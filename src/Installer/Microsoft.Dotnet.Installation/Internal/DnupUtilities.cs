@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper;
+namespace Microsoft.Dotnet.Installation.Internal;
 
 internal static class DnupUtilities
 {
@@ -32,22 +32,6 @@ internal static class DnupUtilities
         return string.Equals(Path.GetFullPath(a).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
                                 Path.GetFullPath(b).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
                                 StringComparison.OrdinalIgnoreCase);
-    }
-
-    public static InstallArchitecture GetInstallArchitecture(System.Runtime.InteropServices.Architecture architecture)
-    {
-        return architecture switch
-        {
-            System.Runtime.InteropServices.Architecture.X86 => InstallArchitecture.x86,
-            System.Runtime.InteropServices.Architecture.X64 => InstallArchitecture.x64,
-            System.Runtime.InteropServices.Architecture.Arm64 => InstallArchitecture.arm64,
-            _ => throw new NotSupportedException($"Architecture {architecture} is not supported.")
-        };
-    }
-
-    public static InstallArchitecture GetDefaultInstallArchitecture()
-    {
-        return GetInstallArchitecture(RuntimeInformation.ProcessArchitecture);
     }
 
     public static void ForceReplaceFile(string sourcePath, string destPath)

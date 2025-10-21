@@ -10,6 +10,7 @@ using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using System.Runtime.InteropServices;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
@@ -23,7 +24,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool _interactive = result.GetValue(SdkInstallCommandParser.InteractiveOption);
     private readonly bool _noProgress = result.GetValue(SdkInstallCommandParser.NoProgressOption);
 
-    private readonly IBootstrapperController _dotnetInstaller = new BootstrapperController();
+    private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly IDotnetReleaseInfoProvider _releaseInfoProvider = new EnvironmentVariableMockReleaseInfoProvider();
     private readonly ManifestChannelVersionResolver _channelVersionResolver = new ManifestChannelVersionResolver();
 
@@ -175,7 +176,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         // Create a request and resolve it using the channel version resolver
         var installRequest = new DotnetInstallRequest(
-            new DotnetInstallRoot(resolvedInstallPath, DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture)),
+            new DotnetInstallRoot(resolvedInstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
             new UpdateChannel(resolvedChannel),
             InstallComponent.SDK,
             new InstallRequestOptions
@@ -229,7 +230,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         {
             // Create the request for the additional version
             var additionalRequest = new DotnetInstallRequest(
-                new DotnetInstallRoot(resolvedInstallPath, DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture)),
+                new DotnetInstallRoot(resolvedInstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
                 new UpdateChannel(additionalVersion),
                 InstallComponent.SDK,
                 new InstallRequestOptions

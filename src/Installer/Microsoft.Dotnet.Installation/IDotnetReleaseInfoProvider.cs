@@ -12,7 +12,7 @@ public interface IDotnetReleaseInfoProvider
 {
     IEnumerable<string> GetAvailableChannels();
 
-    ReleaseVersion GetLatestVersion(InstallComponent component, string channel);
+    ReleaseVersion? GetLatestVersion(InstallComponent component, string channel);
 
     // Get all versions in a channel - do we have a scenario for this?
     //IEnumerable<ReleaseVersion> GetAllVersions(InstallComponent component, string channel);

@@ -11,6 +11,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
 using Microsoft.Dotnet.Installation;
 using Xunit;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Dnup.Tests;
 
@@ -48,7 +49,7 @@ public class InstallEndToEndTests
         var updateChannel = new UpdateChannel(channel);
         var expectedVersion = new ManifestChannelVersionResolver().Resolve(
             new DotnetInstallRequest(
-                new DotnetInstallRoot(testEnv.InstallPath, DnupUtilities.GetDefaultInstallArchitecture()),
+                new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
                 updateChannel,
                 InstallComponent.SDK,
                 new InstallRequestOptions()));
@@ -66,7 +67,7 @@ public class InstallEndToEndTests
         Directory.Exists(Path.GetDirectoryName(testEnv.ManifestPath)).Should().BeTrue();
 
         // Verify the installation was properly recorded in the manifest
-        List<DotnetInstall> installs = new();
+        List<DotnetInstall> installs = [];
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DnupSharedManifest(testEnv.ManifestPath);

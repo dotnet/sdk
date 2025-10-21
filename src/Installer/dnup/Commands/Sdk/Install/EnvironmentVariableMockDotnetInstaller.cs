@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Spectre.Console;
 
@@ -11,7 +12,7 @@ using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install
 {
-    internal class EnvironmentVariableMockDotnetInstaller : IBootstrapperController
+    internal class EnvironmentVariableMockDotnetInstaller : IDotnetInstallManager
     {
         public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
         {
@@ -36,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install
                 return null;
             }
             var installPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH") ?? GetDefaultDotnetInstallPath();
-            return new(new(installPath, DnupUtilities.GetDefaultInstallArchitecture()), installtype, true, true);
+            return new(new(installPath, InstallerUtilities.GetDefaultInstallArchitecture()), installtype, true, true);
         }
 
         public string? GetLatestInstalledAdminVersion()

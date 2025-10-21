@@ -10,9 +10,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper;
+namespace Microsoft.Dotnet.Installation.Internal;
 
-internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
+internal class ArchiveDotnetExtractor : IDisposable
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
@@ -20,7 +20,7 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
     private string scratchDownloadDirectory;
     private string? _archivePath;
 
-    public ArchiveDotnetInstaller(DotnetInstallRequest request, ReleaseVersion resolvedVersion, bool noProgress = false)
+    public ArchiveDotnetExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, bool noProgress = false)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;

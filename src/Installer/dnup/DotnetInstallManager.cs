@@ -5,16 +5,17 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-public class BootstrapperController : IBootstrapperController
+public class DotnetInstallManager : IDotnetInstallManager
 {
     private readonly IEnvironmentProvider _environmentProvider;
 
-    public BootstrapperController(IEnvironmentProvider? environmentProvider = null)
+    public DotnetInstallManager(IEnvironmentProvider? environmentProvider = null)
     {
         _environmentProvider = environmentProvider ?? new EnvironmentProvider();
     }
@@ -37,7 +38,7 @@ public class BootstrapperController : IBootstrapperController
         bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
                               installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
 
-        var installRoot = new DotnetInstallRoot(installDir, DnupUtilities.GetDefaultInstallArchitecture());
+        var installRoot = new DotnetInstallRoot(installDir, InstallerUtilities.GetDefaultInstallArchitecture());
 
         bool isSetAsDotnetRoot = DnupUtilities.PathsEqual(dotnetRoot, installDir);
 

@@ -8,7 +8,14 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-public interface IBootstrapperController
+//  Install process
+// - Resolve version to install from channel
+// - Handle writing to install manifest and garbage collection
+// - Orchestrate installation so that only one install happens at a time
+// - Call into installer implementation
+
+
+public interface IDotnetInstallManager
 {
     GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory);
 

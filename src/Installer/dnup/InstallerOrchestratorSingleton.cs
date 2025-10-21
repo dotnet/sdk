@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -50,7 +51,7 @@ internal class InstallerOrchestratorSingleton
             }
         }
 
-        using ArchiveDotnetInstaller installer = new(installRequest, versionToInstall, noProgress);
+        using ArchiveDotnetExtractor installer = new(installRequest, versionToInstall, noProgress);
         installer.Prepare();
 
         // Extract and commit the install to the directory

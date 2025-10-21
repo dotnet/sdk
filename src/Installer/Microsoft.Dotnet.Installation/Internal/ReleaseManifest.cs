@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Deployment.DotNet.Releases;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper;
+namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
 /// Handles downloading and parsing .NET release manifests to find the correct installer/archive for a given installation.

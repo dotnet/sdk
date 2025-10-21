@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper;
+namespace Microsoft.Dotnet.Installation.Internal;
 
 public class ScopedMutex : IDisposable
 {

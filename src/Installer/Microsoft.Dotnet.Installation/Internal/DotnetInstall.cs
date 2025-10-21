@@ -5,13 +5,13 @@ using System;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper;
+namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
 /// Represents a .NET installation with a fully specified version.
 /// The MuxerDirectory is the directory of the corresponding .NET host that has visibility into this .NET installation.
 /// </summary>
-public record DotnetInstall(
+internal record DotnetInstall(
     DotnetInstallRoot InstallRoot,
     ReleaseVersion Version,
     InstallComponent Component);
@@ -19,13 +19,13 @@ public record DotnetInstall(
 /// <summary>
 /// Represents a request for a .NET installation with a channel version that will get resolved into a fully specified version.
 /// </summary>
-public record DotnetInstallRequest(
+internal record DotnetInstallRequest(
     DotnetInstallRoot InstallRoot,
     UpdateChannel Channel,
     InstallComponent Component,
     InstallRequestOptions Options);
 
-public record InstallRequestOptions()
+internal record InstallRequestOptions()
 {
     // Include options such as the custom feed, manifest path, etc.
     public string? ManifestPath { get; init; }
