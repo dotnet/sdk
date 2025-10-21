@@ -232,11 +232,11 @@ namespace Microsoft.NET.Build.Tasks
 
                     if (UseCrossgen2 && !IsPdbCompilation)
                     {
-                        result.AppendLine($"-r:\"{reference}\"");
+                        result.AppendLine($"-r:\"{reference.ItemSpec}\"");
                     }
                     else
                     {
-                        result.AppendLine($"-r \"{reference}\"");
+                        result.AppendLine($"-r \"{reference.ItemSpec}\"");
                     }
                 }
             }

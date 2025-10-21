@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -10,14 +12,16 @@ internal delegate ValueTask ProcessExitAction(int processId, int? exitCode);
 internal sealed class ProjectLauncher(
     DotNetWatchContext context,
     ProjectNodeMap projectMap,
-    BrowserConnector browserConnector,
     CompilationHandler compilationHandler,
     int iteration)
 {
     public int Iteration = iteration;
 
-    public IReporter Reporter
-        => context.Reporter;
+    public ILogger Logger
+        => context.Logger;
+
+    public ILoggerFactory LoggerFactory
+        => context.LoggerFactory;
 
     public EnvironmentOptions EnvironmentOptions
         => context.EnvironmentOptions;
@@ -38,11 +42,23 @@ internal sealed class ProjectLauncher(
 
         if (!projectNode.IsNetCoreApp(Versions.Version6_0))
         {
-            Reporter.Error($"Hot Reload based watching is only supported in .NET 6.0 or newer apps. Use --no-hot-reload switch or update the project's launchSettings.json to disable this feature.");
+            Logger.LogError($"Hot Reload based watching is only supported in .NET 6.0 or newer apps. Use --no-hot-reload switch or update the project's launchSettings.json to disable this feature.");
             return null;
         }
 
-        var appModel = HotReloadAppModel.InferFromProject(projectNode, Reporter);
+        var appModel = HotReloadAppModel.InferFromProject(context, projectNode);
+
+        // create loggers that include project name in messages:
+        var projectDisplayName = projectNode.GetDisplayName();
+        var clientLogger = context.LoggerFactory.CreateLogger(HotReloadDotNetWatcher.ClientLogComponentName, projectDisplayName);
+        var agentLogger = context.LoggerFactory.CreateLogger(HotReloadDotNetWatcher.AgentLogComponentName, projectDisplayName);
+
+        var clients = await appModel.TryCreateClientsAsync(clientLogger, agentLogger, cancellationToken);
+        if (clients == null)
+        {
+            // error already reported
+            return null;
+        }
 
         var processSpec = new ProcessSpec
         {
@@ -52,76 +68,66 @@ internal sealed class ProjectLauncher(
             OnOutput = onOutput,
         };
 
-        var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
-        var namedPipeName = Guid.NewGuid().ToString();
+        // Stream output lines to the process output reporter.
+        // The reporter synchronizes the output of the process with the logger output,
+        // so that the printed lines don't interleave.
+        processSpec.OnOutput += line =>
+        {
+            context.ProcessOutputReporter.ReportOutput(context.ProcessOutputReporter.PrefixProcessOutput ? line with { Content = $"[{projectDisplayName}] {line.Content}" } : line);
+        };
 
+        var environmentBuilder = new Dictionary<string, string>();
+
+        // initialize with project settings:
         foreach (var (name, value) in projectOptions.LaunchEnvironmentVariables)
         {
-            // ignore dotnet-watch reserved variables -- these shouldn't be set by the project
-            if (name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase) ||
-                name.Equals(EnvironmentVariables.Names.DotNetStartupHooks, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            environmentBuilder.SetVariable(name, value);
+            environmentBuilder[name] = value;
         }
 
         // override any project settings:
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatch, "1");
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchIteration, (Iteration + 1).ToString(CultureInfo.InvariantCulture));
+        environmentBuilder[EnvironmentVariables.Names.DotnetWatch] = "1";
+        environmentBuilder[EnvironmentVariables.Names.DotnetWatchIteration] = (Iteration + 1).ToString(CultureInfo.InvariantCulture);
 
-        // Note:
-        // Microsoft.AspNetCore.Components.WebAssembly.Server.ComponentWebAssemblyConventions and Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware
-        // expect DOTNET_MODIFIABLE_ASSEMBLIES to be set in the blazor-devserver process, even though we are not performing Hot Reload in this process.
-        // The value is converted to DOTNET-MODIFIABLE-ASSEMBLIES header, which is in turn converted back to environment variable in Mono browser runtime loader:
-        // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotNetModifiableAssemblies, "debug");
-
-        if (appModel.TryGetStartupHookPath(out var startupHookPath))
+        if (Logger.IsEnabled(LogLevel.Debug))
         {
-            // HotReload startup hook should be loaded before any other startup hooks:
-            environmentBuilder.DotNetStartupHooks.Insert(0, startupHookPath);
-
-            environmentBuilder.SetVariable(EnvironmentVariables.Names.DotNetWatchHotReloadNamedPipeName, namedPipeName);
-
-            if (context.Options.Verbose)
-            {
-                environmentBuilder.SetVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "1");
-            }
+            environmentBuilder[EnvironmentVariables.Names.HotReloadDeltaClientLogMessages] =
+                (EnvironmentOptions.SuppressEmojis ? Emoji.Default : Emoji.Agent).GetLogMessagePrefix() + $"[{projectDisplayName}]";
         }
 
-        var browserRefreshServer = await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectNode, processSpec, environmentBuilder, projectOptions, appModel, cancellationToken);
+        clients.ConfigureLaunchEnvironment(environmentBuilder);
 
+        processSpec.Arguments = GetProcessArguments(projectOptions, environmentBuilder);
+
+        // Attach trigger to the process that detects when the web server reports to the output that it's listening.
+        // Launches browser on the URL found in the process output for root projects.
+        context.BrowserLauncher.InstallBrowserLaunchTrigger(processSpec, projectNode, projectOptions, clients.BrowserRefreshServer, cancellationToken);
+
+        return await compilationHandler.TrackRunningProjectAsync(
+            projectNode,
+            projectOptions,
+            clients,
+            processSpec,
+            restartOperation,
+            processTerminationSource,
+            cancellationToken);
+    }
+
+    private static IReadOnlyList<string> GetProcessArguments(ProjectOptions projectOptions, IDictionary<string, string> environmentBuilder)
+    {
         var arguments = new List<string>()
         {
             projectOptions.Command,
             "--no-build"
         };
 
-        foreach (var (name, value) in environmentBuilder.GetEnvironment())
+        foreach (var (name, value) in environmentBuilder)
         {
             arguments.Add("-e");
             arguments.Add($"{name}={value}");
         }
 
         arguments.AddRange(projectOptions.CommandArguments);
-
-        processSpec.Arguments = arguments;
-
-        var processReporter = new ProjectSpecificReporter(projectNode, Reporter);
-
-        return await compilationHandler.TrackRunningProjectAsync(
-            projectNode,
-            projectOptions,
-            appModel,
-            namedPipeName,
-            browserRefreshServer,
-            processSpec,
-            restartOperation,
-            processReporter,
-            processTerminationSource,
-            cancellationToken);
+        return arguments;
     }
 
     public ValueTask<int> TerminateProcessAsync(RunningProject project, CancellationToken cancellationToken)

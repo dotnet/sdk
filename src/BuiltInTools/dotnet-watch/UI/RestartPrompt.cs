@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class RestartPrompt(IReporter reporter, ConsoleInputReader requester, bool? noPrompt)
+    internal sealed class RestartPrompt(ILogger logger, ConsoleInputReader requester, bool? noPrompt)
     {
         public bool? AutoRestartPreference { get; private set; } = noPrompt;
 
@@ -11,7 +13,7 @@ namespace Microsoft.DotNet.Watch
         {
             if (AutoRestartPreference.HasValue)
             {
-                reporter.Output("Restarting");
+                logger.LogInformation("Restarting");
                 return AutoRestartPreference.Value;
             }
 

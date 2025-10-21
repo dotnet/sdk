@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-install" "1" "2025-07-30" "" ".NET Documentation"
+.TH "dotnet-tool-install" "1" "2025-09-15" "" ".NET Documentation"
 .hy
 .SH dotnet tool install
 .PP
@@ -65,6 +65,11 @@ To install a global tool in the default location, use the \f[V]--global\f[R] opt
 To install a global tool in a custom location, use the \f[V]--tool-path\f[R] option.
 .IP \[bu] 2
 To install a local tool, omit the \f[V]--global\f[R] and \f[V]--tool-path\f[R] options.
+.RS
+.PP
+[!WARNING] Make sure the directory you specify with the \f[V]--tool-path\f[R] option is secure.
+Tools installed in this location can be executed directly, so using an untrusted or shared path might introduce security risks.
+.RE
 .SS Installation locations
 .SS Global tools
 .PP
@@ -109,7 +114,8 @@ Local tools are stored in the NuGet global directory, whatever you\[cq]ve set th
 There are shim files in \f[V]$HOME/.dotnet/toolResolverCache\f[R] for each local tool that point to where the tools are within that location.
 .PP
 References to local tools are added to a \f[I]dotnet-tools.json\f[R] file in a \f[I].config\f[R] directory under the current directory.
-If a manifest file doesn\[cq]t exist yet, create it by using the \f[V]--create-manifest-if-needed\f[R] option or by running the following command:
+Starting in .NET 10, if a manifest file doesn\[cq]t exist yet, one is created automatically.
+You can also create one manually by running the following command:
 .IP
 .nf
 \f[C]
@@ -137,6 +143,7 @@ Suppresses the warning, \[lq]The requested version x.x.x is lower than existing 
 \f[B]\f[VB]--allow-roll-forward\f[B]\f[R]
 .RS 2
 .PP
+Available starting with .NET 9.0 SDK.
 Allow tool to use a newer version of the .NET runtime if the runtime it targets isn\[cq]t installed.
 .RE
 .IP \[bu] 2
@@ -169,13 +176,14 @@ For more information, see Common NuGet Configurations.
 \f[B]\f[VB]--create-manifest-if-needed\f[B]\f[R]
 .RS 2
 .PP
+Available starting in .NET 8 SDK.
+.PP
 Applies to local tools.
-Available starting with .NET 8 SDK.
 To find a manifest, the search algorithm searches up the directory tree for \f[V]dotnet-tools.json\f[R] or a \f[V].config\f[R] folder that contains a \f[V]dotnet-tools.json\f[R] file.
 .PP
-If a tool-manifest can\[cq]t be found and the \f[V]--create-manifest-if-needed\f[R] option is set to false, the \f[V]CannotFindAManifestFile\f[R] error occurs.
+If a tool-manifest can\[cq]t be found and the \f[V]--create-manifest-if-needed\f[R] option is set to \f[V]false\f[R], the \f[V]CannotFindAManifestFile\f[R] error occurs.
 .PP
-If a tool-manifest can\[cq]t be found and the \f[V]--create-manifest-if-needed\f[R] option is set to true, the tool creates a manifest automatically.
+If a tool-manifest can\[cq]t be found and the \f[V]--create-manifest-if-needed\f[R] option is set to \f[V]true\f[R] (or, in .NET 10 and later versions, when not specified), the tool creates a manifest automatically.
 It chooses a folder for the manifest as follows:
 .IP \[bu] 2
 Walk up the directory tree searching for a directory that has a \f[V].git\f[R] subfolder.
@@ -187,6 +195,16 @@ If one is found, create the manifest in that directory.
 If neither of the previous two steps finds a directory, create the manifest in the current working directory.
 .PP
 For more information on how manifests are located, see Install a local tool.
+.PP
+Starting in .NET 10, a manifest is created automatically if no tools manifest is found.
+This change can be a breaking change.
+You can opt out by passing \f[V]--create-manifest-if-needed=false\f[R].
+.RS
+.PP
+[!WARNING] Don\[cq]t run tool commands from the \f[B]Downloads\f[R] folder or any shared location.
+The CLI walks up the directory tree to find a tool manifest, which might cause it to use a manifest you don\[cq]t expect.
+Always run tool commands from a trusted, project-specific directory.
+.RE
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--disable-parallel\f[B]\f[R]
@@ -325,6 +343,12 @@ Installs dotnetsay (https://www.nuget.org/packages/dotnetsay/) as a local tool f
 .PP
 Installs dotnetsay (https://www.nuget.org/packages/dotnetsay/) as a global tool with the verbosity of minimal.
 The default verbosity for global tool is quiet.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]dotnet tool install -g dotnetsay --allow-roll-forward\f[B]\f[R]
+.RS 2
+.PP
+Installs dotnetsay (https://www.nuget.org/packages/dotnetsay/) as a global tool and allows it to run on newer .NET versions if the target runtime isn\[cq]t available.
 .RE
 .SH SEE ALSO
 .IP \[bu] 2

@@ -1,13 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch
 {
     /// <summary>
     /// This API supports infrastructure and is not intended to be used
     /// directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    internal sealed class ConsoleReporter(IConsole console, bool verbose, bool quiet, bool suppressEmojis) : IReporter
+    internal sealed class ConsoleReporter(IConsole console, bool verbose, bool quiet, bool suppressEmojis) : IReporter, IProcessOutputReporter
     {
         public bool IsVerbose { get; } = verbose;
         public bool IsQuiet { get; } = quiet;
@@ -15,7 +17,10 @@ namespace Microsoft.DotNet.Watch
 
         private readonly Lock _writeLock = new();
 
-        public void ReportProcessOutput(OutputLine line)
+        bool IProcessOutputReporter.PrefixProcessOutput
+            => false;
+
+        void IProcessOutputReporter.ReportOutput(OutputLine line)
         {
             lock (_writeLock)
             {
@@ -23,12 +28,12 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private void WriteLine(TextWriter writer, string message, ConsoleColor? color, string emoji)
+        private void WriteLine(TextWriter writer, string message, ConsoleColor? color, Emoji emoji)
         {
             lock (_writeLock)
             {
                 console.ForegroundColor = ConsoleColor.DarkGray;
-                writer.Write($"dotnet watch {(SuppressEmojis ? ":" : emoji)} ");
+                writer.Write((SuppressEmojis ? Emoji.Default : emoji).GetLogMessagePrefix());
                 console.ResetColor();
 
                 if (color.HasValue)
@@ -45,35 +50,30 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
+        public void Report(EventId id, Emoji emoji, MessageSeverity severity, string message)
         {
-            if (!descriptor.TryGetMessage(prefix, args, out var message))
-            {
-                return;
-            }
-
-            switch (descriptor.Severity)
+            switch (severity)
             {
                 case MessageSeverity.Error:
                     // Use stdout for error messages to preserve ordering with respect to other output.
-                    WriteLine(console.Out, message, ConsoleColor.Red, descriptor.Emoji);
+                    WriteLine(console.Out, message, ConsoleColor.Red, emoji);
                     break;
 
                 case MessageSeverity.Warning:
-                    WriteLine(console.Out, message, ConsoleColor.Yellow, descriptor.Emoji);
+                    WriteLine(console.Out, message, ConsoleColor.Yellow, emoji);
                     break;
 
                 case MessageSeverity.Output:
                     if (!IsQuiet)
                     {
-                        WriteLine(console.Out, message, color: null, descriptor.Emoji);
+                        WriteLine(console.Out, message, color: null, emoji);
                     }
                     break;
 
                 case MessageSeverity.Verbose:
                     if (IsVerbose)
                     {
-                        WriteLine(console.Out, message, ConsoleColor.DarkGray, descriptor.Emoji);
+                        WriteLine(console.Out, message, ConsoleColor.DarkGray, emoji);
                     }
                     break;
             }

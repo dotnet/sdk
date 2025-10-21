@@ -359,10 +359,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -379,6 +375,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -414,10 +414,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -442,6 +438,10 @@
         {
           "Name": "label",
           "Value": "AppWithP2PReference.styles.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -657,10 +657,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -673,6 +669,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -708,10 +708,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -732,6 +728,10 @@
         {
           "Name": "label",
           "Value": "_content/ClassLibrary/ClassLibrary.bundle.scp.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -808,10 +808,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -824,6 +820,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -982,10 +982,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -998,6 +994,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1074,10 +1074,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -1090,6 +1086,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },

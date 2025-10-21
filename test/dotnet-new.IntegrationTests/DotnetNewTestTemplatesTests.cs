@@ -180,6 +180,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string testProjectName = GenerateTestProjectName();
             string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents up to our own solution root, which would affect other tests.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
             string workingDirectory = CreateTemporaryFolder();
 
             // Create new test project: dotnet new <projectTemplate> -n <testProjectName> -f <targetFramework> -lang <language> --coverage-tool <coverageTool> --test-runner <testRunner>
@@ -193,14 +197,22 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             if (runDotnetTest)
             {
+                var isMTP = testRunner == "Microsoft.Testing.Platform";
+                if (isMTP)
+                {
+                    File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeTrue();
+                }
+
                 var result = new DotnetTestCommand(_log, false)
                 .WithWorkingDirectory(outputDirectory)
-                .Execute(outputDirectory);
+#pragma warning disable SA1010 // Opening square brackets should be spaced correctly - false positive. Current formatting is good.
+                .Execute(isMTP ? ["--project", outputDirectory] : [outputDirectory]);
+#pragma warning restore SA1010 // Opening square brackets should be spaced correctly
 
                 result.Should().Pass();
 
                 result.StdOut.Should().Contain("Passed!");
-                result.StdOut.Should().MatchRegex(@"Passed:\s*1");
+                result.StdOut.Should().MatchRegex(isMTP ? "succeeded: 1" : @"Passed:\s*1");
             }
 
             // After executing dotnet new and before cleaning up

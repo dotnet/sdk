@@ -39,13 +39,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <FileAlignment Condition=" '$(FileAlignment)' == '' ">512</FileAlignment>
     <ErrorReport Condition=" '$(ErrorReport)' == '' ">prompt</ErrorReport>
     <AssemblyName Condition=" '$(AssemblyName)' == '' ">$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace Condition=" '$(RootNamespace)' == '' ">$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <Deterministic Condition=" '$(Deterministic)' == '' ">true</Deterministic>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(RootNamespace)' == '' ">
-    <!-- Transform project name for RootNamespace: replace spaces and dashes with underscores, prefix with underscore if starts with digit -->
-    <RootNamespace>$(MSBuildProjectName.Replace(" ", "_").Replace("-", "_"))</RootNamespace>
-    <RootNamespace Condition=" $([System.Char]::IsDigit($(RootNamespace), 0)) ">_$(RootNamespace)</RootNamespace>
   </PropertyGroup>
 
   <!-- User-facing configuration-specific defaults -->
@@ -121,6 +116,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PreferNativeArm64 Condition="'$(PreferNativeArm64)'==''">false</PreferNativeArm64>
     <SignAssembly Condition="'$(SignAssembly)'==''">false</SignAssembly>
     <DelaySign Condition="'$(DelaySign)'==''">false</DelaySign>
+    <!-- TODO: should we set _IsPacking=true on the NuGet Pack targets when they hook up the 'generate package on build' stuff -->
     <GeneratePackageOnBuild Condition="'$(GeneratePackageOnBuild)'==''">false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance Condition="'$(PackageRequireLicenseAcceptance)'==''">false</PackageRequireLicenseAcceptance>
     <DebugSymbols Condition="'$(DebugSymbols)'==''">false</DebugSymbols>

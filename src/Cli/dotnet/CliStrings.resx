@@ -252,6 +252,9 @@
   <data name="SolutionAlreadyContainsProject" xml:space="preserve">
     <value>Solution {0} already contains project {1}.</value>
   </data>
+  <data name="SolutionFolderAlreadyContainsProjectWithFilename" xml:space="preserve">
+    <value>Solution folder '{0}' already contains a project with the filename '{1}'.</value>
+  </data>
   <data name="SpecifyAtLeastOneReferenceToRemove" xml:space="preserve">
     <value>You must specify at least one reference to remove.</value>
   </data>
@@ -510,6 +513,18 @@ setx PATH "%PATH%;{0}"
     <value>Specifying both the `-r|--runtime` and `-os` options is not supported.</value>
   </data>
   <data name="CmdEnvironmentVariableDescription" xml:space="preserve">
+    <value>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</value>
+  </data>
+  <data name="CmdTestEnvironmentVariableDescription" xml:space="preserve">
     <value>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
 This will force the tests to be run in an isolated process. 
@@ -805,7 +820,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
     <comment>{Locked="dotnet workload update"}</comment>
   </data>
   <data name="PackageIdentityArgumentDescription" xml:space="preserve">
-    <value>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</value>
+    <value>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</value>
   </data>
   <data name="PackageIdentityArgumentIdOrVersionIsNull" xml:space="preserve">
     <value>Package reference id and version must not be null.</value>

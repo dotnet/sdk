@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Watch
         public bool LaunchBrowser { get; init; }
         public string? LaunchUrl { get; init; }
 
-        internal static LaunchSettingsProfile? ReadLaunchProfile(string projectPath, string? launchProfileName, IReporter reporter)
+        internal static LaunchSettingsProfile? ReadLaunchProfile(string projectPath, string? launchProfileName, ILogger logger)
         {
             var projectDirectory = Path.GetDirectoryName(projectPath);
             Debug.Assert(projectDirectory != null);
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.Watch
             {
                 if (hasRunJson)
                 {
-                    reporter.Warn(string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath));
+                    logger.LogWarning(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath);
                 }
             }
             else if (hasRunJson)
@@ -60,16 +61,16 @@ namespace Microsoft.DotNet.Watch
                     File.ReadAllText(launchSettingsPath),
                     s_serializerOptions);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                reporter.Verbose($"Error reading '{launchSettingsPath}': {ex}.");
+                logger.LogDebug("Error reading '{Path}': {Message}.", launchSettingsPath, e.Message);
                 return null;
             }
 
             if (string.IsNullOrEmpty(launchProfileName))
             {
                 // Load the default (first) launch profile
-                return ReadDefaultLaunchProfile(launchSettings, reporter);
+                return ReadDefaultLaunchProfile(launchSettings, logger);
             }
 
             // Load the specified launch profile
@@ -78,7 +79,7 @@ namespace Microsoft.DotNet.Watch
 
             if (namedProfile is null)
             {
-                reporter.Warn($"Unable to find launch profile with name '{launchProfileName}'. Falling back to default profile.");
+                logger.LogWarning("Unable to find launch profile with name '{ProfileName}'. Falling back to default profile.", launchProfileName);
 
                 // Check if a case-insensitive match exists
                 var caseInsensitiveNamedProfile = launchSettings?.Profiles?.FirstOrDefault(kvp =>
@@ -86,22 +87,22 @@ namespace Microsoft.DotNet.Watch
 
                 if (caseInsensitiveNamedProfile is not null)
                 {
-                    reporter.Warn($"Note: Launch profile names are case-sensitive. Did you mean '{caseInsensitiveNamedProfile}'?");
+                    logger.LogWarning("Note: Launch profile names are case-sensitive. Did you mean '{ProfileName}'?", caseInsensitiveNamedProfile);
                 }
 
-                return ReadDefaultLaunchProfile(launchSettings, reporter);
+                return ReadDefaultLaunchProfile(launchSettings, logger);
             }
 
-            reporter.Verbose($"Found named launch profile '{launchProfileName}'.");
+            logger.LogDebug("Found named launch profile '{ProfileName}'.", launchProfileName);
             namedProfile.LaunchProfileName = launchProfileName;
             return namedProfile;
         }
 
-        private static LaunchSettingsProfile? ReadDefaultLaunchProfile(LaunchSettingsJson? launchSettings, IReporter reporter)
+        private static LaunchSettingsProfile? ReadDefaultLaunchProfile(LaunchSettingsJson? launchSettings, ILogger logger)
         {
             if (launchSettings is null || launchSettings.Profiles is null)
             {
-                reporter.Verbose("Unable to find default launch profile.");
+                logger.LogDebug("Unable to find default launch profile.");
                 return null;
             }
 
@@ -109,7 +110,7 @@ namespace Microsoft.DotNet.Watch
 
             if (defaultProfileKey is null)
             {
-                reporter.Verbose("Unable to find 'Project' command in the default launch profile.");
+                logger.LogDebug("Unable to find 'Project' command in the default launch profile.");
                 return null;
             }
 

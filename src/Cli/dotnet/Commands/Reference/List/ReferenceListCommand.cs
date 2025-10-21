@@ -38,18 +38,7 @@ internal class ReferenceListCommand : CommandBase
             return 0;
         }
 
-        ProjectRootElement projectRootElement;
-        try
-        {
-            projectRootElement = ProjectRootElement.Open(_fileOrDirectory);
-        }
-        catch (InvalidProjectFileException ex)
-        {
-            Reporter.Error.WriteLine(string.Format(CliStrings.InvalidProjectWithExceptionMessage, _fileOrDirectory, ex.Message));
-            return 0;
-        }
-
-        ProjectInstance projectInstance = new(projectRootElement);
+        ProjectInstance projectInstance = new(msbuildProj.ProjectRootElement);
         Reporter.Output.WriteLine($"{CliStrings.ProjectReferenceOneOrMore}");
         Reporter.Output.WriteLine(new string('-', CliStrings.ProjectReferenceOneOrMore.Length));
         foreach (var item in projectInstance.GetItems("ProjectReference"))

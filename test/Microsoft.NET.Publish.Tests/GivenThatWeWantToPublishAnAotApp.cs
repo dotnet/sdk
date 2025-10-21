@@ -546,7 +546,8 @@ namespace Microsoft.NET.Publish.Tests
             project.Root.Add(new XElement(ns + "ItemGroup",
                 new XElement(ns + "KnownILCompilerPack",
                     new XAttribute("Update", "@(KnownILCompilerPack)"),
-                    new XElement(ns + "ILCompilerRuntimeIdentifiers", runtimeIdentifiers))));
+                    new XElement(ns + "ILCompilerRuntimeIdentifiers", runtimeIdentifiers),
+                    new XElement(ns + "ILCompilerPortableRuntimeIdentifiers", runtimeIdentifiers))));
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]

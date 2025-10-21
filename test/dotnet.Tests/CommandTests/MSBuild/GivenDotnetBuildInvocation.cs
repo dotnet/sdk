@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             new string[] { "--property:TargetFramework=tfm", "--verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
         [InlineData(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet", "-nologo", "--verbosity:quiet" },
-            new string[] { "--property:TargetFramework=tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" })]
+            new string[] { "--property:TargetFramework=tfm", "--getItem:Compile", "--getProperty:TargetFramework", "--getTargetResult:Build" })]
         public void MsbuildInvocationIsCorrectForSeparateRestore(
             string[] args,
             string[] expectedAdditionalArgsForRestore,

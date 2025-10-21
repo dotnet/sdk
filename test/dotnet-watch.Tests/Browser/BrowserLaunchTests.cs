@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
 
             // check that all app output is printed out:
-            await App.AssertOutputLine(line => line.Contains("Content root path:"));
+            await App.WaitForOutputLineContaining("Content root path:");
 
             Assert.Contains(App.Process.Output, line => line.Contains("Application started. Press Ctrl+C to shut down."));
             Assert.Contains(App.Process.Output, line => line.Contains("Hosting environment: Development"));
@@ -39,8 +39,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.EnvironmentVariables.Add("DOTNET_WATCH_BROWSER_PATH", "mycustombrowser.bat");
 
             App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
-            await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToUseBrowserRefresh);
-            await App.AssertOutputLineStartsWith(MessageDescriptor.ConfiguredToLaunchBrowser);
+            await App.WaitForOutputLineContaining(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            await App.WaitForOutputLineContaining(MessageDescriptor.ConfiguredToLaunchBrowser);
 
             // Verify we launched the browser.
             await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: mycustombrowser.bat https://localhost:5001");

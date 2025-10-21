@@ -11,14 +11,12 @@
     </volume-check>
     <choices-outline>
         <line choice="{NetCoreAppTargetingPackComponentId}.pkg.x64" />
-        <line choice="{NetStandardTargetingPackComponentId}.pkg.x64" />
         <line choice="{NetCoreAppHostPackComponentId}.pkg.x64" />
         <line choice="{SharedFxComponentId}.pkg.x64" />
         <line choice="{HostFxrComponentId}.pkg.x64" />
         <line choice="{SharedHostComponentId}.pkg.x64" />
         <line choice="{CLISdkComponentId}.pkg.x64"/>
         <line choice="{NetCoreAppTargetingPackComponentId}.pkg.arm64" />
-        <line choice="{NetStandardTargetingPackComponentId}.pkg.arm64" />
         <line choice="{NetCoreAppHostPackComponentId}.pkg.arm64" />
         <line choice="{SharedFxComponentId}.pkg.arm64" />
         <line choice="{HostFxrComponentId}.pkg.arm64" />
@@ -27,9 +25,6 @@
     </choices-outline>
     <choice id="{NetCoreAppTargetingPackComponentId}.pkg.x64" visible="true" selected="IsX64Machine()" title="{NetCoreAppTargetingPackBrandName} ({arch})" description="The .NET Targeting Pack">
         <pkg-ref id="{NetCoreAppTargetingPackComponentId}.pkg" />
-    </choice>
-    <choice id="{NetStandardTargetingPackComponentId}.pkg.x64" visible="true" selected="IsX64Machine()" title="{NetStandardTargetingPackBrandName} ({arch})" description="The .NET Standard 2.1 Targeting Pack">
-        <pkg-ref id="{NetStandardTargetingPackComponentId}.pkg" />
     </choice>
     <choice id="{NetCoreAppHostPackComponentId}.pkg.x64" visible="true" selected="IsX64Machine()" title="{NetCoreAppHostPackBrandName} ({arch})" description="The .NET App Host Pack">
         <pkg-ref id="{NetCoreAppHostPackComponentId}.pkg" />
@@ -49,9 +44,6 @@
     <choice id="{NetCoreAppTargetingPackComponentId}.pkg.arm64" visible="true" selected="!IsX64Machine()" customLocation="{x64EmulationPkgInstallDirectory}" title="{NetCoreAppTargetingPackBrandName} ({arch})" description="The .NET Targeting Pack">
         <pkg-ref id="{NetCoreAppTargetingPackComponentId}.pkg" />
     </choice>
-    <choice id="{NetStandardTargetingPackComponentId}.pkg.arm64" visible="true" selected="!IsX64Machine()" customLocation="{x64EmulationPkgInstallDirectory}" title="{NetStandardTargetingPackBrandName} ({arch})" description="The .NET Standard 2.1 Targeting Pack">
-        <pkg-ref id="{NetStandardTargetingPackComponentId}.pkg" />
-    </choice>
     <choice id="{NetCoreAppHostPackComponentId}.pkg.arm64" visible="true" selected="!IsX64Machine()" customLocation="{x64EmulationPkgInstallDirectory}" title="{NetCoreAppHostPackBrandName} ({arch})" description="The .NET App Host Pack">
         <pkg-ref id="{NetCoreAppHostPackComponentId}.pkg" />
     </choice>
@@ -68,7 +60,6 @@
         <pkg-ref id="{CLISdkComponentId}.pkg"/>
     </choice>
     <pkg-ref id="{NetCoreAppTargetingPackComponentId}.pkg">{NetCoreAppTargetingPackComponentId}.pkg</pkg-ref>
-    <pkg-ref id="{NetStandardTargetingPackComponentId}.pkg">{NetStandardTargetingPackComponentId}.pkg</pkg-ref>
     <pkg-ref id="{NetCoreAppHostPackComponentId}.pkg">{NetCoreAppHostPackComponentId}.pkg</pkg-ref>
     <pkg-ref id="{SharedFxComponentId}.pkg">{SharedFxComponentId}.pkg</pkg-ref>
     <pkg-ref id="{HostFxrComponentId}.pkg">{HostFxrComponentId}.pkg</pkg-ref>

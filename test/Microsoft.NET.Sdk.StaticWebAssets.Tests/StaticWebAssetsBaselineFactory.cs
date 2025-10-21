@@ -159,6 +159,9 @@ public partial class StaticWebAssetsBaselineFactory
                     case "integrity":
                         property.Value = "__integrity__";
                         break;
+                    case "original-resource":
+                        property.Value = "__original-resource__";
+                        break;
                     default:
                         break;
                 }

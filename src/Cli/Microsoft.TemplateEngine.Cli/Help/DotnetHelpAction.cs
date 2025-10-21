@@ -23,6 +23,9 @@ public sealed class DotnetHelpAction : SynchronousCommandLineAction
     }
 
     /// <inheritdoc />
+    public override bool ClearsParseErrors => true;
+
+    /// <inheritdoc />
     public override int Invoke(ParseResult parseResult)
     {
         var output = parseResult.InvocationConfiguration.Output;
