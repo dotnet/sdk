@@ -77,6 +77,14 @@ internal static class DnupTestUtilities
     /// <returns>A tuple with exit code and captured output (if requested)</returns>
     public static (int exitCode, string output) RunDnupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
     {
+        // In DEBUG builds, automatically add --debug flag for easier debugging
+#if DEBUG
+        if (!args.Contains("--debug"))
+        {
+            args = new[] { "--debug" }.Concat(args).ToArray();
+        }
+#endif
+
         string repoRoot = GetRepositoryRoot();
         string dnupPath = LocateDnupAssembly(repoRoot);
 
@@ -119,6 +127,29 @@ internal static class DnupTestUtilities
 
         process.WaitForExit();
         return (process.ExitCode, outputBuilder.ToString());
+    }
+
+    /// <summary>
+    /// Runs dnup process with debugging support - waits for debugger attachment
+    /// Note: This only works in DEBUG builds of dnup
+    /// </summary>
+    /// <param name="args">Command line arguments for dnup</param>
+    /// <param name="captureOutput">Whether to capture and return the output</param>
+    /// <param name="workingDirectory">Working directory for the process</param>
+    /// <returns>A tuple with exit code and captured output (if requested)</returns>
+    public static (int exitCode, string output) RunDnupProcessWithDebugger(string[] args, bool captureOutput = false, string? workingDirectory = null)
+    {
+        // Add --debug flag to enable debugger waiting (only works in DEBUG builds)
+        var debugArgs = new[] { "--debug" }.Concat(args).ToArray();
+
+        Console.WriteLine("Starting dnup process in debug mode...");
+        Console.WriteLine("Note: --debug flag only works in DEBUG builds of dnup");
+        Console.WriteLine("To attach debugger:");
+        Console.WriteLine("1. In Visual Studio: Debug -> Attach to Process");
+        Console.WriteLine("2. Find the dotnet.exe process running dnup");
+        Console.WriteLine("3. Attach to it, then press Enter in the console");
+
+        return RunDnupProcess(debugArgs, captureOutput, workingDirectory);
     }
 
     private static string GetRepositoryRoot()

@@ -61,6 +61,7 @@ public class InstallEndToEndTests
 
         // Execute the command with explicit manifest path as a separate process
         var args = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
+
         (int exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"dnup exited with code {exitCode}. Output:\n{output}");
 
