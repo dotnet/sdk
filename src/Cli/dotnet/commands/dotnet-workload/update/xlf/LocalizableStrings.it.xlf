@@ -22,6 +22,11 @@
         <target state="translated">Aggiornare i carichi di lavoro in base al file di definizione di ripristino dello stato precedente specificato.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">Nessun carico di lavoro installato per questa banda di caratteristiche. Per eseguire l'aggiornamento da un SDK precedente, includere l'opzione --from-previous-sdk.</target>
@@ -40,6 +45,11 @@
       <trans-unit id="UpdateFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
         <target state="translated">L'aggiornamento del carico di lavoro '{0}' non è riuscito. Motivi:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">L'aggiornamento a un file di rollback non è compatibile con i set di carico di lavoro. L'installazione e l'aggiornamento useranno ora manifesti separati. Per eseguire l'aggiornamento a una versione specifica del carico di lavoro, usare --version.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">

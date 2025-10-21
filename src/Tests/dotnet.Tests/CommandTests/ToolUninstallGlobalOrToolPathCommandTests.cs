@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void GivenAPackageItUninstalls()
         {
-            CreateInstallCommand($"-g {PackageId}").Execute().Should().Be(0);
+            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute().Should().Be(0);
 
             _reporter
                 .Lines
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void GivenAPackageWhenCallFromUninstallRedirectCommandItUninstalls()
         {
-            CreateInstallCommand($"-g {PackageId}").Execute().Should().Be(0);
+            CreateInstallCommand($"-g {PackageId}  --verbosity minimal").Execute().Should().Be(0);
 
             _reporter
                 .Lines
@@ -168,7 +168,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void GivenAFailureToUninstallItLeavesItInstalled()
         {
-            CreateInstallCommand($"-g {PackageId}").Execute().Should().Be(0);
+            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute().Should().Be(0);
 
             _reporter
                 .Lines
@@ -235,10 +235,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     fileSystem: _fileSystem,
                     _reporter
                     );
+            var toolPackageDownloaderMock = new ToolPackageUninstallerMock(_fileSystem, store);
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (store, store, packageDownloaderMock),
+                (location, forwardArguments) => (store, store, packageDownloaderMock, toolPackageDownloaderMock),
                 (_, _) => new ShellShimRepository(
                     new DirectoryPath(_shimsDirectory),
                     string.Empty,
