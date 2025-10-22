@@ -124,10 +124,6 @@ extends:
         jobs:
         - template: /eng/pipelines/templates/jobs/dnup-library-package.yml@self
           parameters:
-            publishUsingPipelines: true
-            publishAssetsImmediately: true
-            isAssetlessBuild: true
-            repositoryAlias: self
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
