@@ -14,6 +14,7 @@
     <IsShipping>false</IsShipping>
     <Title>.NET Installation Library</Title>
     <Version>1.0.0-alpha</Version>
+    <PackageVersion Condition="'$(PackageVersion)'==''">$(Version)</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
