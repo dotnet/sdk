@@ -8,11 +8,13 @@
 
     <!-- Strong naming not needed on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>
+    <PackageId>Microsoft.Dotnet.Installation</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
-    <!-- TODO: Create logging / progress abstraction and remove this dipendency from the library -->
+    <!-- TODO: Create logging / progress abstraction and remove this dependency from the library -->
     <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 
