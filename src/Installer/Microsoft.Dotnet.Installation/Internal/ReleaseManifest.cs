@@ -54,152 +54,6 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     }
 
     /// <summary>
-    /// Gets products from the index that match the specified major version.
-    /// </summary>
-    /// <param name="index">The product collection to search</param>
-    /// <param name="major">The major version to match</param>
-    /// <returns>List of matching products, ordered by minor version (descending)</returns>
-    private List<Product> GetProductsForMajorVersion(ProductCollection index, int major)
-    {
-        var matchingProducts = index.Where(p =>
-        {
-            var productParts = p.ProductVersion.Split('.');
-            if (productParts.Length > 0 && int.TryParse(productParts[0], out var productMajor))
-            {
-                return productMajor == major;
-            }
-            return false;
-        }).ToList();
-
-        // Order by minor version (descending) to prioritize newer versions
-        return matchingProducts.OrderByDescending(p =>
-        {
-            var productParts = p.ProductVersion.Split('.');
-            if (productParts.Length > 1 && int.TryParse(productParts[1], out var productMinor))
-            {
-                return productMinor;
-            }
-            return 0;
-        }).ToList();
-    }
-
-    /// <summary>
-    /// Gets all SDK components from the releases and returns the latest one.
-    /// </summary>
-    /// <param name="releases">List of releases to search</param>
-    /// <param name="majorFilter">Optional major version filter</param>
-    /// <param name="minorFilter">Optional minor version filter</param>
-    /// <returns>Latest SDK version string, or null if none found</returns>
-    private ReleaseVersion? GetLatestSdkVersion(IEnumerable<ProductRelease> releases, int? majorFilter = null, int? minorFilter = null)
-    {
-        var allSdks = releases
-            .SelectMany(r => r.Sdks)
-            .Where(sdk =>
-                (!majorFilter.HasValue || sdk.Version.Major == majorFilter.Value) &&
-                (!minorFilter.HasValue || sdk.Version.Minor == minorFilter.Value))
-            .OrderByDescending(sdk => sdk.Version)
-            .ToList();
-
-        if (allSdks.Any())
-        {
-            return allSdks.First().Version;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Gets all runtime components from the releases and returns the latest one.
-    /// </summary>
-    /// <param name="releases">List of releases to search</param>
-    /// <param name="majorFilter">Optional major version filter</param>
-    /// <param name="minorFilter">Optional minor version filter</param>
-    /// <param name="runtimeType">Optional runtime type filter (null for any runtime)</param>
-    /// <returns>Latest runtime version string, or null if none found</returns>
-    private ReleaseVersion? GetLatestRuntimeVersion(IEnumerable<ProductRelease> releases, int? majorFilter = null, int? minorFilter = null, string? runtimeType = null)
-    {
-        var allRuntimes = releases.SelectMany(r => r.Runtimes).ToList();
-
-        // Filter by version constraints if provided
-        if (majorFilter.HasValue)
-        {
-            allRuntimes = allRuntimes.Where(r => r.Version.Major == majorFilter.Value).ToList();
-        }
-
-        if (minorFilter.HasValue)
-        {
-            allRuntimes = allRuntimes.Where(r => r.Version.Minor == minorFilter.Value).ToList();
-        }
-
-        // Filter by runtime type if specified
-        if (!string.IsNullOrEmpty(runtimeType))
-        {
-            if (string.Equals(runtimeType, "aspnetcore", StringComparison.OrdinalIgnoreCase))
-            {
-                allRuntimes = allRuntimes
-                    .Where(r => r.GetType().Name.Contains("AspNetCore", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            }
-            else if (string.Equals(runtimeType, "windowsdesktop", StringComparison.OrdinalIgnoreCase))
-            {
-                allRuntimes = allRuntimes
-                    .Where(r => r.GetType().Name.Contains("WindowsDesktop", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            }
-            else // Regular runtime
-            {
-                allRuntimes = allRuntimes
-                    .Where(r => !r.GetType().Name.Contains("AspNetCore", StringComparison.OrdinalIgnoreCase) &&
-                              !r.GetType().Name.Contains("WindowsDesktop", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            }
-        }
-
-        if (allRuntimes.Any())
-        {
-            return allRuntimes.OrderByDescending(r => r.Version).First().Version;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Gets the latest SDK version that matches a specific feature band pattern.
-    /// </summary>
-    /// <param name="releases">List of releases to search</param>
-    /// <param name="major">Major version</param>
-    /// <param name="minor">Minor version</param>
-    /// <param name="featureBand">Feature band prefix (e.g., "1" for "1xx")</param>
-    /// <returns>Latest matching version string, or fallback format if none found</returns>
-    private ReleaseVersion? GetLatestFeatureBandVersion(IEnumerable<ProductRelease> releases, int major, int minor, string featureBand)
-    {
-        var allSdkComponents = releases.SelectMany(r => r.Sdks).ToList();
-
-        // Filter by feature band
-        var featureBandSdks = allSdkComponents
-            .Where(sdk =>
-            {
-                var version = sdk.Version.ToString();
-                var versionParts = version.Split('.');
-                if (versionParts.Length < 3) return false;
-
-                var patchPart = versionParts[2].Split('-')[0]; // Remove prerelease suffix
-                return patchPart.Length >= 3 && patchPart.StartsWith(featureBand);
-            })
-            .OrderByDescending(sdk => sdk.Version)
-            .ToList();
-
-        if (featureBandSdks.Any())
-        {
-            // Return the exact version from the latest matching SDK
-            return featureBandSdks.First().Version;
-        }
-
-        // Fallback if no actual release matches the feature band pattern
-        return null;
-    }
-
-    /// <summary>
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
     /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "sts", "preview")</param>
@@ -256,13 +110,19 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         return null;
     }
 
+    private IEnumerable<Product> GetProductsInMajorOrMajorMinor(IEnumerable<Product> index, int major, int? minor = null)
+    {
+        var validProducts = index.Where(p => p.ProductVersion.StartsWith(minor is not null ? $"{major}.{minor}" : $"{major}."));
+        return validProducts;
+    }
+
     /// <summary>
     /// Gets the latest version for a major-only channel (e.g., "9").
     /// </summary>
     private ReleaseVersion? GetLatestVersionForMajorOrMajorMinor(IEnumerable<Product> index, int major, InstallComponent component, int? minor = null)
     {
         // Assumption: The manifest is designed so that the first product for a major version will always be latest.
-        Product? latestProductWithMajor = index.Where(p => p.ProductVersion.StartsWith(minor is not null ? $"{major}.{minor}" : $"{major}.")).FirstOrDefault();
+        Product? latestProductWithMajor = GetProductsInMajorOrMajorMinor(index, major, minor).FirstOrDefault();
         return GetLatestReleaseVersionInProduct(latestProductWithMajor, component);
     }
 
@@ -329,60 +189,43 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         return latestVersion;
     }
 
-    /// <summary>
-    /// Gets the latest version for a major.minor channel (e.g., "9.0").
-    /// </summary>
-    private ReleaseVersion? GetLatestVersionForMajorMinor(ProductCollection index, int major, int minor, InstallComponent component)
+    private static string? NormalizeFeatureBandInput(string band)
     {
-        // Find the product for the requested major.minor
-        string channelKey = $"{major}.{minor}";
-        var product = index.FirstOrDefault(p => p.ProductVersion == channelKey);
-
-        if (product == null)
-        {
-            return null;
-        }
-
-        // Load releases from the sub-manifest for this product
-        var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
-
-        // Find the latest version based on mode
-        if (component == InstallComponent.SDK)
-        {
-            return GetLatestSdkVersion(releases, major, minor);
-        }
-        else // Runtime mode
-        {
-            return GetLatestRuntimeVersion(releases, major, minor);
-        }
+        return band?
+            .Replace("X", "x")
+            .Replace("x", "0")
+            .PadRight(3, '0')
+            .Substring(0, 3);
     }
+
 
     /// <summary>
     /// Gets the latest version for a feature band channel (e.g., "9.0.1xx").
     /// </summary>
     private ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
     {
-        // Find the product for the requested major.minor
-        string channelKey = $"{major}.{minor}";
-        var product = index.FirstOrDefault(p => p.ProductVersion == channelKey);
-
-        if (product == null)
+        if (component != InstallComponent.SDK)
         {
             return null;
         }
 
-        // Load releases from the sub-manifest for this product
-        var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
+        var validProducts = GetProductsInMajorOrMajorMinor(index, major, minor);
+        var latestProduct = validProducts.FirstOrDefault();
+        var releases = latestProduct?.GetReleasesAsync().GetAwaiter().GetResult().ToList() ?? new List<ProductRelease>();
+        var normalizedFeatureBand = NormalizeFeatureBandInput(featureBand);
 
-        // For SDK mode, use feature band filtering
-        if (component == InstallComponent.SDK)
+        foreach (var release in releases)
         {
-            return GetLatestFeatureBandVersion(releases, major, minor, featureBand);
+            foreach (var sdk in release.Sdks)
+            {
+                if (sdk.Version.SdkFeatureBand == int.Parse(normalizedFeatureBand ?? "0"))
+                {
+                    return sdk.Version;
+                }
+            }
         }
-        else // For Runtime mode, just use regular major.minor filtering
-        {
-            return GetLatestRuntimeVersion(releases, major, minor);
-        }
+
+        return null;
     }
 
     private const int MaxRetryCount = 3;
