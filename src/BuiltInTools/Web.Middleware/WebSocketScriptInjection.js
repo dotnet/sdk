@@ -26,22 +26,38 @@ setTimeout(async function () {
 
   let waiting = false;
 
-  connection.onmessage = function (message) {    
-    const payload = JSON.parse(message.data);
-    const action = {
-      'Reload': () => reload(),
-      'Wait': () => wait(),
-      'UpdateStaticFile': () => updateStaticFile(payload.path),
-      'ApplyManagedCodeUpdates': () => applyManagedCodeUpdates(payload.sharedSecret, payload.updateId, payload.deltas, payload.responseLoggingLevel),
-      'ReportDiagnostics': () => reportDiagnostics(payload.diagnostics),
-      'GetApplyUpdateCapabilities': () => getApplyUpdateCapabilities(),
-      'RefreshBrowser': () => refreshBrowser()
-    };
-
-    if (payload.type && action.hasOwnProperty(payload.type)) {
-      action[payload.type]();
+  connection.onmessage = function (message) {
+    if (message.data === 'Reload') {
+      console.debug('Server is ready. Reloading...');
+      location.reload();
+    } else if (message.data === 'Wait') {
+      if (waiting) {
+        return;
+      }
+      waiting = true;
+      console.debug('File changes detected. Waiting for application to rebuild.');
+      const glyphs = ['☱', '☲', '☴'];
+      const title = document.title;
+      let i = 0;
+      setInterval(function () { document.title = glyphs[i++ % glyphs.length] + ' ' + title; }, 240);
     } else {
-      console.error('Unknown payload:', message.data);
+      const payload = JSON.parse(message.data);
+      const action = {
+        'UpdateStaticFile': () => updateStaticFile(payload.path),
+        'BlazorHotReloadDeltav1': () => applyBlazorDeltas_legacy(payload.sharedSecret, payload.deltas, false),
+        'BlazorHotReloadDeltav2': () => applyBlazorDeltas_legacy(payload.sharedSecret, payload.deltas, true),
+        'BlazorHotReloadDeltav3': () => applyBlazorDeltas(payload.sharedSecret, payload.updateId, payload.deltas, payload.responseLoggingLevel),
+        'HotReloadDiagnosticsv1': () => displayDiagnostics(payload.diagnostics),
+        'BlazorRequestApplyUpdateCapabilities': () => getBlazorWasmApplyUpdateCapabilities(false),
+        'BlazorRequestApplyUpdateCapabilities2': () => getBlazorWasmApplyUpdateCapabilities(true),
+        'AspNetCoreHotReloadApplied': () => aspnetCoreHotReloadApplied()
+      };
+
+      if (payload.type && action.hasOwnProperty(payload.type)) {
+        action[payload.type]();
+      } else {
+        console.error('Unknown payload:', message.data);
+      }
     }
   }
 
@@ -90,12 +106,12 @@ setTimeout(async function () {
     return messageAndStack
   }
 
-  function getApplyUpdateCapabilities() {
+  function getBlazorWasmApplyUpdateCapabilities(sendErrorToClient) {
     let applyUpdateCapabilities;
     try {
       applyUpdateCapabilities = window.Blazor._internal.getApplyUpdateCapabilities();
     } catch (error) {
-      applyUpdateCapabilities = "!" + getMessageAndStack(error);
+      applyUpdateCapabilities = sendErrorToClient ? "!" + getMessageAndStack(error) : '';
     }
     connection.send(applyUpdateCapabilities);
   }
@@ -121,6 +137,41 @@ setTimeout(async function () {
     styleElement.parentNode.insertBefore(newElement, styleElement.nextSibling);
   }
 
+  async function applyBlazorDeltas_legacy(serverSecret, deltas, sendErrorToClient) {
+    if (sharedSecret && (serverSecret != sharedSecret.encodedSharedSecret)) {
+      // Validate the shared secret if it was specified. It might be unspecified in older versions of VS
+      // that do not support this feature as yet.
+      throw 'Unable to validate the server. Rejecting apply-update payload.';
+    }
+
+    let applyError = undefined;
+
+    try {
+      applyDeltas_legacy(deltas)
+    } catch (error) {
+      console.warn(error);
+      applyError = error;
+    }
+
+    const body = JSON.stringify({
+      id: deltas[0].sequenceId,
+      deltas: deltas
+    });
+    try {
+      await fetch('/_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: body });
+    } catch (error) {
+      console.warn(error);
+      applyError = error;
+    }
+
+    if (applyError) {
+      sendDeltaNotApplied(sendErrorToClient ? applyError : undefined);
+    } else {
+      sendDeltaApplied();
+      notifyHotReloadApplied();
+    }
+  }
+
   function applyDeltas_legacy(deltas) {
     let apply = window.Blazor?._internal?.applyHotReload
 
@@ -139,15 +190,25 @@ setTimeout(async function () {
       });
     }
   }
+  function sendDeltaApplied() {
+    connection.send(new Uint8Array([1]).buffer);
+  }
 
-  async function applyManagedCodeUpdates(serverSecret, updateId, deltas, responseLoggingLevel) {
+  function sendDeltaNotApplied(error) {
+    if (error) {
+      let encoder = new TextEncoder()
+      connection.send(encoder.encode("\0" + error.message + "\0" + error.stack));
+    } else {
+      connection.send(new Uint8Array([0]).buffer);
+    }
+  }
+
+  async function applyBlazorDeltas(serverSecret, updateId, deltas, responseLoggingLevel) {
     if (sharedSecret && (serverSecret != sharedSecret.encodedSharedSecret)) {
       // Validate the shared secret if it was specified. It might be unspecified in older versions of VS
       // that do not support this feature as yet.
       throw 'Unable to validate the server. Rejecting apply-update payload.';
     }
-
-    console.debug('Applying managed code updates.');
 
     const AgentMessageSeverity_Error = 2
 
@@ -200,13 +261,11 @@ setTimeout(async function () {
     }));
 
     if (!applyError) {
-      displayChangesAppliedToast();
+      notifyHotReloadApplied();
     }
   }
 
-  function reportDiagnostics(diagnostics) {
-    console.debug('Reporting Hot Reload diagnostics.');
-
+  function displayDiagnostics(diagnostics) {
     document.querySelectorAll('#dotnet-compile-error').forEach(el => el.remove());
     const el = document.body.appendChild(document.createElement('div'));
     el.id = 'dotnet-compile-error';
@@ -221,7 +280,7 @@ setTimeout(async function () {
     });
   }
 
-  function displayChangesAppliedToast() {
+  function notifyHotReloadApplied() {
     document.querySelectorAll('#dotnet-compile-error').forEach(el => el.remove());
     if (document.querySelector('#dotnet-hotreload-toast')) {
       return;
@@ -239,7 +298,7 @@ setTimeout(async function () {
     setTimeout(() => el.remove(), 2000);
   }
 
-  function refreshBrowser() {
+  function aspnetCoreHotReloadApplied() {
     if (window.Blazor) {
       window[hotReloadActiveKey] = true;
       // hotReloadApplied triggers an enhanced navigation to
@@ -247,37 +306,15 @@ setTimeout(async function () {
       // Blazor SSR.
       if (window.Blazor?._internal?.hotReloadApplied)
       {
-        console.debug('Refreshing browser: WASM.');
         Blazor._internal.hotReloadApplied();
       }
       else
       {
-        console.debug('Refreshing browser.');
-        displayChangesAppliedToast();
+        notifyHotReloadApplied();
       }
     } else {
-      console.debug('Refreshing browser: Reloading.');
       location.reload();
     }
-  }
-
-  function reload() {
-    console.debug('Reloading.');
-    location.reload();
-  }
-
-  function wait() {
-    console.debug('Waiting for application to rebuild.');
-
-    if (waiting) {
-      return;
-    }
-
-    waiting = true;
-    const glyphs = ['☱', '☲', '☴'];
-    const title = document.title;
-    let i = 0;
-    setInterval(function () { document.title = glyphs[i++ % glyphs.length] + ' ' + title; }, 240);
   }
 
   async function getSecret(serverKeyString) {
@@ -345,8 +382,8 @@ setTimeout(async function () {
       webSocket.addEventListener('close', onClose);
       if (window.Blazor?.removeEventListener && window.Blazor?.addEventListener)
       {
-        webSocket.addEventListener('close', () => window.Blazor?.removeEventListener('enhancedload', displayChangesAppliedToast));
-        window.Blazor?.addEventListener('enhancedload', displayChangesAppliedToast);
+        webSocket.addEventListener('close', () => window.Blazor?.removeEventListener('enhancedload', notifyHotReloadApplied));
+        window.Blazor?.addEventListener('enhancedload', notifyHotReloadApplied);
       }
     });
   }
