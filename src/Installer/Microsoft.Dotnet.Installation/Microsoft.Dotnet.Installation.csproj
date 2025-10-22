@@ -8,8 +8,12 @@
 
     <!-- Strong naming not needed on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>
+    <IsPackable>true</IsPackable>
+    <IncludeSymbols>true</IncludeSymbols>
     <PackageId>Microsoft.Dotnet.Installation</PackageId>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IsShipping>false</IsShipping>
+    <Title>.NET Installation Library</Title>
+    <Version>1.0.0-alpha</Version>
   </PropertyGroup>
 
   <ItemGroup>
