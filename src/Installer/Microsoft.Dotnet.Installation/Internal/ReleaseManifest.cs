@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -206,29 +207,21 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     /// <returns>Latest fully specified version string, or null if not found</returns>
     public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
     {
-        // Check for special channel strings (case insensitive)
-        if (string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) || string.Equals(channel.Name, "sts", StringComparison.OrdinalIgnoreCase))
         {
-            // Handle LTS (Long-Term Support) channel
+            var releaseType = string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) ? ReleaseType.LTS : ReleaseType.STS;
             var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
-            return GetLatestVersionBySupportStatus(productIndex, isLts: true, component);
-        }
-        else if (string.Equals(channel.Name, "sts", StringComparison.OrdinalIgnoreCase))
-        {
-            // Handle STS (Standard-Term Support) channel
-            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
-            return GetLatestVersionBySupportStatus(productIndex, isLts: false, component);
+            return GetLatestVersionBySupportStatus(productIndex, releaseType, component);
         }
         else if (string.Equals(channel.Name, "preview", StringComparison.OrdinalIgnoreCase))
         {
-            // Handle Preview channel - get the latest preview version
             var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
             return GetLatestPreviewVersion(productIndex, component);
         }
         else if (string.Equals(channel.Name, "latest", StringComparison.OrdinalIgnoreCase))
         {
             var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
-            return GetLatestStableVersion(productIndex, component);
+            return GetLatestVersionBySupportPhase(productIndex, component);
         }
 
         var (major, minor, featureBand, isFullySpecified) = ParseVersionChannel(channel);
@@ -247,21 +240,15 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
 
         // Load the index manifest
         var index = ProductCollection.GetAsync().GetAwaiter().GetResult();
-
-        // Case 1: Major only version (e.g., "9")
         if (minor < 0)
         {
-            return GetLatestVersionForMajorOnly(index, major, component);
+            return GetLatestVersionForMajorOrMajorMinor(index, major, component); // Major Only (e.g., "9")
         }
-
-        // Case 2: Major.Minor version (e.g., "9.0")
-        if (minor >= 0 && featureBand == null)
+        else if (minor >= 0 && featureBand == null) // Major.Minor (e.g., "9.0")
         {
-            return GetLatestVersionForMajorMinor(index, major, minor, component);
+            return GetLatestVersionForMajorOrMajorMinor(index, major, component, minor);
         }
-
-        // Case 3: Feature band version (e.g., "9.0.1xx")
-        if (minor >= 0 && featureBand is not null)
+        else if (minor >= 0 && featureBand is not null) // Not Fully Qualified Feature band Version (e.g., "9.0.1xx")
         {
             return GetLatestVersionForFeatureBand(index, major, minor, featureBand, component);
         }
@@ -272,32 +259,11 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     /// <summary>
     /// Gets the latest version for a major-only channel (e.g., "9").
     /// </summary>
-    private ReleaseVersion? GetLatestVersionForMajorOnly(ProductCollection index, int major, InstallComponent component)
+    private ReleaseVersion? GetLatestVersionForMajorOrMajorMinor(IEnumerable<Product> index, int major, InstallComponent component, int? minor = null)
     {
-        // Get products matching the major version
-        var matchingProducts = GetProductsForMajorVersion(index, major);
-
-        if (matchingProducts.Count == 0)
-        {
-            return null;
-        }
-
-        // Get all releases from all matching products
-        var allReleases = new List<ProductRelease>();
-        foreach (var matchingProduct in matchingProducts)
-        {
-            allReleases.AddRange(matchingProduct.GetReleasesAsync().GetAwaiter().GetResult());
-        }
-
-        // Find the latest version based on mode
-        if (component == InstallComponent.SDK)
-        {
-            return GetLatestSdkVersion(allReleases, major);
-        }
-        else // Runtime mode
-        {
-            return GetLatestRuntimeVersion(allReleases, major);
-        }
+        // Assumption: The manifest is designed so that the first product for a major version will always be latest.
+        Product? latestProductWithMajor = index.Where(p => p.ProductVersion.StartsWith(minor is not null ? $"{major}.{minor}" : $"{major}.")).FirstOrDefault();
+        return GetLatestReleaseVersionInProduct(latestProductWithMajor, component);
     }
 
     /// <summary>
@@ -307,71 +273,10 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     /// <param name="isLts">True for LTS (Long-Term Support), false for STS (Standard-Term Support)</param>
     /// <param name="mode">InstallComponent.SDK or InstallComponent.Runtime</param>
     /// <returns>Latest stable version string matching the support status, or null if none found</returns>
-    private ReleaseVersion? GetLatestVersionBySupportStatus(ProductCollection index, bool isLts, InstallComponent component)
+    private static ReleaseVersion? GetLatestVersionBySupportStatus(IEnumerable<Product> index, ReleaseType releaseType, InstallComponent component)
     {
-        // Get all products
-        var allProducts = index.ToList();
-
-        // Use ReleaseType from manifest (dotnetreleases library)
-        var targetType = isLts ? ReleaseType.LTS : ReleaseType.STS;
-        var filteredProducts = allProducts
-            .Where(p => p.ReleaseType == targetType)
-            .OrderByDescending(p =>
-            {
-                var productParts = p.ProductVersion.Split('.');
-                if (productParts.Length > 0 && int.TryParse(productParts[0], out var majorVersion))
-                {
-                    return majorVersion * 100 + (productParts.Length > 1 && int.TryParse(productParts[1], out var minorVersion) ? minorVersion : 0);
-                }
-                return 0;
-            })
-            .ToList();
-
-        // Get all releases from filtered products
-        foreach (var product in filteredProducts)
-        {
-            var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
-
-            // Filter out preview versions
-            var stableReleases = releases
-                .Where(r => !r.IsPreview)
-                .ToList();
-
-            if (!stableReleases.Any())
-            {
-                continue; // No stable releases for this product, try next one
-            }
-
-            // Find latest version based on mode
-            if (component == InstallComponent.SDK)
-            {
-                var sdks = stableReleases
-                    .SelectMany(r => r.Sdks)
-                    .Where(sdk => !sdk.Version.ToString().Contains("-")) // Exclude any preview/RC versions
-                    .OrderByDescending(sdk => sdk.Version)
-                    .ToList();
-
-                if (sdks.Any())
-                {
-                    return sdks.First().Version;
-                }
-            }
-            else // Runtime mode
-            {
-                var runtimes = stableReleases
-                    .SelectMany(r => r.Runtimes)
-                    .Where(runtime => !runtime.Version.ToString().Contains("-")) // Exclude any preview/RC versions
-                    .OrderByDescending(runtime => runtime.Version)
-                    .ToList();
-
-                if (runtimes.Any())
-                {
-                    return runtimes.First().Version;
-                }
-            }
-        }
-
-        return null; // No matching versions found
+        var correctPhaseProducts = index?.Where(p => p.ReleaseType == releaseType) ?? Enumerable.Empty<Product>();
+        return GetLatestVersionBySupportPhase(correctPhaseProducts, component);
     }
 
     /// <summary>
@@ -379,131 +284,49 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     /// </summary>
     /// <param name="index">The product collection to search</param>
     /// <param name="mode">InstallComponent.SDK or InstallComponent.Runtime</param>
-    /// <returns>Latest preview version string, or null if none found</returns>
-    private ReleaseVersion? GetLatestPreviewVersion(ProductCollection index, InstallComponent component)
+    /// <returns>Latest preview or GoLive version string, or null if none found</returns>
+    private ReleaseVersion? GetLatestPreviewVersion(IEnumerable<Product> index, InstallComponent component)
     {
-        // Get all products
-        var allProducts = index.ToList();
-
-        // Order by major and minor version (descending) to get the most recent first
-        var sortedProducts = allProducts
-            .OrderByDescending(p =>
-            {
-                var productParts = p.ProductVersion.Split('.');
-                if (productParts.Length > 0 && int.TryParse(productParts[0], out var majorVersion))
-                {
-                    return majorVersion * 100 + (productParts.Length > 1 && int.TryParse(productParts[1], out var minorVersion) ? minorVersion : 0);
-                }
-                return 0;
-            })
-            .ToList();
-
-        // Get all releases from products
-        foreach (var product in sortedProducts)
+        ReleaseVersion? latestPreviewVersion = GetLatestVersionBySupportPhase(index, component, [SupportPhase.Preview, SupportPhase.GoLive]);
+        if (latestPreviewVersion is not null)
         {
-            var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
-
-            // Filter for preview versions
-            var previewReleases = releases
-                .Where(r => r.IsPreview)
-                .ToList();
-
-            if (!previewReleases.Any())
-            {
-                continue; // No preview releases for this product, try next one
-            }
-
-            // Find latest version based on mode
-            if (component == InstallComponent.SDK)
-            {
-                var sdks = previewReleases
-                    .SelectMany(r => r.Sdks)
-                    .Where(sdk => sdk.Version.ToString().Contains("-")) // Include only preview/RC versions
-                    .OrderByDescending(sdk => sdk.Version)
-                    .ToList();
-
-                if (sdks.Any())
-                {
-                    return sdks.First().Version;
-                }
-            }
-            else // Runtime mode
-            {
-                var runtimes = previewReleases
-                    .SelectMany(r => r.Runtimes)
-                    .Where(runtime => runtime.Version.ToString().Contains("-")) // Include only preview/RC versions
-                    .OrderByDescending(runtime => runtime.Version)
-                    .ToList();
-
-                if (runtimes.Any())
-                {
-                    return runtimes.First().Version;
-                }
-            }
+            return latestPreviewVersion;
         }
 
-        return null; // No preview versions found
+        return GetLatestVersionBySupportPhase(index, component, [SupportPhase.Active]);
     }
 
     /// <summary>
-    /// Gets the latest stable version across all available products.
+    /// Gets the latest version across all available products that matches the support phase.
     /// </summary>
-    private ReleaseVersion? GetLatestStableVersion(ProductCollection index, InstallComponent component)
+    private static ReleaseVersion? GetLatestVersionBySupportPhase(IEnumerable<Product> index, InstallComponent component)
     {
-        var sortedProducts = index
-            .OrderByDescending(p =>
-            {
-                var productParts = p.ProductVersion.Split('.');
-                if (productParts.Length > 0 && int.TryParse(productParts[0], out var major))
-                {
-                    var minor = productParts.Length > 1 && int.TryParse(productParts[1], out var minorVersion)
-                        ? minorVersion
-                        : 0;
-                    return major * 100 + minor;
-                }
-                return 0;
-            })
-            .ToList();
+        return GetLatestVersionBySupportPhase(index, component, [SupportPhase.Active]);
+    }
+    /// <summary>
+    /// Gets the latest version across all available products that matches the support phase.
+    /// </summary>
+    private static ReleaseVersion? GetLatestVersionBySupportPhase(IEnumerable<Product> index, InstallComponent component, SupportPhase[] acceptedSupportPhases)
+    {
+        // A version in preview/ga/rtm support is considered Go Live and not Active.
+        var activeSupportProducts = index?.Where(p => acceptedSupportPhases.Contains(p.SupportPhase));
 
-        foreach (var product in sortedProducts)
+        // The manifest is designed so that the first product will always be latest.
+        Product? latestActiveSupportProduct = activeSupportProducts?.FirstOrDefault();
+
+        return GetLatestReleaseVersionInProduct(latestActiveSupportProduct, component);
+    }
+
+    private static ReleaseVersion? GetLatestReleaseVersionInProduct(Product? product, InstallComponent component)
+    {
+        // Assumption: The latest runtime version will always be the same across runtime components.
+        ReleaseVersion? latestVersion = component switch
         {
-            var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
-            var stableReleases = releases.Where(r => !r.IsPreview).ToList();
+            InstallComponent.SDK => product?.LatestSdkVersion,
+            _ => product?.LatestRuntimeVersion
+        };
 
-            if (!stableReleases.Any())
-            {
-                continue;
-            }
-
-            if (component == InstallComponent.SDK)
-            {
-                var sdks = stableReleases
-                    .SelectMany(r => r.Sdks)
-                    .Where(sdk => !sdk.Version.ToString().Contains("-"))
-                    .OrderByDescending(sdk => sdk.Version)
-                    .ToList();
-
-                if (sdks.Any())
-                {
-                    return sdks.First().Version;
-                }
-            }
-            else
-            {
-                var runtimes = stableReleases
-                    .SelectMany(r => r.Runtimes)
-                    .Where(runtime => !runtime.Version.ToString().Contains("-"))
-                    .OrderByDescending(runtime => runtime.Version)
-                    .ToList();
-
-                if (runtimes.Any())
-                {
-                    return runtimes.First().Version;
-                }
-            }
-        }
-
-        return null;
+        return latestVersion;
     }
 
     /// <summary>
