@@ -118,7 +118,7 @@ internal class ArchiveDotnetExtractor : IDisposable
 
             // Extract archive directly to target directory with special handling for muxer
             var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, existingSdkVersions, null);
-            if (extractResult != null)
+            if (extractResult is not null)
             {
                 throw new InvalidOperationException($"Failed to install SDK: {extractResult}");
             }
@@ -135,7 +135,7 @@ internal class ArchiveDotnetExtractor : IDisposable
 
                     // Extract archive directly to target directory with special handling for muxer
                     var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, existingSdkVersions, installTask);
-                    if (extractResult != null)
+                    if (extractResult is not null)
                     {
                         throw new InvalidOperationException($"Failed to install SDK: {extractResult}");
                     }
@@ -204,7 +204,7 @@ internal class ArchiveDotnetExtractor : IDisposable
             long totalFiles = CountTarEntries(decompressedPath);
 
             // Set progress maximum
-            if (installTask != null)
+            if (installTask is not null)
             {
                 installTask.MaxValue = totalFiles > 0 ? totalFiles : 1;
             }
@@ -255,7 +255,7 @@ internal class ArchiveDotnetExtractor : IDisposable
         long totalFiles = 0;
         using var tarStream = File.OpenRead(tarPath);
         var tarReader = new TarReader(tarStream);
-        while (tarReader.GetNextEntry() != null)
+        while (tarReader.GetNextEntry() is not null)
         {
             totalFiles++;
         }
@@ -271,7 +271,7 @@ internal class ArchiveDotnetExtractor : IDisposable
         var tarReader = new TarReader(tarStream);
         TarEntry? entry;
 
-        while ((entry = tarReader.GetNextEntry()) != null)
+        while ((entry = tarReader.GetNextEntry()) is not null)
         {
             if (entry.EntryType == TarEntryType.RegularFile)
             {

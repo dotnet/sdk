@@ -107,14 +107,14 @@ internal static class DnupTestUtilities
             process.StartInfo.RedirectStandardError = shouldCaptureOutput;
             process.OutputDataReceived += (_, e) =>
             {
-                if (e.Data != null)
+                if (e.Data is not null)
                 {
                     outputBuilder.AppendLine(e.Data);
                 }
             };
             process.ErrorDataReceived += (_, e) =>
             {
-                if (e.Data != null)
+                if (e.Data is not null)
                 {
                     outputBuilder.AppendLine(e.Data);
                 }
@@ -192,7 +192,7 @@ internal static class DnupTestUtilities
     private static string GetRepositoryRoot()
     {
         var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (currentDirectory != null)
+        while (currentDirectory is not null)
         {
             if (File.Exists(Path.Combine(currentDirectory.FullName, "sdk.slnx")))
             {
@@ -240,7 +240,7 @@ internal static class DnupTestUtilities
             .OrderByDescending(File.GetLastWriteTimeUtc)
             .FirstOrDefault();
 
-        if (fallback != null)
+        if (fallback is not null)
         {
             return fallback;
         }

@@ -130,7 +130,7 @@ public class ReuseEndToEndTests
         firstInstall.ExitCode.Should().Be(0,
             $"First installation failed with exit code {firstInstall.ExitCode}. Output:\n{DnupTestUtilities.FormatOutputForAssertions(firstInstall)}");
 
-        List<DotnetInstall> firstDnupInstalls = new();
+        List<DotnetInstall> firstDnupInstalls = [];
         // Verify the installation was successful
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {

@@ -112,13 +112,13 @@ internal class ArchiveInstallationValidator : IInstallationValidator
             return;
         }
 
-        if (AppContext.GetData(HostFxrRuntimeProperty) != null)
+        if (AppContext.GetData(HostFxrRuntimeProperty) is not null)
         {
             return;
         }
 
         string? hostFxrPath = FindHostFxrLibrary(installRoot);
-        if (hostFxrPath != null)
+        if (hostFxrPath is not null)
         {
             AppContext.SetData(HostFxrRuntimeProperty, hostFxrPath);
         }

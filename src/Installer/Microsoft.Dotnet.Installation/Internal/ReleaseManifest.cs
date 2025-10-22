@@ -11,13 +11,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
 /// Handles downloading and parsing .NET release manifests to find the correct installer/archive for a given installation.
 /// </summary>
-internal class ReleaseManifest : IDisposable
+internal class ReleaseManifest(HttpClient httpClient) : IDisposable
 {
     /// <summary>
     /// Parses a version channel string into its components.
@@ -230,8 +231,6 @@ internal class ReleaseManifest : IDisposable
             return GetLatestStableVersion(productIndex, component);
         }
 
-        // Parse the channel string into components
-
         var (major, minor, featureBand, isFullySpecified) = ParseVersionChannel(channel);
 
         // If major is invalid, return null
@@ -262,7 +261,7 @@ internal class ReleaseManifest : IDisposable
         }
 
         // Case 3: Feature band version (e.g., "9.0.1xx")
-        if (minor >= 0 && featureBand != null)
+        if (minor >= 0 && featureBand is not null)
         {
             return GetLatestVersionForFeatureBand(index, major, minor, featureBand, component);
         }
@@ -278,7 +277,7 @@ internal class ReleaseManifest : IDisposable
         // Get products matching the major version
         var matchingProducts = GetProductsForMajorVersion(index, major);
 
-        if (!matchingProducts.Any())
+        if (matchingProducts.Count == 0)
         {
             return null;
         }
@@ -563,32 +562,15 @@ internal class ReleaseManifest : IDisposable
         }
     }
 
-    private const string CacheSubdirectory = "dotnet-manifests";
     private const int MaxRetryCount = 3;
     private const int RetryDelayMilliseconds = 1000;
-    private const string ReleaseCacheMutexName = "Global\\DotNetReleaseCache";
 
-    private readonly HttpClient _httpClient;
-    private readonly string _cacheDirectory;
+    private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     private ProductCollection? _productCollection;
 
     public ReleaseManifest()
-        : this(CreateDefaultHttpClient(), GetDefaultCacheDirectory())
+        : this(CreateDefaultHttpClient())
     {
-    }
-
-    public ReleaseManifest(HttpClient httpClient)
-        : this(httpClient, GetDefaultCacheDirectory())
-    {
-    }
-
-    public ReleaseManifest(HttpClient httpClient, string cacheDirectory)
-    {
-        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _cacheDirectory = cacheDirectory ?? throw new ArgumentNullException(nameof(cacheDirectory));
-
-        // Ensure cache directory exists
-        Directory.CreateDirectory(_cacheDirectory);
     }
 
     /// <summary>
@@ -598,37 +580,22 @@ internal class ReleaseManifest : IDisposable
     {
         var handler = new HttpClientHandler()
         {
-            // Use system proxy settings by default
             UseProxy = true,
-            // Use default credentials for proxy authentication if needed
             UseDefaultCredentials = true,
-            // Handle redirects automatically
             AllowAutoRedirect = true,
-            // Set maximum number of redirects to prevent infinite loops
             MaxAutomaticRedirections = 10,
-            // Enable decompression for better performance
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
         };
 
         var client = new HttpClient(handler)
         {
-            // Set a reasonable timeout for downloads
             Timeout = TimeSpan.FromMinutes(10)
         };
 
-        // Set user agent to identify the client
+        // Set user-agent to identify dnup in telemetry
         client.DefaultRequestHeaders.UserAgent.ParseAdd("dnup-dotnet-installer");
 
         return client;
-    }
-
-    /// <summary>
-    /// Gets the default cache directory path.
-    /// </summary>
-    private static string GetDefaultCacheDirectory()
-    {
-        var baseDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(baseDir, "dnup", CacheSubdirectory);
     }
 
     /// <summary>
@@ -827,59 +794,13 @@ internal class ReleaseManifest : IDisposable
     /// </summary>
     private ProductCollection GetProductCollection()
     {
-        if (_productCollection != null)
+        if (_productCollection is not null)
         {
             return _productCollection;
         }
 
-        // Use ScopedMutex for cross-process locking
-        using var mutex = new ScopedMutex(ReleaseCacheMutexName);
-
-        // Always use the index manifest for ProductCollection
-        for (int attempt = 1; attempt <= MaxRetryCount; attempt++)
-        {
-            try
-            {
-                _productCollection = ProductCollection.GetAsync().GetAwaiter().GetResult();
-                return _productCollection;
-            }
-            catch
-            {
-                if (attempt == MaxRetryCount)
-                {
-                    throw;
-                }
-                Thread.Sleep(RetryDelayMilliseconds * attempt); // Exponential backoff
-            }
-        }
-
-        // This shouldn't be reached due to throw above, but compiler doesn't know that
-        throw new InvalidOperationException("Failed to fetch .NET releases data");
-    }
-
-    /// <summary>
-    /// Serializes a ProductCollection to JSON.
-    /// </summary>
-    private static string SerializeProductCollection(ProductCollection collection)
-    {
-        // Use options that indicate we've verified AOT compatibility
-        var options = new System.Text.Json.JsonSerializerOptions();
-#pragma warning disable IL2026, IL3050
-        return System.Text.Json.JsonSerializer.Serialize(collection, options);
-#pragma warning restore IL2026, IL3050
-    }
-
-    /// <summary>
-    /// Deserializes a ProductCollection from JSON.
-    /// </summary>
-    private static ProductCollection DeserializeProductCollection(string json)
-    {
-        // Use options that indicate we've verified AOT compatibility
-        var options = new System.Text.Json.JsonSerializerOptions();
-#pragma warning disable IL2026, IL3050
-        return System.Text.Json.JsonSerializer.Deserialize<ProductCollection>(json, options)
-            ?? throw new InvalidOperationException("Failed to deserialize ProductCollection from JSON");
-#pragma warning restore IL2026, IL3050
+        _productCollection = ProductCollection.GetAsync().GetAwaiter().GetResult();
+        return _productCollection;
     }
 
     /// <summary>
@@ -894,79 +815,41 @@ internal class ReleaseManifest : IDisposable
     /// <summary>
     /// Finds the specific release for the given version.
     /// </summary>
-    private static ProductRelease? FindRelease(Product product, ReleaseVersion resolvedVersion, InstallComponent component)
+    private static ReleaseComponent? FindRelease(Product product, ReleaseVersion resolvedVersion, InstallComponent component)
     {
-        var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
+        var releases = product.GetReleasesAsync().GetAwaiter().GetResult().ToList();
 
-        // Get all releases
-        var allReleases = releases.ToList();
-
-        // First try to find the exact version in the original release list
-        var exactReleaseMatch = allReleases.FirstOrDefault(r => r.Version.Equals(resolvedVersion));
-        if (exactReleaseMatch != null)
+        foreach (var release in releases)
         {
-            return exactReleaseMatch;
-        }
-
-        // Now check through the releases to find matching components
-        foreach (var release in allReleases)
-        {
-            bool foundMatch = false;
-
-            // Check the appropriate collection based on the mode
             if (component == InstallComponent.SDK)
             {
                 foreach (var sdk in release.Sdks)
                 {
-                    // Check for exact match
                     if (sdk.Version.Equals(resolvedVersion))
                     {
-                        foundMatch = true;
-                        break;
+                        return sdk;
                     }
-
-                    //  Not sure what the point of the below logic was
-                    //// Check for match on major, minor, patch
-                    //if (sdk.Version.Major == targetReleaseVersion.Major &&
-                    //    sdk.Version.Minor == targetReleaseVersion.Minor &&
-                    //    sdk.Version.Patch == targetReleaseVersion.Patch)
-                    //{
-                    //    foundMatch = true;
-                    //    break;
-                    //}
                 }
             }
-            else // Runtime mode
+            else
             {
-                // Get the appropriate runtime components based on the file patterns
-                var filteredRuntimes = release.Runtimes;
-
-                // Use the type information from the file names to filter runtime components
-                // This will prioritize matching the exact runtime type the user is looking for
-
-                foreach (var runtime in filteredRuntimes)
+                var runtimesQuery = component switch
                 {
-                    // Check for exact match
+                    InstallComponent.ASPNETCore => release.Runtimes
+                        .Where(r => r.Name.Contains("ASP", StringComparison.OrdinalIgnoreCase)),
+                    InstallComponent.WindowsDesktop => release.Runtimes
+                        .Where(r => r.Name.Contains("Desktop", StringComparison.OrdinalIgnoreCase)),
+                    _ => release.Runtimes
+                        .Where(r => r.Name.Contains(".NET Runtime", StringComparison.OrdinalIgnoreCase) ||
+                               r.Name.Contains(".NET Core Runtime", StringComparison.OrdinalIgnoreCase)),
+                };
+                foreach (var runtime in runtimesQuery)
+                {
                     if (runtime.Version.Equals(resolvedVersion))
                     {
-                        foundMatch = true;
-                        break;
+                        return runtime;
                     }
-
-                    //// Check for match on major, minor, patch
-                    //if (runtime.Version.Major == targetReleaseVersion.Major &&
-                    //    runtime.Version.Minor == targetReleaseVersion.Minor &&
-                    //    runtime.Version.Patch == targetReleaseVersion.Patch)
-                    //{
-                    //    foundMatch = true;
-                    //    break;
-                    //}
                 }
-            }
-
-            if (foundMatch)
-            {
-                return release;
             }
         }
 
@@ -976,53 +859,22 @@ internal class ReleaseManifest : IDisposable
     /// <summary>
     /// Finds the matching file in the release for the given installation requirements.
     /// </summary>
-    private static ReleaseFile? FindMatchingFile(ProductRelease release, DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
+    private static ReleaseFile? FindMatchingFile(ReleaseComponent release, DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
         var rid = DnupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
         var fileExtension = DnupUtilities.GetArchiveFileExtensionForPlatform();
 
-        // Determine the component type pattern to look for in file names
-        string componentTypePattern;
-        if (installRequest.Component == InstallComponent.SDK)
-        {
-            componentTypePattern = "sdk";
-        }
-        else // Runtime mode
-        {
-            // Determine the specific runtime type based on the release's file patterns
-            // Default to "runtime" if can't determine more specifically
-            componentTypePattern = "runtime";
-
-            // Check if this is specifically an ASP.NET Core runtime
-            if (installRequest.Component == InstallComponent.ASPNETCore)
-            {
-                componentTypePattern = "aspnetcore";
-            }
-            // Check if this is specifically a Windows Desktop runtime
-            else if (installRequest.Component == InstallComponent.WindowsDesktop)
-            {
-                componentTypePattern = "windowsdesktop";
-            }
-        }
-
-        // Filter files based on runtime identifier, component type, and file extension
         var matchingFiles = release.Files
-            .Where(f => f.Rid == rid)
-            .Where(f => f.Name.Contains(componentTypePattern, StringComparison.OrdinalIgnoreCase))
-            .Where(f => f.Name.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+             .Where(f => f.Rid == rid) // TODO: Do we support musl here?
+             .Where(f => f.Name.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase))
+             .ToList();
 
         if (matchingFiles.Count == 0)
         {
             return null;
         }
 
-        // If we have multiple matching files, prefer the one with the full version in the name
-        var versionString = resolvedVersion.ToString();
-        var bestMatch = matchingFiles.FirstOrDefault(f => f.Name.Contains(versionString, StringComparison.OrdinalIgnoreCase));
-
-        // If no file has the exact version string, return the first match
-        return bestMatch ?? matchingFiles.First();
+        return matchingFiles.First();
     }
 
     /// <summary>
@@ -1069,32 +921,5 @@ internal class ReleaseManifest : IDisposable
     public void Dispose()
     {
         _httpClient?.Dispose();
-    }
-}
-
-/// <summary>
-/// Represents download progress information.
-/// </summary>
-public readonly struct DownloadProgress
-{
-    /// <summary>
-    /// Gets the number of bytes downloaded.
-    /// </summary>
-    public long BytesDownloaded { get; }
-
-    /// <summary>
-    /// Gets the total number of bytes to download, if known.
-    /// </summary>
-    public long? TotalBytes { get; }
-
-    /// <summary>
-    /// Gets the percentage of download completed, if total size is known.
-    /// </summary>
-    public double? PercentComplete => TotalBytes.HasValue ? (double)BytesDownloaded / TotalBytes.Value * 100 : null;
-
-    public DownloadProgress(long bytesDownloaded, long? totalBytes)
-    {
-        BytesDownloaded = bytesDownloaded;
-        TotalBytes = totalBytes;
     }
 }

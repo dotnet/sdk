@@ -74,9 +74,9 @@ internal class DnupSharedManifest : IDnupManifest
         try
         {
             var installs = JsonSerializer.Deserialize(json, DnupManifestJsonContext.Default.ListDotnetInstall);
-            var validInstalls = installs ?? new List<DotnetInstall>();
+            var validInstalls = installs ?? [];
 
-            if (validator != null)
+            if (validator is not null)
             {
                 var invalids = validInstalls.Where(i => !validator.Validate(i)).ToList();
                 if (invalids.Count > 0)
@@ -102,10 +102,12 @@ internal class DnupSharedManifest : IDnupManifest
     /// <returns>Installations that match the specified directory</returns>
     public IEnumerable<DotnetInstall> GetInstalledVersions(DotnetInstallRoot installRoot, IInstallationValidator? validator = null)
     {
-        return GetInstalledVersions(validator)
-            .Where(install => DnupUtilities.PathsEqual(
-                Path.GetFullPath(install.InstallRoot.Path!),
-                Path.GetFullPath(installRoot.Path!)));
+        // TODO: Manifest read operations should protect against data structure changes and be able to reformat an old manifest version.
+        var installedVersions = GetInstalledVersions(validator);
+        var expectedInstallRootPath = Path.GetFullPath(installRoot.Path);
+        var installedVersionsInRoot = installedVersions
+            .Where(install => DnupUtilities.PathsEqual(Path.GetFullPath(install.InstallRoot.Path!), expectedInstallRootPath));
+        return installedVersionsInRoot;
     }
 
     public void AddInstalledVersion(DotnetInstall version)
