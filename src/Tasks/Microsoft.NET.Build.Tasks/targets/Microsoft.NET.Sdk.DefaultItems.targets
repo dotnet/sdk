@@ -51,6 +51,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);$(DefaultItemExcludesInProjectFolder);**/.*/**</DefaultExcludesInProjectFolder>
   </PropertyGroup>
 
+  <!-- Exclude PublishDir to prevent published artifacts from being included in subsequent builds/publishes.
+       This is especially important for file-based apps where PublishDir is set to ./artifacts/<appname> next to the app file. -->
+  <PropertyGroup Condition="'$(PublishDir)' != ''">
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(PublishDir)/**</DefaultItemExcludes>
+  </PropertyGroup>
+
   <!-- Set the default versions of the NETStandard.Library or Microsoft.NETCore.App packages to reference.
        The implicit package references themselves are defined in Microsoft.NET.Sdk.props, so that they can be overridden
        in the project file. -->
