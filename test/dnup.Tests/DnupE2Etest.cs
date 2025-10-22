@@ -200,6 +200,7 @@ public class ConcurrentInstallationTests
                 new UpdateChannel(firstChannel),
                 InstallComponent.SDK,
                 new InstallRequestOptions()));
+
         ReleaseVersion? secondResolved = resolver.Resolve(
             new DotnetInstallRequest(
                 new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
@@ -228,32 +229,34 @@ public class ConcurrentInstallationTests
         results[1].ExitCode.Should().Be(0,
             $"Second concurrent install failed with exit code {results[1].ExitCode}. Output:\n{DnupTestUtilities.FormatOutputForAssertions(results[1])}");
 
+        var installs = new List<DotnetInstall>();
+
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DnupSharedManifest(testEnv.ManifestPath);
             var installs = manifest.GetInstalledVersions()
                 .Where(i => DnupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath))
                 .ToList();
-
-            int expectedInstallCount = string.Equals(firstResolved!.ToString(), secondResolved!.ToString(), StringComparison.OrdinalIgnoreCase) ? 1 : 2;
-            installs.Should().HaveCount(expectedInstallCount);
-
-            var expectedVersions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                firstResolved.ToString()!,
-                secondResolved!.ToString()!
-            };
-
-            foreach (var install in installs)
-            {
-                install.Component.Should().Be(InstallComponent.SDK);
-                expectedVersions.Should().Contain(install.Version.ToString());
-                DnupTestUtilities.ValidateInstall(install).Should().BeTrue(
-                    $"ArchiveInstallationValidator failed for concurrent install {install.Version} at {testEnv.InstallPath}");
-            }
-
-            var actualVersions = installs.Select(i => i.Version.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            actualVersions.Should().BeEquivalentTo(expectedVersions);
         }
+
+        int expectedInstallCount = string.Equals(firstResolved!.ToString(), secondResolved!.ToString(), StringComparison.OrdinalIgnoreCase) ? 1 : 2;
+        installs.Should().HaveCount(expectedInstallCount);
+
+        var expectedVersions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            firstResolved.ToString()!,
+            secondResolved!.ToString()!
+        };
+
+        foreach (var install in installs)
+        {
+            install.Component.Should().Be(InstallComponent.SDK);
+            expectedVersions.Should().Contain(install.Version.ToString());
+            DnupTestUtilities.ValidateInstall(install).Should().BeTrue(
+                $"ArchiveInstallationValidator failed for concurrent install {install.Version} at {testEnv.InstallPath}");
+        }
+
+        var actualVersions = installs.Select(i => i.Version.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        actualVersions.Should().BeEquivalentTo(expectedVersions);
     }
 }
