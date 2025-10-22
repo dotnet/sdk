@@ -599,24 +599,13 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     }
 
     /// <summary>
-    /// Downloads the releases.json manifest and finds the download URL for the specified installation.
-    /// </summary>
-    /// <param name="install">The .NET installation details</param>
-    /// <returns>The download URL for the installer/archive, or null if not found</returns>
-    public string? GetDownloadUrl(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
-    {
-        var targetFile = FindReleaseFile(installRequest, resolvedVersion);
-        return targetFile?.Address.ToString();
-    }
-
-    /// <summary>
     /// Downloads the archive from the specified URL to the destination path with progress reporting.
     /// </summary>
     /// <param name="downloadUrl">The URL to download from</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
     /// <returns>True if download was successful, false otherwise</returns>
-    public async Task<bool> DownloadArchiveAsync(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    protected async Task<bool> DownloadArchiveAsync(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         // Create temp file path in same directory for atomic move when complete
         string tempPath = $"{destinationPath}.download";
@@ -734,7 +723,7 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
     /// <returns>True if download was successful, false otherwise</returns>
-    public bool DownloadArchive(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    protected bool DownloadArchive(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         return DownloadArchiveAsync(downloadUrl, destinationPath, progress).GetAwaiter().GetResult();
     }
@@ -748,15 +737,11 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     /// <returns>True if download and verification were successful, false otherwise</returns>
     public bool DownloadArchiveWithVerification(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
-        // Get the download URL and expected hash
-        string? downloadUrl = GetDownloadUrl(installRequest, resolvedVersion);
-        if (string.IsNullOrEmpty(downloadUrl))
-        {
-            return false;
-        }
+        var targetFile = FindReleaseFile(installRequest, resolvedVersion);
+        string? downloadUrl = targetFile?.Address.ToString();
+        string? expectedHash = targetFile?.Hash.ToString();
 
-        string? expectedHash = GetArchiveHash(installRequest, resolvedVersion);
-        if (string.IsNullOrEmpty(expectedHash))
+        if (string.IsNullOrEmpty(expectedHash) || string.IsNullOrEmpty(downloadUrl))
         {
             return false;
         }
@@ -878,17 +863,6 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     }
 
     /// <summary>
-    /// Gets the SHA512 hash of the archive for the specified installation.
-    /// </summary>
-    /// <param name="install">The .NET installation details</param>
-    /// <returns>The SHA512 hash string of the installer/archive, or null if not found</returns>
-    public string? GetArchiveHash(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
-    {
-        var targetFile = FindReleaseFile(installRequest, resolvedVersion);
-        return targetFile?.Hash;
-    }
-
-    /// <summary>
     /// Computes the SHA512 hash of a file.
     /// </summary>
     /// <param name="filePath">Path to the file to hash</param>
@@ -896,6 +870,8 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     public static string ComputeFileHash(string filePath)
     {
         using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        // TODO: Older runtime versions use a different SHA algorithm.
+        // Eventually the manifest should indicate which algorithm to use.
         using var sha512 = SHA512.Create();
         byte[] hashBytes = sha512.ComputeHash(fileStream);
         return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();

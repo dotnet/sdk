@@ -234,7 +234,7 @@ public class ConcurrentInstallationTests
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DnupSharedManifest(testEnv.ManifestPath);
-            var installs = manifest.GetInstalledVersions()
+            installs = manifest.GetInstalledVersions()
                 .Where(i => DnupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath))
                 .ToList();
         }
