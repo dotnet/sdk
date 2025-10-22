@@ -35,6 +35,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultItemExcludes>$(DefaultItemExcludes);$(BaseOutputPath)/**</DefaultItemExcludes>
     <!-- obj folder, by default -->
     <DefaultItemExcludes>$(DefaultItemExcludes);$(BaseIntermediateOutputPath)/**</DefaultItemExcludes>
+    <!-- Exclude PublishDir to prevent published artifacts from being included in subsequent builds/publishes.
+         This is especially important for file-based apps where PublishDir is set to ./artifacts/<appname> next to the app file. -->
+    <DefaultItemExcludes Condition="'$(PublishDir)' != ''">$(DefaultItemExcludes);$(PublishDir)/**</DefaultItemExcludes>
 
     <!-- Various files that should generally always be ignored -->
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.user</DefaultItemExcludes>
@@ -49,12 +52,6 @@ Copyright (c) .NET Foundation. All rights reserved.
          that are in the project folder. Support both DefaultItemExcludesInProjectFolder and DefaultExcludesInProjectFolder
          properties because of a naming mistake. -->
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);$(DefaultItemExcludesInProjectFolder);**/.*/**</DefaultExcludesInProjectFolder>
-  </PropertyGroup>
-
-  <!-- Exclude PublishDir to prevent published artifacts from being included in subsequent builds/publishes.
-       This is especially important for file-based apps where PublishDir is set to ./artifacts/<appname> next to the app file. -->
-  <PropertyGroup Condition="'$(PublishDir)' != ''">
-    <DefaultItemExcludes>$(DefaultItemExcludes);$(PublishDir)/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <!-- Set the default versions of the NETStandard.Library or Microsoft.NETCore.App packages to reference.
