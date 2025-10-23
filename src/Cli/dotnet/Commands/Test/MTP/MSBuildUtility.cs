@@ -39,6 +39,7 @@ internal static class MSBuildUtility
         // MSBuild seems to be special casing web projects specifically!!
         // https://github.com/dotnet/msbuild/blob/243fb764b25affe8cc5f233001ead3b5742a297e/src/Build/Construction/Solution/SolutionProjectGenerator.cs#L659-L672
         // It doesn't make sense to have to duplicate the MSBuild logic here and having to maintain them in sync.
+        // https://github.com/dotnet/msbuild/pull/12692 proposes a public API.
         var projectPaths = solutionFile.ProjectsInOrder
             .Where(p => ProjectShouldBuild(solutionFile, p.RelativePath) && p.ProjectConfigurations.ContainsKey(projectConfiguration))
             .Select(p => (p.ProjectConfigurations[projectConfiguration], p.AbsolutePath))
