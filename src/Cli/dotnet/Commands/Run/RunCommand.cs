@@ -197,14 +197,10 @@ public class RunCommand
         Debug.Assert(ProjectFileFullPath is not null);
 
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
-        
-        // Check if we're in an interactive terminal
-        bool isInteractive = !Console.IsInputRedirected && !Console.IsOutputRedirected;
-
         if (TargetFrameworkSelector.TrySelectTargetFramework(
             ProjectFileFullPath,
             globalProperties,
-            isInteractive,
+            Interactive,
             out string? selectedFramework))
         {
             // If a framework was selected, add it to MSBuildArgs
