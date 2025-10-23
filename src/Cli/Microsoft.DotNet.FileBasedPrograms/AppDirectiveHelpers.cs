@@ -584,14 +584,9 @@ internal sealed class SimpleDiagnostic
     /// </summary>
     public readonly struct Position
     {
-        public string Path { get; init; }
-        public LinePositionSpan Span { get; init; }
-
-        public static implicit operator Position(FileLinePositionSpan fileLinePositionSpan) => new()
-        {
-            Path = fileLinePositionSpan.Path,
-            Span = fileLinePositionSpan.Span,
-        };
+        public required TextSpan TextSpan { get; init; }
+        public required LinePositionSpan Span { get; init; }
+        public required string Path { get; init; }
     }
 }
 
@@ -608,16 +603,16 @@ internal readonly struct DiagnosticBag
     public static DiagnosticBag Collect(out ImmutableArray<SimpleDiagnostic>.Builder builder) => new() { Builder = builder = ImmutableArray.CreateBuilder<SimpleDiagnostic>() };
     public static DiagnosticBag Ignore() => new() { IgnoreDiagnostics = true, Builder = null };
 
-    public void AddError(SourceFile sourceFile, TextSpan span, string message, Exception? inner = null)
+    public void AddError(SourceFile sourceFile, TextSpan textSpan, string message, Exception? inner = null)
     {
         if (Builder != null)
         {
             Debug.Assert(!IgnoreDiagnostics);
-            Builder.Add(new SimpleDiagnostic { Location = sourceFile.GetFileLinePositionSpan(span), Message = message });
+            Builder.Add(new SimpleDiagnostic { Location = new SimpleDiagnostic.Position() { Path = sourceFile.Path, TextSpan = textSpan, Span = sourceFile.GetFileLinePositionSpan(textSpan).Span }, Message = message });
         }
         else if (!IgnoreDiagnostics)
         {
-            throw new GracefulException($"{sourceFile.GetLocationString(span)}: {FileBasedProgramsResources.DirectiveError}: {message}", inner);
+            throw new GracefulException($"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}", inner);
         }
     }
 
