@@ -1,5 +1,6 @@
 using System;
 using Spectre.Console;
+using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.Dotnet.Installation.Internal
 {

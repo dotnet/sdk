@@ -3,14 +3,12 @@
 
 using System.CommandLine;
 using System.Net.Http;
-using Microsoft.Deployment.DotNet.Releases;
-using Spectre.Console;
-
-
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using System.Runtime.InteropServices;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using Spectre.Console;
+using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
@@ -37,11 +35,11 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         string? resolvedInstallPath = null;
 
         string? installPathFromGlobalJson = null;
-        if (globalJsonInfo?.GlobalJsonPath != null)
+        if (globalJsonInfo?.GlobalJsonPath is not null)
         {
             installPathFromGlobalJson = globalJsonInfo.SdkPath;
 
-            if (installPathFromGlobalJson != null && _installPath != null &&
+            if (installPathFromGlobalJson is not null && _installPath is not null &&
                 !DnupUtilities.PathsEqual(installPathFromGlobalJson, _installPath))
             {
                 //  TODO: Add parameter to override error
@@ -57,7 +55,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             resolvedInstallPath = _installPath;
         }
 
-        if (resolvedInstallPath == null && currentDotnetInstallRoot != null && currentDotnetInstallRoot.InstallType == InstallType.User)
+        if (resolvedInstallPath == null && currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
         {
             //  If a user installation is already set up, we don't need to prompt for the install path
             resolvedInstallPath = currentDotnetInstallRoot.Path;
@@ -79,14 +77,14 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         }
 
         string? channelFromGlobalJson = null;
-        if (globalJsonInfo?.GlobalJsonPath != null)
+        if (globalJsonInfo?.GlobalJsonPath is not null)
         {
             channelFromGlobalJson = ResolveChannelFromGlobalJson(globalJsonInfo.GlobalJsonPath);
         }
 
         bool? resolvedUpdateGlobalJson = null;
 
-        if (channelFromGlobalJson != null && _versionOrChannel != null &&
+        if (channelFromGlobalJson is not null && _versionOrChannel is not null &&
             //  TODO: Should channel comparison be case-sensitive?
             !channelFromGlobalJson.Equals(_versionOrChannel, StringComparison.OrdinalIgnoreCase))
         {
@@ -100,13 +98,13 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         string? resolvedChannel = null;
 
-        if (channelFromGlobalJson != null)
+        if (channelFromGlobalJson is not null)
         {
             SpectreAnsiConsole.WriteLine($".NET SDK {channelFromGlobalJson} will be installed since {globalJsonInfo?.GlobalJsonPath} specifies that version.");
 
             resolvedChannel = channelFromGlobalJson;
         }
-        else if (_versionOrChannel != null)
+        else if (_versionOrChannel is not null)
         {
             resolvedChannel = _versionOrChannel;
         }
@@ -191,7 +189,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             if (_interactive)
             {
                 var latestAdminVersion = _dotnetInstaller.GetLatestInstalledAdminVersion();
-                if (latestAdminVersion != null && resolvedVersion < new ReleaseVersion(latestAdminVersion))
+                if (latestAdminVersion is not null && resolvedVersion < new ReleaseVersion(latestAdminVersion))
                 {
                     SpectreAnsiConsole.WriteLine($"Since the admin installs of the .NET SDK will no longer be accessible, we recommend installing the latest admin installed " +
                         $"version ({latestAdminVersion}) to the new user install location.  This will make sure this version of the .NET SDK continues to be used for projects that don't specify a .NET SDK version in global.json.");
