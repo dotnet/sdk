@@ -93,22 +93,18 @@ public class GivenDotnetRunSelectsTargetFramework : SdkTest
     [Fact]
     public void ItPrefersExplicitFrameworkOptionOverProperty()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset(
-                "NETFrameworkReferenceNETStandard20",
-                testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunMultiTarget")
             .WithSource();
-
-        string projectDirectory = Path.Combine(testInstance.Path, "MultiTFMTestApp");
 
         // Pass both --framework and -p:TargetFramework
         // The --framework option should take precedence
         new DotnetCommand(Log, "run")
-            .WithWorkingDirectory(projectDirectory)
+            .WithWorkingDirectory(testInstance.Path)
             .Execute(
                 "--framework", ToolsetInfo.CurrentTargetFramework,
-                "-p:TargetFramework=net462")
+                "-p:TargetFramework=net8.0")
             .Should().Pass()
-            .And.HaveStdOutContaining("This string came from the test library!");
+            .And.HaveStdOutContaining("Hello from multi-targeted app!");
     }
 
     [Fact]
