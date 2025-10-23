@@ -65,7 +65,7 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         {
             var releaseType = string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) ? ReleaseType.LTS : ReleaseType.STS;
             var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
-            return GetLatestVersionBySupportStatus(productIndex, releaseType, component);
+            return GetLatestVersionByReleaseType(productIndex, releaseType, component);
         }
         else if (string.Equals(channel.Name, "preview", StringComparison.OrdinalIgnoreCase))
         {
@@ -75,7 +75,7 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         else if (string.Equals(channel.Name, "latest", StringComparison.OrdinalIgnoreCase))
         {
             var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
-            return GetLatestVersionBySupportPhase(productIndex, component);
+            return GetLatestActiveVersion(productIndex, component);
         }
 
         var (major, minor, featureBand, isFullySpecified) = ParseVersionChannel(channel);
@@ -133,10 +133,10 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     /// <param name="isLts">True for LTS (Long-Term Support), false for STS (Standard-Term Support)</param>
     /// <param name="mode">InstallComponent.SDK or InstallComponent.Runtime</param>
     /// <returns>Latest stable version string matching the support status, or null if none found</returns>
-    private static ReleaseVersion? GetLatestVersionBySupportStatus(IEnumerable<Product> index, ReleaseType releaseType, InstallComponent component)
+    private static ReleaseVersion? GetLatestVersionByReleaseType(IEnumerable<Product> index, ReleaseType releaseType, InstallComponent component)
     {
         var correctPhaseProducts = index?.Where(p => p.ReleaseType == releaseType) ?? Enumerable.Empty<Product>();
-        return GetLatestVersionBySupportPhase(correctPhaseProducts, component);
+        return GetLatestActiveVersion(correctPhaseProducts, component);
     }
 
     /// <summary>
@@ -159,7 +159,7 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
     /// <summary>
     /// Gets the latest version across all available products that matches the support phase.
     /// </summary>
-    private static ReleaseVersion? GetLatestVersionBySupportPhase(IEnumerable<Product> index, InstallComponent component)
+    private static ReleaseVersion? GetLatestActiveVersion(IEnumerable<Product> index, InstallComponent component)
     {
         return GetLatestVersionBySupportPhase(index, component, [SupportPhase.Active]);
     }
@@ -189,13 +189,22 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         return latestVersion;
     }
 
-    private static string? NormalizeFeatureBandInput(string band)
+    /// <summary>
+    ///  Replaces user input feature band strings into the full feature band.
+    ///  This would convert '1xx' into '100'.
+    ///  100 is not necessarily the latest but it is the feature band.
+    ///  The other number in the band is the patch.
+    /// </summary>
+    /// <param name="band"></param>
+    /// <returns></returns>
+    private static int NormalizeFeatureBandInput(string band)
     {
-        return band?
+        var bandString = band
             .Replace("X", "x")
             .Replace("x", "0")
             .PadRight(3, '0')
             .Substring(0, 3);
+        return int.Parse(bandString);
     }
 
 
@@ -218,7 +227,7 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         {
             foreach (var sdk in release.Sdks)
             {
-                if (sdk.Version.SdkFeatureBand == int.Parse(normalizedFeatureBand ?? "0"))
+                if (sdk.Version.SdkFeatureBand == normalizedFeatureBand)
                 {
                     return sdk.Version;
                 }

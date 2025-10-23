@@ -22,11 +22,7 @@ internal static class DnupDebugHelper
 
     public static void WaitForDebugger()
     {
-#if NET5_0_OR_GREATER
         int processId = Environment.ProcessId;
-#else
-        int processId = Process.GetCurrentProcess().Id;
-#endif
 
         Console.WriteLine("Waiting for debugger to attach. Press ENTER to continue");
         Console.WriteLine($"Process ID: {processId}");
