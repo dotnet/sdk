@@ -3,6 +3,7 @@
 
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
