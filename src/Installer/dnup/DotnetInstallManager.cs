@@ -30,7 +30,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         }
 
         string installDir = Path.GetDirectoryName(foundDotnet)!;
-        
+
 
         string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);

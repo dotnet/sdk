@@ -56,6 +56,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install
         }
 
         public SupportType GetSupportType(InstallComponent component, ReleaseVersion version) => throw new NotImplementedException();
-        
+
     }
 }

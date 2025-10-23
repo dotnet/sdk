@@ -5,6 +5,7 @@
       "src\\Installer\\dnup\\dnup.csproj",
       "src\\Installer\\Microsoft.Dotnet.Installation\\Microsoft.Dotnet.Installation.csproj",
       "test\\dnup.Tests\\dnup.Tests.csproj",
+      "src\\Resolvers\\Microsoft.DotNet.NativeWrapper\\Microsoft.DotNet.NativeWrapper.csproj
     ]
   }
 }
