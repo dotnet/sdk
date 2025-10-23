@@ -252,9 +252,21 @@
         android-x64;
         " />
 
+      <Net110RuntimePackRids Include="
+        @(Net100RuntimePackRids);
+        ios-arm64;
+        iossimulator-arm64;
+        iossimulator-x64;
+        tvos-arm64;
+        tvossimulator-arm64;
+        tvossimulator-x64;
+        maccatalyst-arm64;
+        maccatalyst-x64;
+        " />
+
       <NetCoreAppHostRids Include="@(Net90AppHostRids)" />
 
-      <NetCoreRuntimePackRids Include="@(Net100RuntimePackRids)" />
+      <NetCoreRuntimePackRids Include="@(Net110RuntimePackRids)" />
 
       <!--
         In source-only builds, we build the current RID from source, which may be
