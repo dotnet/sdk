@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Exceptions;
 using Microsoft.DotNet.Cli.Utils;
 using Spectre.Console;
 
@@ -33,8 +34,17 @@ internal static class TargetFrameworkSelector
         }
 
         // Evaluate the project to get TargetFrameworks
-        using var collection = new ProjectCollection(globalProperties: globalProperties);
-        var project = collection.LoadProject(projectFilePath);
+        Microsoft.Build.Evaluation.Project project;
+        try
+        {
+            using var collection = new ProjectCollection(globalProperties: globalProperties);
+            project = collection.LoadProject(projectFilePath);
+        }
+        catch (InvalidProjectFileException)
+        {
+            // Invalid project file, return true to continue for normal error handling
+            return true;
+        }
 
         string targetFrameworks = project.GetPropertyValue("TargetFrameworks");
 
