@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
+using System.Runtime.CompilerServices;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
@@ -19,6 +20,10 @@ internal static class MSBuildUtility
 {
     private const string dotnetTestVerb = "dotnet-test";
 
+    // https://github.com/dotnet/msbuild/pull/7992 :/
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ProjectShouldBuild")]
+    static extern bool ProjectShouldBuild(SolutionFile solutionFile, string projectFile);
+
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
         bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
@@ -34,8 +39,12 @@ internal static class MSBuildUtility
         // MSBuild seems to be special casing web projects specifically!!
         // https://github.com/dotnet/msbuild/blob/243fb764b25affe8cc5f233001ead3b5742a297e/src/Build/Construction/Solution/SolutionProjectGenerator.cs#L659-L672
         // It doesn't make sense to have to duplicate the MSBuild logic here and having to maintain them in sync.
-        // TODO: Ensure we are not breaking solution filters. ProjectsInOrder looks like it *might* contain everything from the solution?
-        var projectPaths = solutionFile.ProjectsInOrder.Select(p => (p.ProjectConfigurations[projectConfiguration], p.AbsolutePath)).Where(p => p.Item1.IncludeInBuild).Select(p => p.AbsolutePath);
+        var projectPaths = solutionFile.ProjectsInOrder
+            .Where(p => ProjectShouldBuild(solutionFile, p.RelativePath))
+            .Select(p => (p.ProjectConfigurations[projectConfiguration], p.AbsolutePath))
+            .Where(p => p.Item1.IncludeInBuild)
+            .Select(p => p.AbsolutePath);
+
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption());
