@@ -18,10 +18,13 @@ namespace Analyzer.Utilities.Lightup
             LazyInitializer.EnsureInitialized(ref s_GetAwaitExpressionInfoForLocalDeclaration, () =>
             {
                 // Try to get the method from CSharpExtensions
-                var csharpExtensionsType = typeof(Microsoft.CodeAnalysis.CSharpExtensions);
+                var csharpExtensionsType = typeof(Microsoft.CodeAnalysis.CSharp.CSharpExtensions);
                 var method = csharpExtensionsType.GetMethod(
                     "GetAwaitExpressionInfo",
-                    new[] { typeof(SemanticModel), typeof(LocalDeclarationStatementSyntax) });
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static,
+                    null,
+                    new[] { typeof(SemanticModel), typeof(LocalDeclarationStatementSyntax) },
+                    null);
 
                 if (method != null)
                 {
@@ -40,10 +43,13 @@ namespace Analyzer.Utilities.Lightup
             LazyInitializer.EnsureInitialized(ref s_GetAwaitExpressionInfoForUsingStatement, () =>
             {
                 // Try to get the method from CSharpExtensions
-                var csharpExtensionsType = typeof(Microsoft.CodeAnalysis.CSharpExtensions);
+                var csharpExtensionsType = typeof(Microsoft.CodeAnalysis.CSharp.CSharpExtensions);
                 var method = csharpExtensionsType.GetMethod(
                     "GetAwaitExpressionInfo",
-                    new[] { typeof(SemanticModel), typeof(UsingStatementSyntax) });
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static,
+                    null,
+                    new[] { typeof(SemanticModel), typeof(UsingStatementSyntax) },
+                    null);
 
                 if (method != null)
                 {
