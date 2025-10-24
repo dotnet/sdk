@@ -75,30 +75,6 @@ internal class ArchiveDotnetExtractor : IDisposable
         }
     }
 
-
-
-    internal static string ConstructArchiveName(string? versionString, string rid, string suffix)
-    {
-        // If version is not specified, use a generic name
-        if (string.IsNullOrEmpty(versionString))
-        {
-            return $"dotnet-sdk-{rid}{suffix}";
-        }
-
-        // Make sure the version string doesn't have any build hash or prerelease identifiers
-        // This ensures compatibility with the official download URLs
-        string cleanVersion = versionString;
-        int dashIndex = versionString.IndexOf('-');
-        if (dashIndex >= 0)
-        {
-            cleanVersion = versionString.Substring(0, dashIndex);
-        }
-
-        return $"dotnet-sdk-{cleanVersion}-{rid}{suffix}";
-    }
-
-
-
     public void Commit()
     {
         Commit(GetExistingSdkVersions(_request.InstallRoot));
@@ -235,9 +211,7 @@ internal class ArchiveDotnetExtractor : IDisposable
             return archivePath;
         }
 
-        string decompressedPath = Path.Combine(
-            Path.GetDirectoryName(archivePath) ?? Directory.CreateTempSubdirectory().FullName,
-            "decompressed.tar");
+        string decompressedPath = archivePath.Replace(".gz", "");
 
         using FileStream originalFileStream = File.OpenRead(archivePath);
         using FileStream decompressedFileStream = File.Create(decompressedPath);
@@ -323,7 +297,7 @@ internal class ArchiveDotnetExtractor : IDisposable
     private void HandleMuxerUpdateFromTar(TarEntry entry, string muxerTargetPath)
     {
         // Create a temporary file for the muxer first to avoid locking issues
-        var tempMuxerPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        var tempMuxerPath = Directory.CreateTempSubdirectory().FullName;
         using (var outStream = File.Create(tempMuxerPath))
         {
             entry.DataStream?.CopyTo(outStream);
@@ -408,7 +382,7 @@ internal class ArchiveDotnetExtractor : IDisposable
      */
     private void HandleMuxerUpdateFromZip(ZipArchiveEntry entry, string muxerTargetPath)
     {
-        var tempMuxerPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        var tempMuxerPath = Directory.CreateTempSubdirectory().FullName;
         entry.ExtractToFile(tempMuxerPath, overwrite: true);
 
         try
