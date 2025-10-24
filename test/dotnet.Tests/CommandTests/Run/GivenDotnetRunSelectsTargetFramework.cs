@@ -104,7 +104,7 @@ public class GivenDotnetRunSelectsTargetFramework : SdkTest
                 "--framework", ToolsetInfo.CurrentTargetFramework,
                 "-p:TargetFramework=net8.0")
             .Should().Pass()
-            .And.HaveStdOutContaining("Hello from multi-targeted app!");
+            .And.HaveStdOutContaining($"Target Framework: {ToolsetInfo.CurrentTargetFrameworkMoniker}");
     }
 
     [Fact]
