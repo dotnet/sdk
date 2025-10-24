@@ -49,7 +49,7 @@ internal class DnupSharedManifest : IDnupManifest
 
         // Default location
         return Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             "dnup",
             "dnup_manifest.json");
     }
