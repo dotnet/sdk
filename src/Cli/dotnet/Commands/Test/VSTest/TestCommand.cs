@@ -240,7 +240,7 @@ public class TestCommand(
             }
         }
 
-        
+
         Dictionary<string, string> variables = VSTestForwardingApp.GetVSTestRootVariables();
         foreach (var (rootVariableName, rootValue) in variables) {
             testCommand.EnvironmentVariable(rootVariableName, rootValue);

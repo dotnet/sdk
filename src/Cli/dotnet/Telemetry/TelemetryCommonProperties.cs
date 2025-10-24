@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Collections.Frozen;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -12,14 +10,14 @@ using RuntimeInformation = System.Runtime.InteropServices.RuntimeInformation;
 namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal class TelemetryCommonProperties(
-    Func<string> getCurrentDirectory = null,
-    Func<string, string> hasher = null,
-    Func<string> getMACAddress = null,
-    Func<string> getDeviceId = null,
-    IDockerContainerDetector dockerContainerDetector = null,
-    IUserLevelCacheWriter userLevelCacheWriter = null,
-    ICIEnvironmentDetector ciEnvironmentDetector = null,
-    ILLMEnvironmentDetector llmEnvironmentDetector = null)
+    Func<string>? getCurrentDirectory = null,
+    Func<string, string>? hasher = null,
+    Func<string>? getMACAddress = null,
+    Func<string>? getDeviceId = null,
+    IDockerContainerDetector? dockerContainerDetector = null,
+    IUserLevelCacheWriter? userLevelCacheWriter = null,
+    ICIEnvironmentDetector? ciEnvironmentDetector = null,
+    ILLMEnvironmentDetector? llmEnvironmentDetector = null)
 {
     private readonly IDockerContainerDetector _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
     private readonly ICIEnvironmentDetector _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
@@ -52,14 +50,12 @@ internal class TelemetryCommonProperties(
     private const string LLM = "llm";
 
     private const string TelemetryProfileEnvironmentVariable = "DOTNET_CLI_TELEMETRY_PROFILE";
-    private const string CannotFindMacAddress = "Unknown";
-
     private const string MachineIdCacheKey = "MachineId";
     private const string IsDockerContainerCacheKey = "IsDockerContainer";
 
-    public FrozenDictionary<string, string> GetTelemetryCommonProperties(string currentSessionId)
+    public FrozenDictionary<string, object?> GetTelemetryCommonProperties(string currentSessionId)
     {
-        return new Dictionary<string, string>
+        return new Dictionary<string, object?>
         {
             {OSVersion, RuntimeEnvironment.OperatingSystemVersion},
             {OSPlatform, RuntimeEnvironment.OperatingSystemPlatform.ToString()},
@@ -74,8 +70,7 @@ internal class TelemetryCommonProperties(
             {CurrentPathHash, _hasher(_getCurrentDirectory())},
             {MachineIdOld, _userLevelCacheWriter.RunWithCache(MachineIdCacheKey, GetMachineId)},
             // we don't want to recalcuate a new id for every new SDK version. Reuse the same path across versions.
-            // If we change the format of the cache later.
-            // We need to rename the cache from v1 to v2
+            // If we change the format of the cache later, we need to rename the cache from v1 to v2.
             {MachineId,
                 _userLevelCacheWriter.RunWithCacheInFilePath(
                     Path.Combine(
@@ -94,15 +89,12 @@ internal class TelemetryCommonProperties(
 
     private string GetMachineId()
     {
-        var macAddress = _getMACAddress();
-        if (macAddress != null)
+        if (_getMACAddress() is { } macAddress)
         {
             return _hasher(macAddress);
         }
-        else
-        {
-            return Guid.NewGuid().ToString();
-        }
+
+        return Guid.NewGuid().ToString();
     }
 
     /// <summary>
@@ -139,8 +131,5 @@ internal class TelemetryCommonProperties(
     ///     Windows.7        Microsoft Windows 6.1.7601 S
     ///     Windows.81       Microsoft Windows 6.3.9600
     /// </summary>
-    private static string GetKernelVersion()
-    {
-        return RuntimeInformation.OSDescription;
-    }
+    private static string GetKernelVersion() => RuntimeInformation.OSDescription;
 }
