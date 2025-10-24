@@ -209,13 +209,6 @@ internal static class SolutionAndProjectUtility
         });
     }
 
-    public static string GetRootDirectory(string solutionOrProjectFilePath)
-    {
-        string? fileDirectory = Path.GetDirectoryName(solutionOrProjectFilePath);
-        Debug.Assert(fileDirectory is not null);
-        return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
-    }
-
     public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, EvaluationContext evaluationContext, BuildOptions buildOptions)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();

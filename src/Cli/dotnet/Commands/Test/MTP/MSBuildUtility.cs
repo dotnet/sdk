@@ -3,6 +3,8 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
+using System.Runtime.CompilerServices;
+using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
@@ -18,10 +20,12 @@ internal static class MSBuildUtility
 {
     private const string dotnetTestVerb = "dotnet-test";
 
+    // https://github.com/dotnet/msbuild/pull/7992 :/
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ProjectShouldBuild")]
+    static extern bool ProjectShouldBuild(SolutionFile solutionFile, string projectFile);
+
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
-        SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
-
         bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
 
         if (!isBuiltOrRestored)
@@ -29,9 +33,18 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
-        string rootDirectory = solutionFilePath.HasExtension(".slnf") ?
-                Path.GetDirectoryName(solutionModel.Description)! :
-                SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
+        var solutionFile = SolutionFile.Parse(solutionFilePath);
+        var projectConfiguration = $"{solutionFile.GetDefaultConfigurationName()}|{solutionFile.GetDefaultPlatformName()}";
+        // TODO: What to do if the given key doesn't exist in the ProjectConfigurations?
+        // MSBuild seems to be special casing web projects specifically!!
+        // https://github.com/dotnet/msbuild/blob/243fb764b25affe8cc5f233001ead3b5742a297e/src/Build/Construction/Solution/SolutionProjectGenerator.cs#L659-L672
+        // It doesn't make sense to have to duplicate the MSBuild logic here and having to maintain them in sync.
+        // https://github.com/dotnet/msbuild/pull/12692 proposes a public API.
+        var projectPaths = solutionFile.ProjectsInOrder
+            .Where(p => ProjectShouldBuild(solutionFile, p.RelativePath) && p.ProjectConfigurations.ContainsKey(projectConfiguration))
+            .Select(p => (p.ProjectConfigurations[projectConfiguration], p.AbsolutePath))
+            .Where(p => p.Item1.IncludeInBuild)
+            .Select(p => p.AbsolutePath);
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
 
@@ -39,7 +52,7 @@ internal static class MSBuildUtility
 
         using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, evaluationContext, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
+        ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions);
         logger?.ReallyShutdown();
         collection.UnloadAllProjects();
 
