@@ -1,12 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Pipes;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.DotNet.HotReload;
-using Microsoft.DotNet.Watch;
 
 /// <summary>
 /// The runtime startup hook looks for top-level type named "StartupHook".
@@ -92,7 +99,27 @@ internal sealed class StartupHook
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            ProcessUtilities.EnableWindowsCtrlCHandling(Log);
+            // Enables handling of Ctrl+C in a process where it was disabled.
+            // 
+            // If a process is launched with CREATE_NEW_PROCESS_GROUP flag
+            // it allows the parent process to send Ctrl+C event to the child process,
+            // but also disables Ctrl+C handlers.
+            // 
+            // "If the HandlerRoutine parameter is NULL, a TRUE value causes the calling process to ignore CTRL+C input,
+            // and a FALSE value restores normal processing of CTRL+C input.
+            // This attribute of ignoring or processing CTRL+C is inherited by child processes."
+
+            if (SetConsoleCtrlHandler(null, false))
+            {
+                Log("Windows Ctrl+C handling enabled.");
+            }
+            else
+            {
+                Log($"Failed to enable Ctrl+C handling: {GetLastPInvokeErrorMessage()}");
+            }
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            static extern bool SetConsoleCtrlHandler(Delegate? handler, bool add);
         }
         else
         {
@@ -116,6 +143,16 @@ internal sealed class StartupHook
             Log("Posix signal handlers registered.");
 #endif
         }
+    }
+
+    private static string GetLastPInvokeErrorMessage()
+    {
+        var error = Marshal.GetLastPInvokeError();
+#if NET10_0_OR_GREATER
+        return $"{Marshal.GetPInvokeErrorMessage(error)} (code {error})";
+#else
+        return $"error code {error}";
+#endif
     }
 
     private static void Log(string message)
