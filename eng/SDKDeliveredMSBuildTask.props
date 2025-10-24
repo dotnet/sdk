@@ -1,0 +1,21 @@
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+
+  <!--
+    This file contains common package references for MSBuild task assemblies that ship in the SDK.
+    
+    These packages use VersionOverride to ensure compatibility with MSBuild's binding redirects.
+    Microsoft.NET.HostModel and other components also use these dependencies, so we need to ensure
+    that all components can load the same assembly versions.
+    
+    See MSBuild binding redirect configuration:
+    https://github.com/dotnet/msbuild/blob/main/src/MSBuild/app.config
+  -->
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
+  </ItemGroup>
+
+</Project>
