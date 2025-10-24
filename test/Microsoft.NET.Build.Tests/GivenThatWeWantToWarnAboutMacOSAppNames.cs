@@ -138,7 +138,7 @@ namespace Microsoft.NET.Build.Tests
             var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
-                .Execute("/p:RuntimeIdentifier=osx-x64", "/p:NoWarn=NETSDK1234")
+                .Execute("/p:RuntimeIdentifier=osx-x64", "/p:NoWarn=NETSDK1234", "--verbosity:minimal")
                 .Should()
                 .Pass()
                 .And.NotHaveStdOutContaining("NETSDK1234");
