@@ -1,0 +1,36 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.MacOSAppName.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Default the check to true for executables, but allow developers to turn the warning off. -->
+    <CheckMacOSAppName Condition="'$(CheckMacOSAppName)' == '' and '$(_IsExecutable)' == 'true'">true</CheckMacOSAppName>
+  </PropertyGroup>
+
+  <!--
+    On macOS, applications ending in .App or .Service don't work with 'dotnet run'.
+    This check fires when building an executable project with a macOS RuntimeIdentifier.
+  -->
+  <Target Name="_CheckForInvalidMacOSAppName" 
+          AfterTargets="Build"
+          Condition="'$(CheckMacOSAppName)' == 'true' and 
+                     '$(_IsExecutable)' == 'true' and 
+                     (('$(RuntimeIdentifier)' != '' and ($(RuntimeIdentifier.StartsWith('osx')) or $(RuntimeIdentifier.StartsWith('macos')))) or 
+                      ('$(NETCoreSdkPortableRuntimeIdentifier)' != '' and ($(NETCoreSdkPortableRuntimeIdentifier.StartsWith('osx')) or $(NETCoreSdkPortableRuntimeIdentifier.StartsWith('macos'))))) and
+                     ($(AssemblyName.EndsWith('.App')) or $(AssemblyName.EndsWith('.Service')))">
+    <PropertyGroup>
+      <_InvalidMacOSAppNameSuffix Condition="$(AssemblyName.EndsWith('.App'))">.App</_InvalidMacOSAppNameSuffix>
+      <_InvalidMacOSAppNameSuffix Condition="$(AssemblyName.EndsWith('.Service'))">.Service</_InvalidMacOSAppNameSuffix>
+    </PropertyGroup>
+    <NETSdkWarning ResourceName="MacOSAppNameEndsWithAppOrService"
+                   FormatArguments="$(AssemblyName);$(_InvalidMacOSAppNameSuffix)" />
+  </Target>
+</Project>
