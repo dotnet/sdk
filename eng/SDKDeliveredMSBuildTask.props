@@ -12,6 +12,11 @@
     https://github.com/dotnet/msbuild/blob/main/src/MSBuild/app.config
   -->
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" VersionOverride="$(SystemDiagnosticsDiagnosticSourceToolsetPackageVersion)" />
