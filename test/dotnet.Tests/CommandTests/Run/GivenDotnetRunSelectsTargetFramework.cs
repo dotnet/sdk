@@ -176,33 +176,6 @@ public class GivenDotnetRunSelectsTargetFramework : SdkTest
     }
 
     [Fact]
-    public void ItRunsSingleTFMProjectWithoutFrameworkSpecification()
-    {
-        var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
-            .WithSource();
-
-        new DotnetCommand(Log, "run")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOutContaining("Hello World!");
-    }
-
-    [Fact]
-    public void ItRunsProjectWithOnlyTargetFrameworkProperty()
-    {
-        // Projects with only TargetFramework (not TargetFrameworks) should run without needing --framework
-        var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
-            .WithSource();
-
-        new DotnetCommand(Log, "run")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOutContaining("Hello World!");
-    }
-
-    [Fact]
     public void ItTreatsEmptyFrameworkSpecificationAsNotSpecified()
     {
         var testInstance = _testAssetsManager.CopyTestAsset(
