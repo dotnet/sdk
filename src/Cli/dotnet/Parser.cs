@@ -100,10 +100,7 @@ public static class Parser
 
     internal class PrintVersionAction : SynchronousCommandLineAction
     {
-        public PrintVersionAction()
-        {
-            Terminating = true;
-        }
+        public override bool Terminating => true;
 
         public override int Invoke(ParseResult parseResult)
         {
@@ -120,10 +117,7 @@ public static class Parser
 
     internal class PrintInfoAction : SynchronousCommandLineAction
     {
-        public PrintInfoAction()
-        {
-            Terminating = true;
-        }
+        public override bool Terminating => true;
 
         public override int Invoke(ParseResult parseResult)
         {

@@ -108,8 +108,8 @@ public class Program
         try
         {
             var exitCode = ProcessArgs(args);
-            _mainActivity.AddTag("process.exit.code", exitCode);
-            _mainActivity.SetStatus(ActivityStatusCode.Ok);
+            s_mainActivity?.AddTag("process.exit.code", exitCode);
+            s_mainActivity?.SetStatus(ActivityStatusCode.Ok);
             return exitCode;
         }
         catch (Exception e) when (e.ShouldBeDisplayedAsError())
@@ -122,8 +122,8 @@ public class Program
             {
                 commandParsingException.ParseResult.ShowHelp();
             }
-            _mainActivity.AddTag("process.exit.code", exitCode);
-            _mainActivity.SetStatus(ActivityStatusCode.Error);
+            s_mainActivity?.AddTag("process.exit.code", 1);
+            s_mainActivity?.SetStatus(ActivityStatusCode.Error);
             return 1;
         }
         catch (Exception e) when (!e.ShouldBeDisplayedAsError())
@@ -131,8 +131,8 @@ public class Program
             // If telemetry object has not been initialized yet. It cannot be collected
             TelemetryEventEntry.SendFiltered(e);
             Reporter.Error.WriteLine(e.ToString().Red().Bold());
-            _mainActivity.AddTag("process.exit.code", exitCode);
-            _mainActivity.SetStatus(ActivityStatusCode.Error);
+            s_mainActivity?.AddTag("process.exit.code", 1);
+            s_mainActivity?.SetStatus(ActivityStatusCode.Error);
             return 1;
         }
         finally
@@ -192,18 +192,14 @@ public class Program
     {
         var hostStartupActivity = Activities.Source.StartActivity("host-startup");
         hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
-        string globalJsonState = string.Empty;
         if (TelemetryClient.Enabled && hostStartupActivity is not null)
         {
             // Get the global.json state to report in telemetry along with this command invocation.
             // We don't care about the actual SDK resolution, just the global.json information,
             // so just pass empty string as executable directory for resolution.
             NativeWrapper.SdkResolutionResult result = NativeWrapper.NETCoreSdkResolverNativeWrapper.ResolveSdk(string.Empty, Environment.CurrentDirectory);
-            globalJsonState = result.GlobalJsonState;
-            if (globalJsonState is not null)
-            {
-                hostStartupActivity?.AddTag("dotnet.globalJson", globalJsonState);
-            }
+            string? globalJsonState = result.GlobalJsonState;
+            hostStartupActivity?.AddTag("dotnet.globalJson", globalJsonState);
         }
         hostStartupActivity?.SetEndTime(mainTimeStamp);
         hostStartupActivity?.SetStatus(ActivityStatusCode.Ok);
