@@ -9,6 +9,8 @@ namespace Microsoft.NET.Publish.Tests
     {
         public GivenThatWeWantToPublishIncrementally(ITestOutputHelper log) : base(log)
         {
+            // During the dogfood, we want the MSBuild server on for build of the pipeline. Not for the tests - it breaks outputs.
+            Environment.SetEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER", "0");
         }
 
         [Fact]
@@ -151,7 +153,6 @@ namespace Microsoft.NET.Publish.Tests
 
             // Publish trimmed
             var publishCommand = new PublishCommand(testAsset);
-
             publishCommand
                 .Execute()
                 .Should()
