@@ -23,6 +23,7 @@ namespace Microsoft.NET.Build.Tests
             string artifactsPathLocationType = "null",
             string useMonoRuntime = "null",
             string publishAot = "null",
+            string runAotCompilation = "null",
             string publishTrimmed = "null",
             string publishSelfContained = "null",
             string publishReadyToRun = "null",
@@ -30,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
             string publishProtocol = "null",
             string configuration = "Debug")
         {
-            return $"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\"{targetFrameworkVersion}\",\"RuntimeIdentifier\":\"{runtimeIdentifier}\",\"SelfContained\":\"{selfContained}\",\"UseApphost\":\"{useApphost}\",\"OutputType\":\"{outputType}\",\"UseArtifactsOutput\":\"{useArtifactsOutput}\",\"ArtifactsPathLocationType\":\"{artifactsPathLocationType}\",\"TargetPlatformIdentifier\":\"{targetPlatformIdentifier}\",\"UseMonoRuntime\":\"{useMonoRuntime}\",\"PublishAot\":\"{publishAot}\",\"PublishTrimmed\":\"{publishTrimmed}\",\"PublishSelfContained\":\"{publishSelfContained}\",\"PublishReadyToRun\":\"{publishReadyToRun}\",\"PublishReadyToRunComposite\":\"{publishReadyToRunComposite}\",\"PublishProtocol\":\"{publishProtocol}\",\"Configuration\":\"{Sha256Hasher.HashWithNormalizedCasing(configuration)}\"}}";
+            return $"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\"{targetFrameworkVersion}\",\"RuntimeIdentifier\":\"{runtimeIdentifier}\",\"SelfContained\":\"{selfContained}\",\"UseApphost\":\"{useApphost}\",\"OutputType\":\"{outputType}\",\"UseArtifactsOutput\":\"{useArtifactsOutput}\",\"ArtifactsPathLocationType\":\"{artifactsPathLocationType}\",\"TargetPlatformIdentifier\":\"{targetPlatformIdentifier}\",\"UseMonoRuntime\":\"{useMonoRuntime}\",\"RunAOTCompilation\":\"{runAotCompilation}\",\"PublishAot\":\"{publishAot}\",\"PublishTrimmed\":\"{publishTrimmed}\",\"PublishSelfContained\":\"{publishSelfContained}\",\"PublishReadyToRun\":\"{publishReadyToRun}\",\"PublishReadyToRunComposite\":\"{publishReadyToRunComposite}\",\"PublishProtocol\":\"{publishProtocol}\",\"Configuration\":\"{Sha256Hasher.HashWithNormalizedCasing(configuration)}\"}}";
         }
 
         [CoreMSBuildOnlyFact]
