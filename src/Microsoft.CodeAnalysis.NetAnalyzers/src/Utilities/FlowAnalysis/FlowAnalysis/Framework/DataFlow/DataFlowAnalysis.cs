@@ -220,7 +220,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 var block = cfg.Blocks[blockOrdinal];
 
                 // Ensure that we execute potential nested catch blocks before the finally region.
-                if (pendingBlocksNeedingAtLeastOnePass.Any())
+                if (pendingBlocksNeedingAtLeastOnePass.Count > 0)
                 {
                     var finallyRegion = block.GetInnermostRegionStartedByBlock(ControlFlowRegionKind.Finally);
                     if (finallyRegion?.EnclosingRegion!.Kind == ControlFlowRegionKind.TryAndFinally)
@@ -229,17 +229,20 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                         var tryRegion = finallyRegion.EnclosingRegion.NestedRegions[0];
                         Debug.Assert(tryRegion.Kind == ControlFlowRegionKind.Try);
 
-                        var nestedCatchBlockOrdinals = pendingBlocksNeedingAtLeastOnePass.Where(
-                            p => p >= tryRegion.FirstBlockOrdinal &&
-                                 p <= tryRegion.LastBlockOrdinal &&
-                                 cfg.Blocks[p].GetInnermostRegionStartedByBlock(ControlFlowRegionKind.Catch) != null);
-                        if (nestedCatchBlockOrdinals.Any())
+                        var hasNestedCatchBlockOrdinals = false;
+                        foreach (var ordinal in pendingBlocksNeedingAtLeastOnePass)
                         {
-                            foreach (var catchBlockOrdinal in nestedCatchBlockOrdinals)
+                            if (ordinal >= tryRegion.FirstBlockOrdinal &&
+                                ordinal <= tryRegion.LastBlockOrdinal &&
+                                cfg.Blocks[ordinal].GetInnermostRegionStartedByBlock(ControlFlowRegionKind.Catch) != null)
                             {
-                                worklist.Add(catchBlockOrdinal);
+                                worklist.Add(ordinal);
+                                hasNestedCatchBlockOrdinals = true;
                             }
+                        }
 
+                        if (hasNestedCatchBlockOrdinals)
+                        {
                             // Also add back the finally start block to be processed after catch blocks.
                             worklist.Add(blockOrdinal);
                             continue;
@@ -580,9 +583,16 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             bool HasUnprocessedPredecessorBlock(BasicBlock block)
             {
                 var predecessorsWithBranches = block.GetPredecessorsWithBranches(cfg);
-                return predecessorsWithBranches.Any(predecessorWithBranch =>
-                    predecessorWithBranch.predecessorBlock.Ordinal < block.Ordinal &&
-                    pendingBlocksNeedingAtLeastOnePass.Contains(predecessorWithBranch.predecessorBlock.Ordinal));
+
+                foreach (var (predecessorBlock, _) in predecessorsWithBranches)
+                {
+                    if (predecessorBlock.Ordinal < block.Ordinal && pendingBlocksNeedingAtLeastOnePass.Contains(predecessorBlock.Ordinal))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
             // If this block starts a catch/filter region, return the enclosing TryAndCatch region.
