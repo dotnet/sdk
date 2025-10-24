@@ -4,12 +4,12 @@
 #nullable disable
 
 using System.CommandLine;
+using System.Globalization;
 using Microsoft.DotNet.Cli.Commands.Hidden.List;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using System.Globalization;
-using Microsoft.DotNet.Cli.Commands.MSBuild;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.List;
 

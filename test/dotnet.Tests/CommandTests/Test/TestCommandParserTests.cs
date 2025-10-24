@@ -66,11 +66,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void VSTestCommandIncludesPropertiesOption()
         {
             var command = TestCommandParser.GetCommand();
-            
+
             // Verify that the command includes a property option that supports the /p alias
-            var propertyOption = command.Options.FirstOrDefault(o => 
+            var propertyOption = command.Options.FirstOrDefault(o =>
                 o.Aliases.Contains("/p") || o.Aliases.Contains("--property"));
-            
+
             propertyOption.Should().NotBeNull("VSTest command should include CommonOptions.PropertiesOption to support /p Property=Value syntax");
             propertyOption.Aliases.Should().Contain("/p", "PropertiesOption should include /p alias for MSBuild compatibility");
         }

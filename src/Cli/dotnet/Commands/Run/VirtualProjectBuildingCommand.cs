@@ -1672,6 +1672,13 @@ internal static partial class Patterns
     [GeneratedRegex("""[\s@=/]""")]
     public static partial Regex DisallowedNameCharacters { get; }
 
+    /// <summary>
+    /// SDK names can contain path separators (/ and \) for file-based SDK resolution,
+    /// but not whitespace or = (which would be confused with property directive).
+    /// </summary>
+    [GeneratedRegex("""[\s@=]""")]
+    public static partial Regex SdkNameDisallowedCharacters { get; }
+
     [GeneratedRegex("""^/\w+:".*"$""", RegexOptions.Singleline)]
     public static partial Regex EscapedCompilerOption { get; }
 }
@@ -1771,15 +1778,33 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
         public static new Sdk? Parse(in ParseContext context)
         {
-            if (ParseOptionalTwoParts(context, separator: '@') is not var (sdkName, sdkVersion))
+            // For SDK names, we need to allow paths (which contain '/' or '\')
+            // So we parse the directive text manually instead of using ParseOptionalTwoParts
+            var i = context.DirectiveText.IndexOf('@', StringComparison.Ordinal);
+            var sdkName = (i < 0 ? context.DirectiveText : context.DirectiveText.AsSpan(..i)).TrimEnd();
+
+            if (sdkName.IsWhiteSpace())
             {
-                return null;
+                return context.Diagnostics.AddError<Sdk>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.MissingDirectiveName, "sdk"));
+            }
+
+            // Allow path separators in SDK names for file-based SDK resolution
+            // But still disallow whitespace, = (which would be confused with property directive)
+            if (Patterns.SdkNameDisallowedCharacters.IsMatch(sdkName))
+            {
+                return context.Diagnostics.AddError<Sdk>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.InvalidDirectiveName, "sdk", "@"));
+            }
+
+            var sdkVersion = i < 0 ? null : context.DirectiveText.AsSpan((i + 1)..).TrimStart();
+            if (i >= 0 && sdkVersion.IsWhiteSpace())
+            {
+                return context.Diagnostics.AddError<Sdk>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.InvalidDirectiveName, "sdk", "@"));
             }
 
             return new Sdk(context.Info)
             {
-                Name = sdkName,
-                Version = sdkVersion,
+                Name = sdkName.ToString(),
+                Version = sdkVersion.IsEmpty ? null : sdkVersion.ToString(),
             };
         }
 

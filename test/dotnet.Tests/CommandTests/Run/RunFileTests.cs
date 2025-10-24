@@ -1573,6 +1573,61 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveFile("config.json"); // the JSON is included as content and hence copied
     }
 
+    /// <summary>
+    /// File-based app can use a local SDK referenced by relative path via the #:sdk directive.
+    /// This tests the FileBasedSdkResolver functionality.
+    /// </summary>
+    [Fact]
+    public void FileBasedApp_WithLocalSdkByRelativePath()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        // Create a custom SDK in a local directory
+        var sdkDir = Path.Join(testInstance.Path, "CustomSdk", "Sdk");
+        Directory.CreateDirectory(sdkDir);
+
+        // Create Sdk.props that sets custom properties and imports the base SDK
+        File.WriteAllText(Path.Join(sdkDir, "Sdk.props"), $$"""
+            <Project>
+              <PropertyGroup>
+                <CustomSdkLoaded>true</CustomSdkLoaded>
+                <CustomSdkMessage>Custom SDK is working!</CustomSdkMessage>
+              </PropertyGroup>
+              <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+            </Project>
+            """);
+
+        // Create Sdk.targets that includes the base SDK targets and adds a custom target
+        File.WriteAllText(Path.Join(sdkDir, "Sdk.targets"), $$"""
+            <Project>
+              <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+              <Target Name="PrintCustomMessage" BeforeTargets="CoreCompile">
+                <Message Text="$(CustomSdkMessage)" Importance="High" />
+              </Target>
+            </Project>
+            """);
+
+        // Create a file-based C# program that uses the local SDK via relative path
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, """
+            #:sdk ./CustomSdk
+            Console.WriteLine("Hello from custom SDK!");
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        // Run the file-based app
+        var result = new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute();
+
+        // Verify the build succeeded with the custom SDK
+        // The custom SDK wraps Microsoft.NET.Sdk and adds custom properties/targets
+        result.Should().Pass()
+            .And.HaveStdOutContaining("Hello from custom SDK!"); // Program output
+    }
+
     [Fact]
     public void Publish_Options()
     {
@@ -1965,7 +2020,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Message: 'First1'
                 """);
 
-        new DotnetCommand(Log, "run", "-v", "q",  "Second.cs")
+        new DotnetCommand(Log, "run", "-v", "q", "Second.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
