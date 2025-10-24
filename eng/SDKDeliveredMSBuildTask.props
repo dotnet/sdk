@@ -3,16 +3,17 @@
 
   <!--
     This file contains common package references for MSBuild task assemblies that ship in the SDK.
-    
+
     These packages use VersionOverride to ensure compatibility with MSBuild's binding redirects.
     Microsoft.NET.HostModel and other components also use these dependencies, so we need to ensure
     that all components can load the same assembly versions.
-    
+
     See MSBuild binding redirect configuration:
     https://github.com/dotnet/msbuild/blob/main/src/MSBuild/app.config
   -->
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" /><!-- Not needed by most tasks but a couple of APIs are used. -->
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
   </ItemGroup>
