@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace containerize;
+namespace CreateLayerTarball;
 
 internal class Program
 {
@@ -9,12 +9,12 @@ internal class Program
     {
         try
         {
-            return new ContainerizeCommand().Parse(args).InvokeAsync();
+            return new CreateLayerTarballCommand().Parse(args).InvokeAsync();
         }
         catch (Exception e)
         {
             string message = !e.Message.StartsWith("CONTAINER", StringComparison.OrdinalIgnoreCase) ? $"CONTAINER9000: " + e.ToString() : e.ToString();
-            Console.WriteLine($"Containerize: error {message}");
+            Console.WriteLine($"CreateLayerTarball: error {message}");
 
             return Task.FromResult(1);
         }
