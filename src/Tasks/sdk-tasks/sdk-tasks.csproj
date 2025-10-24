@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepositoryEngineeringDir)SDKDeliveredMSBuildTask.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
-  <Import Project="$(RepositoryEngineeringDir)SDKDeliveredMSBuildTask.props" />
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)\src\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\SdkFeatureBand.cs" LinkBase="Common"/>

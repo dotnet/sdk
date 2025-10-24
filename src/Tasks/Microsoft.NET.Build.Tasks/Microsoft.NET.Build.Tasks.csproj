@@ -18,7 +18,6 @@
   <PropertyGroup>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <GenerateDependencyFile>false</GenerateDependencyFile>
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
     <!-- only copy symbols from project references (omit xml docs and config files) -->
@@ -26,11 +25,6 @@
 
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- MSBuild Task DLLs need to be versioned with every build -->
-    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
-
-    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
-    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
 

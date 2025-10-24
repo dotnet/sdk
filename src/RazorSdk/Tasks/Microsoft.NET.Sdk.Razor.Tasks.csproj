@@ -13,18 +13,13 @@
   <Import Project="$(RepositoryEngineeringDir)SDKDeliveredMSBuildTask.props" />
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-
     <EnableDefaultItems>false</EnableDefaultItems>
-    <GenerateDependencyFile>false</GenerateDependencyFile>
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <CopyLocalLockFileAssemblies Condition="'$(TargetFramework)'!='net472'">false</CopyLocalLockFileAssemblies>
-    <!-- MSBuild Task DLLs need to be versioned with every build -->
-    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
 
     <OutputPath>$(BaseOutputPath)</OutputPath>
     <IsPackable>true</IsPackable>
@@ -36,7 +31,6 @@
     <Description>SDK for building and publishing Razor applications.</Description>
     <OutputType>Library</OutputType>
     <RootNamespace>Microsoft.NET.Sdk.Razor</RootNamespace>
-    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

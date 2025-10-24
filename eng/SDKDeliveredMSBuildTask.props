@@ -12,6 +12,21 @@
     https://github.com/dotnet/msbuild/blob/main/src/MSBuild/app.config
   -->
 
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+
+    <!-- MSBuild Task DLLs need to be versioned with every build -->
+    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+
+    <!-- SDK tasks can reliably use the assemblies found in the SDK so don't need a deps file -->
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+  </PropertyGroup>
+
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" /><!-- Not needed by most tasks but a couple of APIs are used. -->
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />

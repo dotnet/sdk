@@ -14,20 +14,15 @@
   <Import Project="$(RepositoryEngineeringDir)SDKDeliveredMSBuildTask.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
-    <OutputType>Library</OutputType>
     <Description>SDK for building and publishing applications containing static web assets.</Description>
     <RootNamespace>Microsoft.NET.Sdk.StaticWebAssets</RootNamespace>
 
-    <GenerateDependencyFile>false</GenerateDependencyFile>
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <CopyLocalLockFileAssemblies Condition="'$(TargetFramework)'!='net472'">false</CopyLocalLockFileAssemblies>
-    <!-- MSBuild Task DLLs need to be versioned with every build -->
-    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
 
     <OutputPath>$(BaseOutputPath)</OutputPath>
     <IsPackable>true</IsPackable>
