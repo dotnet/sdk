@@ -260,7 +260,9 @@
         "parentPropertyPath": "test",
         "newJsonPropertyName": "runner",
         "newJsonPropertyValue": "Microsoft.Testing.Platform",
-        "detectRepositoryRootForFileCreation": true
+        "detectRepositoryRoot": true,
+        "includeAllDirectoriesInSearch": false,
+        "includeAllParentDirectoriesInSearch": true
       },
       "continueOnError": true
     },

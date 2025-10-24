@@ -48,7 +48,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('solution', 'solution', [CompletionResultType]::ParameterValue, ".NET modify solution file command")
                 [CompletionResult]::new('solution', 'sln', [CompletionResultType]::ParameterValue, ".NET modify solution file command")
                 [CompletionResult]::new('store', 'store', [CompletionResultType]::ParameterValue, "Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.")
-                [CompletionResult]::new('test', 'test', [CompletionResultType]::ParameterValue, ".NET Test Driver")
+                [CompletionResult]::new('test', 'test', [CompletionResultType]::ParameterValue, ".NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.")
                 [CompletionResult]::new('tool', 'tool', [CompletionResultType]::ParameterValue, "Install or work with tools that extend the .NET experience.")
                 [CompletionResult]::new('vstest', 'vstest', [CompletionResultType]::ParameterValue, "vstest")
                 [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, ".NET CLI help utility")
@@ -671,6 +671,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         'testhost;package;update' {
             $staticCompletions = @(
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "Path to a project or solution file, or a directory.")
+                [CompletionResult]::new('--vulnerable', '--vulnerable', [CompletionResultType]::ParameterName, "Upgrade packages with known vulnerabilities.")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")

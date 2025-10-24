@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tests;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -10,8 +12,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     public class GivenDotnetBuildInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
         string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo"];
-        public static string[] RestoreExpectedPrefixForImplicitRestore = [..RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--restoreProperty:{kvp.Key}={kvp.Value}")];
-        public static string[] RestoreExpectedPrefixForSeparateRestore = [..RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--property:{kvp.Key}={kvp.Value}")];
+        public static string[] RestoreExpectedPrefixForImplicitRestore = [.. RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--restoreProperty:{kvp.Key}={kvp.Value}")];
+        public static string[] RestoreExpectedPrefixForSeparateRestore = [.. RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--property:{kvp.Key}={kvp.Value}")];
 
         const string NugetInteractiveProperty = "--property:NuGetInteractive=false";
 
@@ -116,6 +118,48 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 command.GetArgumentTokensToMSBuild()
                     .Should()
                     .BeEquivalentTo([.. ExpectedPrefix, "-consoleloggerparameters:Summary", NugetInteractiveProperty, .. expectedAdditionalArgs]);
+            });
+        }
+
+        [Theory]
+        [MemberData(memberName: nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), MemberType =typeof(TelemetryCommonPropertiesTests))]
+        public void WhenLLMIsDetectedTLLiveUpdateIsDisabled(Dictionary<string, string>? llmEnvVarsToSet, string? expectedLLMName)
+        {
+            CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
+            {
+                try
+                {
+                    // Set environment variables to simulate LLM environment
+                    if (llmEnvVarsToSet is not null)
+                    {
+                        foreach (var (key, value) in llmEnvVarsToSet)
+                        {
+                            Environment.SetEnvironmentVariable(key, value);
+                        }
+                    }
+
+                    var command = (RestoringCommand)BuildCommand.FromArgs([]);
+
+                    if (expectedLLMName is not null)
+                    {
+                        command.GetArgumentTokensToMSBuild().Should().Contain(Constants.TerminalLogger_DisableNodeDisplay);
+                    }
+                    else
+                    {
+                        command.GetArgumentTokensToMSBuild().Should().NotContain(Constants.TerminalLogger_DisableNodeDisplay);
+                    }
+                }
+                finally
+                {
+                    // Clear the environment variables after the test
+                    if (llmEnvVarsToSet is not null)
+                    {
+                        foreach (var (key, value) in llmEnvVarsToSet)
+                        {
+                            Environment.SetEnvironmentVariable(key, null);
+                        }
+                    }
+                }
             });
         }
     }

@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-publish" "1" "2025-08-29" "" ".NET Documentation"
+.TH "dotnet-publish" "1" "2025-09-30" "" ".NET Documentation"
 .hy
 .SH dotnet publish
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 and later versions
 .SH NAME
 .PP
 dotnet-publish - Publishes the application and its dependencies to a folder for deployment to a hosting system.
@@ -26,7 +26,7 @@ dotnet-publish - Publishes the application and its dependencies to a folder for 
 .IP
 .nf
 \f[C]
-dotnet publish [<PROJECT>|<SOLUTION>] [-a|--arch <ARCHITECTURE>]
+dotnet publish [<PROJECT>|<SOLUTION>|<FILE>] [-a|--arch <ARCHITECTURE>]
     [--artifacts-path <ARTIFACTS_DIR>]
     [-c|--configuration <CONFIGURATION>] [--disable-build-servers]
     [-f|--framework <FRAMEWORK>] [--force] [--interactive]
@@ -172,18 +172,20 @@ When you run this command, it initiates an asynchronous background download of a
 If the download is still running when this command finishes, the download is stopped.
 For more information, see Advertising manifests.
 .SH ARGUMENTS
-.IP \[bu] 2
-\f[B]\f[VB]PROJECT|SOLUTION\f[B]\f[R]
-.RS 2
 .PP
-The project or solution to publish.
+\f[V]PROJECT | SOLUTION | FILE\f[R]
+.PP
+The project or solution or C# (file-based app) file to operate on.
+If a file isn\[cq]t specified, MSBuild searches the current directory for a project or solution.
 .IP \[bu] 2
 \f[V]PROJECT\f[R] is the path and filename of a C#, F#, or Visual Basic project file, or the path to a directory that contains a C#, F#, or Visual Basic project file.
-If the directory is not specified, it defaults to the current directory.
 .IP \[bu] 2
 \f[V]SOLUTION\f[R] is the path and filename of a solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] extension), or the path to a directory that contains a solution file.
-If the directory is not specified, it defaults to the current directory.
-.RE
+.IP \[bu] 2
+\f[V]FILE\f[R] is an argument added in .NET 10.
+The path and filename of a file-based app.
+File-based apps are contained within a single file that is built and run without a corresponding project (\f[I].csproj\f[R]) file.
+For more information, see Build file-based C# apps.
 .SH OPTIONS
 .IP \[bu] 2
 \f[B]\f[VB]-a|--arch <ARCHITECTURE>\f[B]\f[R]
@@ -320,15 +322,6 @@ If you specify a relative path when publishing a solution, all output for all pr
 To make publish output go to separate folders for each project, specify a relative path by using the msbuild \f[V]PublishDir\f[R] property instead of the \f[V]--output\f[R] option.
 For example, \f[V]dotnet publish -p:PublishDir=.\[rs]publish\f[R] sends publish output for each project to a \f[V]publish\f[R] folder under the folder that contains the project file.
 .RE
-.IP \[bu] 2
-\&.NET Core 2.x SDK
-.RS 2
-.PP
-If you specify a relative path when publishing a project, the generated output directory is relative to the project file location, not to the current working directory.
-.PP
-If you specify a relative path when publishing a solution, each project\[cq]s output goes into a separate folder relative to the project file location.
-If you specify an absolute path when publishing a solution, all publish output for all projects goes into the specified folder.
-.RE
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--os <OS>\f[B]\f[R]
@@ -376,13 +369,13 @@ If you use this option, use \f[V]--self-contained\f[R] or \f[V]--no-self-contain
 \f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
 .RS 2
 .PP
-Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
+Specifies whether \f[I]Terminal Logger\f[R] should be used for the build output.
 The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
 The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
 \f[V]on\f[R] skips the environment check and enables terminal logging.
 \f[V]off\f[R] skips the environment check and uses the default console logger.
 .PP
-The terminal logger shows you the restore phase followed by the build phase.
+Terminal Logger shows you the restore phase followed by the build phase.
 During each phase, the currently building projects appear at the bottom of the terminal.
 Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
 You can search this information to learn more about the build.
@@ -490,6 +483,18 @@ Publish the current application but don\[cq]t restore project-to-project (P2P) r
 dotnet publish --no-dependencies
 \f[R]
 .fi
+.RE
+.IP \[bu] 2
+Publish the file-based C# program \f[I]app.cs\f[R] in the current directory:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet publish app.cs
+\f[R]
+.fi
+.PP
+File-based program support was added in .NET SDK 10.0.100.
 .RE
 .SH SEE ALSO
 .IP \[bu] 2

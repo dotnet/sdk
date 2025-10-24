@@ -22,6 +22,11 @@ namespace Microsoft.DotNet.Watch
         /// This allows tests to trigger key based events.
         /// </summary>
         ReadKeyFromStdin = 1 << 3,
+
+        /// <summary>
+        /// Redirects the output of the launched browser process to watch output.
+        /// </summary>
+        RedirectBrowserOutput = 1 << 4,
     }
 
     internal sealed record EnvironmentOptions(
