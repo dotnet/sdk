@@ -30,7 +30,7 @@ public class Program
 {
     private static readonly string s_toolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
 
-    public static ITelemetry TelemetryClient { get; }
+    public static readonly ITelemetry TelemetryClient;
 
     // Create a new OpenTelemetry tracer provider and add the Azure Monitor trace exporter and the OTLP trace exporter.
     // It is important to keep the TracerProvider instance active throughout the process lifetime.
@@ -86,9 +86,9 @@ public class Program
         s_mainActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
         s_mainActivity?.AddTag("process.pid", Process.GetCurrentProcess().Id);
         s_mainActivity?.AddTag("process.executable.name", "dotnet");
-        TrackHostStartup(s_mainTimeStamp);
-        SetupMSBuildEnvironmentInvariants();
         TelemetryClient = InitializeTelemetry();
+        TrackHostStartup(TelemetryClient, s_mainTimeStamp);
+        SetupMSBuildEnvironmentInvariants();
     }
 
     public static int Main(string[] args)
@@ -188,11 +188,11 @@ public class Program
         }
     }
 
-    private static void TrackHostStartup(DateTime mainTimeStamp)
+    private static void TrackHostStartup(ITelemetry telemetryClient, DateTime mainTimeStamp)
     {
         var hostStartupActivity = Activities.Source.StartActivity("host-startup");
         hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
-        if (TelemetryClient.Enabled && hostStartupActivity is not null)
+        if (telemetryClient.Enabled && hostStartupActivity is not null)
         {
             // Get the global.json state to report in telemetry along with this command invocation.
             // We don't care about the actual SDK resolution, just the global.json information,
