@@ -45,10 +45,6 @@
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
-  </ItemGroup>
-
   <ItemGroup>
     <AdditionalContent Include="$(RazorSdkRoot)Targets\**\*.*">
       <Pack>true</Pack>

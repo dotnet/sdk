@@ -47,11 +47,6 @@
     <InternalsVisibleTo Include="Microsoft.NET.Sdk.StaticWebAssets.Tests" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" VersionOverride="$(SystemDiagnosticsDiagnosticSourceToolsetPackageVersion)" />
-  </ItemGroup>
-
   <!-- Only include these files in the outer build to avoid double writes. -->
   <ItemGroup Condition="'$(IsCrossTargetingBuild)' == 'true'">
     <AdditionalContent Include="$(StaticWebAssetsSdkRoot)Targets\**\*.*" Pack="true" PackagePath="targets" />
