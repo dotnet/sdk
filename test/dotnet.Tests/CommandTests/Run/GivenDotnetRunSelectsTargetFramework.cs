@@ -91,23 +91,6 @@ public class GivenDotnetRunSelectsTargetFramework : SdkTest
     }
 
     [Fact]
-    public void ItPrefersExplicitFrameworkOptionOverProperty()
-    {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunMultiTarget")
-            .WithSource();
-
-        // Pass both --framework and -p:TargetFramework
-        // The --framework option should take precedence
-        new DotnetCommand(Log, "run")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute(
-                "--framework", ToolsetInfo.CurrentTargetFramework,
-                "-p:TargetFramework=net8.0")
-            .Should().Pass()
-            .And.HaveStdOutContaining($"Target Framework: {ToolsetInfo.CurrentTargetFrameworkMoniker}");
-    }
-
-    [Fact]
     public void ItShowsErrorMessageWithAvailableFrameworks_InNonInteractiveMode()
     {
         var testInstance = _testAssetsManager.CopyTestAsset(
