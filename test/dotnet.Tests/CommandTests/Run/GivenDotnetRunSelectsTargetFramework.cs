@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Utils;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -165,6 +165,13 @@ public class GivenDotnetRunSelectsTargetFramework : SdkTest
     [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkMoniker)]
     public void ItRunsDifferentFrameworksInMultiTargetedApp(string targetFramework, string expectedMoniker)
     {
+        // Skip net8.0 and net9.0 on arm64 as they may not be available on CI
+        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64 &&
+            (targetFramework == "net8.0" || targetFramework == "net9.0"))
+        {
+            return;
+        }
+
         var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunMultiTarget")
             .WithSource();
 
