@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
 using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Logging
 {
@@ -161,6 +162,7 @@ namespace Microsoft.Extensions.Logging
             return new KeyValuePair<string, object>("{OriginalFormat}", OriginalFormat);
         }
 
+        [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "This type was copied from Microsoft.Extensions.Logging, method is unused.")]
         public IEnumerable<KeyValuePair<string, object>> GetValues(object[] values)
         {
             var valueArray = new KeyValuePair<string, object>[values.Length + 1];

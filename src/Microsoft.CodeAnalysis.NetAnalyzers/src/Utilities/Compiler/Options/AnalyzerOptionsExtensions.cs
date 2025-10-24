@@ -24,6 +24,9 @@ namespace Analyzer.Utilities
         private static readonly ImmutableHashSet<OutputKind> s_defaultOutputKinds =
             ImmutableHashSet.CreateRange(Enum.GetValues(typeof(OutputKind)).Cast<OutputKind>());
 
+        private static readonly string[] s_typeAndSuffixSeparator = ["->"];
+        private static readonly char[] s_optionValuesSeparator = ['|'];
+
         private static bool TryGetSyntaxTreeForOption(ISymbol symbol, [NotNullWhen(returnValue: true)] out SyntaxTree? tree)
         {
             switch (symbol.Kind)
@@ -340,7 +343,7 @@ namespace Analyzer.Utilities
 
             static SymbolNamesWithValueOption<string?>.NameParts GetParts(string name)
             {
-                var split = name.Split(new[] { "->" }, StringSplitOptions.RemoveEmptyEntries);
+                var split = name.Split(s_typeAndSuffixSeparator, StringSplitOptions.RemoveEmptyEntries);
 
                 // If we don't find exactly one '->', we assume that there is no given suffix.
                 if (split.Length != 2)
@@ -389,7 +392,7 @@ namespace Analyzer.Utilities
 
             static SymbolNamesWithValueOption<INamedTypeSymbol?>.NameParts GetParts(string name, Compilation compilation)
             {
-                var split = name.Split(new[] { "->" }, StringSplitOptions.RemoveEmptyEntries);
+                var split = name.Split(s_typeAndSuffixSeparator, StringSplitOptions.RemoveEmptyEntries);
 
                 // If we don't find exactly one '->', we assume that there is no given suffix.
                 if (split.Length != 2)
@@ -484,7 +487,7 @@ namespace Analyzer.Utilities
                     return false;
                 }
 
-                var names = optionValue.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
+                var names = optionValue.Split(s_optionValuesSeparator, StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
                 option = SymbolNamesWithValueOption<TValue>.Create(names, arg.compilation, arg.namePrefix, arg.getTypeAndSuffixFunc);
                 return true;
             }

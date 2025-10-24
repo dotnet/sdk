@@ -624,7 +624,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                         if (parent.AnalysisValues.Count > 0)
                         {
-                            if (parentCsAttributes != null && parentCsAttributes.Any() &&
+                            if (parentCsAttributes != null && !parentCsAttributes.IsEmpty &&
                                 IsNegationOfCallsiteAttributes(parentCsAttributes, parent.AnalysisValues))
                             {
                                 continue;
