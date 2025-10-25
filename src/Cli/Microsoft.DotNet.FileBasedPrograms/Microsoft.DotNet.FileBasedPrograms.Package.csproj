@@ -57,4 +57,24 @@
   </ItemGroup>
 
   <Import Project="..\Microsoft.DotNet.FileBasedPrograms\Microsoft.DotNet.FileBasedPrograms.projitems" Label="Shared" />
+
+  <!-- Include resx and xlf files in the package (once, not per-TFM) -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)FileBasedProgramsResources.resx">
+      <Pack>true</Pack>
+      <PackagePath>contentFiles\cs\any\FileBasedProgramsResources.resx</PackagePath>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)xlf\*.xlf">
+      <Pack>true</Pack>
+      <PackagePath>contentFiles\cs\any\xlf</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <!-- Exclude the auto-generated .cs file from the resx from the package -->
+  <Target Name="ExcludeGeneratedResxFromPackage" BeforeTargets="GenerateNuspec">
+    <ItemGroup>
+      <_PackageFiles Remove="@(_PackageFiles)" Condition="$([System.String]::Copy('%(_PackageFiles.Identity)').EndsWith('FileBasedProgramsResources.cs'))" />
+    </ItemGroup>
+  </Target>
+
 </Project>
