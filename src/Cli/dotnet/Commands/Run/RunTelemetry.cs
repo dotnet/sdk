@@ -6,6 +6,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 

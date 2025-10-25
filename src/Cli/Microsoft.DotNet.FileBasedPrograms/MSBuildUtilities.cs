@@ -1,9 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// TODO: consider if this extra copy of the file can be avoided.
+// It's really not that much code, so, if we can't solve the reuse issue, we can live with that.
+#nullable enable
 using System;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.FileBasedPrograms
 {
     /// <summary>
     /// Internal utilities copied from microsoft/MSBuild repo.
