@@ -84,6 +84,14 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 RuleKind.op_OnesComplement or
                 RuleKind.op_UnaryNegation => IsValidUnaryOperatorMethodInvocation(invocation),
 
+                RuleKind.Abs or
+                RuleKind.Ceiling or
+                RuleKind.Floor or
+                RuleKind.Sqrt => IsValidUnaryMethodInvocation(invocation),
+
+                RuleKind.Max or
+                RuleKind.Min => IsValidBinaryMethodInvocation(invocation),
+
                 _ => false,
             };
 
@@ -107,6 +115,19 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             {
                 return (invocation.Arguments.Length == 1) &&
                        SymbolEqualityComparer.Default.Equals(invocation.Type, invocation.Arguments[0].Parameter?.Type);
+            }
+
+            static bool IsValidUnaryMethodInvocation(IInvocationOperation invocation)
+            {
+                return (invocation.Arguments.Length == 1) &&
+                       SymbolEqualityComparer.Default.Equals(invocation.Type, invocation.Arguments[0].Parameter?.Type);
+            }
+
+            static bool IsValidBinaryMethodInvocation(IInvocationOperation invocation)
+            {
+                return (invocation.Arguments.Length == 2) &&
+                       SymbolEqualityComparer.Default.Equals(invocation.Type, invocation.Arguments[0].Parameter?.Type) &&
+                       SymbolEqualityComparer.Default.Equals(invocation.Type, invocation.Arguments[1].Parameter?.Type);
             }
         }
 
@@ -292,6 +313,74 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse41, out var x86Sse41TypeSymbol))
             {
                 AddBinaryOperatorMethods(methodSymbols, "MultiplyLow", x86Sse41TypeSymbol, RuleKind.op_Multiply);
+            }
+
+            // Register named methods (not operators) that have cross-platform equivalents
+
+            if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsArmAdvSimd, out var armAdvSimdTypeSymbolForMethods))
+            {
+                AddUnaryOperatorMethods(methodSymbols, "Abs", armAdvSimdTypeSymbolForMethods, RuleKind.Abs);
+                AddBinaryOperatorMethods(methodSymbols, "Max", armAdvSimdTypeSymbolForMethods, RuleKind.Max);
+                AddBinaryOperatorMethods(methodSymbols, "Min", armAdvSimdTypeSymbolForMethods, RuleKind.Min);
+            }
+
+            if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsArmAdvSimdArm64, out var armAdvSimdArm64TypeSymbolForMethods))
+            {
+                AddUnaryOperatorMethods(methodSymbols, "Abs", armAdvSimdArm64TypeSymbolForMethods, RuleKind.Abs);
+            }
+
+            if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsWasmPackedSimd, out var wasmPackedSimdTypeSymbolForMethods))
+            {
+                AddUnaryOperatorMethods(methodSymbols, "Abs", wasmPackedSimdTypeSymbolForMethods, RuleKind.Abs);
+                AddUnaryOperatorMethods(methodSymbols, "Ceiling", wasmPackedSimdTypeSymbolForMethods, RuleKind.Ceiling);
+                AddUnaryOperatorMethods(methodSymbols, "Floor", wasmPackedSimdTypeSymbolForMethods, RuleKind.Floor);
+                AddBinaryOperatorMethods(methodSymbols, "Max", wasmPackedSimdTypeSymbolForMethods, RuleKind.Max);
+                AddBinaryOperatorMethods(methodSymbols, "Min", wasmPackedSimdTypeSymbolForMethods, RuleKind.Min);
+                AddUnaryOperatorMethods(methodSymbols, "Sqrt", wasmPackedSimdTypeSymbolForMethods, RuleKind.Sqrt);
+            }
+
+            if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx, out var x86AvxTypeSymbolForMethods))
+            {
+                AddUnaryOperatorMethods(methodSymbols, "Ceiling", x86AvxTypeSymbolForMethods, RuleKind.Ceiling);
+                AddUnaryOperatorMethods(methodSymbols, "Floor", x86AvxTypeSymbolForMethods, RuleKind.Floor);
+                AddBinaryOperatorMethods(methodSymbols, "Max", x86AvxTypeSymbolForMethods, RuleKind.Max);
+                AddBinaryOperatorMethods(methodSymbols, "Min", x86AvxTypeSymbolForMethods, RuleKind.Min);
+                AddUnaryOperatorMethods(methodSymbols, "Sqrt", x86AvxTypeSymbolForMethods, RuleKind.Sqrt);
+            }
+
+            if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx2, out var x86Avx2TypeSymbolForMethods))
+            {
+                AddUnaryOperatorMethods(methodSymbols, "Abs", x86Avx2TypeSymbolForMethods, RuleKind.Abs);
+            }
+
+            if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512BW, out var x86Avx512BWTypeSymbolForMethods))
+            {
+                AddUnaryOperatorMethods(methodSymbols, "Abs", x86Avx512BWTypeSymbolForMethods, RuleKind.Abs);
+            }
+
+            if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512F, out var x86Avx512FTypeSymbolForMethods))
+            {
+                AddUnaryOperatorMethods(methodSymbols, "Abs", x86Avx512FTypeSymbolForMethods, RuleKind.Abs);
+                AddBinaryOperatorMethods(methodSymbols, "Max", x86Avx512FTypeSymbolForMethods, RuleKind.Max);
+                AddBinaryOperatorMethods(methodSymbols, "Min", x86Avx512FTypeSymbolForMethods, RuleKind.Min);
+                AddUnaryOperatorMethods(methodSymbols, "Sqrt", x86Avx512FTypeSymbolForMethods, RuleKind.Sqrt);
+            }
+
+            if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse, out var x86SseTypeSymbolForMethods))
+            {
+                AddBinaryOperatorMethods(methodSymbols, "Max", x86SseTypeSymbolForMethods, RuleKind.Max);
+                AddBinaryOperatorMethods(methodSymbols, "Min", x86SseTypeSymbolForMethods, RuleKind.Min);
+                AddUnaryOperatorMethods(methodSymbols, "Sqrt", x86SseTypeSymbolForMethods, RuleKind.Sqrt);
+            }
+
+            if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse2, out var x86Sse2TypeSymbolForMethods))
+            {
+                AddUnaryOperatorMethods(methodSymbols, "Sqrt", x86Sse2TypeSymbolForMethods, RuleKind.Sqrt);
+            }
+
+            if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Ssse3, out var x86Ssse3TypeSymbolForMethods))
+            {
+                AddUnaryOperatorMethods(methodSymbols, "Abs", x86Ssse3TypeSymbolForMethods, RuleKind.Abs);
             }
 
             if (methodSymbols.Any())

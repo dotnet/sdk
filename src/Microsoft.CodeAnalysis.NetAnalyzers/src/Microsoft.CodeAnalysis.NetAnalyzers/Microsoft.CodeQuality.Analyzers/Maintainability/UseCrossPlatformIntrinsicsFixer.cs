@@ -56,6 +56,15 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 RuleKind.op_OnesComplement => ReplaceWithUnaryOperator(currentNode, generator, generator.BitwiseNotExpression),
                 RuleKind.op_Subtraction => ReplaceWithBinaryOperator(currentNode, generator, isCommutative: false, generator.SubtractExpression),
                 RuleKind.op_UnaryNegation => ReplaceWithUnaryOperator(currentNode, generator, generator.NegateExpression),
+
+                RuleKind.Abs => ReplaceWithUnaryMethod(currentNode, generator, "Abs"),
+                RuleKind.Ceiling => ReplaceWithUnaryMethod(currentNode, generator, "Ceiling"),
+                RuleKind.Floor => ReplaceWithUnaryMethod(currentNode, generator, "Floor"),
+                RuleKind.Sqrt => ReplaceWithUnaryMethod(currentNode, generator, "Sqrt"),
+
+                RuleKind.Max => ReplaceWithBinaryMethod(currentNode, generator, "Max"),
+                RuleKind.Min => ReplaceWithBinaryMethod(currentNode, generator, "Min"),
+
                 _ => currentNode,
             };
         }
@@ -63,5 +72,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         protected abstract SyntaxNode ReplaceWithUnaryOperator(SyntaxNode currentNode, SyntaxGenerator generator, Func<SyntaxNode, SyntaxNode?> unaryOpFunc);
 
         protected abstract SyntaxNode ReplaceWithBinaryOperator(SyntaxNode currentNode, SyntaxGenerator generator, bool isCommutative, Func<SyntaxNode, SyntaxNode, SyntaxNode?> binaryOpFunc);
+
+        protected abstract SyntaxNode ReplaceWithUnaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
+
+        protected abstract SyntaxNode ReplaceWithBinaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
     }
 }

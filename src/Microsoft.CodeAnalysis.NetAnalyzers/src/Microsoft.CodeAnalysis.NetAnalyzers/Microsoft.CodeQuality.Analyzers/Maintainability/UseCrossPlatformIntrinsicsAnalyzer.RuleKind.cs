@@ -6,7 +6,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     {
         public enum RuleKind
         {
-            // These names match the underlying IL names for the cross-platform API that will be used in the fixer.
+            // These names match the underlying IL names or method names for the cross-platform API that will be used in the fixer.
 
             op_Addition,
             op_BitwiseAnd,
@@ -20,6 +20,14 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             op_Subtraction,
             op_UnaryNegation,
             op_UnsignedRightShift,
+
+            // Named methods (not operators)
+            Abs,
+            Ceiling,
+            Floor,
+            Max,
+            Min,
+            Sqrt,
 
             Count,
         }

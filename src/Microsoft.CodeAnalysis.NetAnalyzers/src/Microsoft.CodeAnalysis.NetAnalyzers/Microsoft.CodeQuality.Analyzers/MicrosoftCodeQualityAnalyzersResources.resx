@@ -1365,4 +1365,22 @@
   <data name="UseCrossPlatformIntrinsicsMessage_op_UnsignedRightShift" xml:space="preserve">
     <value>The unsigned right-shift operator should be preferred</value>
   </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Abs" xml:space="preserve">
+    <value>The cross-platform 'Abs' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Ceiling" xml:space="preserve">
+    <value>The cross-platform 'Ceiling' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Floor" xml:space="preserve">
+    <value>The cross-platform 'Floor' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Max" xml:space="preserve">
+    <value>The cross-platform 'Max' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Min" xml:space="preserve">
+    <value>The cross-platform 'Min' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Sqrt" xml:space="preserve">
+    <value>The cross-platform 'Sqrt' method should be preferred</value>
+  </data>
 </root>

@@ -75,5 +75,103 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
 
             return generator.Parenthesize(replacementExpression);
         }
+
+        protected override SyntaxNode ReplaceWithUnaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName)
+        {
+            if (currentNode is not InvocationExpressionSyntax invocationExpression)
+            {
+                Debug.Fail($"Found unexpected node kind: {currentNode.RawKind}");
+                return currentNode;
+            }
+
+            SeparatedSyntaxList<ArgumentSyntax> arguments = invocationExpression.ArgumentList.Arguments;
+
+            if (arguments.Count != 1)
+            {
+                Debug.Fail($"Found unexpected number of arguments for unary method replacement: {arguments.Count}");
+                return currentNode;
+            }
+
+            // Get the type from the invocation expression's return type
+            var typeArgumentSyntax = GetTypeArgumentFromInvocation(invocationExpression);
+            if (typeArgumentSyntax == null)
+            {
+                Debug.Fail("Unable to extract type argument from invocation expression");
+                return currentNode;
+            }
+
+            // Create the cross-platform method call: VectorXXX<T>.MethodName(arg)
+            var vectorTypeExpression = generator.GenericName(GetVectorTypeName(invocationExpression), typeArgumentSyntax);
+            var replacementExpression = generator.InvocationExpression(
+                generator.MemberAccessExpression(vectorTypeExpression, methodName),
+                arguments[0].Expression);
+
+            return generator.Parenthesize(replacementExpression);
+        }
+
+        protected override SyntaxNode ReplaceWithBinaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName)
+        {
+            if (currentNode is not InvocationExpressionSyntax invocationExpression)
+            {
+                Debug.Fail($"Found unexpected node kind: {currentNode.RawKind}");
+                return currentNode;
+            }
+
+            SeparatedSyntaxList<ArgumentSyntax> arguments = invocationExpression.ArgumentList.Arguments;
+
+            if (arguments.Count != 2)
+            {
+                Debug.Fail($"Found unexpected number of arguments for binary method replacement: {arguments.Count}");
+                return currentNode;
+            }
+
+            // Get the type from the invocation expression's return type
+            var typeArgumentSyntax = GetTypeArgumentFromInvocation(invocationExpression);
+            if (typeArgumentSyntax == null)
+            {
+                Debug.Fail("Unable to extract type argument from invocation expression");
+                return currentNode;
+            }
+
+            // Create the cross-platform method call: VectorXXX<T>.MethodName(arg1, arg2)
+            var vectorTypeExpression = generator.GenericName(GetVectorTypeName(invocationExpression), typeArgumentSyntax);
+            var replacementExpression = generator.InvocationExpression(
+                generator.MemberAccessExpression(vectorTypeExpression, methodName),
+                arguments[0].Expression,
+                arguments[1].Expression);
+
+            return generator.Parenthesize(replacementExpression);
+        }
+
+        private static TypeSyntax? GetTypeArgumentFromInvocation(InvocationExpressionSyntax invocation)
+        {
+            // The invocation is something like Sse.Sqrt(Vector128<float>), we need to extract the <float> part
+            if (invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
+                memberAccess.Name is GenericNameSyntax genericName &&
+                genericName.TypeArgumentList.Arguments.Count == 1)
+            {
+                return genericName.TypeArgumentList.Arguments[0];
+            }
+
+            return null;
+        }
+
+        private static string GetVectorTypeName(InvocationExpressionSyntax invocation)
+        {
+            // Determine the Vector type name (Vector64, Vector128, Vector256, Vector512) from the invocation
+            // by looking at the return type's name
+            if (invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
+                memberAccess.Name is GenericNameSyntax genericName)
+            {
+                var identifier = genericName.Identifier.Text;
+                if (identifier.StartsWith("Vector"))
+                {
+                    return identifier;
+                }
+            }
+
+            // Default to Vector128 if we can't determine it
+            return "Vector128";
+        }
     }
 }
