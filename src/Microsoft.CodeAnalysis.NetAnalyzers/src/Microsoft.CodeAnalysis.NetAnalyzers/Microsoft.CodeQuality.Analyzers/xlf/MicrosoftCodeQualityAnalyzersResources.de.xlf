@@ -447,6 +447,36 @@
         <target state="translated">Diese Regel erkennt die Verwendung plattformspezifischer systeminterner Funktionen, die durch ein entsprechendes plattformübergreifendes Äquivalent ersetzt werden können.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Abs">
+        <source>The cross-platform 'Abs' method should be preferred</source>
+        <target state="new">The cross-platform 'Abs' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Ceiling">
+        <source>The cross-platform 'Ceiling' method should be preferred</source>
+        <target state="new">The cross-platform 'Ceiling' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Floor">
+        <source>The cross-platform 'Floor' method should be preferred</source>
+        <target state="new">The cross-platform 'Floor' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Max">
+        <source>The cross-platform 'Max' method should be preferred</source>
+        <target state="new">The cross-platform 'Max' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Min">
+        <source>The cross-platform 'Min' method should be preferred</source>
+        <target state="new">The cross-platform 'Min' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Sqrt">
+        <source>The cross-platform 'Sqrt' method should be preferred</source>
+        <target state="new">The cross-platform 'Sqrt' method should be preferred</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Addition">
         <source>The addition operator should be preferred</source>
         <target state="translated">Der Additionsoperator sollte bevorzugt verwendet werden.</target>

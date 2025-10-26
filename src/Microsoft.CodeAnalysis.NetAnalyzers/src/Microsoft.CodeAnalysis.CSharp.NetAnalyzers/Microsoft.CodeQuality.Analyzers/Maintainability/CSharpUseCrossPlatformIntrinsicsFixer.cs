@@ -92,18 +92,14 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
                 return currentNode;
             }
 
-            // Get the type from the invocation expression's return type
-            var typeArgumentSyntax = GetTypeArgumentFromInvocation(invocationExpression);
-            if (typeArgumentSyntax == null)
-            {
-                Debug.Fail("Unable to extract type argument from invocation expression");
-                return currentNode;
-            }
+            // Determine the vector type name from the return type if available
+            var vectorTypeName = DetermineVectorTypeName(invocationExpression);
 
-            // Create the cross-platform method call: VectorXXX<T>.MethodName(arg)
-            var vectorTypeExpression = generator.GenericName(GetVectorTypeName(invocationExpression), typeArgumentSyntax);
+            // Create the cross-platform method call: VectorXXX.MethodName(arg)
+            // The type parameter will be inferred from the argument
+            var vectorTypeIdentifier = generator.IdentifierName(vectorTypeName);
             var replacementExpression = generator.InvocationExpression(
-                generator.MemberAccessExpression(vectorTypeExpression, methodName),
+                generator.MemberAccessExpression(vectorTypeIdentifier, methodName),
                 arguments[0].Expression);
 
             return generator.Parenthesize(replacementExpression);
@@ -125,53 +121,78 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
                 return currentNode;
             }
 
-            // Get the type from the invocation expression's return type
-            var typeArgumentSyntax = GetTypeArgumentFromInvocation(invocationExpression);
-            if (typeArgumentSyntax == null)
-            {
-                Debug.Fail("Unable to extract type argument from invocation expression");
-                return currentNode;
-            }
+            // Determine the vector type name from the return type if available
+            var vectorTypeName = DetermineVectorTypeName(invocationExpression);
 
-            // Create the cross-platform method call: VectorXXX<T>.MethodName(arg1, arg2)
-            var vectorTypeExpression = generator.GenericName(GetVectorTypeName(invocationExpression), typeArgumentSyntax);
+            // Create the cross-platform method call: VectorXXX.MethodName(arg1, arg2)
+            // The type parameter will be inferred from the arguments
+            var vectorTypeIdentifier = generator.IdentifierName(vectorTypeName);
             var replacementExpression = generator.InvocationExpression(
-                generator.MemberAccessExpression(vectorTypeExpression, methodName),
+                generator.MemberAccessExpression(vectorTypeIdentifier, methodName),
                 arguments[0].Expression,
                 arguments[1].Expression);
 
             return generator.Parenthesize(replacementExpression);
         }
 
-        private static TypeSyntax? GetTypeArgumentFromInvocation(InvocationExpressionSyntax invocation)
+        private static string DetermineVectorTypeName(SyntaxNode node)
         {
-            // The invocation is something like Sse.Sqrt(Vector128<float>), we need to extract the <float> part
-            if (invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
-                memberAccess.Name is GenericNameSyntax genericName &&
-                genericName.TypeArgumentList.Arguments.Count == 1)
+            // For method signatures like "Vector256<float> M(Vector256<float> x)",
+            // we need to find the return type of the method containing this invocation
+            
+            // Walk up to find the method declaration
+            var current = node;
+            while (current != null)
             {
-                return genericName.TypeArgumentList.Arguments[0];
+                if (current is MethodDeclarationSyntax methodDecl)
+                {
+                    // Check the return type
+                    var returnType = methodDecl.ReturnType;
+                    if (returnType is GenericNameSyntax genericReturn &&
+                        (genericReturn.Identifier.Text == "Vector64" ||
+                         genericReturn.Identifier.Text == "Vector128" ||
+                         genericReturn.Identifier.Text == "Vector256" ||
+                         genericReturn.Identifier.Text == "Vector512"))
+                    {
+                        return genericReturn.Identifier.Text;
+                    }
+                }
+                current = current.Parent;
             }
 
-            return null;
-        }
-
-        private static string GetVectorTypeName(InvocationExpressionSyntax invocation)
-        {
-            // Determine the Vector type name (Vector64, Vector128, Vector256, Vector512) from the invocation
-            // by looking at the return type's name
-            if (invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
-                memberAccess.Name is GenericNameSyntax genericName)
+            // Also check the invocation itself for argument types
+            // This handles cases where the invocation is in an expression-bodied member
+            if (node is InvocationExpressionSyntax invocation)
             {
-                var identifier = genericName.Identifier.Text;
-                if (identifier.StartsWith("Vector"))
+                foreach (var arg in invocation.ArgumentList.Arguments)
                 {
-                    return identifier;
+                    var vectorType = FindVectorTypeInExpression(arg.Expression);
+                    if (vectorType != null)
+                    {
+                        return vectorType;
+                    }
                 }
             }
 
             // Default to Vector128 if we can't determine it
             return "Vector128";
+        }
+
+        private static string? FindVectorTypeInExpression(SyntaxNode node)
+        {
+            // Look for Vector types in the expression (could be identifiers or generic names)
+            foreach (var descendant in node.DescendantNodesAndSelf())
+            {
+                if (descendant is GenericNameSyntax genericName &&
+                    (genericName.Identifier.Text == "Vector64" ||
+                     genericName.Identifier.Text == "Vector128" ||
+                     genericName.Identifier.Text == "Vector256" ||
+                     genericName.Identifier.Text == "Vector512"))
+                {
+                    return genericName.Identifier.Text;
+                }
+            }
+            return null;
         }
     }
 }
