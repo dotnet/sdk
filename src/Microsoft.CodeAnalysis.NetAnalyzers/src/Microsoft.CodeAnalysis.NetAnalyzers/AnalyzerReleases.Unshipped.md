@@ -11,3 +11,4 @@ CA1876 | Performance | Info | DoNotUseAsParallelInForEachLoopAnalyzer, [Document
 CA2023 | Reliability | Warning | LoggerMessageDefineAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2023)
 CA2024 | Reliability | Warning | DoNotUseEndOfStreamInAsyncMethods, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2024)
 CA2025 | Reliability | Disabled | DoNotPassDisposablesIntoUnawaitedTasksAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2025)
+CA2026 | Reliability | Info | PreferJsonElementParse, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2026)
