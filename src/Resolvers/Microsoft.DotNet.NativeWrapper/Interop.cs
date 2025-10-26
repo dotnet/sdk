@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.NativeWrapper
     public static partial class Interop
     {
         public static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-#if NETCOREAPP
+#if NET
         private static readonly string? HostFxrPath;
 #endif
 
@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.NativeWrapper
             {
                 PreloadWindowsLibrary(Constants.HostFxr);
             }
-#if NETCOREAPP
+#if NET
             else
             {
                 HostFxrPath = (string)AppContext.GetData(Constants.RuntimeProperty.HostFxrPath)!;
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.NativeWrapper
             LoadLibraryExW(dllPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
         }
 
-#if NETCOREAPP
+#if NET
         private static IntPtr HostFxrResolver(Assembly assembly, string libraryName)
         {
             if (libraryName != Constants.HostFxr)
