@@ -534,6 +534,15 @@ public class RunCommand
             projectFileOrDirectoryPath = Directory.GetCurrentDirectory();
         }
 
+        // Normalize path separators to handle Windows-style paths on non-Windows platforms.
+        // This is supported for backward compatibility in 'dotnet run' only, not for all CLI commands.
+        // Converting backslashes to forward slashes allows PowerShell scripts using Windows-style paths
+        // to work cross-platform, maintaining compatibility with .NET 9 behavior.
+        if (Path.DirectorySeparatorChar != '\\')
+        {
+            projectFileOrDirectoryPath = projectFileOrDirectoryPath.Replace('\\', '/');
+        }
+
         string? projectFilePath = Directory.Exists(projectFileOrDirectoryPath)
             ? TryFindSingleProjectInDirectory(projectFileOrDirectoryPath)
             : projectFileOrDirectoryPath;
