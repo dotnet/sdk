@@ -1287,13 +1287,16 @@
     <value>Prefer strongly-typed Append and Insert method overloads on StringBuilder</value>
   </data>
   <data name="PreferTypedStringBuilderAppendOverloadsDescription" xml:space="preserve">
-    <value>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</value>
+    <value>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</value>
   </data>
   <data name="PreferTypedStringBuilderAppendOverloadsMessage" xml:space="preserve">
-    <value>Remove the ToString call in order to use a strongly-typed StringBuilder overload</value>
+    <value>Prefer strongly-typed StringBuilder overload</value>
   </data>
   <data name="PreferTypedStringBuilderAppendOverloadsRemoveToString" xml:space="preserve">
     <value>Remove the ToString call</value>
+  </data>
+  <data name="PreferTypedStringBuilderAppendOverloadsReplaceStringConstructor" xml:space="preserve">
+    <value>Use StringBuilder.Append(char, int) overload</value>
   </data>
   <data name="PreferStringContainsOverIndexOfDescription" xml:space="preserve">
     <value>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</value>
