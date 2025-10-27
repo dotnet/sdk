@@ -222,6 +222,12 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
             return null;
         }
 
+        /// <summary>
+        /// Checks if the given type name is a Vector type (Vector64, Vector128, Vector256, or Vector512).
+        /// </summary>
+        private static bool IsVectorType(string typeName)
+            => typeName is "Vector64" or "Vector128" or "Vector256" or "Vector512";
+
         protected override SyntaxNode ReplaceWithTernaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName)
         {
             if (currentNode is not InvocationExpressionSyntax invocationExpression)
