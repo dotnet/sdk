@@ -179,10 +179,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
                     // Check the return type
                     var returnType = methodDecl.ReturnType;
                     if (returnType is GenericNameSyntax genericReturn &&
-                        (genericReturn.Identifier.Text == "Vector64" ||
-                         genericReturn.Identifier.Text == "Vector128" ||
-                         genericReturn.Identifier.Text == "Vector256" ||
-                         genericReturn.Identifier.Text == "Vector512"))
+                        IsVectorType(genericReturn.Identifier.Text))
                     {
                         return genericReturn.Identifier.Text;
                     }
@@ -204,7 +201,10 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
                 }
             }
 
-            // Default to Vector128 if we can't determine it
+            // Default to Vector128 if we can't determine the vector type from context.
+            // This fallback is used when the platform-specific intrinsic call is in a context
+            // where we cannot infer the return type (e.g., passed as an argument to another method).
+            // Vector128 is the most common vector size across all platforms.
             return "Vector128";
         }
 
@@ -214,10 +214,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
             foreach (var descendant in node.DescendantNodesAndSelf())
             {
                 if (descendant is GenericNameSyntax genericName &&
-                    (genericName.Identifier.Text == "Vector64" ||
-                     genericName.Identifier.Text == "Vector128" ||
-                     genericName.Identifier.Text == "Vector256" ||
-                     genericName.Identifier.Text == "Vector512"))
+                    IsVectorType(genericName.Identifier.Text))
                 {
                     return genericName.Identifier.Text;
                 }
