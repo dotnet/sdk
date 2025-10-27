@@ -23,12 +23,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             // Named methods (not operators)
             Abs,
+            AddSaturate,
             AndNot,              // For ARM BitwiseClear - direct parameter mapping
             AndNot_Swapped,      // For x86/x64 AndNot - needs parameter swap
             Ceiling,
             ConditionalSelect,
+            ConvertToInt32,
+            Equals,
             Floor,
             FusedMultiplyAdd,
+            GetElement,
+            GreaterThan,
+            GreaterThanOrEqual,
+            LessThan,
+            LessThanOrEqual,
             Max,
             MaxNative,           // For x86/x64 Max - different NaN/negative zero handling
             Min,
@@ -37,6 +45,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             Round,
             Sqrt,
             Truncate,
+            WithElement,
 
             Count,
         }

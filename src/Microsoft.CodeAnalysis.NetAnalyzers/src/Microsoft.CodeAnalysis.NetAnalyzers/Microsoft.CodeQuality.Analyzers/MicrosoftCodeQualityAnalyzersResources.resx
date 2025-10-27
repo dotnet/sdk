@@ -1386,6 +1386,9 @@
   <data name="UseCrossPlatformIntrinsicsMessage_Sqrt" xml:space="preserve">
     <value>The cross-platform 'Sqrt' method should be preferred</value>
   </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_AddSaturate" xml:space="preserve">
+    <value>The cross-platform 'AddSaturate' method should be preferred</value>
+  </data>
   <data name="UseCrossPlatformIntrinsicsMessage_AndNot" xml:space="preserve">
     <value>The cross-platform 'AndNot' method should be preferred</value>
   </data>
@@ -1394,6 +1397,27 @@
   </data>
   <data name="UseCrossPlatformIntrinsicsMessage_ConditionalSelect" xml:space="preserve">
     <value>The cross-platform 'ConditionalSelect' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_ConvertToInt32" xml:space="preserve">
+    <value>The cross-platform 'ConvertToInt32' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Equals" xml:space="preserve">
+    <value>The cross-platform 'Equals' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_GetElement" xml:space="preserve">
+    <value>The cross-platform 'GetElement' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_GreaterThan" xml:space="preserve">
+    <value>The cross-platform 'GreaterThan' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_GreaterThanOrEqual" xml:space="preserve">
+    <value>The cross-platform 'GreaterThanOrEqual' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_LessThan" xml:space="preserve">
+    <value>The cross-platform 'LessThan' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_LessThanOrEqual" xml:space="preserve">
+    <value>The cross-platform 'LessThanOrEqual' method should be preferred</value>
   </data>
   <data name="UseCrossPlatformIntrinsicsMessage_MaxNative" xml:space="preserve">
     <value>The cross-platform 'MaxNative' method should be preferred</value>
@@ -1409,5 +1433,8 @@
   </data>
   <data name="UseCrossPlatformIntrinsicsMessage_Truncate" xml:space="preserve">
     <value>The cross-platform 'Truncate' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_WithElement" xml:space="preserve">
+    <value>The cross-platform 'WithElement' method should be preferred</value>
   </data>
 </root>

@@ -86,14 +86,21 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                 RuleKind.Abs or
                 RuleKind.Ceiling or
+                RuleKind.ConvertToInt32 or
                 RuleKind.Floor or
                 RuleKind.Negate or
                 RuleKind.Round or
                 RuleKind.Sqrt or
                 RuleKind.Truncate => IsValidUnaryMethodInvocation(invocation),
 
+                RuleKind.AddSaturate or
                 RuleKind.AndNot or
                 RuleKind.AndNot_Swapped or
+                RuleKind.Equals or
+                RuleKind.GreaterThan or
+                RuleKind.GreaterThanOrEqual or
+                RuleKind.LessThan or
+                RuleKind.LessThanOrEqual or
                 RuleKind.Max or
                 RuleKind.MaxNative or
                 RuleKind.Min or
@@ -341,17 +348,38 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 // Note: AdvSimd.Abs for integer types returns unsigned types (e.g., Vector128<int> → Vector128<uint>),
                 // so we only register floating-point Abs which has compatible signatures
                 AddUnaryMethods(methodSymbols, "Abs", armAdvSimdTypeSymbolForMethods, RuleKind.Abs, [SpecialType.System_Single]);
+                AddUnaryMethods(methodSymbols, "AbsScalar", armAdvSimdTypeSymbolForMethods, RuleKind.Abs, [SpecialType.System_Double]);
+                AddBinaryMethods(methodSymbols, "AddSaturate", armAdvSimdTypeSymbolForMethods, RuleKind.AddSaturate);
                 AddBinaryMethods(methodSymbols, "BitwiseClear", armAdvSimdTypeSymbolForMethods, RuleKind.AndNot);
+                AddTernaryMethods(methodSymbols, "BitwiseSelect", armAdvSimdTypeSymbolForMethods, RuleKind.ConditionalSelect);
+                AddUnaryMethods(methodSymbols, "Ceiling", armAdvSimdTypeSymbolForMethods, RuleKind.Ceiling);
+                AddUnaryMethods(methodSymbols, "CeilingScalar", armAdvSimdTypeSymbolForMethods, RuleKind.Ceiling);
+                AddBinaryMethods(methodSymbols, "CompareEqual", armAdvSimdTypeSymbolForMethods, RuleKind.Equals);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThan", armAdvSimdTypeSymbolForMethods, RuleKind.GreaterThan);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThanOrEqual", armAdvSimdTypeSymbolForMethods, RuleKind.GreaterThanOrEqual);
+                AddBinaryMethods(methodSymbols, "CompareLessThan", armAdvSimdTypeSymbolForMethods, RuleKind.LessThan);
+                AddBinaryMethods(methodSymbols, "CompareLessThanOrEqual", armAdvSimdTypeSymbolForMethods, RuleKind.LessThanOrEqual);
+                AddUnaryMethods(methodSymbols, "ConvertToInt32RoundToZero", armAdvSimdTypeSymbolForMethods, RuleKind.ConvertToInt32);
+                AddUnaryMethods(methodSymbols, "ConvertToInt32RoundToZeroScalar", armAdvSimdTypeSymbolForMethods, RuleKind.ConvertToInt32);
+                // Extract maps to GetElement - will need custom handling
+                AddUnaryMethods(methodSymbols, "Floor", armAdvSimdTypeSymbolForMethods, RuleKind.Floor);
+                AddUnaryMethods(methodSymbols, "FloorScalar", armAdvSimdTypeSymbolForMethods, RuleKind.Floor);
                 AddTernaryMethods(methodSymbols, "FusedMultiplyAdd", armAdvSimdTypeSymbolForMethods, RuleKind.FusedMultiplyAdd);
+                // Insert maps to WithElement - will need custom handling
                 AddBinaryMethods(methodSymbols, "Max", armAdvSimdTypeSymbolForMethods, RuleKind.Max);
                 AddBinaryMethods(methodSymbols, "Min", armAdvSimdTypeSymbolForMethods, RuleKind.Min);
                 // Note: Negate is already registered as op_UnaryNegation above, so we don't register it here
+                // Note: MultiplyAdd(x, y, z) expands to (y * z) + x - needs complex transformation
+                // Note: OrNot expands to two operators - needs complex transformation
+                // Note: Load*/Store*/Shuffle/etc need more complex transformations - will address separately
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsArmAdvSimdArm64, out var armAdvSimdArm64TypeSymbolForMethods))
             {
                 // Note: AdvSimd.Arm64.Abs for integer types returns unsigned types (e.g., Vector128<long> → Vector128<ulong>),
-                // so we don't register Abs here as it doesn't have a compatible cross-platform equivalent
+                // so we only register AbsScalar for compatible types
+                AddUnaryMethods(methodSymbols, "AbsScalar", armAdvSimdArm64TypeSymbolForMethods, RuleKind.Abs, [SpecialType.System_Double]);
+                AddBinaryMethods(methodSymbols, "AddSaturateScalar", armAdvSimdArm64TypeSymbolForMethods, RuleKind.AddSaturate);
                 // Note: Negate is already registered as op_UnaryNegation above, so we don't register it here
             }
 
