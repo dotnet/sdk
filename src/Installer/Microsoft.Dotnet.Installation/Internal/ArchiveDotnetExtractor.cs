@@ -19,14 +19,16 @@ internal class ArchiveDotnetExtractor : IDisposable
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
     private readonly IProgressTarget _progressTarget;
+    private readonly ReleaseManifest _releaseManifest;
     private string scratchDownloadDirectory;
     private string? _archivePath;
 
-    public ArchiveDotnetExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, IProgressTarget progressTarget)
+    public ArchiveDotnetExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, IProgressTarget progressTarget)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
         _progressTarget = progressTarget;
+        _releaseManifest = new();
         scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
     }
 
@@ -34,7 +36,7 @@ internal class ArchiveDotnetExtractor : IDisposable
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
 
-        using var archiveDownloader = new DotnetArchiveDownloader();
+        using var archiveDownloader = new DotnetArchiveDownloader(_releaseManifest);
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
 

@@ -32,6 +32,12 @@ internal class DotnetArchiveDownloader(HttpClient httpClient) : IDisposable
     {
     }
 
+    public DotnetArchiveDownloader(ReleaseManifest releaseManifest)
+        : this(CreateDefaultHttpClient())
+    {
+        _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
+    }
+
     /// <summary>
     /// Creates an HttpClient with enhanced proxy support for enterprise environments.
     /// </summary>
