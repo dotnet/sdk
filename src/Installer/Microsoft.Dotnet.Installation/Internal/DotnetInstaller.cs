@@ -30,7 +30,7 @@ namespace Microsoft.Dotnet.Installation.Internal
 
             var installRequest = new DotnetInstallRequest(dotnetRoot, new UpdateChannel(version.ToString()), component, new InstallRequestOptions());
 
-            using ArchiveDotnetExtractor installer = new(installRequest, version, releaseManifest, _progressTarget);
+            using DotnetArchiveExtractor installer = new(installRequest, version, new ReleaseManifest(), _progressTarget);
             installer.Prepare();
             installer.Commit();
         }
