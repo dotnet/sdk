@@ -1437,4 +1437,10 @@
   <data name="UseCrossPlatformIntrinsicsMessage_WithElement" xml:space="preserve">
     <value>The cross-platform 'WithElement' method should be preferred</value>
   </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Load" xml:space="preserve">
+    <value>The cross-platform 'Load' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Store" xml:space="preserve">
+    <value>The cross-platform 'Store' method should be preferred</value>
+  </data>
 </root>

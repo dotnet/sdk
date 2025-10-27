@@ -46,6 +46,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             Sqrt,
             Truncate,
             WithElement,
+            Load,
+            Store,
 
             Count,
         }

@@ -109,8 +109,26 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 RuleKind.ConditionalSelect or
                 RuleKind.FusedMultiplyAdd => IsValidTernaryMethodInvocation(invocation),
 
+                RuleKind.Load => IsValidLoadMethodInvocation(invocation),
+
+                RuleKind.Store => IsValidStoreMethodInvocation(invocation),
+
                 _ => false,
             };
+
+            static bool IsValidLoadMethodInvocation(IInvocationOperation invocation)
+            {
+                // Load methods typically have one parameter (pointer/reference) and return a vector
+                return (invocation.Arguments.Length >= 1) &&
+                       invocation.Type is INamedTypeSymbol { IsGenericType: true };
+            }
+
+            static bool IsValidStoreMethodInvocation(IInvocationOperation invocation)
+            {
+                // Store methods typically have two parameters (pointer/reference and vector) and return void
+                return (invocation.Arguments.Length >= 2) &&
+                       (invocation.Type?.SpecialType == SpecialType.System_Void);
+            }
 
             static bool IsValidBinaryOperatorMethodInvocation(IInvocationOperation invocation, bool isCommutative)
             {
@@ -382,7 +400,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddUnaryMethods(methodSymbols, "RoundToPositiveInfinity", armAdvSimdTypeSymbolForMethods, RuleKind.Ceiling);
                 AddUnaryMethods(methodSymbols, "RoundToZero", armAdvSimdTypeSymbolForMethods, RuleKind.Truncate);
                 // Note: Sqrt is already registered above as operator method
-                // Note: Load*/Store*/Shuffle/etc need more complex transformations - will address separately
+                AddLoadMethods(methodSymbols, "LoadVector64", armAdvSimdTypeSymbolForMethods, RuleKind.Load);
+                AddLoadMethods(methodSymbols, "LoadVector128", armAdvSimdTypeSymbolForMethods, RuleKind.Load);
+                AddStoreMethods(methodSymbols, "Store", armAdvSimdTypeSymbolForMethods, RuleKind.Store);
+                // Note: Shuffle/Create APIs like Duplicate, ExtractVector128, VectorTableLookup need complex transformations
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsArmAdvSimdArm64, out var armAdvSimdArm64TypeSymbolForMethods))
@@ -431,6 +452,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddUnaryMethods(methodSymbols, "RoundToPositiveInfinity", x86AvxTypeSymbolForMethods, RuleKind.Ceiling);
                 AddUnaryMethods(methodSymbols, "RoundToZero", x86AvxTypeSymbolForMethods, RuleKind.Truncate);
                 AddUnaryMethods(methodSymbols, "Sqrt", x86AvxTypeSymbolForMethods, RuleKind.Sqrt);
+                AddLoadMethods(methodSymbols, "LoadVector256", x86AvxTypeSymbolForMethods, RuleKind.Load);
+                AddStoreMethods(methodSymbols, "Store", x86AvxTypeSymbolForMethods, RuleKind.Store);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx2, out var x86Avx2TypeSymbolForMethods))
@@ -440,6 +463,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddTernaryMethods(methodSymbols, "BlendVariable", x86Avx2TypeSymbolForMethods, RuleKind.ConditionalSelect);
                 AddBinaryMethods(methodSymbols, "CompareEqual", x86Avx2TypeSymbolForMethods, RuleKind.Equals);
                 AddBinaryMethods(methodSymbols, "CompareGreaterThan", x86Avx2TypeSymbolForMethods, RuleKind.GreaterThan);
+                AddLoadMethods(methodSymbols, "LoadVector256", x86Avx2TypeSymbolForMethods, RuleKind.Load);
+                AddStoreMethods(methodSymbols, "Store", x86Avx2TypeSymbolForMethods, RuleKind.Store);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512BW, out var x86Avx512BWTypeSymbolForMethods))
@@ -451,6 +476,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddBinaryMethods(methodSymbols, "CompareGreaterThanOrEqual", x86Avx512BWTypeSymbolForMethods, RuleKind.GreaterThanOrEqual);
                 AddBinaryMethods(methodSymbols, "CompareLessThan", x86Avx512BWTypeSymbolForMethods, RuleKind.LessThan);
                 AddBinaryMethods(methodSymbols, "CompareLessThanOrEqual", x86Avx512BWTypeSymbolForMethods, RuleKind.LessThanOrEqual);
+                AddLoadMethods(methodSymbols, "LoadVector512", x86Avx512BWTypeSymbolForMethods, RuleKind.Load);
+                AddStoreMethods(methodSymbols, "Store", x86Avx512BWTypeSymbolForMethods, RuleKind.Store);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512F, out var x86Avx512FTypeSymbolForMethods))
@@ -468,6 +495,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddBinaryMethods(methodSymbols, "Min", x86Avx512FTypeSymbolForMethods, RuleKind.MinNative);
                 AddUnaryMethods(methodSymbols, "RoundToNearestInteger", x86Avx512FTypeSymbolForMethods, RuleKind.Round);
                 AddUnaryMethods(methodSymbols, "Sqrt", x86Avx512FTypeSymbolForMethods, RuleKind.Sqrt);
+                AddLoadMethods(methodSymbols, "LoadVector512", x86Avx512FTypeSymbolForMethods, RuleKind.Load);
+                AddStoreMethods(methodSymbols, "Store", x86Avx512FTypeSymbolForMethods, RuleKind.Store);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Fma, out var x86FmaTypeSymbolForMethods))
@@ -481,9 +510,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddBinaryMethods(methodSymbols, "CompareEqual", x86SseTypeSymbolForMethods, RuleKind.Equals);
                 AddBinaryMethods(methodSymbols, "CompareGreaterThan", x86SseTypeSymbolForMethods, RuleKind.GreaterThan);
                 AddBinaryMethods(methodSymbols, "CompareLessThan", x86SseTypeSymbolForMethods, RuleKind.LessThan);
+                AddLoadMethods(methodSymbols, "LoadVector128", x86SseTypeSymbolForMethods, RuleKind.Load);
                 AddBinaryMethods(methodSymbols, "Max", x86SseTypeSymbolForMethods, RuleKind.MaxNative);
                 AddBinaryMethods(methodSymbols, "Min", x86SseTypeSymbolForMethods, RuleKind.MinNative);
                 AddUnaryMethods(methodSymbols, "Sqrt", x86SseTypeSymbolForMethods, RuleKind.Sqrt);
+                AddStoreMethods(methodSymbols, "Store", x86SseTypeSymbolForMethods, RuleKind.Store);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse2, out var x86Sse2TypeSymbolForMethods))
@@ -493,7 +524,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddBinaryMethods(methodSymbols, "CompareGreaterThan", x86Sse2TypeSymbolForMethods, RuleKind.GreaterThan);
                 AddBinaryMethods(methodSymbols, "CompareLessThan", x86Sse2TypeSymbolForMethods, RuleKind.LessThan);
                 AddUnaryMethods(methodSymbols, "ConvertToVector128Int32", x86Sse2TypeSymbolForMethods, RuleKind.ConvertToInt32);
+                AddLoadMethods(methodSymbols, "LoadVector128", x86Sse2TypeSymbolForMethods, RuleKind.Load);
                 AddUnaryMethods(methodSymbols, "Sqrt", x86Sse2TypeSymbolForMethods, RuleKind.Sqrt);
+                AddStoreMethods(methodSymbols, "Store", x86Sse2TypeSymbolForMethods, RuleKind.Store);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse41, out var x86Sse41TypeSymbolForMethods))
@@ -586,6 +619,40 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                             SymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, namedReturnTypeSymbol) &&
                                             SymbolEqualityComparer.Default.Equals(m.Parameters[1].Type, namedReturnTypeSymbol) &&
                                             SymbolEqualityComparer.Default.Equals(m.Parameters[2].Type, namedReturnTypeSymbol));
+
+                methodSymbols.AddRange(members.Select((m) => new KeyValuePair<IMethodSymbol, RuleKind>(m, ruleKind)));
+            }
+
+            static void AddLoadMethods(Dictionary<IMethodSymbol, RuleKind> methodSymbols, string name, INamedTypeSymbol typeSymbol, RuleKind ruleKind, params SpecialType[] supportedTypes)
+            {
+                // Looking for Load methods that take a pointer/reference and return a vector, such as:
+                //    Vector128<byte> LoadVector128(byte* address);
+                //    Vector128<byte> LoadVector128(ref byte source);
+
+                IEnumerable<IMethodSymbol> members =
+                    typeSymbol.GetMembers(name)
+                              .OfType<IMethodSymbol>()
+                              .Where((m) => m.Parameters.Length >= 1 &&
+                                            m.ReturnType is INamedTypeSymbol namedReturnTypeSymbol &&
+                                            namedReturnTypeSymbol.Arity == 1 &&
+                                            ((supportedTypes.Length == 0) || supportedTypes.Contains(namedReturnTypeSymbol.TypeArguments[0].SpecialType)));
+
+                methodSymbols.AddRange(members.Select((m) => new KeyValuePair<IMethodSymbol, RuleKind>(m, ruleKind)));
+            }
+
+            static void AddStoreMethods(Dictionary<IMethodSymbol, RuleKind> methodSymbols, string name, INamedTypeSymbol typeSymbol, RuleKind ruleKind, params SpecialType[] supportedTypes)
+            {
+                // Looking for Store methods that take a pointer/reference and a vector, and return void, such as:
+                //    void Store(byte* address, Vector128<byte> source);
+                //    void Store(ref byte destination, Vector128<byte> source);
+
+                IEnumerable<IMethodSymbol> members =
+                    typeSymbol.GetMembers(name)
+                              .OfType<IMethodSymbol>()
+                              .Where((m) => m.Parameters.Length >= 2 &&
+                                            m.ReturnType?.SpecialType == SpecialType.System_Void &&
+                                            m.Parameters.Any(p => p.Type is INamedTypeSymbol { Arity: 1 } paramType &&
+                                                ((supportedTypes.Length == 0) || supportedTypes.Contains(paramType.TypeArguments[0].SpecialType))));
 
                 methodSymbols.AddRange(members.Select((m) => new KeyValuePair<IMethodSymbol, RuleKind>(m, ruleKind)));
             }
