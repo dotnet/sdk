@@ -30,7 +30,7 @@ internal class ChannelVersionResolver
         string? featureBand = null;
         bool isFullySpecified = false;
 
-        if (parts.Length >= 3
+        if (parts.Length >= 3)
         {
             if (parts[2].EndsWith("xx"))
             {
