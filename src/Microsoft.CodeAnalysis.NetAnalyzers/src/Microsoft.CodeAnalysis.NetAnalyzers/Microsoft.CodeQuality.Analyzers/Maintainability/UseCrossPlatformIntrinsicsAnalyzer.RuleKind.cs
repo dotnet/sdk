@@ -23,13 +23,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             // Named methods (not operators)
             Abs,
-            AndNot,
+            AndNot,              // For ARM BitwiseClear - direct parameter mapping
+            AndNot_Swapped,      // For x86/x64 AndNot - needs parameter swap
             Ceiling,
             ConditionalSelect,
             Floor,
             FusedMultiplyAdd,
             Max,
+            MaxNative,           // For x86/x64 Max - different NaN/negative zero handling
             Min,
+            MinNative,           // For x86/x64 Min - different NaN/negative zero handling
             Negate,
             Round,
             Sqrt,

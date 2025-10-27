@@ -93,8 +93,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 RuleKind.Truncate => IsValidUnaryMethodInvocation(invocation),
 
                 RuleKind.AndNot or
+                RuleKind.AndNot_Swapped or
                 RuleKind.Max or
-                RuleKind.Min => IsValidBinaryMethodInvocation(invocation),
+                RuleKind.MaxNative or
+                RuleKind.Min or
+                RuleKind.MinNative => IsValidBinaryMethodInvocation(invocation),
 
                 RuleKind.ConditionalSelect or
                 RuleKind.FusedMultiplyAdd => IsValidTernaryMethodInvocation(invocation),
@@ -313,7 +316,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             {
                 AddBinaryMethods(methodSymbols, "Add", x86Sse2TypeSymbol, RuleKind.op_Addition);
                 AddBinaryMethods(methodSymbols, "And", x86Sse2TypeSymbol, RuleKind.op_BitwiseAnd);
-                AddBinaryMethods(methodSymbols, "AndNot", x86Sse2TypeSymbol, RuleKind.AndNot);
+                AddBinaryMethods(methodSymbols, "AndNot", x86Sse2TypeSymbol, RuleKind.AndNot_Swapped);
                 AddBinaryMethods(methodSymbols, "Divide", x86Sse2TypeSymbol, RuleKind.op_Division);
                 AddBinaryMethods(methodSymbols, "Multiply", x86Sse2TypeSymbol, RuleKind.op_Multiply, [SpecialType.System_Double]);
                 AddBinaryMethods(methodSymbols, "MultiplyLow", x86Sse2TypeSymbol, RuleKind.op_Multiply);
@@ -366,11 +369,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx, out var x86AvxTypeSymbolForMethods))
             {
-                AddBinaryMethods(methodSymbols, "AndNot", x86AvxTypeSymbolForMethods, RuleKind.AndNot);
+                AddBinaryMethods(methodSymbols, "AndNot", x86AvxTypeSymbolForMethods, RuleKind.AndNot_Swapped);
                 AddUnaryMethods(methodSymbols, "Ceiling", x86AvxTypeSymbolForMethods, RuleKind.Ceiling);
                 AddUnaryMethods(methodSymbols, "Floor", x86AvxTypeSymbolForMethods, RuleKind.Floor);
-                AddBinaryMethods(methodSymbols, "Max", x86AvxTypeSymbolForMethods, RuleKind.Max);
-                AddBinaryMethods(methodSymbols, "Min", x86AvxTypeSymbolForMethods, RuleKind.Min);
+                AddBinaryMethods(methodSymbols, "Max", x86AvxTypeSymbolForMethods, RuleKind.MaxNative);
+                AddBinaryMethods(methodSymbols, "Min", x86AvxTypeSymbolForMethods, RuleKind.MinNative);
                 AddUnaryMethods(methodSymbols, "RoundToNearestInteger", x86AvxTypeSymbolForMethods, RuleKind.Round);
                 AddUnaryMethods(methodSymbols, "RoundToNegativeInfinity", x86AvxTypeSymbolForMethods, RuleKind.Floor);
                 AddUnaryMethods(methodSymbols, "RoundToPositiveInfinity", x86AvxTypeSymbolForMethods, RuleKind.Ceiling);
@@ -392,8 +395,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             {
                 AddUnaryMethods(methodSymbols, "Abs", x86Avx512FTypeSymbolForMethods, RuleKind.Abs);
                 AddTernaryMethods(methodSymbols, "FusedMultiplyAdd", x86Avx512FTypeSymbolForMethods, RuleKind.FusedMultiplyAdd);
-                AddBinaryMethods(methodSymbols, "Max", x86Avx512FTypeSymbolForMethods, RuleKind.Max);
-                AddBinaryMethods(methodSymbols, "Min", x86Avx512FTypeSymbolForMethods, RuleKind.Min);
+                AddBinaryMethods(methodSymbols, "Max", x86Avx512FTypeSymbolForMethods, RuleKind.MaxNative);
+                AddBinaryMethods(methodSymbols, "Min", x86Avx512FTypeSymbolForMethods, RuleKind.MinNative);
                 AddUnaryMethods(methodSymbols, "RoundToNearestInteger", x86Avx512FTypeSymbolForMethods, RuleKind.Round);
                 AddUnaryMethods(methodSymbols, "Sqrt", x86Avx512FTypeSymbolForMethods, RuleKind.Sqrt);
             }
@@ -405,9 +408,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse, out var x86SseTypeSymbolForMethods))
             {
-                AddBinaryMethods(methodSymbols, "AndNot", x86SseTypeSymbolForMethods, RuleKind.AndNot);
-                AddBinaryMethods(methodSymbols, "Max", x86SseTypeSymbolForMethods, RuleKind.Max);
-                AddBinaryMethods(methodSymbols, "Min", x86SseTypeSymbolForMethods, RuleKind.Min);
+                AddBinaryMethods(methodSymbols, "AndNot", x86SseTypeSymbolForMethods, RuleKind.AndNot_Swapped);
+                AddBinaryMethods(methodSymbols, "Max", x86SseTypeSymbolForMethods, RuleKind.MaxNative);
+                AddBinaryMethods(methodSymbols, "Min", x86SseTypeSymbolForMethods, RuleKind.MinNative);
                 AddUnaryMethods(methodSymbols, "Sqrt", x86SseTypeSymbolForMethods, RuleKind.Sqrt);
             }
 

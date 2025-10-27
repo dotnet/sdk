@@ -18,8 +18,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [InlineData("float", "Sse.Min")]
         public async Task Fixer_MinMaxSseAsync(string type, string method)
         {
-            var ruleKind = method.Contains("Max") ? RuleKind.Max : RuleKind.Min;
-            var expectedMethod = method.Contains("Max") ? "Max" : "Min";
+            var ruleKind = method.Contains("Max") ? RuleKind.MaxNative : RuleKind.MinNative;
+            var expectedMethod = method.Contains("Max") ? "MaxNative" : "MinNative";
 
             // lang=C#-test
             string testCode = $$"""

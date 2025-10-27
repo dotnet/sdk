@@ -66,8 +66,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 RuleKind.Truncate => ReplaceWithUnaryMethod(currentNode, generator, "Truncate"),
 
                 RuleKind.AndNot => ReplaceWithBinaryMethod(currentNode, generator, "AndNot"),
+                RuleKind.AndNot_Swapped => ReplaceWithBinaryMethodSwapped(currentNode, generator, "AndNot"),
                 RuleKind.Max => ReplaceWithBinaryMethod(currentNode, generator, "Max"),
+                RuleKind.MaxNative => ReplaceWithBinaryMethod(currentNode, generator, "MaxNative"),
                 RuleKind.Min => ReplaceWithBinaryMethod(currentNode, generator, "Min"),
+                RuleKind.MinNative => ReplaceWithBinaryMethod(currentNode, generator, "MinNative"),
 
                 RuleKind.ConditionalSelect => ReplaceWithTernaryMethod(currentNode, generator, "ConditionalSelect"),
                 RuleKind.FusedMultiplyAdd => ReplaceWithTernaryMethod(currentNode, generator, "FusedMultiplyAdd"),
@@ -83,6 +86,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         protected abstract SyntaxNode ReplaceWithUnaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
 
         protected abstract SyntaxNode ReplaceWithBinaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
+
+        protected abstract SyntaxNode ReplaceWithBinaryMethodSwapped(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
 
         protected abstract SyntaxNode ReplaceWithTernaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
     }

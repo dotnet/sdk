@@ -457,6 +457,11 @@
         <target state="new">The cross-platform 'AndNot' method should be preferred</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_AndNot_Swapped">
+        <source>The cross-platform 'AndNot' method should be preferred</source>
+        <target state="new">The cross-platform 'AndNot' method should be preferred</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_Ceiling">
         <source>The cross-platform 'Ceiling' method should be preferred</source>
         <target state="new">The cross-platform 'Ceiling' method should be preferred</target>
@@ -482,9 +487,19 @@
         <target state="new">The cross-platform 'Max' method should be preferred</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_MaxNative">
+        <source>The cross-platform 'MaxNative' method should be preferred</source>
+        <target state="new">The cross-platform 'MaxNative' method should be preferred</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_Min">
         <source>The cross-platform 'Min' method should be preferred</source>
         <target state="new">The cross-platform 'Min' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_MinNative">
+        <source>The cross-platform 'MinNative' method should be preferred</source>
+        <target state="new">The cross-platform 'MinNative' method should be preferred</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_Negate">

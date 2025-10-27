@@ -1389,8 +1389,17 @@
   <data name="UseCrossPlatformIntrinsicsMessage_AndNot" xml:space="preserve">
     <value>The cross-platform 'AndNot' method should be preferred</value>
   </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_AndNot_Swapped" xml:space="preserve">
+    <value>The cross-platform 'AndNot' method should be preferred</value>
+  </data>
   <data name="UseCrossPlatformIntrinsicsMessage_ConditionalSelect" xml:space="preserve">
     <value>The cross-platform 'ConditionalSelect' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_MaxNative" xml:space="preserve">
+    <value>The cross-platform 'MaxNative' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_MinNative" xml:space="preserve">
+    <value>The cross-platform 'MinNative' method should be preferred</value>
   </data>
   <data name="UseCrossPlatformIntrinsicsMessage_Negate" xml:space="preserve">
     <value>The cross-platform 'Negate' method should be preferred</value>

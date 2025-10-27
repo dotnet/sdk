@@ -135,6 +135,36 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
             return generator.Parenthesize(replacementExpression);
         }
 
+        protected override SyntaxNode ReplaceWithBinaryMethodSwapped(SyntaxNode currentNode, SyntaxGenerator generator, string methodName)
+        {
+            if (currentNode is not InvocationExpressionSyntax invocationExpression)
+            {
+                Debug.Fail($"Found unexpected node kind: {currentNode.RawKind}");
+                return currentNode;
+            }
+
+            SeparatedSyntaxList<ArgumentSyntax> arguments = invocationExpression.ArgumentList.Arguments;
+
+            if (arguments.Count != 2)
+            {
+                Debug.Fail($"Found unexpected number of arguments for binary method replacement: {arguments.Count}");
+                return currentNode;
+            }
+
+            // Determine the vector type name from the return type if available
+            var vectorTypeName = DetermineVectorTypeName(invocationExpression);
+
+            // Create the cross-platform method call with swapped parameters: VectorXXX.MethodName(arg2, arg1)
+            // For example, Sse.AndNot(x, y) = ~x & y maps to Vector128.AndNot(y, x) = y & ~x
+            var vectorTypeIdentifier = generator.IdentifierName(vectorTypeName);
+            var replacementExpression = generator.InvocationExpression(
+                generator.MemberAccessExpression(vectorTypeIdentifier, methodName),
+                arguments[1].Expression,  // Swap: second argument first
+                arguments[0].Expression); // Swap: first argument second
+
+            return generator.Parenthesize(replacementExpression);
+        }
+
         private static string DetermineVectorTypeName(SyntaxNode node)
         {
             // For method signatures like "Vector256<float> M(Vector256<float> x)",
