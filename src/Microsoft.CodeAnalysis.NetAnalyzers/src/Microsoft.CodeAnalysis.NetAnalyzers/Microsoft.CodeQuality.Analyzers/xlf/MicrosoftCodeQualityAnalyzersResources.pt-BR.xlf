@@ -522,6 +522,11 @@
         <target state="new">The cross-platform 'LessThanOrEqual' method should be preferred</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Load">
+        <source>The cross-platform 'Load' method should be preferred</source>
+        <target state="new">The cross-platform 'Load' method should be preferred</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_Max">
         <source>The cross-platform 'Max' method should be preferred</source>
         <target state="new">The cross-platform 'Max' method should be preferred</target>
@@ -555,6 +560,11 @@
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_Sqrt">
         <source>The cross-platform 'Sqrt' method should be preferred</source>
         <target state="new">The cross-platform 'Sqrt' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Store">
+        <source>The cross-platform 'Store' method should be preferred</source>
+        <target state="new">The cross-platform 'Store' method should be preferred</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_Truncate">

@@ -82,6 +82,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 RuleKind.ConditionalSelect => ReplaceWithTernaryMethod(currentNode, generator, "ConditionalSelect"),
                 RuleKind.FusedMultiplyAdd => ReplaceWithTernaryMethod(currentNode, generator, "FusedMultiplyAdd"),
 
+                RuleKind.Load => ReplaceWithUnaryMethod(currentNode, generator, "Load"),
+                RuleKind.Store => ReplaceWithBinaryMethod(currentNode, generator, "Store"),
+
                 _ => currentNode,
             };
         }
