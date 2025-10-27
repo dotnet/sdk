@@ -452,9 +452,19 @@
         <target state="new">The cross-platform 'Abs' method should be preferred</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_AndNot">
+        <source>The cross-platform 'AndNot' method should be preferred</source>
+        <target state="new">The cross-platform 'AndNot' method should be preferred</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_Ceiling">
         <source>The cross-platform 'Ceiling' method should be preferred</source>
         <target state="new">The cross-platform 'Ceiling' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_ConditionalSelect">
+        <source>The cross-platform 'ConditionalSelect' method should be preferred</source>
+        <target state="new">The cross-platform 'ConditionalSelect' method should be preferred</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_Floor">
@@ -472,9 +482,24 @@
         <target state="new">The cross-platform 'Min' method should be preferred</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Negate">
+        <source>The cross-platform 'Negate' method should be preferred</source>
+        <target state="new">The cross-platform 'Negate' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Round">
+        <source>The cross-platform 'Round' method should be preferred</source>
+        <target state="new">The cross-platform 'Round' method should be preferred</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_Sqrt">
         <source>The cross-platform 'Sqrt' method should be preferred</source>
         <target state="new">The cross-platform 'Sqrt' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Truncate">
+        <source>The cross-platform 'Truncate' method should be preferred</source>
+        <target state="new">The cross-platform 'Truncate' method should be preferred</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Addition">

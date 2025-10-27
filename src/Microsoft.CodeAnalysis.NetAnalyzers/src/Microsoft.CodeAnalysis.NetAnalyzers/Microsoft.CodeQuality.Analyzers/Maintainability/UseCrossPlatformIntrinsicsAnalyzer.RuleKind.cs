@@ -23,11 +23,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             // Named methods (not operators)
             Abs,
+            AndNot,
             Ceiling,
+            ConditionalSelect,
             Floor,
             Max,
             Min,
+            Negate,
+            Round,
             Sqrt,
+            Truncate,
 
             Count,
         }

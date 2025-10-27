@@ -60,10 +60,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 RuleKind.Abs => ReplaceWithUnaryMethod(currentNode, generator, "Abs"),
                 RuleKind.Ceiling => ReplaceWithUnaryMethod(currentNode, generator, "Ceiling"),
                 RuleKind.Floor => ReplaceWithUnaryMethod(currentNode, generator, "Floor"),
+                RuleKind.Negate => ReplaceWithUnaryMethod(currentNode, generator, "Negate"),
+                RuleKind.Round => ReplaceWithUnaryMethod(currentNode, generator, "Round"),
                 RuleKind.Sqrt => ReplaceWithUnaryMethod(currentNode, generator, "Sqrt"),
+                RuleKind.Truncate => ReplaceWithUnaryMethod(currentNode, generator, "Truncate"),
 
+                RuleKind.AndNot => ReplaceWithBinaryMethod(currentNode, generator, "AndNot"),
                 RuleKind.Max => ReplaceWithBinaryMethod(currentNode, generator, "Max"),
                 RuleKind.Min => ReplaceWithBinaryMethod(currentNode, generator, "Min"),
+
+                RuleKind.ConditionalSelect => ReplaceWithTernaryMethod(currentNode, generator, "ConditionalSelect"),
 
                 _ => currentNode,
             };
@@ -76,5 +82,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         protected abstract SyntaxNode ReplaceWithUnaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
 
         protected abstract SyntaxNode ReplaceWithBinaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
+
+        protected abstract SyntaxNode ReplaceWithTernaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
     }
 }

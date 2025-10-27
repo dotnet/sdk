@@ -194,5 +194,36 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
             }
             return null;
         }
+
+        protected override SyntaxNode ReplaceWithTernaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName)
+        {
+            if (currentNode is not InvocationExpressionSyntax invocationExpression)
+            {
+                Debug.Fail($"Found unexpected node kind: {currentNode.RawKind}");
+                return currentNode;
+            }
+
+            SeparatedSyntaxList<ArgumentSyntax> arguments = invocationExpression.ArgumentList.Arguments;
+
+            if (arguments.Count != 3)
+            {
+                Debug.Fail($"Found unexpected number of arguments for ternary method replacement: {arguments.Count}");
+                return currentNode;
+            }
+
+            // Determine the vector type name from the return type if available
+            var vectorTypeName = DetermineVectorTypeName(invocationExpression);
+
+            // Create the cross-platform method call: VectorXXX.MethodName(arg1, arg2, arg3)
+            // The type parameter will be inferred from the arguments
+            var vectorTypeIdentifier = generator.IdentifierName(vectorTypeName);
+            var replacementExpression = generator.InvocationExpression(
+                generator.MemberAccessExpression(vectorTypeIdentifier, methodName),
+                arguments[0].Expression,
+                arguments[1].Expression,
+                arguments[2].Expression);
+
+            return generator.Parenthesize(replacementExpression);
+        }
     }
 }

@@ -1383,4 +1383,19 @@
   <data name="UseCrossPlatformIntrinsicsMessage_Sqrt" xml:space="preserve">
     <value>The cross-platform 'Sqrt' method should be preferred</value>
   </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_AndNot" xml:space="preserve">
+    <value>The cross-platform 'AndNot' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_ConditionalSelect" xml:space="preserve">
+    <value>The cross-platform 'ConditionalSelect' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Negate" xml:space="preserve">
+    <value>The cross-platform 'Negate' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Round" xml:space="preserve">
+    <value>The cross-platform 'Round' method should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_Truncate" xml:space="preserve">
+    <value>The cross-platform 'Truncate' method should be preferred</value>
+  </data>
 </root>
