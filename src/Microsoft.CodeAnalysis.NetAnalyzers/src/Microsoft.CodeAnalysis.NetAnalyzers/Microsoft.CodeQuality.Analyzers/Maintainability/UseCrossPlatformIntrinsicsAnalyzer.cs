@@ -361,16 +361,27 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddBinaryMethods(methodSymbols, "CompareLessThanOrEqual", armAdvSimdTypeSymbolForMethods, RuleKind.LessThanOrEqual);
                 AddUnaryMethods(methodSymbols, "ConvertToInt32RoundToZero", armAdvSimdTypeSymbolForMethods, RuleKind.ConvertToInt32);
                 AddUnaryMethods(methodSymbols, "ConvertToInt32RoundToZeroScalar", armAdvSimdTypeSymbolForMethods, RuleKind.ConvertToInt32);
-                // Extract maps to GetElement - will need custom handling
+                // Extract maps to GetElement - needs index parameter handling in fixer
+                // TODO: Implement Extract → GetElement transformation
                 AddUnaryMethods(methodSymbols, "Floor", armAdvSimdTypeSymbolForMethods, RuleKind.Floor);
                 AddUnaryMethods(methodSymbols, "FloorScalar", armAdvSimdTypeSymbolForMethods, RuleKind.Floor);
                 AddTernaryMethods(methodSymbols, "FusedMultiplyAdd", armAdvSimdTypeSymbolForMethods, RuleKind.FusedMultiplyAdd);
-                // Insert maps to WithElement - will need custom handling
+                // FusedMultiplySubtract and variants need parameter negation/reordering in fixer
+                // TODO: Implement FusedMultiplySubtract transformations
+                // Insert maps to WithElement - needs index parameter handling in fixer
+                // TODO: Implement Insert → WithElement transformation
                 AddBinaryMethods(methodSymbols, "Max", armAdvSimdTypeSymbolForMethods, RuleKind.Max);
                 AddBinaryMethods(methodSymbols, "Min", armAdvSimdTypeSymbolForMethods, RuleKind.Min);
                 // Note: Negate is already registered as op_UnaryNegation above, so we don't register it here
-                // Note: MultiplyAdd(x, y, z) expands to (y * z) + x - needs complex transformation
-                // Note: OrNot expands to two operators - needs complex transformation
+                // Note: MultiplyAdd(x, y, z) expands to (y * z) + x - needs operator expansion
+                // TODO: Implement MultiplyAdd → operator expansion transformation
+                // Note: OrNot expands to two operators - needs operator expansion  
+                // TODO: Implement OrNot → operator expansion transformation
+                AddUnaryMethods(methodSymbols, "RoundToNearest", armAdvSimdTypeSymbolForMethods, RuleKind.Round);
+                AddUnaryMethods(methodSymbols, "RoundToNegativeInfinity", armAdvSimdTypeSymbolForMethods, RuleKind.Floor);
+                AddUnaryMethods(methodSymbols, "RoundToPositiveInfinity", armAdvSimdTypeSymbolForMethods, RuleKind.Ceiling);
+                AddUnaryMethods(methodSymbols, "RoundToZero", armAdvSimdTypeSymbolForMethods, RuleKind.Truncate);
+                // Note: Sqrt is already registered above as operator method
                 // Note: Load*/Store*/Shuffle/etc need more complex transformations - will address separately
             }
 
@@ -381,6 +392,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddUnaryMethods(methodSymbols, "AbsScalar", armAdvSimdArm64TypeSymbolForMethods, RuleKind.Abs, [SpecialType.System_Double]);
                 AddBinaryMethods(methodSymbols, "AddSaturateScalar", armAdvSimdArm64TypeSymbolForMethods, RuleKind.AddSaturate);
                 // Note: Negate is already registered as op_UnaryNegation above, so we don't register it here
+                // TODO: Add scalar variants of Extract/Insert, FusedMultiply*, Round*
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsWasmPackedSimd, out var wasmPackedSimdTypeSymbolForMethods))
