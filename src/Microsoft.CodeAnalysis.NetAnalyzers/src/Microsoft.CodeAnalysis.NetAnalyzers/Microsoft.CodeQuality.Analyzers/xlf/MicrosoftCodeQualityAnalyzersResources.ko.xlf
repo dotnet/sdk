@@ -472,6 +472,11 @@
         <target state="new">The cross-platform 'Floor' method should be preferred</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_FusedMultiplyAdd">
+        <source>The cross-platform 'FusedMultiplyAdd' method should be preferred</source>
+        <target state="new">The cross-platform 'FusedMultiplyAdd' method should be preferred</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_Max">
         <source>The cross-platform 'Max' method should be preferred</source>
         <target state="new">The cross-platform 'Max' method should be preferred</target>

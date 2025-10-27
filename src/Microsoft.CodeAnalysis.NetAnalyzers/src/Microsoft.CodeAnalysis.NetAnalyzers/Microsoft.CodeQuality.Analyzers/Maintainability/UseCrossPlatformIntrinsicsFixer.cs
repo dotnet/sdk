@@ -70,6 +70,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 RuleKind.Min => ReplaceWithBinaryMethod(currentNode, generator, "Min"),
 
                 RuleKind.ConditionalSelect => ReplaceWithTernaryMethod(currentNode, generator, "ConditionalSelect"),
+                RuleKind.FusedMultiplyAdd => ReplaceWithTernaryMethod(currentNode, generator, "FusedMultiplyAdd"),
 
                 _ => currentNode,
             };

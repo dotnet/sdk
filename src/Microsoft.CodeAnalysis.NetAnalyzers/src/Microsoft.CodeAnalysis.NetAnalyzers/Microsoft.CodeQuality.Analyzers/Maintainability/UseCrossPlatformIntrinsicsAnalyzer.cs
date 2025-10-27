@@ -96,7 +96,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 RuleKind.Max or
                 RuleKind.Min => IsValidBinaryMethodInvocation(invocation),
 
-                RuleKind.ConditionalSelect => IsValidTernaryMethodInvocation(invocation),
+                RuleKind.ConditionalSelect or
+                RuleKind.FusedMultiplyAdd => IsValidTernaryMethodInvocation(invocation),
 
                 _ => false,
             };
@@ -336,15 +337,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             {
                 AddUnaryOperatorMethods(methodSymbols, "Abs", armAdvSimdTypeSymbolForMethods, RuleKind.Abs);
                 AddBinaryOperatorMethods(methodSymbols, "AndNot", armAdvSimdTypeSymbolForMethods, RuleKind.AndNot);
+                AddTernaryMethods(methodSymbols, "FusedMultiplyAdd", armAdvSimdTypeSymbolForMethods, RuleKind.FusedMultiplyAdd);
                 AddBinaryOperatorMethods(methodSymbols, "Max", armAdvSimdTypeSymbolForMethods, RuleKind.Max);
                 AddBinaryOperatorMethods(methodSymbols, "Min", armAdvSimdTypeSymbolForMethods, RuleKind.Min);
-                AddUnaryOperatorMethods(methodSymbols, "Negate", armAdvSimdTypeSymbolForMethods, RuleKind.Negate);
+                // Note: Negate is already registered as op_UnaryNegation above, so we don't register it here
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsArmAdvSimdArm64, out var armAdvSimdArm64TypeSymbolForMethods))
             {
                 AddUnaryOperatorMethods(methodSymbols, "Abs", armAdvSimdArm64TypeSymbolForMethods, RuleKind.Abs);
-                AddUnaryOperatorMethods(methodSymbols, "Negate", armAdvSimdArm64TypeSymbolForMethods, RuleKind.Negate);
+                // Note: Negate is already registered as op_UnaryNegation above, so we don't register it here
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsWasmPackedSimd, out var wasmPackedSimdTypeSymbolForMethods))
@@ -354,7 +356,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddUnaryOperatorMethods(methodSymbols, "Floor", wasmPackedSimdTypeSymbolForMethods, RuleKind.Floor);
                 AddBinaryOperatorMethods(methodSymbols, "Max", wasmPackedSimdTypeSymbolForMethods, RuleKind.Max);
                 AddBinaryOperatorMethods(methodSymbols, "Min", wasmPackedSimdTypeSymbolForMethods, RuleKind.Min);
-                AddUnaryOperatorMethods(methodSymbols, "Negate", wasmPackedSimdTypeSymbolForMethods, RuleKind.Negate);
+                // Note: Negate is already registered as op_UnaryNegation above, so we don't register it here
                 AddUnaryOperatorMethods(methodSymbols, "Sqrt", wasmPackedSimdTypeSymbolForMethods, RuleKind.Sqrt);
                 AddUnaryOperatorMethods(methodSymbols, "Truncate", wasmPackedSimdTypeSymbolForMethods, RuleKind.Truncate);
             }
@@ -386,10 +388,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512F, out var x86Avx512FTypeSymbolForMethods))
             {
                 AddUnaryOperatorMethods(methodSymbols, "Abs", x86Avx512FTypeSymbolForMethods, RuleKind.Abs);
+                AddTernaryMethods(methodSymbols, "FusedMultiplyAdd", x86Avx512FTypeSymbolForMethods, RuleKind.FusedMultiplyAdd);
                 AddBinaryOperatorMethods(methodSymbols, "Max", x86Avx512FTypeSymbolForMethods, RuleKind.Max);
                 AddBinaryOperatorMethods(methodSymbols, "Min", x86Avx512FTypeSymbolForMethods, RuleKind.Min);
                 AddUnaryOperatorMethods(methodSymbols, "RoundToNearestInteger", x86Avx512FTypeSymbolForMethods, RuleKind.Round);
                 AddUnaryOperatorMethods(methodSymbols, "Sqrt", x86Avx512FTypeSymbolForMethods, RuleKind.Sqrt);
+            }
+
+            if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Fma, out var x86FmaTypeSymbolForMethods))
+            {
+                AddTernaryMethods(methodSymbols, "MultiplyAdd", x86FmaTypeSymbolForMethods, RuleKind.FusedMultiplyAdd);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse, out var x86SseTypeSymbolForMethods))
@@ -473,6 +481,25 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                             namedReturnTypeSymbol.Arity == 1 &&
                                             ((supportedTypes.Length == 0) || supportedTypes.Contains(namedReturnTypeSymbol.TypeArguments[0].SpecialType)) &&
                                             SymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, namedReturnTypeSymbol));
+
+                methodSymbols.AddRange(members.Select((m) => new KeyValuePair<IMethodSymbol, RuleKind>(m, ruleKind)));
+            }
+
+            static void AddTernaryMethods(Dictionary<IMethodSymbol, RuleKind> methodSymbols, string name, INamedTypeSymbol typeSymbol, RuleKind ruleKind, params SpecialType[] supportedTypes)
+            {
+                // Looking for a method with 3 operands, where all are of the same type as the generic return type, such as:
+                //    Vector128<float> FusedMultiplyAdd(Vector128<float> a, Vector128<float> b, Vector128<float> c);
+
+                IEnumerable<IMethodSymbol> members =
+                    typeSymbol.GetMembers(name)
+                              .OfType<IMethodSymbol>()
+                              .Where((m) => m.Parameters.Length == 3 &&
+                                            m.ReturnType is INamedTypeSymbol namedReturnTypeSymbol &&
+                                            namedReturnTypeSymbol.Arity == 1 &&
+                                            ((supportedTypes.Length == 0) || supportedTypes.Contains(namedReturnTypeSymbol.TypeArguments[0].SpecialType)) &&
+                                            SymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, namedReturnTypeSymbol) &&
+                                            SymbolEqualityComparer.Default.Equals(m.Parameters[1].Type, namedReturnTypeSymbol) &&
+                                            SymbolEqualityComparer.Default.Equals(m.Parameters[2].Type, namedReturnTypeSymbol));
 
                 methodSymbols.AddRange(members.Select((m) => new KeyValuePair<IMethodSymbol, RuleKind>(m, ruleKind)));
             }

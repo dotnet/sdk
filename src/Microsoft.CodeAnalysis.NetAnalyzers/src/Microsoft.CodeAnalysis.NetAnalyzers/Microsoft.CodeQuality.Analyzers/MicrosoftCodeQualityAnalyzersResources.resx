@@ -1374,6 +1374,9 @@
   <data name="UseCrossPlatformIntrinsicsMessage_Floor" xml:space="preserve">
     <value>The cross-platform 'Floor' method should be preferred</value>
   </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_FusedMultiplyAdd" xml:space="preserve">
+    <value>The cross-platform 'FusedMultiplyAdd' method should be preferred</value>
+  </data>
   <data name="UseCrossPlatformIntrinsicsMessage_Max" xml:space="preserve">
     <value>The cross-platform 'Max' method should be preferred</value>
   </data>

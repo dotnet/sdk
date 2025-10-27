@@ -27,6 +27,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             Ceiling,
             ConditionalSelect,
             Floor,
+            FusedMultiplyAdd,
             Max,
             Min,
             Negate,
