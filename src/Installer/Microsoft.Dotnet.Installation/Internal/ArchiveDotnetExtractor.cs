@@ -30,7 +30,7 @@ internal class ArchiveDotnetExtractor : IDisposable
 
     public void Prepare()
     {
-        using var releaseManifest = new ReleaseManifest();
+        using var archiveDownloader = new DotnetArchiveDownloader();
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
 
@@ -38,7 +38,7 @@ internal class ArchiveDotnetExtractor : IDisposable
         {
             // When no-progress is enabled, download without progress display
             Console.WriteLine($"Downloading .NET SDK {_resolvedVersion}...");
-            var downloadSuccess = releaseManifest.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, null);
+            var downloadSuccess = archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, null);
             if (!downloadSuccess)
             {
                 throw new InvalidOperationException($"Failed to download .NET archive for version {_resolvedVersion}");
@@ -53,7 +53,7 @@ internal class ArchiveDotnetExtractor : IDisposable
                 {
                     var downloadTask = ctx.AddTask($"Downloading .NET SDK {_resolvedVersion}", autoStart: true);
                     var reporter = new SpectreDownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
-                    var downloadSuccess = releaseManifest.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
+                    var downloadSuccess = archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
                     if (!downloadSuccess)
                     {
                         throw new InvalidOperationException($"Failed to download .NET archive for version {_resolvedVersion}");

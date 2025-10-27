@@ -5,12 +5,12 @@ using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dnup.Tests
 {
-    public class ReleaseManifestTests
+    public class ChannelVersionResolverTests
     {
         [Fact]
         public void GetLatestVersionForChannel_MajorOnly_ReturnsLatestVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9"), InstallComponent.SDK);
             Assert.NotNull(version);
         }
@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
         [Fact]
         public void GetLatestVersionForChannel_MajorMinor_ReturnsLatestVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9"), InstallComponent.SDK);
             Assert.NotNull(version);
             Assert.StartsWith("9.0.", version.ToString());
@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
         [Fact]
         public void GetLatestVersionForChannel_FeatureBand_ReturnsLatestVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
 
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9.0.1xx"), InstallComponent.SDK);
             Console.WriteLine($"Version found: {version}");
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
         [Fact]
         public void GetLatestVersionForChannel_LTS_ReturnsLatestLTSVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("lts"), InstallComponent.SDK);
 
             Console.WriteLine($"LTS Version found: {version}");
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
         [Fact]
         public void GetLatestVersionForChannel_STS_ReturnsLatestSTSVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("sts"), InstallComponent.SDK);
 
             Console.WriteLine($"STS Version found: {version}");
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
         [Fact]
         public void GetLatestVersionForChannel_Preview_ReturnsLatestPreviewVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("preview"), InstallComponent.SDK);
 
             Console.WriteLine($"Preview Version found: {version}");

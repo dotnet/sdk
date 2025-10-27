@@ -36,7 +36,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
         bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
-                              installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
+                              installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase); // TODO: This should be improved to not be windows-specific
 
         var installRoot = new DotnetInstallRoot(installDir, InstallerUtilities.GetDefaultInstallArchitecture());
 
