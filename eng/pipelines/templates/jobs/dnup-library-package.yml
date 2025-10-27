@@ -39,9 +39,15 @@ jobs:
           analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|artifacts\bin\**\capstone.dll;
       outputs:
       - output: pipelineArtifact
-        displayName: '🌐 Publish dnup library package'
+        displayName: '🌐 Publish dnup library package from standard ci'
         condition: always()
         targetPath: '$(Build.SourcesDirectory)/artifacts/packages/Release/NonShipping/'
+        artifactName: 'Microsoft.Dotnet.Installation.1.0.0-alpha.nupkg' # TODO: Replace hard-coded with * or version
+        publishLocation: Container
+      - output: pipelineArtifact
+        displayName: '🌏 Publish dnup library package from Arcade'
+        condition: always()
+        targetPath: ' $(System.DefaultWorkingDirectory)/artifacts/packages/Release/Shipping/'
         artifactName: 'Microsoft.Dotnet.Installation.1.0.0-alpha.nupkg' # TODO: Replace hard-coded with * or version
         publishLocation: Container
 
@@ -59,3 +65,16 @@ jobs:
       - powershell: |
            & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj
         displayName: 📦 Package dnup library
+      - powershell: >-
+          eng/common/build.ps1
+          -restore -build -sign -pack -publish -ci
+          -verbosity detailed
+          -binaryLog
+          -configuration $(_BuildConfig)
+          -projects src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj;src\Installer\dnup\dnup.csproj
+          /p:DotNetSignType=$(_SignType)
+          /p:TeamName=$(_TeamName)
+          /p:DotNetPublishUsingPipelines=true
+          /p:OfficialBuildId=$(OfficialBuildId)
+          /p:StabilizePackageVersion=${{ parameters.stabilizePackageVersion }}
+        displayName: 📦 Package dnup library (arcade)
