@@ -48,6 +48,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             WithElement,
             Load,
             Store,
+            Shuffle,
 
             Count,
         }

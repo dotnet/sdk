@@ -84,6 +84,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                 RuleKind.Load => ReplaceWithUnaryMethod(currentNode, generator, "Load"),
                 RuleKind.Store => ReplaceWithBinaryMethod(currentNode, generator, "Store"),
+                RuleKind.Shuffle => ReplaceWithBinaryMethod(currentNode, generator, "Shuffle"),
 
                 _ => currentNode,
             };

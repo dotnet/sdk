@@ -403,7 +403,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddLoadMethods(methodSymbols, "LoadVector64", armAdvSimdTypeSymbolForMethods, RuleKind.Load);
                 AddLoadMethods(methodSymbols, "LoadVector128", armAdvSimdTypeSymbolForMethods, RuleKind.Load);
                 AddStoreMethods(methodSymbols, "Store", armAdvSimdTypeSymbolForMethods, RuleKind.Store);
-                // Note: Shuffle/Create APIs like Duplicate, ExtractVector128, VectorTableLookup need complex transformations
+                // VectorTableLookup is 1-to-1 with Shuffle for byte/sbyte
+                AddBinaryMethods(methodSymbols, "VectorTableLookup", armAdvSimdTypeSymbolForMethods, RuleKind.Shuffle, [SpecialType.System_Byte, SpecialType.System_SByte]);
+                // Note: Shuffle/Create APIs like Duplicate, ExtractVector128 need complex transformations (constant extraction)
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsArmAdvSimdArm64, out var armAdvSimdArm64TypeSymbolForMethods))
