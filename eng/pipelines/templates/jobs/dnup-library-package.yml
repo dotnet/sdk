@@ -1,0 +1,58 @@
+parameters:
+  ### GENERAL ###
+  variables: {}
+  dependsOn: ''
+  helixTargetQueue: ''
+  oneESCompat:
+    templateFolderName: templates
+    publishTaskPrefix: ''
+  container: ''
+  helixTargetContainer: ''
+  categoryName: dnup
+  runTests: true
+  publishRetryConfig: false
+  publishXunitResults: false
+  enableSbom: true
+  timeoutInMinutes: 150
+
+jobs:
+- template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
+  parameters:
+    displayName: '${{ parameters.pool.emoji }} dnup package: ${{ parameters.pool.os }} (${{ parameters.helixTargetQueue }})'
+    pool: ${{ parameters.pool }}
+    container: ${{ parameters.container }}
+    strategy: ${{ parameters.strategy }}
+    helixRepo: dotnet/sdk
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    enableMicrobuild: true
+    enablePublishBuildAssets: true
+    enableTelemetry: true
+    enablePublishUsingPipelines: true
+    enableSbom: ${{ parameters.enableSbom }}
+    variables:
+    - ${{ insert }}: ${{ parameters.variables }}
+    dependsOn: ${{ parameters.dependsOn }}
+    preSteps: ${{ parameters.preSteps }}
+    templateContext:
+      sdl:
+        binskim:
+          analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|artifacts\bin\**\capstone.dll;
+
+    steps:
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - powershell: |
+          & .\restore.cmd
+        displayName: 🍱 Bootstrap toolset (Windows)
+      - powershell: |
+          & .\.dotnet\dotnet restore test\dnup.Tests\dnup.Tests.csproj
+        displayName: ♻️ Restore dnup tests (Windows)
+      - powershell: |
+          & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release --no-restore
+        displayName: 💻 Build Windows
+    - task: PublishBuildArtifacts@1
+      displayName: ⬇️ Publish test artifacts
+      condition: always()
+      inputs:
+        PathtoPublish: $(Build.SourcesDirectory)/artifacts/dnupTestResults
+        ArtifactName: dnupTestResults_${{ parameters.pool.os }}
+        publishLocation: Container
