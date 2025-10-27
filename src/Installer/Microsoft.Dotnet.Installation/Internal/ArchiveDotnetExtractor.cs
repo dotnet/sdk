@@ -17,21 +17,23 @@ internal class ArchiveDotnetExtractor : IDisposable
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
+    private readonly ReleaseManifest _releaseManifest;
     private readonly bool _noProgress;
     private string scratchDownloadDirectory;
     private string? _archivePath;
 
-    public ArchiveDotnetExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, bool noProgress = false)
+    public ArchiveDotnetExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, bool noProgress = false)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
         _noProgress = noProgress;
+        _releaseManifest = new();
         scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
     }
 
     public void Prepare()
     {
-        using var archiveDownloader = new DotnetArchiveDownloader();
+        using var archiveDownloader = new DotnetArchiveDownloader(_releaseManifest);
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
 

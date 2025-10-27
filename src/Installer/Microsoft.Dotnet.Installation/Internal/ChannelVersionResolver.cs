@@ -10,6 +10,18 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 internal class ChannelVersionResolver
 {
+    private ReleaseManifest _releaseManifest = new();
+
+    public ChannelVersionResolver()
+    {
+
+    }
+
+    public ChannelVersionResolver(ReleaseManifest releaseManifest)
+    {
+        _releaseManifest = releaseManifest;
+    }
+
     public ReleaseVersion? Resolve(DotnetInstallRequest installRequest)
     {
         return GetLatestVersionForChannel(installRequest.Channel, installRequest.Component);
@@ -58,17 +70,17 @@ internal class ChannelVersionResolver
         if (string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) || string.Equals(channel.Name, "sts", StringComparison.OrdinalIgnoreCase))
         {
             var releaseType = string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) ? ReleaseType.LTS : ReleaseType.STS;
-            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestVersionByReleaseType(productIndex, releaseType, component);
         }
         else if (string.Equals(channel.Name, "preview", StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestPreviewVersion(productIndex, component);
         }
         else if (string.Equals(channel.Name, "latest", StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestActiveVersion(productIndex, component);
         }
 
@@ -87,7 +99,7 @@ internal class ChannelVersionResolver
         }
 
         // Load the index manifest
-        var index = ProductCollection.GetAsync().GetAwaiter().GetResult();
+        var index = _releaseManifest.GetReleasesIndex();
         if (minor < 0)
         {
             return GetLatestVersionForMajorOrMajorMinor(index, major, component); // Major Only (e.g., "9")
@@ -214,7 +226,7 @@ internal class ChannelVersionResolver
 
         var validProducts = GetProductsInMajorOrMajorMinor(index, major, minor);
         var latestProduct = validProducts.FirstOrDefault();
-        var releases = latestProduct?.GetReleasesAsync().GetAwaiter().GetResult().ToList() ?? new List<ProductRelease>();
+        var releases = latestProduct?.GetReleasesAsync().GetAwaiter().GetResult().ToList() ?? [];
         var normalizedFeatureBand = NormalizeFeatureBandInput(featureBand);
 
         foreach (var release in releases)

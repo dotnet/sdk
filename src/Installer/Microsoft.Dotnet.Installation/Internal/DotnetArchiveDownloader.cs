@@ -25,12 +25,17 @@ internal class DotnetArchiveDownloader(HttpClient httpClient) : IDisposable
     private const int RetryDelayMilliseconds = 1000;
 
     private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-    private ProductCollection? _productCollection;
     private ReleaseManifest _releaseManifest = new();
 
     public DotnetArchiveDownloader()
         : this(CreateDefaultHttpClient())
     {
+    }
+
+    public DotnetArchiveDownloader(ReleaseManifest releaseManifest)
+        : this(CreateDefaultHttpClient())
+    {
+        _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
     }
 
     /// <summary>
