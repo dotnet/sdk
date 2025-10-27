@@ -49,10 +49,3 @@ jobs:
       - powershell: |
           & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release --no-restore
         displayName: 💻 Build Windows
-    - task: PublishBuildArtifacts@1
-      displayName: ⬇️ Publish test artifacts
-      condition: always()
-      inputs:
-        PathtoPublish: $(Build.SourcesDirectory)/artifacts/dnupTestResults
-        ArtifactName: dnupTestResults_${{ parameters.pool.os }}
-        publishLocation: Container
