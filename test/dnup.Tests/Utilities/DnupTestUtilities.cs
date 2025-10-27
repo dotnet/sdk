@@ -88,15 +88,15 @@ internal static class DnupTestUtilities
             throw new FileNotFoundException($"dnup executable not found at: {dnupPath}");
         }
 
-    using var process = new Process();
-    string repoDotnet = Path.Combine(repoRoot, ".dotnet", DnupUtilities.GetDotnetExeName());
-    process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DnupUtilities.GetDotnetExeName();
+        using var process = new Process();
+        string repoDotnet = Path.Combine(repoRoot, ".dotnet", DnupUtilities.GetDotnetExeName());
+        process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DnupUtilities.GetDotnetExeName();
         process.StartInfo.Arguments = $"\"{dnupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.CreateNoWindow = true;
         process.StartInfo.RedirectStandardOutput = captureOutput;
         process.StartInfo.RedirectStandardError = captureOutput;
-    process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
+        process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
 
         StringBuilder outputBuilder = new();
         if (captureOutput)
@@ -145,9 +145,4 @@ internal static class DnupTestUtilities
         throw new InvalidOperationException($"Unable to locate repository root from base directory '{AppContext.BaseDirectory}'.");
     }
 
-    /// <summary>
-    /// Maps System.Runtime.InteropServices.Architecture to Microsoft.Dotnet.Installation.InstallArchitecture
-    /// </summary>
-    public static InstallArchitecture MapArchitecture(Architecture architecture) =>
-        InstallerUtilities.GetInstallArchitecture(architecture);
 }
