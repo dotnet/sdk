@@ -26,6 +26,7 @@ using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -171,7 +172,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (field.IsDefault)
             {
                 var sourceFile = SourceFile.Load(EntryPointFileFullPath);
-                field = FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.ThrowOnFirst());
+                field = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.ThrowOnFirst());
                 Debug.Assert(!field.IsDefault);
             }
 

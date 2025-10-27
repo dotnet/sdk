@@ -1,6 +1,27 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Xml;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
+
+#if !FILE_BASED_PROGRAMS_SOURCE_PACKAGE_GRACEFUL_EXCEPTION
+using Microsoft.DotNet.Cli.Utils;
+#endif
+
+using Roslyn.Utilities;
+
 namespace Microsoft.DotNet.FileBasedPrograms;
 
 internal static class FileLevelDirectiveHelpers
@@ -20,93 +41,13 @@ internal static class FileLevelDirectiveHelpers
     /// </param>
     public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, DiagnosticBag diagnostics)
     {
-        var deduplicated = new HashSet<CSharpDirective.Named>(NamedDirectiveComparer.Instance);
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
         var tokenizer = CreateTokenizer(sourceFile.Text);
 
         var result = tokenizer.ParseLeadingTrivia();
-        TextSpan previousWhiteSpaceSpan = default;
         var triviaList = result.Token.LeadingTrivia;
-        foreach (var (index, trivia) in triviaList.Index())
-        {
-            // Stop when the trivia contains an error (e.g., because it's after #if).
-            if (trivia.ContainsDiagnostics)
-            {
-                break;
-            }
 
-            if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
-            {
-                Debug.Assert(previousWhiteSpaceSpan.IsEmpty);
-                previousWhiteSpaceSpan = trivia.FullSpan;
-                continue;
-            }
-
-            if (trivia.IsKind(SyntaxKind.ShebangDirectiveTrivia))
-            {
-                TextSpan span = GetFullSpan(previousWhiteSpaceSpan, trivia);
-
-                var whiteSpace = GetWhiteSpaceInfo(triviaList, index);
-                var info = new CSharpDirective.ParseInfo
-                {
-                    Span = span,
-                    LeadingWhiteSpace = whiteSpace.Leading,
-                    TrailingWhiteSpace = whiteSpace.Trailing,
-                };
-                builder.Add(new CSharpDirective.Shebang(info));
-            }
-            else if (trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
-            {
-                TextSpan span = GetFullSpan(previousWhiteSpaceSpan, trivia);
-
-                var message = trivia.GetStructure() is IgnoredDirectiveTriviaSyntax { Content: { RawKind: (int)SyntaxKind.StringLiteralToken } content }
-                    ? content.Text.AsSpan().Trim()
-                    : "";
-                var parts = Patterns.Whitespace.EnumerateSplits(message, 2);
-                var name = parts.MoveNext() ? message[parts.Current] : default;
-                var value = parts.MoveNext() ? message[parts.Current] : default;
-                Debug.Assert(!parts.MoveNext());
-
-                var whiteSpace = GetWhiteSpaceInfo(triviaList, index);
-                var context = new CSharpDirective.ParseContext
-                {
-                    Info = new()
-                    {
-                        Span = span,
-                        LeadingWhiteSpace = whiteSpace.Leading,
-                        TrailingWhiteSpace = whiteSpace.Trailing,
-                    },
-                    Diagnostics = diagnostics,
-                    SourceFile = sourceFile,
-                    DirectiveKind = name.ToString(),
-                    DirectiveText = value.ToString(),
-                };
-
-                // Block quotes now so we can later support quoted values without a breaking change. https://github.com/dotnet/sdk/issues/49367
-                if (value.Contains('"'))
-                {
-                    diagnostics.AddError(sourceFile, context.Info.Span, CliCommandStrings.QuoteInDirective);
-                }
-
-                if (CSharpDirective.Parse(context) is { } directive)
-                {
-                    // If the directive is already present, report an error.
-                    if (deduplicated.TryGetValue(directive, out var existingDirective))
-                    {
-                        var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
-                        diagnostics.AddError(sourceFile, directive.Info.Span, string.Format(CliCommandStrings.DuplicateDirective, typeAndName));
-                    }
-                    else
-                    {
-                        deduplicated.Add(directive);
-                    }
-
-                    builder.Add(directive);
-                }
-            }
-
-            previousWhiteSpaceSpan = default;
-        }
+        FindLeadingDirectives(sourceFile, triviaList, diagnostics, builder);
 
         // In conversion mode, we want to report errors for any invalid directives in the rest of the file
         // so users don't end up with invalid directives in the converted project.
@@ -131,21 +72,122 @@ internal static class FileLevelDirectiveHelpers
             while (!result.Token.IsKind(SyntaxKind.EndOfFileToken));
         }
 
+        void ReportErrorFor(SyntaxTrivia trivia)
+        {
+            if (trivia.ContainsDiagnostics && trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
+            {
+                diagnostics.AddError(sourceFile, trivia.Span, FileBasedProgramsResources.CannotConvertDirective);
+            }
+        }
+
         // The result should be ordered by source location, RemoveDirectivesFromFile depends on that.
         return builder.ToImmutable();
+    }
+
+    /// <summary>Finds file-level directives in the leading trivia list of a compilation unit and reports diagnostics on them.</summary>
+    /// <param name="builder">The builder to store the parsed directives in, or null if the parsed directives are not needed.</param>
+    public static void FindLeadingDirectives(
+        SourceFile sourceFile,
+        SyntaxTriviaList triviaList,
+        DiagnosticBag diagnostics,
+        ImmutableArray<CSharpDirective>.Builder? builder)
+    {
+        Debug.Assert(triviaList.Span.Start == 0);
+
+        var deduplicated = new Dictionary<CSharpDirective.Named, CSharpDirective.Named>(NamedDirectiveComparer.Instance);
+        TextSpan previousWhiteSpaceSpan = default;
+
+        for (var index = 0; index < triviaList.Count; index++)
+        {
+            var trivia = triviaList[index];
+            // Stop when the trivia contains an error (e.g., because it's after #if).
+            if (trivia.ContainsDiagnostics)
+            {
+                break;
+            }
+
+            if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
+            {
+                Debug.Assert(previousWhiteSpaceSpan.IsEmpty);
+                previousWhiteSpaceSpan = trivia.FullSpan;
+                continue;
+            }
+
+            if (trivia.IsKind(SyntaxKind.ShebangDirectiveTrivia))
+            {
+                TextSpan span = GetFullSpan(previousWhiteSpaceSpan, trivia);
+
+                var whiteSpace = GetWhiteSpaceInfo(triviaList, index);
+                var info = new CSharpDirective.ParseInfo
+                {
+                    Span = span,
+                    LeadingWhiteSpace = whiteSpace.Leading,
+                    TrailingWhiteSpace = whiteSpace.Trailing,
+                };
+                builder?.Add(new CSharpDirective.Shebang(info));
+            }
+            else if (trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
+            {
+                TextSpan span = GetFullSpan(previousWhiteSpaceSpan, trivia);
+
+                var message = trivia.GetStructure() is IgnoredDirectiveTriviaSyntax { Content: { RawKind: (int)SyntaxKind.StringLiteralToken } content }
+                    ? content.Text.AsSpan().Trim()
+                    : "";
+                // TODO: original impl was using more recent span-oriented APIs. Optimal sharing may be tricky.
+                // var parts = Patterns.Whitespace.EnumerateSplits(message, 2);
+                var parts = Patterns.Whitespace.Split(message.ToString(), 2);
+                var name = parts.Length > 0 ? parts[0] : "";
+                var value = parts.Length > 1 ? parts[1] : "";
+                Debug.Assert(!(parts.Length > 2));
+
+                var whiteSpace = GetWhiteSpaceInfo(triviaList, index);
+                var context = new CSharpDirective.ParseContext
+                {
+                    Info = new()
+                    {
+                        Span = span,
+                        LeadingWhiteSpace = whiteSpace.Leading,
+                        TrailingWhiteSpace = whiteSpace.Trailing,
+                    },
+                    Diagnostics = diagnostics,
+                    SourceFile = sourceFile,
+                    DirectiveKind = name,
+                    DirectiveText = value,
+                };
+
+                // Block quotes now so we can later support quoted values without a breaking change. https://github.com/dotnet/sdk/issues/49367
+                if (value.Contains('"'))
+                {
+                    diagnostics.AddError(sourceFile, context.Info.Span, FileBasedProgramsResources.QuoteInDirective);
+                }
+
+                if (CSharpDirective.Parse(context) is { } directive)
+                {
+                    // If the directive is already present, report an error.
+                    if (deduplicated.ContainsKey(directive))
+                    {
+                        var existingDirective = deduplicated[directive];
+                        var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
+                        diagnostics.AddError(sourceFile, directive.Info.Span, string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
+                    }
+                    else
+                    {
+                        deduplicated.Add(directive, directive);
+                    }
+
+                    builder?.Add(directive);
+                }
+            }
+
+            previousWhiteSpaceSpan = default;
+        }
+
+        return;
 
         static TextSpan GetFullSpan(TextSpan previousWhiteSpaceSpan, SyntaxTrivia trivia)
         {
             // Include the preceding whitespace in the span, i.e., span will be the whole line.
             return previousWhiteSpaceSpan.IsEmpty ? trivia.FullSpan : TextSpan.FromBounds(previousWhiteSpaceSpan.Start, trivia.FullSpan.End);
-        }
-
-        void ReportErrorFor(SyntaxTrivia trivia)
-        {
-            if (trivia.ContainsDiagnostics && trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
-            {
-                diagnostics.AddError(sourceFile, trivia.Span, CliCommandStrings.CannotConvertDirective);
-            }
         }
 
         static (WhiteSpaceInfo Leading, WhiteSpaceInfo Trailing) GetWhiteSpaceInfo(in SyntaxTriviaList triviaList, int index)
@@ -220,14 +262,11 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
 
 internal static partial class Patterns
 {
-    [GeneratedRegex("""\s+""")]
-    public static partial Regex Whitespace { get; }
+    public static Regex Whitespace { get; } = new Regex("""\s+""", RegexOptions.Compiled);
 
-    [GeneratedRegex("""[\s@=/]""")]
-    public static partial Regex DisallowedNameCharacters { get; }
+    public static Regex DisallowedNameCharacters { get; } = new Regex("""[\s@=/]""", RegexOptions.Compiled);
 
-    [GeneratedRegex("""^/\w+:".*"$""", RegexOptions.Singleline)]
-    public static partial Regex EscapedCompilerOption { get; }
+    public static Regex EscapedCompilerOption { get; } = new Regex("""^/\w+:".*"$""", RegexOptions.Compiled | RegexOptions.Singleline);
 }
 
 internal struct WhiteSpaceInfo
@@ -271,25 +310,25 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             "property" => Property.Parse(context),
             "package" => Package.Parse(context),
             "project" => Project.Parse(context),
-            var other => context.Diagnostics.AddError<Named>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.UnrecognizedDirective, other)),
+            var other => context.Diagnostics.AddError<Named>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.UnrecognizedDirective, other)),
         };
     }
 
     private static (string, string?)? ParseOptionalTwoParts(in ParseContext context, char separator)
     {
-        var separatorIndex = context.DirectiveText.IndexOf(separator, StringComparison.Ordinal);
-        var firstPart = (separatorIndex < 0 ? context.DirectiveText : context.DirectiveText.AsSpan(..separatorIndex)).TrimEnd();
+        var separatorIndex = context.DirectiveText.IndexOf(separator);
+        var firstPart = (separatorIndex < 0 ? context.DirectiveText : context.DirectiveText.AsSpan(0, separatorIndex)).TrimEnd();
 
         string directiveKind = context.DirectiveKind;
         if (firstPart.IsWhiteSpace())
         {
-            return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind));
+            return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
         }
 
         // If the name contains characters that resemble separators, report an error to avoid any confusion.
-        if (Patterns.DisallowedNameCharacters.IsMatch(firstPart))
+        if (Patterns.DisallowedNameCharacters.Match(context.DirectiveText, beginning: 0, length: separatorIndex).Success)
         {
-            return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, separator));
+            return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.InvalidDirectiveName, directiveKind, separator));
         }
 
         if (separatorIndex < 0)
@@ -297,7 +336,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return (firstPart.ToString(), null);
         }
 
-        var secondPart = context.DirectiveText.AsSpan((separatorIndex + 1)..).TrimStart();
+        var secondPart = context.DirectiveText.AsSpan(separatorIndex + 1).TrimStart();
         if (secondPart.IsWhiteSpace())
         {
             Debug.Assert(secondPart.Length == 0,
@@ -364,7 +403,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
             if (propertyValue is null)
             {
-                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, CliCommandStrings.PropertyDirectiveMissingParts);
+                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, FileBasedProgramsResources.PropertyDirectiveMissingParts);
             }
 
             try
@@ -373,13 +412,13 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             }
             catch (XmlException ex)
             {
-                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.PropertyDirectiveInvalidName, ex.Message), ex);
+                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, ex.Message), ex);
             }
 
             if (propertyName.Equals("RestoreUseStaticGraphEvaluation", StringComparison.OrdinalIgnoreCase) &&
                 MSBuildUtilities.ConvertStringToBool(propertyValue))
             {
-                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, CliCommandStrings.StaticGraphRestoreNotSupported);
+                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, FileBasedProgramsResources.StaticGraphRestoreNotSupported);
             }
 
             return new Property(context.Info)
@@ -427,7 +466,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             if (directiveText.IsWhiteSpace())
             {
                 string directiveKind = context.DirectiveKind;
-                return context.Diagnostics.AddError<Project?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind));
+                return context.Diagnostics.AddError<Project?>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
             }
 
             try
@@ -438,21 +477,21 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 var resolvedProjectPath = Path.Combine(sourceDirectory, directiveText.Replace('\\', '/'));
                 if (Directory.Exists(resolvedProjectPath))
                 {
-                    var fullFilePath = MsbuildProject.GetProjectFileFromDirectory(resolvedProjectPath).FullName;
+                    var fullFilePath = GetProjectFileFromDirectory(resolvedProjectPath).FullName;
 
                     // Keep a relative path only if the original directive was a relative path.
-                    directiveText = Path.IsPathFullyQualified(directiveText)
+                    directiveText = ExternalHelpers.IsPathFullyQualified(directiveText)
                         ? fullFilePath
-                        : Path.GetRelativePath(relativeTo: sourceDirectory, fullFilePath);
+                        : ExternalHelpers.GetRelativePath(relativeTo: sourceDirectory, fullFilePath);
                 }
                 else if (!File.Exists(resolvedProjectPath))
                 {
-                    throw new GracefulException(CliStrings.CouldNotFindProjectOrDirectory, resolvedProjectPath);
+                    throw new GracefulException(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, resolvedProjectPath);
                 }
             }
             catch (GracefulException e)
             {
-                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.InvalidProjectDirective, e.Message), e);
+                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.InvalidProjectDirective, e.Message), e);
             }
 
             return new Project(context.Info)
@@ -464,6 +503,39 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         public Project WithName(string name)
         {
             return new Project(Info) { Name = name };
+        }
+
+        public static FileInfo GetProjectFileFromDirectory(string projectDirectory)
+        {
+            DirectoryInfo dir;
+            try
+            {
+                dir = new DirectoryInfo(projectDirectory);
+            }
+            catch (ArgumentException)
+            {
+                throw new GracefulException(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, projectDirectory);
+            }
+
+            if (!dir.Exists)
+            {
+                throw new GracefulException(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, projectDirectory);
+            }
+
+            FileInfo[] files = dir.GetFiles("*proj");
+            if (files.Length == 0)
+            {
+                throw new GracefulException(
+                    FileBasedProgramsResources.CouldNotFindAnyProjectInDirectory,
+                    projectDirectory);
+            }
+
+            if (files.Length > 1)
+            {
+                throw new GracefulException(FileBasedProgramsResources.MoreThanOneProjectInDirectory, projectDirectory);
+            }
+
+            return files.First();
         }
 
         public override string ToString() => $"#:project {Name}";
@@ -486,14 +558,14 @@ internal sealed class NamedDirectiveComparer : IEqualityComparer<CSharpDirective
         if (x is null || y is null) return false;
 
         return x.GetType() == y.GetType() &&
-            string.Equals(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
+            StringComparer.OrdinalIgnoreCase.Equals(x.Name, y.Name);
     }
 
     public int GetHashCode(CSharpDirective.Named obj)
     {
-        return HashCode.Combine(
+        return ExternalHelpers.CombineHashCodes(
             obj.GetType().GetHashCode(),
-            obj.Name.GetHashCode(StringComparison.OrdinalIgnoreCase));
+            StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Name));
     }
 }
 
@@ -507,14 +579,9 @@ internal sealed class SimpleDiagnostic
     /// </summary>
     public readonly struct Position
     {
-        public string Path { get; init; }
-        public LinePositionSpan Span { get; init; }
-
-        public static implicit operator Position(FileLinePositionSpan fileLinePositionSpan) => new()
-        {
-            Path = fileLinePositionSpan.Path,
-            Span = fileLinePositionSpan.Span,
-        };
+        public required TextSpan TextSpan { get; init; }
+        public required LinePositionSpan Span { get; init; }
+        public required string Path { get; init; }
     }
 }
 
@@ -531,16 +598,16 @@ internal readonly struct DiagnosticBag
     public static DiagnosticBag Collect(out ImmutableArray<SimpleDiagnostic>.Builder builder) => new() { Builder = builder = ImmutableArray.CreateBuilder<SimpleDiagnostic>() };
     public static DiagnosticBag Ignore() => new() { IgnoreDiagnostics = true, Builder = null };
 
-    public void AddError(SourceFile sourceFile, TextSpan span, string message, Exception? inner = null)
+    public void AddError(SourceFile sourceFile, TextSpan textSpan, string message, Exception? inner = null)
     {
         if (Builder != null)
         {
             Debug.Assert(!IgnoreDiagnostics);
-            Builder.Add(new SimpleDiagnostic { Location = sourceFile.GetFileLinePositionSpan(span), Message = message });
+            Builder.Add(new SimpleDiagnostic { Location = new SimpleDiagnostic.Position() { Path = sourceFile.Path, TextSpan = textSpan, Span = sourceFile.GetFileLinePositionSpan(textSpan).Span }, Message = message });
         }
         else if (!IgnoreDiagnostics)
         {
-            throw new GracefulException($"{sourceFile.GetLocationString(span)}: {CliCommandStrings.DirectiveError}: {message}", inner);
+            throw new GracefulException($"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}", inner);
         }
     }
 

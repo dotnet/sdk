@@ -8,6 +8,7 @@ using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
@@ -64,7 +65,7 @@ internal abstract class RunApiInput
         public override RunApiOutput Execute()
         {
             var sourceFile = SourceFile.Load(EntryPointFileFullPath);
-            var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, DiagnosticBag.Collect(out var diagnostics));
+            var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: true, DiagnosticBag.Collect(out var diagnostics));
             string artifactsPath = ArtifactsPath ?? VirtualProjectBuildingCommand.GetArtifactsPath(EntryPointFileFullPath);
 
             var csprojWriter = new StringWriter();
@@ -160,6 +161,9 @@ internal abstract class RunApiOutput
     }
 }
 
+// TODO: getting the following error, which is not suppressible with pragma.
+// error SYSLIB1225: The type 'Encoding' includes the ref like property, field or constructor parameter 'Preamble'. No source code will be generated for the property, field or constructor. (https://learn.microsoft.com/dotnet/fundamentals/syslib-diagnostics/syslib1225)
+// I have no idea how the type 'Encoding' is ending up getting used as a result of my change.
 [JsonSerializable(typeof(RunApiInput))]
 [JsonSerializable(typeof(RunApiOutput))]
 internal partial class RunFileApiJsonSerializerContext : JsonSerializerContext;
