@@ -66,7 +66,6 @@ internal class DotnetArchiveExtractor : IDisposable
                 });
         }
     }
-
     public void Commit()
     {
         Commit(GetExistingSdkVersions(_request.InstallRoot));
@@ -74,23 +73,11 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Commit(IEnumerable<ReleaseVersion> existingSdkVersions)
     {
-        if (_archivePath == null || !File.Exists(_archivePath))
-        {
-            throw new InvalidOperationException("Archive not found. Make sure Prepare() was called successfully.");
-        }
-
         if (_noProgress)
         {
             // When no-progress is enabled, install without progress display
             Console.WriteLine($"Installing .NET SDK {_resolvedVersion}...");
-
-            // Extract archive directly to target directory with special handling for muxer
-            var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, existingSdkVersions, null);
-            if (extractResult is not null)
-            {
-                throw new InvalidOperationException($"Failed to install SDK: {extractResult}");
-            }
-
+            ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, existingSdkVersions, null);
             Console.WriteLine($"Installation of .NET SDK {_resolvedVersion} complete.");
         }
         else
@@ -100,14 +87,7 @@ internal class DotnetArchiveExtractor : IDisposable
                 .Start(ctx =>
                 {
                     var installTask = ctx.AddTask($"Installing .NET SDK {_resolvedVersion}", autoStart: true);
-
-                    // Extract archive directly to target directory with special handling for muxer
-                    var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, existingSdkVersions, installTask);
-                    if (extractResult is not null)
-                    {
-                        throw new InvalidOperationException($"Failed to install SDK: {extractResult}");
-                    }
-
+                    ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, existingSdkVersions, installTask);
                     installTask.Value = installTask.MaxValue;
                 });
         }
@@ -119,25 +99,17 @@ internal class DotnetArchiveExtractor : IDisposable
      */
     private string? ExtractArchiveDirectlyToTarget(string archivePath, string targetDir, IEnumerable<ReleaseVersion> existingSdkVersions, Spectre.Console.ProgressTask? installTask)
     {
-        try
+        Directory.CreateDirectory(targetDir);
+
+        var muxerConfig = ConfigureMuxerHandling(existingSdkVersions);
+
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            // Ensure target directory exists
-            Directory.CreateDirectory(targetDir);
-
-            var muxerConfig = ConfigureMuxerHandling(existingSdkVersions);
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return ExtractTarArchive(archivePath, targetDir, muxerConfig, installTask);
-            }
-            else
-            {
-                return ExtractZipArchive(archivePath, targetDir, muxerConfig, installTask);
-            }
+            return ExtractTarArchive(archivePath, targetDir, muxerConfig, installTask);
         }
-        catch (Exception e)
+        else
         {
-            return e.Message;
+            return ExtractZipArchive(archivePath, targetDir, muxerConfig, installTask);
         }
     }
 
@@ -146,6 +118,7 @@ internal class DotnetArchiveExtractor : IDisposable
      */
     private MuxerHandlingConfig ConfigureMuxerHandling(IEnumerable<ReleaseVersion> existingSdkVersions)
     {
+        // TODO: This is very wrong - its comparing a runtime version and sdk version, plus it needs to respect the muxer version
         ReleaseVersion? existingMuxerVersion = existingSdkVersions.Any() ? existingSdkVersions.Max() : (ReleaseVersion?)null;
         ReleaseVersion newRuntimeVersion = _resolvedVersion;
         bool shouldUpdateMuxer = existingMuxerVersion is null || newRuntimeVersion.CompareTo(existingMuxerVersion) > 0;

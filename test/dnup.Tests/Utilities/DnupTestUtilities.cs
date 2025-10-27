@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
