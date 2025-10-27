@@ -48,9 +48,9 @@ public class InstallEndToEndTests
 
         // First verify what version dnup should resolve this channel to
         var updateChannel = new UpdateChannel(channel);
-        var expectedVersion = new ManifestChannelVersionResolver().Resolve(
+        var expectedVersion = new ChannelVersionResolver().Resolve(
             new DotnetInstallRequest(
-                new DotnetInstallRoot(testEnv.InstallPath, DnupUtilities.GetDefaultInstallArchitecture()),
+                new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
                 updateChannel,
                 InstallComponent.SDK,
                 new InstallRequestOptions()));
@@ -147,7 +147,7 @@ public class ReuseEndToEndTests
         output.Should().NotContain("Downloading .NET SDK",
             "dnup should not attempt to download the SDK again");
 
-        List<DotnetInstall> matchingInstalls = new();
+        List<DotnetInstall> matchingInstalls = [];
         // Verify the installation record in the manifest hasn't changed
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {

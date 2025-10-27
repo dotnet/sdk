@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
@@ -148,5 +149,5 @@ internal static class DnupTestUtilities
     /// Maps System.Runtime.InteropServices.Architecture to Microsoft.Dotnet.Installation.InstallArchitecture
     /// </summary>
     public static InstallArchitecture MapArchitecture(Architecture architecture) =>
-        Microsoft.DotNet.Tools.Bootstrapper.DnupUtilities.GetInstallArchitecture(architecture);
+        InstallerUtilities.GetInstallArchitecture(architecture);
 }

@@ -33,7 +33,7 @@ internal class ArchiveDotnetExtractor : IDisposable
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
 
-        using var releaseManifest = new ReleaseManifest();
+        using var archiveDownloader = new DotnetArchiveDownloader();
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
 
@@ -41,7 +41,7 @@ internal class ArchiveDotnetExtractor : IDisposable
         {
             var downloadTask = progressReporter.AddTask($"Downloading .NET SDK {_resolvedVersion}", 100);
             var reporter = new DownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
-            var downloadSuccess = releaseManifest.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
+            var downloadSuccess = archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
             if (!downloadSuccess)
             {
                 throw new InvalidOperationException($"Failed to download .NET archive for version {_resolvedVersion}");

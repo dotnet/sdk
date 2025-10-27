@@ -25,7 +25,7 @@ internal class InstallerOrchestratorSingleton
     public DotnetInstall? Install(DotnetInstallRequest installRequest, bool noProgress = false)
     {
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
-        ReleaseVersion? versionToInstall = new ManifestChannelVersionResolver().Resolve(installRequest);
+        ReleaseVersion? versionToInstall = new ChannelVersionResolver().Resolve(installRequest);
 
         if (versionToInstall == null)
         {
