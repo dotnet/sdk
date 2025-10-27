@@ -399,6 +399,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             {
                 AddUnaryMethods(methodSymbols, "Abs", wasmPackedSimdTypeSymbolForMethods, RuleKind.Abs);
                 AddUnaryMethods(methodSymbols, "Ceiling", wasmPackedSimdTypeSymbolForMethods, RuleKind.Ceiling);
+                AddBinaryMethods(methodSymbols, "CompareEqual", wasmPackedSimdTypeSymbolForMethods, RuleKind.Equals);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThan", wasmPackedSimdTypeSymbolForMethods, RuleKind.GreaterThan);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThanOrEqual", wasmPackedSimdTypeSymbolForMethods, RuleKind.GreaterThanOrEqual);
+                AddBinaryMethods(methodSymbols, "CompareLessThan", wasmPackedSimdTypeSymbolForMethods, RuleKind.LessThan);
+                AddBinaryMethods(methodSymbols, "CompareLessThanOrEqual", wasmPackedSimdTypeSymbolForMethods, RuleKind.LessThanOrEqual);
                 AddUnaryMethods(methodSymbols, "Floor", wasmPackedSimdTypeSymbolForMethods, RuleKind.Floor);
                 AddBinaryMethods(methodSymbols, "Max", wasmPackedSimdTypeSymbolForMethods, RuleKind.Max);
                 AddBinaryMethods(methodSymbols, "Min", wasmPackedSimdTypeSymbolForMethods, RuleKind.Min);
@@ -409,8 +414,15 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx, out var x86AvxTypeSymbolForMethods))
             {
+                AddBinaryMethods(methodSymbols, "AddSaturate", x86AvxTypeSymbolForMethods, RuleKind.AddSaturate);
                 AddBinaryMethods(methodSymbols, "AndNot", x86AvxTypeSymbolForMethods, RuleKind.AndNot_Swapped);
+                AddTernaryMethods(methodSymbols, "BlendVariable", x86AvxTypeSymbolForMethods, RuleKind.ConditionalSelect);
                 AddUnaryMethods(methodSymbols, "Ceiling", x86AvxTypeSymbolForMethods, RuleKind.Ceiling);
+                AddBinaryMethods(methodSymbols, "CompareEqual", x86AvxTypeSymbolForMethods, RuleKind.Equals);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThan", x86AvxTypeSymbolForMethods, RuleKind.GreaterThan);
+                AddBinaryMethods(methodSymbols, "CompareLessThan", x86AvxTypeSymbolForMethods, RuleKind.LessThan);
+                AddUnaryMethods(methodSymbols, "ConvertToVector128Int32", x86AvxTypeSymbolForMethods, RuleKind.ConvertToInt32);
+                AddUnaryMethods(methodSymbols, "ConvertToVector256Int32", x86AvxTypeSymbolForMethods, RuleKind.ConvertToInt32);
                 AddUnaryMethods(methodSymbols, "Floor", x86AvxTypeSymbolForMethods, RuleKind.Floor);
                 AddBinaryMethods(methodSymbols, "Max", x86AvxTypeSymbolForMethods, RuleKind.MaxNative);
                 AddBinaryMethods(methodSymbols, "Min", x86AvxTypeSymbolForMethods, RuleKind.MinNative);
@@ -424,16 +436,33 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx2, out var x86Avx2TypeSymbolForMethods))
             {
                 AddUnaryMethods(methodSymbols, "Abs", x86Avx2TypeSymbolForMethods, RuleKind.Abs);
+                AddBinaryMethods(methodSymbols, "AddSaturate", x86Avx2TypeSymbolForMethods, RuleKind.AddSaturate);
+                AddTernaryMethods(methodSymbols, "BlendVariable", x86Avx2TypeSymbolForMethods, RuleKind.ConditionalSelect);
+                AddBinaryMethods(methodSymbols, "CompareEqual", x86Avx2TypeSymbolForMethods, RuleKind.Equals);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThan", x86Avx2TypeSymbolForMethods, RuleKind.GreaterThan);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512BW, out var x86Avx512BWTypeSymbolForMethods))
             {
                 AddUnaryMethods(methodSymbols, "Abs", x86Avx512BWTypeSymbolForMethods, RuleKind.Abs);
+                AddBinaryMethods(methodSymbols, "AddSaturate", x86Avx512BWTypeSymbolForMethods, RuleKind.AddSaturate);
+                AddBinaryMethods(methodSymbols, "CompareEqual", x86Avx512BWTypeSymbolForMethods, RuleKind.Equals);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThan", x86Avx512BWTypeSymbolForMethods, RuleKind.GreaterThan);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThanOrEqual", x86Avx512BWTypeSymbolForMethods, RuleKind.GreaterThanOrEqual);
+                AddBinaryMethods(methodSymbols, "CompareLessThan", x86Avx512BWTypeSymbolForMethods, RuleKind.LessThan);
+                AddBinaryMethods(methodSymbols, "CompareLessThanOrEqual", x86Avx512BWTypeSymbolForMethods, RuleKind.LessThanOrEqual);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512F, out var x86Avx512FTypeSymbolForMethods))
             {
                 AddUnaryMethods(methodSymbols, "Abs", x86Avx512FTypeSymbolForMethods, RuleKind.Abs);
+                AddBinaryMethods(methodSymbols, "CompareEqual", x86Avx512FTypeSymbolForMethods, RuleKind.Equals);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThan", x86Avx512FTypeSymbolForMethods, RuleKind.GreaterThan);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThanOrEqual", x86Avx512FTypeSymbolForMethods, RuleKind.GreaterThanOrEqual);
+                AddBinaryMethods(methodSymbols, "CompareLessThan", x86Avx512FTypeSymbolForMethods, RuleKind.LessThan);
+                AddBinaryMethods(methodSymbols, "CompareLessThanOrEqual", x86Avx512FTypeSymbolForMethods, RuleKind.LessThanOrEqual);
+                AddUnaryMethods(methodSymbols, "ConvertToVector128Int32", x86Avx512FTypeSymbolForMethods, RuleKind.ConvertToInt32);
+                AddUnaryMethods(methodSymbols, "ConvertToVector256Int32", x86Avx512FTypeSymbolForMethods, RuleKind.ConvertToInt32);
                 AddTernaryMethods(methodSymbols, "FusedMultiplyAdd", x86Avx512FTypeSymbolForMethods, RuleKind.FusedMultiplyAdd);
                 AddBinaryMethods(methodSymbols, "Max", x86Avx512FTypeSymbolForMethods, RuleKind.MaxNative);
                 AddBinaryMethods(methodSymbols, "Min", x86Avx512FTypeSymbolForMethods, RuleKind.MinNative);
@@ -449,6 +478,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse, out var x86SseTypeSymbolForMethods))
             {
                 AddBinaryMethods(methodSymbols, "AndNot", x86SseTypeSymbolForMethods, RuleKind.AndNot_Swapped);
+                AddBinaryMethods(methodSymbols, "CompareEqual", x86SseTypeSymbolForMethods, RuleKind.Equals);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThan", x86SseTypeSymbolForMethods, RuleKind.GreaterThan);
+                AddBinaryMethods(methodSymbols, "CompareLessThan", x86SseTypeSymbolForMethods, RuleKind.LessThan);
                 AddBinaryMethods(methodSymbols, "Max", x86SseTypeSymbolForMethods, RuleKind.MaxNative);
                 AddBinaryMethods(methodSymbols, "Min", x86SseTypeSymbolForMethods, RuleKind.MinNative);
                 AddUnaryMethods(methodSymbols, "Sqrt", x86SseTypeSymbolForMethods, RuleKind.Sqrt);
@@ -456,11 +488,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse2, out var x86Sse2TypeSymbolForMethods))
             {
+                AddBinaryMethods(methodSymbols, "AddSaturate", x86Sse2TypeSymbolForMethods, RuleKind.AddSaturate);
+                AddBinaryMethods(methodSymbols, "CompareEqual", x86Sse2TypeSymbolForMethods, RuleKind.Equals);
+                AddBinaryMethods(methodSymbols, "CompareGreaterThan", x86Sse2TypeSymbolForMethods, RuleKind.GreaterThan);
+                AddBinaryMethods(methodSymbols, "CompareLessThan", x86Sse2TypeSymbolForMethods, RuleKind.LessThan);
+                AddUnaryMethods(methodSymbols, "ConvertToVector128Int32", x86Sse2TypeSymbolForMethods, RuleKind.ConvertToInt32);
                 AddUnaryMethods(methodSymbols, "Sqrt", x86Sse2TypeSymbolForMethods, RuleKind.Sqrt);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse41, out var x86Sse41TypeSymbolForMethods))
             {
+                AddTernaryMethods(methodSymbols, "BlendVariable", x86Sse41TypeSymbolForMethods, RuleKind.ConditionalSelect);
                 AddUnaryMethods(methodSymbols, "RoundToNearestInteger", x86Sse41TypeSymbolForMethods, RuleKind.Round);
                 AddUnaryMethods(methodSymbols, "RoundToNegativeInfinity", x86Sse41TypeSymbolForMethods, RuleKind.Floor);
                 AddUnaryMethods(methodSymbols, "RoundToPositiveInfinity", x86Sse41TypeSymbolForMethods, RuleKind.Ceiling);
