@@ -13,7 +13,7 @@ using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
-internal class ArchiveDotnetExtractor : IDisposable
+internal class DotnetArchiveExtractor : IDisposable
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
@@ -22,7 +22,7 @@ internal class ArchiveDotnetExtractor : IDisposable
     private string scratchDownloadDirectory;
     private string? _archivePath;
 
-    public ArchiveDotnetExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, bool noProgress = false)
+    public DotnetArchiveExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, bool noProgress = false)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;

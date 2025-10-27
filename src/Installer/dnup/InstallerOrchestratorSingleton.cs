@@ -52,7 +52,7 @@ internal class InstallerOrchestratorSingleton
             }
         }
 
-        using ArchiveDotnetExtractor installer = new(installRequest, versionToInstall, releaseManifest, noProgress);
+        using DotnetArchiveExtractor installer = new(installRequest, versionToInstall, releaseManifest, noProgress);
         installer.Prepare();
 
         // Extract and commit the install to the directory
