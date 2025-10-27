@@ -54,17 +54,6 @@ internal class ArchiveDotnetExtractor : IDisposable
         }
     }
 
-    /**
-    Returns a string if the archive is valid within SDL specification, false otherwise.
-    */
-    private void VerifyArchive(string archivePath)
-    {
-        if (!File.Exists(archivePath)) // Enhancement: replace this with actual verification logic once its implemented.
-        {
-            throw new InvalidOperationException("Archive verification failed.");
-        }
-    }
-
     public void Commit()
     {
         Commit(GetExistingSdkVersions(_request.InstallRoot));
