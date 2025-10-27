@@ -37,6 +37,13 @@ jobs:
       sdl:
         binskim:
           analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|artifacts\bin\**\capstone.dll;
+      outputs:
+      - output: pipelineArtifact
+        displayName: '🌐 Publish dnup library package'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)/artifacts/packages/Release/NonShipping/'
+        artifactName: 'Microsoft.Dotnet.Installation.1.0.0-alpha.nupkg' # TODO: Replace hard-coded with * or version
+        publishLocation: Container
 
     steps:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
@@ -49,3 +56,6 @@ jobs:
       - powershell: |
           & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release --no-restore
         displayName: 💻 Build Windows
+      - powershell: |
+           & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj
+        displayName: 📦 Package dnup library
