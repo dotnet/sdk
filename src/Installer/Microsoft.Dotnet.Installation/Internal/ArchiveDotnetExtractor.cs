@@ -9,6 +9,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -431,47 +432,11 @@ internal class ArchiveDotnetExtractor : IDisposable
         }
     }
 
-    //  TODO: InstallerOrchestratorSingleton also checks existing installs via the manifest.  Which should we use and where?
-    // This should be cached and more sophisticated based on vscode logic in the future
+    // TODO: InstallerOrchestratorSingleton also checks existing installs via the manifest. Which should we use and where?
     private IEnumerable<ReleaseVersion> GetExistingSdkVersions(DotnetInstallRoot installRoot)
     {
-        if (installRoot.Path == null)
-            return Enumerable.Empty<ReleaseVersion>();
-
-        var dotnetExe = Path.Combine(installRoot.Path, DnupUtilities.GetDotnetExeName());
-        if (!File.Exists(dotnetExe))
-            return Enumerable.Empty<ReleaseVersion>();
-
-        try
-        {
-            var process = new System.Diagnostics.Process();
-            process.StartInfo.FileName = dotnetExe;
-            process.StartInfo.Arguments = "--list-sdks";
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.Start();
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-
-            var versions = new List<ReleaseVersion>();
-            foreach (var line in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                var parts = line.Split(' ');
-                if (parts.Length > 0)
-                {
-                    var versionStr = parts[0];
-                    if (ReleaseVersion.TryParse(versionStr, out var version))
-                    {
-                        versions.Add(version);
-                    }
-                }
-            }
-            return versions;
-        }
-        catch
-        {
-            return [];
-        }
+        var bundleProvider = new NETBundlesNativeWrapper();
+        NetEnvironmentInfo environmentInfo = bundleProvider.GetDotnetEnvironmentInfo(installRoot.Path);
+        return environmentInfo.SdkInfo.Select(sdk => sdk.Version);
     }
 }
