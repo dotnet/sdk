@@ -84,8 +84,7 @@ extends:
           ignoreDirectories: artifacts, .packages
 
     stages:
-    ############### BUILD STAGE ###############
-      ############### WINDOWS ###############
+      ### Windows ###
       - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
         parameters:
           pool:
@@ -115,11 +114,9 @@ extends:
               publishRetryConfig: true
               variables:
                 _SignType: real
-
-    ############### PACKAGE STAGE ###############
-    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-      - stage: publish
-        displayName: Publish
+      ### Packaging ###
+      - stage: package
+        displayName: 📦 Package dnup
         dependsOn: []
         jobs:
         - template: /eng/pipelines/templates/jobs/dnup-library-package.yml@self
