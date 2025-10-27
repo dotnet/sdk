@@ -144,10 +144,4 @@ internal static class DnupTestUtilities
 
         throw new InvalidOperationException($"Unable to locate repository root from base directory '{AppContext.BaseDirectory}'.");
     }
-
-    /// <summary>
-    /// Maps System.Runtime.InteropServices.Architecture to Microsoft.Dotnet.Installation.InstallArchitecture
-    /// </summary>
-    public static InstallArchitecture MapArchitecture(Architecture architecture) =>
-        Microsoft.DotNet.Tools.Bootstrapper.DnupUtilities.GetInstallArchitecture(architecture);
 }
