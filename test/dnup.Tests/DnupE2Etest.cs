@@ -12,6 +12,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
 using Microsoft.Dotnet.Installation;
 using Xunit;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Dnup.Tests;
 
@@ -177,8 +178,8 @@ public class ConcurrentInstallationTests
         var args1 = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
         var args2 = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
 
-    var installTask1 = Task.Run(() => DnupTestUtilities.RunDnupProcess(args1, captureOutput: true, workingDirectory: testEnv.TempRoot));
-    var installTask2 = Task.Run(() => DnupTestUtilities.RunDnupProcess(args2, captureOutput: true, workingDirectory: testEnv.TempRoot));
+        var installTask1 = Task.Run(() => DnupTestUtilities.RunDnupProcess(args1, captureOutput: true, workingDirectory: testEnv.TempRoot));
+        var installTask2 = Task.Run(() => DnupTestUtilities.RunDnupProcess(args2, captureOutput: true, workingDirectory: testEnv.TempRoot));
 
         var results = await Task.WhenAll(installTask1, installTask2);
 
@@ -187,13 +188,15 @@ public class ConcurrentInstallationTests
         results[1].exitCode.Should().Be(0,
             $"Second concurrent install failed with exit code {results[1].exitCode}. Output:\n{results[1].output}");
 
-        string manifestMutexName = DnupTestUtilities.GetManifestMutexName(testEnv.ManifestPath);
-        using (var finalizeLock = new ScopedMutex(manifestMutexName))
+        var finalInstalls = new List<DotnetInstall>();
+
+        using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DnupSharedManifest(testEnv.ManifestPath);
-            var installs = manifest.GetInstalledVersions().Where(i => DnupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
-            installs.Should().ContainSingle();
-            installs[0].Version.ToString().Should().Be(channel);
+            finalInstalls = manifest.GetInstalledVersions().Where(i => DnupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
         }
+
+        finalInstalls.Should().ContainSingle();
+        finalInstalls[0].Version.ToString().Should().Be(channel);
     }
 }
