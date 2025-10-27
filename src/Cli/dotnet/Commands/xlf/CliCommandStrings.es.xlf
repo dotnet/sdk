@@ -92,7 +92,7 @@
         <target state="translated">Generador para .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">No mostrar la pancarta de inicio ni el mensaje de copyright.</target>
         <note />
@@ -2697,7 +2697,7 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">No se puede usar el perfil de inicio '{0}' porque no se pudo localizar el archivo de configuración de inicio. Ubicaciones probadas: 
+        <target state="translated">No se puede usar el perfil de inicio '{0}' porque no se pudo localizar el archivo de configuración de inicio. Ubicaciones probadas:
 {1}</target>
         <note />
       </trans-unit>

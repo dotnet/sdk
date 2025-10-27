@@ -92,7 +92,7 @@
         <target state="translated">.NET Oluşturucusu</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Başlangıç bandını veya telif hakkı iletisini görüntüleme.</target>
         <note />
@@ -3481,9 +3481,9 @@ and the corresponding package Ids for installed tools using the command
 'dotnet tool list'.</source>
         <target state="translated">'{0}' paket kimliğine sahip araç bulunamadı.
 
-Araçlar, aracı çağırırken kullandığınız araç adından farklı olabilen 
-paket kimlikleri kullanılarak kaldırılır. Yüklü araçların araç adlarını ve 
-karşılık gelen paket kimliklerini bulmak için 
+Araçlar, aracı çağırırken kullandığınız araç adından farklı olabilen
+paket kimlikleri kullanılarak kaldırılır. Yüklü araçların araç adlarını ve
+karşılık gelen paket kimliklerini bulmak için
 'dotnet tool list' komutunu kullanabilirsiniz.</target>
         <note />
       </trans-unit>

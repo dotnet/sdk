@@ -92,7 +92,7 @@
         <target state="translated">.NET Builder</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>
         <note />

@@ -92,7 +92,7 @@
         <target state="translated">Generatore .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
         <note />
@@ -2697,7 +2697,7 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">Non è possibile usare il profilo di avvio "{0}" perché il file delle impostazioni di avvio non è stato trovato. Posizioni tentate: 
+        <target state="translated">Non è possibile usare il profilo di avvio "{0}" perché il file delle impostazioni di avvio non è stato trovato. Posizioni tentate:
 {1}</target>
         <note />
       </trans-unit>
