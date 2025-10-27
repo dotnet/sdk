@@ -176,223 +176,226 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsArmAdvSimd, out var armAdvSimdTypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "Add", armAdvSimdTypeSymbol, RuleKind.op_Addition);
-                AddBinaryOperatorMethods(methodSymbols, "AddScalar", armAdvSimdTypeSymbol, RuleKind.op_Addition, [SpecialType.System_Int64, SpecialType.System_UInt64, SpecialType.System_Double]);
-                AddBinaryOperatorMethods(methodSymbols, "And", armAdvSimdTypeSymbol, RuleKind.op_BitwiseAnd);
-                AddBinaryOperatorMethods(methodSymbols, "DivideScalar", armAdvSimdTypeSymbol, RuleKind.op_Division, [SpecialType.System_Double]);
-                AddBinaryOperatorMethods(methodSymbols, "Multiply", armAdvSimdTypeSymbol, RuleKind.op_Multiply);
-                AddBinaryOperatorMethods(methodSymbols, "MultiplyScalar", armAdvSimdTypeSymbol, RuleKind.op_Multiply, [SpecialType.System_Double]);
-                AddBinaryOperatorMethods(methodSymbols, "Or", armAdvSimdTypeSymbol, RuleKind.op_BitwiseOr);
-                AddBinaryOperatorMethods(methodSymbols, "Subtract", armAdvSimdTypeSymbol, RuleKind.op_Subtraction);
-                AddBinaryOperatorMethods(methodSymbols, "SubtractScalar", armAdvSimdTypeSymbol, RuleKind.op_Subtraction, [SpecialType.System_Int64, SpecialType.System_UInt64, SpecialType.System_Double]);
-                AddBinaryOperatorMethods(methodSymbols, "Xor", armAdvSimdTypeSymbol, RuleKind.op_ExclusiveOr);
+                AddBinaryMethods(methodSymbols, "Add", armAdvSimdTypeSymbol, RuleKind.op_Addition);
+                AddBinaryMethods(methodSymbols, "AddScalar", armAdvSimdTypeSymbol, RuleKind.op_Addition, [SpecialType.System_Int64, SpecialType.System_UInt64, SpecialType.System_Double]);
+                AddBinaryMethods(methodSymbols, "And", armAdvSimdTypeSymbol, RuleKind.op_BitwiseAnd);
+                AddBinaryMethods(methodSymbols, "DivideScalar", armAdvSimdTypeSymbol, RuleKind.op_Division, [SpecialType.System_Double]);
+                AddBinaryMethods(methodSymbols, "Multiply", armAdvSimdTypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "MultiplyScalar", armAdvSimdTypeSymbol, RuleKind.op_Multiply, [SpecialType.System_Double]);
+                AddBinaryMethods(methodSymbols, "Or", armAdvSimdTypeSymbol, RuleKind.op_BitwiseOr);
+                AddBinaryMethods(methodSymbols, "Subtract", armAdvSimdTypeSymbol, RuleKind.op_Subtraction);
+                AddBinaryMethods(methodSymbols, "SubtractScalar", armAdvSimdTypeSymbol, RuleKind.op_Subtraction, [SpecialType.System_Int64, SpecialType.System_UInt64, SpecialType.System_Double]);
+                AddBinaryMethods(methodSymbols, "Xor", armAdvSimdTypeSymbol, RuleKind.op_ExclusiveOr);
 
-                AddShiftOperatorMethods(methodSymbols, "ShiftLeftLogical", armAdvSimdTypeSymbol, RuleKind.op_LeftShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftLeftLogicalScalar", armAdvSimdTypeSymbol, RuleKind.op_LeftShift, [SpecialType.System_Int64, SpecialType.System_UInt64]);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightArithmetic", armAdvSimdTypeSymbol, RuleKind.op_RightShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightArithmeticScalar", armAdvSimdTypeSymbol, RuleKind.op_RightShift, [SpecialType.System_Int64, SpecialType.System_UInt64]);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightLogical", armAdvSimdTypeSymbol, RuleKind.op_UnsignedRightShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightLogicalScalar", armAdvSimdTypeSymbol, RuleKind.op_UnsignedRightShift, [SpecialType.System_Int64, SpecialType.System_UInt64]);
+                AddShiftMethods(methodSymbols, "ShiftLeftLogical", armAdvSimdTypeSymbol, RuleKind.op_LeftShift);
+                AddShiftMethods(methodSymbols, "ShiftLeftLogicalScalar", armAdvSimdTypeSymbol, RuleKind.op_LeftShift, [SpecialType.System_Int64, SpecialType.System_UInt64]);
+                AddShiftMethods(methodSymbols, "ShiftRightArithmetic", armAdvSimdTypeSymbol, RuleKind.op_RightShift);
+                AddShiftMethods(methodSymbols, "ShiftRightArithmeticScalar", armAdvSimdTypeSymbol, RuleKind.op_RightShift, [SpecialType.System_Int64, SpecialType.System_UInt64]);
+                AddShiftMethods(methodSymbols, "ShiftRightLogical", armAdvSimdTypeSymbol, RuleKind.op_UnsignedRightShift);
+                AddShiftMethods(methodSymbols, "ShiftRightLogicalScalar", armAdvSimdTypeSymbol, RuleKind.op_UnsignedRightShift, [SpecialType.System_Int64, SpecialType.System_UInt64]);
 
-                AddUnaryOperatorMethods(methodSymbols, "Negate", armAdvSimdTypeSymbol, RuleKind.op_UnaryNegation);
-                AddUnaryOperatorMethods(methodSymbols, "NegateScalar", armAdvSimdTypeSymbol, RuleKind.op_UnaryNegation, [SpecialType.System_Double]);
-                AddUnaryOperatorMethods(methodSymbols, "Not", armAdvSimdTypeSymbol, RuleKind.op_OnesComplement);
+                AddUnaryMethods(methodSymbols, "Negate", armAdvSimdTypeSymbol, RuleKind.op_UnaryNegation);
+                AddUnaryMethods(methodSymbols, "NegateScalar", armAdvSimdTypeSymbol, RuleKind.op_UnaryNegation, [SpecialType.System_Double]);
+                AddUnaryMethods(methodSymbols, "Not", armAdvSimdTypeSymbol, RuleKind.op_OnesComplement);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsArmAdvSimdArm64, out var armAdvSimdArm64TypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "Add", armAdvSimdArm64TypeSymbol, RuleKind.op_Addition);
-                AddBinaryOperatorMethods(methodSymbols, "Divide", armAdvSimdArm64TypeSymbol, RuleKind.op_Division);
-                AddBinaryOperatorMethods(methodSymbols, "Multiply", armAdvSimdArm64TypeSymbol, RuleKind.op_Multiply);
-                AddBinaryOperatorMethods(methodSymbols, "Subtract", armAdvSimdArm64TypeSymbol, RuleKind.op_Subtraction);
+                AddBinaryMethods(methodSymbols, "Add", armAdvSimdArm64TypeSymbol, RuleKind.op_Addition);
+                AddBinaryMethods(methodSymbols, "Divide", armAdvSimdArm64TypeSymbol, RuleKind.op_Division);
+                AddBinaryMethods(methodSymbols, "Multiply", armAdvSimdArm64TypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "Subtract", armAdvSimdArm64TypeSymbol, RuleKind.op_Subtraction);
 
-                AddUnaryOperatorMethods(methodSymbols, "Negate", armAdvSimdArm64TypeSymbol, RuleKind.op_UnaryNegation);
-                AddUnaryOperatorMethods(methodSymbols, "NegateScalar", armAdvSimdArm64TypeSymbol, RuleKind.op_UnaryNegation, [SpecialType.System_Int64]);
+                AddUnaryMethods(methodSymbols, "Negate", armAdvSimdArm64TypeSymbol, RuleKind.op_UnaryNegation);
+                AddUnaryMethods(methodSymbols, "NegateScalar", armAdvSimdArm64TypeSymbol, RuleKind.op_UnaryNegation, [SpecialType.System_Int64]);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsWasmPackedSimd, out var wasmPackedSimdTypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "Add", wasmPackedSimdTypeSymbol, RuleKind.op_Addition);
-                AddBinaryOperatorMethods(methodSymbols, "And", wasmPackedSimdTypeSymbol, RuleKind.op_BitwiseAnd);
-                AddBinaryOperatorMethods(methodSymbols, "Divide", wasmPackedSimdTypeSymbol, RuleKind.op_Division);
-                AddBinaryOperatorMethods(methodSymbols, "Multiply", wasmPackedSimdTypeSymbol, RuleKind.op_Multiply);
-                AddBinaryOperatorMethods(methodSymbols, "Or", wasmPackedSimdTypeSymbol, RuleKind.op_BitwiseOr);
-                AddBinaryOperatorMethods(methodSymbols, "Subtract", wasmPackedSimdTypeSymbol, RuleKind.op_Subtraction);
-                AddBinaryOperatorMethods(methodSymbols, "Xor", wasmPackedSimdTypeSymbol, RuleKind.op_ExclusiveOr);
+                AddBinaryMethods(methodSymbols, "Add", wasmPackedSimdTypeSymbol, RuleKind.op_Addition);
+                AddBinaryMethods(methodSymbols, "And", wasmPackedSimdTypeSymbol, RuleKind.op_BitwiseAnd);
+                AddBinaryMethods(methodSymbols, "Divide", wasmPackedSimdTypeSymbol, RuleKind.op_Division);
+                AddBinaryMethods(methodSymbols, "Multiply", wasmPackedSimdTypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "Or", wasmPackedSimdTypeSymbol, RuleKind.op_BitwiseOr);
+                AddBinaryMethods(methodSymbols, "Subtract", wasmPackedSimdTypeSymbol, RuleKind.op_Subtraction);
+                AddBinaryMethods(methodSymbols, "Xor", wasmPackedSimdTypeSymbol, RuleKind.op_ExclusiveOr);
 
-                AddShiftOperatorMethods(methodSymbols, "ShiftLeft", wasmPackedSimdTypeSymbol, RuleKind.op_LeftShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightArithmetic", wasmPackedSimdTypeSymbol, RuleKind.op_RightShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightLogical", wasmPackedSimdTypeSymbol, RuleKind.op_UnsignedRightShift);
+                AddShiftMethods(methodSymbols, "ShiftLeft", wasmPackedSimdTypeSymbol, RuleKind.op_LeftShift);
+                AddShiftMethods(methodSymbols, "ShiftRightArithmetic", wasmPackedSimdTypeSymbol, RuleKind.op_RightShift);
+                AddShiftMethods(methodSymbols, "ShiftRightLogical", wasmPackedSimdTypeSymbol, RuleKind.op_UnsignedRightShift);
 
-                AddUnaryOperatorMethods(methodSymbols, "Negate", wasmPackedSimdTypeSymbol, RuleKind.op_UnaryNegation);
-                AddUnaryOperatorMethods(methodSymbols, "Not", wasmPackedSimdTypeSymbol, RuleKind.op_OnesComplement);
+                AddUnaryMethods(methodSymbols, "Negate", wasmPackedSimdTypeSymbol, RuleKind.op_UnaryNegation);
+                AddUnaryMethods(methodSymbols, "Not", wasmPackedSimdTypeSymbol, RuleKind.op_OnesComplement);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx, out var x86AvxTypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "Add", x86AvxTypeSymbol, RuleKind.op_Addition);
-                AddBinaryOperatorMethods(methodSymbols, "And", x86AvxTypeSymbol, RuleKind.op_BitwiseAnd);
-                AddBinaryOperatorMethods(methodSymbols, "Divide", x86AvxTypeSymbol, RuleKind.op_Division);
-                AddBinaryOperatorMethods(methodSymbols, "Multiply", x86AvxTypeSymbol, RuleKind.op_Multiply);
-                AddBinaryOperatorMethods(methodSymbols, "Or", x86AvxTypeSymbol, RuleKind.op_BitwiseOr);
-                AddBinaryOperatorMethods(methodSymbols, "Subtract", x86AvxTypeSymbol, RuleKind.op_Subtraction);
-                AddBinaryOperatorMethods(methodSymbols, "Xor", x86AvxTypeSymbol, RuleKind.op_ExclusiveOr);
+                AddBinaryMethods(methodSymbols, "Add", x86AvxTypeSymbol, RuleKind.op_Addition);
+                AddBinaryMethods(methodSymbols, "And", x86AvxTypeSymbol, RuleKind.op_BitwiseAnd);
+                AddBinaryMethods(methodSymbols, "Divide", x86AvxTypeSymbol, RuleKind.op_Division);
+                AddBinaryMethods(methodSymbols, "Multiply", x86AvxTypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "Or", x86AvxTypeSymbol, RuleKind.op_BitwiseOr);
+                AddBinaryMethods(methodSymbols, "Subtract", x86AvxTypeSymbol, RuleKind.op_Subtraction);
+                AddBinaryMethods(methodSymbols, "Xor", x86AvxTypeSymbol, RuleKind.op_ExclusiveOr);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx2, out var x86Avx2TypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "Add", x86Avx2TypeSymbol, RuleKind.op_Addition);
-                AddBinaryOperatorMethods(methodSymbols, "And", x86Avx2TypeSymbol, RuleKind.op_BitwiseAnd);
-                AddBinaryOperatorMethods(methodSymbols, "MultiplyLow", x86Avx2TypeSymbol, RuleKind.op_Multiply);
-                AddBinaryOperatorMethods(methodSymbols, "Or", x86Avx2TypeSymbol, RuleKind.op_BitwiseOr);
-                AddBinaryOperatorMethods(methodSymbols, "Subtract", x86Avx2TypeSymbol, RuleKind.op_Subtraction);
-                AddBinaryOperatorMethods(methodSymbols, "Xor", x86Avx2TypeSymbol, RuleKind.op_ExclusiveOr);
+                AddBinaryMethods(methodSymbols, "Add", x86Avx2TypeSymbol, RuleKind.op_Addition);
+                AddBinaryMethods(methodSymbols, "And", x86Avx2TypeSymbol, RuleKind.op_BitwiseAnd);
+                AddBinaryMethods(methodSymbols, "MultiplyLow", x86Avx2TypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "Or", x86Avx2TypeSymbol, RuleKind.op_BitwiseOr);
+                AddBinaryMethods(methodSymbols, "Subtract", x86Avx2TypeSymbol, RuleKind.op_Subtraction);
+                AddBinaryMethods(methodSymbols, "Xor", x86Avx2TypeSymbol, RuleKind.op_ExclusiveOr);
 
-                AddShiftOperatorMethods(methodSymbols, "ShiftLeftLogical", x86Avx2TypeSymbol, RuleKind.op_LeftShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightArithmetic", x86Avx2TypeSymbol, RuleKind.op_RightShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightLogical", x86Avx2TypeSymbol, RuleKind.op_UnsignedRightShift);
+                AddShiftMethods(methodSymbols, "ShiftLeftLogical", x86Avx2TypeSymbol, RuleKind.op_LeftShift);
+                AddShiftMethods(methodSymbols, "ShiftRightArithmetic", x86Avx2TypeSymbol, RuleKind.op_RightShift);
+                AddShiftMethods(methodSymbols, "ShiftRightLogical", x86Avx2TypeSymbol, RuleKind.op_UnsignedRightShift);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512BW, out var x86Avx512BWTypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "Add", x86Avx512BWTypeSymbol, RuleKind.op_Addition);
-                AddBinaryOperatorMethods(methodSymbols, "MultiplyLow", x86Avx512BWTypeSymbol, RuleKind.op_Multiply);
-                AddBinaryOperatorMethods(methodSymbols, "Subtract", x86Avx512BWTypeSymbol, RuleKind.op_Subtraction);
+                AddBinaryMethods(methodSymbols, "Add", x86Avx512BWTypeSymbol, RuleKind.op_Addition);
+                AddBinaryMethods(methodSymbols, "MultiplyLow", x86Avx512BWTypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "Subtract", x86Avx512BWTypeSymbol, RuleKind.op_Subtraction);
 
-                AddShiftOperatorMethods(methodSymbols, "ShiftLeftLogical", x86Avx512BWTypeSymbol, RuleKind.op_LeftShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightArithmetic", x86Avx512BWTypeSymbol, RuleKind.op_RightShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightLogical", x86Avx512BWTypeSymbol, RuleKind.op_UnsignedRightShift);
+                AddShiftMethods(methodSymbols, "ShiftLeftLogical", x86Avx512BWTypeSymbol, RuleKind.op_LeftShift);
+                AddShiftMethods(methodSymbols, "ShiftRightArithmetic", x86Avx512BWTypeSymbol, RuleKind.op_RightShift);
+                AddShiftMethods(methodSymbols, "ShiftRightLogical", x86Avx512BWTypeSymbol, RuleKind.op_UnsignedRightShift);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512DQ, out var x86Avx512DQTypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "And", x86Avx512DQTypeSymbol, RuleKind.op_BitwiseAnd);
-                AddBinaryOperatorMethods(methodSymbols, "MultiplyLow", x86Avx512DQTypeSymbol, RuleKind.op_Multiply);
-                AddBinaryOperatorMethods(methodSymbols, "Or", x86Avx512DQTypeSymbol, RuleKind.op_BitwiseOr);
-                AddBinaryOperatorMethods(methodSymbols, "Xor", x86Avx512DQTypeSymbol, RuleKind.op_ExclusiveOr);
+                AddBinaryMethods(methodSymbols, "And", x86Avx512DQTypeSymbol, RuleKind.op_BitwiseAnd);
+                AddBinaryMethods(methodSymbols, "MultiplyLow", x86Avx512DQTypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "Or", x86Avx512DQTypeSymbol, RuleKind.op_BitwiseOr);
+                AddBinaryMethods(methodSymbols, "Xor", x86Avx512DQTypeSymbol, RuleKind.op_ExclusiveOr);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512DQVL, out var x86Avx512DQVLTypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "MultiplyLow", x86Avx512DQVLTypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "MultiplyLow", x86Avx512DQVLTypeSymbol, RuleKind.op_Multiply);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512F, out var x86Avx512FTypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "Add", x86Avx512FTypeSymbol, RuleKind.op_Addition);
-                AddBinaryOperatorMethods(methodSymbols, "And", x86Avx512FTypeSymbol, RuleKind.op_BitwiseAnd);
-                AddBinaryOperatorMethods(methodSymbols, "Divide", x86Avx512FTypeSymbol, RuleKind.op_Division);
-                AddBinaryOperatorMethods(methodSymbols, "Multiply", x86Avx512FTypeSymbol, RuleKind.op_Multiply, [SpecialType.System_Single, SpecialType.System_Double]);
-                AddBinaryOperatorMethods(methodSymbols, "MultiplyLow", x86Avx512FTypeSymbol, RuleKind.op_Multiply);
-                AddBinaryOperatorMethods(methodSymbols, "Or", x86Avx512FTypeSymbol, RuleKind.op_BitwiseOr);
-                AddBinaryOperatorMethods(methodSymbols, "Subtract", x86Avx512FTypeSymbol, RuleKind.op_Subtraction);
-                AddBinaryOperatorMethods(methodSymbols, "Xor", x86Avx512FTypeSymbol, RuleKind.op_ExclusiveOr);
+                AddBinaryMethods(methodSymbols, "Add", x86Avx512FTypeSymbol, RuleKind.op_Addition);
+                AddBinaryMethods(methodSymbols, "And", x86Avx512FTypeSymbol, RuleKind.op_BitwiseAnd);
+                AddBinaryMethods(methodSymbols, "Divide", x86Avx512FTypeSymbol, RuleKind.op_Division);
+                AddBinaryMethods(methodSymbols, "Multiply", x86Avx512FTypeSymbol, RuleKind.op_Multiply, [SpecialType.System_Single, SpecialType.System_Double]);
+                AddBinaryMethods(methodSymbols, "MultiplyLow", x86Avx512FTypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "Or", x86Avx512FTypeSymbol, RuleKind.op_BitwiseOr);
+                AddBinaryMethods(methodSymbols, "Subtract", x86Avx512FTypeSymbol, RuleKind.op_Subtraction);
+                AddBinaryMethods(methodSymbols, "Xor", x86Avx512FTypeSymbol, RuleKind.op_ExclusiveOr);
 
-                AddShiftOperatorMethods(methodSymbols, "ShiftLeftLogical", x86Avx512FTypeSymbol, RuleKind.op_LeftShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightArithmetic", x86Avx512FTypeSymbol, RuleKind.op_RightShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightLogical", x86Avx512FTypeSymbol, RuleKind.op_UnsignedRightShift);
+                AddShiftMethods(methodSymbols, "ShiftLeftLogical", x86Avx512FTypeSymbol, RuleKind.op_LeftShift);
+                AddShiftMethods(methodSymbols, "ShiftRightArithmetic", x86Avx512FTypeSymbol, RuleKind.op_RightShift);
+                AddShiftMethods(methodSymbols, "ShiftRightLogical", x86Avx512FTypeSymbol, RuleKind.op_UnsignedRightShift);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512FVL, out var x86Avx512FVLTypeSymbol))
             {
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightArithmetic", x86Avx512FVLTypeSymbol, RuleKind.op_RightShift);
+                AddShiftMethods(methodSymbols, "ShiftRightArithmetic", x86Avx512FVLTypeSymbol, RuleKind.op_RightShift);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse, out var x86SseTypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "Add", x86SseTypeSymbol, RuleKind.op_Addition);
-                AddBinaryOperatorMethods(methodSymbols, "And", x86SseTypeSymbol, RuleKind.op_BitwiseAnd);
-                AddBinaryOperatorMethods(methodSymbols, "Divide", x86SseTypeSymbol, RuleKind.op_Division);
-                AddBinaryOperatorMethods(methodSymbols, "Multiply", x86SseTypeSymbol, RuleKind.op_Multiply);
-                AddBinaryOperatorMethods(methodSymbols, "Or", x86SseTypeSymbol, RuleKind.op_BitwiseOr);
-                AddBinaryOperatorMethods(methodSymbols, "Subtract", x86SseTypeSymbol, RuleKind.op_Subtraction);
-                AddBinaryOperatorMethods(methodSymbols, "Xor", x86SseTypeSymbol, RuleKind.op_ExclusiveOr);
+                AddBinaryMethods(methodSymbols, "Add", x86SseTypeSymbol, RuleKind.op_Addition);
+                AddBinaryMethods(methodSymbols, "And", x86SseTypeSymbol, RuleKind.op_BitwiseAnd);
+                AddBinaryMethods(methodSymbols, "Divide", x86SseTypeSymbol, RuleKind.op_Division);
+                AddBinaryMethods(methodSymbols, "Multiply", x86SseTypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "Or", x86SseTypeSymbol, RuleKind.op_BitwiseOr);
+                AddBinaryMethods(methodSymbols, "Subtract", x86SseTypeSymbol, RuleKind.op_Subtraction);
+                AddBinaryMethods(methodSymbols, "Xor", x86SseTypeSymbol, RuleKind.op_ExclusiveOr);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse2, out var x86Sse2TypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "Add", x86Sse2TypeSymbol, RuleKind.op_Addition);
-                AddBinaryOperatorMethods(methodSymbols, "And", x86Sse2TypeSymbol, RuleKind.op_BitwiseAnd);
-                AddBinaryOperatorMethods(methodSymbols, "AndNot", x86Sse2TypeSymbol, RuleKind.AndNot);
-                AddBinaryOperatorMethods(methodSymbols, "Divide", x86Sse2TypeSymbol, RuleKind.op_Division);
-                AddBinaryOperatorMethods(methodSymbols, "Multiply", x86Sse2TypeSymbol, RuleKind.op_Multiply, [SpecialType.System_Double]);
-                AddBinaryOperatorMethods(methodSymbols, "MultiplyLow", x86Sse2TypeSymbol, RuleKind.op_Multiply);
-                AddBinaryOperatorMethods(methodSymbols, "Or", x86Sse2TypeSymbol, RuleKind.op_BitwiseOr);
-                AddBinaryOperatorMethods(methodSymbols, "Subtract", x86Sse2TypeSymbol, RuleKind.op_Subtraction);
-                AddBinaryOperatorMethods(methodSymbols, "Xor", x86Sse2TypeSymbol, RuleKind.op_ExclusiveOr);
+                AddBinaryMethods(methodSymbols, "Add", x86Sse2TypeSymbol, RuleKind.op_Addition);
+                AddBinaryMethods(methodSymbols, "And", x86Sse2TypeSymbol, RuleKind.op_BitwiseAnd);
+                AddBinaryMethods(methodSymbols, "AndNot", x86Sse2TypeSymbol, RuleKind.AndNot);
+                AddBinaryMethods(methodSymbols, "Divide", x86Sse2TypeSymbol, RuleKind.op_Division);
+                AddBinaryMethods(methodSymbols, "Multiply", x86Sse2TypeSymbol, RuleKind.op_Multiply, [SpecialType.System_Double]);
+                AddBinaryMethods(methodSymbols, "MultiplyLow", x86Sse2TypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "Or", x86Sse2TypeSymbol, RuleKind.op_BitwiseOr);
+                AddBinaryMethods(methodSymbols, "Subtract", x86Sse2TypeSymbol, RuleKind.op_Subtraction);
+                AddBinaryMethods(methodSymbols, "Xor", x86Sse2TypeSymbol, RuleKind.op_ExclusiveOr);
 
-                AddShiftOperatorMethods(methodSymbols, "ShiftLeftLogical", x86Sse2TypeSymbol, RuleKind.op_LeftShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightArithmetic", x86Sse2TypeSymbol, RuleKind.op_RightShift);
-                AddShiftOperatorMethods(methodSymbols, "ShiftRightLogical", x86Sse2TypeSymbol, RuleKind.op_UnsignedRightShift);
+                AddShiftMethods(methodSymbols, "ShiftLeftLogical", x86Sse2TypeSymbol, RuleKind.op_LeftShift);
+                AddShiftMethods(methodSymbols, "ShiftRightArithmetic", x86Sse2TypeSymbol, RuleKind.op_RightShift);
+                AddShiftMethods(methodSymbols, "ShiftRightLogical", x86Sse2TypeSymbol, RuleKind.op_UnsignedRightShift);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse41, out var x86Sse41TypeSymbol))
             {
-                AddBinaryOperatorMethods(methodSymbols, "MultiplyLow", x86Sse41TypeSymbol, RuleKind.op_Multiply);
+                AddBinaryMethods(methodSymbols, "MultiplyLow", x86Sse41TypeSymbol, RuleKind.op_Multiply);
             }
 
             // Register named methods (not operators) that have cross-platform equivalents
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsArmAdvSimd, out var armAdvSimdTypeSymbolForMethods))
             {
-                AddUnaryOperatorMethods(methodSymbols, "Abs", armAdvSimdTypeSymbolForMethods, RuleKind.Abs);
-                AddBinaryOperatorMethods(methodSymbols, "AndNot", armAdvSimdTypeSymbolForMethods, RuleKind.AndNot);
+                // Note: AdvSimd.Abs for integer types returns unsigned types (e.g., Vector128<int> → Vector128<uint>),
+                // so we only register floating-point Abs which has compatible signatures
+                AddUnaryMethods(methodSymbols, "Abs", armAdvSimdTypeSymbolForMethods, RuleKind.Abs, [SpecialType.System_Single]);
+                AddBinaryMethods(methodSymbols, "BitwiseClear", armAdvSimdTypeSymbolForMethods, RuleKind.AndNot);
                 AddTernaryMethods(methodSymbols, "FusedMultiplyAdd", armAdvSimdTypeSymbolForMethods, RuleKind.FusedMultiplyAdd);
-                AddBinaryOperatorMethods(methodSymbols, "Max", armAdvSimdTypeSymbolForMethods, RuleKind.Max);
-                AddBinaryOperatorMethods(methodSymbols, "Min", armAdvSimdTypeSymbolForMethods, RuleKind.Min);
+                AddBinaryMethods(methodSymbols, "Max", armAdvSimdTypeSymbolForMethods, RuleKind.Max);
+                AddBinaryMethods(methodSymbols, "Min", armAdvSimdTypeSymbolForMethods, RuleKind.Min);
                 // Note: Negate is already registered as op_UnaryNegation above, so we don't register it here
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsArmAdvSimdArm64, out var armAdvSimdArm64TypeSymbolForMethods))
             {
-                AddUnaryOperatorMethods(methodSymbols, "Abs", armAdvSimdArm64TypeSymbolForMethods, RuleKind.Abs);
+                // Note: AdvSimd.Arm64.Abs for integer types returns unsigned types (e.g., Vector128<long> → Vector128<ulong>),
+                // so we don't register Abs here as it doesn't have a compatible cross-platform equivalent
                 // Note: Negate is already registered as op_UnaryNegation above, so we don't register it here
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsWasmPackedSimd, out var wasmPackedSimdTypeSymbolForMethods))
             {
-                AddUnaryOperatorMethods(methodSymbols, "Abs", wasmPackedSimdTypeSymbolForMethods, RuleKind.Abs);
-                AddUnaryOperatorMethods(methodSymbols, "Ceiling", wasmPackedSimdTypeSymbolForMethods, RuleKind.Ceiling);
-                AddUnaryOperatorMethods(methodSymbols, "Floor", wasmPackedSimdTypeSymbolForMethods, RuleKind.Floor);
-                AddBinaryOperatorMethods(methodSymbols, "Max", wasmPackedSimdTypeSymbolForMethods, RuleKind.Max);
-                AddBinaryOperatorMethods(methodSymbols, "Min", wasmPackedSimdTypeSymbolForMethods, RuleKind.Min);
+                AddUnaryMethods(methodSymbols, "Abs", wasmPackedSimdTypeSymbolForMethods, RuleKind.Abs);
+                AddUnaryMethods(methodSymbols, "Ceiling", wasmPackedSimdTypeSymbolForMethods, RuleKind.Ceiling);
+                AddUnaryMethods(methodSymbols, "Floor", wasmPackedSimdTypeSymbolForMethods, RuleKind.Floor);
+                AddBinaryMethods(methodSymbols, "Max", wasmPackedSimdTypeSymbolForMethods, RuleKind.Max);
+                AddBinaryMethods(methodSymbols, "Min", wasmPackedSimdTypeSymbolForMethods, RuleKind.Min);
                 // Note: Negate is already registered as op_UnaryNegation above, so we don't register it here
-                AddUnaryOperatorMethods(methodSymbols, "Sqrt", wasmPackedSimdTypeSymbolForMethods, RuleKind.Sqrt);
-                AddUnaryOperatorMethods(methodSymbols, "Truncate", wasmPackedSimdTypeSymbolForMethods, RuleKind.Truncate);
+                AddUnaryMethods(methodSymbols, "Sqrt", wasmPackedSimdTypeSymbolForMethods, RuleKind.Sqrt);
+                AddUnaryMethods(methodSymbols, "Truncate", wasmPackedSimdTypeSymbolForMethods, RuleKind.Truncate);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx, out var x86AvxTypeSymbolForMethods))
             {
-                AddBinaryOperatorMethods(methodSymbols, "AndNot", x86AvxTypeSymbolForMethods, RuleKind.AndNot);
-                AddUnaryOperatorMethods(methodSymbols, "Ceiling", x86AvxTypeSymbolForMethods, RuleKind.Ceiling);
-                AddUnaryOperatorMethods(methodSymbols, "Floor", x86AvxTypeSymbolForMethods, RuleKind.Floor);
-                AddBinaryOperatorMethods(methodSymbols, "Max", x86AvxTypeSymbolForMethods, RuleKind.Max);
-                AddBinaryOperatorMethods(methodSymbols, "Min", x86AvxTypeSymbolForMethods, RuleKind.Min);
-                AddUnaryOperatorMethods(methodSymbols, "RoundToNearestInteger", x86AvxTypeSymbolForMethods, RuleKind.Round);
-                AddUnaryOperatorMethods(methodSymbols, "RoundToNegativeInfinity", x86AvxTypeSymbolForMethods, RuleKind.Floor);
-                AddUnaryOperatorMethods(methodSymbols, "RoundToPositiveInfinity", x86AvxTypeSymbolForMethods, RuleKind.Ceiling);
-                AddUnaryOperatorMethods(methodSymbols, "RoundToZero", x86AvxTypeSymbolForMethods, RuleKind.Truncate);
-                AddUnaryOperatorMethods(methodSymbols, "Sqrt", x86AvxTypeSymbolForMethods, RuleKind.Sqrt);
+                AddBinaryMethods(methodSymbols, "AndNot", x86AvxTypeSymbolForMethods, RuleKind.AndNot);
+                AddUnaryMethods(methodSymbols, "Ceiling", x86AvxTypeSymbolForMethods, RuleKind.Ceiling);
+                AddUnaryMethods(methodSymbols, "Floor", x86AvxTypeSymbolForMethods, RuleKind.Floor);
+                AddBinaryMethods(methodSymbols, "Max", x86AvxTypeSymbolForMethods, RuleKind.Max);
+                AddBinaryMethods(methodSymbols, "Min", x86AvxTypeSymbolForMethods, RuleKind.Min);
+                AddUnaryMethods(methodSymbols, "RoundToNearestInteger", x86AvxTypeSymbolForMethods, RuleKind.Round);
+                AddUnaryMethods(methodSymbols, "RoundToNegativeInfinity", x86AvxTypeSymbolForMethods, RuleKind.Floor);
+                AddUnaryMethods(methodSymbols, "RoundToPositiveInfinity", x86AvxTypeSymbolForMethods, RuleKind.Ceiling);
+                AddUnaryMethods(methodSymbols, "RoundToZero", x86AvxTypeSymbolForMethods, RuleKind.Truncate);
+                AddUnaryMethods(methodSymbols, "Sqrt", x86AvxTypeSymbolForMethods, RuleKind.Sqrt);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx2, out var x86Avx2TypeSymbolForMethods))
             {
-                AddUnaryOperatorMethods(methodSymbols, "Abs", x86Avx2TypeSymbolForMethods, RuleKind.Abs);
+                AddUnaryMethods(methodSymbols, "Abs", x86Avx2TypeSymbolForMethods, RuleKind.Abs);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512BW, out var x86Avx512BWTypeSymbolForMethods))
             {
-                AddUnaryOperatorMethods(methodSymbols, "Abs", x86Avx512BWTypeSymbolForMethods, RuleKind.Abs);
+                AddUnaryMethods(methodSymbols, "Abs", x86Avx512BWTypeSymbolForMethods, RuleKind.Abs);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Avx512F, out var x86Avx512FTypeSymbolForMethods))
             {
-                AddUnaryOperatorMethods(methodSymbols, "Abs", x86Avx512FTypeSymbolForMethods, RuleKind.Abs);
+                AddUnaryMethods(methodSymbols, "Abs", x86Avx512FTypeSymbolForMethods, RuleKind.Abs);
                 AddTernaryMethods(methodSymbols, "FusedMultiplyAdd", x86Avx512FTypeSymbolForMethods, RuleKind.FusedMultiplyAdd);
-                AddBinaryOperatorMethods(methodSymbols, "Max", x86Avx512FTypeSymbolForMethods, RuleKind.Max);
-                AddBinaryOperatorMethods(methodSymbols, "Min", x86Avx512FTypeSymbolForMethods, RuleKind.Min);
-                AddUnaryOperatorMethods(methodSymbols, "RoundToNearestInteger", x86Avx512FTypeSymbolForMethods, RuleKind.Round);
-                AddUnaryOperatorMethods(methodSymbols, "Sqrt", x86Avx512FTypeSymbolForMethods, RuleKind.Sqrt);
+                AddBinaryMethods(methodSymbols, "Max", x86Avx512FTypeSymbolForMethods, RuleKind.Max);
+                AddBinaryMethods(methodSymbols, "Min", x86Avx512FTypeSymbolForMethods, RuleKind.Min);
+                AddUnaryMethods(methodSymbols, "RoundToNearestInteger", x86Avx512FTypeSymbolForMethods, RuleKind.Round);
+                AddUnaryMethods(methodSymbols, "Sqrt", x86Avx512FTypeSymbolForMethods, RuleKind.Sqrt);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Fma, out var x86FmaTypeSymbolForMethods))
@@ -402,28 +405,28 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse, out var x86SseTypeSymbolForMethods))
             {
-                AddBinaryOperatorMethods(methodSymbols, "AndNot", x86SseTypeSymbolForMethods, RuleKind.AndNot);
-                AddBinaryOperatorMethods(methodSymbols, "Max", x86SseTypeSymbolForMethods, RuleKind.Max);
-                AddBinaryOperatorMethods(methodSymbols, "Min", x86SseTypeSymbolForMethods, RuleKind.Min);
-                AddUnaryOperatorMethods(methodSymbols, "Sqrt", x86SseTypeSymbolForMethods, RuleKind.Sqrt);
+                AddBinaryMethods(methodSymbols, "AndNot", x86SseTypeSymbolForMethods, RuleKind.AndNot);
+                AddBinaryMethods(methodSymbols, "Max", x86SseTypeSymbolForMethods, RuleKind.Max);
+                AddBinaryMethods(methodSymbols, "Min", x86SseTypeSymbolForMethods, RuleKind.Min);
+                AddUnaryMethods(methodSymbols, "Sqrt", x86SseTypeSymbolForMethods, RuleKind.Sqrt);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse2, out var x86Sse2TypeSymbolForMethods))
             {
-                AddUnaryOperatorMethods(methodSymbols, "Sqrt", x86Sse2TypeSymbolForMethods, RuleKind.Sqrt);
+                AddUnaryMethods(methodSymbols, "Sqrt", x86Sse2TypeSymbolForMethods, RuleKind.Sqrt);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Sse41, out var x86Sse41TypeSymbolForMethods))
             {
-                AddUnaryOperatorMethods(methodSymbols, "RoundToNearestInteger", x86Sse41TypeSymbolForMethods, RuleKind.Round);
-                AddUnaryOperatorMethods(methodSymbols, "RoundToNegativeInfinity", x86Sse41TypeSymbolForMethods, RuleKind.Floor);
-                AddUnaryOperatorMethods(methodSymbols, "RoundToPositiveInfinity", x86Sse41TypeSymbolForMethods, RuleKind.Ceiling);
-                AddUnaryOperatorMethods(methodSymbols, "RoundToZero", x86Sse41TypeSymbolForMethods, RuleKind.Truncate);
+                AddUnaryMethods(methodSymbols, "RoundToNearestInteger", x86Sse41TypeSymbolForMethods, RuleKind.Round);
+                AddUnaryMethods(methodSymbols, "RoundToNegativeInfinity", x86Sse41TypeSymbolForMethods, RuleKind.Floor);
+                AddUnaryMethods(methodSymbols, "RoundToPositiveInfinity", x86Sse41TypeSymbolForMethods, RuleKind.Ceiling);
+                AddUnaryMethods(methodSymbols, "RoundToZero", x86Sse41TypeSymbolForMethods, RuleKind.Truncate);
             }
 
             if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeIntrinsicsX86Ssse3, out var x86Ssse3TypeSymbolForMethods))
             {
-                AddUnaryOperatorMethods(methodSymbols, "Abs", x86Ssse3TypeSymbolForMethods, RuleKind.Abs);
+                AddUnaryMethods(methodSymbols, "Abs", x86Ssse3TypeSymbolForMethods, RuleKind.Abs);
             }
 
             if (methodSymbols.Any())
@@ -431,10 +434,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 context.RegisterOperationAction((context) => AnalyzeInvocation(context, methodSymbols), OperationKind.Invocation);
             }
 
-            static void AddBinaryOperatorMethods(Dictionary<IMethodSymbol, RuleKind> methodSymbols, string name, INamedTypeSymbol typeSymbol, RuleKind ruleKind, params SpecialType[] supportedTypes)
+            static void AddBinaryMethods(Dictionary<IMethodSymbol, RuleKind> methodSymbols, string name, INamedTypeSymbol typeSymbol, RuleKind ruleKind, params SpecialType[] supportedTypes)
             {
-                // Looking for a method with 2 operands, where the both are of the same type as the generic return type, such as:
+                // Looking for a method with 2 operands, where both are of the same type as the generic return type, such as:
                 //    Vector128<byte> Add(Vector128<byte> x, Vector128<byte> y);
+                // This is used for both operator replacements (e.g., Add → +) and method replacements (e.g., Max → Vector128.Max)
 
                 IEnumerable<IMethodSymbol> members =
                     typeSymbol.GetMembers(name)
@@ -449,7 +453,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 methodSymbols.AddRange(members.Select((m) => new KeyValuePair<IMethodSymbol, RuleKind>(m, ruleKind)));
             }
 
-            static void AddShiftOperatorMethods(Dictionary<IMethodSymbol, RuleKind> methodSymbols, string name, INamedTypeSymbol typeSymbol, RuleKind ruleKind, params SpecialType[] supportedTypes)
+            static void AddShiftMethods(Dictionary<IMethodSymbol, RuleKind> methodSymbols, string name, INamedTypeSymbol typeSymbol, RuleKind ruleKind, params SpecialType[] supportedTypes)
             {
                 // Looking for a method with 2 operands, where the first is of the same type as the generic return type and the second is byte or int, such as:
                 //    Vector128<byte> LeftShift(Vector128<byte> x, byte y);
@@ -468,10 +472,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 methodSymbols.AddRange(members.Select((m) => new KeyValuePair<IMethodSymbol, RuleKind>(m, ruleKind)));
             }
 
-            static void AddUnaryOperatorMethods(Dictionary<IMethodSymbol, RuleKind> methodSymbols, string name, INamedTypeSymbol typeSymbol, RuleKind ruleKind, params SpecialType[] supportedTypes)
+            static void AddUnaryMethods(Dictionary<IMethodSymbol, RuleKind> methodSymbols, string name, INamedTypeSymbol typeSymbol, RuleKind ruleKind, params SpecialType[] supportedTypes)
             {
                 // Looking for a method with 1 operand, where it is of the same type as the generic return type, such as:
                 //    Vector128<byte> Negate(Vector128<byte> operand);
+                // This is used for both operator replacements (e.g., Negate → unary -) and method replacements (e.g., Sqrt → Vector128.Sqrt)
 
                 IEnumerable<IMethodSymbol> members =
                     typeSymbol.GetMembers(name)
