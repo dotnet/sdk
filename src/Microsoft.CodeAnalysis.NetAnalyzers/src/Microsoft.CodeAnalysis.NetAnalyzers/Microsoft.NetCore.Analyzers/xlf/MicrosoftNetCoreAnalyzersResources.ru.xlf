@@ -1008,6 +1008,21 @@ Widening and user defined conversions are not supported with generic types.</sou
         <target state="translated">Используйте SAS службы вместо SAS учетной записи для детализированного контроля доступа и политики доступа на уровне контейнеров.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopDescription">
+        <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</source>
+        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopMessage">
+        <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</source>
+        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopTitle">
+        <source>Do not use 'AsParallel' in 'foreach'</source>
+        <target state="new">Do not use 'AsParallel' in 'foreach'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseBrokenCryptographicAlgorithms">
         <source>Do Not Use Broken Cryptographic Algorithms</source>
         <target state="translated">Не используйте взломанные алгоритмы шифрования</target>

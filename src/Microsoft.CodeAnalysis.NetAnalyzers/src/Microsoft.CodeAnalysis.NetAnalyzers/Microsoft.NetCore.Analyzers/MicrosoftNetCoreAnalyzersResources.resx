@@ -195,6 +195,15 @@
   <data name="DoNotUseCountWhenAnyCanBeUsedTitle" xml:space="preserve">
     <value>Do not use Count() or LongCount() when Any() can be used</value>
   </data>
+  <data name="DoNotUseAsParallelInForEachLoopTitle" xml:space="preserve">
+    <value>Do not use 'AsParallel' in 'foreach'</value>
+  </data>
+  <data name="DoNotUseAsParallelInForEachLoopMessage" xml:space="preserve">
+    <value>Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</value>
+  </data>
+  <data name="DoNotUseAsParallelInForEachLoopDescription" xml:space="preserve">
+    <value>Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</value>
+  </data>
   <data name="PreferConvertToHexStringOverBitConverterTitle" xml:space="preserve">
     <value>Prefer 'Convert.ToHexString' and 'Convert.ToHexStringLower' over call chains based on 'BitConverter.ToString'</value>
   </data>
