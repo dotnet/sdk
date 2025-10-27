@@ -229,11 +229,6 @@ Durchsuchte Pfade: "{1}", "{2}".</target>
         <target state="translated">.NET-Befehl "Clean"</target>
         <note />
       </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Zeigt kein Startbanner und keine Copyrightmeldung an.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -1932,11 +1927,6 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
         <target state="translated">.NET Core NuGet Package Packer</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Zeigt kein Startbanner und keine Copyrightmeldung an.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2478,11 +2468,6 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Herausgeber für die .NET-Plattform</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Zeigt kein Startbanner und keine Copyrightmeldung an.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">

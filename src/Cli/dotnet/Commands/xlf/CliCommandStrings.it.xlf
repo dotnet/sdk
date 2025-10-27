@@ -229,11 +229,6 @@ Percorsi cercati: '{1}', '{2}'.</target>
         <target state="translated">Comando di pulizia .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -1932,11 +1927,6 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <target state="translated">Strumento di creazione pacchetti NuGet di .NET Core</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2478,11 +2468,6 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Editore per la piattaforma .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">

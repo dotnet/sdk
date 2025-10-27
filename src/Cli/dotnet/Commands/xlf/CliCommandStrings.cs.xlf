@@ -229,11 +229,6 @@ Prohledané cesty: „{1}“, „{2}“.</target>
         <target state="translated">Příkaz rozhraní .NET pro vyčištění</target>
         <note />
       </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -1932,11 +1927,6 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Nástroj .NET Core pro balení balíčku NuGet</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2478,11 +2468,6 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Vydavatel pro platformu .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">

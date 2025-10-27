@@ -410,11 +410,11 @@ internal static class CommonOptions
     /// </list>
     /// Finally, if neither the option nor the environment variable is set, the option will default to the provided <paramref name="defaultValue"/>.
     /// </summary>
-    public static Option<bool> NoLogoOption(bool defaultValue = true, string forwardAs = "-nologo")
+    public static Option<bool> NoLogoOption(bool defaultValue = true, string forwardAs = "-nologo", string? description = null)
     {
         return new Option<bool>("--nologo")
         {
-            Description = Commands.CliCommandStrings.NoLogoOptionDescription,
+            Description = description ?? Commands.CliCommandStrings.NoLogoOptionDescription,
             DefaultValueFactory = (ar) => Env.TryGetEnvironmentVariableAsBool("DOTNET_NOLOGO", out bool value) ? value : defaultValue,
             CustomParser = (ar) => true,
             Arity = ArgumentArity.Zero

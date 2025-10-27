@@ -229,11 +229,6 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">Команда .NET Clean</target>
         <note />
       </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Не отображать начальный баннер или сообщение об авторских правах.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -1932,11 +1927,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">Упаковщик пакетов NuGet .NET Core</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Не отображать начальный баннер или сообщение об авторских правах.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2478,11 +2468,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Издатель для платформы .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Не отображать начальный баннер или сообщение об авторских правах.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">

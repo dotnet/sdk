@@ -229,11 +229,6 @@ Les chemins d’accès ont recherché : « {1} », « {2} ».</target>
         <target state="translated">Commande de nettoyage .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">N'affiche pas la bannière de démarrage ni le message de copyright.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -1932,11 +1927,6 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
         <target state="translated">Compresseur de package NuGet .NET Core</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">N'affiche pas la bannière de démarrage ni le message de copyright.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2478,11 +2468,6 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Éditeur pour la plateforme .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">N'affiche pas la bannière de démarrage ni le message de copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">

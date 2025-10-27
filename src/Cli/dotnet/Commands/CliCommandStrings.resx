@@ -250,9 +250,6 @@ Paths searched: '{1}', '{2}'.</value>
   <data name="CleanAppFullName" xml:space="preserve">
     <value>.NET Clean Command</value>
   </data>
-  <data name="CleanCmdNoLogo" xml:space="preserve">
-    <value>Do not display the startup banner or the copyright message.</value>
-  </data>
   <data name="CleanCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>
@@ -1322,9 +1319,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="PackAppFullName" xml:space="preserve">
     <value>.NET Core NuGet Package Packer</value>
   </data>
-  <data name="PackCmdNoLogo" xml:space="preserve">
-    <value>Do not display the startup banner or the copyright message.</value>
-  </data>
   <data name="PackCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>
@@ -1596,9 +1590,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="PublishAppDescription" xml:space="preserve">
     <value>Publisher for the .NET Platform</value>
-  </data>
-  <data name="PublishCmdNoLogo" xml:space="preserve">
-    <value>Do not display the startup banner or the copyright message.</value>
   </data>
   <data name="PublishConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to publish for. The default is 'Release' for NET 8.0 projects and above, but 'Debug' for older projects.</value>

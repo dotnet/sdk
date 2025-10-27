@@ -229,11 +229,6 @@ Caminhos pesquisados: "{1}", "{2}".</target>
         <target state="translated">Comando Clean do .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Não exibe a faixa de inicialização ou a mensagem de direitos autorais.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -1932,11 +1927,6 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
         <target state="translated">Empacotador de Pacotes NuGet do .NET Core</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Não exibe a faixa de inicialização ou a mensagem de direitos autorais.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2478,11 +2468,6 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Editor para a Plataforma .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Não exibe a faixa de inicialização ou a mensagem de direitos autorais.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">

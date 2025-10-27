@@ -229,11 +229,6 @@ Przeszukane ścieżki: „{1}”, „{2}”.</target>
         <target state="translated">Polecenie clean platformy .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nie wyświetlaj baneru początkowego ani komunikatu o prawach autorskich.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -1932,11 +1927,6 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <target state="translated">Tworzenie pakietów NuGet w programie .NET Core</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nie wyświetlaj baneru początkowego ani komunikatu o prawach autorskich.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2478,11 +2468,6 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Wydawca dla platformy .NET.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nie wyświetlaj baneru początkowego ani komunikatu o prawach autorskich.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
