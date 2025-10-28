@@ -3527,6 +3527,26 @@
             ]
           }
         },
+        "CA1877": {
+          "id": "CA1877",
+          "shortDescription": "Collapse consecutive Path.Combine or Path.Join operations",
+          "fullDescription": "When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/cA1877",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CollapseMultiplePathOperationsAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",

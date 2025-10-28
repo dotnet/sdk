@@ -2240,4 +2240,16 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="DoNotUseThreadVolatileReadWriteCodeFixTitle" xml:space="preserve">
     <value>Replace obsolete call</value>
   </data>
+  <data name="CollapseMultiplePathOperationsTitle" xml:space="preserve">
+    <value>Collapse consecutive Path.Combine or Path.Join operations</value>
+  </data>
+  <data name="CollapseMultiplePathOperationsMessage" xml:space="preserve">
+    <value>Multiple consecutive Path.{0} operations can be collapsed into a single operation</value>
+  </data>
+  <data name="CollapseMultiplePathOperationsDescription" xml:space="preserve">
+    <value>When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</value>
+  </data>
+  <data name="CollapseMultiplePathOperationsCodeFixTitle" xml:space="preserve">
+    <value>Collapse into single Path.{0} operation</value>
+  </data>
 </root>
