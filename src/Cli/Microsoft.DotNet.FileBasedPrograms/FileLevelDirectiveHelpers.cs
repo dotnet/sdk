@@ -326,7 +326,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         }
 
         // If the name contains characters that resemble separators, report an error to avoid any confusion.
-        if (Patterns.DisallowedNameCharacters.Match(context.DirectiveText, beginning: 0, length: separatorIndex).Success)
+        if (Patterns.DisallowedNameCharacters.Match(context.DirectiveText, beginning: 0, length: firstPart.Length).Success)
         {
             return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.InvalidDirectiveName, directiveKind, separator));
         }
