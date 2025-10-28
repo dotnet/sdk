@@ -1908,6 +1908,30 @@ In many situations, logging is disabled or set to a log level that results in an
 |CodeFix|True|
 ---
 
+## [CA1876](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1876): Do not use 'AsParallel' in 'foreach'
+
+Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
+## [CA1877](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1877): Collapse consecutive Path.Combine or Path.Join operations
+
+When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
@@ -2164,6 +2188,18 @@ JsonDocument implements IDisposable and needs to be properly disposed. When only
 |Enabled|True|
 |Severity|Info|
 |CodeFix|True|
+---
+
+## [CA2027](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2027): Cancel Task.Delay after Task.WhenAny completes
+
+When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
 ---
 
 ## [CA2100](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
