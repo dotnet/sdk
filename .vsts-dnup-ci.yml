@@ -94,7 +94,7 @@ extends:
         displayName: 🧪 dnup tests
         jobs:
         ### Windows ###
-        - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
+        - template: /eng/pipelines/templates/jobs/dnup/dnup-tests.yml@self
           parameters:
             pool:
               name: $(DncEngInternalBuildPool)
@@ -128,7 +128,7 @@ extends:
         displayName: 📦 Package dnup
         dependsOn: []
         jobs:
-        - template: /eng/pipelines/templates/jobs/dnup-library-package.yml@self
+        - template: /eng/pipelines/templates/jobs/dnup/dnup-library-package.yml@self
           parameters:
             pool:
               name: $(DncEngInternalBuildPool)
