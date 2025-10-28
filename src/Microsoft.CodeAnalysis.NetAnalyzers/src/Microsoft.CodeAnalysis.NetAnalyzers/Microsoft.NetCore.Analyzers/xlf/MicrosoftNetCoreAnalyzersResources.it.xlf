@@ -1163,6 +1163,21 @@ L'ampliamento e le conversioni definite dall'utente non sono supportate con tipi
         <target state="translated">{0} è un generatore di numeri casuali non sicuro. Usare generatori di numeri casuali sicuri dal punto di vista della crittografia quando per motivi di sicurezza è richiesta la casualità.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyDescription">
+        <source>When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</source>
+        <target state="new">When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyMessage">
+        <source>Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</source>
+        <target state="new">Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyTitle">
+        <source>Cancel Task.Delay after Task.WhenAny completes</source>
+        <target state="new">Cancel Task.Delay after Task.WhenAny completes</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
         <source>Do not use obsolete key derivation function</source>
         <target state="translated">Non usare la funzione di derivazione di chiave obsoleta</target>

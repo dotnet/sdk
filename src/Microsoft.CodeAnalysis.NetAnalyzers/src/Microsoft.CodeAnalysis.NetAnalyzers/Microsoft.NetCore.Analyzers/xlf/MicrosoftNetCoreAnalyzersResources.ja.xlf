@@ -1163,6 +1163,21 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">{0} は安全でない乱数ジェネレーターです。セキュリティにランダム度が必要な場合に、暗号化によってセキュリティで保護された乱数ジェネレーターを使用します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyDescription">
+        <source>When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</source>
+        <target state="new">When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyMessage">
+        <source>Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</source>
+        <target state="new">Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyTitle">
+        <source>Cancel Task.Delay after Task.WhenAny completes</source>
+        <target state="new">Cancel Task.Delay after Task.WhenAny completes</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
         <source>Do not use obsolete key derivation function</source>
         <target state="translated">非推奨のキー派生関数を使用しないでください</target>

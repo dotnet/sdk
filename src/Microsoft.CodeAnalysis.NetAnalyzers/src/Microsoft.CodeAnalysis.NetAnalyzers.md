@@ -2178,6 +2178,18 @@ JsonDocument implements IDisposable and needs to be properly disposed. When only
 |CodeFix|True|
 ---
 
+## [CA2027](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2027): Cancel Task.Delay after Task.WhenAny completes
+
+When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
 ## [CA2100](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.

@@ -1646,6 +1646,15 @@
   <data name="DoNotUseWhenAllWithSingleTaskFix" xml:space="preserve">
     <value>Replace 'WhenAll' call with argument</value>
   </data>
+  <data name="DoNotUseNonCancelableTaskDelayWithWhenAnyTitle" xml:space="preserve">
+    <value>Cancel Task.Delay after Task.WhenAny completes</value>
+  </data>
+  <data name="DoNotUseNonCancelableTaskDelayWithWhenAnyMessage" xml:space="preserve">
+    <value>Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</value>
+  </data>
+  <data name="DoNotUseNonCancelableTaskDelayWithWhenAnyDescription" xml:space="preserve">
+    <value>When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</value>
+  </data>
   <data name="UseStringEqualsOverStringCompareCodeFixTitle" xml:space="preserve">
     <value>Use 'string.Equals'</value>
   </data>

@@ -1163,6 +1163,21 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">{0}은(는) 비보안 난수 생성기입니다. 보안을 위해 임의성이 필요한 경우 암호화된 보안 난수 생성기를 사용하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyDescription">
+        <source>When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</source>
+        <target state="new">When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyMessage">
+        <source>Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</source>
+        <target state="new">Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyTitle">
+        <source>Cancel Task.Delay after Task.WhenAny completes</source>
+        <target state="new">Cancel Task.Delay after Task.WhenAny completes</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
         <source>Do not use obsolete key derivation function</source>
         <target state="translated">사용되지 않는 키 파생 함수 사용 안 함</target>
