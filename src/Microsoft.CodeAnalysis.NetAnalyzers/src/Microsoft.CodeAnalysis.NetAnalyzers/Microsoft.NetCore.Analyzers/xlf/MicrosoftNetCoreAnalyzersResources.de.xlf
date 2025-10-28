@@ -82,6 +82,26 @@
         <target state="translated">Potenziell kostspielige Protokollierung vermeiden</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchDescription">
+        <source>Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and unnecessarily repeats the matching operation. Call 'Regex.Match' directly and check the 'Success' property instead.</source>
+        <target state="new">Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and unnecessarily repeats the matching operation. Call 'Regex.Match' directly and check the 'Success' property instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchFix">
+        <source>Remove redundant 'Regex.IsMatch' guard</source>
+        <target state="new">Remove redundant 'Regex.IsMatch' guard</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchMessage">
+        <source>Remove redundant 'Regex.IsMatch' guard; 'Regex.Match' contains a 'Success' property to test for matching</source>
+        <target state="new">Remove redundant 'Regex.IsMatch' guard; 'Regex.Match' contains a 'Success' property to test for matching</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchTitle">
+        <source>Avoid redundant 'Regex.IsMatch' guard before 'Regex.Match'</source>
+        <target state="new">Avoid redundant 'Regex.IsMatch' guard before 'Regex.Match'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
         <target state="translated">Erstellen Sie für Serialisierungsvorgänge nicht jeweils eine neue JsonSerializerOptions-Instanz. Speichern Sie stattdessen Instanzen zwischen, und verwenden Sie sie wieder. Die einmalige Verwendung von JsonSerializerOptions-Instanzen kann die Leistung Ihrer Anwendung erheblich beeinträchtigen.</target>
