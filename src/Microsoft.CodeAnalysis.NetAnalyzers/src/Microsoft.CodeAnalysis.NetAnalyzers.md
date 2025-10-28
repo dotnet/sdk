@@ -1920,7 +1920,7 @@ Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' s
 |CodeFix|False|
 ---
 
-## [CA1877](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/cA1877): Collapse consecutive Path.Combine or Path.Join operations
+## [CA1877](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1877): Collapse consecutive Path.Combine or Path.Join operations
 
 When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.
 
