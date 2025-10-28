@@ -396,11 +396,9 @@ internal class DotnetArchiveExtractor : IDisposable
         }
     }
 
-    // TODO: InstallerOrchestratorSingleton also checks existing installs via the manifest. Which should we use and where?
-    private IEnumerable<ReleaseVersion> GetExistingSdkVersions(DotnetInstallRoot installRoot)
+    private static IEnumerable<ReleaseVersion> GetExistingSdkVersions(DotnetInstallRoot installRoot)
     {
-        var bundleProvider = new NETBundlesNativeWrapper();
-        NetEnvironmentInfo environmentInfo = bundleProvider.GetDotnetEnvironmentInfo(installRoot.Path);
+        var environmentInfo = HostFxrWrapper.getInfo(installRoot.Path!);
         return environmentInfo.SdkInfo.Select(sdk => sdk.Version);
     }
 }

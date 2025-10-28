@@ -75,8 +75,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
     {
         try
         {
-            var bundleProvider = new NETBundlesNativeWrapper();
-            NetEnvironmentInfo environmentInfo = bundleProvider.GetDotnetEnvironmentInfo(installRoot); // Could we use get_available_sdks instead to improve perf?
+            var environmentInfo = HostFxrWrapper.getInfo(installRoot);
 
             if (component == InstallComponent.SDK)
             {
