@@ -68,11 +68,6 @@
     <ProjectReference Include="..\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-  </ItemGroup>
-
   <!-- These are loaded from the CLI's copy on .NET Core, we don't need to duplicate them on disk -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <PackageReference Update="Microsoft.Extensions.DependencyModel" ExcludeAssets="Runtime" />
