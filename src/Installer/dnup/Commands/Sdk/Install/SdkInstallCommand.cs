@@ -209,7 +209,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         //  TODO: Implement transaction / rollback?
 
-        SpectreAnsiConsole.MarkupInterpolated($"Installing .NET SDK [blue]{resolvedVersion}[/] to [blue]{resolvedInstallPath}[/]...");
+        SpectreAnsiConsole.MarkupLineInterpolated($"Installing .NET SDK [blue]{resolvedVersion}[/] to [blue]{resolvedInstallPath}[/]...");
 
         DotnetInstall? mainInstall;
 
