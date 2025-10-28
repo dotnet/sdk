@@ -10,9 +10,9 @@ namespace Microsoft.Dotnet.Installation;
 
 public static class InstallerFactory
 {
-    public static IDotnetInstaller CreateInstaller()
+    public static IDotnetInstaller CreateInstaller(IProgressTarget progressTarget)
     {
-        return new DotnetInstaller();
+        return new DotnetInstaller(progressTarget);
     }
 
     public static IDotnetReleaseInfoProvider CreateReleaseInfoProvider()
