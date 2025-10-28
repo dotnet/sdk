@@ -6,6 +6,7 @@ pr:
   branches:
     include:
     - dnup
+    - release/dnup
   paths:
     include:
     - src/Installer/dnup/
