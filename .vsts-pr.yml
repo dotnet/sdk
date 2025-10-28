@@ -13,6 +13,11 @@ pr:
     - documentation/*
     - README.md
     - CODEOWNERS
+    - .vsts-dnup-ci.yml
+    - .vsts-dnup-pr.yml
+    - /eng/pipelines/templates/jobs/dnup/*
+    - src/Installer/*
+    - test/dnup.Tests/*
 
 parameters:
 - name: enableArm64Job
