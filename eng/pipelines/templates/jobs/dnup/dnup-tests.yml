@@ -37,6 +37,13 @@ jobs:
       sdl:
         binskim:
           analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|artifacts\bin\**\capstone.dll;
+      outputs:
+      - output: pipelineArtifact
+        displayName: '🌐 Publish Test Artifacts'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)/artifacts/dnupTestResults'
+        artifactName: 'dnupTestResults_${{ parameters.pool.os }}'
+        publishLocation: Container
 
     steps:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
@@ -79,10 +86,3 @@ jobs:
         testResultsFiles: '**/dnup-tests.trx'
         searchFolder: $(Build.SourcesDirectory)/artifacts/dnupTestResults
         testRunTitle: 'dnup ${{ parameters.pool.os }}'
-    - task: PublishBuildArtifacts@1
-      displayName: ⬇️ Publish test artifacts
-      condition: always()
-      inputs:
-        PathtoPublish: $(Build.SourcesDirectory)/artifacts/dnupTestResults
-        ArtifactName: dnupTestResults_${{ parameters.pool.os }}
-        publishLocation: Container
