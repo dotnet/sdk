@@ -1008,6 +1008,21 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <target state="translated">Ayrıntılı erişim denetimi ve kapsayıcı düzeyinde erişim ilkesi için Hesap SAS'si yerine Hizmet SAS'sini kullanın</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopDescription">
+        <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</source>
+        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopMessage">
+        <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</source>
+        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopTitle">
+        <source>Do not use 'AsParallel' in 'foreach'</source>
+        <target state="new">Do not use 'AsParallel' in 'foreach'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseBrokenCryptographicAlgorithms">
         <source>Do Not Use Broken Cryptographic Algorithms</source>
         <target state="translated">Bozuk Kriptografik Algoritmalar Kullanma</target>
@@ -2314,18 +2329,23 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
-        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
-        <target state="translated">StringBuilder.Append ve StringBuilder.Insert, System.String'in ötesinde birden çok türe yönelik aşırı yükleme sağlar. Mümkün olduğunda, ToString() ve dize tabanlı aşırı yüklemeyi kullanmak yerine kesin tür belirtilmiş aşırı yüklemeleri tercih edin.</target>
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</source>
+        <target state="needs-review-translation">StringBuilder.Append ve StringBuilder.Insert, System.String'in ötesinde birden çok türe yönelik aşırı yükleme sağlar. Mümkün olduğunda, ToString() ve dize tabanlı aşırı yüklemeyi kullanmak yerine kesin tür belirtilmiş aşırı yüklemeleri tercih edin.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
-        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
-        <target state="translated">Kesin tür belirtilmiş bir StringBuilder aşırı yüklemesi kullanmak için ToString çağrısını kaldırın</target>
+        <source>Prefer strongly-typed StringBuilder overload</source>
+        <target state="needs-review-translation">Kesin tür belirtilmiş bir StringBuilder aşırı yüklemesi kullanmak için ToString çağrısını kaldırın</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
         <source>Remove the ToString call</source>
         <target state="translated">ToString çağrısını kaldırın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsReplaceStringConstructor">
+        <source>Use StringBuilder.Append(char, int) overload</source>
+        <target state="new">Use StringBuilder.Append(char, int) overload</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
