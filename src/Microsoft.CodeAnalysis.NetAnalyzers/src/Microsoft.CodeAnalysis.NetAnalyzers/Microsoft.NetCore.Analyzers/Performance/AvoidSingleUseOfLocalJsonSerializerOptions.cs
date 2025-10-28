@@ -60,7 +60,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     INamedTypeSymbol? typeSymbol = operation.Constructor?.ContainingType;
                     if (SymbolEqualityComparer.Default.Equals(typeSymbol, jsonSerializerOptionsSymbol))
                     {
-                        // Don't report diagnostic for top-level statements as they only execute once
+                        // Don't report diagnostic for top-level statements as caching there is less impactful
                         if (context.ContainingSymbol is IMethodSymbol method && method.IsTopLevelStatementsEntryPointMethod())
                         {
                             return;
