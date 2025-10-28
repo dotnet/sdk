@@ -173,7 +173,8 @@ internal static class CommonOptions
         new Option<string>("--framework", "-f")
         {
             Description = description,
-            HelpName = CliStrings.FrameworkArgumentName
+            HelpName = CliStrings.FrameworkArgumentName,
+            IsDynamic = true
         }
         .ForwardAsSingle(o => $"--property:TargetFramework={o}")
         .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
