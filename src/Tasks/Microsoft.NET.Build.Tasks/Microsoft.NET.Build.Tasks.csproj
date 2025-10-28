@@ -54,6 +54,13 @@
     <!-- Use an alias for APICompat so that we bring in the binaries, but don't accidentally reference any types -->
     <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" />
     <PackageReference Include="System.IO.Hashing" />
+
+    <!-- Promote the System.Text.Json reference even for .NET Framework, because
+         GenerateDepsFile uses a live version of Microsoft.Extensions.DependencyModel
+         (to generate the latest deps file format) and DependencyModel has a live dep
+         on STJ. For this to work, we must ensure that we never try to interchange
+         types between the live STJ and the VS/MSBuild-provided one. -->
+    <PackageReference Update="System.Text.Json" VersionOverride="" />
   </ItemGroup>
 
   <ItemGroup>
