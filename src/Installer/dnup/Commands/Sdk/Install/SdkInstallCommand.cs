@@ -24,7 +24,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly IDotnetReleaseInfoProvider _releaseInfoProvider = new EnvironmentVariableMockReleaseInfoProvider();
-    private readonly ManifestChannelVersionResolver _channelVersionResolver = new ManifestChannelVersionResolver();
+    private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
 
     public override int Execute()
     {
