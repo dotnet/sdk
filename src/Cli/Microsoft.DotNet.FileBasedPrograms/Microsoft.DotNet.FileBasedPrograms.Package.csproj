@@ -27,6 +27,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <!-- Make sure the shared source files do not require any global usings -->

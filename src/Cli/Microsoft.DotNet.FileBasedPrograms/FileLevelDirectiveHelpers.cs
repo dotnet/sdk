@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -579,7 +580,10 @@ internal sealed class SimpleDiagnostic
     /// </summary>
     public readonly struct Position
     {
-        public required TextSpan TextSpan { get; init; }
+        // note: this type is only serialized for run-api scenarios.
+        // If/when run-api is removed, we would also want to remove this configuration.
+        [JsonIgnore]
+        public TextSpan TextSpan { get; init; }
         public required LinePositionSpan Span { get; init; }
         public required string Path { get; init; }
     }
