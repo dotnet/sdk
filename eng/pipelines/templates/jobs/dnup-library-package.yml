@@ -39,16 +39,16 @@ jobs:
           analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|artifacts\bin\**\capstone.dll;
       outputs:
       - output: pipelineArtifact
-        displayName: '🌐 Publish dnup library package from standard ci'
+        displayName: '🌐 Publish dnup library packages'
         condition: always()
         targetPath: '$(Build.SourcesDirectory)/artifacts/packages/Release/NonShipping/'
-        artifactName: 'Microsoft.Dotnet.Installation.1.0.0-alpha.nupkg' # TODO: Replace hard-coded with * or version
+        artifactName: 'dnup-library-packages'
         publishLocation: Container
       - output: pipelineArtifact
-        displayName: '🌏 Publish dnup library package from Arcade'
+        displayName: '🌏 Publish dnup library packages (Arcade)'
         condition: always()
-        targetPath: ' $(System.DefaultWorkingDirectory)/artifacts/packages/Release/Shipping/'
-        artifactName: 'Microsoft.Dotnet.Installation.1.0.0-alpha.nupkg' # TODO: Replace hard-coded with * or version
+        targetPath: '$(System.DefaultWorkingDirectory)/artifacts/packages/Release/Shipping/'
+        artifactName: 'dnup-library-packages-arcade'
         publishLocation: Container
 
     steps:
