@@ -19,7 +19,11 @@ public interface IProgressReporter : IDisposable
 
 public interface IProgressTask
 {
+    string Description { get; set; }
     double Value { get; set; }
+    double MaxValue { get; set; }
+
+
 }
 
 public class NullProgressTarget : IProgressTarget
@@ -32,11 +36,18 @@ public class NullProgressTarget : IProgressTarget
         }
         public IProgressTask AddTask(string description, double maxValue)
         {
-            return new NullProgressTask();
+            return new NullProgressTask(description);
         }
     }
     class NullProgressTask : IProgressTask
     {
+        public NullProgressTask(string description)
+        {
+            Description = description;
+        }
+
         public double Value { get; set; }
+        public string Description { get; set; }
+        public double MaxValue { get; set; }
     }
 }

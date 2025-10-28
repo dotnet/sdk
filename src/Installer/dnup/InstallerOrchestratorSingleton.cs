@@ -51,7 +51,10 @@ internal class InstallerOrchestratorSingleton
             }
         }
 
-        using ArchiveDotnetExtractor installer = new(installRequest, versionToInstall, noProgress);
+        //  TODO: Change noProgress logic so that output should still be printed, just not updates
+        IProgressTarget progressTarget = noProgress ? new NullProgressTarget() : new SpectreProgressTarget();
+
+        using ArchiveDotnetExtractor installer = new(installRequest, versionToInstall, progressTarget);
         installer.Prepare();
 
         // Extract and commit the install to the directory

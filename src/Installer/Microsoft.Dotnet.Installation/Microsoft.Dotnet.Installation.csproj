@@ -19,8 +19,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
-    <!-- TODO: Create logging / progress abstraction and remove this dependency from the library -->
-    <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 
 </Project>

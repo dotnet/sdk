@@ -29,7 +29,7 @@ public class LibraryTests
         var latestVersion = releaseInfoProvider.GetLatestVersion(InstallComponent.SDK, channel);
         Log.WriteLine($"Latest version for channel '{channel}' is '{latestVersion}'");
 
-        var installer = InstallerFactory.CreateInstaller();
+        var installer = InstallerFactory.CreateInstaller(new NullProgressTarget());
 
         using var testEnv = DnupTestUtilities.CreateTestEnvironment();
 

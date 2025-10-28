@@ -54,5 +54,15 @@ public class SpectreProgressTarget : IProgressTarget
             get => _task.Value;
             set => _task.Value = value;
         }
+        public string Description
+        {
+            get => _task.Description;
+            set => _task.Description = value;
+        }
+        public double MaxValue
+        {
+            get => _task.MaxValue;
+            set => _task.MaxValue = value;
+        }
     }
 }
