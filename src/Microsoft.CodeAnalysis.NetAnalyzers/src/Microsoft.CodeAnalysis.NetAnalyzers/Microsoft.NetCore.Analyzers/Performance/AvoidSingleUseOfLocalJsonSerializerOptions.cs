@@ -60,6 +60,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     INamedTypeSymbol? typeSymbol = operation.Constructor?.ContainingType;
                     if (SymbolEqualityComparer.Default.Equals(typeSymbol, jsonSerializerOptionsSymbol))
                     {
+                        // Don't report diagnostic for top-level statements as they only execute once
+                        if (context.ContainingSymbol is IMethodSymbol method && method.IsTopLevelStatementsEntryPointMethod())
+                        {
+                            return;
+                        }
+
                         if (IsCtorUsedAsArgumentForJsonSerializer(operation, jsonSerializerSymbol) ||
                             IsLocalUsedAsArgumentForJsonSerializerOnly(operation, jsonSerializerSymbol, jsonSerializerOptionsSymbol))
                         {
