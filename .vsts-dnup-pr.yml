@@ -6,6 +6,7 @@ pr:
   branches:
     include:
     - dnup
+    - release/dnup
   paths:
     include:
     - src/Installer/dnup/
@@ -29,7 +30,7 @@ stages:
   displayName: 🏰 dnup tests
   jobs:
   ############### WINDOWS ###############
-  - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
+  - template: /eng/pipelines/templates/jobs/dnup/dnup-tests.yml@self
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
@@ -39,7 +40,7 @@ stages:
       helixTargetQueue: windows.amd64.vs2022.pre.open
 
   ############### LINUX ###############
-  - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
+  - template: /eng/pipelines/templates/jobs/dnup/dnup-tests.yml@self
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
@@ -49,7 +50,7 @@ stages:
       helixTargetQueue: ubuntu.2204.amd64.open
 
   ############### MACOS ###############
-  - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
+  - template: /eng/pipelines/templates/jobs/dnup/dnup-tests.yml@self
     parameters:
       pool:
         name: Azure Pipelines
@@ -60,7 +61,7 @@ stages:
 
   ### ARM64 ###
   - ${{ if eq(parameters.enableArm64Job, true) }}:
-    - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
+    - template: /eng/pipelines/templates/jobs/dnup/dnup-tests.yml@self
       parameters:
         pool:
           name: Azure Pipelines
