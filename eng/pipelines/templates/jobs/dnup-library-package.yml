@@ -51,10 +51,7 @@ jobs:
           & .\restore.cmd
         displayName: 🍱 Bootstrap toolset (Windows)
       - powershell: |
-          & .\.dotnet\dotnet restore test\dnup.Tests\dnup.Tests.csproj
-        displayName: ♻️ Restore dnup tests (Windows)
-      - powershell: |
-          & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release --no-restore
+          & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release
         displayName: 💻 Build Windows
       - powershell: |
            & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj
