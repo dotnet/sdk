@@ -44,12 +44,6 @@ jobs:
         targetPath: '$(Build.SourcesDirectory)/artifacts/packages/Release/NonShipping/'
         artifactName: 'dnup-library-packages'
         publishLocation: Container
-      - output: pipelineArtifact
-        displayName: '🌏 Publish dnup library packages (Arcade)'
-        condition: always()
-        targetPath: '$(System.DefaultWorkingDirectory)/artifacts/packages/Release/Shipping/'
-        artifactName: 'dnup-library-packages-arcade'
-        publishLocation: Container
 
     steps:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
@@ -65,16 +59,3 @@ jobs:
       - powershell: |
            & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj
         displayName: 📦 Package dnup library
-      - powershell: >-
-          eng/common/build.ps1
-          -restore -build -sign -pack -publish -ci
-          -verbosity detailed
-          -binaryLog
-          -configuration $(_BuildConfig)
-          -projects src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj;src\Installer\dnup\dnup.csproj
-          /p:DotNetSignType=$(_SignType)
-          /p:TeamName=$(_TeamName)
-          /p:DotNetPublishUsingPipelines=true
-          /p:OfficialBuildId=$(OfficialBuildId)
-          /p:StabilizePackageVersion=${{ parameters.stabilizePackageVersion }}
-        displayName: 📦 Package dnup library (arcade)
