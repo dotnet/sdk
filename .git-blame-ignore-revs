@@ -1,0 +1,8 @@
+# This file contains commits that should be ignored by git blame
+# Format: one commit SHA per line with optional comment
+# 
+# To use this file, run:
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Format AvoidSingleUseOfLocalJsonSerializerOptions.cs (imports ordering)
+39fa404
