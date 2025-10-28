@@ -237,6 +237,26 @@
         <target state="translated">Dispose メソッドは、SuppressFinalize を呼び出す必要があります</target>
         <note />
       </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsCodeFixTitle">
+        <source>Collapse into single Path.{0} operation</source>
+        <target state="new">Collapse into single Path.{0} operation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsDescription">
+        <source>When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</source>
+        <target state="new">When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsMessage">
+        <source>Multiple consecutive Path.{0} operations can be collapsed into a single operation</source>
+        <target state="new">Multiple consecutive Path.{0} operations can be collapsed into a single operation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsTitle">
+        <source>Collapse consecutive Path.Combine or Path.Join operations</source>
+        <target state="new">Collapse consecutive Path.Combine or Path.Join operations</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommaSeparator">
         <source>, </source>
         <target state="translated">, </target>
