@@ -11,6 +11,7 @@ namespace Microsoft.DotNet.Cli.CommandLine;
 public static class ForwardedOptionExtensions
 {
     private static readonly Dictionary<Symbol, Func<ParseResult, IEnumerable<string>>> s_forwardingFunctions = [];
+    private static readonly Lock s_lock = new();
 
     extension(Option option)
     {
@@ -78,7 +79,10 @@ public static class ForwardedOptionExtensions
         /// </summary>
         public Option<TValue> SetForwardingFunction(Func<TValue?, IEnumerable<string>> func)
         {
-            s_forwardingFunctions[option] = option.GetForwardingFunction(func);
+            lock (s_lock)
+            {
+                s_forwardingFunctions[option] = option.GetForwardingFunction(func);
+            }
             return option;
         }
 
@@ -88,7 +92,10 @@ public static class ForwardedOptionExtensions
         /// </summary>
         public Option<TValue> SetForwardingFunction(Func<TValue, string> format)
         {
-            s_forwardingFunctions[option] = option.GetForwardingFunction(o => [format(o)]);
+            lock (s_lock)
+            {
+                s_forwardingFunctions[option] = option.GetForwardingFunction(o => [format(o)]);
+            }
             return option;
         }
 
@@ -98,7 +105,10 @@ public static class ForwardedOptionExtensions
         /// </summary>
         public Option<TValue> SetForwardingFunction(Func<TValue?, ParseResult, IEnumerable<string>> func)
         {
-            s_forwardingFunctions[option] = option.GetForwardingFunction(func);
+            lock (s_lock)
+            {
+                s_forwardingFunctions[option] = option.GetForwardingFunction(func);
+            }
             return option;
         }
 

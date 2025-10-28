@@ -8,6 +8,7 @@ namespace Microsoft.DotNet.Cli.CommandLine;
 public static class SymbolDocumentationExtensions
 {
     private static readonly Dictionary<Symbol, string> s_documentationLinks = new();
+    private static readonly Lock s_lock = new();
 
     extension(Symbol symbol)
     {
@@ -21,13 +22,16 @@ public static class SymbolDocumentationExtensions
             get => s_documentationLinks.TryGetValue(symbol, out var link) ? link : null;
             set
             {
-                if (string.IsNullOrEmpty(value))
+                lock (s_lock)
                 {
-                    s_documentationLinks.Remove(symbol);
-                }
-                else
-                {
-                    s_documentationLinks[symbol] = value;
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        s_documentationLinks.Remove(symbol);
+                    }
+                    else
+                    {
+                        s_documentationLinks[symbol] = value;
+                    }
                 }
             }
         }
