@@ -114,6 +114,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 context.RegisterOperationAction(context => AnalyzeInvocation(context, loggerType, loggerExtensionsType, loggerMessageType), OperationKind.Invocation);
+
+                if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftExtensionsLoggingLoggerMessageAttribute, out var loggerMessageAttributeType))
+                {
+                    context.RegisterSymbolAction(context => AnalyzeMethodSymbol(context, loggerMessageAttributeType), SymbolKind.Method);
+                }
             });
         }
 
@@ -191,6 +196,60 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
+        private void AnalyzeMethodSymbol(SymbolAnalysisContext context, INamedTypeSymbol loggerMessageAttributeType)
+        {
+            var method = (IMethodSymbol)context.Symbol;
+
+            // Look for LoggerMessageAttribute on the method
+            var attribute = method.GetAttribute(loggerMessageAttributeType);
+            if (attribute == null)
+                return;
+
+            // Extract the message template from the attribute
+            var messageValue = ExtractMessageFromAttribute(attribute);
+            if (messageValue == null)
+                return;
+
+            // Analyze the message template for CA1727, CA2253, and CA2023 rules
+            AnalyzeMessageTemplateFromSymbol(context, messageValue, method);
+        }
+
+        private string? ExtractMessageFromAttribute(AttributeData attribute)
+        {
+            // Check constructor arguments (positional) - typically: LoggerMessage(eventId, level, message)
+            if (attribute.ConstructorArguments.Length >= 3 &&
+                attribute.ConstructorArguments[2].Value is string constructorMessage)
+            {
+                return constructorMessage;
+            }
+
+            // Check named arguments - Message = "..."
+            var messageArg = attribute.NamedArguments.FirstOrDefault(arg => arg.Key == "Message");
+            if (messageArg.Value.Value is string namedMessage)
+            {
+                return namedMessage;
+            }
+
+            return null;
+        }
+
+        private void AnalyzeMessageTemplateFromSymbol(SymbolAnalysisContext context, string text, IMethodSymbol methodSymbol)
+        {
+            // Get the first syntax reference for reporting location
+            var syntaxReference = methodSymbol.DeclaringSyntaxReferences.FirstOrDefault();
+            if (syntaxReference == null)
+                return;
+
+            var location = syntaxReference.GetSyntax().GetLocation();
+
+            // Use the common analysis logic but report diagnostics directly to the symbol context
+            AnalyzeMessageTemplateCore(text,
+                onInvalidTemplate: () => context.ReportDiagnostic(Diagnostic.Create(CA2023Rule, location)),
+                onNumericPlaceholder: () => context.ReportDiagnostic(Diagnostic.Create(CA2253Rule, location)),
+                onCamelCasePlaceholder: () => context.ReportDiagnostic(Diagnostic.Create(CA1727Rule, location)),
+                onParameterCountMismatch: null); // Skip parameter count validation for LoggerMessageAttribute methods
+        }
+
         private void AnalyzeFormatArgument(OperationAnalysisContext context, IOperation formatExpression, int paramsCount, bool argsIsArray, bool usingLoggerExtensionsTypes, IMethodSymbol methodSymbol)
         {
             var text = TryGetFormatText(formatExpression);
@@ -204,6 +263,26 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
+            // Use the common analysis logic but report diagnostics to the operation context
+            AnalyzeMessageTemplateCore(text,
+                onInvalidTemplate: () => context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2023Rule)),
+                onNumericPlaceholder: () => context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2253Rule)),
+                onCamelCasePlaceholder: () => context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA1727Rule)),
+                onParameterCountMismatch: (expectedCount) =>
+                {
+                    var argsPassedDirectly = argsIsArray && paramsCount == 1;
+                    if (!argsPassedDirectly && paramsCount != expectedCount)
+                    {
+                        context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2017Rule));
+                    }
+                });
+        }
+
+        /// <summary>
+        /// Core logic for analyzing message templates. Uses callbacks to report diagnostics to different contexts.
+        /// </summary>
+        private void AnalyzeMessageTemplateCore(string text, Action onInvalidTemplate, Action onNumericPlaceholder, Action onCamelCasePlaceholder, Action<int>? onParameterCountMismatch)
+        {
             LogValuesFormatter formatter;
             try
             {
@@ -218,7 +297,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             if (!IsValidMessageTemplate(formatter.OriginalFormat))
             {
-                context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2023Rule));
+                onInvalidTemplate();
                 return;
             }
 
@@ -226,19 +305,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 if (int.TryParse(valueName, out _))
                 {
-                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2253Rule));
+                    onNumericPlaceholder();
                 }
                 else if (!string.IsNullOrEmpty(valueName) && char.IsLower(valueName[0]))
                 {
-                    context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA1727Rule));
+                    onCamelCasePlaceholder();
                 }
             }
 
-            var argsPassedDirectly = argsIsArray && paramsCount == 1;
-            if (!argsPassedDirectly && paramsCount != formatter.ValueNames.Count)
-            {
-                context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2017Rule));
-            }
+            // Parameter count validation (only for operation-based analysis)
+            onParameterCountMismatch?.Invoke(formatter.ValueNames.Count);
         }
 
         private static SymbolDisplayFormat GetLanguageSpecificFormat(IOperation operation) =>
