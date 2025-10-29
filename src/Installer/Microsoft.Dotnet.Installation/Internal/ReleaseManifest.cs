@@ -53,6 +53,17 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         return (major, minor, featureBand, isFullySpecified);
     }
 
+    public IEnumerable<string> GetAvailableChannels()
+    {
+
+        return ["latest", "preview", "lts", "sts",
+            ..GetProductCollection()
+                .Where(p => p.IsSupported)
+                .Select(p => p.ProductVersion.ToString())
+        ];
+
+    }
+
     /// <summary>
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
@@ -64,17 +75,17 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         if (string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) || string.Equals(channel.Name, "sts", StringComparison.OrdinalIgnoreCase))
         {
             var releaseType = string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) ? ReleaseType.LTS : ReleaseType.STS;
-            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            var productIndex = GetProductCollection();
             return GetLatestVersionByReleaseType(productIndex, releaseType, component);
         }
         else if (string.Equals(channel.Name, "preview", StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            var productIndex = GetProductCollection();
             return GetLatestPreviewVersion(productIndex, component);
         }
         else if (string.Equals(channel.Name, "latest", StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            var productIndex = GetProductCollection();
             return GetLatestActiveVersion(productIndex, component);
         }
 
@@ -93,7 +104,7 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         }
 
         // Load the index manifest
-        var index = ProductCollection.GetAsync().GetAwaiter().GetResult();
+        var index = GetProductCollection();
         if (minor < 0)
         {
             return GetLatestVersionForMajorOrMajorMinor(index, major, component); // Major Only (e.g., "9")
