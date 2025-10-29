@@ -2328,6 +2328,26 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">명확성과 성능을 위해 'Any()'를 사용하는 것보다 'Length'를 0과 비교하는 것이 좋습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanCodeFixTitle">
+        <source>Change to '{0}'</source>
+        <target state="new">Change to '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanDescription">
+        <source>Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</source>
+        <target state="new">Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanMessage">
+        <source>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</source>
+        <target state="new">Parameter '{0}' can be declared as '{1}' instead of as '{2}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanTitle">
+        <source>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</source>
+        <target state="new">Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">'Stream'에 첫 번째 인수로 'Memory&lt;Byte&gt;'를 사용하는 'ReadAsync' 오버로드와 첫 번째 인수로 'ReadOnlyMemory&lt;Byte&gt;'를 사용하는 'WriteAsync' 오버로드가 있습니다. 더 효율적인 메모리 기반 오버로드를 호출하는 것이 좋습니다.</target>
