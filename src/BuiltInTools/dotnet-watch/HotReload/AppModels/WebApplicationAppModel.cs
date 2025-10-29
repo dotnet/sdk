@@ -71,13 +71,13 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     {
         if (context.EnvironmentOptions.SuppressBrowserRefresh)
         {
-            logger.Log(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable.WithSeverityWhen(MessageSeverity.Error, RequiresBrowserRefresh), EnvironmentVariables.Names.SuppressBrowserRefresh);
+            logger.Log(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable.WithLevelWhen(LogLevel.Error, RequiresBrowserRefresh), EnvironmentVariables.Names.SuppressBrowserRefresh);
             return false;
         }
 
         if (!projectNode.IsNetCoreApp(minVersion: s_minimumSupportedVersion))
         {
-            logger.Log(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported.WithSeverityWhen(MessageSeverity.Error, RequiresBrowserRefresh));
+            logger.Log(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported.WithLevelWhen(LogLevel.Error, RequiresBrowserRefresh));
             return false;
         }
 
