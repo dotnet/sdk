@@ -21,8 +21,6 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Utils;
 #endif
 
-using Roslyn.Utilities;
-
 namespace Microsoft.DotNet.FileBasedPrograms;
 
 internal static class FileLevelDirectiveHelpers
