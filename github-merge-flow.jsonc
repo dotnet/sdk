@@ -35,6 +35,11 @@
         "release/10.0.2xx":{
             "MergeToBranch": "main",
             "ExtraSwitches": "-QuietComments"
+        },
+        // Automate opening PRs to merge sdk repos from dnup to release/dnup
+        "dnup":{
+            "MergeToBranch": "release/dnup",
+            "ExtraSwitches": "-QuietComments"
         }
     }
 }
