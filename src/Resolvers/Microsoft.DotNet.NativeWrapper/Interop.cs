@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.NativeWrapper
     public static partial class Interop
     {
         public static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-#if NETCOREAPP
+#if NET
         private static readonly string? HostFxrPath;
 #endif
 
@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.NativeWrapper
             {
                 PreloadWindowsLibrary(Constants.HostFxr);
             }
-#if NETCOREAPP
+#if NET
             else
             {
                 HostFxrPath = (string)AppContext.GetData(Constants.RuntimeProperty.HostFxrPath)!;
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.NativeWrapper
         }
 
         // MSBuild SDK resolvers are required to be AnyCPU, but we have a native dependency and .NETFramework does not
-        // have a built-in facility for dynamically loading user native dlls for the appropriate platform. We therefore 
+        // have a built-in facility for dynamically loading user native dlls for the appropriate platform. We therefore
         // preload the version with the correct architecture (from a corresponding sub-folder relative to us) on static
         // construction so that subsequent P/Invokes can find it.
         private static void PreloadWindowsLibrary(string dllFileName)
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.NativeWrapper
             LoadLibraryExW(dllPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
         }
 
-#if NETCOREAPP
+#if NET
         private static IntPtr HostFxrResolver(Assembly assembly, string libraryName)
         {
             if (libraryName != Constants.HostFxr)
@@ -180,20 +180,6 @@ namespace Microsoft.DotNet.NativeWrapper
             internal static extern int hostfxr_get_available_sdks(
                 string? exe_dir,
                 hostfxr_get_available_sdks_result_fn result);
-
-            [DllImport("libc", CharSet = UTF8, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-            private static extern IntPtr realpath(string path, IntPtr buffer);
-
-            [DllImport("libc", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-            private static extern void free(IntPtr ptr);
-
-            public static string? realpath(string path)
-            {
-                var ptr = realpath(path, IntPtr.Zero);
-                var result = PtrToStringUTF8(ptr);
-                free(ptr);
-                return result;
-            }
         }
     }
 }
