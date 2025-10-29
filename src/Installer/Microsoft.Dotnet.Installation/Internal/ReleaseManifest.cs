@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -59,8 +60,22 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         return ["latest", "preview", "lts", "sts",
             ..GetProductCollection()
                 .Where(p => p.IsSupported)
-                .Select(p => p.ProductVersion.ToString())
+                .OrderByDescending(p => p.LatestReleaseVersion)
+                .SelectMany(GetChannelsForProduct)
         ];
+
+        static IEnumerable<string> GetChannelsForProduct(Product product)
+        {
+            return [product.ProductVersion,
+                ..product.GetReleasesAsync().GetAwaiter().GetResult()
+                    .SelectMany(r => r.Sdks)
+                    .Select(sdk => sdk.Version)
+                    .OrderByDescending(v => v)
+                    .Select(v => $"{v.Major}.{v.Minor}.{(v.Patch / 100)}xx")
+                    .Distinct()
+                    .ToList()
+                ];                
+        }
 
     }
 
