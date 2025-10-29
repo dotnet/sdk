@@ -161,9 +161,6 @@ internal abstract class RunApiOutput
     }
 }
 
-// TODO: getting the following error, which is not suppressible with pragma.
-// error SYSLIB1225: The type 'Encoding' includes the ref like property, field or constructor parameter 'Preamble'. No source code will be generated for the property, field or constructor. (https://learn.microsoft.com/dotnet/fundamentals/syslib-diagnostics/syslib1225)
-// I have no idea how the type 'Encoding' is ending up getting used as a result of my change.
 [JsonSerializable(typeof(RunApiInput))]
 [JsonSerializable(typeof(RunApiOutput))]
 internal partial class RunFileApiJsonSerializerContext : JsonSerializerContext;

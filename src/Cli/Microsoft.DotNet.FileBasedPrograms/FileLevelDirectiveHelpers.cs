@@ -134,8 +134,6 @@ internal static class FileLevelDirectiveHelpers
                 var message = trivia.GetStructure() is IgnoredDirectiveTriviaSyntax { Content: { RawKind: (int)SyntaxKind.StringLiteralToken } content }
                     ? content.Text.AsSpan().Trim()
                     : "";
-                // TODO: original impl was using more recent span-oriented APIs. Optimal sharing may be tricky.
-                // var parts = Patterns.Whitespace.EnumerateSplits(message, 2);
                 var parts = Patterns.Whitespace.Split(message.ToString(), 2);
                 var name = parts.Length > 0 ? parts[0] : "";
                 var value = parts.Length > 1 ? parts[1] : "";
