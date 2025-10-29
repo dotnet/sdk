@@ -244,7 +244,8 @@ public class TestCommand(
             CommonOptions.PropertiesOption,
             CommonOptions.RestorePropertiesOption,
             TestCommandParser.VsTestTargetOption,
-            TestCommandParser.VerbosityOption);
+            TestCommandParser.VerbosityOption,
+            CommonOptions.NoLogoOption());
 
         TestCommand testCommand = new(
             parsedMSBuildArgs,
@@ -260,7 +261,7 @@ public class TestCommand(
             }
         }
 
-        
+
         Dictionary<string, string> variables = VSTestForwardingApp.GetVSTestRootVariables();
         foreach (var (rootVariableName, rootValue) in variables) {
             testCommand.EnvironmentVariable(rootVariableName, rootValue);
