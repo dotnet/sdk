@@ -40,12 +40,12 @@ namespace Microsoft.DotNet.Watch
 
         private bool _isDisposed;
 
-        public CompilationHandler(ILoggerFactory loggerFactory, ILogger logger, ProcessRunner processRunner)
+        public CompilationHandler(ILoggerFactory loggerFactory, ILogger logger, ProcessRunner processRunner, EnvironmentOptions environmentOptions)
         {
             _loggerFactory = loggerFactory;
             _logger = logger;
             _processRunner = processRunner;
-            Workspace = new IncrementalMSBuildWorkspace(logger);
+            Workspace = new IncrementalMSBuildWorkspace(logger, environmentOptions);
             _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
         }
 
