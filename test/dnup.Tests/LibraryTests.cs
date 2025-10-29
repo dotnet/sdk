@@ -22,6 +22,9 @@ public class LibraryTests
     [Theory]
     [InlineData("9")]
     [InlineData("latest")]
+    [InlineData("sts")]
+    [InlineData("lts")]
+    [InlineData("preview")]
     public void LatestVersionForChannelCanBeInstalled(string channel)
     {
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
@@ -39,5 +42,22 @@ public class LibraryTests
             new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
             InstallComponent.SDK,
             latestVersion!);
+    }
+
+    [Fact]
+    public void TestGetSupportedChannels()
+    {
+        var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
+        var channels = releaseInfoProvider.GetSupportedChannels();
+
+        channels.Should().Contain(new[] { "latest", "lts", "sts", "preview" });
+
+        //  This will need to be updated every few years as versions go out of support
+        channels.Should().Contain(new[] { "10.0", "10.0.1xx" });
+        channels.Should().NotContain("10");
+
+        channels.Should().NotContain("7.0");
+        channels.Should().NotContain("7.0.1xx");
+
     }
 }
