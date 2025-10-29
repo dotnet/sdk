@@ -2328,6 +2328,26 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
         <target state="translated">为了清楚起见和提高性能，首选将 'Length'与 0 进行比较，而不是使用 'Any()'。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanCodeFixTitle">
+        <source>Change to '{0}'</source>
+        <target state="new">Change to '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanDescription">
+        <source>Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</source>
+        <target state="new">Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanMessage">
+        <source>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</source>
+        <target state="new">Parameter '{0}' can be declared as '{1}' instead of as '{2}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanTitle">
+        <source>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</source>
+        <target state="new">Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">"Stream" 有一个将 "Memory&lt;Byte&gt;" 作为第一个参数的 "ReadAsync" 重载和一个将 "Memory&lt;Byte&gt;" 作为第一个参数的 "WriteAsync" 重载。首选调用基于内存的重载，它们的效率更高。</target>
