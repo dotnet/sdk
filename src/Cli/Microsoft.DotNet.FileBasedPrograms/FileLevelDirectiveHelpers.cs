@@ -574,14 +574,16 @@ internal sealed class SimpleDiagnostic
     /// <summary>
     /// An adapter of <see cref="FileLinePositionSpan"/> that ensures we JSON-serialize only the necessary fields.
     /// </summary>
+    /// <remarks>
+    /// note: this type is only serialized for run-api scenarios.
+    /// If/when run-api is removed, we would also want to remove the usage of System.Text.Json attributes.
+    /// </remarks>
     public readonly struct Position
     {
-        // note: this type is only serialized for run-api scenarios.
-        // If/when run-api is removed, we would also want to remove this configuration.
+        public required string Path { get; init; }
+        public required LinePositionSpan Span { get; init; }
         [JsonIgnore]
         public TextSpan TextSpan { get; init; }
-        public required LinePositionSpan Span { get; init; }
-        public required string Path { get; init; }
     }
 }
 
