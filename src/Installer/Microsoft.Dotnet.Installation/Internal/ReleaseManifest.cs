@@ -53,7 +53,7 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         return (major, minor, featureBand, isFullySpecified);
     }
 
-    public IEnumerable<string> GetAvailableChannels()
+    public IEnumerable<string> GetSupportedChannels()
     {
 
         return ["latest", "preview", "lts", "sts",

@@ -10,10 +10,10 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 internal class DotnetReleaseInfoProvider : IDotnetReleaseInfoProvider
 {
-    public IEnumerable<string> GetAvailableChannels()
+    public IEnumerable<string> GetSupportedChannels()
     {
         var releaseManifest = new ReleaseManifest();
-        return releaseManifest.GetAvailableChannels();
+        return releaseManifest.GetSupportedChannels();
     }
     public ReleaseVersion? GetLatestVersion(InstallComponent component, string channel)
     {

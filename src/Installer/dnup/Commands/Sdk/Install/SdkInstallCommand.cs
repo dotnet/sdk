@@ -113,7 +113,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             if (_interactive)
             {
 
-                SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', _releaseInfoProvider.GetAvailableChannels()));
+                SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', _releaseInfoProvider.GetSupportedChannels()));
                 SpectreAnsiConsole.WriteLine("You can also specify a specific version (for example 9.0.304).");
 
                 resolvedChannel = SpectreAnsiConsole.Prompt(
