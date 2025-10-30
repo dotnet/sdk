@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
 
     <!-- Strong naming not needed on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>

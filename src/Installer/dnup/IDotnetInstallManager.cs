@@ -43,7 +43,14 @@ public class GlobalJsonInfo
     public string? SdkVersion => GlobalJsonContents?.Sdk?.Version;
     public bool? AllowPrerelease => GlobalJsonContents?.Sdk?.AllowPrerelease;
     public string? RollForward => GlobalJsonContents?.Sdk?.RollForward;
-    public string? SdkPath => (GlobalJsonContents?.Sdk?.Paths is not null && GlobalJsonContents.Sdk.Paths.Length > 0) ? GlobalJsonContents.Sdk.Paths[0] : null;
+    public string? SdkPath
+    {
+        get
+        {
+            return (GlobalJsonContents?.Sdk?.Paths is not null && GlobalJsonContents.Sdk.Paths.Length > 0) ?
+                Path.GetFullPath(GlobalJsonContents.Sdk.Paths[0], GlobalJsonPath!) : null;
+        }
+    }
 }
 
 public record DotnetInstallRootConfiguration(

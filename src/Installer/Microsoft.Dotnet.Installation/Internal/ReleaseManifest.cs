@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -53,6 +54,31 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         return (major, minor, featureBand, isFullySpecified);
     }
 
+    public IEnumerable<string> GetSupportedChannels()
+    {
+
+        return ["latest", "preview", "lts", "sts",
+            ..GetProductCollection()
+                .Where(p => p.IsSupported)
+                .OrderByDescending(p => p.LatestReleaseVersion)
+                .SelectMany(GetChannelsForProduct)
+        ];
+
+        static IEnumerable<string> GetChannelsForProduct(Product product)
+        {
+            return [product.ProductVersion,
+                ..product.GetReleasesAsync().GetAwaiter().GetResult()
+                    .SelectMany(r => r.Sdks)
+                    .Select(sdk => sdk.Version)
+                    .OrderByDescending(v => v)
+                    .Select(v => $"{v.Major}.{v.Minor}.{(v.Patch / 100)}xx")
+                    .Distinct()
+                    .ToList()
+                ];                
+        }
+
+    }
+
     /// <summary>
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
@@ -64,17 +90,17 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         if (string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) || string.Equals(channel.Name, "sts", StringComparison.OrdinalIgnoreCase))
         {
             var releaseType = string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) ? ReleaseType.LTS : ReleaseType.STS;
-            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            var productIndex = GetProductCollection();
             return GetLatestVersionByReleaseType(productIndex, releaseType, component);
         }
         else if (string.Equals(channel.Name, "preview", StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            var productIndex = GetProductCollection();
             return GetLatestPreviewVersion(productIndex, component);
         }
         else if (string.Equals(channel.Name, "latest", StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            var productIndex = GetProductCollection();
             return GetLatestActiveVersion(productIndex, component);
         }
 
@@ -93,7 +119,7 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
         }
 
         // Load the index manifest
-        var index = ProductCollection.GetAsync().GetAwaiter().GetResult();
+        var index = GetProductCollection();
         if (minor < 0)
         {
             return GetLatestVersionForMajorOrMajorMinor(index, major, component); // Major Only (e.g., "9")

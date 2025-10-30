@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.NativeWrapper
             var runtimes = new hostfxr_dotnet_environment_framework_info[infoStruct.framework_count];
             for (var i = 0; i < (int)infoStruct.framework_count; i++)
             {
-                var pointer = new IntPtr(infoStruct.frameworks.ToInt64() + i * Marshal.SizeOf(typeof(hostfxr_dotnet_environment_framework_info)));
+                var pointer = new IntPtr(infoStruct.frameworks.ToInt64() + i * Marshal.SizeOf<hostfxr_dotnet_environment_framework_info>());
                 runtimes[i] = Marshal.PtrToStructure<hostfxr_dotnet_environment_framework_info>(pointer);
             }
             RuntimeInfo = runtimes.Select(runtime => new NetRuntimeInfo(runtime.name, runtime.version, runtime.path));
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.NativeWrapper
             var sdks = new hostfxr_dotnet_environment_sdk_info[infoStruct.sdk_count];
             for (var i = 0; i < (int)infoStruct.sdk_count; i++)
             {
-                var pointer = new IntPtr(infoStruct.sdks.ToInt64() + i * Marshal.SizeOf(typeof(hostfxr_dotnet_environment_sdk_info)));
+                var pointer = new IntPtr(infoStruct.sdks.ToInt64() + i * Marshal.SizeOf<hostfxr_dotnet_environment_sdk_info>());
                 sdks[i] = Marshal.PtrToStructure<hostfxr_dotnet_environment_sdk_info>(pointer);
             }
             SdkInfo = sdks.Select(sdk => new NetSdkInfo(sdk.version, sdk.path));

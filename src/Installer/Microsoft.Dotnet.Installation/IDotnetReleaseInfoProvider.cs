@@ -10,7 +10,7 @@ namespace Microsoft.Dotnet.Installation;
 
 public interface IDotnetReleaseInfoProvider
 {
-    IEnumerable<string> GetAvailableChannels();
+    IEnumerable<string> GetSupportedChannels();
 
     ReleaseVersion? GetLatestVersion(InstallComponent component, string channel);
 
