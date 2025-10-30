@@ -948,6 +948,18 @@ This rule detects usage of platform-specific intrinsics that can be replaced wit
 |CodeFix|True|
 ---
 
+## [CA1517](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1517): Use 'ReadOnlySpan\<T>' or 'ReadOnlyMemory\<T>' instead of 'Span\<T>' or 'Memory\<T>'
+
+Using 'ReadOnlySpan\<T>' or 'ReadOnlyMemory\<T>' instead of 'Span\<T>' or 'Memory\<T>' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.
+
+|Item|Value|
+|-|-|
+|Category|Maintainability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA1700](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1700): Do not name enum values 'Reserved'
 
 This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.
