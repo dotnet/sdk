@@ -5,7 +5,7 @@ Usage:
   dotnet test [options] [platform options] [extension options]
 
 Options:
-  --project <PROJECT_PATH>                        Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.
+  --project <PROJECT_OR_SOLUTION_PATH>            Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.
   --solution <SOLUTION_PATH>                      Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.
   --test-modules <EXPRESSION>                     Run tests for the specified test modules.
   --root-directory <ROOT_PATH>                    The test modules have the specified root directory.
