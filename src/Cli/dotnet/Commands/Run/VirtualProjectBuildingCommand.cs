@@ -1654,8 +1654,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             return directives
                 .Select(d => d is CSharpDirective.Project p
-                    ? (project is null ? p : p.WithName(project.ExpandString(p.Name)))
-                        .ResolveProjectPath(sourceFile, diagnostics)
+                    ? (project is null
+                        ? p
+                        : p.WithName(project.ExpandString(p.Name)))
+                       .ResolveProjectPath(sourceFile, diagnostics)
                     : d)
                 .ToImmutableArray();
         }
@@ -1988,7 +1990,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
         public Project WithName(string name, bool preserveUnresolvedName = false)
         {
-            return name == Name
+            return name == Name && (preserveUnresolvedName || UnresolvedName == name)
                 ? this
                 : new Project(Info, name)
                 {
