@@ -2498,7 +2498,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut(expectedOutput);
 
         // Running from a different working directory shouldn't affect handling of the relative project paths.
-        new DotnetCommand(Log, "run", "app/Program.cs")
+        new DotnetCommand(Log, "run", "App/Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
