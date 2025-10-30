@@ -4,6 +4,7 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+CA1517 | Maintainability | Info | PreferReadOnlySpanOverSpanAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1516)
 CA1873 | Performance | Info | AvoidPotentiallyExpensiveCallWhenLoggingAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1873)
 CA1874 | Performance | Info | UseRegexMembers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1874)
 CA1875 | Performance | Info | UseRegexMembers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1875)

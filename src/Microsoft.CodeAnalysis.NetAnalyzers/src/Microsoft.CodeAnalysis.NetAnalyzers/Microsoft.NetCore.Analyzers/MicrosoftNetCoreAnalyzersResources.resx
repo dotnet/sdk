@@ -2261,4 +2261,16 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="CollapseMultiplePathOperationsCodeFixTitle" xml:space="preserve">
     <value>Collapse into single Path.{0} operation</value>
   </data>
+  <data name="PreferReadOnlySpanOverSpanTitle" xml:space="preserve">
+    <value>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</value>
+  </data>
+  <data name="PreferReadOnlySpanOverSpanMessage" xml:space="preserve">
+    <value>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</value>
+  </data>
+  <data name="PreferReadOnlySpanOverSpanDescription" xml:space="preserve">
+    <value>Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</value>
+  </data>
+  <data name="PreferReadOnlySpanOverSpanCodeFixTitle" xml:space="preserve">
+    <value>Change to '{0}'</value>
+  </data>
 </root>
