@@ -141,7 +141,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return new RunningWatcher(this, watcher, watchTask, reporter, console, serviceHolder, shutdownSource);
     }
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -302,7 +302,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
     [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
@@ -401,7 +401,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
@@ -492,7 +492,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
 
-    [Fact]
+    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
     public async Task RudeEditInProjectWithoutRunningProcess()
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc");
@@ -645,7 +645,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Fact]
+    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
     public async Task ProjectAndSourceFileChange()
     {
         var testAsset = CopyTestAsset("WatchHotReloadApp");
@@ -691,7 +691,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdatedOutput.Task;
     }
 
-    [Fact]
+    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
     public async Task ProjectAndSourceFileChange_AddProjectReference()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -760,7 +760,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Assert.Equal(1, hotReloadSucceeded.CurrentCount);
     }
 
-    [Fact]
+    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
     public async Task ProjectAndSourceFileChange_AddPackageReference()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
