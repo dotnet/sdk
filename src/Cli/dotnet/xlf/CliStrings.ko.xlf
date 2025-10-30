@@ -374,7 +374,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="Error_NU1302_HttpSourceUsed">
         <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">여러분은 'tool install' 작업을 'HTTP' 원본 {0}(으)로 실행하고 있습니다. NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGet.Config 파일에서 'allowInsecureConnections'를 명시적으로 true로 설정해야 합니다. https://aka.ms/nuget-https-everywhere에서 자세한 내용을 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectDepsJsonAt">
@@ -783,8 +783,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
-        <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
-        <target state="translated">'Newtonsoft.Json'과 같은 패키지 식별자 또는 'Newtonsoft.Json@13.0.3'과 같이 '@'로 구분된 패키지 식별자 및 버전 형식의 패키지 참조입니다.</target>
+        <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
+        <target state="translated">'{0}'과 같은 패키지 식별자 또는 '{0}@{1}'과 같이 '@'로 구분된 패키지 식별자 및 버전 형식의 패키지 참조입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">

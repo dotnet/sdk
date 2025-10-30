@@ -1,9 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Compression;
 using System.IO.Pipelines;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -95,39 +102,44 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var response = _context.Response;
 
             _isHtmlResponse =
-                (response.StatusCode == StatusCodes.Status200OK || response.StatusCode == StatusCodes.Status500InternalServerError) &&
+                (response.StatusCode == StatusCodes.Status200OK || 
+                 response.StatusCode == StatusCodes.Status404NotFound || 
+                 response.StatusCode == StatusCodes.Status500InternalServerError) &&
                 MediaTypeHeaderValue.TryParse(response.ContentType, out var mediaType) &&
                 mediaType.IsSubsetOf(s_textHtmlMediaType) &&
                 (!mediaType.Charset.HasValue || mediaType.Charset.Equals("utf-8", StringComparison.OrdinalIgnoreCase));
 
-            if (_isHtmlResponse.Value)
+            if (!_isHtmlResponse.Value)
             {
-                BrowserRefreshMiddleware.Log.SetupResponseForBrowserRefresh(_logger);
-                // Since we're changing the markup content, reset the content-length
-                response.Headers.ContentLength = null;
+                BrowserRefreshMiddleware.Log.ScriptInjectionSkipped(_logger, response.StatusCode, response.ContentType);
+                return;
+            }
 
-                _scriptInjectingStream = new ScriptInjectingStream(_baseStream);
+            BrowserRefreshMiddleware.Log.SetupResponseForBrowserRefresh(_logger);
+            // Since we're changing the markup content, reset the content-length
+            response.Headers.ContentLength = null;
 
-                // By default, write directly to the script injection stream.
-                // We may change the base stream below if we detect that the response
-                // is compressed.
-                _baseStream = _scriptInjectingStream;
+            _scriptInjectingStream = new ScriptInjectingStream(_baseStream);
 
-                // Check if the response has gzip Content-Encoding
-                if (response.Headers.TryGetValue(HeaderNames.ContentEncoding, out var contentEncodingValues))
+            // By default, write directly to the script injection stream.
+            // We may change the base stream below if we detect that the response
+            // is compressed.
+            _baseStream = _scriptInjectingStream;
+
+            // Check if the response has gzip Content-Encoding
+            if (response.Headers.TryGetValue(HeaderNames.ContentEncoding, out var contentEncodingValues))
+            {
+                var contentEncoding = contentEncodingValues.FirstOrDefault();
+                if (string.Equals(contentEncoding, "gzip", StringComparison.OrdinalIgnoreCase))
                 {
-                    var contentEncoding = contentEncodingValues.FirstOrDefault();
-                    if (string.Equals(contentEncoding, "gzip", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Remove the Content-Encoding header since we'll be serving uncompressed content
-                        response.Headers.Remove(HeaderNames.ContentEncoding);
+                    // Remove the Content-Encoding header since we'll be serving uncompressed content
+                    response.Headers.Remove(HeaderNames.ContentEncoding);
 
-                        _pipe = new Pipe();
-                        var gzipStream = new GZipStream(_pipe.Reader.AsStream(leaveOpen: true), CompressionMode.Decompress, leaveOpen: true);
+                    _pipe = new Pipe();
+                    var gzipStream = new GZipStream(_pipe.Reader.AsStream(leaveOpen: true), CompressionMode.Decompress, leaveOpen: true);
 
-                        _gzipCopyTask = gzipStream.CopyToAsync(_scriptInjectingStream);
-                        _baseStream = _pipe.Writer.AsStream(leaveOpen: true);
-                    }
+                    _gzipCopyTask = gzipStream.CopyToAsync(_scriptInjectingStream);
+                    _baseStream = _pipe.Writer.AsStream(leaveOpen: true);
                 }
             }
         }

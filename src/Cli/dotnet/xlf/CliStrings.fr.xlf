@@ -374,7 +374,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="Error_NU1302_HttpSourceUsed">
         <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">Vous exécutez l'opération « installation d’outils » avec une source « HTTP » : {0}. NuGet nécessite des sources HTTPS. Pour utiliser une source HTTP, vous devez définir explicitement « allowInsecureConnections » sur true dans votre fichier NuGet.Config. Reportez-vous à https://aka.ms/nuget-https-everywhere pour plus d’informations.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectDepsJsonAt">
@@ -783,8 +783,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
-        <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
-        <target state="translated">Référence de package sous la forme d’un identificateur de package tel que « Newtonsoft.Json » ou d’un identificateur de package et d’une version séparés par « @ », comme « Newtonsoft.Json@13.0.3 ».</target>
+        <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
+        <target state="translated">Référence de package sous la forme d’un identificateur de package tel que « {0} » ou d’un identificateur de package et d’une version séparés par « @ », comme « {0}@{1} ».</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">

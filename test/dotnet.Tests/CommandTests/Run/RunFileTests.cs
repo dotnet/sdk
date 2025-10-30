@@ -878,6 +878,128 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Hello from TestName");
     }
 
+    /// <summary>
+    /// Overriding default (implicit) properties of file-based apps via implicit build files.
+    /// </summary>
+    [Fact]
+    public void DefaultProps_DirectoryBuildProps()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine("Hi");
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ImplicitUsings>disable</ImplicitUsings>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+
+        // Converting to a project should not change the behavior.
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "Program"))
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+    }
+
+    /// <summary>
+    /// Overriding default (implicit) properties of file-based apps from custom SDKs.
+    /// </summary>
+    [Fact]
+    public void DefaultProps_CustomSdk()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var sdkDir = Path.Join(testInstance.Path, "MySdk");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Join(sdkDir, "Sdk.props"), """
+            <Project>
+              <PropertyGroup>
+                <ImplicitUsings>disable</ImplicitUsings>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Join(sdkDir, "Sdk.targets"), """
+            <Project />
+            """);
+        File.WriteAllText(Path.Join(sdkDir, "MySdk.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                <PackageType>MSBuildSdk</PackageType>
+                <IncludeBuildOutput>false</IncludeBuildOutput>
+              </PropertyGroup>
+              <ItemGroup>
+                <None Include="Sdk.*" Pack="true" PackagePath="Sdk" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "pack")
+            .WithWorkingDirectory(sdkDir)
+            .Execute()
+            .Should().Pass();
+
+        var appDir = Path.Join(testInstance.Path, "app");
+        Directory.CreateDirectory(appDir);
+        File.WriteAllText(Path.Join(appDir, "NuGet.config"), $"""
+            <configuration>
+              <packageSources>
+                <add key="local" value="{Path.Join(sdkDir, "bin", "Release")}" />
+                <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+              </packageSources>
+            </configuration>
+            """);
+        File.WriteAllText(Path.Join(appDir, "Program.cs"), """
+            #:sdk Microsoft.NET.Sdk
+            #:sdk MySdk@1.0.0
+            Console.WriteLine("Hi");
+            """);
+
+        // Use custom package cache to avoid reuse of the custom SDK packed by previous test runs.
+        var packagesDir = Path.Join(testInstance.Path, ".packages");
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithEnvironmentVariable("NUGET_PACKAGES", packagesDir)
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+
+        // Converting to a project should not change the behavior.
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithEnvironmentVariable("NUGET_PACKAGES", packagesDir)
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run")
+            .WithEnvironmentVariable("NUGET_PACKAGES", packagesDir)
+            .WithWorkingDirectory(Path.Join(appDir, "Program"))
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+    }
+
     [Fact]
     public void ComputeRunArguments_Success()
     {
@@ -1489,6 +1611,230 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Changed");
+    }
+
+    [Fact]
+    public void Build_Library()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "lib.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Library
+            class C;
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Library"));
+    }
+
+    [Fact]
+    public void Build_Library_MultiTarget()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "lib.cs");
+        File.WriteAllText(programFile, $"""
+            #:property OutputType=Library
+            #:property PublishAot=false
+            #:property LangVersion=preview
+            #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
+            class C;
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <TargetFramework></TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+
+        new DotnetCommand(Log, "run", "lib.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Library"));
+    }
+
+    [Fact]
+    public void Build_Module()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "module.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Module
+            #:property ProduceReferenceAssembly=false
+            class C;
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "module.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "module.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Module"));
+    }
+
+    [Fact]
+    public void Build_WinExe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "winexe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=WinExe
+            Console.WriteLine("Hello WinExe");
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "winexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "winexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello WinExe");
+    }
+
+    [Fact]
+    public void Build_Exe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "exe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Exe
+            Console.WriteLine("Hello Exe");
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello Exe");
+    }
+
+    [Fact]
+    public void Build_Exe_MultiTarget()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "exe.cs");
+        File.WriteAllText(programFile, $"""
+            #:property OutputType=Exe
+            #:property PublishAot=false
+            #:property LangVersion=preview
+            #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
+            Console.WriteLine("Hello Exe");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <TargetFramework></TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+
+        new DotnetCommand(Log, "run", "exe.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello Exe");
+    }
+
+    [Fact]
+    public void Build_AppContainerExe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "appcontainerexe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=AppContainerExe
+            Console.WriteLine("Hello AppContainerExe");
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "appcontainerexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "appcontainerexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "AppContainerExe"));
     }
 
     [Fact]
@@ -2214,9 +2560,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
     [InlineData(true, null)]
-    [InlineData(false, null, Skip = "Needs https://github.com/dotnet/aspnetcore/pull/63496")]
+    [InlineData(false, null)]
     [InlineData(true, "test-id")]
-    [InlineData(false, "test-id", Skip = "Needs https://github.com/dotnet/aspnetcore/pull/63496")]
+    [InlineData(false, "test-id")]
     public void UserSecrets(bool useIdArg, string? userSecretsId)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -2237,6 +2583,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         if (useIdArg)
         {
@@ -3275,6 +3625,37 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     /// <summary>
     /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// If hard links are enabled, the <c>bin/app.dll</c> and <c>obj/app.dll</c> files are going to be the same,
+    /// so our "copy obj to bin" logic must account for that.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_HardLinks()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = $"""
+            #:property CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=true
+            #:property CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible=true
+            {s_program}
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All);
+
+        code = code.Replace("Hello", "Hi");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "Hi from Program");
+    }
+
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// This optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
     /// </summary>
     [Fact]
@@ -3456,6 +3837,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -3466,16 +3855,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
                       <PropertyGroup>
-                        <OutputType>Exe</OutputType>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <PackAsTool>true</PackAsTool>
-                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <TargetFramework>net11.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
+                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
@@ -3527,6 +3909,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -3536,14 +3926,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
-                        <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <PackAsTool>true</PackAsTool>
-                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
@@ -3595,6 +3977,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -3604,14 +3994,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
-                        <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <PackAsTool>true</PackAsTool>
-                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>

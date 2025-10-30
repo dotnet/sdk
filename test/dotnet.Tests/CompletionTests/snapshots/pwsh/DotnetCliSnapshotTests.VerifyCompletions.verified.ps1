@@ -48,7 +48,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('solution', 'solution', [CompletionResultType]::ParameterValue, ".NET modify solution file command")
                 [CompletionResult]::new('solution', 'sln', [CompletionResultType]::ParameterValue, ".NET modify solution file command")
                 [CompletionResult]::new('store', 'store', [CompletionResultType]::ParameterValue, "Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.")
-                [CompletionResult]::new('test', 'test', [CompletionResultType]::ParameterValue, ".NET Test Driver")
+                [CompletionResult]::new('test', 'test', [CompletionResultType]::ParameterValue, ".NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.")
                 [CompletionResult]::new('tool', 'tool', [CompletionResultType]::ParameterValue, "Install or work with tools that extend the .NET experience.")
                 [CompletionResult]::new('vstest', 'vstest', [CompletionResultType]::ParameterValue, "vstest")
                 [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, ".NET CLI help utility")
@@ -671,6 +671,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         'testhost;package;update' {
             $staticCompletions = @(
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "Path to a project or solution file, or a directory.")
+                [CompletionResult]::new('--vulnerable', '--vulnerable', [CompletionResultType]::ParameterName, "Upgrade packages with known vulnerabilities.")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
@@ -830,7 +831,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "The target framework to run for. The target framework must also be specified in the project file.")
                 [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "The target runtime to run for.")
                 [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "The target runtime to run for.")
-                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The path to the project file to run (defaults to the current directory if there is only one project).")
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.")
                 [CompletionResult]::new('--file', '--file', [CompletionResultType]::ParameterName, "The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).")
                 [CompletionResult]::new('--launch-profile', '--launch-profile', [CompletionResultType]::ParameterName, "The name of the launch profile (if any) to use when launching the application.")
                 [CompletionResult]::new('--launch-profile', '-lp', [CompletionResultType]::ParameterName, "The name of the launch profile (if any) to use when launching the application.")
