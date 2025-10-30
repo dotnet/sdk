@@ -25,9 +25,9 @@ internal static partial class FormatCommandParser
     {
         var formatCommand = new Command("format")
         {
+            Arguments = { Arguments },
             DocsLink = DocsLink,
         };
-        formatCommand.Arguments.Add(Arguments);
         formatCommand.SetAction((parseResult) => FormatCommand.Run(parseResult.GetValue(Arguments)));
         return formatCommand;
     }

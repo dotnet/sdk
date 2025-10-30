@@ -175,7 +175,7 @@ public static class ForwardedOptionExtensions
     extension(ParseResult parseResult)
     {
         /// <summary>
-        /// Calls the forwarding functions for all options that implement <see cref="IForwardedOption"/> in the provided <see cref="ParseResult"/>.
+        /// Calls the forwarding functions for all options that have declared a forwarding function (via <see cref="ForwardedOptionExtensions"/>'s extension members) in the provided <see cref="ParseResult"/>.
         /// </summary>
         /// <param name="parseResult"></param>
         /// <param name="command">If not provided, uses the <see cref="ParseResult.CommandResult" />'s <see cref="CommandResult.Command"/>.</param>

@@ -24,9 +24,9 @@ internal static class MSBuildCommandParser
     {
         var command = new Command("msbuild", CliCommandStrings.BuildAppFullName)
         {
-            Arguments
+            Arguments = { Arguments },
+            DocsLink = DocsLink,
         };
-        command.DocsLink = DocsLink;
 
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);

@@ -23,9 +23,10 @@ internal static class FsiCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("fsi") { Arguments };
-        command.DocsLink = DocsLink;
-
+        Command command = new("fsi") {
+            Arguments = { Arguments },
+            DocsLink = DocsLink,
+        };
         command.SetAction((parseResult) => FsiCommand.Run(parseResult.GetValue(Arguments)));
 
         return command;
