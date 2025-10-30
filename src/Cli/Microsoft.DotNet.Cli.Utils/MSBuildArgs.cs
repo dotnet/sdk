@@ -109,19 +109,15 @@ public sealed class MSBuildArgs
         }
 
         var parseResult = fakeCommand.Parse([.. forwardedAndUserFacingArgs], _analysisParsingConfiguration);
-        var globalProperties = parseResult.GetResult("--property") is OptionResult propResult ? propResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
-        var restoreProperties = parseResult.GetResult("--restoreProperty") is OptionResult restoreResult ? restoreResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
-        var requestedTargets = parseResult.GetResult("--target") is OptionResult targetResult ? targetResult.GetValueOrDefault<string[]?>() : null;
+        var globalProperties = TryGetValue<ReadOnlyDictionary<string, string>?>("--property");
+        var restoreProperties = TryGetValue<ReadOnlyDictionary<string, string>?>("--restoreProperty");
+        var requestedTargets = TryGetValue<string[]?>("--target");
         var getProperty = TryGetValue<string[]>("--getProperty");
         var getItem = TryGetValue<string[]?>("--getItem");
         var getTargetResult = TryGetValue<string[]?>("--getTargetResult");
         var getResultOutputFile = TryGetValue<string[]?>("--getResultOutputFile");
-        var verbosity = parseResult.GetResult("--verbosity") is OptionResult verbosityResult
-            ? verbosityResult.GetValueOrDefault<VerbosityOptions?>()
-            : null;
-        var nologo = parseResult.GetResult("--nologo") is OptionResult nologoResult
-            ? nologoResult.GetValueOrDefault<bool>()
-            : false;
+        var verbosity = TryGetValue<VerbosityOptions?>("--verbosity");
+        var nologo = TryGetValue<bool>("--nologo") || true; // Default to nologo if not specified
         var otherMSBuildArgs = parseResult.UnmatchedTokens.ToArray();
         return new MSBuildArgs(
             properties: globalProperties,
@@ -135,6 +131,9 @@ public sealed class MSBuildArgs
             verbosity: verbosity,
             noLogo: nologo);
 
+        /// We can't use <see cref="ParseResult.GetResult(string)"/> to check if the names of the options we care
+        /// about were specified, because if they weren't specified it throws.
+        /// So we first check if the option was specified, and only then get its value.
         T? TryGetValue<T>(string name)
         {
             return options.Any(o => o.Name == name) ? parseResult.GetValue<T>(name) : default;
