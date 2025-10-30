@@ -172,6 +172,8 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         ImmutableArray<CSharpDirective> UpdateDirectives(ImmutableArray<CSharpDirective> directives)
         {
+            var sourceDirectory = Path.GetDirectoryName(file)!;
+
             var result = ImmutableArray.CreateBuilder<CSharpDirective>(directives.Length);
 
             foreach (var directive in directives)
@@ -208,13 +210,13 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
                     // If the original path is to a directory, just append the resolved file name
                     // but preserve the variables from the original, e.g., `../$(..)/Directory/Project.csproj`.
-                    if (Directory.Exists(project.UnresolvedName))
+                    if (Directory.Exists(Path.Combine(sourceDirectory, project.UnresolvedName)))
                     {
                         var projectFileName = Path.GetFileName(project.Name);
                         project = project.WithName(Path.Join(project.OriginalName, projectFileName));
                     }
 
-                    project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: project.Name));
+                    project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: Path.Combine(sourceDirectory, project.Name)));
                     result.Add(project);
                     continue;
                 }
