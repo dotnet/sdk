@@ -11,6 +11,7 @@ internal class ToolCommandSpecCreator
 {
     public static CommandSpec CreateToolCommandSpec(string toolName, string toolExecutable, string toolRunner, bool allowRollForward, IEnumerable<string> commandArguments)
     {
+        var env = ActivityContext.MakeActivityContextEnvironment();
         if (toolRunner == "dotnet")
         {
             if (allowRollForward)
@@ -20,7 +21,8 @@ internal class ToolCommandSpecCreator
 
             return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
                 toolExecutable,
-                commandArguments);
+                commandArguments,
+                env);
         }
         else if (toolRunner == "executable")
         {
@@ -29,7 +31,8 @@ internal class ToolCommandSpecCreator
 
             return new CommandSpec(
                 toolExecutable,
-                escapedArgs);
+                escapedArgs,
+                env);
         }
         else
         {
