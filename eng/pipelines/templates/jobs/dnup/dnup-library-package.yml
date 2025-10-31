@@ -44,7 +44,6 @@ jobs:
         targetPath: '$(Build.SourcesDirectory)/artifacts/packages/Release/NonShipping/'
         artifactName: 'dnup-library-packages'
         publishLocation: Container
-
     steps:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: |
@@ -54,5 +53,11 @@ jobs:
           & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release
         displayName: 💻 Build Windows
       - powershell: |
-           & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj
+          & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj
         displayName: 📦 Package dnup library
+      - powershell: |
+          & .\.dotnet\dotnet build .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.sign.proj
+        displayName: 🖋️ Sign dnup library packages with full.sign.proj (no sign target)
+      - powershell: |
+          & .\.dotnet\dotnet build .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.sign.proj /t:Sign
+        displayName: 🖋️ Sign dnup library packages with arcade signtool
