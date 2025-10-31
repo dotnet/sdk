@@ -33,24 +33,40 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption());
         var solutionFile = SolutionFile.Parse(solutionFilePath);
-        var projectConfiguration = $"{solutionFile.GetDefaultConfigurationName()}|{solutionFile.GetDefaultPlatformName()}";
+        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
+
+        globalProperties.TryGetValue("Configuration", out var activeSolutionConfiguration);
+        globalProperties.TryGetValue("Platform", out var activeSolutionPlatform);
+
+        if (string.IsNullOrEmpty(activeSolutionConfiguration))
+        {
+            activeSolutionConfiguration = solutionFile.GetDefaultConfigurationName();
+        }
+
+        if (string.IsNullOrEmpty(activeSolutionPlatform))
+        {
+            activeSolutionPlatform = solutionFile.GetDefaultPlatformName();
+        }
+
+        var solutionConfiguration = solutionFile.SolutionConfigurations.FirstOrDefault(c => c.ConfigurationName == activeSolutionConfiguration && c.PlatformName == activeSolutionPlatform)
+            ?? throw new InvalidOperationException($"The solution configuration '{activeSolutionConfiguration}|{activeSolutionPlatform}' is invalid.");
+
         // TODO: What to do if the given key doesn't exist in the ProjectConfigurations?
         // MSBuild seems to be special casing web projects specifically!!
         // https://github.com/dotnet/msbuild/blob/243fb764b25affe8cc5f233001ead3b5742a297e/src/Build/Construction/Solution/SolutionProjectGenerator.cs#L659-L672
         // It doesn't make sense to have to duplicate the MSBuild logic here and having to maintain them in sync.
-        // https://github.com/dotnet/msbuild/pull/12692 proposes a public API.
+        // https://github.com/dotnet/msbuild/issues/12711 tracks having a better public API.
         var projectPaths = solutionFile.ProjectsInOrder
-            .Where(p => ProjectShouldBuild(solutionFile, p.RelativePath) && p.ProjectConfigurations.ContainsKey(projectConfiguration))
-            .Select(p => (p.ProjectConfigurations[projectConfiguration], p.AbsolutePath))
+            .Where(p => ProjectShouldBuild(solutionFile, p.RelativePath) && p.ProjectConfigurations.ContainsKey(solutionConfiguration.FullName))
+            .Select(p => (p.ProjectConfigurations[solutionConfiguration.FullName], p.AbsolutePath))
             .Where(p => p.Item1.IncludeInBuild)
-            .Select(p => p.AbsolutePath);
+            .Select(p => (p.AbsolutePath, p.Item1.ConfigurationName, p.Item1.PlatformName));
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption());
-
-        using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        using var collection = new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
         ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions);
         logger?.ReallyShutdown();
@@ -143,7 +159,11 @@ internal static class MSBuildUtility
         return result == (int)BuildResultCode.Success;
     }
 
-    private static ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectsProperties(ProjectCollection projectCollection, EvaluationContext evaluationContext, IEnumerable<string> projects, BuildOptions buildOptions)
+    private static ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectsProperties(
+        ProjectCollection projectCollection,
+        EvaluationContext evaluationContext,
+        IEnumerable<(string ProjectFilePath, string Configuration, string Platform)> projects,
+        BuildOptions buildOptions)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
 
@@ -154,7 +174,7 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
             (project) =>
             {
-                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection, evaluationContext, buildOptions);
+                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, project.Configuration, project.Platform);
                 foreach (var projectMetadata in projectsMetadata)
                 {
                     allProjects.Add(projectMetadata);
