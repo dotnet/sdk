@@ -35,6 +35,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--configuration", "config" }, new string[] { "--property:Configuration=config" })]
         [InlineData(new string[] { "--version-suffix", "mysuffix" }, new string[] { "--property:VersionSuffix=mysuffix" })]
         [InlineData(new string[] { "--no-dependencies" }, new string[] { "--property:BuildProjectReferences=false" })]
+        [InlineData(new string[] { "--nologo" }, new string[] { "-nologo" })]
+        [InlineData(new string[] { "--no-logo" }, new string[] { "-nologo" })]
         [InlineData(new string[] { "-v", "diag" }, new string[] { "--verbosity:diag" })]
         [InlineData(new string[] { "--verbosity", "diag" }, new string[] { "--verbosity:diag" })]
         [InlineData(new string[] { "--no-incremental", "-o", "myoutput", "-r", "myruntime", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
