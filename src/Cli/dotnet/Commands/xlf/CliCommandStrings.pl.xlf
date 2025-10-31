@@ -458,16 +458,6 @@ W katalogu domyślnym „TestResults” zostanie wygenerowany plik, jeśli nie z
         <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdDirectoryDescription">
-        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definiuje ścieżkę katalogu do uruchomienia. Jeśli nie zostanie określony, domyślnie będzie to bieżący katalog.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDirectoryPathName">
-        <source>DIRECTORY_PATH</source>
-        <target state="translated">DIRECTORY_PATH</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
         <source>Prevent restoring multiple projects in parallel.</source>
         <target state="translated">Nie zezwalaj na równoległe przywracanie wielu projektów.</target>
@@ -744,13 +734,18 @@ Jest to równoważne usunięciu pliku project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
-        <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
-        <note>{0} is the verb (e.g., "test", "run")</note>
+        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note />
       </trans-unit>
-      <trans-unit id="CmdProjectPathName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+      <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
+        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectOrSolutionPathName">
+        <source>PROJECT_OR_SOLUTION_PATH</source>
+        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -1185,11 +1180,6 @@ Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
       <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
         <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
         <target state="translated">Wystąpił błąd podczas usuwania elementu „NamedPipeServer” i nie znaleziono uzgadniania.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DotnetTestPipeIncompleteSize">
-        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="translated">Element „dotnet” nieoczekiwanie odebrał mniej niż 4 bajty z nazwanego potoku "dotnet test".</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
@@ -3755,16 +3745,6 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">Właściwość „{0}” musi być obiektem, jeśli jest określona.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbRun">
-        <source>run</source>
-        <target state="new">run</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbTest">
-        <source>test</source>
-        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">

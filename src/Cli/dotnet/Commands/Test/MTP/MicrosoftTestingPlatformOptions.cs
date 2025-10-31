@@ -7,10 +7,10 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class MicrosoftTestingPlatformOptions
 {
-    public static readonly Option<string> ProjectOption = new("--project")
+    public static readonly Option<string> ProjectOrSolutionOption = new("--project")
     {
-        Description = string.Format(CliCommandStrings.CmdProjectDescriptionFormat, CliCommandStrings.VerbTest),
-        HelpName = CliCommandStrings.CmdProjectPathName,
+        Description = CliCommandStrings.CmdProjectOrSolutionDescriptionFormat,
+        HelpName = CliCommandStrings.CmdProjectOrSolutionPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 
