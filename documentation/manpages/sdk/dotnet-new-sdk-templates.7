@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-sdk-templates" "7" "2025-09-15" "" ".NET Documentation"
+.TH "dotnet-new-sdk-templates" "7" "2025-10-30" "" ".NET Documentation"
 .hy
 .SH NAME
 .PP
@@ -498,7 +498,6 @@ By default, \f[I]Directory.Build.targets\f[R] files don\[cq]t inherit from paren
 .RS 2
 .PP
 Specifies the framework to target.
-Available since .NET Core 3.0 SDK.
 .PP
 The following table lists the default values according to the SDK version you\[cq]re using:
 .PP
@@ -1041,7 +1040,6 @@ Excludes \f[I]launchSettings.json\f[R] from the generated template.
 .RS 2
 .PP
 Specifies the framework to target.
-Option not available in .NET Core 2.2 SDK.
 .PP
 The following table lists the default values according to the SDK version number you\[cq]re using:
 .PP
@@ -1230,7 +1228,6 @@ Only applies to \f[V]Individual\f[R] or \f[V]IndividualB2C\f[R] authentication.
 .RS 2
 .PP
 Specifies the framework to target.
-Option available since .NET Core 3.0 SDK.
 .PP
 The following table lists the default values according to the SDK version number you\[cq]re using:
 .PP
@@ -1495,7 +1492,6 @@ Only applies to \f[V]IndividualB2C\f[R] authentication.
 .RS 2
 .PP
 Specifies the framework to target.
-Option not available in .NET Core 2.2 SDK.
 .PP
 The following table lists the default values according to the SDK version number you\[cq]re using:
 .PP
@@ -1575,6 +1571,13 @@ Specifies the version of the .NET SDK to use in the \f[I]global.json\f[R] file.
 .PP
 The roll-forward policy to use when selecting an SDK version, either as a fallback when a specific SDK version is missing or as a directive to use a later version.
 For more information, see global-json.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--test-runner <TEST_RUNNER>\f[B]\f[R]
+.RS 2
+.PP
+This option was introduced in .NET 10 SDK and specifies the test runner to use, either VSTest or Microsoft.Testing.Platform.
+The default is VSTest.
 .RE
 .SS \f[V]sln\f[R]
 .PP
@@ -1711,7 +1714,6 @@ This option only applies if authentication is \f[V]None\f[R].
 .PP
 Specifies LocalDB should be used instead of SQLite.
 Only applies to \f[V]Individual\f[R] or \f[V]IndividualB2C\f[R] authentication.
-Available since .NET Core 3.0 SDK.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
