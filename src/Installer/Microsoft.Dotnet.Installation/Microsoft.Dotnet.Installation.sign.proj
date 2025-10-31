@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- Determine repository root when the pipeline variables are unavailable (e.g. local invocations). -->
+    <_RepoRoot Condition="'$(RepoRoot)' != ''">$(RepoRoot)</_RepoRoot>
+    <_RepoRoot Condition="'$(_RepoRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\'))</_RepoRoot>
+
+    <!-- Allow callers to override these directories; fall back to repo-relative defaults. -->
+    <PackagesDir Condition="'$(PackagesDir)' == ''">$(_RepoRoot)artifacts\packages\Release\</PackagesDir>
+    <IntermediateOutputPath Condition="'$(IntermediateOutputPath)' == ''">$(_RepoRoot)artifacts\obj\Sign\</IntermediateOutputPath>
+    <LogDir Condition="'$(LogDir)' == ''">$(_RepoRoot)artifacts\log\Sign\</LogDir>
+
+    <!-- SignTool requires explicit dotnet path; default to repo-local SDK. -->
+    <DotNetPath Condition="'$(DotNetPath)' == ''">$(_RepoRoot).dotnet\dotnet.exe</DotNetPath>
+
+    <MicroBuild_DoNotStrongNameSign>true</MicroBuild_DoNotStrongNameSign>
+    <MicroBuild_SigningEnabled>true</MicroBuild_SigningEnabled>
+  </PropertyGroup>
+
+  <Import Project="$(NuGetPackageRoot)microsoft.dotnet.signtool\$(MicrosoftDotNetSignToolVersion)\build\Microsoft.DotNet.SignTool.props" />
+
+  <ItemGroup>
+    <FileExtensionSignInfo Include=".nupkg" CertificateName="NuGet" />
+    <FileExtensionSignInfo Include=".dll" CertificateName="Microsoft400" />
+    <FileSignInfo Include="Microsoft.Dotnet.Installation.dll" CertificateName="Microsoft400" />
+    <FileSignInfo Include="Microsoft.Dotnet.Installation*.nupkg" CertificateName="NuGet" />
+    <ItemsToSign Include="$(PackagesDir)**\Microsoft.Dotnet.Installation*.nupkg">
+      <Authenticode>NuGet</Authenticode>
+    </ItemsToSign>
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(SignType)' == ''">
+      <SignType>test</SignType>
+      <TestSign>true</TestSign>
+  </PropertyGroup>
+
+ <PropertyGroup Condition="'$(TestSign)' == ''">
+      <TestSign>false</TestSign>
+  </PropertyGroup>
+
+
+  <Target Name="Sign" AfterTargets="Build">
+    <Microsoft.DotNet.SignTool.SignToolTask
+        DryRun="false"
+        TestSign="$(TestSign)"
+        ItemsToSign="@(ItemsToSign)"
+        FileSignInfo="@(FileSignInfo)"
+        FileExtensionSignInfo="@(FileExtensionSignInfo)"
+        TempDir="$(IntermediateOutputPath)"
+        LogDir="$(LogDir)"
+        DoStrongNameCheck="false"
+        DotNetPath="$(DotNetPath)"
+        MicroBuildCorePath="$(NuGetPackageRoot)microsoft.visualstudioeng.microbuild.core\$(MicrosoftVisualStudioEngMicroBuildCoreVersion)"
+        SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
+        >
+    </Microsoft.DotNet.SignTool.SignToolTask>
+  </Target>
+</Project>
