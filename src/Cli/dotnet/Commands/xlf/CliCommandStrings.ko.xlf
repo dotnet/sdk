@@ -184,11 +184,6 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">{0} 및 {1} 옵션을 함께 사용할 수 없습니다.  옵션 중 하나를 제거하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">일부 지시문을 변환할 수 없습니다. 파일을 실행하여 모든 컴파일 오류를 확인하세요. 변환을 강제로 진행하려면 '--force'를 지정하세요.</target>
-        <note>{Locked="--force"}</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">이름이 '{0}'인 명령이 있는 매니페스트 파일에서 도구를 찾을 수 없습니다.</target>
@@ -1121,11 +1116,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">진단 출력을 사용하도록 설정합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectiveError">
-        <source>error</source>
-        <target state="translated">오류</target>
-        <note>Used when reporting directive errors like "file(location): error: message".</note>
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">다음에서 '{2}'에 대한 '{0}' 지시문({1})을 제거했습니다. {3}</target>
@@ -1225,11 +1215,6 @@ Make the profile names distinct.</source>
 {0}
 고유한 프로필 이름을 사용하세요.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0}</source>
-        <target state="translated">중복 지시문은 지원되지 않습니다. {0}</target>
-        <note>{0} is the directive type and name.</note>
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1586,11 +1571,6 @@ Make the profile names distinct.</source>
         <target state="translated">'{0}' 메서드가 성공적으로 종료되지 않았습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">지시문에는 특수 문자가 없는 이름과 '#:{0} 이름{1}값'과 같이 '{1}'(으)로 구분된 선택적 값이 포함되어야 합니다.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
-      </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
         <target state="translated">지정한 파일이 존재해야 하며 '.cs' 파일 확장명이 있어야 합니다. '{0}'.</target>
@@ -1605,11 +1585,6 @@ Make the profile names distinct.</source>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">'-'를 사용하여 표준 입력에서 파일을 읽는 경우에도 '{0}' 옵션을 지정할 수 없습니다.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive is invalid: {0}</source>
-        <target state="translated">'#:p roject' 지시문이 잘못되었습니다. {0}</target>
-        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1747,11 +1722,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
         <target state="translated">이전 핸드셰이크 '{1}'과(와) 일치하지 않는 테스트 애플리케이션에 대해 새 핸드셰이크 '{0}'이(가) 수신되었습니다.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}'.</source>
-        <target state="translated">'{0}' 이름이 없습니다.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
@@ -2515,16 +2485,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">프로젝트</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name: {0}</source>
-        <target state="translated">잘못된 속성 이름: {0}</target>
-        <note>{0} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="translated">property 지시문에는 '#:property PropertyName=PropertyValue'와 같이 '='로 구분된 두 부분이 있어야 합니다.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">.NET 플랫폼용 게시자입니다.</target>
@@ -2565,11 +2525,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
 The default is to publish a framework-dependent application.</source>
         <target state="translated">게시할 대상 런타임입니다. 자체 포함 배포를 만들 때 사용됩니다.
 기본값은 프레임워크 종속 애플리케이션을 게시하는 것입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="QuoteInDirective">
-        <source>Directives currently cannot contain double quotes (").</source>
-        <target state="translated">지시문은 현재 큰따옴표(")를 포함할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
@@ -3075,11 +3030,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>Standard output</source>
         <target state="translated">표준 출력</target>
         <note />
-      </trans-unit>
-      <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="translated">정적 그래프 복원은 파일 기반 앱에서 지원되지 않습니다. '#:property'를 제거합니다.</target>
-        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
@@ -3626,11 +3576,6 @@ and the corresponding package Ids for installed tools using the command
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">기록되지 않은 변경 내용이 있는 행은 .NET CLI 워크로드 명령 이외의 작업에서 변경된 사항을 나타냅니다. 이러한 변경 사항은 일반적으로 .NET SDK 또는 Visual Studio에 대한 업데이트를 나타냅니다.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}'.</source>
-        <target state="translated">인식할 수 없는 지시문 '{0}'입니다.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>

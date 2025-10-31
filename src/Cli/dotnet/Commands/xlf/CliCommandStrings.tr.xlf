@@ -184,11 +184,6 @@ Aranan yollar: '{1}', '{2}'.</target>
         <target state="translated">{0} ve {1} seçenekleri birlikte kullanılamaz.  Seçeneklerden birini kaldırın.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">Bazı yönergeler dönüştürülemez. Tüm derleme hatalarını görmek için dosyayı çalıştırın. Yine de dönüştürmek için '--force' belirtin.</target>
-        <note>{Locked="--force"}</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">Bildirim dosyasında komut adı '{0}' olan bir araç bulunamıyor.</target>
@@ -1121,11 +1116,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <target state="translated">Tanılama çıkışı sağlar.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectiveError">
-        <source>error</source>
-        <target state="translated">hata</target>
-        <note>Used when reporting directive errors like "file(location): error: message".</note>
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">‘{2}’ için ‘{0}’ yönergeleri ({1}) şuradan kaldırıldı: {3}</target>
@@ -1225,11 +1215,6 @@ Make the profile names distinct.</source>
 {0}
 Lütfen profil adlarını değiştirin.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0}</source>
-        <target state="translated">Yinelenen yönergeler desteklenmez: {0}</target>
-        <note>{0} is the directive type and name.</note>
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1586,11 +1571,6 @@ Lütfen profil adlarını değiştirin.</target>
         <target state="translated">'{0}' yöntemi başarıyla çıkmadı</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">Yönerge, özel karakterler içermeyen bir ad ve ‘#:{0} Ad{1}Değer’ gibi '{1}' ile ayrılmış isteğe bağlı bir değer içermelidir.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
-      </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
         <target state="translated">Belirtilen dosya mevcut olmalıdır ve uzantısı '.cs' olmalıdır: '{0}'</target>
@@ -1605,11 +1585,6 @@ Lütfen profil adlarını değiştirin.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Standart girişten dosyayı okumak için ‘-’ kullanırken '{0}' seçeneği belirtilemez.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive is invalid: {0}</source>
-        <target state="translated">‘#:project’ yönergesi geçersizdir: {0}</target>
-        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1747,11 +1722,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
         <target state="translated">Test uygulaması için önceki el sıkışma '{1}' ile eşleşmeyen yeni bir el sıkışma '{0}' alındı.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}'.</source>
-        <target state="translated">'{0}' adı eksik.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
@@ -2515,16 +2485,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">Projeler</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name: {0}</source>
-        <target state="translated">Geçersiz özellik adı: {0}</target>
-        <note>{0} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="translated">Özellik yönergesi, ‘#:property PropertyName=PropertyValue’ gibi ‘=’ ile ayrılmış iki bölümden oluşmalıdır.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">.NET Platformunun yayımcısı.</target>
@@ -2565,11 +2525,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
 The default is to publish a framework-dependent application.</source>
         <target state="translated">Yayımlanacak hedef çalışma zamanı. Bu, şirket içinde barındırılan bir dağıtım oluştururken yararlıdır.
 Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="QuoteInDirective">
-        <source>Directives currently cannot contain double quotes (").</source>
-        <target state="translated">Yönergeler şu anda çift tırnak (") içeremez.</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
@@ -3075,11 +3030,6 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <source>Standard output</source>
         <target state="translated">Standart çıkış</target>
         <note />
-      </trans-unit>
-      <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="translated">Dosya tabanlı uygulamalar için statik grafik geri yükleme desteklenmemektedir. ‘#:property’i kaldırın.</target>
-        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
@@ -3626,11 +3576,6 @@ karşılık gelen paket kimliklerini bulmak için
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">Kaydedilmemiş değişiklikler içeren satırlar, .NET CLI iş yükü komutları dışındaki eylemlerden kaynaklanan değişiklikleri temsil eder. Bu genellikle .NET SDK'ya veya Visual Studio'ya bir güncelleştirme anlamına gelir.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}'.</source>
-        <target state="translated">Tanınmayan yönerge '{0}'.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>

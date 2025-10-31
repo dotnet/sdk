@@ -184,11 +184,6 @@ Durchsuchte Pfade: "{1}", "{2}".</target>
         <target state="translated">Die Optionen {0} und {1} können nicht zusammen verwendet werden.  Entfernen Sie eine der Optionen.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">Einige Anweisungen können nicht konvertiert werden. Führen Sie die Datei aus, um alle Kompilierungsfehler anzuzeigen. Geben Sie „--force“ an, um das Umwandeln trotzdem auszuführen.</target>
-        <note>{Locked="--force"}</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">In der Manifestdatei wurde kein Tool mit einem Befehl namens "{0}" gefunden.</target>
@@ -1121,11 +1116,6 @@ Weitere Informationen finden Sie unter https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Aktiviert die Diagnoseausgabe.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectiveError">
-        <source>error</source>
-        <target state="translated">Fehler</target>
-        <note>Used when reporting directive errors like "file(location): error: message".</note>
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">Die „{0}“-Direktiven ({1}) für „{2}“ wurden aus folgender Datei entfernt: {3}</target>
@@ -1225,11 +1215,6 @@ Make the profile names distinct.</source>
 {0}
 Erstellen Sie eindeutige Profilnamen.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0}</source>
-        <target state="translated">Doppelte Anweisungen werden nicht unterstützt: {0}</target>
-        <note>{0} is the directive type and name.</note>
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1586,11 +1571,6 @@ Erstellen Sie eindeutige Profilnamen.</target>
         <target state="translated">Die Methode "{0}" wurde nicht erfolgreich beendet</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">Die Anweisung sollte einen Namen ohne Sonderzeichen und einen optionalen Wert enthalten, die durch „{1}“ getrennt sind, wie „#:{0} Name{1}Wert“.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
-      </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
         <target state="translated">Die angegebene Datei muss vorhanden sein und die Dateierweiterung ".cs" aufweisen: "{0}".</target>
@@ -1605,11 +1585,6 @@ Erstellen Sie eindeutige Profilnamen.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Die Option „{0}“ kann nicht angegeben werden, wenn auch „-“ zum Lesen der Datei aus der Standardeingabe verwendet wird.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive is invalid: {0}</source>
-        <target state="translated">Die Anweisung „#:p roject“ ist ungültig: {0}</target>
-        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1747,11 +1722,6 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
         <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
         <target state="translated">Für die Testanwendung wurde ein neuer Handshake „{0}“ empfangen, der nicht mit dem vorherigen Handshake „{1}“ übereinstimmt.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}'.</source>
-        <target state="translated">Fehlender Name der Anweisung „{0}“.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
@@ -2515,16 +2485,6 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
         <target state="translated">Projekt(e)</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name: {0}</source>
-        <target state="translated">Ungültiger Eigenschaftenname: {0}</target>
-        <note>{0} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="translated">Die Eigenschaftsanweisung muss zwei durch „=“ getrennte Teile aufweisen, z. B. „#:property PropertyName=PropertyValue“.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Herausgeber für die .NET-Plattform</target>
@@ -2565,11 +2525,6 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
 The default is to publish a framework-dependent application.</source>
         <target state="translated">Die Zielruntime für die Veröffentlichung. Diese wird verwendet, wenn eine eigenständige Bereitstellung erstellt wird.
 Standardmäßig wird eine Framework-abhängige Anwendung veröffentlicht.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="QuoteInDirective">
-        <source>Directives currently cannot contain double quotes (").</source>
-        <target state="translated">Direktiven dürfen derzeit keine doppelten Anführungszeichen (") enthalten.</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
@@ -3075,11 +3030,6 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <source>Standard output</source>
         <target state="translated">Standardausgabe</target>
         <note />
-      </trans-unit>
-      <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="translated">Die Statische Graphwiederherstellung wird für dateibasierte Apps nicht unterstützt. Entfernen Sie '#:property'.</target>
-        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
@@ -3626,11 +3576,6 @@ und die zugehörigen Paket-IDs für installierte Tools über den Befehl
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">Zeilen mit nicht protokollierten Änderungen stellen Änderungen von anderen Aktionen als .NET CLI-Workloadbefehlen dar. In der Regel stellt dies ein Update für das .NET SDK oder für Visual Studio dar.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}'.</source>
-        <target state="translated">Unbekannte Anweisung „{0}“.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
