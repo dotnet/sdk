@@ -134,3 +134,9 @@ extends:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
+      ### Publishing ###
+      - stage: publish
+        displayName: 🚀 Publish dnup packages
+        dependsOn: package
+        jobs:
+        - template: /eng/pipelines/templates/jobs/dnup/dnup-library-publish.yml@self
