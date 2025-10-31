@@ -56,8 +56,5 @@ jobs:
           & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj
         displayName: 📦 Package dnup library
       - powershell: |
-          & .\.dotnet\dotnet build .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.sign.proj
-        displayName: 🖋️ Sign dnup library packages with full.sign.proj (no sign target)
-      - powershell: |
           & .\.dotnet\dotnet build .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.sign.proj /t:Sign
         displayName: 🖋️ Sign dnup library packages with arcade signtool
