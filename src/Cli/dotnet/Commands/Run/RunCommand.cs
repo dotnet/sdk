@@ -833,11 +833,11 @@ public class RunCommand
     {
         Debug.Assert(ProjectFileFullPath != null);
         var projectIdentifier = RunTelemetry.GetProjectBasedIdentifier(ProjectFileFullPath, GetRepositoryRoot(), Sha256Hasher.Hash);
-        
+
         // Get package and project reference counts for project-based apps
         int packageReferenceCount = 0;
         int projectReferenceCount = 0;
-        
+
         // Try to get project information for telemetry if we built the project
         if (ShouldBuild)
         {
@@ -846,10 +846,10 @@ public class RunCommand
                 var globalProperties = MSBuildArgs.GlobalProperties?.ToDictionary() ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 globalProperties[Constants.EnableDefaultItems] = "false";
                 globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
-                
+
                 using var collection = new ProjectCollection(globalProperties: globalProperties);
                 var project = collection.LoadProject(ProjectFileFullPath).CreateProjectInstance();
-                
+
                 packageReferenceCount = RunTelemetry.CountPackageReferences(project);
                 projectReferenceCount = RunTelemetry.CountProjectReferences(project);
             }
@@ -878,10 +878,10 @@ public class RunCommand
     {
         try
         {
-            var currentDir = ProjectFileFullPath != null 
+            var currentDir = ProjectFileFullPath != null
                 ? Path.GetDirectoryName(ProjectFileFullPath)
                 : Directory.GetCurrentDirectory();
-                
+
             while (currentDir != null)
             {
                 if (Directory.Exists(Path.Combine(currentDir, ".git")))
@@ -895,7 +895,7 @@ public class RunCommand
         {
             // Ignore errors when trying to find repo root
         }
-        
+
         return null;
     }
 }
