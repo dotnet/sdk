@@ -25,6 +25,8 @@ Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.PortType.tcp = 0 -> Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.PortType.udp = 1 -> Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AdditionalLayers.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AdditionalLayers.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageTag.get -> string!
@@ -100,6 +102,7 @@ override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolName.get -> str
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateCommandLineCommands() -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateFullPathToTool() -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GetProcessStartInfo(string! pathToTool, string! commandLineCommands, string! responseFileSwitch) -> System.Diagnostics.ProcessStartInfo!
+override Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.Execute() -> bool
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.set -> void
@@ -145,4 +148,3 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.get
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetFrameworkVersion.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetFrameworkVersion.set -> void
-override Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.Execute() -> bool
