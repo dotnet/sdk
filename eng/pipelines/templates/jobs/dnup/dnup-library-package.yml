@@ -1,0 +1,58 @@
+parameters:
+  ### GENERAL ###
+  variables: {}
+  dependsOn: ''
+  helixTargetQueue: ''
+  oneESCompat:
+    templateFolderName: templates
+    publishTaskPrefix: ''
+  container: ''
+  helixTargetContainer: ''
+  categoryName: dnup
+  runTests: true
+  publishRetryConfig: false
+  publishXunitResults: false
+  enableSbom: true
+  timeoutInMinutes: 150
+
+jobs:
+- template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
+  parameters:
+    displayName: '${{ parameters.pool.emoji }} dnup package: ${{ parameters.pool.os }} (${{ parameters.helixTargetQueue }})'
+    pool: ${{ parameters.pool }}
+    container: ${{ parameters.container }}
+    strategy: ${{ parameters.strategy }}
+    helixRepo: dotnet/sdk
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    enableMicrobuild: true
+    enablePublishBuildAssets: true
+    enableTelemetry: true
+    enablePublishUsingPipelines: true
+    enableSbom: ${{ parameters.enableSbom }}
+    variables:
+    - ${{ insert }}: ${{ parameters.variables }}
+    dependsOn: ${{ parameters.dependsOn }}
+    preSteps: ${{ parameters.preSteps }}
+    templateContext:
+      sdl:
+        binskim:
+          analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|artifacts\bin\**\capstone.dll;
+      outputs:
+      - output: pipelineArtifact
+        displayName: '🌐 Publish dnup library packages'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)/artifacts/packages/Release/NonShipping/'
+        artifactName: 'dnup-library-packages'
+        publishLocation: Container
+
+    steps:
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - powershell: |
+          & .\restore.cmd
+        displayName: 🍱 Bootstrap toolset (Windows)
+      - powershell: |
+          & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release
+        displayName: 💻 Build Windows
+      - powershell: |
+           & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj
+        displayName: 📦 Package dnup library

@@ -1,23 +1,18 @@
-# Pipeline: https://dev.azure.com/dnceng-public/public/_build?definitionId=101
+# Pipeline: https://dev.azure.com/dnceng-public/public/_build?definitionId=323
 
 trigger: none
 
 pr:
   branches:
     include:
-    - main
-    - release/*
-    - internal/release/*
+    - dnup
+    - release/dnup
   paths:
-    exclude:
-    - documentation/*
-    - README.md
-    - CODEOWNERS
-    - .vsts-dnup-ci.yml
-    - .vsts-dnup-pr.yml
-    - /eng/pipelines/templates/jobs/dnup/*
-    - src/Installer/*
-    - test/dnup.Tests/*
+    include:
+    - src/Installer/dnup/
+    - test/dnup.Tests/
+    - global.json
+    - .vsts-dnup-tests.yml
 
 parameters:
 - name: enableArm64Job
@@ -27,58 +22,52 @@ parameters:
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
-# Variables used: DncEngPublicBuildPool
+  # Variables used: DncEngPublicBuildPool
 - template: /eng/common/templates/variables/pool-providers.yml
 
-resources:
-  containers:
-  - container: azureLinux30Amd64
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
-
 stages:
-############### BUILD STAGE ###############
-- stage: build
-  displayName: Build
+- stage: dnup
+  displayName: 🏰 dnup tests
   jobs:
   ############### WINDOWS ###############
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+  - template: /eng/pipelines/templates/jobs/dnup/dnup-tests.yml@self
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
+        emoji: 🪟
       helixTargetQueue: windows.amd64.vs2022.pre.open
 
   ############### LINUX ###############
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+  - template: /eng/pipelines/templates/jobs/dnup/dnup-tests.yml@self
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals build.ubuntu.2204.amd64.open
         os: linux
+        emoji: 🐧
       helixTargetQueue: ubuntu.2204.amd64.open
 
   ############### MACOS ###############
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+  - template: /eng/pipelines/templates/jobs/dnup/dnup-tests.yml@self
     parameters:
       pool:
         name: Azure Pipelines
         vmImage: macOS-latest
         os: macOS
+        emoji: 🍎
       helixTargetQueue: osx.15.amd64.open
+
   ### ARM64 ###
   - ${{ if eq(parameters.enableArm64Job, true) }}:
-    - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+    - template: /eng/pipelines/templates/jobs/dnup/dnup-tests.yml@self
       parameters:
         pool:
           name: Azure Pipelines
           vmImage: macOS-latest
           os: macOS
+          emoji: 💪
         helixTargetQueue: osx.13.arm64.open
-        macOSJobParameterSets:
-        - categoryName: TestBuild
-          targetArchitecture: arm64
-          runtimeIdentifier: osx-arm64
 
-  ############### DOTNET-FORMAT ###############
-  - template: /eng/dotnet-format/dotnet-format-integration.yml
+
