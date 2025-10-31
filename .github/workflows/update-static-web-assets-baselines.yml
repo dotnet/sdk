@@ -21,7 +21,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-          persist-credentials: false
       
       - name: Checkout PR branch
         run: |
