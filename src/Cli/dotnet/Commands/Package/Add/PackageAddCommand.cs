@@ -91,7 +91,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             $"-property:RestoreDotnetCliToolReferences=false",
 
             // Output should not include MSBuild version header
-            "-nologo",
+            "--nologo",
 
             // Set verbosity to quiet to avoid cluttering the output for this 'inner' build
             "-v:quiet"

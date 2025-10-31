@@ -73,7 +73,7 @@ public class VSTestArgumentConverter
             StringComparer.OrdinalIgnoreCase,
             // Arguments
             "--listtests",
-            "--nologo",
+            "---nologo",
 
             // Ignored arguments
             "--no-build",

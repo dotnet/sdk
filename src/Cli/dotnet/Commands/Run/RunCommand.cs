@@ -365,7 +365,7 @@ public class RunCommand
     /// <returns></returns>
     private MSBuildArgs SetupSilentBuildArgs(MSBuildArgs msbuildArgs)
     {
-        msbuildArgs = msbuildArgs.CloneWithAdditionalArgs("-nologo");
+        msbuildArgs = msbuildArgs.CloneWithNoLogo(true);
 
         if (msbuildArgs.Verbosity is VerbosityOptions userVerbosity)
         {
