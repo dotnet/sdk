@@ -32,7 +32,6 @@ public static class CommandFactory
                 CommonOptions.GetItemOption,
                 CommonOptions.GetTargetResultOption,
                 CommonOptions.GetResultOutputFileOption,
-                CommonOptions.NoLogoOption()
             ]);
             msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
             return configureVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
