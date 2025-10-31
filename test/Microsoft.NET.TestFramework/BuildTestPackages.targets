@@ -7,6 +7,7 @@
   <Target Name="PrepareTests"
           DependsOnTargets="SetupTestPackageProjectData;
                             CreateTestAssetPackageNuPkgs"
+          Condition="false"
           BeforeTargets="Build">
   </Target>
 
