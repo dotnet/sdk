@@ -14,9 +14,9 @@ permissions:
 
 jobs:
     remove-labels:
+        # Only run on the main repository, not forks
         if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'Branding') && github.repository == 'dotnet/sdk'
         runs-on: ubuntu-latest
-        # Only run on the main repository, not forks
         steps:
         -   name: PR's only change is <VersionFeature> in eng/Versions.props
             id: only_version_feature_changed
