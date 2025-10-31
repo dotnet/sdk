@@ -54,6 +54,9 @@ public class RunCommand
 
     /// <summary>
     /// Parsed structure representing the MSBuild arguments that will be used to build the project.
+    /// 
+    /// Note: This property has a private setter and is mutated within the class when framework selection modifies it.
+    /// This mutability is necessary to allow the command to update MSBuild arguments after construction based on framework selection.
     /// </summary>
     public MSBuildArgs MSBuildArgs { get; private set; }
     public bool Interactive { get; }
