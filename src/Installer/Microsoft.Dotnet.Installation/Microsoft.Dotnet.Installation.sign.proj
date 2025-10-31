@@ -19,14 +19,6 @@
 
   <Import Project="$(NuGetPackageRoot)microsoft.dotnet.signtool\$(MicrosoftDotNetSignToolVersion)\build\Microsoft.DotNet.SignTool.props" />
 
-  <!-- The name of the .NET specific certificate, which is a general replacement for Microsoft400
-       If UseDotNetCert is specific in a repo's eng/Signing.props, all usage of Microsoft400 is replaced
-       with MicrosoftDotNet500 -->
-  <PropertyGroup>
-    <DotNetCertificateName>MicrosoftDotNet500</DotNetCertificateName>
-    <UseDotNetCertificate>false</UseDotNetCertificate>
-  </PropertyGroup>
-
   <ItemGroup>
     <FileExtensionSignInfo Include=".nupkg" CertificateName="NuGet" />
     <FileExtensionSignInfo Include=".dll" CertificateName="Microsoft400" />
