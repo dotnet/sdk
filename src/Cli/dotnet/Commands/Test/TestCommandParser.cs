@@ -153,11 +153,7 @@ internal static class TestCommandParser
         HelpName = CliCommandStrings.HangTimeoutArgumentName
     }.ForwardAsMany(o => ["-property:VSTestBlameHang=true", $"-property:VSTestBlameHangTimeout={o}"]);
 
-    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
-    {
-        Description = CliCommandStrings.TestCmdNoLogo,
-        Arity = ArgumentArity.Zero
-    }.ForwardIfEnabled("-property:VSTestNoLogo=true");
+    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption(forwardAs: "-property:VSTestNoLogo=true", description: CliCommandStrings.TestCmdNoLogo);
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 

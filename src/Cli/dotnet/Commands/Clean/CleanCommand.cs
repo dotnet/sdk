@@ -33,7 +33,7 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
                 NoWriteBuildMarkers = true,
             },
             static (msbuildArgs, msbuildPath) => new CleanCommand(msbuildArgs, msbuildPath),
-            [ CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption, CleanCommandParser.VerbosityOption ],
+            [ CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption, CleanCommandParser.VerbosityOption, CleanCommandParser.NoLogoOption],
             result,
             msbuildPath
         );
