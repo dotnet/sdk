@@ -603,6 +603,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1157: JIT 라이브러리 '{0}'을(를) 찾을 수 없습니다.</target>
         <note>{StrBegins="NETSDK1157: "}</note>
       </trans-unit>
+      <trans-unit id="MacOSAppNameEndsWithAppOrService">
+        <source>NETSDK1234: The application name '{0}' ends with '{1}' which may prevent the application from running on macOS. Rename the application or set the AssemblyName property to a different value.</source>
+        <target state="new">NETSDK1234: The application name '{0}' ends with '{1}' which may prevent the application from running on macOS. Rename the application or set the AssemblyName property to a different value.</target>
+        <note>{StrBegins="NETSDK1234: "}</note>
+      </trans-unit>
       <trans-unit id="MicrosoftNetSdkCompilersToolsetNotFound">
         <source>NETSDK1216: Package Microsoft.Net.Sdk.Compilers.Toolset is not downloaded but it is needed because your MSBuild and SDK versions are mismatched. Ensure version {0} of the package is available in your NuGet source feeds and then run NuGet package restore from Visual Studio or MSBuild.</source>
         <target state="translated">NETSDK1216: 패키지 Microsoft.Net.Sdk.Compilers.Toolset이 다운로드되지 않았지만 MSBuild 및 SDK 버전이 일치하지 않기 때문에 필요합니다. NuGet 소스 피드에서 패키지의 {0} 버전을 사용할 수 있는지 확인한 다음 Visual Studio 또는 MSBuild에서 NuGet 패키지 복원을 실행합니다.</target>
