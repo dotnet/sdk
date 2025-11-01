@@ -10,6 +10,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Commands.Tool.Update;

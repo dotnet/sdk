@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -17,13 +18,13 @@ internal static class CleanCommandParser
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.CleanCmdOutputDirDescription,
         HelpName = CliCommandStrings.CleanCmdOutputDir
     }.ForwardAsOutputPath("OutputPath");
 
-    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
+    public static readonly Option<bool> NoLogoOption = new Option<bool>("--nologo")
     {
         Description = CliCommandStrings.CleanCmdNoLogo,
         Arity = ArgumentArity.Zero
@@ -47,7 +48,10 @@ internal static class CleanCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("clean", DocsLink, CliCommandStrings.CleanAppFullName);
+        Command command = new("clean", CliCommandStrings.CleanAppFullName)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(FrameworkOption);

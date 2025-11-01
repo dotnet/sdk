@@ -3,18 +3,20 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal partial class NewCommand : BaseCommand<NewCommandArgs>, ICustomHelp, ICommandDocument
+    internal partial class NewCommand : BaseCommand<NewCommandArgs>, ICustomHelp
     {
         internal NewCommand(
             string commandName,
             Func<ParseResult, ITemplateEngineHost> hostBuilder)
             : base(hostBuilder, commandName, SymbolStrings.Command_New_Description)
         {
+            this.DocsLink = "https://aka.ms/dotnet-new";
             TreatUnmatchedTokensAsErrors = true;
 
             //it is important that legacy commands are built before non-legacy, as non legacy commands are building validators that rely on legacy stuff
@@ -43,8 +45,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Options.Add(SharedOptions.NoUpdateCheckOption);
             Options.Add(SharedOptions.ProjectPathOption);
         }
-
-        public string DocsLink { get; } = "https://aka.ms/dotnet-new";
 
         internal static Option<string?> DebugCustomSettingsLocationOption { get; } = new("--debug:custom-hive")
         {

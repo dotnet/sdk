@@ -21,10 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../Microsoft.DotNet.Cli.CommandLine/Microsoft.DotNet.Cli.CommandLine.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="../Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="../Microsoft.DotNet.Configurer/Microsoft.DotNet.Configurer.csproj" GlobalPropertiesToRemove="PublishDir" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Update="Commands\HelpStrings.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -65,6 +66,6 @@
     <Copy SourceFiles="@(WcwidthFiles)" DestinationFolder="$(BaseIntermediateOutputPath)/External/%(RecursiveDir)" />
     <ItemGroup>
       <Compile Include="$(BaseIntermediateOutputPath)/External/**/*.cs" />
-    </ItemGroup> 
+    </ItemGroup>
   </Target>
 </Project>
