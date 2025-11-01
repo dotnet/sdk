@@ -2662,6 +2662,11 @@ La valeur par défaut est de publier une application dépendante du framework.</
         <target state="translated">Échec de la restauration.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">Échec partiel de la restauration.</target>
