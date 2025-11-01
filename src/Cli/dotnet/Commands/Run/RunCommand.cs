@@ -54,8 +54,11 @@ public class RunCommand
 
     /// <summary>
     /// Parsed structure representing the MSBuild arguments that will be used to build the project.
+    /// 
+    /// Note: This property has a private setter and is mutated within the class when framework selection modifies it.
+    /// This mutability is necessary to allow the command to update MSBuild arguments after construction based on framework selection.
     /// </summary>
-    public MSBuildArgs MSBuildArgs { get; }
+    public MSBuildArgs MSBuildArgs { get; private set; }
     public bool Interactive { get; }
 
     /// <summary>
@@ -122,6 +125,12 @@ public class RunCommand
             return 1;
         }
 
+        // Pre-run evaluation: Handle target framework selection for multi-targeted projects
+        if (ProjectFileFullPath is not null && !TrySelectTargetFrameworkIfNeeded())
+        {
+            return 1;
+        }
+
         Func<ProjectCollection, ProjectInstance>? projectFactory = null;
         RunProperties? cachedRunProperties = null;
         VirtualProjectBuildingCommand? virtualCommand = null;
@@ -178,6 +187,36 @@ public class RunCommand
                 string.Format(CliCommandStrings.RunCommandSpecifiedFileIsNotAValidProject, ProjectFileFullPath),
                 e);
         }
+    }
+
+    /// <summary>
+    /// Checks if target framework selection is needed for multi-targeted projects.
+    /// If needed and we're in interactive mode, prompts the user to select a framework.
+    /// If needed and we're in non-interactive mode, shows an error.
+    /// </summary>
+    /// <returns>True if we can continue, false if we should exit</returns>
+    private bool TrySelectTargetFrameworkIfNeeded()
+    {
+        Debug.Assert(ProjectFileFullPath is not null);
+
+        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
+        if (TargetFrameworkSelector.TrySelectTargetFramework(
+            ProjectFileFullPath,
+            globalProperties,
+            Interactive,
+            out string? selectedFramework))
+        {
+            // If a framework was selected, add it to MSBuildArgs
+            if (selectedFramework is not null)
+            {
+                var additionalProperties = new ReadOnlyDictionary<string, string>(
+                    new Dictionary<string, string> { { "TargetFramework", selectedFramework } });
+                MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
+            }
+            return true;
+        }
+
+        return false;
     }
 
     internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
@@ -499,16 +538,6 @@ public class RunCommand
 
     internal static void ThrowUnableToRunError(ProjectInstance project)
     {
-        string targetFrameworks = project.GetPropertyValue("TargetFrameworks");
-        if (!string.IsNullOrEmpty(targetFrameworks))
-        {
-            string targetFramework = project.GetPropertyValue("TargetFramework");
-            if (string.IsNullOrEmpty(targetFramework))
-            {
-                throw new GracefulException(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework");
-            }
-        }
-
         throw new GracefulException(
                 string.Format(
                     CliCommandStrings.RunCommandExceptionUnableToRun,
