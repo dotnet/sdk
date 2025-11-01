@@ -56,24 +56,24 @@ namespace Microsoft.DotNet.Watch
             {
                 case MessageSeverity.Error:
                     // Use stdout for error messages to preserve ordering with respect to other output.
-                    WriteLine(console.Out, message, ConsoleColor.Red, emoji);
+                    WriteLine(console.Error, message, ConsoleColor.Red, emoji);
                     break;
 
                 case MessageSeverity.Warning:
-                    WriteLine(console.Out, message, ConsoleColor.Yellow, emoji);
+                    WriteLine(console.Error, message, ConsoleColor.Yellow, emoji);
                     break;
 
                 case MessageSeverity.Output:
                     if (!IsQuiet)
                     {
-                        WriteLine(console.Out, message, color: null, emoji);
+                        WriteLine(console.Error, message, color: null, emoji);
                     }
                     break;
 
                 case MessageSeverity.Verbose:
                     if (IsVerbose)
                     {
-                        WriteLine(console.Out, message, ConsoleColor.DarkGray, emoji);
+                        WriteLine(console.Error, message, ConsoleColor.DarkGray, emoji);
                     }
                     break;
             }

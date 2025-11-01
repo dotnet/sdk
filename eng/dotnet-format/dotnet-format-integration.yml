@@ -2,6 +2,7 @@ parameters:
 - name: oneESCompat
   type: object
   default:
+    templateFolderName: templates
     publishTaskPrefix: ''
 
 - name: TestArguments
@@ -63,6 +64,9 @@ parameters:
 - name: runtimeSourceProperties
   type: string
   default: ''
+- name: populateInternalRuntimeVariables
+  type: boolean
+  default: false
 
 jobs:
 - job: Formatting_Check
@@ -77,8 +81,11 @@ jobs:
       os: windows
   timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
   steps:
-  - template: /eng/common/templates/steps/enable-internal-runtimes.yml
-  - template: /eng/common/templates/steps/enable-internal-sources.yml
+  - ${{ if eq(parameters.populateInternalRuntimeVariables, true) }}:
+    - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-sources.yml
+      parameters:
+        legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+    - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-runtimes.yml
   - script: .\restore.cmd ${{ parameters.runtimeSourceProperties }}
     displayName: 🟣 Restore dependencies
   - script: |
@@ -106,8 +113,11 @@ jobs:
         os: windows
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     steps:
-    - template: /eng/common/templates/steps/enable-internal-runtimes.yml
-    - template: /eng/common/templates/steps/enable-internal-sources.yml
+    - ${{ if eq(parameters.populateInternalRuntimeVariables, true) }}:
+      - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-sources.yml
+        parameters:
+          legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+      - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-runtimes.yml
     - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare' -runtimeSourceProperties '${{ parameters.runtimeSourceProperties }}'
       displayName: 🟣 Prepare ${{ testArgs._repoName }} for formatting
 

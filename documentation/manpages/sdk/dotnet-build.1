@@ -14,19 +14,19 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-build" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-build" "1" "2025-09-30" "" ".NET Documentation"
 .hy
 .SH dotnet build
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 and later versions
 .SH NAME
 .PP
-dotnet-build - Builds a project and all of its dependencies.
+dotnet-build - Builds a project, solution, or file-based app and all of its dependencies.
 .SH SYNOPSIS
 .IP
 .nf
 \f[C]
-dotnet build [<PROJECT>|<SOLUTION>] [-a|--arch <ARCHITECTURE>]
+dotnet build [<PROJECT>|<SOLUTION>|<FILE>] [-a|--arch <ARCHITECTURE>]
     [--artifacts-path <ARTIFACTS_DIR>]
     [-c|--configuration <CONFIGURATION>] [-f|--framework <FRAMEWORK>]
     [--disable-build-servers]
@@ -35,7 +35,7 @@ dotnet build [<PROJECT>|<SOLUTION>] [-a|--arch <ARCHITECTURE>]
     [-o|--output <OUTPUT_DIRECTORY>]
     [-p|--property:<PROPERTYNAME>=<VALUE>]
     [-r|--runtime <RUNTIME_IDENTIFIER>]
-    [--self-contained [true|false]] [--source <SOURCE>]
+    [-sc|--self-contained [true|false]] [--source <SOURCE>]
     [--tl:[auto|on|off]] [--use-current-runtime, --ucr [true|false]]
     [-v|--verbosity <LEVEL>] [--version-suffix <VERSION_SUFFIX>]
 
@@ -44,11 +44,11 @@ dotnet build -h|--help
 .fi
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet build\f[R] command builds the project and its dependencies into a set of binaries.
+The \f[V]dotnet build\f[R] command builds the project, solution, or file-based app and its dependencies into a set of binaries.
 The binaries include the project\[cq]s code in Intermediate Language (IL) files with a \f[I].dll\f[R] extension.
 Depending on the project type and settings, other files may be included, such as:
 .IP \[bu] 2
-An executable that can be used to run the application, if the project type is an executable targeting .NET Core 3.0 or later.
+An executable that can be used to run the application.
 .IP \[bu] 2
 Symbol files used for debugging with a \f[I].pdb\f[R] extension.
 .IP \[bu] 2
@@ -57,12 +57,6 @@ A \f[I].deps.json\f[R] file, which lists the dependencies of the application or 
 A \f[I].runtimeconfig.json\f[R] file, which specifies the shared runtime and its version for an application.
 .IP \[bu] 2
 Other libraries that the project depends on (via project references or NuGet package references).
-.PP
-For executable projects targeting versions earlier than .NET Core 3.0, library dependencies from NuGet are typically NOT copied to the output folder.
-They\[cq]re resolved from the NuGet global packages folder at run time.
-With that in mind, the product of \f[V]dotnet build\f[R] isn\[cq]t ready to be transferred to another machine to run.
-To create a version of the application that can be deployed, you need to publish it (for example, with the dotnet publish command).
-For more information, see .NET Application Deployment.
 .PP
 For executable projects targeting .NET Core 3.0 and later, library dependencies are copied to the output folder.
 This means that if there isn\[cq]t any other publish-specific logic (such as Web projects have), the build output should be deployable.
@@ -98,7 +92,8 @@ To produce a library, omit the \f[V]<OutputType>\f[R] property or change its val
 The IL DLL for a library doesn\[cq]t contain entry points and can\[cq]t be executed.
 .SS MSBuild
 .PP
-\f[V]dotnet build\f[R] uses MSBuild to build the project, so it supports both parallel and incremental builds.
+\f[V]dotnet build\f[R] uses MSBuild to build the project, solution, or file-based app.
+It supports both parallel and incremental builds.
 For more information, see Incremental Builds.
 .PP
 In addition to its options, the \f[V]dotnet build\f[R] command accepts MSBuild options, such as \f[V]-p\f[R] for setting properties or \f[V]-l\f[R] to define a logger.
@@ -117,10 +112,19 @@ If the download is still running when this command finishes, the download is sto
 For more information, see Advertising manifests.
 .SH ARGUMENTS
 .PP
-\f[V]PROJECT | SOLUTION\f[R]
+\f[V]PROJECT | SOLUTION | FILE\f[R]
 .PP
-The project or solution file to build.
-If a project or solution file isn\[cq]t specified, MSBuild searches the current working directory for a file that has a file extension that ends in either \f[I]proj\f[R] or \f[I]sln\f[R] and uses that file.
+The project or solution or C# (file-based app) file to operate on.
+If a file isn\[cq]t specified, MSBuild searches the current directory for a project or solution.
+.IP \[bu] 2
+\f[V]PROJECT\f[R] is the path and filename of a C#, F#, or Visual Basic project file, or the path to a directory that contains a C#, F#, or Visual Basic project file.
+.IP \[bu] 2
+\f[V]SOLUTION\f[R] is the path and filename of a solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] extension), or the path to a directory that contains a solution file.
+.IP \[bu] 2
+\f[V]FILE\f[R] is an argument added in .NET 10.
+The path and filename of a file-based app.
+File-based apps are contained within a single file that is built and run without a corresponding project (\f[I].csproj\f[R]) file.
+For more information, see Build file-based C# apps.
 .SH OPTIONS
 .IP \[bu] 2
 \f[B]\f[VB]-a|--arch <ARCHITECTURE>\f[B]\f[R]
@@ -285,13 +289,13 @@ The URI of the NuGet package source to use during the restore operation.
 \f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
 .RS 2
 .PP
-Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
+Specifies whether \f[I]Terminal Logger\f[R] should be used for the build output.
 The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
 The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
 \f[V]on\f[R] skips the environment check and enables terminal logging.
 \f[V]off\f[R] skips the environment check and uses the default console logger.
 .PP
-The terminal logger shows you the restore phase followed by the build phase.
+Terminal Logger shows you the restore phase followed by the build phase.
 During each phase, the currently building projects appear at the bottom of the terminal.
 Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
 You can search this information to learn more about the build.
@@ -346,6 +350,18 @@ Build a project and its dependencies:
 dotnet build
 \f[R]
 .fi
+.RE
+.IP \[bu] 2
+Build a file-based app:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet build MyProject.cs
+\f[R]
+.fi
+.PP
+File-based app support was added in .NET SDK 10.0.100.
 .RE
 .IP \[bu] 2
 Build a project and its dependencies using Release configuration:
