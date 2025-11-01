@@ -3218,6 +3218,51 @@ Proceed?</source>
         <target state="translated">ツール パッケージのダウンロードには確認が必要です。対話モードで実行するか、"--yes" コマンド ライン オプションを使用して確認してください。</target>
         <note>{Locked="--yes"}</note>
       </trans-unit>
+      <trans-unit id="ToolDscCommandDescription">
+        <source>Manage tools using Microsoft Desired State Configuration (DSC).</source>
+        <target state="new">Manage tools using Microsoft Desired State Configuration (DSC).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscExportCommandDescription">
+        <source>Export the current state of all installed tools.</source>
+        <target state="new">Export the current state of all installed tools.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscGetCommandDescription">
+        <source>Get the current state of installed tools.</source>
+        <target state="new">Get the current state of installed tools.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscInputOptionDescription">
+        <source>JSON input representing the desired or requested tool state.</source>
+        <target state="new">JSON input representing the desired or requested tool state.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscInputOptionName">
+        <source>JSON</source>
+        <target state="new">JSON</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscManifestCommandDescription">
+        <source>Get the Microsoft Desired State Configuration (DSC) resource manifest for dotnet tool.</source>
+        <target state="new">Get the Microsoft Desired State Configuration (DSC) resource manifest for dotnet tool.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscSchemaCommandDescription">
+        <source>Get the JSON schema for DSC tool state.</source>
+        <target state="new">Get the JSON schema for DSC tool state.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscSetCommandDescription">
+        <source>Set the desired state of tools by installing or updating them.</source>
+        <target state="new">Set the desired state of tools by installing or updating them.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscTestCommandDescription">
+        <source>Test if the current state matches the desired state.</source>
+        <target state="new">Test if the current state matches the desired state.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolExecuteCommandDescription">
         <source>Executes a tool from source without permanently installing it.</source>
         <target state="translated">ツールを永続的にインストールすることなく、ソースから実行します。</target>
