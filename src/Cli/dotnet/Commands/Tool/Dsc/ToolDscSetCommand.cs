@@ -5,7 +5,11 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Dsc;
 
@@ -23,51 +27,87 @@ internal class ToolDscSetCommand : CommandBase
     {
         try
         {
-            DscToolsState inputState = null;
-
-            if (!string.IsNullOrEmpty(_input))
-            {
-                try
-                {
-                    string jsonInput = DscWriter.ReadInput(_input);
-                    inputState = JsonSerializer.Deserialize<DscToolsState>(jsonInput);
-                    DscWriter.WriteTrace($"Input JSON deserialized: {inputState?.Tools?.Count ?? 0} tools");
-                }
-                catch (JsonException ex)
-                {
-                    DscWriter.WriteError($"Failed to deserialize JSON: {ex.Message}");
-                    return 1;
-                }
-            }
+            var inputState = DscWriter.ReadAndDeserializeInput(_input);
+            var resultState = new DscToolsState();
+            bool hasFailures = false;
 
             foreach (var tool in inputState?.Tools ?? Enumerable.Empty<DscToolState>())
             {
-                if (string.IsNullOrEmpty(tool.PackageId))
-                {
-                    DscWriter.WriteError("Property 'packageId' is required for 'set' operation.");
-                    return 1;
-                }
-
+                // Skip tools that should not exist (Exist == false)
                 if (tool.Exist == false)
                 {
-                    DscWriter.WriteError($"Removing tools is not supported. Use 'dotnet tool uninstall' instead.");
-                    return 1;
+                    DscWriter.WriteDebug($"Skipping tool {tool.PackageId}: _exist is false (tool removal not supported)");
+                    continue;
+                }
+
+                // Only support Global scope for now
+                var scope = tool.Scope ?? DscToolScope.Global;
+                if (scope != DscToolScope.Global)
+                {
+                    DscWriter.WriteDebug($"Skipping tool {tool.PackageId}: only Global scope is currently supported");
+                    continue;
                 }
 
                 DscWriter.WriteDebug($"Setting desired state for tool: {tool.PackageId}");
 
-                // TODO: Implement actual tool installation/update logic
-                // This would involve:
-                // - Checking if tool is already installed
-                // - Installing tool if not present
-                // - Updating tool if version doesn't match
-                // - Handling different scopes (global, local, toolPath)
+                // Parse packageId and version
+                var (packageId, versionRange) = tool.ParsePackageIdentity();
+                
+                if (string.IsNullOrEmpty(packageId))
+                {
+                    DscWriter.WriteError($"Invalid packageId: {tool.PackageId}");
+                    continue;
+                }
+
+                // Install or update the tool
+                try
+                {
+                    string installArgs = $"tool install -g {packageId}";
+                    if (versionRange != null)
+                    {
+                        installArgs += $" --version \"{versionRange.OriginalString}\"";
+                    }
+
+                    var installParseResult = Parser.Parse($"dotnet {installArgs}");
+                    
+                    var installCommand = new ToolInstallGlobalOrToolPathCommand(
+                        installParseResult,
+                        packageId: new PackageId(packageId),
+                        createToolPackageStoreDownloaderUninstaller: null,
+                        createShellShimRepository: null,
+                        environmentPathInstruction: null,
+                        reporter: null);
+
+                    int exitCode = installCommand.Execute();
+
+                    if (exitCode != 0)
+                    {
+                        DscWriter.WriteError($"Failed to install/update tool {packageId}");
+                        hasFailures = true;
+                        continue;
+                    }
+
+                    DscWriter.WriteDebug($"Tool {packageId} is at desired state");
+                }
+                catch (Exception ex)
+                {
+                    DscWriter.WriteError($"Error installing/updating tool {packageId}: {ex.Message}");
+                    hasFailures = true;
+                    continue;
+                }
+
+                // Query final state after installation
+                var finalState = DscWriter.QueryToolState(new DscToolState 
+                { 
+                    PackageId = packageId, 
+                    Scope = scope 
+                });
+
+                resultState.Tools.Add(finalState);
             }
 
-            var resultState = new DscToolsState();
             DscWriter.WriteResult(resultState);
-
-            return 0;
+            return hasFailures ? 1 : 0;
         }
         catch (Exception ex)
         {
@@ -75,5 +115,4 @@ internal class ToolDscSetCommand : CommandBase
             return 1;
         }
     }
-
 }

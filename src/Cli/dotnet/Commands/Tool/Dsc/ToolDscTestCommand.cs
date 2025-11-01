@@ -6,6 +6,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Dsc;
 
@@ -23,42 +24,29 @@ internal class ToolDscTestCommand : CommandBase
     {
         try
         {
-            DscToolsState inputState = null;
-
-            if (!string.IsNullOrEmpty(_input))
-            {
-                try
-                {
-                    string jsonInput = DscWriter.ReadInput(_input);
-                    inputState = JsonSerializer.Deserialize<DscToolsState>(jsonInput);
-                    DscWriter.WriteTrace($"Input JSON deserialized: {inputState?.Tools?.Count ?? 0} tools");
-                }
-                catch (JsonException ex)
-                {
-                    DscWriter.WriteError($"Failed to deserialize JSON: {ex.Message}");
-                    return 1;
-                }
-            }
-
+            var inputState = DscWriter.ReadAndDeserializeInput(_input);
             var resultState = new DscToolsState();
+            bool allMatch = true;
 
             foreach (var tool in inputState?.Tools ?? Enumerable.Empty<DscToolState>())
             {
-                if (string.IsNullOrEmpty(tool.PackageId))
+                var actualState = DscWriter.QueryToolState(tool);
+                bool matches = CompareToolStates(tool, actualState);
+                
+                actualState.Exist = matches;
+                
+                if (!matches)
                 {
-                    DscWriter.WriteError("Property 'packageId' is required for 'test' operation.");
-                    return 1;
+                    allMatch = false;
                 }
 
-                var testResult = TestToolState(tool);
-                resultState.Tools.Add(testResult);
+                resultState.Tools.Add(actualState);
             }
 
             DscWriter.WriteResult(resultState);
 
-            // Return exit code 0 if all tools exist as desired, 1 otherwise
-            // TODO: Implement proper comparison to determine if tools match desired state
-            return 0;
+            // Return exit code 0 if all tools match desired state, 1 if any don't match
+            return allMatch ? 0 : 1;
         }
         catch (Exception ex)
         {
@@ -67,24 +55,118 @@ internal class ToolDscTestCommand : CommandBase
         }
     }
 
-    private DscToolState TestToolState(DscToolState desiredState)
+    /// <summary>
+    /// Compares desired state with actual state to determine if they match.
+    /// </summary>
+    private bool CompareToolStates(DscToolState desired, DscToolState actual)
     {
-        // TODO: Implement actual tool state comparison logic
-        // This would involve:
-        // - Getting the actual state of the tool
-        // - Comparing with desired state (version, commands, etc.)
-        // - Returning the actual state with _exist property
-        // The exit code indicates whether the system is in sync
+        // Parse packageId to handle packageId@version syntax
+        var (packageId, versionRange) = desired.ParsePackageIdentity();
 
-        var result = new DscToolState
+        // Check _exist property first
+        bool desiredExist = desired.Exist ?? true; // Default to true if not specified
+        bool actualExist = actual.Exist ?? false;
+
+        if (desiredExist != actualExist)
         {
-            PackageId = desiredState.PackageId,
-            Version = desiredState.Version,
-            Scope = desiredState.Scope,
-            Exist = false // Placeholder - should query actual state
-        };
+            DscWriter.WriteDebug($"Tool {packageId}: Exist mismatch (desired: {desiredExist}, actual: {actualExist})");
+            return false;
+        }
 
-        return result;
+        // If tool should not exist and doesn't exist, that's a match
+        if (!desiredExist && !actualExist)
+        {
+            DscWriter.WriteDebug($"Tool {packageId}: Correctly does not exist");
+            return true;
+        }
+
+        // If tool should exist but doesn't, already caught above
+        // Now check version if specified
+        if (versionRange != null)
+        {
+            // packageId@version syntax or Version property specified
+            if (string.IsNullOrEmpty(actual.Version))
+            {
+                DscWriter.WriteDebug($"Tool {packageId}: Version mismatch (desired: {versionRange.OriginalString}, actual: none)");
+                return false;
+            }
+
+            // Check if actual version satisfies the version range
+            if (NuGetVersion.TryParse(actual.Version, out var actualVersion))
+            {
+                if (!versionRange.Satisfies(actualVersion))
+                {
+                    DscWriter.WriteDebug($"Tool {packageId}: Version mismatch (desired: {versionRange.OriginalString}, actual: {actual.Version})");
+                    return false;
+                }
+            }
+            else
+            {
+                DscWriter.WriteDebug($"Tool {packageId}: Failed to parse actual version {actual.Version}");
+                return false;
+            }
+        }
+        else if (!string.IsNullOrEmpty(desired.Version))
+        {
+            // Fallback to string comparison for Version property (shouldn't happen if ParsePackageIdentity works)
+            if (string.IsNullOrEmpty(actual.Version))
+            {
+                DscWriter.WriteDebug($"Tool {packageId}: Version mismatch (desired: {desired.Version}, actual: none)");
+                return false;
+            }
+
+            if (NuGetVersion.TryParse(desired.Version, out var desiredVersion) &&
+                NuGetVersion.TryParse(actual.Version, out var actualVersion))
+            {
+                if (!desiredVersion.Equals(actualVersion))
+                {
+                    DscWriter.WriteDebug($"Tool {packageId}: Version mismatch (desired: {desired.Version}, actual: {actual.Version})");
+                    return false;
+                }
+            }
+            else if (!string.Equals(desired.Version, actual.Version, StringComparison.OrdinalIgnoreCase))
+            {
+                DscWriter.WriteDebug($"Tool {packageId}: Version mismatch (desired: {desired.Version}, actual: {actual.Version})");
+                return false;
+            }
+        }
+
+        // Check commands if specified
+        if (desired.Commands != null && desired.Commands.Any())
+        {
+            if (actual.Commands == null || !actual.Commands.Any())
+            {
+                DscWriter.WriteDebug($"Tool {desired.PackageId}: Commands mismatch (desired commands specified, actual: none)");
+                return false;
+            }
+
+            // Check if all desired commands are present in actual
+            var missingCommands = desired.Commands.Except(actual.Commands, StringComparer.OrdinalIgnoreCase).ToList();
+            if (missingCommands.Any())
+            {
+                DscWriter.WriteDebug($"Tool {desired.PackageId}: Missing commands: {string.Join(", ", missingCommands)}");
+                return false;
+            }
+        }
+
+        // Check scope if specified
+        if (desired.Scope.HasValue && actual.Scope.HasValue)
+        {
+            if (desired.Scope.Value != actual.Scope.Value)
+            {
+                DscWriter.WriteDebug($"Tool {desired.PackageId}: Scope mismatch (desired: {desired.Scope.Value}, actual: {actual.Scope.Value})");
+                return false;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(desired.ToolPath) && !string.IsNullOrEmpty(actual.ToolPath))
+        {
+            if (!string.Equals(desired.ToolPath, actual.ToolPath, StringComparison.OrdinalIgnoreCase))
+            {
+                DscWriter.WriteDebug($"Tool {desired.PackageId}: ToolPath mismatch (desired: {desired.ToolPath}, actual: {actual.ToolPath})");
+                return false;
+            }
+        }
+        return true;
     }
-
 }

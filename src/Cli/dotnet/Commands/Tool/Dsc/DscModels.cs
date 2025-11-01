@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Serialization;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Dsc;
 
@@ -34,6 +35,40 @@ internal record DscToolState
 
     [JsonPropertyName("_exist")]
     public bool? Exist { get; set; }
+
+    /// <summary>
+    /// Parses packageId and version from the PackageId property.
+    /// Supports format: "packageId" or "packageId@version"
+    /// </summary>
+    public (string PackageId, VersionRange? VersionRange) ParsePackageIdentity()
+    {
+        if (string.IsNullOrEmpty(PackageId))
+        {
+            return (string.Empty, null);
+        }
+
+        string[] parts = PackageId.Split('@');
+        string packageId = parts[0];
+
+        if (parts.Length > 1 && !string.IsNullOrEmpty(parts[1]))
+        {
+            // packageId@version format
+            if (VersionRange.TryParse(parts[1], out var versionRange))
+            {
+                return (packageId, versionRange);
+            }
+        }
+        else if (!string.IsNullOrEmpty(Version))
+        {
+            // Use separate Version property if available
+            if (VersionRange.TryParse(Version, out var versionRange))
+            {
+                return (packageId, versionRange);
+            }
+        }
+
+        return (packageId, null);
+    }
 }
 
 internal enum DscToolScope
