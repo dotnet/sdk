@@ -3218,6 +3218,51 @@ Proceed?</source>
         <target state="translated">도구 패키지 다운로드를 확인해야 합니다. 대화형 모드에서 실행하거나 "--yes" 명령줄 옵션을 사용하여 확인하세요.</target>
         <note>{Locked="--yes"}</note>
       </trans-unit>
+      <trans-unit id="ToolDscCommandDescription">
+        <source>Manage tools using Microsoft Desired State Configuration (DSC).</source>
+        <target state="new">Manage tools using Microsoft Desired State Configuration (DSC).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscExportCommandDescription">
+        <source>Export the current state of all installed tools.</source>
+        <target state="new">Export the current state of all installed tools.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscGetCommandDescription">
+        <source>Get the current state of installed tools.</source>
+        <target state="new">Get the current state of installed tools.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscInputOptionDescription">
+        <source>JSON input representing the desired or requested tool state.</source>
+        <target state="new">JSON input representing the desired or requested tool state.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscInputOptionName">
+        <source>JSON</source>
+        <target state="new">JSON</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscManifestCommandDescription">
+        <source>Get the Microsoft Desired State Configuration (DSC) resource manifest for dotnet tool.</source>
+        <target state="new">Get the Microsoft Desired State Configuration (DSC) resource manifest for dotnet tool.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscSchemaCommandDescription">
+        <source>Get the JSON schema for DSC tool state.</source>
+        <target state="new">Get the JSON schema for DSC tool state.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscSetCommandDescription">
+        <source>Set the desired state of tools by installing or updating them.</source>
+        <target state="new">Set the desired state of tools by installing or updating them.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDscTestCommandDescription">
+        <source>Test if the current state matches the desired state.</source>
+        <target state="new">Test if the current state matches the desired state.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolExecuteCommandDescription">
         <source>Executes a tool from source without permanently installing it.</source>
         <target state="translated">영구적으로 설치하지 않고 원본에서 도구를 실행합니다.</target>
