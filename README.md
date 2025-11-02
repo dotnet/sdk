@@ -105,3 +105,5 @@ For PRs, we assign a reviewer once a week on Wednesday, looking only at PRs that
 The .NET SDK project uses the [MIT license](LICENSE.TXT).
 
 The *LICENSE.txt* and *ThirdPartyNotices.txt* in any downloaded archives are authoritative.
+
+
