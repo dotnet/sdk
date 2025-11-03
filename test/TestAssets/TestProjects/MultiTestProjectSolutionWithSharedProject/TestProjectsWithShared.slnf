@@ -1,0 +1,9 @@
+{
+  "solution": {
+    "path": "MultiTestProjectSolutionWithSharedProject.sln",
+    "projects": [
+      "TestProject/TestProject.csproj",
+      "SharedProject/SharedProject.shproj"
+    ]
+  }
+}
