@@ -26,6 +26,7 @@ jobs:
     os: windows
   templateContext:
     type: releaseJob
+    isProduction: true
   strategy:
     runOnce:
       deploy:
