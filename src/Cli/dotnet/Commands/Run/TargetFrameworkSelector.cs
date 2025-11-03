@@ -54,11 +54,15 @@ internal static class TargetFrameworkSelector
             return true;
         }
 
-        var frameworks = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        // parse the TargetFrameworks property and make sure to account for any additional whitespace
+        // users may have added for formatting reasons.
+        var frameworks = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        // If there's only one framework, no selection needed
-        if (frameworks.Length <= 1)
+        // If there's only one framework in the TargetFrameworks, we do need to pick it to force the subsequent builds/evaluations
+        // to act against the correct 'view' of the project
+        if (frameworks.Length == 1)
         {
+            selectedFramework = frameworks[0];
             return true;
         }
 
@@ -73,12 +77,12 @@ internal static class TargetFrameworkSelector
             Reporter.Error.WriteLine();
             Reporter.Error.WriteLine(CliCommandStrings.RunCommandAvailableTargetFrameworks);
             Reporter.Error.WriteLine();
-            
+
             for (int i = 0; i < frameworks.Length; i++)
             {
                 Reporter.Error.WriteLine($"  {i + 1}. {frameworks[i]}");
             }
-            
+
             Reporter.Error.WriteLine();
             Reporter.Error.WriteLine($"{CliCommandStrings.RunCommandExampleText}: dotnet run --framework {frameworks[0]}");
             Reporter.Error.WriteLine();
@@ -98,7 +102,7 @@ internal static class TargetFrameworkSelector
                 .PageSize(10)
                 .MoreChoicesText($"[grey]({Markup.Escape(CliCommandStrings.RunCommandMoreFrameworksText)})[/]")
                 .AddChoices(frameworks);
-            
+
             return Spectre.Console.AnsiConsole.Prompt(prompt);
         }
         catch (Exception)
