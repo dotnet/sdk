@@ -13,6 +13,7 @@
 
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
     <IsSourcePackage>true</IsSourcePackage>
     <PackageId>Microsoft.DotNet.HotReload.Client</PackageId>
     <IncludeBuildOutput>false</IncludeBuildOutput>
