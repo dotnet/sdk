@@ -146,9 +146,9 @@ public class RunTelemetryTests : SdkTest
     {
         // Arrange
         var events = new List<(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)>();
-        
+
         void handler(object? sender, InstrumentationEventArgs args) => events.Add((args.EventName, args.Properties, args.Measurements));
-        
+
         TelemetryEventEntry.EntryPosted += handler;
 
         try
@@ -172,7 +172,7 @@ public class RunTelemetryTests : SdkTest
             var eventData = events[0];
             eventData.eventName.Should().Be("run");
             eventData.properties.Should().NotBeNull();
-            
+
             var props = eventData.properties!;
             props["app_type"].Should().Be("file_based");
             props["project_id"].Should().Be("test-hash");
@@ -197,9 +197,9 @@ public class RunTelemetryTests : SdkTest
     {
         // Arrange
         var events = new List<(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)>();
-        
+
         void handler(object? sender, InstrumentationEventArgs args) => events.Add((args.EventName, args.Properties, args.Measurements));
-        
+
         TelemetryEventEntry.EntryPosted += handler;
 
         try
@@ -220,7 +220,7 @@ public class RunTelemetryTests : SdkTest
             var eventData = events[0];
             eventData.eventName.Should().Be("run");
             eventData.properties.Should().NotBeNull();
-            
+
             var props = eventData.properties!;
             props["app_type"].Should().Be("project_based");
             props["project_id"].Should().Be("project-hash");
@@ -244,9 +244,9 @@ public class RunTelemetryTests : SdkTest
     {
         // Arrange
         var events = new List<(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)>();
-        
+
         void handler(object? sender, InstrumentationEventArgs args) => events.Add((args.EventName, args.Properties, args.Measurements));
-        
+
         TelemetryEventEntry.EntryPosted += handler;
 
         var launchSettings = new ProjectLaunchSettingsModel
