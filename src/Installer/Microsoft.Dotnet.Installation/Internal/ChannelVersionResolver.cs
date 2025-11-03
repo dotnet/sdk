@@ -59,6 +59,31 @@ internal class ChannelVersionResolver
         return (major, minor, featureBand, isFullySpecified);
     }
 
+    public IEnumerable<string> GetSupportedChannels()
+    {
+
+        return ["latest", "preview", "lts", "sts",
+            .._releaseManifest.GetReleasesIndex()
+                .Where(p => p.IsSupported)
+                .OrderByDescending(p => p.LatestReleaseVersion)
+                .SelectMany(GetChannelsForProduct)
+        ];
+
+        static IEnumerable<string> GetChannelsForProduct(Product product)
+        {
+            return [product.ProductVersion,
+                ..product.GetReleasesAsync().GetAwaiter().GetResult()
+                    .SelectMany(r => r.Sdks)
+                    .Select(sdk => sdk.Version)
+                    .OrderByDescending(v => v)
+                    .Select(v => $"{v.Major}.{v.Minor}.{(v.Patch / 100)}xx")
+                    .Distinct()
+                    .ToList()
+                ];
+        }
+
+    }
+
     /// <summary>
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
