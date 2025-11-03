@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.NativeWrapper
         // construction so that subsequent P/Invokes can find it.
         private static void PreloadWindowsLibrary(string dllFileName)
         {
-            string? basePath = Path.GetDirectoryName(typeof(Interop).Assembly.Location);
+            string? basePath = AppContext.BaseDirectory;
             string architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
             string dllPath = Path.Combine(basePath ?? string.Empty, architecture, $"{dllFileName}.dll");
 

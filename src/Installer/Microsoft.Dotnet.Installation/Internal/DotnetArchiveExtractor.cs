@@ -18,16 +18,16 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
     private readonly ReleaseManifest _releaseManifest;
-    private readonly bool _noProgress;
+    private readonly IProgressTarget _progressTarget;
     private string scratchDownloadDirectory;
     private string? _archivePath;
 
-    public DotnetArchiveExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, bool noProgress = false)
+    public DotnetArchiveExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, IProgressTarget progressTarget)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
-        _noProgress = noProgress;
-        _releaseManifest = new();
+        _releaseManifest = releaseManifest ?? new();
+        _progressTarget = progressTarget;
         scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
     }
 
@@ -37,35 +37,21 @@ internal class DotnetArchiveExtractor : IDisposable
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
 
-        if (_noProgress)
+        using (var progressReporter = _progressTarget.CreateProgressReporter())
         {
-            // When no-progress is enabled, download without progress display
-            Console.WriteLine($"Downloading .NET SDK {_resolvedVersion}...");
-            var downloadSuccess = archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, null);
+            var downloadTask = progressReporter.AddTask($"Downloading .NET SDK {_resolvedVersion}", 100);
+            var reporter = new DownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
+            var downloadSuccess = archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
             if (!downloadSuccess)
             {
                 throw new InvalidOperationException($"Failed to download .NET archive for version {_resolvedVersion}");
             }
-            Console.WriteLine($"Download of .NET SDK {_resolvedVersion} complete.");
-        }
-        else
-        {
-            // Use progress display for normal operation
-            Spectre.Console.AnsiConsole.Progress()
-                .Start(ctx =>
-                {
-                    var downloadTask = ctx.AddTask($"Downloading .NET SDK {_resolvedVersion}", autoStart: true);
-                    var reporter = new SpectreDownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
-                    var downloadSuccess = archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
-                    if (!downloadSuccess)
-                    {
-                        throw new InvalidOperationException($"Failed to download .NET archive for version {_resolvedVersion}");
-                    }
 
-                    downloadTask.Value = 100;
-                });
+            Console.WriteLine($"Download of .NET SDK {_resolvedVersion} complete.");
+            downloadTask.Value = 100;
         }
     }
+
     public void Commit()
     {
         Commit(GetExistingSdkVersions(_request.InstallRoot));
@@ -73,23 +59,23 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Commit(IEnumerable<ReleaseVersion> existingSdkVersions)
     {
-        if (_noProgress)
+        if (_archivePath == null || !File.Exists(_archivePath))
         {
-            // When no-progress is enabled, install without progress display
-            Console.WriteLine($"Installing .NET SDK {_resolvedVersion}...");
-            ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, existingSdkVersions, null);
-            Console.WriteLine($"Installation of .NET SDK {_resolvedVersion} complete.");
+            throw new InvalidOperationException("Archive not found. Make sure Prepare() was called successfully.");
         }
-        else
+
+        using (var progressReporter = _progressTarget.CreateProgressReporter())
         {
-            // Use progress display for normal operation
-            Spectre.Console.AnsiConsole.Progress()
-                .Start(ctx =>
-                {
-                    var installTask = ctx.AddTask($"Installing .NET SDK {_resolvedVersion}", autoStart: true);
-                    ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, existingSdkVersions, installTask);
-                    installTask.Value = installTask.MaxValue;
-                });
+            var installTask = progressReporter.AddTask($"Installing .NET SDK {_resolvedVersion}", maxValue: 100);
+
+            // Extract archive directly to target directory with special handling for muxer
+            var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, existingSdkVersions, installTask);
+            if (extractResult is not null)
+            {
+                throw new InvalidOperationException($"Failed to install SDK: {extractResult}");
+            }
+
+            installTask.Value = installTask.MaxValue;
         }
     }
 
@@ -97,7 +83,7 @@ internal class DotnetArchiveExtractor : IDisposable
      * Extracts the archive directly to the target directory with special handling for muxer.
      * Combines extraction and installation into a single operation.
      */
-    private string? ExtractArchiveDirectlyToTarget(string archivePath, string targetDir, IEnumerable<ReleaseVersion> existingSdkVersions, Spectre.Console.ProgressTask? installTask)
+    private string? ExtractArchiveDirectlyToTarget(string archivePath, string targetDir, IEnumerable<ReleaseVersion> existingSdkVersions, IProgressTask? installTask)
     {
         Directory.CreateDirectory(targetDir);
 
@@ -135,7 +121,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /**
      * Extracts a tar or tar.gz archive to the target directory.
      */
-    private string? ExtractTarArchive(string archivePath, string targetDir, MuxerHandlingConfig muxerConfig, Spectre.Console.ProgressTask? installTask)
+    private string? ExtractTarArchive(string archivePath, string targetDir, MuxerHandlingConfig muxerConfig, IProgressTask? installTask)
     {
         string decompressedPath = DecompressTarGzIfNeeded(archivePath, out bool needsDecompression);
 
@@ -204,7 +190,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /**
      * Extracts the contents of a tar file to the target directory.
      */
-    private void ExtractTarContents(string tarPath, string targetDir, MuxerHandlingConfig muxerConfig, Spectre.Console.ProgressTask? installTask)
+    private void ExtractTarContents(string tarPath, string targetDir, MuxerHandlingConfig muxerConfig, IProgressTask? installTask)
     {
         using var tarStream = File.OpenRead(tarPath);
         var tarReader = new TarReader(tarStream);
@@ -221,12 +207,12 @@ internal class DotnetArchiveExtractor : IDisposable
                 // Create directory if it doesn't exist
                 var dirPath = Path.Combine(targetDir, entry.Name);
                 Directory.CreateDirectory(dirPath);
-                installTask?.Increment(1);
+                installTask?.Value += 1;
             }
             else
             {
                 // Skip other entry types
-                installTask?.Increment(1);
+                installTask?.Value += 1;
             }
         }
     }
@@ -234,7 +220,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /**
      * Extracts a single file entry from a tar archive.
      */
-    private void ExtractTarFileEntry(TarEntry entry, string targetDir, MuxerHandlingConfig muxerConfig, Spectre.Console.ProgressTask? installTask)
+    private void ExtractTarFileEntry(TarEntry entry, string targetDir, MuxerHandlingConfig muxerConfig, IProgressTask? installTask)
     {
         var fileName = Path.GetFileName(entry.Name);
         var destPath = Path.Combine(targetDir, entry.Name);
@@ -253,7 +239,7 @@ internal class DotnetArchiveExtractor : IDisposable
             entry.DataStream?.CopyTo(outStream);
         }
 
-        installTask?.Increment(1);
+        installTask?.Value += 1;
     }
 
     /**
@@ -285,7 +271,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /**
      * Extracts a zip archive to the target directory.
      */
-    private string? ExtractZipArchive(string archivePath, string targetDir, MuxerHandlingConfig muxerConfig, Spectre.Console.ProgressTask? installTask)
+    private string? ExtractZipArchive(string archivePath, string targetDir, MuxerHandlingConfig muxerConfig, IProgressTask? installTask)
     {
         long totalFiles = CountZipEntries(archivePath);
 
@@ -312,7 +298,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /**
      * Extracts a single entry from a zip archive.
      */
-    private void ExtractZipEntry(ZipArchiveEntry entry, string targetDir, MuxerHandlingConfig muxerConfig, Spectre.Console.ProgressTask? installTask)
+    private void ExtractZipEntry(ZipArchiveEntry entry, string targetDir, MuxerHandlingConfig muxerConfig, IProgressTask? installTask)
     {
         var fileName = Path.GetFileName(entry.FullName);
         var destPath = Path.Combine(targetDir, entry.FullName);
@@ -321,7 +307,7 @@ internal class DotnetArchiveExtractor : IDisposable
         if (string.IsNullOrEmpty(fileName))
         {
             Directory.CreateDirectory(destPath);
-            installTask?.Increment(1);
+            installTask?.Value += 1;
             return;
         }
 
@@ -339,7 +325,7 @@ internal class DotnetArchiveExtractor : IDisposable
             entry.ExtractToFile(destPath, overwrite: true);
         }
 
-        installTask?.Increment(1);
+        installTask?.Value += 1;
     }
 
     /**

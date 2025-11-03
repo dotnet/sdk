@@ -1,16 +1,15 @@
 using System;
-using Spectre.Console;
 using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.Dotnet.Installation.Internal
 {
-    public class SpectreDownloadProgressReporter : IProgress<DownloadProgress>
+    public class DownloadProgressReporter : IProgress<DownloadProgress>
     {
-        private readonly ProgressTask _task;
+        private readonly IProgressTask _task;
         private readonly string _description;
         private long? _totalBytes;
 
-        public SpectreDownloadProgressReporter(ProgressTask task, string description)
+        public DownloadProgressReporter(IProgressTask task, string description)
         {
             _task = task;
             _description = description;
