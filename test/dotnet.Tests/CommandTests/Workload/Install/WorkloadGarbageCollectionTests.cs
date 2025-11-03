@@ -4,11 +4,11 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using System.Text.Json;
-using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 CreatePackInfo("Xamarin.Android.Framework", "8.4.0", WorkloadPackKind.Framework),
                 CreatePackInfo("Xamarin.Android.Runtime", "8.4.7.4", WorkloadPackKind.Library)
             };
-            var sdkVersions = new [] { "6.0.100", "6.0.300" };
+            var sdkVersions = new[] { "6.0.100", "6.0.300" };
 
             // Write packs
             foreach (var sdkVersion in sdkVersions)
@@ -348,7 +348,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             File.WriteAllText(installStatePath, installStateContents);
         }
 
-        private void CreateDotnetRoot([CallerMemberName]string testName = "", string identifier = "")
+        private void CreateDotnetRoot([CallerMemberName] string testName = "", string identifier = "")
         {
             if (_dotnetRoot == null)
             {
@@ -397,7 +397,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestProvider = new SdkDirectoryWorkloadManifestProvider(_dotnetRoot, sdkVersion, userProfileDir: null, globalJsonPath: null);
 
             var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, _dotnetRoot);
-            
+
 
             IWorkloadResolver GetResolver(string workloadSetVersion)
             {

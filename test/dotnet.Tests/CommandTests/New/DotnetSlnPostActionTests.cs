@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
             EnsureParentDirectoriesExist(targetBasePath);
-            
+
             string solutionFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
 
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
             EnsureParentDirectoriesExist(targetBasePath);
-            
+
             string slnFileFullPath = Path.Combine(targetBasePath, "MySln.sln");
             string slnxFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnFileFullPath, string.Empty);

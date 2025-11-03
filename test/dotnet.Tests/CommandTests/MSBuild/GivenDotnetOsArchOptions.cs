@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         private static readonly string[] DefaultArgs = ["-restore", "-consoleloggerparameters:Summary", NugetInteractiveProperty];
 
         private static readonly string WorkingDirectory =
-            TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));        [Fact]
+            TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation)); [Fact]
         public void OsOptionIsCorrectlyResolved()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>

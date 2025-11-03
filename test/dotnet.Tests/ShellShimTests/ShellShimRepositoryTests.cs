@@ -193,11 +193,11 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 shellShimRepository = ConfigBasicTestDependencyShellShimRepository(pathToShim);
             }
 
-            
+
 
             Action intendedError = () => throw new ToolPackageException("simulated error");
 
-            
+
 
             Action a = () =>
             {
