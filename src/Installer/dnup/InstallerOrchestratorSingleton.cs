@@ -52,6 +52,8 @@ internal class InstallerOrchestratorSingleton
             }
         }
 
+        IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+
         using DotnetArchiveExtractor installer = new(installRequest, versionToInstall, releaseManifest, progressTarget);
         installer.Prepare();
 
