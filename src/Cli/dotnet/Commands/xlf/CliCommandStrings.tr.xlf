@@ -2779,6 +2779,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">Uyarı NETSDK1174: --project için -p kısaltması kullanımdan kaldırıldı. Lütfen --project kullanın.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
         <target state="new">Select the target framework to run:</target>

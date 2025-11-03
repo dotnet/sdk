@@ -2779,6 +2779,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <target state="translated">Advertencia NETSDK1174: La abreviatura de -p para --project está en desuso. Use --project.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
         <target state="new">Select the target framework to run:</target>

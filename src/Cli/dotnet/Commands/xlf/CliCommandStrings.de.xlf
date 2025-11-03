@@ -2779,6 +2779,11 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <target state="translated">Warnung NETSDK1174: Die Abkürzung von „-p“ für „--project“ ist veraltet. Verwenden Sie „--project“.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
         <target state="new">Select the target framework to run:</target>

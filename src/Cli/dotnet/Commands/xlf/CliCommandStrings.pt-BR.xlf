@@ -2779,6 +2779,11 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <target state="translated">Aviso NETSDK1174: a abreviação de-p para--project é preterida. Use --project.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
         <target state="new">Select the target framework to run:</target>

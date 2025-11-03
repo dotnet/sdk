@@ -1796,6 +1796,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="RunCommandMoreFrameworksText" xml:space="preserve">
     <value>Move up and down to reveal more frameworks</value>
   </data>
+  <data name="RunCommandSearchPlaceholderText" xml:space="preserve">
+    <value>Type to search</value>
+  </data>
   <data name="RunCommandAvailableTargetFrameworks" xml:space="preserve">
     <value>Available target frameworks:</value>
   </data>

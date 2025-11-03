@@ -2779,6 +2779,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">Avviso NETSDK1174: l'abbreviazione di -p per --project è deprecata. Usare --project.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
         <target state="new">Select the target framework to run:</target>

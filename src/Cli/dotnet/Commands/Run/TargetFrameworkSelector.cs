@@ -101,7 +101,9 @@ internal static class TargetFrameworkSelector
                 .Title($"[cyan]{Markup.Escape(CliCommandStrings.RunCommandSelectTargetFrameworkPrompt)}[/]")
                 .PageSize(10)
                 .MoreChoicesText($"[grey]({Markup.Escape(CliCommandStrings.RunCommandMoreFrameworksText)})[/]")
-                .AddChoices(frameworks);
+                .AddChoices(frameworks)
+                .EnableSearch()
+                .SearchPlaceholderText(CliCommandStrings.RunCommandSearchPlaceholderText);
 
             return Spectre.Console.AnsiConsole.Prompt(prompt);
         }
