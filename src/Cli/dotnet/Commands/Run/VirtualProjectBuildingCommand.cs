@@ -1191,6 +1191,18 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                 """);
 
+            // Only set these to false when using the default SDK with no additional SDKs
+            // to avoid including .resx and other files that are typically not expected in simple file-based apps.
+            // When other SDKs are used (e.g., Microsoft.NET.Sdk.Web), keep the default behavior.
+            bool usingOnlyDefaultSdk = firstSdkName == "Microsoft.NET.Sdk" && sdkDirectives.Count() <= 1;
+            if (usingOnlyDefaultSdk)
+            {
+                writer.WriteLine($"""
+                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+                        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+                    """);
+            }
+
             // Write default properties before importing SDKs so they can be overridden by SDKs
             // (and implicit build files which are imported by the default .NET SDK).
             foreach (var (name, value) in DefaultProperties)
