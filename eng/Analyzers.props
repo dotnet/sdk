@@ -1,5 +1,10 @@
 <Project>
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <PackageReference Include="StyleCop.Analyzers" PrivateAssets="all" Condition="'$(EnableStyleCopAnalyzer)' == 'true'" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)../BannedSymbols.txt" />
   </ItemGroup>
 </Project>
