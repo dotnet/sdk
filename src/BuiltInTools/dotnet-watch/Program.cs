@@ -240,7 +240,7 @@ namespace Microsoft.DotNet.Watch
                 EnvironmentOptions = environmentOptions,
                 RootProjectOptions = rootProjectOptions,
                 BrowserRefreshServerFactory = new BrowserRefreshServerFactory(),
-                BrowserLauncher = new BrowserLauncher(logger, environmentOptions),
+                BrowserLauncher = new BrowserLauncher(logger, processOutputReporter, environmentOptions),
             };
         }
 

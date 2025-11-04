@@ -1,20 +1,31 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watch;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, string name)> clients, BrowserRefreshServer? browserRefreshServer) : IDisposable
+internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, string name)> clients, AbstractBrowserRefreshServer? browserRefreshServer) : IDisposable
 {
-    public HotReloadClients(HotReloadClient client, BrowserRefreshServer? browserRefreshServer)
+    public HotReloadClients(HotReloadClient client, AbstractBrowserRefreshServer? browserRefreshServer)
         : this([(client, "")], browserRefreshServer)
     {
     }
 
+    /// <summary>
+    /// Disposes all clients. Can occur unexpectedly whenever the process exits.
+    /// </summary>
     public void Dispose()
     {
         foreach (var (client, _) in clients)
@@ -23,8 +34,30 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         }
     }
 
-    public BrowserRefreshServer? BrowserRefreshServer
+    public AbstractBrowserRefreshServer? BrowserRefreshServer
         => browserRefreshServer;
+
+    /// <summary>
+    /// Invoked when a rude edit is detected at runtime.
+    /// May be invoked multiple times, by each client.
+    /// </summary>
+    public event Action<int, string> OnRuntimeRudeEdit
+    {
+        add
+        {
+            foreach (var (client, _) in clients)
+            {
+                client.OnRuntimeRudeEdit += value;
+            }
+        }
+        remove
+        {
+            foreach (var (client, _) in clients)
+            {
+                client.OnRuntimeRudeEdit -= value;
+            }
+        }
+    }
 
     /// <summary>
     /// All clients share the same loggers.
@@ -48,6 +81,7 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: true);
     }
 
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     internal void InitiateConnection(CancellationToken cancellationToken)
     {
         foreach (var (client, _) in clients)
@@ -56,11 +90,13 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         }
     }
 
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     internal async ValueTask WaitForConnectionEstablishedAsync(CancellationToken cancellationToken)
     {
         await Task.WhenAll(clients.Select(c => c.client.WaitForConnectionEstablishedAsync(cancellationToken)));
     }
 
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public async ValueTask<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
     {
         if (clients is [var (singleClient, _)])
@@ -75,7 +111,9 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         return [.. results.SelectMany(r => r).Distinct(StringComparer.Ordinal).OrderBy(c => c)];
     }
 
-    public async ValueTask ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
+    /// <param name="isInitial">True if the updates are initial updates applied automatically when a process starts.</param>
+    public async ValueTask ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, bool isInitial, CancellationToken cancellationToken)
     {
         var anyFailure = false;
 
@@ -120,9 +158,13 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
 
         if (!anyFailure)
         {
-            // all clients share the same loggers, pick any:
-            var logger = clients[0].client.Logger;
-            logger.Log(LogEvents.HotReloadSucceeded);
+            // Only report status for updates made directly by the user, not for initial updates.
+            if (!isInitial)
+            {
+                // all clients share the same loggers, pick any:
+                var logger = clients[0].client.Logger;
+                logger.Log(LogEvents.HotReloadSucceeded);
+            }
 
             if (browserRefreshServer != null)
             {
@@ -131,6 +173,7 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         }
     }
 
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public async ValueTask InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
     {
         if (clients is [var (singleClient, _)])
@@ -143,6 +186,7 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         }
     }
 
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public async Task ApplyStaticAssetUpdatesAsync(IEnumerable<(string filePath, string relativeUrl, string assemblyName, bool isApplicationProject)> assets, CancellationToken cancellationToken)
     {
         if (browserRefreshServer != null)
@@ -158,9 +202,14 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
                 ImmutableArray<byte> content;
                 try
                 {
-                    content = ImmutableCollectionsMarshal.AsImmutableArray(await File.ReadAllBytesAsync(filePath, cancellationToken));
+#if NET
+                    var blob = await File.ReadAllBytesAsync(filePath, cancellationToken);
+#else
+                    var blob = File.ReadAllBytes(filePath);
+#endif
+                    content = ImmutableCollectionsMarshal.AsImmutableArray(blob);
                 }
-                catch (Exception e)
+                catch (Exception e) when (e is not OperationCanceledException)
                 {
                     ClientLogger.LogError("Failed to read file {FilePath}: {Message}", filePath, e.Message);
                     continue;
@@ -177,6 +226,7 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         }
     }
 
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public async ValueTask ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
     {
         if (clients is [var (singleClient, _)])
@@ -189,6 +239,7 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         }
     }
 
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public ValueTask ReportCompilationErrorsInApplicationAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
         => browserRefreshServer?.ReportCompilationErrorsInBrowserAsync(compilationErrors, cancellationToken) ?? ValueTask.CompletedTask;
 }
