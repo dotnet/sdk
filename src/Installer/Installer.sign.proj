@@ -1,17 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <!-- Determine repository root when the pipeline variables are unavailable (e.g. local invocations). -->
-    <_RepoRoot Condition="'$(RepoRoot)' != ''">$(RepoRoot)</_RepoRoot>
-    <_RepoRoot Condition="'$(_RepoRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\'))</_RepoRoot>
-
     <!-- Allow callers to override these directories; fall back to repo-relative defaults. -->
-    <PackagesDir Condition="'$(PackagesDir)' == ''">$(_RepoRoot)artifacts\packages\Release\</PackagesDir>
-    <IntermediateOutputPath Condition="'$(IntermediateOutputPath)' == ''">$(_RepoRoot)artifacts\obj\Sign\</IntermediateOutputPath>
-    <LogDir Condition="'$(LogDir)' == ''">$(_RepoRoot)artifacts\log\Sign\</LogDir>
+    <PackagesDir Condition="'$(PackagesDir)' == ''">$(RepoRoot)artifacts\packages\Release\</PackagesDir>
+    <IntermediateOutputPath Condition="'$(IntermediateOutputPath)' == ''">$(RepoRoot)artifacts\obj\Sign\</IntermediateOutputPath>
+    <LogDir Condition="'$(LogDir)' == ''">$(RepoRoot)artifacts\log\Sign\</LogDir>
 
     <!-- SignTool requires explicit dotnet path; default to repo-local SDK. -->
-    <DotNetPath Condition="'$(DotNetPath)' == ''">$(_RepoRoot).dotnet\dotnet.exe</DotNetPath>
+    <DotNetPath Condition="'$(DotNetPath)' == ''">$(RepoRoot).dotnet\dotnet.exe</DotNetPath>
 
     <MicroBuild_DoNotStrongNameSign>true</MicroBuild_DoNotStrongNameSign>
     <MicroBuild_SigningEnabled>true</MicroBuild_SigningEnabled>

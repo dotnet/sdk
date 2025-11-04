@@ -62,5 +62,5 @@ jobs:
           & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-package.binlog
         displayName: 📦 Package dnup library
       - powershell: |
-          & .\.dotnet\dotnet build .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.sign.proj /t:Sign -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-sign.binlog
+          & .\.dotnet\dotnet build .\src\Installer\Installer.sign.proj /t:Sign -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-sign.binlog
         displayName: 🖋️ Sign dnup library packages with arcade signtool
