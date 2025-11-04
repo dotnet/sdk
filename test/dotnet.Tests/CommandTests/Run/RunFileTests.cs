@@ -1673,9 +1673,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log, "run", "lib.cs")
             .WithWorkingDirectory(testInstance.Path)
-            .Execute()
+            .Execute("--no-interactive")
             .Should().Fail()
-            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
 
         new DotnetCommand(Log, "run", "lib.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
             .WithWorkingDirectory(testInstance.Path)
