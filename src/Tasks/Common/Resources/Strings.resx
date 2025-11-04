@@ -1010,5 +1010,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</value>
     <comment>{StrBegins="NETSDK1233: "}</comment>
   </data>
-  <!-- The latest message added is Net10NotCompatibleWithVS17. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="CannotHaveSolutionLevelTargetFramework" xml:space="preserve">
+    <value>NETSDK1234: The "--framework" option isn't supported when building a solution. Specifying a solution-level framework results in all projects building for that framework, which can cause referenced projects to build multiple times and can lead to inconsistent builds.</value>
+    <comment>{StrBegins="NETSDK1234: "}{Locked="--framework"}</comment>
+  </data>
+  <!-- The latest message added is CannotHaveSolutionLevelTargetFramework. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

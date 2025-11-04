@@ -37,4 +37,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <Target Name="_CheckForSolutionLevelTargetFramework"
+          BeforeTargets="Build;Publish;Clean;Store;VSTest;_MTPBuild"
+          Condition="'$(_CommandLineDefinedTargetFramework)' == 'true'">
+
+    <NetSdkWarning ResourceName="CannotHaveSolutionLevelTargetFramework" />
+
+  </Target>
+
 </Project>
