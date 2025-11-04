@@ -31,6 +31,8 @@ jobs:
     enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}
+    - name: _officialBuildProperties
+      value: /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
     dependsOn: ${{ parameters.dependsOn }}
     preSteps: ${{ parameters.preSteps }}
     templateContext:
@@ -53,14 +55,14 @@ jobs:
     steps:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: |
-          & .\restore.cmd
+          & .\restore.cmd $(_officialBuildProperties)
         displayName: 🍱 Bootstrap toolset (Windows)
       - powershell: |
-          & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-build.binlog
+          & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-build.binlog $(_officialBuildProperties)
         displayName: 💻 Build Windows
       - powershell: |
-          & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-package.binlog
+          & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-package.binlog $(_officialBuildProperties)
         displayName: 📦 Package dnup library
       - powershell: |
-          & .\.dotnet\dotnet build .\src\Installer\Installer.sign.proj /t:Sign -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-sign.binlog
+          & .\.dotnet\dotnet build .\src\Installer\Installer.sign.proj /t:Sign -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-sign.binlog $(_officialBuildProperties)
         displayName: 🖋️ Sign dnup library packages with arcade signtool
