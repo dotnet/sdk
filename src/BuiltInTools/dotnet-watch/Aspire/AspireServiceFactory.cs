@@ -43,6 +43,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 
         private readonly Dictionary<string, Session> _sessions = [];
         private int _sessionIdDispenser;
+
         private volatile bool _isDisposed;
 
         public SessionManager(ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)
@@ -82,10 +83,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 _sessions.Clear();
             }
 
-            foreach (var session in sessions)
-            {
-                await TerminateSessionAsync(session, cancellationToken);
-            }
+            await Task.WhenAll(sessions.Select(TerminateSessionAsync)).WaitAsync(cancellationToken);
         }
 
         public IEnumerable<(string name, string value)> GetEnvironmentVariables()
@@ -113,13 +111,30 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
             var processTerminationSource = new CancellationTokenSource();
             var outputChannel = Channel.CreateUnbounded<OutputLine>(s_outputChannelOptions);
 
-            var runningProject = await _projectLauncher.TryLaunchProcessAsync(
+            RunningProject? runningProject = null;
+
+            runningProject = await _projectLauncher.TryLaunchProcessAsync(
                 projectOptions,
                 processTerminationSource,
                 onOutput: line =>
                 {
                     var writeResult = outputChannel.Writer.TryWrite(line);
                     Debug.Assert(writeResult);
+                },
+                onExit: async (processId, exitCode) =>
+                {
+                    // Project can be null if the process exists while it's being initialized.
+                    if (runningProject?.IsRestarting == false)
+                    {
+                        try
+                        {
+                            await _service.NotifySessionEndedAsync(dcpId, sessionId, processId, exitCode, cancellationToken);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // canceled on shutdown, ignore
+                        }
+                    }
                 },
                 restartOperation: cancellationToken =>
                     StartProjectAsync(dcpId, sessionId, projectOptions, isRestart: true, cancellationToken),
@@ -134,7 +149,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
             await _service.NotifySessionStartedAsync(dcpId, sessionId, runningProject.ProcessId, cancellationToken);
 
             // cancel reading output when the process terminates:
-            var outputReader = StartChannelReader(processTerminationSource.Token);
+            var outputReader = StartChannelReader(runningProject.ProcessExitedCancellationToken);
 
             lock (_guard)
             {
@@ -159,7 +174,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 }
                 catch (Exception e)
                 {
-                    if (e is not OperationCanceledException)
+                    if (!cancellationToken.IsCancellationRequested)
                     {
                         _logger.LogError("Unexpected error reading output of session '{SessionId}': {Exception}", sessionId, e);
                     }
@@ -185,18 +200,15 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 _sessions.Remove(sessionId);
             }
 
-            await TerminateSessionAsync(session, cancellationToken);
+            await TerminateSessionAsync(session);
             return true;
         }
 
-        private async ValueTask TerminateSessionAsync(Session session, CancellationToken cancellationToken)
+        private async Task TerminateSessionAsync(Session session)
         {
             _logger.LogDebug("Stop session #{SessionId}", session.Id);
 
-            var exitCode = await _projectLauncher.TerminateProcessAsync(session.RunningProject, cancellationToken);
-
-            // Wait until the started notification has been sent so that we don't send out of order notifications:
-            await _service.NotifySessionEndedAsync(session.DcpId, session.Id, session.RunningProject.ProcessId, exitCode, cancellationToken);
+            await session.RunningProject.TerminateAsync();
 
             // process termination should cancel output reader task:
             await session.OutputReader;

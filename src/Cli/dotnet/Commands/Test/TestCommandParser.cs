@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.Utils;
 using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -235,7 +234,7 @@ internal static class TestCommandParser
 
     private static Command GetTestingPlatformCliCommand()
     {
-        var command = new MicrosoftTestingPlatformTestCommand("test", CliCommandStrings.DotnetTestCommand);
+        var command = new MicrosoftTestingPlatformTestCommand("test", CliCommandStrings.DotnetTestCommandMTPDescription);
         command.SetAction(parseResult => command.Run(parseResult));
         command.Options.Add(MicrosoftTestingPlatformOptions.ProjectOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.SolutionOption);
@@ -269,7 +268,7 @@ internal static class TestCommandParser
 
     private static Command GetVSTestCliCommand()
     {
-        Command command = new("test", CliCommandStrings.TestAppFullName)
+        Command command = new("test", CliCommandStrings.DotnetTestCommandVSTestDescription)
         {
             TreatUnmatchedTokensAsErrors = false,
             DocsLink = DocsLink

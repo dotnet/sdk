@@ -19,7 +19,7 @@ namespace Microsoft.NET.Restore.Tests
         [Theory]
         [InlineData("4.7.1")]
         [InlineData("4.7.2")]
-        [InlineData("4.5.2")]
+        [InlineData("4.6.2")]
         [InlineData("4.8")]
         public void It_restores_net_framework_project_successfully(string version)
         {
