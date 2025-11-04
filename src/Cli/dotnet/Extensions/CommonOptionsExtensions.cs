@@ -4,8 +4,8 @@
 #nullable disable
 
 using Microsoft.Build.Framework;
-using Microsoft.Extensions.Logging;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Cli.Extensions;
 

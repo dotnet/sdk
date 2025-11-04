@@ -5,6 +5,7 @@
 
 using System.CommandLine.Completions;
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using static System.Array;
 
@@ -69,8 +70,9 @@ internal static class CliCompletion
     {
         try
         {
+            var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
             return MsbuildProject.FromFileOrDirectory(
-                new ProjectCollection(),
+                new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default),
                 Directory.GetCurrentDirectory(), interactive: false);
         }
         catch (Exception e)

@@ -16,13 +16,13 @@ using Microsoft.DotNet.Cli.Commands.Workload.Restore;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 using Microsoft.DotNet.Cli.Commands.Workload.Update;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
-using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
 using Command = System.CommandLine.Command;
-using Microsoft.DotNet.Cli.CommandLine;
+using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 

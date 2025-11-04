@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -35,7 +36,8 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: !_force, VirtualProjectBuildingCommand.ThrowingReporter);
 
         // Create a project instance for evaluation.
-        var projectCollection = new ProjectCollection();
+        var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
+        var projectCollection = new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var command = new VirtualProjectBuildingCommand(
             entryPointFileFullPath: file,
             msbuildArgs: MSBuildArgs.FromOtherArgs([]))

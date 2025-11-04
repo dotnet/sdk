@@ -20,7 +20,8 @@ internal class ReferenceAddCommand(ParseResult parseResult) : CommandBase(parseR
 
     public override int Execute()
     {
-        using var projects = new ProjectCollection();
+        var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
+        using var projects = new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         bool interactive = _parseResult.GetValue(ReferenceAddCommandParser.InteractiveOption);
         MsbuildProject msbuildProj = MsbuildProject.FromFileOrDirectory(
             projects,
