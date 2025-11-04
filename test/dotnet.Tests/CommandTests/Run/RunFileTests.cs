@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -135,7 +136,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     internal static string DirectiveError(string path, int line, string messageFormat, params ReadOnlySpan<object> args)
     {
-        return $"{path}({line}): {CliCommandStrings.DirectiveError}: {string.Format(messageFormat, args)}";
+        return $"{path}({line}): {FileBasedProgramsResources.DirectiveError}: {string.Format(messageFormat, args)}";
     }
 
     /// <summary>
@@ -1529,7 +1530,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErr(DirectiveError(programFile, 1, CliCommandStrings.StaticGraphRestoreNotSupported));
+            .And.HaveStdErr(DirectiveError(programFile, 1, FileBasedProgramsResources.StaticGraphRestoreNotSupported));
     }
 
     [Fact]
@@ -1611,6 +1612,230 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Changed");
+    }
+
+    [Fact]
+    public void Build_Library()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "lib.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Library
+            class C;
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Library"));
+    }
+
+    [Fact]
+    public void Build_Library_MultiTarget()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "lib.cs");
+        File.WriteAllText(programFile, $"""
+            #:property OutputType=Library
+            #:property PublishAot=false
+            #:property LangVersion=preview
+            #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
+            class C;
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <TargetFramework></TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+
+        new DotnetCommand(Log, "run", "lib.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Library"));
+    }
+
+    [Fact]
+    public void Build_Module()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "module.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Module
+            #:property ProduceReferenceAssembly=false
+            class C;
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "module.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "module.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Module"));
+    }
+
+    [Fact]
+    public void Build_WinExe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "winexe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=WinExe
+            Console.WriteLine("Hello WinExe");
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "winexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "winexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello WinExe");
+    }
+
+    [Fact]
+    public void Build_Exe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "exe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Exe
+            Console.WriteLine("Hello Exe");
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello Exe");
+    }
+
+    [Fact]
+    public void Build_Exe_MultiTarget()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "exe.cs");
+        File.WriteAllText(programFile, $"""
+            #:property OutputType=Exe
+            #:property PublishAot=false
+            #:property LangVersion=preview
+            #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
+            Console.WriteLine("Hello Exe");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <TargetFramework></TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+
+        new DotnetCommand(Log, "run", "exe.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello Exe");
+    }
+
+    [Fact]
+    public void Build_AppContainerExe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "appcontainerexe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=AppContainerExe
+            Console.WriteLine("Hello AppContainerExe");
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "appcontainerexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "appcontainerexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "AppContainerExe"));
     }
 
     [Fact]
@@ -2282,8 +2507,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "wrong.csproj"))));
+            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "wrong.csproj"))));
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:project dir/
@@ -2294,8 +2519,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "dir/"))));
 
         Directory.CreateDirectory(Path.Join(testInstance.Path, "dir"));
 
@@ -2304,8 +2529,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindAnyProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
 
         File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj1.csproj"), "<Project />");
         File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj2.csproj"), "<Project />");
@@ -2315,15 +2540,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.MoreThanOneProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.MoreThanOneProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
     }
 
     [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
     [InlineData(true, null)]
-    [InlineData(false, null, Skip = "Needs https://github.com/dotnet/aspnetcore/pull/63496")]
+    [InlineData(false, null)]
     [InlineData(true, "test-id")]
-    [InlineData(false, "test-id", Skip = "Needs https://github.com/dotnet/aspnetcore/pull/63496")]
+    [InlineData(false, "test-id")]
     public void UserSecrets(bool useIdArg, string? userSecretsId)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -2344,6 +2569,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         if (useIdArg)
         {
@@ -3382,6 +3611,37 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     /// <summary>
     /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// If hard links are enabled, the <c>bin/app.dll</c> and <c>obj/app.dll</c> files are going to be the same,
+    /// so our "copy obj to bin" logic must account for that.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_HardLinks()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = $"""
+            #:property CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=true
+            #:property CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible=true
+            {s_program}
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All);
+
+        code = code.Replace("Hello", "Hi");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "Hi from Program");
+    }
+
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// This optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
     /// </summary>
     [Fact]
@@ -3673,7 +3933,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":1,"Character":0},"End":{"Line":1,"Character":30}{{nop}}}{{nop}}},
-                "Message":{{ToJson(CliCommandStrings.CannotConvertDirective)}}}]}
+                "Message":{{ToJson(FileBasedProgramsResources.CannotConvertDirective)}}}]}
                 """.ReplaceLineEndings(""));
     }
 
@@ -3741,7 +4001,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":0,"Character":0},"End":{"Line":1,"Character":0}{{nop}}}{{nop}}},
-                "Message":{{ToJson(string.Format(CliCommandStrings.UnrecognizedDirective, "unknown"))}}}]}
+                "Message":{{ToJson(string.Format(FileBasedProgramsResources.UnrecognizedDirective, "unknown"))}}}]}
                 """.ReplaceLineEndings(""));
     }
 

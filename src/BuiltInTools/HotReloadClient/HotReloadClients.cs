@@ -38,6 +38,28 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         => browserRefreshServer;
 
     /// <summary>
+    /// Invoked when a rude edit is detected at runtime.
+    /// May be invoked multiple times, by each client.
+    /// </summary>
+    public event Action<int, string> OnRuntimeRudeEdit
+    {
+        add
+        {
+            foreach (var (client, _) in clients)
+            {
+                client.OnRuntimeRudeEdit += value;
+            }
+        }
+        remove
+        {
+            foreach (var (client, _) in clients)
+            {
+                client.OnRuntimeRudeEdit -= value;
+            }
+        }
+    }
+
+    /// <summary>
     /// All clients share the same loggers.
     /// </summary>
     public ILogger ClientLogger
@@ -90,7 +112,8 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
     }
 
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public async ValueTask ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
+    /// <param name="isInitial">True if the updates are initial updates applied automatically when a process starts.</param>
+    public async ValueTask ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, bool isInitial, CancellationToken cancellationToken)
     {
         var anyFailure = false;
 
@@ -135,9 +158,13 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
 
         if (!anyFailure)
         {
-            // all clients share the same loggers, pick any:
-            var logger = clients[0].client.Logger;
-            logger.Log(LogEvents.HotReloadSucceeded);
+            // Only report status for updates made directly by the user, not for initial updates.
+            if (!isInitial)
+            {
+                // all clients share the same loggers, pick any:
+                var logger = clients[0].client.Logger;
+                logger.Log(LogEvents.HotReloadSucceeded);
+            }
 
             if (browserRefreshServer != null)
             {

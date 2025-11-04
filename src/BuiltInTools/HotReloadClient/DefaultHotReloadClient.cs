@@ -28,6 +28,9 @@ namespace Microsoft.DotNet.HotReload
         private NamedPipeServerStream? _pipe;
         private bool _managedCodeUpdateFailedOrCancelled;
 
+        // The status of the last update response.
+        private TaskCompletionSource<bool> _updateStatusSource = new();
+
         public override void Dispose()
         {
             DisposePipe();
@@ -75,23 +78,64 @@ namespace Microsoft.DotNet.HotReload
 
                     var capabilities = (await ClientInitializationResponse.ReadAsync(_pipe, cancellationToken)).Capabilities;
                     Logger.Log(LogEvents.Capabilities, capabilities);
+
+                    // fire and forget:
+                    _ = ListenForResponsesAsync(cancellationToken);
+
                     return [.. capabilities.Split(' ')];
-                }
-                catch (EndOfStreamException)
-                {
-                    // process terminated before capabilities sent:
-                    return [];
                 }
                 catch (Exception e) when (e is not OperationCanceledException)
                 {
-                    // pipe might throw another exception when forcibly closed on process termination:
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        Logger.LogError("Failed to read capabilities: {Message}", e.Message);
-                    }
-
+                    ReportPipeReadException(e, "capabilities", cancellationToken);
                     return [];
                 }
+            }
+        }
+
+        private void ReportPipeReadException(Exception e, string responseType, CancellationToken cancellationToken)
+        {
+            // Don't report a warning when cancelled or the pipe has been disposed. The process has terminated or the host is shutting down in that case.
+            // Best effort: There is an inherent race condition due to time between the process exiting and the cancellation token triggering.
+            if (e is ObjectDisposedException or EndOfStreamException || cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            Logger.LogError("Failed to read {ResponseType} from the pipe: {Message}", responseType, e.Message);
+        }
+
+        private async Task ListenForResponsesAsync(CancellationToken cancellationToken)
+        {
+            Debug.Assert(_pipe != null);
+
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    var type = (ResponseType)await _pipe.ReadByteAsync(cancellationToken);
+
+                    switch (type)
+                    {
+                        case ResponseType.UpdateResponse:
+                            // update request can't be issued again until the status is read and a new source is created:
+                            _updateStatusSource.SetResult(await ReadUpdateResponseAsync(cancellationToken));
+                            break;
+
+                        case ResponseType.HotReloadExceptionNotification:
+                            var notification = await HotReloadExceptionCreatedNotification.ReadAsync(_pipe, cancellationToken);
+                            RuntimeRudeEditDetected(notification.Code, notification.Message);
+                            break;
+
+                        default:
+                            // can't continue, the pipe is in undefined state:
+                            Logger.LogError("Unexpected response received from the agent: {ResponseType}", type);
+                            return;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ReportPipeReadException(e, "response", cancellationToken);
             }
         }
 
@@ -278,6 +322,13 @@ namespace Microsoft.DotNet.HotReload
         }
 
         private async ValueTask<bool> ReceiveUpdateResponseAsync(CancellationToken cancellationToken)
+        {
+            var result = await _updateStatusSource.Task;
+            _updateStatusSource = new TaskCompletionSource<bool>();
+            return result;
+        }
+
+        private async ValueTask<bool> ReadUpdateResponseAsync(CancellationToken cancellationToken)
         {
             // Should be initialized:
             Debug.Assert(_pipe != null);

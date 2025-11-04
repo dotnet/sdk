@@ -8,6 +8,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
@@ -31,7 +32,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         // Find directives (this can fail, so do this before creating the target directory).
         var sourceFile = SourceFile.Load(file);
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !_force, DiagnosticBag.ThrowOnFirst());
+        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: !_force, DiagnosticBag.ThrowOnFirst());
 
         // Create a project instance for evaluation.
         var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();

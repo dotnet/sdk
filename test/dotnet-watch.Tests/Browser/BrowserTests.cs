@@ -79,7 +79,12 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
             🧪 Received: Reload
             """);
 
+        // no other browser message sent:
+        Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪")));
+
         await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+
+        App.Process.ClearOutput();
 
         // another rude edit:
         UpdateSourceFile(homePagePath, src => src.Replace("public virtual int F() => 1;", "/* member placeholder */"));
@@ -98,13 +103,25 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
             🧪 Received: Reload
             """);
 
+        // no other browser message sent:
+        Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪")));
+
+        App.Process.ClearOutput();
+
         // valid edit:
         UpdateSourceFile(homePagePath, src => src.Replace("/* member placeholder */", "public int F() => 1;"));
 
         await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded);
 
         await App.WaitUntilOutputContains($$"""
+            🧪 Received: {"type":"HotReloadDiagnosticsv1","diagnostics":[]}
+            """);
+
+        await App.WaitUntilOutputContains($$"""
             🧪 Received: {"type":"AspNetCoreHotReloadApplied"}
             """);
+
+        // no other browser message sent:
+        Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪")));
     }
 }

@@ -19,11 +19,12 @@ Targeting an SDK (and hence also loading analyzers) with newer major version in 
 
 ## Overview
 
-- The SDK will contain a VSIX with the analyzer DLLs and an MEF-exported implementation of `IAnalyzerAssemblyRedirector`.
+- The SDK will deploy analyzer DLLs and Roslyn will deploy an implementation of `IAnalyzerAssemblyRedirector`
+  (could be deployed by SDK but we are saving on analyzer loads and Roslyn already has a VSIX with a DLL).
   Implementations of this interface are imported by Roslyn and can redirect analyzer DLL loading.
 
-- The SDK's implementation of `IAnalyzerAssemblyRedirector` will redirect any analyzer DLL matching some pattern
-  to the corresponding DLL deployed via the VSIX.
+- That implementation of `IAnalyzerAssemblyRedirector` will redirect any analyzer DLL matching some pattern
+  to the corresponding DLL deployed with VS.
   Details of this process are described below.
 
 - Note that when `IAnalyzerAssemblyRedirector` is involved, Roslyn is free to not use shadow copy loading and instead load the DLLs directly.
@@ -33,7 +34,7 @@ Targeting an SDK (and hence also loading analyzers) with newer major version in 
 
 ## Details
 
-The VSIX contains some analyzers, for example:
+The VS deployment contains some analyzers, for example:
 
 ```
 AspNetCoreAnalyzers\analyzers\dotnet\cs\Microsoft.AspNetCore.App.Analyzers.dll
@@ -69,7 +70,7 @@ C:\Program Files\dotnet\sdk\9.0.100-preview.5.24307.3\Sdks\Microsoft.NET.Sdk\ana
 will be redirected to
 
 ```
-{VSIX}\SDKAnalyzers\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
+{InstallDir}\SDKAnalyzers\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
 ```
 
 where `metadata.json` has `"SDKAnalyzers": "9.0.100-dev"`, because
@@ -83,6 +84,5 @@ Analyzers that cannot be matched will continue to be loaded from the SDK
 ### Implementation
 
 Analyzer DLLs are contained in transport package `VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers`.
-The redirecting logic lives in "system" VS extension `Microsoft.Net.Sdk.AnalyzerRedirecting`.
 
 [torn-sdk]: https://github.com/dotnet/sdk/issues/42087

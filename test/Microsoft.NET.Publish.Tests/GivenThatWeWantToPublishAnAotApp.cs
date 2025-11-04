@@ -253,7 +253,7 @@ namespace Microsoft.NET.Publish.Tests
 
         private const string Net7ExplicitPackageVersion = "7.0.0";
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/51361")]
         [InlineData("net7.0")]
         public void NativeAot_hw_runs_with_PackageReference_PublishAot_is_enabled(string targetFramework)
         {
@@ -606,7 +606,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("warning IL3002");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/51361")]
         [InlineData("net5.0", true)]
         [InlineData("net6.0", true)]
         [InlineData("net7.0", false)]
@@ -706,7 +706,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning IL3002");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/51361")]
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_compiler_runs_when_PublishAot_is_enabled(string targetFramework)
         {

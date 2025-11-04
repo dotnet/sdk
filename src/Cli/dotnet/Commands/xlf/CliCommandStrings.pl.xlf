@@ -184,11 +184,6 @@ Przeszukane ścieżki: „{1}”, „{2}”.</target>
         <target state="translated">Nie można używać opcji {0} i {1} razem.  Usuń jedną z opcji.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">Nie można przekonwertować niektórych dyrektyw. Uruchom plik, aby wyświetlić wszystkie błędy kompilacji. Określ element „--force”, aby mimo to przekonwertować.</target>
-        <note>{Locked="--force"}</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">Nie można odnaleźć narzędzia w pliku manifestu, które zawiera polecenie o nazwie „{0}”.</target>
@@ -743,10 +738,10 @@ Jest to równoważne usunięciu pliku project.assets.json.</target>
         <target state="translated">Podczas wyszukiwania nowszych pakietów uwzględniaj pakiety z wersjami wstępnymi. Wymaga opcji „--outdated”.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definiuje ścieżkę pliku projektu do uruchomienia (nazwę folderu lub pełną ścieżkę). Jeśli nie zostanie określony, domyślnie będzie to bieżący katalog.</target>
-        <note />
+      <trans-unit id="CmdProjectDescriptionFormat">
+        <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note>{0} is the verb (e.g., "test", "run")</note>
       </trans-unit>
       <trans-unit id="CmdProjectPathName">
         <source>PROJECT_PATH</source>
@@ -796,8 +791,8 @@ Jeśli określony katalog nie istnieje, zostanie utworzony.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definiuje ścieżkę pliku rozwiązania do uruchomienia. Jeśli nie zostanie określony, domyślnie będzie to bieżący katalog.</target>
+        <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -986,11 +981,6 @@ Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Nie próbuj używać plików launchSettings.json ani [app].run.json do konfigurowania aplikacji.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">Ścieżka do pliku projektu, który ma zostać uruchomiony (w przypadku tylko jednego projektu wartością domyślną jest bieżący katalog).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
@@ -1126,11 +1116,6 @@ Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Włącza dane wyjściowe diagnostyki.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectiveError">
-        <source>error</source>
-        <target state="translated">błąd</target>
-        <note>Used when reporting directive errors like "file(location): error: message".</note>
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">Usunięto dyrektywy „{0}” ({1}) dla „{2}” z pliku: {3}</target>
@@ -1164,12 +1149,12 @@ Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
       </trans-unit>
       <trans-unit id="DotnetTestCommandMTPDescription">
         <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">Polecenie testowe platformy .NET dla elementu Microsoft.Testing.Platform (aktywowane przez plik „global.json”). Obsługuje tylko Microsoft.Testing.Platform i nie obsługuje VSTest. Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestCommandVSTestDescription">
         <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">Polecenie testowe platformy .NET dla narzędzia VSTest. Aby korzystać z platformy Microsoft.Testing.Platform, wyraź zgodę na użycie polecenia opartego na Microsoft.Testing.Platform za pośrednictwem pliku global.json. Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
@@ -1231,19 +1216,14 @@ Make the profile names distinct.</source>
 Rozróżnij nazwy profilów.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0}</source>
-        <target state="translated">Zduplikowane dyrektywy nie są obsługiwane: {0}</target>
-        <note>{0} is the directive type and name.</note>
-      </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
-        <target state="new">duration:</target>
+        <target state="translated">czas trwania:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorColon">
         <source>error:</source>
-        <target state="new">error:</target>
+        <target state="translated">błąd:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
@@ -1298,7 +1278,7 @@ Rozróżnij nazwy profilów.</target>
       </trans-unit>
       <trans-unit id="FailedColon">
         <source>failed:</source>
-        <target state="new">failed:</target>
+        <target state="translated">zakończone niepowodzeniem:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -1591,11 +1571,6 @@ Rozróżnij nazwy profilów.</target>
         <target state="translated">Metoda „{0}” nie zakończyła się pomyślnie</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">Dyrektywa powinna zawierać nazwę bez znaków specjalnych i opcjonalną wartość rozdzieloną znakiem "{1}#:{0} Name{1}Value".</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
-      </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
         <target state="translated">Określony plik musi istnieć i mieć rozszerzenie pliku „.cs”: „{0}”</target>
@@ -1610,11 +1585,6 @@ Rozróżnij nazwy profilów.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Nie można określić opcji „{0}” przy jednoczesnym używaniu znaku „-” do odczytu pliku ze standardowych danych wejściowych.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive is invalid: {0}</source>
-        <target state="translated">Dyrektywa „#:project” jest nieprawidłowa: {0}</target>
-        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1752,11 +1722,6 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
         <target state="translated">Odebrano nowe uzgadnianie „{0}” dla aplikacji testowej, która nie pasuje do poprzedniego uzgadniania „{1}”.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}'.</source>
-        <target state="translated">Brak nazwy „{0}”.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
@@ -2520,16 +2485,6 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <target state="translated">Projekty</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name: {0}</source>
-        <target state="translated">Nieprawidłowa nazwa właściwości: {0}</target>
-        <note>{0} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="translated">Dyrektywa właściwości musi mieć dwie części oddzielone znakiem „=”, na przykład „#:property PropertyName=PropertyValue”.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Wydawca dla platformy .NET.</target>
@@ -2694,7 +2649,7 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
       </trans-unit>
       <trans-unit id="Retried">
         <source>retried</source>
-        <target state="new">retried</target>
+        <target state="translated">próbowano ponownie</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2978,7 +2933,7 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
       </trans-unit>
       <trans-unit id="SkippedColon">
         <source>skipped:</source>
-        <target state="new">skipped:</target>
+        <target state="translated">pominięto:</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippedLowercase">
@@ -3076,11 +3031,6 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">Standardowe dane wyjściowe</target>
         <note />
       </trans-unit>
-      <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="translated">Przywracanie statycznego grafu nie jest obsługiwane w przypadku aplikacji opartych na plikach. Usuń element „#:property”.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">Stan</target>
@@ -3118,7 +3068,7 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
       </trans-unit>
       <trans-unit id="SucceededColon">
         <source>succeeded:</source>
-        <target state="new">succeeded:</target>
+        <target state="translated">zakończone powodzeniem:</target>
         <note />
       </trans-unit>
       <trans-unit id="Summary">
@@ -3584,7 +3534,7 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
       </trans-unit>
       <trans-unit id="TotalColon">
         <source>total:</source>
-        <target state="new">total:</target>
+        <target state="translated">suma:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">
@@ -3626,11 +3576,6 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">Wiersze z niezarejestrowanymi zmianami reprezentują zmiany pochodzące z akcji innych niż polecenia obciążenia interfejsu wiersza polecenia platformy .NET. Zazwyczaj oznacza to aktualizację zestawu .NET SDK lub programu Visual Studio.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}'.</source>
-        <target state="translated">Nierozpoznana dyrektywa „{0}”.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
@@ -3755,6 +3700,16 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">Właściwość „{0}” musi być obiektem, jeśli jest określona.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">

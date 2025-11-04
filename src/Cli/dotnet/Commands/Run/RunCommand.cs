@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
@@ -490,7 +491,9 @@ public class RunCommand
         static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, ILogger? telemetryCentralLogger)
         {
             List<ILogger> loggersForBuild = [
-                TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
+                CommonRunHelpers.GetConsoleLogger(
+                    buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
+                )
             ];
             if (binaryLogger is not null)
             {
@@ -504,6 +507,7 @@ public class RunCommand
         }
     }
 
+    [DoesNotReturn]
     internal static void ThrowUnableToRunError(ProjectInstance project)
     {
         string targetFrameworks = project.GetPropertyValue("TargetFrameworks");
@@ -539,6 +543,15 @@ public class RunCommand
         {
             emptyProjectOption = true;
             projectFileOrDirectoryPath = Directory.GetCurrentDirectory();
+        }
+
+        // Normalize path separators to handle Windows-style paths on non-Windows platforms.
+        // This is supported for backward compatibility in 'dotnet run' only, not for all CLI commands.
+        // Converting backslashes to forward slashes allows PowerShell scripts using Windows-style paths
+        // to work cross-platform, maintaining compatibility with .NET 9 behavior.
+        if (Path.DirectorySeparatorChar != '\\')
+        {
+            projectFileOrDirectoryPath = projectFileOrDirectoryPath.Replace('\\', '/');
         }
 
         string? projectFilePath = Directory.Exists(projectFileOrDirectoryPath)

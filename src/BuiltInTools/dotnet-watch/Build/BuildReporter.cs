@@ -102,7 +102,7 @@ internal sealed class BuildReporter(ILogger logger, GlobalOptions options, Envir
         public void ReportOutput()
         {
             _logger.LogInformation("MSBuild output:");
-            BuildOutput.ReportBuildOutput(_logger, Messages, success: false, projectDisplay: null);
+            BuildOutput.ReportBuildOutput(_logger, Messages, success: false);
         }
     }
 }

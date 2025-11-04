@@ -13,20 +13,8 @@ internal static partial class BuildOutput
     [GeneratedRegex(@"[^:]+: (error|warning) [A-Za-z]+[0-9]+: .+")]
     private static partial Regex GetBuildDiagnosticRegex();
 
-    public static void ReportBuildOutput(ILogger logger, IEnumerable<OutputLine> buildOutput, bool success, string? projectDisplay)
+    public static void ReportBuildOutput(ILogger logger, IEnumerable<OutputLine> buildOutput, bool success)
     {
-        if (projectDisplay != null)
-        {
-            if (success)
-            {
-                logger.Log(MessageDescriptor.BuildSucceeded, projectDisplay);
-            }
-            else
-            {
-                logger.Log(MessageDescriptor.BuildFailed, projectDisplay);
-            }
-        }
-
         foreach (var (line, isError) in buildOutput)
         {
             if (isError)

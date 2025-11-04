@@ -184,11 +184,6 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">無法同時使用 {0} 與 {1} 選項。移除其中一個選項。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">無法轉換某些指示詞。執行檔案以查看所有編譯錯誤。指定 '--force' 以繼續轉換。</target>
-        <note>{Locked="--force"}</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">在資訊清單中找不到有名稱 '{0}' 命令的工具。</target>
@@ -743,10 +738,10 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="translated">在搜尋較新套件時，建議搜尋具有發行前版本的套件。需要使用 '--outdated' 選項。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">定義要執行的專案檔案路徑 (資料夾名稱或完整路徑)。如果未指定，則預設為目前目錄。</target>
-        <note />
+      <trans-unit id="CmdProjectDescriptionFormat">
+        <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note>{0} is the verb (e.g., "test", "run")</note>
       </trans-unit>
       <trans-unit id="CmdProjectPathName">
         <source>PROJECT_PATH</source>
@@ -796,8 +791,8 @@ The specified directory will be created if it does not exist.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">定義要執行的解決方案檔案的路徑。如果未指定，則預設為目前目錄。</target>
+        <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -986,11 +981,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">請勿嘗試使用 launchSettings.json 或 [app].run.json 設定該應用程式。</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">要執行之專案檔的路徑 (如果只有一個專案，預設為目前的目錄)。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
@@ -1126,11 +1116,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">啟用診斷輸出。</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectiveError">
-        <source>error</source>
-        <target state="translated">錯誤</target>
-        <note>Used when reporting directive errors like "file(location): error: message".</note>
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">已從 {3} 移除 '{2}' 的 '{0}' 指令 ({1})</target>
@@ -1164,12 +1149,12 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       </trans-unit>
       <trans-unit id="DotnetTestCommandMTPDescription">
         <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">.NET 測試命令，適用於 Microsoft.Testing.Platform (透過 'global.json' 檔案選擇加入)。此命令僅支援 Microsoft.Testing.Platform，不支援 VSTest。如需詳細資訊，請參閱 https://aka.ms/dotnet-test。</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestCommandVSTestDescription">
         <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">適用於 VSTest 的 .NET 測試命令。若要使用 Microsoft.Testing.Platform，請透過 global.json 選擇加入以 Microsoft.Testing.Platform 為基礎的命令。如需詳細資訊，請參閱 https://aka.ms/dotnet-test。</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
@@ -1231,19 +1216,14 @@ Make the profile names distinct.</source>
 請讓設定檔名稱相異。</target>
         <note />
       </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0}</source>
-        <target state="translated">不支援重複的指示詞: {0}</target>
-        <note>{0} is the directive type and name.</note>
-      </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
-        <target state="new">duration:</target>
+        <target state="translated">期間:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorColon">
         <source>error:</source>
-        <target state="new">error:</target>
+        <target state="translated">錯誤:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
@@ -1298,7 +1278,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="FailedColon">
         <source>failed:</source>
-        <target state="new">failed:</target>
+        <target state="translated">失敗:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -1591,11 +1571,6 @@ Make the profile names distinct.</source>
         <target state="translated">方法 '{0}' 未成功結束</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">指示詞應包含不含特殊字元的名稱，以及 '{1}' 分隔的選用值，例如 '#:{0} Name{1}Value'。</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
-      </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
         <target state="translated">指定的檔案必須存在，並具有 '.cs' 副檔名:'{0}'</target>
@@ -1610,11 +1585,6 @@ Make the profile names distinct.</source>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">當使用「-」從標準輸入讀取檔案時，無法指定選項 '{0}'。</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive is invalid: {0}</source>
-        <target state="translated">'#:project' 指示詞無效: {0}</target>
-        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1752,11 +1722,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
         <target state="translated">測試應用程式收到新的交握 '{0}'，與先前的交握 '{1}' 不相符。</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}'.</source>
-        <target state="translated">缺少 '{0}' 的名稱。</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
@@ -2520,16 +2485,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">專案</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name: {0}</source>
-        <target state="translated">屬性名稱無效: {0}</target>
-        <note>{0} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="translated">屬性指示詞必須有兩個部分，其以 '=' 分隔，例如 '#:property PropertyName=PropertyValue'。</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">.NET 平台的發行者</target>
@@ -2694,7 +2649,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="Retried">
         <source>retried</source>
-        <target state="new">retried</target>
+        <target state="translated">已重試</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2978,7 +2933,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="SkippedColon">
         <source>skipped:</source>
-        <target state="new">skipped:</target>
+        <target state="translated">已略過:</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippedLowercase">
@@ -3076,11 +3031,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">標準輸出</target>
         <note />
       </trans-unit>
-      <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="translated">檔案型應用程式不支援靜態圖表還原。移除 ''#:property'。</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">狀態</target>
@@ -3118,7 +3068,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="SucceededColon">
         <source>succeeded:</source>
-        <target state="new">succeeded:</target>
+        <target state="translated">已成功:</target>
         <note />
       </trans-unit>
       <trans-unit id="Summary">
@@ -3584,7 +3534,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="TotalColon">
         <source>total:</source>
-        <target state="new">total:</target>
+        <target state="translated">總計:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">
@@ -3626,11 +3576,6 @@ and the corresponding package Ids for installed tools using the command
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">具有未記錄變更的列代表變更來自 .NET CLI 工作負載命令以外的動作。這通常代表對 .NET SDK 或 Visual Studio 的更新。</target>
         <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}'.</source>
-        <target state="translated">無法識別的指示詞 '{0}'。</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
@@ -3755,6 +3700,16 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">如果屬性 '{0}' 受到指定，則其必須為物件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">
