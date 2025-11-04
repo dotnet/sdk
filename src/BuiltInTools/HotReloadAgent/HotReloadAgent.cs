@@ -38,11 +38,16 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
     private Func<AssemblyLoadContext, AssemblyName, Assembly?>? _assemblyResolvingHandlerToInstall;
     private Func<AssemblyLoadContext, AssemblyName, Assembly?>? _installedAssemblyResolvingHandler;
 
-    public HotReloadAgent(Func<AssemblyLoadContext, AssemblyName, Assembly?>? assemblyResolvingHandler)
+    // handler to install to HotReloadException.Created:
+    private Action<int, string>? _hotReloadExceptionCreateHandler;
+
+    public HotReloadAgent(
+        Func<AssemblyLoadContext, AssemblyName, Assembly?>? assemblyResolvingHandler,
+        Action<int, string>? hotReloadExceptionCreateHandler)
     {
         _metadataUpdateHandlerInvoker = new(Reporter);
         _assemblyResolvingHandlerToInstall = assemblyResolvingHandler;
-
+        _hotReloadExceptionCreateHandler = hotReloadExceptionCreateHandler;
         GetUpdaterMethodsAndCapabilities(out _applyUpdate, out _capabilities);
 
         AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
@@ -148,9 +153,67 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
             cachedModuleUpdates.Add(update);
         }
 
-        _metadataUpdateHandlerInvoker.MetadataUpdated(GetMetadataUpdateTypes(updates));
+        var updatedTypes = GetMetadataUpdateTypes(updates);
+
+        InstallHotReloadExceptionCreatedHandler(updatedTypes);
+
+        _metadataUpdateHandlerInvoker.MetadataUpdated(updatedTypes);
 
         Reporter.Report("Updates applied.", AgentMessageSeverity.Verbose);
+    }
+
+    private void InstallHotReloadExceptionCreatedHandler(Type[] types)
+    {
+        if (_hotReloadExceptionCreateHandler is null)
+        {
+            // already installed or not available
+            return;
+        }
+
+        var exceptionType = types.FirstOrDefault(static t => t.FullName == "System.Runtime.CompilerServices.HotReloadException");
+        if (exceptionType == null)
+        {
+            return;
+        }
+
+        var handler = Interlocked.Exchange(ref _hotReloadExceptionCreateHandler, null);
+        if (handler == null)
+        {
+            // already installed or not available
+            return;
+        }
+
+        // HotReloadException has a private static field Action<Exception> Created, unless emitted by previous versions of the compiler:
+        // See https://github.com/dotnet/roslyn/blob/06f2643e1268e4a7fcdf1221c052f9c8cce20b60/src/Compilers/CSharp/Portable/Symbols/Synthesized/SynthesizedHotReloadExceptionSymbol.cs#L29
+        var createdField = exceptionType.GetField("Created", BindingFlags.Static | BindingFlags.NonPublic);
+        var codeField = exceptionType.GetField("Code", BindingFlags.Public | BindingFlags.Instance);
+        if (createdField == null || codeField == null)
+        {
+            Reporter.Report($"Failed to install HotReloadException handler: not supported by the compiler", AgentMessageSeverity.Verbose);
+            return;
+        }
+
+        try
+        {
+            createdField.SetValue(null, new Action<Exception>(e =>
+            {
+                try
+                {
+                    handler(codeField.GetValue(e) is int code ? code : 0, e.Message);
+                }
+                catch
+                {
+                    // do not crash the app
+                }
+            }));
+        }
+        catch (Exception e)
+        {
+            Reporter.Report($"Failed to install HotReloadException handler: {e.Message}", AgentMessageSeverity.Verbose);
+            return;
+        }
+
+        Reporter.Report($"HotReloadException handler installed.", AgentMessageSeverity.Verbose);
     }
 
     private Type[] GetMetadataUpdateTypes(IEnumerable<RuntimeManagedCodeUpdate> updates)
