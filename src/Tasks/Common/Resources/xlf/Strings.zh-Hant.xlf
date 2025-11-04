@@ -182,6 +182,11 @@
         <target state="translated">NETSDK1134: 不支援使用特定 RuntimeIdentifier 建置解決方案。若要發佈單一 RID，請改為在個別專案層級指定 RID。</target>
         <note>{StrBegins="NETSDK1134: "}</note>
       </trans-unit>
+      <trans-unit id="CannotHaveSolutionLevelTargetFramework">
+        <source>NETSDK1234: The "--framework" option isn't supported when building a solution. Specifying a solution-level framework results in all projects building for that framework, which can cause referenced projects to build multiple times and can lead to inconsistent builds.</source>
+        <target state="new">NETSDK1234: The "--framework" option isn't supported when building a solution. Specifying a solution-level framework results in all projects building for that framework, which can cause referenced projects to build multiple times and can lead to inconsistent builds.</target>
+        <note>{StrBegins="NETSDK1234: "}{Locked="--framework"}</note>
+      </trans-unit>
       <trans-unit id="CannotHaveSupportedOSPlatformVersionHigherThanTargetPlatformVersion">
         <source>NETSDK1135: SupportedOSPlatformVersion {0} cannot be higher than TargetPlatformVersion {1}.</source>
         <target state="translated">NETSDK1135: SupportedOSPlatformVersion {0} 不得高於 TargetPlatformVersion {1}。</target>
