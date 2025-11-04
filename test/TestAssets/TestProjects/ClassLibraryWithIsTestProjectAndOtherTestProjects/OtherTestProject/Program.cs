@@ -1,6 +1,4 @@
-﻿//See https://aka.ms/new-console-template for more information
-
-//Opt -out telemetry
+﻿//Opt -out telemetry
 
 using Microsoft.Testing.Platform.Builder;
 using Microsoft.Testing.Platform.Capabilities.TestFramework;
