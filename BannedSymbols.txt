@@ -1,0 +1,23 @@
+# Ban direct usage of MSBuild API Build methods to ensure telemetry logger is always attached
+# Use BuildWithTelemetry extension methods from ProjectInstanceExtensions instead
+
+# Ban ProjectInstance.Build() methods
+M:Microsoft.Build.Execution.ProjectInstance.Build();Use BuildWithTelemetry() from ProjectInstanceExtensions instead
+M:Microsoft.Build.Execution.ProjectInstance.Build(System.String[],System.Collections.Generic.IEnumerable`1<Microsoft.Build.Framework.ILogger>);Use BuildWithTelemetry() from ProjectInstanceExtensions instead
+M:Microsoft.Build.Execution.ProjectInstance.Build(System.String[],System.Collections.Generic.IEnumerable`1<Microsoft.Build.Framework.ILogger>,System.Collections.Generic.IEnumerable`1<Microsoft.Build.Logging.ForwardingLoggerRecord>);Use BuildWithTelemetry() from ProjectInstanceExtensions instead
+M:Microsoft.Build.Execution.ProjectInstance.Build(System.String[],System.Collections.Generic.IEnumerable`1<Microsoft.Build.Framework.ILogger>,System.Collections.Generic.IEnumerable`1<Microsoft.Build.Logging.ForwardingLoggerRecord>,Microsoft.Build.Evaluation.Context.EvaluationContext);Use BuildWithTelemetry() from ProjectInstanceExtensions instead
+
+# Ban Project.Build() methods
+M:Microsoft.Build.Evaluation.Project.Build();Use BuildWithTelemetry() on the Project's ProjectInstance instead
+M:Microsoft.Build.Evaluation.Project.Build(Microsoft.Build.Framework.ILogger);Use BuildWithTelemetry() on the Project's ProjectInstance instead
+M:Microsoft.Build.Evaluation.Project.Build(System.String);Use BuildWithTelemetry() on the Project's ProjectInstance instead
+M:Microsoft.Build.Evaluation.Project.Build(System.String[]);Use BuildWithTelemetry() on the Project's ProjectInstance instead
+M:Microsoft.Build.Evaluation.Project.Build(System.String,System.Collections.Generic.IEnumerable`1<Microsoft.Build.Framework.ILogger>);Use BuildWithTelemetry() on the Project's ProjectInstance instead
+M:Microsoft.Build.Evaluation.Project.Build(System.String[],System.Collections.Generic.IEnumerable`1<Microsoft.Build.Framework.ILogger>);Use BuildWithTelemetry() on the Project's ProjectInstance instead
+M:Microsoft.Build.Evaluation.Project.Build(System.String[],System.Collections.Generic.IEnumerable`1<Microsoft.Build.Framework.ILogger>,System.Collections.Generic.IEnumerable`1<Microsoft.Build.Logging.ForwardingLoggerRecord>);Use BuildWithTelemetry() on the Project's ProjectInstance instead
+
+# Ban ProjectCollection constructor without telemetry - use CreateLoggersWithTelemetry() helper
+M:Microsoft.Build.Evaluation.ProjectCollection.#ctor();Use constructor with loggers from CreateLoggersWithTelemetry()
+M:Microsoft.Build.Evaluation.ProjectCollection.#ctor(System.Collections.Generic.IDictionary`2<System.String,System.String>);Use constructor with loggers from CreateLoggersWithTelemetry()
+M:Microsoft.Build.Evaluation.ProjectCollection.#ctor(Microsoft.Build.Evaluation.ToolsetDefinitionLocations);Use constructor with loggers from CreateLoggersWithTelemetry()
+M:Microsoft.Build.Evaluation.ProjectCollection.#ctor(System.Collections.Generic.IDictionary`2<System.String,System.String>,System.Collections.Generic.IEnumerable`1<Microsoft.Build.Framework.ILogger>,Microsoft.Build.Evaluation.ToolsetDefinitionLocations);Ensure telemetry logger is included via CreateLoggersWithTelemetry()
