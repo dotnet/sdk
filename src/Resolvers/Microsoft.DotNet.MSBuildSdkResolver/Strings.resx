@@ -138,4 +138,7 @@
   <data name="GlobalJsonResolutionFailedSpecificVersion" xml:space="preserve">
     <value>Unable to locate the .NET SDK version '{0}' as specified by global.json, please check that the specified version is installed.</value>
   </data>
+  <data name="UnableToLocateNETCoreSdkButPreviewAvailable" xml:space="preserve">
+    <value>Unable to locate the .NET SDK. A preview SDK (version {0}) is available but is being blocked by your Visual Studio settings. To use preview SDKs, go to Tools -> Options -> Environment -> Preview Features and check "Use previews of the .NET SDK", or add "allowPrerelease": true to global.json.</value>
+  </data>
 </root>

@@ -149,7 +149,21 @@ namespace Microsoft.DotNet.DotNetSdkResolver
 
         public SdkResolutionResult ResolveNETCoreSdkDirectory(string? globalJsonStartDir, Version msbuildVersion, bool isRunningInVisualStudio, string? dotnetExeDir)
         {
-            var result = NETCoreSdkResolverNativeWrapper.ResolveSdk(dotnetExeDir, globalJsonStartDir, _vsSettings.DisallowPrerelease());
+            return ResolveNETCoreSdkDirectory(globalJsonStartDir, msbuildVersion, isRunningInVisualStudio, dotnetExeDir, _vsSettings.DisallowPrerelease());
+        }
+
+        /// <summary>
+        /// Resolves the .NET Core SDK directory with explicit control over prerelease handling.
+        /// </summary>
+        /// <param name="globalJsonStartDir">Starting directory for global.json search</param>
+        /// <param name="msbuildVersion">Version of MSBuild</param>
+        /// <param name="isRunningInVisualStudio">Whether running in Visual Studio</param>
+        /// <param name="dotnetExeDir">Directory containing dotnet executable</param>
+        /// <param name="disallowPrerelease">Whether to disallow prerelease SDKs</param>
+        /// <returns>SDK resolution result</returns>
+        public SdkResolutionResult ResolveNETCoreSdkDirectory(string? globalJsonStartDir, Version msbuildVersion, bool isRunningInVisualStudio, string? dotnetExeDir, bool disallowPrerelease)
+        {
+            var result = NETCoreSdkResolverNativeWrapper.ResolveSdk(dotnetExeDir, globalJsonStartDir, disallowPrerelease);
 
             string? mostCompatible = result.ResolvedSdkDirectory;
             if (result.ResolvedSdkDirectory == null
