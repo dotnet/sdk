@@ -41,6 +41,7 @@ internal partial class ExternalHelpers
 #endif
 }
 
+// https://github.com/dotnet/sdk/issues/51487: Remove usage of GracefulException from the source package
 #if FILE_BASED_PROGRAMS_SOURCE_PACKAGE_GRACEFUL_EXCEPTION
 internal class GracefulException : Exception
 {

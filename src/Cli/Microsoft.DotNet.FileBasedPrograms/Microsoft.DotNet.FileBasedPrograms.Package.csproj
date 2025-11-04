@@ -71,6 +71,7 @@
   <!-- Exclude the auto-generated .cs file from the resx from the package -->
   <Target Name="ExcludeGeneratedResxFromPackage" BeforeTargets="GenerateNuspec">
     <ItemGroup>
+      <!-- https://github.com/dotnet/sdk/issues/51487: Cleanup the target which excludes the resx generated output from the package. -->
       <_PackageFiles Remove="@(_PackageFiles)" Condition="$([System.String]::Copy('%(_PackageFiles.Identity)').EndsWith('FileBasedProgramsResources.cs'))" />
     </ItemGroup>
   </Target>

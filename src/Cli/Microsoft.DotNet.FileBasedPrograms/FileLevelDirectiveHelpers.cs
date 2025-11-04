@@ -17,12 +17,14 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
+// https://github.com/dotnet/sdk/issues/51487: Remove usage of GracefulException from the source package
 #if !FILE_BASED_PROGRAMS_SOURCE_PACKAGE_GRACEFUL_EXCEPTION
 using Microsoft.DotNet.Cli.Utils;
 #endif
 
 namespace Microsoft.DotNet.FileBasedPrograms;
 
+// https://github.com/dotnet/sdk/issues/51487: Use 'file class' where appropriate to reduce exposed internal API surface
 internal static class FileLevelDirectiveHelpers
 {
     public static SyntaxTokenParser CreateTokenizer(SourceText text)
@@ -470,6 +472,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             {
                 // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.
                 // Also normalize blackslashes to forward slashes to ensure the directive works on all platforms.
+                // https://github.com/dotnet/sdk/issues/51487: Behavior should not depend on process current directory
                 var sourceDirectory = Path.GetDirectoryName(context.SourceFile.Path) ?? ".";
                 var resolvedProjectPath = Path.Combine(sourceDirectory, directiveText.Replace('\\', '/'));
                 if (Directory.Exists(resolvedProjectPath))
@@ -502,6 +505,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return new Project(Info) { Name = name };
         }
 
+        // https://github.com/dotnet/sdk/issues/51487: Delete copies of methods from MsbuildProject and MSBuildUtilities from the source package, sharing the original method(s) under src/Cli instead.
         public static FileInfo GetProjectFileFromDirectory(string projectDirectory)
         {
             DirectoryInfo dir;
