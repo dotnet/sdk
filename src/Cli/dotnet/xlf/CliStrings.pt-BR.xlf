@@ -100,9 +100,10 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Define o valor de uma variável de ambiente. 
-Cria a variável se ela não existir, substitui se existir. 
-Este argumento pode ser especificado várias vezes para fornecer múltiplas variáveis.
+        <target state="needs-review-translation">Define o valor de uma variável de ambiente. 
+Criará a variável quando ela não existir e a substituirá quando existir. 
+Isso forçará a execução dos testes em um processo isolado. 
+Esse argumento pode ser especificado várias vezes para fornecer várias variáveis.
 
 Exemplos:
 -e VARIABLE=abc
@@ -129,15 +130,15 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Define o valor de uma variável de ambiente. 
-Criará a variável quando ela não existir e a substituirá quando existir. 
-Isso forçará a execução dos testes em um processo isolado. 
-Esse argumento pode ser especificado várias vezes para fornecer várias variáveis.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
 
-Exemplos:
+Examples:
 -e VARIABLE=abc
--e VARIABLE="valor com espaços"
--e VARIABLE="valor;separado com;ponto e vírgula"
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -784,7 +785,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
         <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
-        <target state="translated">Referência de pacote na forma de um identificador de pacote como '{0}' ou identificador de pacote e versão separados por '@', como '{0}@{1}'.</target>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
@@ -1031,6 +1032,11 @@ O padrão é 'false.' No entanto, ao direcionar para .NET 7 ou inferior, o padr�
       <trans-unit id="SolutionDoesNotExist">
         <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
         <target state="translated">O arquivo de solução {0} especificado não existe ou não há um arquivo de solução no diretório.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">

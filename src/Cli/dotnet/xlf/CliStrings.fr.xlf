@@ -100,14 +100,15 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Définit la valeur d’une variable d’environnement. 
-Crée la variable si elle n’existe pas, et la remplace si elle existe. 
+        <target state="needs-review-translation">Définit la valeur d'une variable d'environnement. 
+Crée la variable si elle n'existe pas, et la remplace si elle existe. 
+Cela entraîne l'exécution forcée des tests dans un processus isolé. 
 Vous pouvez spécifier cet argument plusieurs fois pour fournir plusieurs variables.
 
 Exemples :
 -e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="valeur avec des espaces"
+-e VARIABLE="valeur;séparée;par;des;points;virgules"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -129,15 +130,15 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Définit la valeur d'une variable d'environnement. 
-Crée la variable si elle n'existe pas, et la remplace si elle existe. 
-Cela entraîne l'exécution forcée des tests dans un processus isolé. 
-Vous pouvez spécifier cet argument plusieurs fois pour fournir plusieurs variables.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
 
-Exemples :
+Examples:
 -e VARIABLE=abc
--e VARIABLE="valeur avec des espaces"
--e VARIABLE="valeur;séparée;par;des;points;virgules"
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -784,7 +785,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
         <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
-        <target state="translated">Référence de package sous la forme d’un identificateur de package tel que « {0} » ou d’un identificateur de package et d’une version séparés par « @ », comme « {0}@{1} ».</target>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
@@ -1031,6 +1032,11 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
       <trans-unit id="SolutionDoesNotExist">
         <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
         <target state="translated">Le fichier solution spécifié {0} n'existe pas ou il n'y a pas de fichier solution dans le répertoire.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
