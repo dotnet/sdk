@@ -1,5 +1,6 @@
 # This is a comment.
 # Each line is a file pattern followed by one or more owners.
+# Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-syntax
 
 # These owners will be the default owners for everything in
 # the repo. Unless a later match takes precedence,
@@ -30,8 +31,8 @@
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
-/src/Cli/dotnet/commands/dotnet-format @arunchndr
-/test/dotnet-format.UnitTests @arunchndr
+/src/Cli/dotnet/commands/dotnet-format @phil-allen-msft
+/test/dotnet-format.UnitTests @phil-allen-msft
 
 # Area-NuGet
 /src/Cli/dotnet/Commands/NuGet @dotnet/nuget-team
@@ -76,10 +77,10 @@
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
-/test/TestAssets/TestProjects/Watch*/ @tmat @arunchndr @dotnet/roslyn-ide
-/test/dotnet-watch.Tests/ @tmat @arunchndr @dotnet/roslyn-ide
+/test/TestAssets/TestProjects/Watch*/ @tmat @dotnet/roslyn-ide
+/test/dotnet-watch.Tests/ @tmat @dotnet/roslyn-ide
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/* @tmat @arunchndr @dotnet/roslyn-ide
+/src/BuiltInTools/* @tmat @dotnet/roslyn-ide
 /src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
 /src/BuiltInTools/AspireService @dotnet/aspnet-blazor-eng
 
@@ -100,14 +101,20 @@
 /test/Microsoft.DotNet.GenAPI/ @dotnet/area-infrastructure-libraries
 /test/Microsoft.DotNet.ApiSymbolExtensions.Tests/ @dotnet/area-infrastructure-libraries
 
-# Area: dotnet containers
+# Area-Containers
 /src/Cli/Containers @dotnet/sdk-container-builds-maintainers
 /test/containerize.UnitTests @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.IntegrationTests @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.UnitTests @dotnet/sdk-container-builds-maintainers
 
-# dotnet-format
+# Area-Format
 /src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
 /test/dotnet-format.UnitTests @dotnet/roslyn-ide
 
+# Area-Microsoft.CodeAnalysis.NetAnalyzers
 /src/Microsoft.CodeAnalysis.NetAnalyzers @dotnet/dotnet-analyzers
+
+# Area-Infrastructure
+.vsts-ci.yml @MiYanni
+.vsts-pr.yml @MiYanni
+/eng/pipelines @MiYanni

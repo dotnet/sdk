@@ -100,6 +100,12 @@ internal sealed class TestApplicationHandler
             throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(DiscoveredTestMessages)));
         }
 
+        if (discoveredTestMessages.ExecutionId != _handshakeInfo.Value.ExecutionId)
+        {
+            // Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.
+            throw new InvalidOperationException(string.Format(CliCommandStrings.DotnetTestMismatchingExecutionId, discoveredTestMessages.ExecutionId, nameof(DiscoveredTestMessages), _handshakeInfo.Value.ExecutionId));
+        }
+
         foreach (var test in discoveredTestMessages.DiscoveredMessages)
         {
             _output.TestDiscovered(_handshakeInfo.Value.ExecutionId,
@@ -120,6 +126,12 @@ internal sealed class TestApplicationHandler
         if (!_handshakeInfo.HasValue)
         {
             throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(TestResultMessages)));
+        }
+
+        if (testResultMessage.ExecutionId != _handshakeInfo.Value.ExecutionId)
+        {
+            // Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.
+            throw new InvalidOperationException(string.Format(CliCommandStrings.DotnetTestMismatchingExecutionId, testResultMessage.ExecutionId, nameof(TestResultMessages), _handshakeInfo.Value.ExecutionId));
         }
 
         var handshakeInfo = _handshakeInfo.Value;
@@ -169,6 +181,12 @@ internal sealed class TestApplicationHandler
             throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(FileArtifactMessages)));
         }
 
+        if (fileArtifactMessages.ExecutionId != _handshakeInfo.Value.ExecutionId)
+        {
+            // Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.
+            throw new InvalidOperationException(string.Format(CliCommandStrings.DotnetTestMismatchingExecutionId, fileArtifactMessages.ExecutionId, nameof(FileArtifactMessages), _handshakeInfo.Value.ExecutionId));
+        }
+
         var handshakeInfo = _handshakeInfo.Value;
         foreach (var artifact in fileArtifactMessages.FileArtifacts)
         {
@@ -191,6 +209,12 @@ internal sealed class TestApplicationHandler
             if (!_handshakeInfo.HasValue)
             {
                 throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(DiscoveredTestMessages)));
+            }
+
+            if (sessionEvent.ExecutionId != _handshakeInfo.Value.ExecutionId)
+            {
+                // Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.
+                throw new InvalidOperationException(string.Format(CliCommandStrings.DotnetTestMismatchingExecutionId, sessionEvent.ExecutionId, nameof(TestSessionEvent), _handshakeInfo.Value.ExecutionId));
             }
 
             if (sessionEvent.SessionType == SessionEventTypes.TestSessionStart)

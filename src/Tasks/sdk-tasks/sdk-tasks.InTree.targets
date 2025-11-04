@@ -13,7 +13,6 @@
   <UsingTask TaskName="AddMetadataIsPE" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="CalculateTemplateVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="ChangeEntryPointLibraryName" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
-  <UsingTask TaskName="CollatePackageDownloads" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Crossgen" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="ExtractArchiveToDirectory" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="GenerateDefaultRuntimeFrameworkVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
@@ -28,6 +27,7 @@
   <UsingTask TaskName="GetRuntimePackRids" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="GetWorkloadSetFeatureBand" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="OverrideAndCreateBundledNETCoreAppPackageVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="ProcessRuntimeAnalyzerVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="RemoveAssetFromDepsPackages" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="ReplaceFileContents" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="ReplaceFilesWithSymbolicLinks" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />

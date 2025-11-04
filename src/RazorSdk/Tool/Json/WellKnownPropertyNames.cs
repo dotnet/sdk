@@ -6,4 +6,5 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Json;
 internal static class WellKnownPropertyNames
 {
     public const string Message = "Message";
+    public const string MetadataKind = "MetadataKind";
 }

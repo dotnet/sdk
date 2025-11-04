@@ -6,15 +6,13 @@ namespace Microsoft.NET.TestFramework.Commands
     public sealed class PackCommand : MSBuildCommand
     {
         public PackCommand(ITestOutputHelper log, string projectPath, string? relativePathToProject = null)
-            : base(log, "Pack", projectPath, relativePathToProject)
+            : base(log, "Pack", projectPath, relativePathToProject, requiredArgs: "/p:_IsPacking=true")
         {
-
         }
 
         public PackCommand(TestAsset testAsset, string? relativePathToProject = null)
-            : base(testAsset, "Pack", relativePathToProject)
+            : base(testAsset, "Pack", relativePathToProject, requiredArgs: "/p:_IsPacking=true")
         {
-
         }
 
         public string GetIntermediateNuspecPath(string? packageId = null, string configuration = "Debug", string packageVersion = "1.0.0")
