@@ -30,6 +30,17 @@
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
+  <!-- PublicAPI Analyzer -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Condition=" '$(DotNetBuildSourceOnly)' != 'true' ">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
+    <AdditionalFiles Include="InternalAPI.Shipped.txt" />
+    <AdditionalFiles Include="InternalAPI.Unshipped.txt" />
+  </ItemGroup>
+
   <!-- Make sure the shared source files do not require any global usings -->
   <ItemGroup>
     <Using Remove="@(Using)" />

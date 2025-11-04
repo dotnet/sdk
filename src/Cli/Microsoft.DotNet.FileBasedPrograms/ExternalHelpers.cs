@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.FileBasedPrograms;
 /// <summary>
 /// When targeting netstandard2.0, the user of the source package must "implement" certain methods by declaring members in this type.
 /// </summary>
-partial class ExternalHelpers
+internal partial class ExternalHelpers
 {
     public static partial int CombineHashCodes(int value1, int value2);
     public static partial string GetRelativePath(string relativeTo, string path);
