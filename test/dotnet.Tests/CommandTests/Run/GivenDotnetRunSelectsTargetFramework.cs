@@ -1,14 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
 /// <summary>
 /// Integration tests for target framework selection in dotnet run
 /// </summary>
-public class GivenDotnetRunSelectsTargetFramework : SdkTest
+public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
 {
     public GivenDotnetRunSelectsTargetFramework(ITestOutputHelper log) : base(log)
     {
@@ -212,4 +212,32 @@ public class GivenDotnetRunSelectsTargetFramework : SdkTest
             result.Should().HaveStdErrContaining("multiple frameworks");
         }
     }
+
+    [Fact]
+    public void ItAutoSelectsSingleFrameworkInTargetFrameworksProperty()
+    {
+        // Reuse the DotnetRunMultiTarget project and modify it to have only one framework
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunMultiTarget")
+            .WithSource();
+
+        // Read the existing .csproj file
+        var projectPath = Path.Combine(testInstance.Path, "DotnetRunMultiTarget.csproj");
+        var projectContent = File.ReadAllText(projectPath);
+
+        // Replace TargetFrameworks with a single framework
+        projectContent = TargetFrameworksRegex()
+            .Replace(projectContent, $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework}</TargetFrameworks>");
+        File.WriteAllText(projectPath, projectContent);
+
+        // Run without specifying --framework - it should auto-select the single framework
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute();
+
+        result.Should().Pass()
+            .And.HaveStdOutContaining($"Target Framework: {ToolsetInfo.CurrentTargetFrameworkMoniker}");
+    }
+
+    [GeneratedRegex(@"<TargetFrameworks>.*?</TargetFrameworks>")]
+    private static partial Regex TargetFrameworksRegex();
 }
