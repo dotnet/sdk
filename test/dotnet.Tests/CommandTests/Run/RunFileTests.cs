@@ -1363,7 +1363,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Default projects include embedded resources by default.
+    /// File-based projects using the default SDK do not include embedded resources by default.
     /// </summary>
     [Fact]
     public void EmbeddedResource()
@@ -1371,6 +1371,21 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
+
+        // By default, with the default SDK, embedded resources are not included
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Resource not found
+                """);
+
+        // This behavior can be overridden to enable embedded resources.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:property EnableDefaultEmbeddedResourceItems=true
+            {s_programReadingEmbeddedResource}
+            """);
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -1380,9 +1395,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 [MyString, TestValue]
                 """);
 
-        // This behavior can be overridden.
+        // When using a non-default SDK, embedded resources are included by default
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
-            #:property EnableDefaultEmbeddedResourceItems=false
+            #:sdk Microsoft.NET.Sdk.Web
             {s_programReadingEmbeddedResource}
             """);
 
@@ -1391,7 +1406,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("""
-                Resource not found
+                [MyString, TestValue]
                 """);
     }
 
@@ -1402,8 +1417,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Theory, CombinatorialData]
     public void EmbeddedResource_AlongsideProj([CombinatorialValues("sln", "slnx", "csproj", "vbproj", "shproj", "proj")] string ext)
     {
-        bool considered = ext is "sln" or "slnx" or "csproj";
-
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
@@ -1411,11 +1424,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Up-to-date check currently doesn't support default items, so we need to pass --no-cache
         // otherwise other runs of this test theory might cause outdated results.
+        // With the default SDK, embedded resources are not included by default regardless of project files
         new DotnetCommand(Log, "run", "--no-cache", "--file", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut(considered ? "Resource not found" : "[MyString, TestValue]");
+            .And.HaveStdOut("Resource not found");
     }
 
     [Fact]
@@ -3151,6 +3165,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var code = $"""
             {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            #:property EnableDefaultEmbeddedResourceItems=true
             {s_programReadingEmbeddedResource}
             """;
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
@@ -3215,6 +3230,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var code = $"""
             #:property Configuration=Release
             {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            #:property EnableDefaultEmbeddedResourceItems=true
             {s_programReadingEmbeddedResource}
             """;
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
