@@ -69,8 +69,8 @@
     <Compile Include="DockerLoadException.cs" />
     <Compile Include="Registry/RegistryConstants.cs" />
     <Compile Include="Tasks/ParseContainerProperties.cs" />
-    <Compile Include="Tasks/CreateNewImage.Interface.cs" />
-    <Compile Include="Tasks/CreateNewImageToolTask.cs" />
+    <Compile Include="Tasks/CreateAppLayer.Interface.cs" />
+    <Compile Include="Tasks/CreateAppLayerToolTask.cs" />
     <Compile Include="Tasks/ComputeDotnetBaseImageAndTag.cs" />
     <Compile Include="ContainerHelpers.cs" />
     <Compile Include="net472Definitions.cs" />
@@ -83,7 +83,7 @@
 
   <!-- core remove files specific to net472 workarounds -->
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
-    <Compile Remove="Tasks/CreateNewImageToolTask.cs" />
+    <Compile Remove="Tasks/CreateAppLayerToolTask.cs" />
     <Compile Remove="net472Definitions.cs" />
     <Compile Remove="VSHostObject.cs" />
   </ItemGroup>

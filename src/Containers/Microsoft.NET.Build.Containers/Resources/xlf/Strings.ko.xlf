@@ -225,8 +225,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageMetadata">
-        <source>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="translated">제공된 이미지가 잘못되었으므로 이미지 인덱스를 만들 수 없습니다. 항목에는 'Config', 'Manifest', 'ManifestMediaType' 및 'ManifestDigest' 메타데이터가 있어야 합니다.</target>
+        <source>Cannot create image index because provided images are invalid. Items must have 'ConfigurationPath' and 'ManifestPath' metadata.</source>
+        <target state="needs-review-translation">제공된 이미지가 잘못되었으므로 이미지 인덱스를 만들 수 없습니다. 항목에는 'Config', 'Manifest', 'ManifestMediaType' 및 'ManifestDigest' 메타데이터가 있어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">

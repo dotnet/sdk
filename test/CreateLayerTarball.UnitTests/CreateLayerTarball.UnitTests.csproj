@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Containers\containerize\containerize.csproj" />
+    <ProjectReference Include="..\..\src\Containers\CreateLayerTarball\CreateLayerTarball.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 

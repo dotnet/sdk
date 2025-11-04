@@ -103,7 +103,7 @@
 
 # Area-Containers
 /src/Cli/Containers @dotnet/sdk-container-builds-maintainers
-/test/containerize.UnitTests @dotnet/sdk-container-builds-maintainers
+/test/CreateLayerTarball.UnitTests @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.IntegrationTests @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.UnitTests @dotnet/sdk-container-builds-maintainers
 
