@@ -178,9 +178,10 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         logger?.LogString("Retrying SDK resolution allowing preview SDKs");
                         var retryResult = _netCoreSdkResolver.ResolveNETCoreSdkDirectory(globalJsonStartDir, context.MSBuildVersion, context.IsRunningInVisualStudio, dotnetRoot, disallowPrerelease: false);
 
-                        if (retryResult.ResolvedSdkDirectory != null)
+                        string? previewSdkDirectory = retryResult.ResolvedSdkDirectory;
+                        if (previewSdkDirectory != null)
                         {
-                            string previewVersion = new DirectoryInfo(retryResult.ResolvedSdkDirectory).Name;
+                            string previewVersion = new DirectoryInfo(previewSdkDirectory).Name;
                             logger?.LogMessage($"Found preview SDK: {previewVersion}");
                             return Failure(
                                 factory,
