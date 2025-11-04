@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -46,14 +47,8 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
             .Execute("--no-interactive");
 
-        result.Should().Fail();
-        
-        if (!TestContext.IsLocalized())
-        {
-            result.Should().HaveStdErrContaining("Unable to run your project");
-            result.Should().HaveStdErrContaining("multiple frameworks");
-            result.Should().HaveStdErrContaining("--framework");
-        }
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
     }
 
     [Fact]
@@ -105,21 +100,8 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
             .Execute("--no-interactive");
 
-        result.Should().Fail();
-        
-        if (!TestContext.IsLocalized())
-        {
-            // Should show the "Unable to run your project" message
-            result.Should().HaveStdErrContaining("Unable to run your project");
-            result.Should().HaveStdErrContaining("Your project targets multiple frameworks");
-            
-            // Should show available frameworks
-            result.Should().HaveStdErrContaining("Available target frameworks:");
-            
-            // Should show example command
-            result.Should().HaveStdErrContaining("Example:");
-            result.Should().HaveStdErrContaining("dotnet run --framework");
-        }
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
     }
 
     [Fact]
@@ -133,13 +115,8 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
             .Execute("--no-interactive");
 
-        result.Should().Fail();
-        
-        if (!TestContext.IsLocalized())
-        {
-            result.Should().HaveStdErrContaining("Unable to run your project");
-            result.Should().HaveStdErrContaining("multiple frameworks");
-        }
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
     }
 
     [Theory]
@@ -180,13 +157,8 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
             .Execute("-p:TargetFramework=", "--no-interactive"); // Empty string
 
-        result.Should().Fail();
-        
-        if (!TestContext.IsLocalized())
-        {
-            result.Should().HaveStdErrContaining("Unable to run your project");
-            result.Should().HaveStdErrContaining("multiple frameworks");
-        }
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
     }
 
     [Fact]
@@ -204,13 +176,8 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
             .Execute("-p:TargetFramework=   ", "--no-interactive"); // Whitespace
 
-        result.Should().Fail();
-        
-        if (!TestContext.IsLocalized())
-        {
-            result.Should().HaveStdErrContaining("Unable to run your project");
-            result.Should().HaveStdErrContaining("multiple frameworks");
-        }
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
     }
 
     [Fact]
