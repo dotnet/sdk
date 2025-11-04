@@ -57,6 +57,20 @@ internal static class TargetFrameworkSelector
         // users may have added for formatting reasons.
         var frameworks = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
+        return TrySelectTargetFramework(frameworks, isInteractive, out selectedFramework);
+    }
+
+    /// <summary>
+    /// Handles target framework selection when given an array of frameworks.
+    /// If there's only one framework, selects it automatically.
+    /// If there are multiple frameworks, prompts the user (interactive) or shows an error (non-interactive).
+    /// </summary>
+    /// <param name="frameworks">Array of target frameworks to choose from</param>
+    /// <param name="isInteractive">Whether we're running in interactive mode (can prompt user)</param>
+    /// <param name="selectedFramework">The selected target framework, or null if selection was cancelled</param>
+    /// <returns>True if we should continue, false if we should exit with error</returns>
+    public static bool TrySelectTargetFramework(string[] frameworks, bool isInteractive, out string? selectedFramework)
+    {
         // If there's only one framework in the TargetFrameworks, we do need to pick it to force the subsequent builds/evaluations
         // to act against the correct 'view' of the project
         if (frameworks.Length == 1)
@@ -85,6 +99,7 @@ internal static class TargetFrameworkSelector
             Reporter.Error.WriteLine();
             Reporter.Error.WriteLine($"{CliCommandStrings.RunCommandExampleText}: dotnet run --framework {frameworks[0]}");
             Reporter.Error.WriteLine();
+            selectedFramework = null;
             return false;
         }
     }

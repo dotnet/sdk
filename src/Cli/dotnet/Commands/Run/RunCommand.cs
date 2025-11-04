@@ -132,6 +132,12 @@ public class RunCommand
             return 1;
         }
 
+        // For file-based projects, check for multi-targeting before building
+        if (EntryPointFileFullPath is not null && !TrySelectTargetFrameworkForFileBasedProject())
+        {
+            return 1;
+        }
+
         Func<ProjectCollection, ProjectInstance>? projectFactory = null;
         RunProperties? cachedRunProperties = null;
         VirtualProjectBuildingCommand? virtualCommand = null;
@@ -207,17 +213,81 @@ public class RunCommand
             Interactive,
             out string? selectedFramework))
         {
-            // If a framework was selected, add it to MSBuildArgs
-            if (selectedFramework is not null)
-            {
-                var additionalProperties = new ReadOnlyDictionary<string, string>(
-                    new Dictionary<string, string> { { "TargetFramework", selectedFramework } });
-                MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
-            }
+            ApplySelectedFramework(selectedFramework);
             return true;
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Checks if target framework selection is needed for file-based projects.
+    /// Parses directives from the source file to detect multi-targeting.
+    /// </summary>
+    /// <returns>True if we can continue, false if we should exit</returns>
+    private bool TrySelectTargetFrameworkForFileBasedProject()
+    {
+        Debug.Assert(EntryPointFileFullPath is not null);
+
+        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
+        
+        // If a framework is already specified via --framework, no need to check
+        if (globalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework))
+        {
+            return true;
+        }
+
+        // Get frameworks from source file directives
+        var frameworks = GetTargetFrameworksFromSourceFile(EntryPointFileFullPath);
+        if (frameworks is null || frameworks.Length == 0)
+        {
+            return true; // Not multi-targeted
+        }
+
+        // Use TargetFrameworkSelector to handle multi-target selection (or single framework selection)
+        if (TargetFrameworkSelector.TrySelectTargetFramework(frameworks, Interactive, out string? selectedFramework))
+        {
+            ApplySelectedFramework(selectedFramework);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Parses a source file to extract target frameworks from directives.
+    /// </summary>
+    /// <returns>Array of frameworks if TargetFrameworks is specified, null otherwise</returns>
+    private static string[]? GetTargetFrameworksFromSourceFile(string sourceFilePath)
+    {
+        var sourceFile = SourceFile.Load(sourceFilePath);
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
+        
+        var targetFrameworksDirective = directives.OfType<CSharpDirective.Property>()
+            .FirstOrDefault(p => string.Equals(p.Name, "TargetFrameworks", StringComparison.OrdinalIgnoreCase));
+        
+        if (targetFrameworksDirective is null)
+        {
+            return null;
+        }
+
+        return targetFrameworksDirective.Value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    /// <summary>
+    /// Applies the selected target framework to MSBuildArgs if a framework was provided.
+    /// </summary>
+    /// <param name="selectedFramework">The framework to apply, or null if no framework selection was needed</param>
+    private void ApplySelectedFramework(string? selectedFramework)
+    {
+        // If selectedFramework is null, it means no framework selection was needed
+        // (e.g., user already specified --framework, or single-target project)
+        if (selectedFramework is not null)
+        {
+            var additionalProperties = new ReadOnlyDictionary<string, string>(
+                new Dictionary<string, string> { { "TargetFramework", selectedFramework } });
+            MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
+        }
     }
 
     internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
