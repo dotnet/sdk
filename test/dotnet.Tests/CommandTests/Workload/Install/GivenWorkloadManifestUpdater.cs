@@ -353,7 +353,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public async Task ItSuppressesMessagesWhenDisplayManifestUpdatesIsFalse()
         {
             //  Test that advertising manifest messages are suppressed when displayManifestUpdates is false
-            //  This validates the fix for https://github.com/dotnet/sdk/issues/xxxxx
 
             //  Arrange
             string sdkFeatureBand = "6.0.300";
