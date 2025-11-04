@@ -38,8 +38,13 @@ NOTE: This file is imported from the following contexts, so be aware when writin
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <PropertyGroup>
-    <!-- tools are specially-formatted packages, so we tell nuget Pack to not even try to include build output -->
+    <!-- Tools are specially-formatted packages, so we tell nuget Pack to not even try to include build output.
+         Since this file is only loaded when PackAsTool is true, we can safely disable validation here. -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
+
+    <!-- Tool packages are not library/API-providing packages, so they should not participate in API Compat validation at all.
+         Since this file is only loaded when PackAsTool is true, we can safely disable validation here. -->
+    <EnablePackageValidation>false</EnablePackageValidation>
 
     <!-- Determine information about all of the potential tool packages to build -->
     <!-- If shims are included, we need to make sure we restore for those RIDs so the apphost shims are available during restore/publish.

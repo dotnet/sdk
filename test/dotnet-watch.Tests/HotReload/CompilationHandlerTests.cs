@@ -25,7 +25,7 @@ public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTest
         var loggerFactory = new LoggerFactory(reporter);
         var logger = loggerFactory.CreateLogger("Test");
         var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(options.ProjectPath, globalOptions: [], logger, projectGraphRequired: false, CancellationToken.None);
-        var handler = new CompilationHandler(loggerFactory, logger, processRunner);
+        var handler = new CompilationHandler(logger, processRunner);
 
         await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);
 

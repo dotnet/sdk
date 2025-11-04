@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 // <metadata update handler placeholder>
 

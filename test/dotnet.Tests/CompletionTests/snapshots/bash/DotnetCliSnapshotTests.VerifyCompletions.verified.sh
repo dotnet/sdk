@@ -1137,7 +1137,7 @@ _testhost_package_update() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--project --interactive --verbosity --help" 
+    opts="--project --vulnerable --interactive --verbosity --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1145,6 +1145,10 @@ _testhost_package_update() {
     fi
     
     case $prev in
+        --vulnerable)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
+            return
+        ;;
         --interactive)
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
