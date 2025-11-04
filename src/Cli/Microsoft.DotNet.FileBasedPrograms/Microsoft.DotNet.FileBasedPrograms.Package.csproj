@@ -25,9 +25,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
-    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Contracts" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
+    <PackageReference Include="System.Text.Encoding.CodePages" VersionOverride="$(SystemTextEncodingCodePagesToolsetPackageVersion)" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)" />
   </ItemGroup>
 
   <!-- PublicAPI Analyzer -->
