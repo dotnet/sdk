@@ -34,19 +34,18 @@ internal static class TargetFrameworkSelector
         }
 
         // Evaluate the project to get TargetFrameworks
-        Microsoft.Build.Evaluation.Project project;
+        string targetFrameworks;
         try
         {
             using var collection = new ProjectCollection(globalProperties: globalProperties);
-            project = collection.LoadProject(projectFilePath);
+            var project = collection.LoadProject(projectFilePath);
+            targetFrameworks = project.GetPropertyValue("TargetFrameworks");
         }
         catch (InvalidProjectFileException)
         {
             // Invalid project file, return true to continue for normal error handling
             return true;
         }
-
-        string targetFrameworks = project.GetPropertyValue("TargetFrameworks");
 
         // If there's no TargetFrameworks property or only one framework, no selection needed
         if (string.IsNullOrWhiteSpace(targetFrameworks))
