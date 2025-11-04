@@ -1372,7 +1372,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
 
-        // By default, with the default SDK, embedded resources are not included
+        // By default, with the default SDK, embedded resources are not included.
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
@@ -1395,7 +1395,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 [MyString, TestValue]
                 """);
 
-        // When using a non-default SDK, embedded resources are included by default
+        // When using a non-default SDK, embedded resources are included by default.
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
             #:sdk Microsoft.NET.Sdk.Web
             {s_programReadingEmbeddedResource}
@@ -1408,6 +1408,20 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("""
                 [MyString, TestValue]
                 """);
+
+        // When using the default SDK explicitly, embedded resources are not included.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:sdk Microsoft.NET.Sdk
+            {s_programReadingEmbeddedResource}
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Resource not found
+                """);
     }
 
     /// <summary>
@@ -1417,19 +1431,23 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Theory, CombinatorialData]
     public void EmbeddedResource_AlongsideProj([CombinatorialValues("sln", "slnx", "csproj", "vbproj", "shproj", "proj")] string ext)
     {
+        bool considered = ext is "sln" or "slnx" or "csproj";
+
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:property EnableDefaultEmbeddedResourceItems=true
+            {s_programReadingEmbeddedResource}
+            """);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
         File.WriteAllText(Path.Join(testInstance.Path, $"repo.{ext}"), "");
 
         // Up-to-date check currently doesn't support default items, so we need to pass --no-cache
         // otherwise other runs of this test theory might cause outdated results.
-        // With the default SDK, embedded resources are not included by default regardless of project files
         new DotnetCommand(Log, "run", "--no-cache", "--file", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("Resource not found");
+            .And.HaveStdOut(considered ? "Resource not found" : "[MyString, TestValue]");
     }
 
     [Fact]
@@ -3183,42 +3201,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Combination of <see cref="UpToDate_DefaultItems"/> with <see cref="CscOnly"/> optimization.
-    /// </summary>
-    [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
-    public void UpToDate_DefaultItems_CscOnly(bool optOut)
-    {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
-        var code = $"""
-            {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
-            {s_programReadingEmbeddedResource}
-            """;
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
-        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
-
-        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, TestValue]" : "Resource not found");
-
-        // Update the RESX file.
-        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"));
-
-        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.None, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "Resource not found");
-
-        // Update the C# file.
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + code);
-
-        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "Resource not found");
-
-        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "[MyString, UpdatedValue]");
-
-        // Update the C# file.
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v3\n" + code);
-
-        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: "[MyString, UpdatedValue]");
-    }
-
-    /// <summary>
     /// Combination of <see cref="UpToDate_DefaultItems"/> with <see cref="CscOnly_AfterMSBuild"/> optimization.
     /// </summary>
+    /// <remarks>
+    /// Note: we cannot test <see cref="CscOnly"/> because that optimization doesn't support neither <c>#:property</c> nor <c>#:sdk</c> which we need to enable default items.
+    /// </remarks>
     [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
     public void UpToDate_DefaultItems_CscOnly_AfterMSBuild(bool optOut)
     {
@@ -3877,6 +3864,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <FileBasedProgram>true</FileBasedProgram>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+                        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
                         <OutputType>Exe</OutputType>
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
@@ -3945,6 +3934,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <FileBasedProgram>true</FileBasedProgram>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+                        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
                         <OutputType>Exe</OutputType>
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
