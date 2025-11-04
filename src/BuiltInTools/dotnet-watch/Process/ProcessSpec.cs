@@ -8,12 +8,13 @@ namespace Microsoft.DotNet.Watch
     {
         public string? Executable { get; set; }
         public string? WorkingDirectory { get; set; }
-        public Dictionary<string, string> EnvironmentVariables { get; } = new();
+        public Dictionary<string, string> EnvironmentVariables { get; } = [];
         public IReadOnlyList<string>? Arguments { get; set; }
         public string? EscapedArguments { get; set; }
         public Action<OutputLine>? OnOutput { get; set; }
         public ProcessExitAction? OnExit { get; set; }
         public CancellationToken CancelOutputCapture { get; set; }
+        public bool UseShellExecute { get; set; } = false;
 
         /// <summary>
         /// True if the process is a user application, false if it is a helper process (e.g. dotnet build).</param>

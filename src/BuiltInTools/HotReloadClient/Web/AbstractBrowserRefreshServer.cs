@@ -101,7 +101,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
             builder[MiddlewareEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
         }
 
-        if (logger.IsEnabled(LogLevel.Debug))
+        if (logger.IsEnabled(LogLevel.Trace))
         {
             // enable debug logging from middleware:
             builder[MiddlewareEnvironmentVariables.LoggingLevel] = "Debug";
@@ -163,7 +163,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
         }, progressCancellationSource.Token);
 
         // Work around lack of Task.WaitAsync(cancellationToken) on .NET Framework:
-        cancellationToken.Register(() => _browserConnected.SetCanceled());
+        cancellationToken.Register(() => _browserConnected.TrySetCanceled());
 
         try
         {
@@ -237,8 +237,12 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
     }
 
     public ValueTask SendWaitMessageAsync(CancellationToken cancellationToken)
-        => SendAsync(s_waitMessage, cancellationToken);
+    {
+        logger.Log(LogEvents.SendingWaitMessage);
+        return SendAsync(s_waitMessage, cancellationToken);
+    }
 
+    // obsolete: to be removed
     public ValueTask SendPingMessageAsync(CancellationToken cancellationToken)
         => SendAsync(s_pingMessage, cancellationToken);
 

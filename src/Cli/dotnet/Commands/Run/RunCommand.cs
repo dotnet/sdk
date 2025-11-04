@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
@@ -436,7 +437,7 @@ public class RunCommand
             // So we can skip project evaluation to continue the optimized path.
             Debug.Assert(EntryPointFileFullPath is not null);
             Reporter.Verbose.WriteLine("Getting target command: for csc-built program.");
-            return CreateCommandForCscBuiltProgram(EntryPointFileFullPath);
+            return CreateCommandForCscBuiltProgram(EntryPointFileFullPath, ApplicationArgs);
         }
 
         Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
@@ -503,11 +504,11 @@ public class RunCommand
             }
         }
 
-        static ICommand CreateCommandForCscBuiltProgram(string entryPointFileFullPath)
+        static ICommand CreateCommandForCscBuiltProgram(string entryPointFileFullPath, string[] args)
         {
             var artifactsPath = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointFileFullPath);
             var exePath = Path.Join(artifactsPath, "bin", "debug", Path.GetFileNameWithoutExtension(entryPointFileFullPath) + FileNameSuffixes.CurrentPlatform.Exe);
-            var commandSpec = new CommandSpec(path: exePath, args: null);
+            var commandSpec = new CommandSpec(path: exePath, args: ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args));
             var command = CommandFactoryUsingResolver.Create(commandSpec)
                 .WorkingDirectory(Path.GetDirectoryName(entryPointFileFullPath));
 
@@ -523,7 +524,9 @@ public class RunCommand
         static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs)
         {
             List<ILogger> loggersForBuild = [
-                TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
+                CommonRunHelpers.GetConsoleLogger(
+                    buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
+                )
             ];
             if (binaryLogger is not null)
             {
@@ -537,6 +540,7 @@ public class RunCommand
         }
     }
 
+    [DoesNotReturn]
     internal static void ThrowUnableToRunError(ProjectInstance project)
     {
         throw new GracefulException(
@@ -562,6 +566,15 @@ public class RunCommand
         {
             emptyProjectOption = true;
             projectFileOrDirectoryPath = Directory.GetCurrentDirectory();
+        }
+
+        // Normalize path separators to handle Windows-style paths on non-Windows platforms.
+        // This is supported for backward compatibility in 'dotnet run' only, not for all CLI commands.
+        // Converting backslashes to forward slashes allows PowerShell scripts using Windows-style paths
+        // to work cross-platform, maintaining compatibility with .NET 9 behavior.
+        if (Path.DirectorySeparatorChar != '\\')
+        {
+            projectFileOrDirectoryPath = projectFileOrDirectoryPath.Replace('\\', '/');
         }
 
         string? projectFilePath = Directory.Exists(projectFileOrDirectoryPath)

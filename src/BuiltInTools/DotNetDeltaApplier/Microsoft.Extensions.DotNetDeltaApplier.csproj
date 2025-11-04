@@ -16,6 +16,8 @@
 
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+    <IsShippingPackage>true</IsShippingPackage>
     <PackageId>Microsoft.DotNet.HotReload.Agent.Host</PackageId>
     <PackageDescription>Package containing Hot Reload agent host.</PackageDescription>
     <DisableTransitiveFrameworkReferenceDownloads Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</DisableTransitiveFrameworkReferenceDownloads>
