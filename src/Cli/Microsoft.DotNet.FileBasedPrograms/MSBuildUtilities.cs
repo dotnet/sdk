@@ -1,8 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// TODO: consider if this extra copy of the file can be avoided.
-// It's really not that much code, so, if we can't solve the reuse issue, we can live with that.
+// https://github.com/dotnet/sdk/issues/51487: avoid this extra copy of the file.
 #nullable enable
 using System;
 
