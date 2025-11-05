@@ -299,14 +299,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
     public ValueTask ReportCompilationErrorsInBrowserAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
     {
         logger.Log(LogEvents.UpdatingDiagnostics);
-        if (compilationErrors.IsEmpty)
-        {
-            return SendJsonMessageAsync(new AspNetCoreHotReloadApplied(), cancellationToken);
-        }
-        else
-        {
-            return SendJsonMessageAsync(new HotReloadDiagnostics { Diagnostics = compilationErrors }, cancellationToken);
-        }
+        return SendJsonMessageAsync(new HotReloadDiagnostics { Diagnostics = compilationErrors }, cancellationToken);
     }
 
     public async ValueTask UpdateStaticAssetsAsync(IEnumerable<string> relativeUrls, CancellationToken cancellationToken)

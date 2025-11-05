@@ -743,10 +743,10 @@ Dies entspricht dem Löschen von "project.assets.json".</target>
         <target state="translated">Hiermit werden bei der Suche nach neueren Pakete auch Pakete mit Vorabversionen berücksichtigt. Hierfür ist die Option "--outdated" erforderlich.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definiert den Pfad der auszuführenden Projektdatei (Ordnername oder vollständiger Pfad). Wenn keine Angabe erfolgt, wird standardmäßig das aktuelle Verzeichnis verwendet.</target>
-        <note />
+      <trans-unit id="CmdProjectDescriptionFormat">
+        <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note>{0} is the verb (e.g., "test", "run")</note>
       </trans-unit>
       <trans-unit id="CmdProjectPathName">
         <source>PROJECT_PATH</source>
@@ -796,8 +796,8 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definiert den Pfad der auszuführenden Projektmappendatei. Wenn keine Angabe erfolgt, wird standardmäßig das aktuelle Verzeichnis verwendet.</target>
+        <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -985,11 +985,6 @@ Weitere Informationen finden Sie unter https://aka.ms/dotnet-test/mtp.</target>
         <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
         <target state="translated">Versuchen Sie nicht, „launchSettings.json“ oder „[app].run.json“ zum Konfigurieren der Anwendung zu verwenden.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
-      </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">Der Pfad zur auszuführenden Projektdatei (standardmäßig das aktuelle Verzeichnis, falls nur ein einzelnes Projekt vorhanden ist).</target>
-        <note />
       </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
@@ -3765,6 +3760,16 @@ und die zugehörigen Paket-IDs für installierte Tools über den Befehl
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">Die Eigenschaft "{0}" muss ein Objekt sein, sofern angegeben.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">
