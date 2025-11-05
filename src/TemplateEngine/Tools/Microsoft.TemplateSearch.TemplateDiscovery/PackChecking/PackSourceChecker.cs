@@ -97,7 +97,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                     count = ProcessCount(count);
                     if (newCache.ContainsKey(sourceInfo.Name) || filteredPackages.ContainsKey(sourceInfo.Name))
                     {
-                        Verbose.WriteLine($"Package {sourceInfo.Name}::{sourceInfo.Version} is already processed.");
+                        Verbose.WriteLine($"Package {sourceInfo.Name}@{sourceInfo.Version} is already processed.");
                         continue;
                     }
                     string? oldTemplateVersion = null;
@@ -209,7 +209,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                     IDownloadedPackInfo? packInfo = await provider.DownloadPackageAsync(package, cancellationToken).ConfigureAwait(false);
                     if (packInfo == null)
                     {
-                        Console.WriteLine($"[Error] Package {package.Name}::{package.Version} is not processed.");
+                        Console.WriteLine($"[Error] Package {package.Name}@{package.Version} is not processed.");
                         continue;
                     }
                     if (CheckIfPackageIsFiltered(packInfo, filteredPackages, scanningStats, null, oldNonTemplateVersion))
@@ -233,7 +233,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             {
                 if (sourceInfo.Version == existingInfo.Version)
                 {
-                    Verbose.WriteLine($"Package {sourceInfo.Name}::{sourceInfo.Version} has not changed since last scan, updating metadata only.");
+                    Verbose.WriteLine($"Package {sourceInfo.Name}@{sourceInfo.Version} has not changed since last scan, updating metadata only.");
                     newCache[sourceInfo.Name] = new TemplatePackageSearchData(sourceInfo, existingInfo.Templates, sourceInfo.ProduceAdditionalData(_additionalDataProducers));
 
                     scanningStats.SameTemplatePacksCount++;
@@ -258,7 +258,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             {
                 if (sourceInfo.Version == info.Version)
                 {
-                    Verbose.WriteLine($"Package {sourceInfo.Name}::{sourceInfo.Version} has not changed since last scan, skipping as it was filtered last time.");
+                    Verbose.WriteLine($"Package {sourceInfo.Name}@{sourceInfo.Version} has not changed since last scan, skipping as it was filtered last time.");
                     filteredPackages[sourceInfo.Name] = info;
                     scanningStats.SameNonTemplatePacksCount++;
                     return true;
@@ -296,7 +296,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             CancellationToken cancellationToken)
         {
             IEnumerable<TemplateSearchData> foundTemplates = await TryGetTemplatesInPackAsync(sourceInfo, _additionalDataProducers, cancellationToken).ConfigureAwait(false);
-            Verbose.WriteLine($"{sourceInfo.Name}::{sourceInfo.Version} is processed");
+            Verbose.WriteLine($"{sourceInfo.Name}@{sourceInfo.Version} is processed");
             if (foundTemplates.Any())
             {
                 Verbose.WriteLine("Found templates:");
@@ -346,7 +346,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             string? oldTemplatePackageVersion,
             string? oldNonTemplatePackageVersion)
         {
-            Verbose.WriteLine($"{sourceInfo.Name}::{sourceInfo.Version} is skipped, {filterReason}");
+            Verbose.WriteLine($"{sourceInfo.Name}@{sourceInfo.Version} is skipped, {filterReason}");
             filteredPackages[sourceInfo.Name] = new FilteredPackageInfo(sourceInfo, filterReason);
             if (string.IsNullOrWhiteSpace(oldNonTemplatePackageVersion))
             {
@@ -396,7 +396,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Failed to read package {0}::{1}, details: {2}. The package will be skipped.", packInfo.Name, packInfo.Version, ex);
+                Console.WriteLine("Failed to read package {0}@{1}, details: {2}. The package will be skipped.", packInfo.Name, packInfo.Version, ex);
                 return [];
             }
         }
@@ -428,7 +428,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                 Console.WriteLine($"[Error]: the following {removedTemplatePacks.Count} packages were removed");
                 foreach (var package in removedTemplatePacks)
                 {
-                    Console.WriteLine($"   {package.Name}::{package.Version}");
+                    Console.WriteLine($"   {package.Name}@{package.Version}");
                 }
             }
             if (removedNonTemplatePacks.Any())
@@ -436,7 +436,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                 Console.WriteLine($"[Error]: the following {removedNonTemplatePacks.Count} non template packages were removed");
                 foreach (var package in removedNonTemplatePacks)
                 {
-                    Console.WriteLine($"   {package.Name}::{package.Version}");
+                    Console.WriteLine($"   {package.Name}@{package.Version}");
                 }
             }
             return (removedTemplatePacks, removedNonTemplatePacks);
@@ -449,7 +449,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             Console.WriteLine($"   new: {scanningStats.NewTemplatePacks.Count}");
             foreach (var package in scanningStats.NewTemplatePacks)
             {
-                Console.WriteLine($"      {package.Name}::{package.Version}");
+                Console.WriteLine($"      {package.Name}@{package.Version}");
             }
 
             Console.WriteLine($"   updated: {scanningStats.UpdatedTemplatePacks.Count}");
@@ -461,14 +461,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             Console.WriteLine($"   removed: {scanningStats.RemovedTemplatePacks.Count}");
             foreach (var package in scanningStats.RemovedTemplatePacks)
             {
-                Console.WriteLine($"      {package.Name}::{package.Version}");
+                Console.WriteLine($"      {package.Name}@{package.Version}");
             }
             if (scanningStats.BecameTemplatePacks.Any())
             {
                 Console.WriteLine($"   became template packages: {scanningStats.BecameTemplatePacks.Count}");
                 foreach (var package in scanningStats.BecameTemplatePacks)
                 {
-                    Console.WriteLine($"      {package.Name}::{package.Version}");
+                    Console.WriteLine($"      {package.Name}@{package.Version}");
                 }
             }
             Console.WriteLine($"   not changed: {scanningStats.SameTemplatePacksCount}");
