@@ -143,7 +143,7 @@ internal static class CommonOptions
     public static Option<Verbosity> VerbosityOption(Verbosity defaultVerbosity) =>
         new Option<Verbosity>("--verbosity", "-v")
         {
-            Description = CliStrings.VerbosityOptionDescription,
+            Description = string.Format(CliStrings.VerbosityOptionDescription, string.Join(", ", VerbosityData.VerbosityNames)),
             HelpName = CliStrings.LevelArgumentName,
             DefaultValueFactory = _ => defaultVerbosity,
             CustomParser = static r => ParseVerbosityEnum(r)!.Value
@@ -154,7 +154,7 @@ internal static class CommonOptions
     public static Option<Verbosity?> VerbosityOption() =>
         new Option<Verbosity?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
-            Description = CliStrings.VerbosityOptionDescription,
+            Description = string.Format(CliStrings.VerbosityOptionDescription, string.Join(", ", VerbosityData.VerbosityNames)),
             HelpName = CliStrings.LevelArgumentName,
             CustomParser = ParseVerbosityEnum
         }
@@ -173,7 +173,7 @@ internal static class CommonOptions
             {
                 [var single] => single.Value,
                 [.., var last] => last.Value,
-                _ => throw new InvalidOperationException("Unreachable")
+                _ => throw new System.Diagnostics.UnreachableException()
             };
 
         // happy path: someone used the fully enum case name
@@ -198,7 +198,7 @@ internal static class CommonOptions
         }
         else // we couldn't parse it, so report an error
         {
-            result.AddError($"'{tokenToParse}' is not a valid value for --verbosity. Allowed values are: quiet (q), minimal (m), normal (n), detailed (d), diagnostic (diag).");
+            result.AddError(string.Format(CliStrings.VerbosityParserInvalidToken, tokenToParse, string.Join(", ", VerbosityData.VerbosityNames)));
             return default;
         }
     }

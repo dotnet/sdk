@@ -12,3 +12,20 @@ public enum Verbosity
     detailed,
     diagnostic
 }
+
+public static class VerbosityData
+{
+    public static string[] VerbosityNames =
+    [
+        "quiet",
+        "q",
+        "minimal",
+        "m",
+        "normal",
+        "n",
+        "detailed",
+        "d",
+        "diagnostic",
+        "diag"
+    ];
+}

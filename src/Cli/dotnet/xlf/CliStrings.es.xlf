@@ -1174,9 +1174,14 @@ El valor predeterminado es "false." Sin embargo, cuando el destino es .NET 7 o i
         <note />
       </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
-        <source>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</source>
-        <target state="translated">Establece el nivel de detalle de MSBuild. Los valores permitidos son q[uiet], m[inimal], n[ormal], d[etailed] y diag[nostic].</target>
-        <note />
+        <source>Set the MSBuild verbosity level. Allowed values are: {0}.</source>
+        <target state="new">Set the MSBuild verbosity level. Allowed values are: {0}.</target>
+        <note>{0} is a comma-separated list of allowed string values</note>
+      </trans-unit>
+      <trans-unit id="VerbosityParserInvalidToken">
+        <source>'{0}' is not a valid value for --verbosity. Allowed values are: {1}.</source>
+        <target state="new">'{0}' is not a valid value for --verbosity. Allowed values are: {1}.</target>
+        <note>{0} is the invalid token, {1} is a comma-separated list of allowed string values</note>
       </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
         <source>Verified that the NuGet package "{0}" has a valid signature.</source>
