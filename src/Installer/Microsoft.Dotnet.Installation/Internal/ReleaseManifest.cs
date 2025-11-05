@@ -74,7 +74,7 @@ internal class ReleaseManifest(HttpClient httpClient) : IDisposable
                     .Select(v => $"{v.Major}.{v.Minor}.{(v.Patch / 100)}xx")
                     .Distinct()
                     .ToList()
-                ];                
+                ];
         }
 
     }

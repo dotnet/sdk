@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 
 </Project>

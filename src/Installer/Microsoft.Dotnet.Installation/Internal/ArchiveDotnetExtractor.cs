@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
@@ -30,6 +31,8 @@ internal class ArchiveDotnetExtractor : IDisposable
 
     public void Prepare()
     {
+        using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
+
         using var releaseManifest = new ReleaseManifest();
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
@@ -90,6 +93,8 @@ internal class ArchiveDotnetExtractor : IDisposable
 
     public void Commit(IEnumerable<ReleaseVersion> existingSdkVersions)
     {
+        using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
+
         if (_archivePath == null || !File.Exists(_archivePath))
         {
             throw new InvalidOperationException("Archive not found. Make sure Prepare() was called successfully.");
