@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Commands.New.PostActions;
 using Microsoft.DotNet.Cli.Commands.Workload;

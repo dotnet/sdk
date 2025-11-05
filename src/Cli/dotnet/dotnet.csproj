@@ -48,6 +48,7 @@
     <ProjectReference Include="../../Microsoft.Win32.Msi/Microsoft.Win32.Msi.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\..\System.CommandLine.StaticCompletions\System.CommandLine.StaticCompletions.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.CommandLine\Microsoft.DotNet.Cli.CommandLine.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -101,10 +102,7 @@
     <PropertyGroup>
       <DestinationPath>$([System.IO.Path]::Combine($(TestHostDotNetRoot), "sdk", $(Version)))</DestinationPath>
     </PropertyGroup>
-    <Copy SourceFiles="$(TargetPath)"
-          DestinationFolder="$(DestinationPath)"
-          SkipUnchangedFiles="true"
-          OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DestinationPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
   </Target>
 
 </Project>
