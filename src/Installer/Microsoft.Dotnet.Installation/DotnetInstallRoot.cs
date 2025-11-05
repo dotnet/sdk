@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Microsoft.Dotnet.Installation;
+
 public record DotnetInstallRoot(
     string Path,
     InstallArchitecture Architecture);
