@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Reflection;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
 internal static class InstallationActivitySource
 {
-    private static readonly ActivitySource s_activitySource = new("Microsoft.Dotnet.Installer", "1.0.0");
+    private static readonly ActivitySource s_activitySource = new("Microsoft.Dotnet.Installer",
+        typeof(InstallationActivitySource).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0");
 
     public static ActivitySource ActivitySource => s_activitySource;
 }
