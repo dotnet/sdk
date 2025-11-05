@@ -70,6 +70,6 @@ jobs:
         displayName: 🟣 Publish packages to AzDO
         inputs:
           useDotNetTask: true
-          packagesToPush: '!$(System.DefaultWorkingDirectory)/packages/Release/**/*.symbols.nupkg;$(System.DefaultWorkingDirectory)/packages/Release/**/*.nupkg'
-          packageParentPath: $(System.DefaultWorkingDirectory)/packages/Release
+          packagesToPush: '$(Build.SourcesDirectory)/artifacts/packages/Release/**/*.nupkg;!$(Build.SourcesDirectory)/artifacts/packages/Release/**/*.symbols.nupkg'
+          packageParentPath: $(Build.SourcesDirectory)/artifacts/packages/Release
           publishVstsFeed: public/dotnet-tools
