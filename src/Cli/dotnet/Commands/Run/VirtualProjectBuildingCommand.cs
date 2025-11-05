@@ -1431,13 +1431,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-#pragma warning disable RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
     public static SyntaxTokenParser CreateTokenizer(SourceText text)
     {
         return SyntaxFactory.CreateTokenParser(text,
             CSharpParseOptions.Default.WithFeatures([new("FileBasedProgram", "true")]));
     }
-#pragma warning restore RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
 
     /// <param name="reportAllErrors">
     /// If <see langword="true"/>, the whole <paramref name="sourceFile"/> is parsed to find diagnostics about every app directive.

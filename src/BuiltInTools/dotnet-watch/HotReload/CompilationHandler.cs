@@ -77,7 +77,23 @@ namespace Microsoft.DotNet.Watch
         {
             _logger.Log(MessageDescriptor.HotReloadSessionStarting);
 
-            await _hotReloadService.StartSessionAsync(Workspace.CurrentSolution, cancellationToken);
+            var solution = Workspace.CurrentSolution;
+
+            await _hotReloadService.StartSessionAsync(solution, cancellationToken);
+
+            // TODO: StartSessionAsync should do this: https://github.com/dotnet/roslyn/issues/80687
+            foreach (var project in solution.Projects)
+            {
+                foreach (var document in project.AdditionalDocuments)
+                {
+                    await document.GetTextAsync(cancellationToken);
+                }
+
+                foreach (var document in project.AnalyzerConfigDocuments)
+                {
+                    await document.GetTextAsync(cancellationToken);
+                }
+            }
 
             _logger.Log(MessageDescriptor.HotReloadSessionStarted);
         }
