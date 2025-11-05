@@ -196,6 +196,7 @@ internal static class RestoreCommandParser
 
         yield return CommonOptions.PropertiesOption;
         yield return CommonOptions.RestorePropertiesOption;
+        yield return CommonOptions.NoLogoOption();
 
         if (includeRuntimeOption)
         {
