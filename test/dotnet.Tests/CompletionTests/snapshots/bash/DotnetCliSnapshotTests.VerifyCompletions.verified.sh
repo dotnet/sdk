@@ -1541,7 +1541,7 @@ _testhost_store() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--manifest --framework-version --output --working-dir --skip-optimization --skip-symbols --framework --runtime --verbosity --use-current-runtime --disable-build-servers --help" 
+    opts="--manifest --framework-version --output --working-dir --skip-optimization --skip-symbols --framework --runtime --verbosity --use-current-runtime --disable-build-servers --nologo --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )

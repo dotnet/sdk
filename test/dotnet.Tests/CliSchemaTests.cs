@@ -185,9 +185,13 @@ public class CliSchemaTests : SdkTest
     "--nologo": {
       "description": "Do not display the startup banner or the copyright message.",
       "hidden": false,
+      "aliases": [
+         "-nologo",
+         "/nologo"
+      ],
       "valueType": "System.Boolean",
       "hasDefaultValue": true,
-      "defaultValue": false,
+      "defaultValue": true,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -993,9 +997,13 @@ public class CliSchemaTests : SdkTest
     "--nologo": {
       "description": "Do not display the startup banner or the copyright message.",
       "hidden": false,
+      "aliases": [
+        "-nologo",
+        "/nologo"
+      ],
       "valueType": "System.Boolean",
       "hasDefaultValue": true,
-      "defaultValue": false,
+      "defaultValue": true,
       "arity": {
         "minimum": 0,
         "maximum": 0

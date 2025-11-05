@@ -59,6 +59,8 @@ _testhost() {
                         '--no-incremental[Do not use incremental building.]' \
                         '--no-dependencies[Do not build project-to-project references and only build the specified project.]' \
                         '--nologo[Do not display the startup banner or the copyright message.]' \
+                        '-nologo[Do not display the startup banner or the copyright message.]' \
+                        '/nologo[Do not display the startup banner or the copyright message.]' \
                         '--self-contained=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--sc=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--no-self-contained[Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.]' \
@@ -122,6 +124,8 @@ _testhost() {
                         '-o=[The directory containing the build artifacts to clean.]:OUTPUT_DIR: ' \
                         '--artifacts-path=[The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.]:ARTIFACTS_DIR: ' \
                         '--nologo[Do not display the startup banner or the copyright message.]' \
+                        '-nologo[Do not display the startup banner or the copyright message.]' \
+                        '/nologo[Do not display the startup banner or the copyright message.]' \
                         '--disable-build-servers[Force the command to ignore any persistent build servers.]' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
@@ -539,6 +543,8 @@ _testhost() {
                         '--serviceable[Set the serviceable flag in the package. See https\://aka.ms/nupkgservicing for more information.]' \
                         '-s[Set the serviceable flag in the package. See https\://aka.ms/nupkgservicing for more information.]' \
                         '--nologo[Do not display the startup banner or the copyright message.]' \
+                        '-nologo[Do not display the startup banner or the copyright message.]' \
+                        '/nologo[Do not display the startup banner or the copyright message.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--no-restore[Do not restore the project before building.]' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
@@ -724,6 +730,8 @@ _testhost() {
                         '--sc=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--no-self-contained[Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.]' \
                         '--nologo[Do not display the startup banner or the copyright message.]' \
+                        '-nologo[Do not display the startup banner or the copyright message.]' \
+                        '/nologo[Do not display the startup banner or the copyright message.]' \
                         '--framework=[The target framework to publish for. The target framework has to be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to publish for. The target framework has to be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '--runtime=[The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
@@ -989,6 +997,9 @@ _testhost() {
                         '--use-current-runtime[Use current runtime as the target runtime.]' \
                         '--ucr[Use current runtime as the target runtime.]' \
                         '--disable-build-servers[Force the command to ignore any persistent build servers.]' \
+                        '--nologo[Do not display the startup banner or the copyright message.]' \
+                        '-nologo[Do not display the startup banner or the copyright message.]' \
+                        '/nologo[Do not display the startup banner or the copyright message.]' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
                         '*::argument: ' \
@@ -1032,6 +1043,8 @@ _testhost() {
                         '--blame-hang-dump-type=[The type of crash dump to be collected. The supported values are full (default), mini, and none. When '\''none'\'' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.]:DUMP_TYPE:((full\:"full" mini\:"mini" none\:"none" ))' \
                         '--blame-hang-timeout=[Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h. The timeout value is specified in the following format\: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds. When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case, For MSTest before 2.2.4, the timeout is used for all testcases.]:TIMESPAN: ' \
                         '--nologo[Run test(s), without displaying Microsoft Testplatform banner]' \
+                        '-nologo[Run test(s), without displaying Microsoft Testplatform banner]' \
+                        '/nologo[Run test(s), without displaying Microsoft Testplatform banner]' \
                         '--configuration=[The configuration to use for running tests. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '-c=[The configuration to use for running tests. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--framework=[The target framework to run tests for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
