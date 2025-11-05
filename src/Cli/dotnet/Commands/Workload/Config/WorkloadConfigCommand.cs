@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
