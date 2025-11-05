@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Commands.Solution.Add;
 using Microsoft.DotNet.Cli.Commands.Solution.List;
 using Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 using Microsoft.DotNet.Cli.Commands.Solution.Remove;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution;
@@ -34,7 +35,10 @@ internal static class SolutionCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new(CommandName, DocsLink, CliCommandStrings.SolutionAppFullName);
+        Command command = new(CommandName, CliCommandStrings.SolutionAppFullName)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Aliases.Add(CommandAlias);
 
