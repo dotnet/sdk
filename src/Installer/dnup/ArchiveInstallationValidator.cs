@@ -75,10 +75,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
     {
         try
         {
-            ConfigureHostFxrResolution(installRoot);
-
-            var bundleProvider = new NETBundlesNativeWrapper();
-            NetEnvironmentInfo environmentInfo = bundleProvider.GetDotnetEnvironmentInfo(installRoot);
+            var environmentInfo = HostFxrWrapper.getInfo(installRoot);
 
             if (component == InstallComponent.SDK)
             {
@@ -103,43 +100,5 @@ internal class ArchiveInstallationValidator : IInstallationValidator
         {
             return false;
         }
-    }
-
-    private static void ConfigureHostFxrResolution(string installRoot)
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            return;
-        }
-
-        if (AppContext.GetData(HostFxrRuntimeProperty) is not null)
-        {
-            return;
-        }
-
-        string? hostFxrPath = FindHostFxrLibrary(installRoot);
-        if (hostFxrPath is not null)
-        {
-            AppContext.SetData(HostFxrRuntimeProperty, hostFxrPath);
-        }
-    }
-
-    private static string? FindHostFxrLibrary(string installRoot)
-    {
-        string hostFxrDirectory = Path.Combine(installRoot, "host", "fxr");
-        if (!Directory.Exists(hostFxrDirectory))
-        {
-            return null;
-        }
-
-        string libraryName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? "hostfxr.dll"
-            : RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
-                ? "libhostfxr.dylib"
-                : "libhostfxr.so";
-
-        return Directory.EnumerateFiles(hostFxrDirectory, libraryName, SearchOption.AllDirectories)
-            .OrderByDescending(File.GetLastWriteTimeUtc)
-            .FirstOrDefault();
     }
 }
