@@ -1,0 +1,14 @@
+{
+  "solution": {
+    "path": "sdk.slnx",
+    "projects": [
+      "src/BuiltInTools/dotnet-watch/dotnet-watch.csproj",
+      "src/Cli/dotnet/dotnet.csproj",
+      "src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj",
+      "test/Microsoft.NET.TestFramework/Microsoft.NET.TestFramework.csproj",
+      "test/dotnet-watch.Tests/dotnet-watch.Tests.csproj",
+      "test/dotnet.Tests/dotnet.Tests.csproj",
+      "test/Microsoft.DotNet.Cli.Utils.Tests/Microsoft.DotNet.Cli.Utils.Tests.csproj"
+    ]
+  }
+}
