@@ -13,6 +13,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -225,6 +226,30 @@ internal static class FileLevelDirectiveHelpers
                 return false;
             }
         }
+    }
+
+    /// <summary>
+    /// If there are any <c>#:project</c> <paramref name="directives"/>, expand <c>$()</c> in them and then resolve the project paths.
+    /// </summary>
+    public static ImmutableArray<CSharpDirective> EvaluateDirectives(
+        ProjectInstance? project,
+        ImmutableArray<CSharpDirective> directives,
+        SourceFile sourceFile,
+        DiagnosticBag diagnostics)
+    {
+        if (directives.OfType<CSharpDirective.Project>().Any())
+        {
+            return directives
+                .Select(d => d is CSharpDirective.Project p
+                    ? (project is null
+                        ? p
+                        : p.WithName(project.ExpandString(p.Name)))
+                       .ResolveProjectPath(sourceFile, diagnostics)
+                    : d)
+                .ToImmutableArray();
+        }
+
+        return directives;
     }
 }
 

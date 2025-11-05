@@ -1066,7 +1066,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         var project = CreateProjectInstance(projectCollection, Directives, addGlobalProperties);
 
-        var directives = EvaluateDirectives(project, Directives, EntryPointSourceFile, DiagnosticBag.ThrowOnFirst());
+        var directives = FileLevelDirectiveHelpers.EvaluateDirectives(project, Directives, EntryPointSourceFile, DiagnosticBag.ThrowOnFirst());
         if (directives != Directives)
         {
             Directives = directives;
@@ -1460,30 +1460,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     """);
             }
         }
-    }
-
-    /// <summary>
-    /// If there are any <c>#:project</c> <paramref name="directives"/>, expand <c>$()</c> in them and then resolve the project paths.
-    /// </summary>
-    public static ImmutableArray<CSharpDirective> EvaluateDirectives(
-        ProjectInstance? project,
-        ImmutableArray<CSharpDirective> directives,
-        SourceFile sourceFile,
-        DiagnosticBag diagnostics)
-    {
-        if (directives.OfType<CSharpDirective.Project>().Any())
-        {
-            return directives
-                .Select(d => d is CSharpDirective.Project p
-                    ? (project is null
-                        ? p
-                        : p.WithName(project.ExpandString(p.Name)))
-                       .ResolveProjectPath(sourceFile, diagnostics)
-                    : d)
-                .ToImmutableArray();
-        }
-
-        return directives;
     }
 
     public static SourceText? RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text)
