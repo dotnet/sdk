@@ -48,13 +48,10 @@ internal static class NewCommandParser
         Recursive = true
     }.Hide();
 
-    private static readonly Option<Verbosity> s_verbosityOption = new("--verbosity", "-v")
-    {
-        DefaultValueFactory = _ => DefaultVerbosity,
-        Description = CliCommandStrings.Verbosity_OptionDescription,
-        HelpName = CliStrings.LevelArgumentName,
-        Recursive = true
-    };
+    private static readonly Option<Verbosity> s_verbosityOption =
+        CommonOptions.VerbosityOption(DefaultVerbosity)
+        .WithDescription(string.Format(CliCommandStrings.Verbosity_OptionDescription, string.Join(", ", VerbosityData.VerbosityNames)))
+        .Recursive();
 
     private static readonly Option<bool> s_diagnosticOption =
         CommonOptionsFactory

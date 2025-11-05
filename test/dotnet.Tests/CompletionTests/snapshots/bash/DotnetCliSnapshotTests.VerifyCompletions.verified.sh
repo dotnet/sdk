@@ -1100,7 +1100,7 @@ _testhost_package_list() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;

@@ -149,7 +149,8 @@ internal static class CommonOptions
             CustomParser = static r => ParseVerbosityEnum(r)!.Value
         }
         .ForwardAsSingle(o => $"--verbosity:{o}")
-        .AggregateRepeatedTokens();
+        .AggregateRepeatedTokens()
+        .AcceptOnlyFromAmong(VerbosityData.VerbosityNames);
 
     public static Option<Verbosity?> VerbosityOption() =>
         new Option<Verbosity?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
@@ -159,7 +160,8 @@ internal static class CommonOptions
             CustomParser = ParseVerbosityEnum
         }
         .ForwardAsSingle(o => $"--verbosity:{o}")
-        .AggregateRepeatedTokens();
+        .AggregateRepeatedTokens()
+        .AcceptOnlyFromAmong(VerbosityData.VerbosityNames);
 
     public static Option<Verbosity> HiddenVerbosityOption = VerbosityOption(Verbosity.normal).Hide();
     public static Verbosity? ParseVerbosityEnum(ArgumentResult result)
