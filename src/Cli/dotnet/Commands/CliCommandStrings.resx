@@ -378,12 +378,6 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
   <data name="CmdDGFileIOException" xml:space="preserve">
     <value>Unable to generate a temporary file for project '{0}'. Cannot add package reference. Clear the temp directory and try again.</value>
   </data>
-  <data name="CmdDirectoryDescription" xml:space="preserve">
-    <value>Defines the path of directory to run. If not specified, it defaults to the current directory.</value>
-  </data>
-  <data name="CmdDirectoryPathName" xml:space="preserve">
-    <value>DIRECTORY_PATH</value>
-  </data>
   <data name="CmdDisableParallelOptionDescription" xml:space="preserve">
     <value>Prevent restoring multiple projects in parallel.</value>
   </data>
@@ -550,11 +544,13 @@ This is equivalent to deleting project.assets.json.</value>
     <value>Consider packages with prerelease versions when searching for newer packages. Requires the '--outdated' option.</value>
   </data>
   <data name="CmdProjectDescriptionFormat" xml:space="preserve">
-    <value>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
-    <comment>{0} is the verb (e.g., "test", "run")</comment>
+    <value>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
   </data>
-  <data name="CmdProjectPathName" xml:space="preserve">
-    <value>PROJECT_PATH</value>
+  <data name="CmdProjectOrSolutionDescriptionFormat" xml:space="preserve">
+    <value>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
+  </data>
+  <data name="CmdProjectOrSolutionPathName" xml:space="preserve">
+    <value>PROJECT_OR_SOLUTION_PATH</value>
   </data>
   <data name="CmdReevaluateOptionDescription" xml:space="preserve">
     <value>Forces restore to reevaluate all dependencies even if a lock file already exists.</value>
@@ -599,12 +595,6 @@ If not specified the file will be generated inside the default 'TestResults' dir
   </data>
   <data name="CmdSolutionPathName" xml:space="preserve">
     <value>SOLUTION_PATH</value>
-  </data>
-  <data name="VerbRun" xml:space="preserve">
-    <value>run</value>
-  </data>
-  <data name="VerbTest" xml:space="preserve">
-    <value>test</value>
   </data>
   <data name="CmdSourceOption" xml:space="preserve">
     <value>SOURCE</value>
@@ -2616,9 +2606,6 @@ Proceed?</value>
   </data>
   <data name="DotnetTestPipeOverlapping" xml:space="preserve">
     <value>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</value>
-  </data>
-  <data name="DotnetTestPipeIncompleteSize" xml:space="preserve">
-    <value>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</value>
   </data>
   <data name="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage" xml:space="preserve">
     <value>Method '{0}' did not exit successfully</value>
