@@ -134,8 +134,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Choose>
     <!-- For all targets other than .NETFramework, set $(PlatformTarget) to AnyCPU.
 
-         Modern .NET assemblies don't rely on the platform bit in the binary; they're CPU-agnostic,
-         and the JIT determines the actual architecture behavior at runtime.
+         Outside .NET Framework, PlatformTarget does not have a real purpose since the process architecture is
+         determined by the host used to launch the application. Defaulting to AnyCPU naturally works on all platforms
+         where modern .NET is supported and makes it unnecessary to recognize these platforms as PlatformTargets.
     -->
     <When Condition="'$(PlatformTarget)' == '' and '$(TargetFrameworkIdentifier)' != '.NETFramework' and '$(UseNativeCode)' != 'true'">
       <PropertyGroup>
