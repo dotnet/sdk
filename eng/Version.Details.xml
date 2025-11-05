@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
-  <Source Uri="https://github.com/dotnet/dotnet" Mapping="sdk" Sha="79c85d969a02abd06c2202949318fd4c21e5e7a0" BarId="287426" />
+  <Source Uri="https://github.com/dotnet/dotnet" Mapping="sdk" Sha="5558d2da527906dd610d5bfa63177e67e515b5e7" BarId="285880" />
   <ProductDependencies>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-rc.2.25502.107">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
@@ -553,13 +553,13 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
       <Sha>89c8f6a112d37d2ea8b77821e56d170a1bccdc5a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="2.1.0-preview.25529.4">
+    <Dependency Name="Microsoft.Testing.Platform" Version="2.1.0-preview.25553.3">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>e96f161396747bd209333e1d2f54fc8164a79905</Sha>
+      <Sha>b2b75ecb52bcff592001df6d08f5fffccd945fdd</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="4.1.0-preview.25529.4">
+    <Dependency Name="MSTest" Version="4.1.0-preview.25553.3">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>e96f161396747bd209333e1d2f54fc8164a79905</Sha>
+      <Sha>b2b75ecb52bcff592001df6d08f5fffccd945fdd</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-rc.2.25502.107">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>

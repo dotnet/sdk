@@ -11,7 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Microsoft.Net.Sdk.AnalyzerRedirecting\Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" />
     <ProjectReference Include="..\redist\redist.csproj" />
   </ItemGroup>
 
@@ -30,20 +29,15 @@
       <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.AspNetCore.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="AspNetCoreAnalyzers" />
       <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk\analyzers\**\*.*" DeploymentSubpath="SDKAnalyzers" />
       <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk.Web\analyzers\**\*.*" DeploymentSubpath="WebSDKAnalyzers" />
-      <RedirectingRuntimeAnalyzersContent Include="$(ArtifactsBinDir)Microsoft.Net.Sdk.AnalyzerRedirecting\$(Configuration)\net472\**\*.*" DeploymentSubpath="AnalyzerRedirecting" />
     </ItemGroup>
 
     <Error Condition="'@(RedistRuntimeAnalyzersContent)' == ''" Text="The 'RedistRuntimeAnalyzersContent' items are empty. This shouldn't happen!" />
-    <Error Condition="'@(RedirectingRuntimeAnalyzersContent)' == ''" Text="The 'RedirectingRuntimeAnalyzersContent' items are empty. This shouldn't happen!" />
 
     <!-- The custom task cannot access %(RecursiveDir) without this. -->
     <ItemGroup>
       <RedistRuntimeAnalyzersContent Update="@(RedistRuntimeAnalyzersContent)">
         <CustomRecursiveDir>%(RecursiveDir)</CustomRecursiveDir>      
       </RedistRuntimeAnalyzersContent>
-      <RedirectingRuntimeAnalyzersContent Update="@(RedirectingRuntimeAnalyzersContent)">
-        <CustomRecursiveDir>%(RecursiveDir)</CustomRecursiveDir>
-      </RedirectingRuntimeAnalyzersContent>
     </ItemGroup>
 
     <ProcessRuntimeAnalyzerVersions Inputs="@(RedistRuntimeAnalyzersContent)" MetadataFilePath="$(SdkRuntimeAnalyzersMetadataFile)">
@@ -51,27 +45,12 @@
     </ProcessRuntimeAnalyzerVersions>
 
     <ItemGroup>
-      <RuntimeAnalyzersContent Include="@(ProcessedRedistRuntimeAnalyzersContent);@(RedirectingRuntimeAnalyzersContent)" />
+      <RuntimeAnalyzersContent Include="@(ProcessedRedistRuntimeAnalyzersContent)" />
     </ItemGroup>
 
     <Copy SourceFiles="@(RuntimeAnalyzersContent)"
           DestinationFiles="@(RuntimeAnalyzersContent->'$(OutputPath)\%(DeploymentSubpath)\%(CustomRecursiveDir)%(Filename)%(Extension)')"
           UseHardlinksIfPossible="true" />
-
-    <!-- Replace Experimental=true with SystemComponent=true in the VS extension manifest. -->
-    <PropertyGroup>
-      <_VsixNamespace>
-        <Namespace Prefix="pm" Uri="http://schemas.microsoft.com/developer/vsx-schema/2011" />
-      </_VsixNamespace>
-    </PropertyGroup>
-    <XmlPoke XmlInputPath="$(OutputPath)\AnalyzerRedirecting\extension.vsixmanifest"
-             Namespaces="$(_VsixNamespace)"
-             Query="/pm:PackageManifest/pm:Installation/@Experimental"
-             Value="false" />
-    <XmlPoke XmlInputPath="$(OutputPath)\AnalyzerRedirecting\extension.vsixmanifest"
-             Namespaces="$(_VsixNamespace)"
-             Query="/pm:PackageManifest/pm:Installation/@SystemComponent"
-             Value="true" />
 
     <GenerateRuntimeAnalyzersSWR RuntimeAnalyzersLayoutDirectory="$(OutputPath)"
                                  OutputFile="$(SdkRuntimeAnalyzersSwrFile)" />
