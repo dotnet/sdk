@@ -31,6 +31,8 @@ jobs:
     enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}
+    - name: _officialBuildProperties
+      value: /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
     dependsOn: ${{ parameters.dependsOn }}
     preSteps: ${{ parameters.preSteps }}
     templateContext:
@@ -44,17 +46,30 @@ jobs:
         targetPath: '$(Build.SourcesDirectory)/artifacts/packages/Release/NonShipping/'
         artifactName: 'dnup-library-packages'
         publishLocation: Container
+      - output: pipelineArtifact
+        displayName: '📊 Publish dnup library build binlogs'
+        condition: always()
+        targetPath: '$(Build.SourcesDirectory)/artifacts/binlogs/'
+        artifactName: 'dnup-library-binlogs'
+        publishLocation: Container
     steps:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: |
-          & .\restore.cmd
+          & .\restore.cmd $(_officialBuildProperties)
         displayName: 🍱 Bootstrap toolset (Windows)
       - powershell: |
-          & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release
+          & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-build.binlog $(_officialBuildProperties)
         displayName: 💻 Build Windows
       - powershell: |
-          & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj
+          & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-package.binlog $(_officialBuildProperties)
         displayName: 📦 Package dnup library
       - powershell: |
-          & .\.dotnet\dotnet build .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.sign.proj /t:Sign
+          & .\.dotnet\dotnet build .\src\Installer\Installer.sign.proj /t:Sign -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-sign.binlog $(_officialBuildProperties)
         displayName: 🖋️ Sign dnup library packages with arcade signtool
+      - task: 1ES.PublishNuget@1
+        displayName: 🟣 Publish packages to AzDO
+        inputs:
+          useDotNetTask: true
+          packagesToPush: '$(Build.SourcesDirectory)/artifacts/packages/Release/**/*.nupkg;!$(Build.SourcesDirectory)/artifacts/packages/Release/**/*.symbols.nupkg'
+          packageParentPath: $(Build.SourcesDirectory)/artifacts/packages/Release
+          publishVstsFeed: public/dotnet-tools
