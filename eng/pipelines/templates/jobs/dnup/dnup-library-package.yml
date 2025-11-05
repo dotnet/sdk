@@ -66,3 +66,10 @@ jobs:
       - powershell: |
           & .\.dotnet\dotnet build .\src\Installer\Installer.sign.proj /t:Sign -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-sign.binlog $(_officialBuildProperties)
         displayName: 🖋️ Sign dnup library packages with arcade signtool
+      - task: 1ES.PublishNuget@1
+        displayName: 🟣 Publish packages to AzDO
+        inputs:
+          useDotNetTask: true
+          packagesToPush: '!$(System.DefaultWorkingDirectory)/packages/Release/**/*.symbols.nupkg;$(System.DefaultWorkingDirectory)/packages/Release/**/*.nupkg'
+          packageParentPath: $(System.DefaultWorkingDirectory)/packages/Release
+          publishVstsFeed: public/dotnet-tools
