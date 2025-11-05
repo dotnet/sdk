@@ -4,68 +4,68 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
 internal static class PackageListCommandParser
 {
-    public static readonly Option OutdatedOption = new ForwardedOption<bool>("--outdated")
+    public static readonly Option OutdatedOption = new Option<bool>("--outdated")
     {
         Description = CliCommandStrings.CmdOutdatedDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--outdated");
 
-    public static readonly Option DeprecatedOption = new ForwardedOption<bool>("--deprecated")
+    public static readonly Option DeprecatedOption = new Option<bool>("--deprecated")
     {
         Description = CliCommandStrings.CmdDeprecatedDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--deprecated");
 
-    public static readonly Option VulnerableOption = new ForwardedOption<bool>("--vulnerable")
+    public static readonly Option VulnerableOption = new Option<bool>("--vulnerable")
     {
         Description = CliCommandStrings.CmdVulnerableDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--vulnerable");
 
-    public static readonly Option FrameworkOption = new ForwardedOption<IEnumerable<string>>("--framework", "-f")
+    public static readonly Option FrameworkOption = new Option<IEnumerable<string>>("--framework", "-f")
     {
         Description = CliCommandStrings.PackageListCmdFrameworkDescription,
         HelpName = CliCommandStrings.PackageListCmdFramework
     }.ForwardAsManyArgumentsEachPrefixedByOption("--framework")
     .AllowSingleArgPerToken();
 
-    public static readonly Option TransitiveOption = new ForwardedOption<bool>("--include-transitive")
+    public static readonly Option TransitiveOption = new Option<bool>("--include-transitive")
     {
         Description = CliCommandStrings.CmdTransitiveDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--include-transitive");
 
-    public static readonly Option PrereleaseOption = new ForwardedOption<bool>("--include-prerelease")
+    public static readonly Option PrereleaseOption = new Option<bool>("--include-prerelease")
     {
         Description = CliCommandStrings.CmdPrereleaseDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--include-prerelease");
 
-    public static readonly Option HighestPatchOption = new ForwardedOption<bool>("--highest-patch")
+    public static readonly Option HighestPatchOption = new Option<bool>("--highest-patch")
     {
         Description = CliCommandStrings.CmdHighestPatchDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--highest-patch");
 
-    public static readonly Option HighestMinorOption = new ForwardedOption<bool>("--highest-minor")
+    public static readonly Option HighestMinorOption = new Option<bool>("--highest-minor")
     {
         Description = CliCommandStrings.CmdHighestMinorDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--highest-minor");
 
-    public static readonly Option ConfigOption = new ForwardedOption<string>("--config", "--configfile")
+    public static readonly Option ConfigOption = new Option<string>("--config", "--configfile")
     {
         Description = CliCommandStrings.CmdConfigDescription,
         HelpName = CliCommandStrings.CmdConfig
     }.ForwardAsMany(o => ["--config", o]);
 
-    public static readonly Option SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
+    public static readonly Option SourceOption = new Option<IEnumerable<string>>("--source", "-s")
     {
         Description = CliCommandStrings.PackageListCmdSourceDescription,
         HelpName = CliCommandStrings.PackageListCmdSource
@@ -80,18 +80,18 @@ internal static class PackageListCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option VerbosityOption = new ForwardedOption<Utils.VerbosityOptions>("--verbosity", "-v")
+    public static readonly Option VerbosityOption = new Option<Utils.VerbosityOptions>("--verbosity", "-v")
     {
         Description = CliStrings.VerbosityOptionDescription,
         HelpName = CliStrings.LevelArgumentName
     }.ForwardAsSingle(o => $"--verbosity:{o}");
 
-    public static readonly Option FormatOption = new ForwardedOption<ReportOutputFormat>("--format")
+    public static readonly Option FormatOption = new Option<ReportOutputFormat>("--format")
     {
         Description = CliCommandStrings.CmdFormatDescription
     }.ForwardAsSingle(o => $"--format:{o}");
 
-    public static readonly Option OutputVersionOption = new ForwardedOption<int>("--output-version")
+    public static readonly Option OutputVersionOption = new Option<int>("--output-version")
     {
         Description = CliCommandStrings.CmdOutputVersionDescription
     }.ForwardAsSingle(o => $"--output-version:{o}");

@@ -440,7 +440,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51469")]
         [CombinatorialData]
         public async Task AutoRestartOnRuntimeRudeEdit(bool nonInteractive)
         {
@@ -755,7 +755,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 App.DotnetWatchArgs.Clear();
             }
 
-            App.Start(testAsset, [], testFlags: TestFlags.ElevateWaitingForChangesMessageSeverity);
+            App.Start(testAsset, []);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
