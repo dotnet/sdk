@@ -235,7 +235,7 @@ internal static class TestCommandParser
     {
         var command = new MicrosoftTestingPlatformTestCommand("test", CliCommandStrings.DotnetTestCommandMTPDescription);
         command.SetAction(parseResult => command.Run(parseResult));
-        command.Options.Add(MicrosoftTestingPlatformOptions.ProjectOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.SolutionOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption);
