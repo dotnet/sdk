@@ -58,6 +58,7 @@ _testhost() {
                         '--artifacts-path=[The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.]:ARTIFACTS_DIR: ' \
                         '--no-incremental[Do not use incremental building.]' \
                         '--no-dependencies[Do not build project-to-project references and only build the specified project.]' \
+                        '--no-logo[Do not display the startup banner or the copyright message.]' \
                         '--nologo[Do not display the startup banner or the copyright message.]' \
                         '-nologo[Do not display the startup banner or the copyright message.]' \
                         '/nologo[Do not display the startup banner or the copyright message.]' \
@@ -123,6 +124,7 @@ _testhost() {
                         '--output=[The directory containing the build artifacts to clean.]:OUTPUT_DIR: ' \
                         '-o=[The directory containing the build artifacts to clean.]:OUTPUT_DIR: ' \
                         '--artifacts-path=[The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.]:ARTIFACTS_DIR: ' \
+                        '--no-logo[Do not display the startup banner or the copyright message.]' \
                         '--nologo[Do not display the startup banner or the copyright message.]' \
                         '-nologo[Do not display the startup banner or the copyright message.]' \
                         '/nologo[Do not display the startup banner or the copyright message.]' \
@@ -542,6 +544,7 @@ _testhost() {
                         '--include-source[Include PDBs and source files. Source files go into the '\''src'\'' folder in the resulting nuget package.]' \
                         '--serviceable[Set the serviceable flag in the package. See https\://aka.ms/nupkgservicing for more information.]' \
                         '-s[Set the serviceable flag in the package. See https\://aka.ms/nupkgservicing for more information.]' \
+                        '--no-logo[Do not display the startup banner or the copyright message.]' \
                         '--nologo[Do not display the startup banner or the copyright message.]' \
                         '-nologo[Do not display the startup banner or the copyright message.]' \
                         '/nologo[Do not display the startup banner or the copyright message.]' \
@@ -729,6 +732,7 @@ _testhost() {
                         '--self-contained=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--sc=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--no-self-contained[Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.]' \
+                        '--no-logo[Do not display the startup banner or the copyright message.]' \
                         '--nologo[Do not display the startup banner or the copyright message.]' \
                         '-nologo[Do not display the startup banner or the copyright message.]' \
                         '/nologo[Do not display the startup banner or the copyright message.]' \
@@ -997,6 +1001,7 @@ _testhost() {
                         '--use-current-runtime[Use current runtime as the target runtime.]' \
                         '--ucr[Use current runtime as the target runtime.]' \
                         '--disable-build-servers[Force the command to ignore any persistent build servers.]' \
+                        '--no-logo[Do not display the startup banner or the copyright message.]' \
                         '--nologo[Do not display the startup banner or the copyright message.]' \
                         '-nologo[Do not display the startup banner or the copyright message.]' \
                         '/nologo[Do not display the startup banner or the copyright message.]' \
@@ -1042,6 +1047,7 @@ _testhost() {
                         '--blame-hang[Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.]' \
                         '--blame-hang-dump-type=[The type of crash dump to be collected. The supported values are full (default), mini, and none. When '\''none'\'' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.]:DUMP_TYPE:((full\:"full" mini\:"mini" none\:"none" ))' \
                         '--blame-hang-timeout=[Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h. The timeout value is specified in the following format\: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds. When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case, For MSTest before 2.2.4, the timeout is used for all testcases.]:TIMESPAN: ' \
+                        '--no-logo[Run test(s), without displaying Microsoft Testplatform banner]' \
                         '--nologo[Run test(s), without displaying Microsoft Testplatform banner]' \
                         '-nologo[Run test(s), without displaying Microsoft Testplatform banner]' \
                         '/nologo[Run test(s), without displaying Microsoft Testplatform banner]' \

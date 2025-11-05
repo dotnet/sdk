@@ -117,7 +117,7 @@ public sealed class MSBuildArgs
         var getTargetResult = TryGetValue<string[]?>("--getTargetResult");
         var getResultOutputFile = TryGetValue<string[]?>("--getResultOutputFile");
         var verbosity = TryGetValue<VerbosityOptions?>("--verbosity");
-        var nologo = TryGetValue<bool?>("--nologo") ?? true; // Default to nologo if not specified
+        var nologo = TryGetValue<bool?>("--no-logo") ?? true; // Default to nologo if not specified
         var otherMSBuildArgs = parseResult.UnmatchedTokens.ToArray();
         return new MSBuildArgs(
             properties: globalProperties,

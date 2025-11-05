@@ -400,11 +400,11 @@ internal static class CommonOptions
     public static readonly Option<string[]> TestLoggerOption = new("--logger");
 
     /// <summary>
-    /// Creates an implementation of the <c>--nologo</c> option.
+    /// Creates an implementation of the <c>--no-logo</c> option.
     /// This option suppresses the display of the startup banner or logos for commands or products it is applied to.
     /// The behavior of this option is influenced by the <c>DOTNET_NOLOGO</c> environment variable if it is set:
     /// <list type="bullet">
-    /// <item>If the <c>--nologo</c> option is not specified on the command line, the environment variable will be checked to determine
+    /// <item>If the <c>--no-logo</c> option is not specified on the command line, the environment variable will be checked to determine
     /// whether to suppress logos. Any truthy value - <c>true</c>, <c>1</c>, <c>yes</c>, <c>on</c> - will suppress logos, while any falsy value - <c>false</c>, <c>0</c>, <c>no</c>, <c>off</c> - will show logos.</item>
     /// <item>If the option is specified on the command line, it takes precedence over the environment variable.</item>
     /// </list>
@@ -412,7 +412,7 @@ internal static class CommonOptions
     /// </summary>
     public static Option<bool> NoLogoOption(bool defaultValue = true, string forwardAs = "--nologo", string? description = null)
     {
-        return new Option<bool>("--nologo", "-nologo", "/nologo")
+        return new Option<bool>("--no-logo", "--nologo", "-nologo", "/nologo")
         {
             Description = description ?? Commands.CliCommandStrings.NoLogoOptionDescription,
             DefaultValueFactory = (ar) => Env.TryGetEnvironmentVariableAsBool("DOTNET_NOLOGO", out bool value) ? value : defaultValue,
