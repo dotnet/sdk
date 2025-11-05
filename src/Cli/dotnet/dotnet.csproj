@@ -105,4 +105,17 @@
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DestinationPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
   </Target>
 
+  <!-- Generate Microsoft DSC resource manifest after publish -->
+  <Target Name="GenerateDscManifest" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
+    <PropertyGroup>
+      <OutputFileName>$(TargetName).dsc.resource.json</OutputFileName>
+      <RepoDotNet>$(RepoRoot).dotnet\dotnet$([System.IO.Path]::GetExtension('$(DotnetToolCommand)'))</RepoDotNet>
+    </PropertyGroup>
+
+    <Exec Command="&quot;$(RepoDotNet)&quot; &quot;$(PublishDir)$(TargetFileName)&quot; tool dsc manifest &gt; &quot;$(PublishDir)$(OutputFileName)&quot;" 
+          WorkingDirectory="$(PublishDir)" />
+
+    <Message Text="DSC manifest generated: $(PublishDir)$(OutputFileName)" Importance="high" />
+  </Target>
+
 </Project>

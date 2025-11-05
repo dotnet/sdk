@@ -2056,6 +2056,33 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="ToolDefinition" xml:space="preserve">
     <value>Install or manage tools that extend the .NET experience.</value>
   </data>
+  <data name="ToolDscCommandDescription" xml:space="preserve">
+    <value>Manage tools using Microsoft Desired State Configuration (DSC).</value>
+  </data>
+  <data name="ToolDscGetCommandDescription" xml:space="preserve">
+    <value>Get the current state of installed tools.</value>
+  </data>
+  <data name="ToolDscSetCommandDescription" xml:space="preserve">
+    <value>Set the desired state of tools by installing or updating them.</value>
+  </data>
+  <data name="ToolDscTestCommandDescription" xml:space="preserve">
+    <value>Test if the current state matches the desired state.</value>
+  </data>
+  <data name="ToolDscExportCommandDescription" xml:space="preserve">
+    <value>Export the current state of all installed tools.</value>
+  </data>
+  <data name="ToolDscSchemaCommandDescription" xml:space="preserve">
+    <value>Get the JSON schema for DSC tool state.</value>
+  </data>
+  <data name="ToolDscManifestCommandDescription" xml:space="preserve">
+    <value>Get the Microsoft Desired State Configuration (DSC) resource manifest for dotnet tool.</value>
+  </data>
+  <data name="ToolDscInputOptionDescription" xml:space="preserve">
+    <value>JSON input representing the desired or requested tool state.</value>
+  </data>
+  <data name="ToolDscInputOptionName" xml:space="preserve">
+    <value>JSON</value>
+  </data>
   <data name="ToolInstallAddSourceOptionDescription" xml:space="preserve">
     <value>Add an additional NuGet package source to use during installation.</value>
   </data>
