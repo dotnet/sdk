@@ -295,7 +295,7 @@ function InstallDotNet([string] $dotnetRoot,
     if ($runtime -eq "aspnetcore") { $runtimePath = $runtimePath + "\Microsoft.AspNetCore.App" }
     if ($runtime -eq "windowsdesktop") { $runtimePath = $runtimePath + "\Microsoft.WindowsDesktop.App" }
     $runtimePath = $runtimePath + "\" + $version
-  
+
     $dotnetVersionLabel = "runtime toolset '$runtime/$architecture v$version'"
 
     if (Test-Path $runtimePath) {
@@ -576,6 +576,22 @@ function LocateVisualStudio([object]$vsRequirements = $null){
   return $vsInfo[0]
 }
 
+function EnablePreviewSdks() {
+    $vsInfo = LocateVisualStudio
+    if ($vsInfo -eq $null) {
+        # Preview SDKs are allowed when no Visual Studio instance is installed
+        return
+    }
+
+    $vsId = $vsInfo.instanceId
+    $vsMajorVersion = $vsInfo.installationVersion.Split('.')[0]
+
+    $instanceDir = Join-Path ${env:USERPROFILE} "AppData\Local\Microsoft\VisualStudio\$vsMajorVersion.0_$vsId"
+    Create-Directory $instanceDir
+    $sdkFile = Join-Path $instanceDir "sdk.txt"
+    'UsePreviews=True' | Set-Content $sdkFile
+}
+
 function InitializeBuildTool() {
   if (Test-Path variable:global:_BuildTool) {
     # If the requested msbuild parameters do not match, clear the cached variables.
@@ -610,7 +626,7 @@ function InitializeBuildTool() {
     } else {
       $initializeBuildToolFramework=$env:_OverrideArcadeInitializeBuildToolFramework
     }
-    
+
     $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = $initializeBuildToolFramework }
   } elseif ($msbuildEngine -eq "vs") {
     try {

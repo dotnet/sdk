@@ -4,6 +4,8 @@ function InitializeCustomSDKToolset {
      Write-Host "INFO: Tests will run against full MSBuild in $env:DOTNET_SDK_TEST_MSBUILD_PATH"
   }
 
+  EnablePreviewSdks
+
   if (-not $restore) {
     return
   }
