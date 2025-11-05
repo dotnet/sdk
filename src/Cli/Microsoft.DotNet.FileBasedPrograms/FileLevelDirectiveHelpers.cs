@@ -243,7 +243,7 @@ internal static class FileLevelDirectiveHelpers
                 .Select(d => d is CSharpDirective.Project p
                     ? (project is null
                         ? p
-                        : p.WithName(project.ExpandString(p.Name)))
+                        : p.WithName(project.ExpandString(p.Name), CSharpDirective.Project.NameKind.Expanded))
                        .ResolveProjectPath(sourceFile, diagnostics)
                     : d)
                 .ToImmutableArray();
@@ -490,23 +490,24 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         {
             Name = name;
             OriginalName = name;
-            UnresolvedName = name;
         }
 
         /// <summary>
-        /// Preserved across <see cref="WithName"/> calls.
+        /// Preserved across <see cref="WithName"/> calls, i.e.,
+        /// this is the original directive text as entered by the user.
         /// </summary>
         public string OriginalName { get; init; }
 
         /// <summary>
-        /// Preserved across <see cref="ResolveProjectPath"/> calls.
+        /// This is the <see cref="OriginalName"/> with MSBuild <c>$(..)</c> vars expanded (via <see cref="ProjectInstance.ExpandString"/>).
         /// </summary>
-        /// <remarks>
-        /// When MSBuild <c>$(..)</c> vars are expanded via <see cref="WithName"/>,
-        /// the <see cref="UnresolvedName"/> will be expanded, but not resolved
-        /// (i.e., can be pointing to project directory or file).
-        /// </remarks>
-        public string UnresolvedName { get; init; }
+        public string? ExpandedName { get; init; }
+
+        /// <summary>
+        /// This is the <see cref="ExpandedName"/> resolved via <see cref="ResolveProjectPath"/>
+        /// (i.e., this is a file path if the original text pointed to a directory).
+        /// </summary>
+        public string? ResolvedName { get; init; }
 
         public static new Project? Parse(in ParseContext context)
         {
@@ -520,15 +521,32 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return new Project(context.Info, directiveText);
         }
 
-        public Project WithName(string name, bool preserveUnresolvedName = false)
+        public enum NameKind
         {
-            return name == Name && (preserveUnresolvedName || UnresolvedName == name)
-                ? this
-                : new Project(Info, name)
-                {
-                    OriginalName = OriginalName,
-                    UnresolvedName = preserveUnresolvedName ? UnresolvedName : name,
-                };
+            /// <summary>
+            /// Change <see cref="Named.Name"/> and <see cref="ExpandedName"/>.
+            /// </summary>
+            Expanded = 1,
+
+            /// <summary>
+            /// Change <see cref="Named.Name"/> and <see cref="ResolvedName"/>.
+            /// </summary>
+            Resolved = 2,
+
+            /// <summary>
+            /// Change only <see cref="Named.Name"/>.
+            /// </summary>
+            Final = 3,
+        }
+
+        public Project WithName(string name, NameKind kind)
+        {
+            return new Project(Info, name)
+            {
+                OriginalName = OriginalName,
+                ExpandedName = kind == NameKind.Expanded ? name : ExpandedName,
+                ResolvedName = kind == NameKind.Resolved ? name : ResolvedName,
+            };
         }
 
         /// <summary>
@@ -563,7 +581,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 diagnostics.AddError(sourceFile, Info.Span, string.Format(FileBasedProgramsResources.InvalidProjectDirective, e.Message), e);
             }
 
-            return WithName(directiveText, preserveUnresolvedName: true);
+            return WithName(directiveText, NameKind.Resolved);
         }
 
         // https://github.com/dotnet/sdk/issues/51487: Delete copies of methods from MsbuildProject and MSBuildUtilities from the source package, sharing the original method(s) under src/Cli instead.

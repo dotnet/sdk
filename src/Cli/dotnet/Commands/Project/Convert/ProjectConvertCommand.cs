@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -184,10 +185,12 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                 // while also pointing to the project file rather than a directory).
                 if (directive is CSharpDirective.Project project)
                 {
+                    Debug.Assert(project.ExpandedName != null && project.ResolvedName != null && project.ResolvedName == project.Name);
+
                     if (Path.IsPathFullyQualified(project.Name))
                     {
                         // If the path is absolute and has no `$(..)` vars, just keep it.
-                        if (project.UnresolvedName == project.OriginalName)
+                        if (project.ExpandedName == project.OriginalName)
                         {
                             result.Add(project);
                             continue;
@@ -203,7 +206,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                         // The `OriginalName` is absolute if there are no `$(..)` vars at the start.
                         if (!Path.IsPathFullyQualified(project.OriginalName))
                         {
-                            project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: project.Name));
+                            project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: project.Name), CSharpDirective.Project.NameKind.Final);
                             result.Add(project);
                             continue;
                         }
@@ -211,13 +214,13 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
                     // If the original path is to a directory, just append the resolved file name
                     // but preserve the variables from the original, e.g., `../$(..)/Directory/Project.csproj`.
-                    if (Directory.Exists(Path.Combine(sourceDirectory, project.UnresolvedName)))
+                    if (Directory.Exists(Path.Combine(sourceDirectory, project.ExpandedName)))
                     {
                         var projectFileName = Path.GetFileName(project.Name);
-                        project = project.WithName(Path.Join(project.OriginalName, projectFileName));
+                        project = project.WithName(Path.Join(project.OriginalName, projectFileName), CSharpDirective.Project.NameKind.Final);
                     }
 
-                    project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: Path.Combine(sourceDirectory, project.Name)));
+                    project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: Path.Combine(sourceDirectory, project.Name)), CSharpDirective.Project.NameKind.Final);
                     result.Add(project);
                     continue;
                 }
