@@ -2573,6 +2573,63 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "$(Test"))));
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("app")]
+    public void ProjectReference_Duplicate(string? subdir)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var relativeFilePath = Path.Join(subdir, "Program.cs");
+        var filePath = Path.Join(testInstance.Path, relativeFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, subdir, "dir"));
+        File.WriteAllText(Path.Join(testInstance.Path, subdir, "dir", "proj1.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project dir/
+            Console.WriteLine("Hello");
+            """);
+
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 2, FileBasedProgramsResources.DuplicateDirective, "#:project dir/"));
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project dir/proj1.csproj
+            Console.WriteLine("Hello");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate project reference
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project $(MSBuildProjectDirectory)/dir/
+            Console.WriteLine("Hello");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate project reference
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
+    }
+
     [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
     [InlineData(true, null)]
     [InlineData(false, null)]
