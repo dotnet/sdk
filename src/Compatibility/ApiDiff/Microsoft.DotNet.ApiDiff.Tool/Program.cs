@@ -14,7 +14,6 @@ namespace Microsoft.DotNet.ApiDiff.Tool;
 /// </summary>
 public static class Program
 {
-    private static readonly string AttributesToExcludeDefaultFileName = "AttributesToExclude.txt";
 
     public static async Task Main(string[] args)
     {
@@ -87,10 +86,10 @@ public static class Program
 
         Option<FileInfo[]?> optionFilesWithAttributesToExclude = new("--attributesToExclude", "-eattrs")
         {
-            Description = $"An optional array of filepaths, each containing a list of attributes to exclude from the diff. Each file should contain one API full name per line. You can either modify the default file '{AttributesToExcludeDefaultFileName}' to add your own attributes, or include additional files using this command line option.",
+            Description = "An optional array of filepaths, each containing a list of attributes to exclude from the diff. Each file should contain one docID per line in the format 'T:Namespace.TypeName'. If not specified, a default set of common attributes will be excluded automatically. Specifying this option replaces the defaults with the attributes listed in the provided files.",
             Arity = ArgumentArity.ZeroOrMore,
             Required = false,
-            DefaultValueFactory = _ => [new FileInfo(AttributesToExcludeDefaultFileName)]
+            DefaultValueFactory = _ => null
         };
 
         Option<FileInfo[]?> optionFilesWithApisToExclude = new("--apisToExclude", "-eapis")
