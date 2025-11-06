@@ -26,7 +26,7 @@ _testhost() {
         ":: :_testhost_commands" \
         "*::: :->testhost" \
         && ret=0
-    local original_args="testhost ${line[@]}"
+    local original_args="testhost ${line[@]}" 
     case $state in
         (testhost)
             words=($line[1] "${words[@]}")
