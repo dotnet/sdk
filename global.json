@@ -16,6 +16,9 @@
   "native-tools": {
     "cmake": "latest"
   },
+  "sdk": {
+    "allowPrerelease": true
+  },
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "9.0.0-beta.25515.2",
     "Microsoft.DotNet.Helix.Sdk": "9.0.0-beta.25515.2",
