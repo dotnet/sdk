@@ -9,6 +9,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
@@ -58,8 +59,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
         internal static ReadOnlyMemory<byte> GetBrowserRefreshJS()
         {
-            var endpoint = Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT")!;
-            var serverKey = Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_KEY") ?? string.Empty;
+            var endpoint = Environment.GetEnvironmentVariable(MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSEndPoint) ?? "";
+            var serverKey = Environment.GetEnvironmentVariable(MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSKey) ?? "";
 
             return GetWebSocketClientJavaScript(endpoint, serverKey);
         }

@@ -84,15 +84,17 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
             throw new InvalidOperationException("Server not started");
         }
 
-        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSEndPoint] = string.Join(",", _lazyHost.EndPoints);
-        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSKey] = _sharedSecretProvider.GetPublicKey();
-        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadVirtualDirectory] = _lazyHost.VirtualDirectory;
-
-        builder.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
-        builder.InsertListItem(MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies, Path.GetFileNameWithoutExtension(middlewareAssemblyPath), MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
-
         if (enableHotReload)
         {
+            // If Hot Reload is disabled do not load the middleware and do not set env variables that configure its behavior.
+
+            builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSEndPoint] = string.Join(",", _lazyHost.EndPoints);
+            builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSKey] = _sharedSecretProvider.GetPublicKey();
+            builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadVirtualDirectory] = _lazyHost.VirtualDirectory;
+
+            builder.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
+            builder.InsertListItem(MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies, Path.GetFileNameWithoutExtension(middlewareAssemblyPath), MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
+
             // Note:
             // Microsoft.AspNetCore.Components.WebAssembly.Server.ComponentWebAssemblyConventions and Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware
             // expect DOTNET_MODIFIABLE_ASSEMBLIES to be set in the blazor-devserver process, even though we are not performing Hot Reload in this process.

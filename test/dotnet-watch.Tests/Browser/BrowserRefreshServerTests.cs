@@ -34,19 +34,21 @@ public class BrowserRefreshServerTests
         var envBuilder = new Dictionary<string, string>();
         server.ConfigureLaunchEnvironment(envBuilder, enableHotReload);
 
-        Assert.True(envBuilder.Remove("ASPNETCORE_AUTO_RELOAD_WS_KEY"));
-
-        var expected = new List<string>()
-        {
-            "ASPNETCORE_AUTO_RELOAD_VDIR=/test/virt/dir",
-            "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT=http://test.endpoint",
-            "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES=" + middlewareFileName,
-            "DOTNET_STARTUP_HOOKS=" + middlewarePath,
-        };
+        var expected = new List<string>();
 
         if (enableHotReload)
         {
+            Assert.True(envBuilder.Remove("ASPNETCORE_AUTO_RELOAD_WS_KEY"));
+
+            expected.Add("ASPNETCORE_AUTO_RELOAD_VDIR=/test/virt/dir");
+            expected.Add("ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT=http://test.endpoint");
             expected.Add("DOTNET_MODIFIABLE_ASSEMBLIES=debug");
+            expected.Add("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES=" + middlewareFileName);
+            expected.Add("DOTNET_STARTUP_HOOKS=" + middlewarePath);
+        }
+        else
+        {
+            Assert.False(envBuilder.ContainsKey("ASPNETCORE_AUTO_RELOAD_WS_KEY"));
         }
 
         if (logLevel == LogLevel.Trace)

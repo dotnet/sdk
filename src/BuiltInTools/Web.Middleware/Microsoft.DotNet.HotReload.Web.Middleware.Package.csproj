@@ -39,6 +39,10 @@
     <Using Remove="@(Using)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\HotReloadClient\Web\MiddlewareEnvironmentVariables.cs" Link="MiddlewareEnvironmentVariables.cs" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddJSFilesToSourcePackage</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
@@ -50,7 +54,7 @@
     <ItemGroup>
       <!-- Must be in 'cs' directory since NuGet filters the files based on consuming project language -->
       <_File Include="$(MSBuildProjectDirectory)\**\*.js" TargetDir="contentFiles/cs/$(TargetFramework)" BuildAction="EmbeddedResource" />
-      <TfmSpecificPackageFile Include="@(_File)" PackagePath="%(_File.TargetDir)/%(_File.RecursiveDir)%(_File.FileName)%(_File.Extension)"/>
+      <TfmSpecificPackageFile Include="@(_File)" PackagePath="%(_File.TargetDir)/%(_File.RecursiveDir)%(_File.FileName)%(_File.Extension)" />
     </ItemGroup>
   </Target>
 </Project>

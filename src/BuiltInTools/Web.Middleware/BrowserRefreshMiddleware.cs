@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         private static readonly MediaTypeHeaderValue s_applicationJsonMediaType = new("application/json");
         private readonly RequestDelegate _next;
         private readonly ILogger<BrowserRefreshMiddleware> _logger;
-        private string? _dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue("DOTNET_MODIFIABLE_ASSEMBLIES");
+        private string? _dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue(MiddlewareEnvironmentVariables.DotNetModifiableAssemblies);
         private string? _aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
 
         public BrowserRefreshMiddleware(RequestDelegate next, ILogger<BrowserRefreshMiddleware> logger)
