@@ -29,35 +29,34 @@ internal static class RestoreCommandParser
     public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.minimal);
     public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
 
-    private static IEnumerable<Option> FullRestoreOptions() =>
-        ImplicitRestoreOptions(true, true, true, true).Concat(
-            [
-                VerbosityOption,
-                CommonOptions.InteractiveMsBuildForwardOption,
-                CommonOptions.ArtifactsPathOption,
-                new Option<bool>("--use-lock-file")
-                {
-                    Description = CliCommandStrings.CmdUseLockFileOptionDescription,
-                    Arity = ArgumentArity.Zero
-                }.ForwardAs("-property:RestorePackagesWithLockFile=true"),
-                new Option<bool>("--locked-mode")
-                {
-                    Description = CliCommandStrings.CmdLockedModeOptionDescription,
-                    Arity = ArgumentArity.Zero
-                }.ForwardAs("-property:RestoreLockedMode=true"),
-                new Option<string>("--lock-file-path")
-                {
-                    Description = CliCommandStrings.CmdLockFilePathOptionDescription,
-                    HelpName = CliCommandStrings.CmdLockFilePathOption
-                }.ForwardAsSingle(o => $"-property:NuGetLockFilePath={o}"),
-                new Option<bool>("--force-evaluate")
-                {
-                    Description = CliCommandStrings.CmdReevaluateOptionDescription,
-                    Arity = ArgumentArity.Zero
-                }.ForwardAs("-property:RestoreForceEvaluate=true"),
-                TargetOption
-            ]);
-
+    private static IEnumerable<Option> FullRestoreOptions() => [
+        ..ImplicitRestoreOptions(true, true, true, true),
+        VerbosityOption,
+        CommonOptions.InteractiveMsBuildForwardOption,
+        CommonOptions.ArtifactsPathOption,
+        new Option<bool>("--use-lock-file")
+        {
+            Description = CliCommandStrings.CmdUseLockFileOptionDescription,
+            Arity = ArgumentArity.Zero
+        }.ForwardAs("-property:RestorePackagesWithLockFile=true"),
+        new Option<bool>("--locked-mode")
+        {
+            Description = CliCommandStrings.CmdLockedModeOptionDescription,
+            Arity = ArgumentArity.Zero
+        }.ForwardAs("-property:RestoreLockedMode=true"),
+        new Option<string>("--lock-file-path")
+        {
+            Description = CliCommandStrings.CmdLockFilePathOptionDescription,
+            HelpName = CliCommandStrings.CmdLockFilePathOption
+        }.ForwardAsSingle(o => $"-property:NuGetLockFilePath={o}"),
+        new Option<bool>("--force-evaluate")
+        {
+            Description = CliCommandStrings.CmdReevaluateOptionDescription,
+            Arity = ArgumentArity.Zero
+        }.ForwardAs("-property:RestoreForceEvaluate=true"),
+        TargetOption,
+        CommonOptions.NoLogoOption()
+    ];
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -196,7 +195,6 @@ internal static class RestoreCommandParser
 
         yield return CommonOptions.PropertiesOption;
         yield return CommonOptions.RestorePropertiesOption;
-        yield return CommonOptions.NoLogoOption();
 
         if (includeRuntimeOption)
         {
