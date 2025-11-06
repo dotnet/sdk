@@ -55,7 +55,7 @@ internal static class RestoreCommandParser
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreForceEvaluate=true"),
         TargetOption,
-        CommonOptions.NoLogoOption()
+        NoLogoOption
     ];
     private static readonly Command Command = ConstructCommand();
 
