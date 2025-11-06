@@ -26,7 +26,7 @@ _testhost() {
         ":: :_testhost_commands" \
         "*::: :->testhost" \
         && ret=0
-    local original_args="testhost ${line[@]}" 
+    local original_args="testhost ${line[@]}"
     case $state in
         (testhost)
             words=($line[1] "${words[@]}")
@@ -861,6 +861,10 @@ _testhost() {
                         '--locked-mode[Don'\''t allow updating project lock file.]' \
                         '--lock-file-path=[Output location where project lock file is written. By default, this is '\''PROJECT_ROOT\packages.lock.json'\''.]:LOCK_FILE_PATH: ' \
                         '--force-evaluate[Forces restore to reevaluate all dependencies even if a lock file already exists.]' \
+                        '--no-logo[Do not display the startup banner or the copyright message.]' \
+                        '--nologo[Do not display the startup banner or the copyright message.]' \
+                        '-nologo[Do not display the startup banner or the copyright message.]' \
+                        '/nologo[Do not display the startup banner or the copyright message.]' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
                         '--os=[The target operating system.]:OS: ' \
