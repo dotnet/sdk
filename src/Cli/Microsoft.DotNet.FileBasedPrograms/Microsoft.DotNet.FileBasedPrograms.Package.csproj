@@ -12,6 +12,7 @@
 
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
     <IsSourcePackage>true</IsSourcePackage>
     <PackageId>Microsoft.DotNet.FileBasedPrograms</PackageId>
     <IncludeBuildOutput>false</IncludeBuildOutput>
