@@ -729,9 +729,9 @@ Isso equivale a excluir o project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
-        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
-        <note />
+        <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note>{0} is the verb (e.g., "test", "run")</note>
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
         <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
@@ -1884,8 +1884,8 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">Nenhuma carga de trabalho instalada, nada para reparar. Execute a 'pesquisa de carga de trabalho dotnet' para encontrar cargas de trabalho a serem instaladas.</target>
-        <note />
+        <target state="needs-review-translation">Nenhuma carga de trabalho instalada, nada para reparar. Execute a 'pesquisa de carga de trabalho dotnet' para encontrar cargas de trabalho a serem instaladas.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2716,10 +2716,10 @@ O padrão é publicar uma aplicação dependente de framework.</target>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">Não é possível continuar com o projeto "{0}".
-Verifique se você tem um tipo de projeto executável.
-Um projeto executável deve ter como destino um TFM executável (por exemplo, net{1}) e ter OutputType "Exe".
-O OutputType atual é "{2}".</target>
+        <target state="needs-review-translation">Não é possível executar o projeto.
+Verifique se você tem um tipo de projeto executável e se '{0}' dá suporte a esse projeto.
+Um projeto executável deve ter como destino um TFM executável (por exemplo, o net5.0) e ter o OutputType 'Exe'.
+O {1} atual é '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -3275,6 +3275,11 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito.</target>
         <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
         <target state="translated">Substitua todas as fontes de pacote NuGet a serem usadas durante a instalação por estas.</target>
@@ -3692,6 +3697,16 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
         <target state="translated">Se especificado, a propriedade '{0}' deve ser um objeto.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Detalhamento</target>
@@ -3990,8 +4005,8 @@ Para exibir um valor, especifique a opção de linha de comando correspondente s
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Pesquise cargas de trabalho disponíveis.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">Pesquise cargas de trabalho disponíveis.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">

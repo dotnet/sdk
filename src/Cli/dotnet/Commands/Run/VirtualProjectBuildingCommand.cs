@@ -1432,6 +1432,186 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
+    public static SyntaxTokenParser CreateTokenizer(SourceText text)
+    {
+        return SyntaxFactory.CreateTokenParser(text,
+            CSharpParseOptions.Default.WithFeatures([new("FileBasedProgram", "true")]));
+    }
+
+    /// <param name="reportAllErrors">
+    /// If <see langword="true"/>, the whole <paramref name="sourceFile"/> is parsed to find diagnostics about every app directive.
+    /// Otherwise, only directives up to the first C# token is checked.
+    /// The former is useful for <c>dotnet project convert</c> where we want to report all errors because it would be difficult to fix them up after the conversion.
+    /// The latter is useful for <c>dotnet run file.cs</c> where if there are app directives after the first token,
+    /// compiler reports <see cref="ErrorCode.ERR_PPIgnoredFollowsToken"/> anyway, so we speed up success scenarios by not parsing the whole file up front in the SDK CLI.
+    /// </param>
+    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, DiagnosticBag diagnostics)
+    {
+        var deduplicated = new HashSet<CSharpDirective.Named>(NamedDirectiveComparer.Instance);
+        var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
+        var tokenizer = CreateTokenizer(sourceFile.Text);
+
+        var result = tokenizer.ParseLeadingTrivia();
+        TextSpan previousWhiteSpaceSpan = default;
+        var triviaList = result.Token.LeadingTrivia;
+        foreach (var (index, trivia) in triviaList.Index())
+        {
+            // Stop when the trivia contains an error (e.g., because it's after #if).
+            if (trivia.ContainsDiagnostics)
+            {
+                break;
+            }
+
+            if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
+            {
+                Debug.Assert(previousWhiteSpaceSpan.IsEmpty);
+                previousWhiteSpaceSpan = trivia.FullSpan;
+                continue;
+            }
+
+            if (trivia.IsKind(SyntaxKind.ShebangDirectiveTrivia))
+            {
+                TextSpan span = GetFullSpan(previousWhiteSpaceSpan, trivia);
+
+                var whiteSpace = GetWhiteSpaceInfo(triviaList, index);
+                var info = new CSharpDirective.ParseInfo
+                {
+                    Span = span,
+                    LeadingWhiteSpace = whiteSpace.Leading,
+                    TrailingWhiteSpace = whiteSpace.Trailing,
+                };
+                builder.Add(new CSharpDirective.Shebang(info));
+            }
+            else if (trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
+            {
+                TextSpan span = GetFullSpan(previousWhiteSpaceSpan, trivia);
+
+                var message = trivia.GetStructure() is IgnoredDirectiveTriviaSyntax { Content: { RawKind: (int)SyntaxKind.StringLiteralToken } content }
+                    ? content.Text.AsSpan().Trim()
+                    : "";
+                var parts = Patterns.Whitespace.EnumerateSplits(message, 2);
+                var name = parts.MoveNext() ? message[parts.Current] : default;
+                var value = parts.MoveNext() ? message[parts.Current] : default;
+                Debug.Assert(!parts.MoveNext());
+
+                var whiteSpace = GetWhiteSpaceInfo(triviaList, index);
+                var context = new CSharpDirective.ParseContext
+                {
+                    Info = new()
+                    {
+                        Span = span,
+                        LeadingWhiteSpace = whiteSpace.Leading,
+                        TrailingWhiteSpace = whiteSpace.Trailing,
+                    },
+                    Diagnostics = diagnostics,
+                    SourceFile = sourceFile,
+                    DirectiveKind = name.ToString(),
+                    DirectiveText = value.ToString(),
+                };
+
+                // Block quotes now so we can later support quoted values without a breaking change. https://github.com/dotnet/sdk/issues/49367
+                if (value.Contains('"'))
+                {
+                    diagnostics.AddError(sourceFile, context.Info.Span, CliCommandStrings.QuoteInDirective);
+                }
+
+                if (CSharpDirective.Parse(context) is { } directive)
+                {
+                    // If the directive is already present, report an error.
+                    if (deduplicated.TryGetValue(directive, out var existingDirective))
+                    {
+                        var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
+                        diagnostics.AddError(sourceFile, directive.Info.Span, string.Format(CliCommandStrings.DuplicateDirective, typeAndName));
+                    }
+                    else
+                    {
+                        deduplicated.Add(directive);
+                    }
+
+                    builder.Add(directive);
+                }
+            }
+
+            previousWhiteSpaceSpan = default;
+        }
+
+        // In conversion mode, we want to report errors for any invalid directives in the rest of the file
+        // so users don't end up with invalid directives in the converted project.
+        if (reportAllErrors)
+        {
+            tokenizer.ResetTo(result);
+
+            do
+            {
+                result = tokenizer.ParseNextToken();
+
+                foreach (var trivia in result.Token.LeadingTrivia)
+                {
+                    ReportErrorFor(trivia);
+                }
+
+                foreach (var trivia in result.Token.TrailingTrivia)
+                {
+                    ReportErrorFor(trivia);
+                }
+            }
+            while (!result.Token.IsKind(SyntaxKind.EndOfFileToken));
+        }
+
+        // The result should be ordered by source location, RemoveDirectivesFromFile depends on that.
+        return builder.ToImmutable();
+
+        static TextSpan GetFullSpan(TextSpan previousWhiteSpaceSpan, SyntaxTrivia trivia)
+        {
+            // Include the preceding whitespace in the span, i.e., span will be the whole line.
+            return previousWhiteSpaceSpan.IsEmpty ? trivia.FullSpan : TextSpan.FromBounds(previousWhiteSpaceSpan.Start, trivia.FullSpan.End);
+        }
+
+        void ReportErrorFor(SyntaxTrivia trivia)
+        {
+            if (trivia.ContainsDiagnostics && trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
+            {
+                diagnostics.AddError(sourceFile, trivia.Span, CliCommandStrings.CannotConvertDirective);
+            }
+        }
+
+        static (WhiteSpaceInfo Leading, WhiteSpaceInfo Trailing) GetWhiteSpaceInfo(in SyntaxTriviaList triviaList, int index)
+        {
+            (WhiteSpaceInfo Leading, WhiteSpaceInfo Trailing) result = default;
+
+            for (int i = index - 1; i >= 0; i--)
+            {
+                if (!Fill(ref result.Leading, triviaList, i)) break;
+            }
+
+            for (int i = index + 1; i < triviaList.Count; i++)
+            {
+                if (!Fill(ref result.Trailing, triviaList, i)) break;
+            }
+
+            return result;
+
+            static bool Fill(ref WhiteSpaceInfo info, in SyntaxTriviaList triviaList, int index)
+            {
+                var trivia = triviaList[index];
+                if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
+                {
+                    info.LineBreaks += 1;
+                    info.TotalLength += trivia.FullSpan.Length;
+                    return true;
+                }
+
+                if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
+                {
+                    info.TotalLength += trivia.FullSpan.Length;
+                    return true;
+                }
+
+                return false;
+            }
+        }
+    }
+
     public static SourceText? RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text)
     {
         if (directives.Length == 0)

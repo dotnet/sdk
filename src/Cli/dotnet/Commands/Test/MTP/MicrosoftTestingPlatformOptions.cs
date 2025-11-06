@@ -9,8 +9,8 @@ internal static class MicrosoftTestingPlatformOptions
 {
     public static readonly Option<string> ProjectOrSolutionOption = new("--project")
     {
-        Description = CliCommandStrings.CmdProjectOrSolutionDescriptionFormat,
-        HelpName = CliCommandStrings.CmdProjectOrSolutionPathName,
+        Description = string.Format(CliCommandStrings.CmdProjectDescriptionFormat, CliCommandStrings.VerbTest),
+        HelpName = CliCommandStrings.CmdProjectPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 
