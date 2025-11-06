@@ -13,7 +13,7 @@ set DOTNET_MULTILEVEL_LOOKUP=0
 set TestFullMSBuild=%1
 
 REM Ensure Visual Studio instances allow preview SDKs
-PowerShell -ExecutionPolicy ByPass -NoProfile -Command " $vsRoot = Join-Path $env:USERPROFILE 'AppData\Local\Microsoft\VisualStudio'; if (Test-Path $vsRoot) { Get-ChildItem -Path $vsRoot -Directory | Where-Object { $_.Name -like '*.0_*' } | ForEach-Object { $instanceDir = $_.FullName; New-Item -ItemType Directory -Path $instanceDir -Force | Out-Null; 'UsePreviews=True' | Set-Content -Path (Join-Path $instanceDir 'sdk.txt') -Encoding ASCII } }"
+PowerShell -ExecutionPolicy ByPass -NoProfile -File "%HELIX_CORRELATION_PAYLOAD%\t\eng\EnablePreviewSdks.ps1"
 
 REM Use powershell to call partical Arcade logic to get full framework msbuild path and assign it
 if "%TestFullMSBuild%"=="true" (
