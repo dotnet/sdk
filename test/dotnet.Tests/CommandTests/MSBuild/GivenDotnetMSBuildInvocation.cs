@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         private static readonly string WorkingDirectory = TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetPackInvocation));
 
         [Theory]
-        [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false", "--nologo" })]
+        [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
