@@ -1,8 +1,6 @@
 {
   "tools": {
-    "dotnet": {
-      "version": "9.0.111"
-    },
+    "dotnet": "9.0.111",
     "sdk": {
       "allowPrerelease": true
     },
