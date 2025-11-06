@@ -24,9 +24,10 @@ jobs:
       
       - name: Checkout PR branch
         run: |
-          gh pr checkout ${{ github.event.inputs.pr_number }}
+          gh pr checkout ${GITHUB_EVENT_INPUTS_PR_NUMBER}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_EVENT_INPUTS_PR_NUMBER: ${{ github.event.inputs.pr_number }}
       
       - name: Run build script
         id: build
@@ -79,33 +80,39 @@ jobs:
       - name: Comment on PR - No changes
         if: steps.update.outcome == 'success' && steps.check-changes.outputs.changes == 'false'
         run: |
-          gh pr comment ${{ github.event.inputs.pr_number }} \
+          gh pr comment ${GITHUB_EVENT_INPUTS_PR_NUMBER} \
             --body "No baselines were updated."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_EVENT_INPUTS_PR_NUMBER: ${{ github.event.inputs.pr_number }}
       
       - name: Comment on PR - Changes pushed
         if: steps.commit.outcome == 'success'
         run: |
-          gh pr comment ${{ github.event.inputs.pr_number }} \
+          gh pr comment ${GITHUB_EVENT_INPUTS_PR_NUMBER} \
             --body "Baselines updated."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_EVENT_INPUTS_PR_NUMBER: ${{ github.event.inputs.pr_number }}
       
       - name: Comment on PR - Failure
         if: steps.build.outcome == 'failure' || steps.update.outcome == 'failure' || (steps.check-changes.outputs.changes == 'true' && steps.commit.outcome == 'failure')
         run: |
           ERROR_MSG="Update baselines failed"
           
-          if [[ "${{ steps.build.outcome }}" == "failure" ]]; then
+          if [[ "${STEPS_BUILD_OUTCOME}" == "failure" ]]; then
             ERROR_MSG="$ERROR_MSG: Build script failed"
-          elif [[ "${{ steps.update.outcome }}" == "failure" ]]; then
+          elif [[ "${STEPS_UPDATE_OUTCOME}" == "failure" ]]; then
             ERROR_MSG="$ERROR_MSG: Update baselines script failed"
-          elif [[ "${{ steps.commit.outcome }}" == "failure" ]]; then
+          elif [[ "${STEPS_COMMIT_OUTCOME}" == "failure" ]]; then
             ERROR_MSG="$ERROR_MSG: Failed to commit or push changes"
           fi
           
-          gh pr comment ${{ github.event.inputs.pr_number }} \
+          gh pr comment ${GITHUB_EVENT_INPUTS_PR_NUMBER} \
             --body "$ERROR_MSG"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STEPS_BUILD_OUTCOME: ${{ steps.build.outcome }}
+          STEPS_UPDATE_OUTCOME: ${{ steps.update.outcome }}
+          STEPS_COMMIT_OUTCOME: ${{ steps.commit.outcome }}
+          GITHUB_EVENT_INPUTS_PR_NUMBER: ${{ github.event.inputs.pr_number }}

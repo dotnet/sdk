@@ -110,9 +110,18 @@ internal sealed partial class CSharpCompilerCommand
         if (BuildResultFile != null &&
             CSharpCommandLineParser.Default.Parse(CscArguments, BaseDirectory, sdkDirectory: null) is { OutputFileName: { } outputFileName } parsedArgs)
         {
-            var objFile = parsedArgs.GetOutputFilePath(outputFileName);
-            Reporter.Verbose.WriteLine($"Copying '{objFile}' to '{BuildResultFile}'.");
-            File.Copy(objFile, BuildResultFile, overwrite: true);
+            var objFile = new FileInfo(parsedArgs.GetOutputFilePath(outputFileName));
+            var binFile = new FileInfo(BuildResultFile);
+
+            if (HaveMatchingSizeAndTimeStamp(objFile, binFile))
+            {
+                Reporter.Verbose.WriteLine($"Skipping copy of '{objFile}' to '{BuildResultFile}' because the files have matching size and timestamp.");
+            }
+            else
+            {
+                Reporter.Verbose.WriteLine($"Copying '{objFile}' to '{BuildResultFile}'.");
+                File.Copy(objFile.FullName, binFile.FullName, overwrite: true);
+            }
         }
 
         return exitCode;
@@ -152,6 +161,27 @@ internal sealed partial class CSharpCompilerCommand
                     fallbackToNormalBuild = true;
                     return 1;
             }
+        }
+
+        // Inspired by MSBuild: https://github.com/dotnet/msbuild/blob/a7a4d5af02be5aa6dc93a492d6d03056dc811388/src/Tasks/Copy.cs#L208
+        static bool HaveMatchingSizeAndTimeStamp(FileInfo sourceFile, FileInfo destinationFile)
+        {
+            if (!destinationFile.Exists)
+            {
+                return false;
+            }
+
+            if (sourceFile.LastWriteTimeUtc != destinationFile.LastWriteTimeUtc)
+            {
+                return false;
+            }
+
+            if (sourceFile.Length != destinationFile.Length)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 

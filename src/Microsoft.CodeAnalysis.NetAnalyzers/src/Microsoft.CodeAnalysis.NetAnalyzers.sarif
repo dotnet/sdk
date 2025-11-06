@@ -5,7 +5,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
-        "version": "10.0.100",
+        "version": "10.0.200",
         "language": "en-US"
       },
       "rules": {
@@ -708,7 +708,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.NetAnalyzers",
-        "version": "10.0.100",
+        "version": "10.0.200",
         "language": "en-US"
       },
       "rules": {
@@ -2172,6 +2172,26 @@
             "category": "Maintainability",
             "isEnabledByDefault": true,
             "typeName": "AvoidLengthCalculationWhenSlicingToEndAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1517": {
+          "id": "CA1517",
+          "shortDescription": "Use 'ReadOnlySpan<T>' or 'ReadOnlyMemory<T>' instead of 'Span<T>' or 'Memory<T>'",
+          "fullDescription": "Using 'ReadOnlySpan<T>' or 'ReadOnlyMemory<T>' instead of 'Span<T>' or 'Memory<T>' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1517",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": true,
+            "typeName": "PreferReadOnlySpanOverSpanAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -6583,7 +6603,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers",
-        "version": "10.0.100",
+        "version": "10.0.200",
         "language": "en-US"
       },
       "rules": {

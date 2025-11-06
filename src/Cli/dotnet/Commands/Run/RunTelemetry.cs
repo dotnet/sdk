@@ -47,9 +47,13 @@ internal static class RunTelemetry
         {
             ["app_type"] = isFileBased ? "file_based" : "project_based",
             ["project_id"] = projectIdentifier,
-            ["sdk_count"] = sdkCount.ToString(),
-            ["package_reference_count"] = packageReferenceCount.ToString(),
-            ["project_reference_count"] = projectReferenceCount.ToString(),
+        };
+
+        var measurements = new Dictionary<string, double>
+        {
+            ["sdk_count"] = sdkCount,
+            ["package_reference_count"] = packageReferenceCount,
+            ["project_reference_count"] = projectReferenceCount,
         };
 
         // Launch profile telemetry
@@ -75,7 +79,7 @@ internal static class RunTelemetry
         // File-based app specific telemetry
         if (isFileBased)
         {
-            properties["additional_properties_count"] = additionalPropertiesCount.ToString();
+            measurements["additional_properties_count"] = additionalPropertiesCount;
             if (usedMSBuild.HasValue)
             {
                 properties["used_msbuild"] = usedMSBuild.Value ? "true" : "false";
@@ -86,7 +90,7 @@ internal static class RunTelemetry
             }
         }
 
-        TelemetryEventEntry.TrackEvent(RunEventName, properties, measurements: null);
+        TelemetryEventEntry.TrackEvent(RunEventName, properties, measurements);
     }
 
     /// <summary>

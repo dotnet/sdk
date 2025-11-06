@@ -2,6 +2,7 @@ parameters:
 - name: oneESCompat
   type: object
   default:
+    templateFolderName: templates
     publishTaskPrefix: ''
 
 - name: TestArguments
@@ -49,13 +50,6 @@ parameters:
     _branchName: "main"
     _sha: "1b2ff365399ab6736a9ea4c98ab1b60acda5d917"
     _useParentSdk: 0
-  - Name: razor_tooling
-    _repo: "https://github.com/dotnet/razor"
-    _repoName: "dotnet/razor"
-    _targetSolution: "Razor.sln"
-    _branchName: "main"
-    _sha: "ecb4b595e3322a18c240f50a763868540f51eaaa"
-    _useParentSdk: 0
 
 - name: timeoutInMinutes
   type: number
@@ -63,6 +57,9 @@ parameters:
 - name: runtimeSourceProperties
   type: string
   default: ''
+- name: populateInternalRuntimeVariables
+  type: boolean
+  default: false
 
 jobs:
 - job: Formatting_Check
@@ -77,8 +74,11 @@ jobs:
       os: windows
   timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
   steps:
-  - template: /eng/common/templates/steps/enable-internal-runtimes.yml
-  - template: /eng/common/templates/steps/enable-internal-sources.yml
+  - ${{ if eq(parameters.populateInternalRuntimeVariables, true) }}:
+    - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-sources.yml
+      parameters:
+        legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+    - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-runtimes.yml
   - script: .\restore.cmd ${{ parameters.runtimeSourceProperties }}
     displayName: 🟣 Restore dependencies
   - script: |
@@ -106,8 +106,11 @@ jobs:
         os: windows
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     steps:
-    - template: /eng/common/templates/steps/enable-internal-runtimes.yml
-    - template: /eng/common/templates/steps/enable-internal-sources.yml
+    - ${{ if eq(parameters.populateInternalRuntimeVariables, true) }}:
+      - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-sources.yml
+        parameters:
+          legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+      - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-runtimes.yml
     - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare' -runtimeSourceProperties '${{ parameters.runtimeSourceProperties }}'
       displayName: 🟣 Prepare ${{ testArgs._repoName }} for formatting
 
