@@ -3309,52 +3309,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// When compilation fails, the obj dll should not be copied to bin directory.
-    /// This prevents spurious errors if the source file was not even produced by roslyn due to compilation errors.
-    /// </summary>
-    [Fact]
-    public void CscOnly_CompilationFailure_NoCopyToBin()
-    {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
-
-        // First, create a valid program and build it successfully
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            Console.WriteLine("version 1");
-            """);
-
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
-        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
-
-        new DotnetCommand(Log, "run", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOutContaining("version 1");
-
-        // Verify that the bin dll was created
-        var binDll = Path.Join(artifactsDir, "bin", "debug", "Program.dll");
-        File.Exists(binDll).Should().BeTrue("bin dll should exist after successful build");
-        var binDllTimestampBeforeFailure = File.GetLastWriteTimeUtc(binDll);
-
-        // Now write invalid code that causes compilation to fail
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            this is not valid C# code
-            """);
-
-        // Try to build the invalid code
-        new DotnetCommand(Log, "run", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Fail()
-            .And.HaveStdOutContaining("error CS");
-
-        // Verify that the bin dll was NOT updated (still has old timestamp from successful build)
-        File.Exists(binDll).Should().BeTrue("bin dll should still exist from previous successful build");
-        var binDllTimestampAfterFailure = File.GetLastWriteTimeUtc(binDll);
-        binDllTimestampAfterFailure.Should().Be(binDllTimestampBeforeFailure, "bin dll should not have been updated after failed compilation");
-    }
-
-    /// <summary>
     /// Checks that the <c>DOTNET_ROOT</c> env var is set the same in csc mode as in msbuild mode.
     /// </summary>
     [Fact]
@@ -3620,6 +3574,57 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2 Release", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// Testing optimization <see cref="CscOnly_AfterMSBuild"/>.
+    /// When compilation fails, the obj dll should not be copied to bin directory.
+    /// This prevents spurious errors if the dll file was not even produced by roslyn due to compilation errors.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_CompilationFailure_NoCopyToBin()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        // First, create a valid program and build it successfully
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        var code = """
+            #:property PublishAot=false
+            Console.WriteLine("version 1");
+            """;
+        File.WriteAllText(programPath, code);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "version 1");
+
+        // Verify that the dlls were created
+        var objDll = Path.Join(artifactsDir, "obj", "debug", "Program.dll");
+        new FileInfo(objDll).Should().Exist();
+        var binDll = Path.Join(artifactsDir, "bin", "debug", "Program.dll");
+        new FileInfo(binDll).Should().Exist();
+
+        // Delete the dlls
+        File.Delete(objDll);
+        File.Delete(binDll);
+
+        // Write invalid code that causes compilation to fail
+        code = code.Replace(";", "");
+        File.WriteAllText(programPath, code);
+
+        // Try to build the invalid code
+        new DotnetCommand(Log, "run", "-bl", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc)
+            // error CS1002: ; expected
+            .And.HaveStdOutContaining("error CS1002")
+            .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
+
+        new FileInfo(objDll).Should().NotExist();
+        new FileInfo(binDll).Should().NotExist();
     }
 
     /// <summary>
