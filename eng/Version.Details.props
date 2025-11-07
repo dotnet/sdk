@@ -11,6 +11,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftBuildLocalizationPackageVersion>18.1.0-preview-25563-105</MicrosoftBuildLocalizationPackageVersion>
     <MicrosoftBuildNuGetSdkResolverPackageVersion>7.1.0-preview.1.6405</MicrosoftBuildNuGetSdkResolverPackageVersion>
     <MicrosoftCodeAnalysisPackageVersion>5.3.0-1.25563.105</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion>5.3.0-1.25563.105</MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion>
     <MicrosoftCodeAnalysisBuildClientPackageVersion>5.3.0-1.25563.105</MicrosoftCodeAnalysisBuildClientPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>5.3.0-1.25563.105</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>5.3.0-1.25563.105</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
@@ -153,6 +154,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftBuildLocalizationVersion>$(MicrosoftBuildLocalizationPackageVersion)</MicrosoftBuildLocalizationVersion>
     <MicrosoftBuildNuGetSdkResolverVersion>$(MicrosoftBuildNuGetSdkResolverPackageVersion)</MicrosoftBuildNuGetSdkResolverVersion>
     <MicrosoftCodeAnalysisVersion>$(MicrosoftCodeAnalysisPackageVersion)</MicrosoftCodeAnalysisVersion>
+    <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>$(MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion)</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
     <MicrosoftCodeAnalysisBuildClientVersion>$(MicrosoftCodeAnalysisBuildClientPackageVersion)</MicrosoftCodeAnalysisBuildClientVersion>
     <MicrosoftCodeAnalysisCSharpVersion>$(MicrosoftCodeAnalysisCSharpPackageVersion)</MicrosoftCodeAnalysisCSharpVersion>
     <MicrosoftCodeAnalysisCSharpCodeStyleVersion>$(MicrosoftCodeAnalysisCSharpCodeStylePackageVersion)</MicrosoftCodeAnalysisCSharpCodeStyleVersion>
