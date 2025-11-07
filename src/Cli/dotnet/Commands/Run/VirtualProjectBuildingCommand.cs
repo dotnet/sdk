@@ -927,29 +927,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
             else
             {
-                // Check that NuGet cache files still exist before attempting to reuse cached CSC arguments
-                bool canUseCachedArguments = true;
-                foreach (var filePath in CSharpCompilerCommand.GetPathsOfCscInputsFromNuGetCache())
-                {
-                    if (!File.Exists(filePath))
-                    {
-                        Reporter.Verbose.WriteLine($"Cannot use CSC arguments from previous run because NuGet package file does not exist: {filePath}");
-                        canUseCachedArguments = false;
-                        break;
-                    }
-                }
+                Reporter.Verbose.WriteLine("We have CSC arguments from previous run. Skipping MSBuild and using CSC only.");
 
-                if (canUseCachedArguments)
-                {
-                    Reporter.Verbose.WriteLine("We have CSC arguments from previous run. Skipping MSBuild and using CSC only.");
+                // Keep the cached info for next time, so we can use CSC again.
+                cache.CurrentEntry.CscArguments = cache.PreviousEntry.CscArguments;
+                cache.CurrentEntry.BuildResultFile = cache.PreviousEntry.BuildResultFile;
+                cache.CurrentEntry.Run = cache.PreviousEntry.Run;
 
-                    // Keep the cached info for next time, so we can use CSC again.
-                    cache.CurrentEntry.CscArguments = cache.PreviousEntry.CscArguments;
-                    cache.CurrentEntry.BuildResultFile = cache.PreviousEntry.BuildResultFile;
-                    cache.CurrentEntry.Run = cache.PreviousEntry.Run;
-
-                    return BuildLevel.Csc;
-                }
+                return BuildLevel.Csc;
             }
         }
 

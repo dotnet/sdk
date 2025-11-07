@@ -3787,6 +3787,63 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v3 ");
     }
 
+    /// <summary>
+    /// Verifies that when NuGet cache is cleared after initial compilation,
+    /// the CSC-only path with cached arguments can fallback to MSBuild.
+    /// See <see href="https://github.com/dotnet/sdk/issues/45169"/>.
+    /// </summary>
+    /// <remarks>
+    /// This test cannot easily simulate NuGet cache being cleared in a way that  
+    /// would fail without the fix, because MSBuild's restore recreates the packages.
+    /// The fix ensures that if CS0006 errors occur during CSC compilation,
+    /// it falls back to MSBuild instead of failing.
+    /// </remarks>
+    [Fact]
+    public void CscOnly_AfterMSBuild_NuGetCacheCleared()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var code = """
+            #:property Configuration=Release
+            Console.Write("v1");
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        // First build uses MSBuild (PublishAot=true by default, which references NuGet packages)
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1");
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        // Second build reuses CSC arguments from previous run
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2");
+
+        // Simulate NuGet cache being cleared by deleting the NuGet package DLLs
+        // that are referenced by the cached CSC arguments.
+        // This tests the fallback mechanism: CSC will fail with CS0006, then fallback to MSBuild.
+        foreach (var filePath in CSharpCompilerCommand.GetPathsOfCscInputsFromNuGetCache())
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+
+        code = code.Replace("v2", "v3");
+        File.WriteAllText(programPath, code);
+
+        // Third build: With the fix, CSC attempts to use cached arguments, fails with CS0006,
+        // then falls back to MSBuild which restores the packages and succeeds.
+        // Without the fix, this would fail with CS0006 errors.
+        Build(testInstance, BuildLevel.All, expectedOutput: "v3");
+    }
+
     private static string ToJson(string s) => JsonSerializer.Serialize(s);
 
     /// <summary>
@@ -4255,50 +4312,5 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
             return result;
         }
-    }
-
-    [Fact]
-    public void FallbackToMSBuildWhenNuGetCacheCleared()
-    {
-        // This test simulates the scenario where NuGet cache is cleared after
-        // the initial compilation. When recompiling with CSC-only path, the analyzer
-        // DLLs won't be found, causing CS0006 errors. The fix should detect this and
-        // fallback to full MSBuild which will restore the packages.
-        // Note: Default file-based apps use PublishAot=true which references analyzers
-        // from the NuGet cache (ILLink.CodeFixProvider.dll, ILLink.RoslynAnalyzer.dll).
-        
-        var testInstance = _testAssetsManager.CreateTestDirectory();
-        string programPath = Path.Join(testInstance.Path, "Program.cs");
-        
-        // Write a simple program
-        File.WriteAllText(programPath, s_program);
-
-        // First run: compile and run successfully
-        var firstRun = new DotnetCommand(Log, "run", programPath)
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute();
-        
-        firstRun.Should().Pass();
-        firstRun.StdOut.Should().Contain("Hello from Program");
-
-        // Modify the program slightly to trigger recompilation via CSC path
-        File.WriteAllText(programPath, s_program.Replace("Hello from", "Greetings from"));
-
-        // Delete the artifacts to simulate scenario similar to cleared cache
-        // This ensures the CSC path will be attempted but should fallback to MSBuild
-        var artifactsPath = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
-        if (Directory.Exists(artifactsPath))
-        {
-            Directory.Delete(artifactsPath, recursive: true);
-        }
-
-        // Second run: should still succeed
-        // If fallback mechanism works, it will use MSBuild and succeed
-        var secondRun = new DotnetCommand(Log, "run", programPath)
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute();
-        
-        secondRun.Should().Pass();
-        secondRun.StdOut.Should().Contain("Greetings from Program");
     }
 }
