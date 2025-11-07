@@ -3128,7 +3128,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc);
     }
 
-    private void Build(TestDirectory testInstance, BuildLevel expectedLevel, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program", string programFileName = "Program.cs")
+    private void Build(
+        TestDirectory testInstance,
+        BuildLevel expectedLevel,
+        ReadOnlySpan<string> args = default,
+        string expectedOutput = "Hello from Program",
+        string programFileName = "Program.cs",
+        Func<TestCommand, TestCommand>? customizeCommand = null)
     {
         string prefix = expectedLevel switch
         {
@@ -3138,9 +3144,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             _ => throw new ArgumentOutOfRangeException(paramName: nameof(expectedLevel)),
         };
 
-        new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
+        var command = new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
+            .WithWorkingDirectory(testInstance.Path);
+
+        if (customizeCommand != null)
+        {
+            command = customizeCommand(command);
+        }
+
+        command.Execute()
             .Should().Pass()
             .And.HaveStdOut(prefix + expectedOutput);
 
@@ -3788,50 +3800,99 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Verifies basic CSC compilation flow after MSBuild with configuration property.
-    /// This test structure can be used to verify the fallback mechanism when NuGet cache is cleared.
+    /// Testing <see cref="CscOnly"/> optimization when the NuGet cache is cleared between builds.
     /// See <see href="https://github.com/dotnet/sdk/issues/45169"/>.
     /// </summary>
-    /// <remarks>
-    /// Testing the CS0006 fallback is challenging because when NuGet package files are deleted,
-    /// MSBuild's restore step recreates them before CSC is attempted. The fix ensures that
-    /// if CS0006 errors occur during CSC compilation with cached arguments, it falls back
-    /// to MSBuild instead of failing. This behavior is tested indirectly through the overall
-    /// flow, though a perfect negative test case is difficult to construct.
-    /// </remarks>
     [Fact]
-    public void CscOnly_AfterMSBuild_NuGetCacheCleared()
+    public void CscOnly_NuGetCacheCleared()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         var code = """
-            #:property Configuration=Release
             Console.Write("v1");
             """;
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, code);
 
-        // Remove artifacts from possible previous runs of this test.
         var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
-        // First build uses MSBuild (PublishAot=true by default, which references NuGet packages)
-        Build(testInstance, BuildLevel.All, expectedOutput: "v1");
+        var packageDir = Path.Join(testInstance.Path, "packages");
+        TestCommand CustomizeCommand(TestCommand command) => command.WithEnvironmentVariable("NUGET_PACKAGES", packageDir);
+
+        Assert.False(Directory.Exists(packageDir));
+
+        // Ensure the packages exist first.
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1", customizeCommand: CustomizeCommand);
+
+        Assert.True(Directory.Exists(packageDir));
+
+        // Now clear the build outputs (but not packages) to verify CSC is used even from "first run".
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         code = code.Replace("v1", "v2");
         File.WriteAllText(programPath, code);
 
-        // Second build reuses CSC arguments from previous run
-        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2");
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", customizeCommand: CustomizeCommand);
 
         code = code.Replace("v2", "v3");
         File.WriteAllText(programPath, code);
 
-        // Third build continues to use CSC with cached arguments
-        // If NuGet cache were cleared externally (not by this test), the fix would ensure
-        // CSC failures fallback to MSBuild instead of failing with CS0006 errors.
-        Build(testInstance, BuildLevel.Csc, expectedOutput: "v3");
+        // Clear NuGet cache.
+        Directory.Delete(packageDir, recursive: true);
+        Assert.False(Directory.Exists(packageDir));
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v3", customizeCommand: CustomizeCommand);
+
+        Assert.True(Directory.Exists(packageDir));
+    }
+
+    /// <summary>
+    /// Combination of <see cref="CscOnly_NuGetCacheCleared"/> and <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_NuGetCacheCleared()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var code = """
+            #:property PublishAot=false
+            #:package System.CommandLine@2.0.0-beta4.22272.1
+            new System.CommandLine.RootCommand("v1");
+            Console.WriteLine("v1");
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, code);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var packageDir = Path.Join(testInstance.Path, "packages");
+        TestCommand CustomizeCommand(TestCommand command) => command.WithEnvironmentVariable("NUGET_PACKAGES", packageDir);
+
+        Assert.False(Directory.Exists(packageDir));
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1", customizeCommand: CustomizeCommand);
+
+        Assert.True(Directory.Exists(packageDir));
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", customizeCommand: CustomizeCommand);
+
+        code = code.Replace("v2", "v3");
+        File.WriteAllText(programPath, code);
+
+        // Clear NuGet cache.
+        Directory.Delete(packageDir, recursive: true);
+        Assert.False(Directory.Exists(packageDir));
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v3", customizeCommand: CustomizeCommand);
+
+        Assert.True(Directory.Exists(packageDir));
     }
 
     private static string ToJson(string s) => JsonSerializer.Serialize(s);

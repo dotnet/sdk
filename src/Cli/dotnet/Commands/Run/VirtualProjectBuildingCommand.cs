@@ -244,11 +244,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 if (buildLevel is BuildLevel.Csc)
                 {
-                    if (binaryLogger is not null)
-                    {
-                        Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
-                    }
-
                     MarkBuildStart();
 
                     // Execute CSC.
@@ -267,6 +262,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         if (result == 0)
                         {
                             MarkBuildSuccess(cache);
+                        }
+
+                        if (binaryLogger is not null)
+                        {
+                            Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
                         }
 
                         return result;
