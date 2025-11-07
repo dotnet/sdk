@@ -403,29 +403,36 @@ public class RunCommand
 
         Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
-        var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
+        var (project, telemetryCentralLogger) = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
-        InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
+        InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, telemetryCentralLogger);
         logger?.ReallyShutdown();
         var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
         var command = CreateCommandFromRunProperties(runProperties);
         return command;
 
-        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, MSBuildArgs msbuildArgs, ILogger? binaryLogger)
+        static (ProjectInstance project, ILogger? telemetryCentralLogger) EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, MSBuildArgs msbuildArgs, ILogger? binaryLogger)
         {
             Debug.Assert(projectFilePath is not null || projectFactory is not null);
 
             var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
 
-            var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+            // Include telemetry logger for evaluation and capture it for reuse in builds
+            var (loggers, telemetryCentralLogger) = ProjectInstanceExtensions.CreateLoggersWithTelemetry(binaryLogger is null ? null : [binaryLogger]);
+            var collection = new ProjectCollection(globalProperties: globalProperties, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
+            ProjectInstance projectInstance;
             if (projectFilePath is not null)
             {
-                return collection.LoadProject(projectFilePath).CreateProjectInstance();
+                projectInstance = collection.LoadProject(projectFilePath).CreateProjectInstance();
+            }
+            else
+            {
+                Debug.Assert(projectFactory is not null);
+                projectInstance = projectFactory(collection);
             }
 
-            Debug.Assert(projectFactory is not null);
-            return projectFactory(collection);
+            return (projectInstance, telemetryCentralLogger);
         }
 
         static void ValidatePreconditions(ProjectInstance project)
@@ -481,7 +488,7 @@ public class RunCommand
             return command;
         }
 
-        static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs)
+        static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, ILogger? telemetryCentralLogger)
         {
             List<ILogger> loggersForBuild = [
                 CommonRunHelpers.GetConsoleLogger(
@@ -493,7 +500,7 @@ public class RunCommand
                 loggersForBuild.Add(binaryLogger);
             }
 
-            if (!project.Build([Constants.ComputeRunArguments], loggers: loggersForBuild, remoteLoggers: null, out _))
+            if (!project.BuildWithTelemetry([Constants.ComputeRunArguments], loggersForBuild, null, out _, telemetryCentralLogger))
             {
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, Constants.ComputeRunArguments);
             }

@@ -124,6 +124,10 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
       <Sha>89c8f6a112d37d2ea8b77821e56d170a1bccdc5a</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.0.0-2.25502.107">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
+      <Sha>89c8f6a112d37d2ea8b77821e56d170a1bccdc5a</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="7.0.0-rc.307">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
       <Sha>89c8f6a112d37d2ea8b77821e56d170a1bccdc5a</Sha>

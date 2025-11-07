@@ -6,8 +6,10 @@ using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
@@ -191,7 +193,7 @@ internal static class SolutionAndProjectUtility
         return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
-    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, EvaluationContext evaluationContext, BuildOptions buildOptions)
+    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, EvaluationContext evaluationContext, BuildOptions buildOptions, ILogger? telemetryCentralLogger = null)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, null);
@@ -203,7 +205,7 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
+            if (GetModuleFromProject(projectInstance, buildOptions, telemetryCentralLogger) is { } module)
             {
                 projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
             }
@@ -231,7 +233,7 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, telemetryCentralLogger) is { } module)
                     {
                         projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
                     }
@@ -245,7 +247,7 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, telemetryCentralLogger) is { } module)
                     {
                         innerModules ??= new List<TestModule>();
                         innerModules.Add(module);
@@ -262,7 +264,7 @@ internal static class SolutionAndProjectUtility
         return projects;
     }
 
-    private static TestModule? GetModuleFromProject(ProjectInstance project, BuildOptions buildOptions)
+    private static TestModule? GetModuleFromProject(ProjectInstance project, BuildOptions buildOptions, ILogger? telemetryCentralLogger = null)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
@@ -280,7 +282,7 @@ internal static class SolutionAndProjectUtility
         RunProperties runProperties;
         if (isTestingPlatformApplication)
         {
-            runProperties = GetRunProperties(project);
+            runProperties = GetRunProperties(project, telemetryCentralLogger);
 
             // dotnet run throws the same if RunCommand is null or empty.
             // In dotnet test, we are additionally checking that RunCommand is not dll.
@@ -320,7 +322,7 @@ internal static class SolutionAndProjectUtility
 
         return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath), rootVariableName);
 
-        static RunProperties GetRunProperties(ProjectInstance project)
+        static RunProperties GetRunProperties(ProjectInstance project, ILogger? telemetryCentralLogger)
         {
             // Build API cannot be called in parallel, even if the projects are different.
             // Otherwise, BuildManager in MSBuild will fail:
@@ -328,7 +330,7 @@ internal static class SolutionAndProjectUtility
             // NOTE: BuildManager is singleton.
             lock (s_buildLock)
             {
-                if (!project.Build(s_computeRunArgumentsTarget, loggers: null))
+                if (!project.BuildWithTelemetry(s_computeRunArgumentsTarget, telemetryCentralLogger: telemetryCentralLogger))
                 {
                     throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget[0]);
                 }

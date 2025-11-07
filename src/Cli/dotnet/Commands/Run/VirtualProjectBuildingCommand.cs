@@ -24,6 +24,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -298,14 +299,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];
-            IEnumerable<ILogger> loggers = [.. binaryLoggers, consoleLogger];
+            IEnumerable<ILogger> existingLoggers = [.. binaryLoggers, consoleLogger];
+
+            // Include telemetry logger for evaluation and capture it for potential future use
+            var (loggersWithTelemetry, telemetryCentralLogger) = ProjectInstanceExtensions.CreateLoggersWithTelemetry(existingLoggers);
             var projectCollection = new ProjectCollection(
                 MSBuildArgs.GlobalProperties,
-                loggers,
+                loggersWithTelemetry,
                 ToolsetDefinitionLocations.Default);
             var parameters = new BuildParameters(projectCollection)
             {
-                Loggers = loggers,
+                Loggers = loggersWithTelemetry,
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
 
