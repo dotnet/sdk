@@ -1180,11 +1180,16 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             // Note that ArtifactsPath needs to be specified before Sdk.props
             // (usually it's recommended to specify it in Directory.Build.props
             // but importing Sdk.props manually afterwards also works).
+            //
+            // An empty value is always given for BaseIntermediateOutputPath and BaseOutputPath, to ensure that
+            // the SDK targets will initialize them based on ArtifactsPath, and not use values for those paths coming in from Directory.Build.props.
             writer.WriteLine($"""
                 <Project>
 
                   <PropertyGroup>
                     <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                    <BaseIntermediateOutputPath></BaseIntermediateOutputPath>
+                    <BaseOutputPath></BaseOutputPath>
                     <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
                     <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                     <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
