@@ -55,17 +55,17 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>42532a7524749ad5d48d1820eaa7d4ab7e77faa6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.10.46">
+    <Dependency Name="Microsoft.Build" Version="17.10.48">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>49570e4485d50317e5719958985f7ad40de4774e</Sha>
+      <Sha>7ed9cf3b60e549ceeafbac09cfe2e6ed51124897</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.10.46-servicing-25517-01">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.10.48-servicing-25520-09">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>49570e4485d50317e5719958985f7ad40de4774e</Sha>
+      <Sha>7ed9cf3b60e549ceeafbac09cfe2e6ed51124897</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.10.46-servicing-25517-01">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.10.48-servicing-25520-09">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>49570e4485d50317e5719958985f7ad40de4774e</Sha>
+      <Sha>7ed9cf3b60e549ceeafbac09cfe2e6ed51124897</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.301-beta.24271.6">
@@ -354,9 +354,9 @@
       <Sha>16bcad1c13be082bd52ce178896d1119a73081a9</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.25520.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.25522.3">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>4f39ba9e117ece1679a2bd4f2e8c188f914078e1</Sha>
+      <Sha>449148366d9105de8a6470ebc4ba198926e9a30a</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-rtm.1.25064.1">
