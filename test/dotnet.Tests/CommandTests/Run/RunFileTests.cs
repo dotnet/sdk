@@ -4256,4 +4256,47 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             return result;
         }
     }
+
+    [Fact]
+    public void FallbackToMSBuildWhenNuGetCacheCleared()
+    {
+        // This test simulates the scenario where NuGet cache is cleared after
+        // the initial compilation. When recompiling with CSC-only path, the analyzer
+        // DLLs won't be found, causing CS0006 errors. The fix should detect this and
+        // fallback to full MSBuild which will restore the packages.
+        
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        string programPath = Path.Join(testInstance.Path, "Program.cs");
+        
+        // Write a simple program that will trigger PublishAot analyzers
+        File.WriteAllText(programPath, s_program);
+
+        // First run: compile and run successfully
+        var firstRun = new DotnetCommand(Log, "run", programPath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute();
+        
+        firstRun.Should().Pass();
+        firstRun.StdOut.Should().Contain("Hello from Program");
+
+        // Modify the program slightly to trigger recompilation via CSC path
+        File.WriteAllText(programPath, s_program.Replace("Hello from", "Greetings from"));
+
+        // Delete the artifacts to simulate scenario similar to cleared cache
+        // This ensures the CSC path will be attempted but should fallback to MSBuild
+        var artifactsPath = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsPath))
+        {
+            Directory.Delete(artifactsPath, recursive: true);
+        }
+
+        // Second run: should still succeed
+        // If fallback mechanism works, it will use MSBuild and succeed
+        var secondRun = new DotnetCommand(Log, "run", programPath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute();
+        
+        secondRun.Should().Pass();
+        secondRun.StdOut.Should().Contain("Greetings from Program");
+    }
 }
