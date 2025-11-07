@@ -25,4 +25,10 @@
   </ItemGroup>
 
   <Import Project="..\Web.Middleware\Microsoft.DotNet.HotReload.Web.Middleware.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <EmbeddedResource Update="@(EmbeddedResource)">
+      <LogicalName>%(FileName)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>
