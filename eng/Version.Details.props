@@ -22,6 +22,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftBuildLocalizationPackageVersion>18.1.0-preview-25568-105</MicrosoftBuildLocalizationPackageVersion>
     <MicrosoftBuildNuGetSdkResolverPackageVersion>7.1.0-preview.1.6905</MicrosoftBuildNuGetSdkResolverPackageVersion>
     <MicrosoftCodeAnalysisPackageVersion>5.3.0-1.25568.105</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion>5.3.0-1.25568.105</MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion>
     <MicrosoftCodeAnalysisBuildClientPackageVersion>5.3.0-1.25568.105</MicrosoftCodeAnalysisBuildClientPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>5.3.0-1.25568.105</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>5.3.0-1.25568.105</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
@@ -214,6 +215,37 @@ This file should be imported by eng/Versions.props
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
+    <!-- dotnet/dotnet dependencies -->
+    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalVersion>$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalVersion>
+    <MicrosoftBuildVersion>$(MicrosoftBuildPackageVersion)</MicrosoftBuildVersion>
+    <MicrosoftBuildLocalizationVersion>$(MicrosoftBuildLocalizationPackageVersion)</MicrosoftBuildLocalizationVersion>
+    <MicrosoftBuildNuGetSdkResolverVersion>$(MicrosoftBuildNuGetSdkResolverPackageVersion)</MicrosoftBuildNuGetSdkResolverVersion>
+    <MicrosoftCodeAnalysisVersion>$(MicrosoftCodeAnalysisPackageVersion)</MicrosoftCodeAnalysisVersion>
+    <MicrosoftCodeAnalysisBannedApiAnalyzersVersion>$(MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion)</MicrosoftCodeAnalysisBannedApiAnalyzersVersion>
+    <MicrosoftCodeAnalysisBuildClientVersion>$(MicrosoftCodeAnalysisBuildClientPackageVersion)</MicrosoftCodeAnalysisBuildClientVersion>
+    <MicrosoftCodeAnalysisCSharpVersion>$(MicrosoftCodeAnalysisCSharpPackageVersion)</MicrosoftCodeAnalysisCSharpVersion>
+    <MicrosoftCodeAnalysisCSharpCodeStyleVersion>$(MicrosoftCodeAnalysisCSharpCodeStylePackageVersion)</MicrosoftCodeAnalysisCSharpCodeStyleVersion>
+    <MicrosoftCodeAnalysisCSharpFeaturesVersion>$(MicrosoftCodeAnalysisCSharpFeaturesPackageVersion)</MicrosoftCodeAnalysisCSharpFeaturesVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesVersion>$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
+    <MicrosoftCodeAnalysisExternalAccessHotReloadVersion>$(MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion)</MicrosoftCodeAnalysisExternalAccessHotReloadVersion>
+    <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>$(MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion)</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
+    <MicrosoftCodeAnalysisRazorToolingInternalVersion>$(MicrosoftCodeAnalysisRazorToolingInternalPackageVersion)</MicrosoftCodeAnalysisRazorToolingInternalVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonVersion>$(MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)</MicrosoftCodeAnalysisWorkspacesCommonVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildVersion>$(MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion)</MicrosoftCodeAnalysisWorkspacesMSBuildVersion>
+    <MicrosoftDotNetArcadeSdkVersion>$(MicrosoftDotNetArcadeSdkPackageVersion)</MicrosoftDotNetArcadeSdkVersion>
+    <MicrosoftDotNetBuildTasksInstallersVersion>$(MicrosoftDotNetBuildTasksInstallersPackageVersion)</MicrosoftDotNetBuildTasksInstallersVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>$(MicrosoftDotNetBuildTasksTemplatingPackageVersion)</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksWorkloadsVersion>$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)</MicrosoftDotNetBuildTasksWorkloadsVersion>
+    <MicrosoftDotNetHelixSdkVersion>$(MicrosoftDotNetHelixSdkPackageVersion)</MicrosoftDotNetHelixSdkVersion>
+    <MicrosoftDotNetSignToolVersion>$(MicrosoftDotNetSignToolPackageVersion)</MicrosoftDotNetSignToolVersion>
+    <MicrosoftDotNetXliffTasksVersion>$(MicrosoftDotNetXliffTasksPackageVersion)</MicrosoftDotNetXliffTasksVersion>
+    <MicrosoftDotNetXUnitExtensionsVersion>$(MicrosoftDotNetXUnitExtensionsPackageVersion)</MicrosoftDotNetXUnitExtensionsVersion>
+    <MicrosoftFSharpCompilerVersion>$(MicrosoftFSharpCompilerPackageVersion)</MicrosoftFSharpCompilerVersion>
+    <MicrosoftNetCompilersToolsetVersion>$(MicrosoftNetCompilersToolsetPackageVersion)</MicrosoftNetCompilersToolsetVersion>
+    <MicrosoftNetCompilersToolsetFrameworkVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</MicrosoftNetCompilersToolsetFrameworkVersion>
+    <MicrosoftNETRuntimeEmscriptenSdkInternalVersion>$(MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion)</MicrosoftNETRuntimeEmscriptenSdkInternalVersion>
+    <MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)</MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>
+    <MicrosoftNETTestSdkVersion>$(MicrosoftNETTestSdkPackageVersion)</MicrosoftNETTestSdkVersion>
     <!-- dotnet/templating dependencies -->
     <MicrosoftTemplateEngineAbstractionsVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineAbstractionsVersion>
     <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>$(MicrosoftTemplateEngineAuthoringTemplateVerifierPackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>

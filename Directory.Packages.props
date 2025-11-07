@@ -29,7 +29,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="$(MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="$(MicrosoftCodeAnalysisRazorToolingInternalVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
