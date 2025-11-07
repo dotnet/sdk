@@ -144,8 +144,9 @@ internal sealed partial class CSharpCompilerCommand
                     Reporter.Verbose.WriteLine("Compiler server processed compilation.");
                     
                     // Check if the compilation failed with CS0006 error (metadata file not found)
-                    // This can happen when NuGet cache is cleared and analyzer DLLs are missing
-                    if (completed.ReturnCode != 0 && completed.Output.Contains("error CS0006:"))
+                    // This can happen when NuGet cache is cleared and analyzer DLLs are missing.
+                    // The error format is consistent: "error CS0006: Metadata file 'path' could not be found"
+                    if (completed.ReturnCode != 0 && completed.Output.Contains("error CS0006:", StringComparison.Ordinal))
                     {
                         Reporter.Verbose.WriteLine("CS0006 error detected in optimized compilation, falling back to full MSBuild.");
                         Reporter.Verbose.Write(completed.Output);

@@ -4264,11 +4264,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // the initial compilation. When recompiling with CSC-only path, the analyzer
         // DLLs won't be found, causing CS0006 errors. The fix should detect this and
         // fallback to full MSBuild which will restore the packages.
+        // Note: Default file-based apps use PublishAot=true which references analyzers
+        // from the NuGet cache (ILLink.CodeFixProvider.dll, ILLink.RoslynAnalyzer.dll).
         
         var testInstance = _testAssetsManager.CreateTestDirectory();
         string programPath = Path.Join(testInstance.Path, "Program.cs");
         
-        // Write a simple program that will trigger PublishAot analyzers
+        // Write a simple program
         File.WriteAllText(programPath, s_program);
 
         // First run: compile and run successfully
