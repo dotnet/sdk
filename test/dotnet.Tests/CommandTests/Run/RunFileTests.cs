@@ -3334,15 +3334,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // Verify that the bin dll was created
         var binDll = Path.Join(artifactsDir, "bin", "debug", "Program.dll");
         File.Exists(binDll).Should().BeTrue("bin dll should exist after successful build");
-        var binDllTimestamp = File.GetLastWriteTimeUtc(binDll);
+        var binDllTimestampBeforeFailure = File.GetLastWriteTimeUtc(binDll);
 
         // Now write invalid code that causes compilation to fail
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             this is not valid C# code
             """);
-
-        // Wait a bit to ensure timestamp would be different if file was copied
-        Thread.Sleep(100);
 
         // Try to build the invalid code
         new DotnetCommand(Log, "run", "Program.cs")
@@ -3354,7 +3351,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // Verify that the bin dll was NOT updated (still has old timestamp from successful build)
         File.Exists(binDll).Should().BeTrue("bin dll should still exist from previous successful build");
         var binDllTimestampAfterFailure = File.GetLastWriteTimeUtc(binDll);
-        binDllTimestampAfterFailure.Should().Be(binDllTimestamp, "bin dll should not have been updated after failed compilation");
+        binDllTimestampAfterFailure.Should().Be(binDllTimestampBeforeFailure, "bin dll should not have been updated after failed compilation");
     }
 
     /// <summary>
