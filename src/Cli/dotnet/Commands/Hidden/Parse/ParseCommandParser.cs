@@ -7,23 +7,15 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Parse;
 
-internal static class ParseCommandParser
+internal static partial class ParseCommandParser
 {
-    private static readonly Command Command = ConstructCommand();
 
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         var command = new Command("parse")
         {
             Hidden = true
         };
-
-        command.SetAction(ParseCommand.Run);
 
         return command;
     }

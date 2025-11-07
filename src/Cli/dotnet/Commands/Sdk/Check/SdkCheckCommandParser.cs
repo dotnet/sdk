@@ -7,20 +7,12 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
-internal static class SdkCheckCommandParser
+internal static partial class SdkCheckCommandParser
 {
-    private static readonly Command Command = ConstructCommand();
 
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("check", CliCommandStrings.SdkCheckAppFullName);
-
-        command.SetAction(SdkCheckCommand.Run);
 
         return command;
     }

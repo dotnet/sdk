@@ -7,7 +7,7 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Store;
 
-internal static class StoreCommandParser
+internal static partial class StoreCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-store";
 
@@ -67,14 +67,7 @@ internal static class StoreCommandParser
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:CreateProfilingSymbols=false");
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("store", CliCommandStrings.StoreAppDescription)
         {
@@ -94,8 +87,6 @@ internal static class StoreCommandParser
         command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(CommonOptions.NoLogoOption(true));
-
-        command.SetAction(StoreCommand.Run);
 
         return command;
     }

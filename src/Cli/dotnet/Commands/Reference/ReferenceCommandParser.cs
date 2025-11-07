@@ -12,7 +12,7 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference;
 
-internal static class ReferenceCommandParser
+internal static partial class ReferenceCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-reference";
 
@@ -22,14 +22,7 @@ internal static class ReferenceCommandParser
         Recursive = true
     };
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         var command = new Command("reference", CliCommandStrings.NetRemoveCommand)
         {
@@ -40,7 +33,6 @@ internal static class ReferenceCommandParser
         command.Subcommands.Add(ReferenceListCommandParser.GetCommand());
         command.Subcommands.Add(ReferenceRemoveCommandParser.GetCommand());
         command.Options.Add(ProjectOption);
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
         return command;
     }

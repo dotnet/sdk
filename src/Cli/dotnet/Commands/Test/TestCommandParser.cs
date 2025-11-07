@@ -10,7 +10,7 @@ using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal static class TestCommandParser
+internal static partial class TestCommandParser
 {
     private sealed class GlobalJsonModel
     {
@@ -166,14 +166,6 @@ internal static class TestCommandParser
     public static readonly Option<string[]> VsTestTargetOption = CommonOptions.RequiredMSBuildTargetOption("VSTest");
     public static readonly Option<string[]> MTPTargetOption = CommonOptions.RequiredMSBuildTargetOption(CliConstants.MTPTarget);
 
-
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
     private static string GetTestRunnerName()
     {
         string? globalJsonPath = GetGlobalJsonPath(Environment.CurrentDirectory);
@@ -212,7 +204,7 @@ internal static class TestCommandParser
         return null;
     }
 
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         string testRunnerName = GetTestRunnerName();
 
@@ -304,9 +296,8 @@ internal static class TestCommandParser
         command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(VsTestTargetOption);
-        command.SetAction(TestCommand.Run);
 
-        return command;
+        return ConfigureCommand(command);
     }
 
     private static string GetSemiColonEscapedstring(string arg)

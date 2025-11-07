@@ -8,7 +8,7 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
 
-internal static class CleanCommandParser
+internal static partial class CleanCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-clean";
 
@@ -34,15 +34,7 @@ internal static class CleanCommandParser
 
     public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
 
-
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("clean", CliCommandStrings.CleanAppFullName)
         {
@@ -65,8 +57,6 @@ internal static class CleanCommandParser
         command.Options.Add(CommonOptions.GetTargetResultOption);
         command.Options.Add(CommonOptions.GetResultOutputFileOption);
         command.Subcommands.Add(CleanFileBasedAppArtifactsCommandParser.Command);
-
-        command.SetAction(CleanCommand.Run);
 
         return command;
     }

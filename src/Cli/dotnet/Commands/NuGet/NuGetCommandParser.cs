@@ -9,18 +9,11 @@ namespace Microsoft.DotNet.Cli.Commands.NuGet;
 
 // This parser is used for completion and telemetry.
 // See https://github.com/NuGet/NuGet.Client for the actual implementation.
-internal static class NuGetCommandParser
+internal static partial class NuGetCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-nuget";
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         var command = new Command("nuget")
         {
@@ -42,8 +35,6 @@ internal static class NuGetCommandParser
         command.Subcommands.Add(GetTrustCommand());
         command.Subcommands.Add(GetSignCommand());
         NuGetWhyCommand.GetWhyCommand(command);
-
-        command.SetAction(NuGetCommand.Run);
 
         return command;
     }
@@ -191,7 +182,7 @@ internal static class NuGetCommandParser
         {
             command.Options.Add(configFile);
             command.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
-            command.SetAction(NuGetCommand.Run);
+
         }
 
         Command AuthorCommand() => new("author") {

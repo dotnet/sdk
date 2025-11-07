@@ -9,7 +9,7 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Publish;
 
-internal static class PublishCommandParser
+internal static partial class PublishCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-publish";
 
@@ -55,14 +55,7 @@ internal static class PublishCommandParser
 
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandParser.VerbosityOption;
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         var command = new Command("publish", CliCommandStrings.PublishAppDescription)
         {
@@ -94,8 +87,6 @@ internal static class PublishCommandParser
         command.Options.Add(CommonOptions.GetItemOption);
         command.Options.Add(CommonOptions.GetTargetResultOption);
         command.Options.Add(CommonOptions.GetResultOutputFileOption);
-
-        command.SetAction(PublishCommand.Run);
 
         return command;
     }

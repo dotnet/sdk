@@ -10,18 +10,11 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Add;
 
-internal static class AddCommandParser
+internal static partial class AddCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-add";
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         var command = new Command("add", CliCommandStrings.NetAddCommand)
         {
@@ -32,8 +25,6 @@ internal static class AddCommandParser
         command.Arguments.Add(PackageCommandParser.ProjectOrFileArgument);
         command.Subcommands.Add(AddPackageCommandParser.GetCommand());
         command.Subcommands.Add(AddReferenceCommandParser.GetCommand());
-
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
         return command;
     }

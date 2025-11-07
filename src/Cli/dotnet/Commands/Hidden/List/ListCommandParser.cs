@@ -11,7 +11,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.List;
 
-internal static class ListCommandParser
+internal static partial class ListCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-list";
 
@@ -24,14 +24,7 @@ internal static class ListCommandParser
             Arity = ArgumentArity.ZeroOrOne
         }.DefaultToCurrentDirectory();
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         var command = new Command("list", CliCommandStrings.NetListCommand)
         {
@@ -42,8 +35,6 @@ internal static class ListCommandParser
         command.Arguments.Add(SlnOrProjectArgument);
         command.Subcommands.Add(ListPackageCommandParser.GetCommand());
         command.Subcommands.Add(ListReferenceCommandParser.GetCommand());
-
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
         return command;
     }

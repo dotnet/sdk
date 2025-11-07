@@ -14,21 +14,13 @@ internal static partial class FormatCommandParser
 
     public static readonly string DocsLink = "https://aka.ms/dotnet-format";
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         var formatCommand = new Command("format")
         {
             Arguments = { Arguments },
             DocsLink = DocsLink,
         };
-        formatCommand.SetAction((parseResult) => FormatCommand.Run(parseResult.GetValue(Arguments)));
         return formatCommand;
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Build;
 
-internal static class BuildCommandParser
+internal static partial class BuildCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-build";
 
@@ -57,14 +57,7 @@ internal static class BuildCommandParser
 
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("build", CliCommandStrings.BuildAppFullName)
         {
@@ -96,8 +89,6 @@ internal static class BuildCommandParser
         command.Options.Add(CommonOptions.GetItemOption);
         command.Options.Add(CommonOptions.GetTargetResultOption);
         command.Options.Add(CommonOptions.GetResultOutputFileOption);
-
-        command.SetAction(BuildCommand.Run);
 
         return command;
     }

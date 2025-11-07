@@ -8,7 +8,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Help;
 
-internal static class HelpCommandParser
+internal static partial class HelpCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-help";
 
@@ -18,14 +18,7 @@ internal static class HelpCommandParser
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("help", CliCommandStrings.HelpAppFullName)
         {
@@ -33,8 +26,6 @@ internal static class HelpCommandParser
         };
 
         command.Arguments.Add(Argument);
-
-        command.SetAction(HelpCommand.Run);
 
         return command;
     }

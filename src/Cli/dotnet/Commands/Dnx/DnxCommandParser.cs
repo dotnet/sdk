@@ -7,15 +7,10 @@ using Microsoft.DotNet.Cli.Commands.Tool.Execute;
 
 namespace Microsoft.DotNet.Cli.Commands.Dnx;
 
-internal static class DnxCommandParser
+internal static partial class DnxCommandParser
 {
-    public static readonly Command Command = ConstructCommand();
-    public static Command GetCommand()
-    {
-        return Command;
-    }
 
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("dnx", CliCommandStrings.ToolExecuteCommandDescription);
         command.Hidden = true;
@@ -29,8 +24,6 @@ internal static class DnxCommandParser
         {
             command.Options.Add(option);
         }
-
-        command.SetAction((parseResult) => new ToolExecuteCommand(parseResult).Execute());
 
         return command;
     }

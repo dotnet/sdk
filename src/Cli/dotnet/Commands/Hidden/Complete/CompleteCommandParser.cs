@@ -7,7 +7,7 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Complete;
 
-internal static class CompleteCommandParser
+internal static partial class CompleteCommandParser
 {
     public static readonly Argument<string> PathArgument = new("path");
 
@@ -16,14 +16,7 @@ internal static class CompleteCommandParser
         HelpName = "command"
     };
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("complete")
         {
@@ -32,8 +25,6 @@ internal static class CompleteCommandParser
 
         command.Arguments.Add(PathArgument);
         command.Options.Add(PositionOption);
-
-        command.SetAction(CompleteCommand.Run);
 
         return command;
     }

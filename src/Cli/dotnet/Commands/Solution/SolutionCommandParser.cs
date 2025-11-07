@@ -13,7 +13,7 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution;
 
-internal static class SolutionCommandParser
+internal static partial class SolutionCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-sln";
 
@@ -26,14 +26,7 @@ internal static class SolutionCommandParser
         Arity = ArgumentArity.ZeroOrOne
     }.DefaultToCurrentDirectory();
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new(CommandName, CliCommandStrings.SolutionAppFullName)
         {
@@ -47,8 +40,6 @@ internal static class SolutionCommandParser
         command.Subcommands.Add(SolutionListCommandParser.GetCommand());
         command.Subcommands.Add(SolutionRemoveCommandParser.GetCommand());
         command.Subcommands.Add(SolutionMigrateCommandParser.GetCommand());
-
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
         return command;
     }

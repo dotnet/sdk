@@ -8,7 +8,7 @@ using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.Commands.Restore;
 
-internal static class RestoreCommandParser
+internal static partial class RestoreCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-restore";
 
@@ -57,14 +57,8 @@ internal static class RestoreCommandParser
         TargetOption,
         NoLogoOption
     ];
-    private static readonly Command Command = ConstructCommand();
 
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         var command = new Command("restore", CliCommandStrings.RestoreAppFullName)
         {
@@ -82,7 +76,6 @@ internal static class RestoreCommandParser
         command.Options.Add(CommonOptions.GetItemOption);
         command.Options.Add(CommonOptions.GetTargetResultOption);
         command.Options.Add(CommonOptions.GetResultOutputFileOption);
-        command.SetAction(RestoreCommand.Run);
 
         return command;
     }

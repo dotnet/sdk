@@ -10,26 +10,17 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk;
 
-internal static class SdkCommandParser
+internal static partial class SdkCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-sdk";
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("sdk", CliCommandStrings.SdkAppFullName)
         {
             DocsLink = DocsLink
         };
         command.Subcommands.Add(SdkCheckCommandParser.GetCommand());
-
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
         return command;
     }

@@ -10,18 +10,11 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 
-internal static class RemoveCommandParser
+internal static partial class RemoveCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-remove";
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         var command = new Command("remove", CliCommandStrings.NetRemoveCommand)
         {
@@ -32,8 +25,6 @@ internal static class RemoveCommandParser
         command.Arguments.Add(PackageCommandParser.ProjectOrFileArgument);
         command.Subcommands.Add(RemovePackageCommandParser.GetCommand());
         command.Subcommands.Add(RemoveReferenceCommandParser.GetCommand());
-
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
         return command;
     }

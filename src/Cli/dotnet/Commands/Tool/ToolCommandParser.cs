@@ -17,18 +17,11 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool;
 
-internal static class ToolCommandParser
+internal static partial class ToolCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-tool";
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("tool", CliCommandStrings.ToolCommandDescription)
         {
@@ -43,8 +36,6 @@ internal static class ToolCommandParser
         command.Subcommands.Add(ToolSearchCommandParser.GetCommand());
         command.Subcommands.Add(ToolRestoreCommandParser.GetCommand());
         command.Subcommands.Add(ToolExecuteCommandParser.GetCommand());
-
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
         return command;
     }

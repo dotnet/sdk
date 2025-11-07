@@ -14,7 +14,7 @@ using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Package;
 
-internal class PackageCommandParser
+internal partial class PackageCommandParser
 {
     private const string DocsLink = "https://aka.ms/dotnet-package";
 
@@ -36,7 +36,7 @@ internal class PackageCommandParser
         Description = CliStrings.ProjectOrFileArgumentDescription
     }.DefaultToCurrentDirectory();
 
-    public static Command GetCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new Command("package")
         {

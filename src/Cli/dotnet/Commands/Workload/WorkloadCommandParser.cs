@@ -26,7 +26,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
-internal static class WorkloadCommandParser
+internal static partial class WorkloadCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-workload";
     public static readonly Option<bool> InfoOption = new("--info")
@@ -42,13 +42,6 @@ internal static class WorkloadCommandParser
         Arity = ArgumentArity.Zero,
         Action = new ShowWorkloadsVersionOption()
     };
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static readonly Command Command = ConstructCommand();
 
     internal static string GetWorkloadsVersion(WorkloadInfoHelper workloadInfoHelper = null)
     {
@@ -141,7 +134,7 @@ internal static class WorkloadCommandParser
 
     private static int ProcessArgs(ParseResult parseResult) => parseResult.HandleMissingCommand();
 
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("workload", CliCommandStrings.WorkloadCommandDescription)
         {
@@ -170,8 +163,6 @@ internal static class WorkloadCommandParser
                 commandResult.AddError(CliStrings.RequiredCommandNotPassed);
             }
         });
-
-        command.SetAction(ProcessArgs);
 
         return command;
     }

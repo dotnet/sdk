@@ -8,20 +8,13 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Fsi;
 
-internal static class FsiCommandParser
+internal static partial class FsiCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-fsi";
 
     public static readonly Argument<string[]> Arguments = new("arguments");
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("fsi") {
             Arguments = { Arguments },

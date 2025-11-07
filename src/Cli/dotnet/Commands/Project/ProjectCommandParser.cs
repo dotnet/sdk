@@ -7,12 +7,11 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Project;
 
-internal sealed class ProjectCommandParser
+internal sealed partial class ProjectCommandParser
 {
-    public static Command GetCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("project");
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
         command.Subcommands.Add(ProjectConvertCommandParser.GetCommand());
 
         return command;

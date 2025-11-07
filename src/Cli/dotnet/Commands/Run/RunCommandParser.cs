@@ -7,7 +7,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
-internal static class RunCommandParser
+internal static partial class RunCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-run";
 
@@ -76,14 +76,7 @@ internal static class RunCommandParser
         Description = "Arguments passed to the application that is being run."
     };
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("run", CliCommandStrings.RunAppFullName)
         {
@@ -112,8 +105,6 @@ internal static class RunCommandParser
         command.Options.Add(CommonOptions.EnvOption);
 
         command.Arguments.Add(ApplicationArguments);
-
-        command.SetAction(RunCommand.Run);
 
         return command;
     }

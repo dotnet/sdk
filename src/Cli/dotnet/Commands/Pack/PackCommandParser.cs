@@ -9,7 +9,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
-internal static class PackCommandParser
+internal static partial class PackCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-pack";
 
@@ -77,14 +77,7 @@ internal static class PackCommandParser
             }
         }.ForwardAsSingle(o => $"--property:PackageVersion={o}");
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         var command = new Command("pack", CliCommandStrings.PackAppFullName)
         {
@@ -115,8 +108,6 @@ internal static class PackCommandParser
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription));
-
-        command.SetAction(PackCommand.Run);
 
         return command;
     }

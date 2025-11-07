@@ -7,18 +7,11 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 
-internal static class InternalReportInstallSuccessCommandParser
+internal static partial class InternalReportInstallSuccessCommandParser
 {
     public static readonly Argument<string> Argument = new("internal-reportinstallsuccess-arg");
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
+    public static Command CreateCommandDefinition()
     {
         Command command = new("internal-reportinstallsuccess")
         {
@@ -26,8 +19,6 @@ internal static class InternalReportInstallSuccessCommandParser
         };
 
         command.Arguments.Add(Argument);
-
-        command.SetAction(InternalReportInstallSuccessCommand.Run);
 
         return command;
     }
