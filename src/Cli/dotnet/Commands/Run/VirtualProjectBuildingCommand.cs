@@ -1157,6 +1157,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
 
+        const string defaultSdkName = "Microsoft.NET.Sdk";
         string firstSdkName;
         string? firstSdkVersion;
 
@@ -1168,7 +1169,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         else
         {
-            firstSdkName = "Microsoft.NET.Sdk";
+            firstSdkName = defaultSdkName;
             firstSdkVersion = null;
         }
 
@@ -1191,6 +1192,18 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                     <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                 """);
+
+            // Only set these to false when using the default SDK with no additional SDKs
+            // to avoid including .resx and other files that are typically not expected in simple file-based apps.
+            // When other SDKs are used (e.g., Microsoft.NET.Sdk.Web), keep the default behavior.
+            bool usingOnlyDefaultSdk = firstSdkName == defaultSdkName && sdkDirectives.Count() <= 1;
+            if (usingOnlyDefaultSdk)
+            {
+                writer.WriteLine($"""
+                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+                        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+                    """);
+            }
 
             // Write default properties before importing SDKs so they can be overridden by SDKs
             // (and implicit build files which are imported by the default .NET SDK).
@@ -1400,9 +1413,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             if (!sdkDirectives.Any())
             {
-                Debug.Assert(firstSdkName == "Microsoft.NET.Sdk" && firstSdkVersion == null);
-                writer.WriteLine("""
-                      <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+                Debug.Assert(firstSdkName == defaultSdkName && firstSdkVersion == null);
+                writer.WriteLine($"""
+                      <Import Project="Sdk.targets" Sdk="{defaultSdkName}" />
                     """);
             }
 

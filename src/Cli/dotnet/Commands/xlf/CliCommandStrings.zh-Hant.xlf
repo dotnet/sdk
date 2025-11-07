@@ -453,16 +453,6 @@ If not specified the file will be generated inside the default 'TestResults' dir
         <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdDirectoryDescription">
-        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">定義要執行的目錄路徑。如果未指定，則預設為目前目錄。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDirectoryPathName">
-        <source>DIRECTORY_PATH</source>
-        <target state="translated">DIRECTORY_PATH</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
         <source>Prevent restoring multiple projects in parallel.</source>
         <target state="translated">避免平行還原多個專案。</target>
@@ -739,13 +729,18 @@ This is equivalent to deleting project.assets.json.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
-        <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
-        <note>{0} is the verb (e.g., "test", "run")</note>
+        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note />
       </trans-unit>
-      <trans-unit id="CmdProjectPathName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+      <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
+        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectOrSolutionPathName">
+        <source>PROJECT_OR_SOLUTION_PATH</source>
+        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -1175,11 +1170,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
         <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
         <target state="translated">處理 'NamedPipeServer' 時發生錯誤，且找不到交握。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DotnetTestPipeIncompleteSize">
-        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="translated">'dotnet' 從 'dotnet test' 具名管道意外接收到的資料少於 4 個位元組。</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
@@ -3700,16 +3690,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">如果屬性 '{0}' 受到指定，則其必須為物件。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbRun">
-        <source>run</source>
-        <target state="new">run</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbTest">
-        <source>test</source>
-        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">
