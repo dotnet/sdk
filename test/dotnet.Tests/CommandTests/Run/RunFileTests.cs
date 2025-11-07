@@ -3309,6 +3309,55 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// When compilation fails, the obj dll should not be copied to bin directory.
+    /// This prevents spurious errors if the source file was not even produced by roslyn due to compilation errors.
+    /// </summary>
+    [Fact]
+    public void CscOnly_CompilationFailure_NoCopyToBin()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        // First, create a valid program and build it successfully
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine("version 1");
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("version 1");
+
+        // Verify that the bin dll was created
+        var binDll = Path.Join(artifactsDir, "bin", "debug", "Program.dll");
+        File.Exists(binDll).Should().BeTrue("bin dll should exist after successful build");
+        var binDllTimestamp = File.GetLastWriteTimeUtc(binDll);
+
+        // Now write invalid code that causes compilation to fail
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            this is not valid C# code
+            """);
+
+        // Wait a bit to ensure timestamp would be different if file was copied
+        Thread.Sleep(100);
+
+        // Try to build the invalid code
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("error CS");
+
+        // Verify that the bin dll was NOT updated (still has old timestamp from successful build)
+        File.Exists(binDll).Should().BeTrue("bin dll should still exist from previous successful build");
+        var binDllTimestampAfterFailure = File.GetLastWriteTimeUtc(binDll);
+        binDllTimestampAfterFailure.Should().Be(binDllTimestamp, "bin dll should not have been updated after failed compilation");
+    }
+
+    /// <summary>
     /// Checks that the <c>DOTNET_ROOT</c> env var is set the same in csc mode as in msbuild mode.
     /// </summary>
     [Fact]
