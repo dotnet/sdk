@@ -45,6 +45,7 @@ public class Program
     private static readonly PosixSignalRegistration s_sigIntRegistration;
     private static readonly PosixSignalRegistration s_sigQuitRegistration;
     private static readonly PosixSignalRegistration s_sigTermRegistration;
+    private static readonly List<Activity> s_activities = [];
 
     static Program()
     {
@@ -77,6 +78,7 @@ public class Program
                 o.EnableLiveMetrics = false;
                 o.StorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, Telemetry.Telemetry.DefaultStorageFolderName);
             })
+            .AddInMemoryExporter(s_activities)
             .SetSampler(new AlwaysOnSampler())
             .Build();
 
@@ -138,6 +140,12 @@ public class Program
         finally
         {
             Shutdown(default!);
+
+            var diskLogPath = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_LOG_PATH");
+            if (!string.IsNullOrWhiteSpace(diskLogPath))
+            {
+                TelemetryDiskLogger.WriteLog(diskLogPath, s_activities);
+            }
         }
     }
 
