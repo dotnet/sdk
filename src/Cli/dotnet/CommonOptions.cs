@@ -116,6 +116,10 @@ internal static class CommonOptions
 
     public static readonly Option<string[]?> GetResultOutputFileOption = MSBuildMultiOption("getResultOutputFile");
 
+    /// <summary>
+    /// A helper for defining an option that accepts MSBuild-style prefix flags (--, -, and /)
+    /// and forwards each instance of itself as a separate matching MSBuild argument via direct forwarding.
+    /// </summary>
     private static Option<string[]?> MSBuildMultiOption(string name)
         => new Option<string[]?>($"--{name}", $"-{name}", $"/{name}")
         {
@@ -126,6 +130,9 @@ internal static class CommonOptions
         .ForwardAsMany(xs => (xs ?? []).Select(x => $"--{name}:{x}"))
         .AllowSingleArgPerToken();
 
+    /// <summary>
+    /// A parser that splits MSBuild-style semicolon or comma separated values into an array of strings.
+    /// </summary>
     public static string[] SplitMSBuildValues(string? defaultValue, ArgumentResult argumentResult)
     {
         if (argumentResult.Tokens.Count == 0)
@@ -140,8 +147,13 @@ internal static class CommonOptions
         return allValues.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
+    /// <summary>
+    /// The shared implementation of the --verbosity option. It accepts MSBuild-style verbosity flags (quiet, minimal, normal, detailed, diagnostic)
+    /// and msbuild short-prefixes (q, m, n, d, diag) and forwards them to MSBuild.
+    /// It accepts multiple instances of the option and uses the last one specified.
+    /// </summary>
     public static Option<Verbosity> VerbosityOption(Verbosity defaultVerbosity) =>
-        new Option<Verbosity>("--verbosity", "-v")
+        new Option<Verbosity>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = string.Format(CliStrings.VerbosityOptionDescription, string.Join(", ", VerbosityData.VerbosityNames)),
             HelpName = CliStrings.LevelArgumentName,
@@ -152,6 +164,11 @@ internal static class CommonOptions
         .AggregateRepeatedTokens()
         .AcceptOnlyFromAmong(VerbosityData.VerbosityNames);
 
+    /// <summary>
+    /// The shared implementation of the --verbosity option. It accepts MSBuild-style verbosity flags (quiet, minimal, normal, detailed, diagnostic)
+    /// and msbuild short-prefixes (q, m, n, d, diag) and forwards them to MSBuild.
+    /// It accepts multiple instances of the option and uses the last one specified.
+    /// </summary>
     public static Option<Verbosity?> VerbosityOption() =>
         new Option<Verbosity?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
@@ -163,8 +180,15 @@ internal static class CommonOptions
         .AggregateRepeatedTokens()
         .AcceptOnlyFromAmong(VerbosityData.VerbosityNames);
 
+    /// <summary>
+    /// The shared implementation of the --verbosity option. It accepts MSBuild-style verbosity flags (quiet, minimal, normal, detailed, diagnostic)
+    /// and msbuild short-prefixes (q, m, n, d, diag) and forwards them to MSBuild.
+    /// It accepts multiple instances of the option and uses the last one specified.
+    /// This option is hidden from help and used when we want to enforce a specific verbosity without exposing it to the user.
+    /// </summary>
     public static Option<Verbosity> HiddenVerbosityOption = VerbosityOption(Verbosity.normal).Hide();
-    public static Verbosity? ParseVerbosityEnum(ArgumentResult result)
+
+    private static Verbosity? ParseVerbosityEnum(ArgumentResult result)
     {
         if (result.Tokens.Count == 0)
         {
@@ -205,6 +229,10 @@ internal static class CommonOptions
         }
     }
 
+    /// <summary>
+    /// The shared description of the --framework option, used to specify a TargetFramework for the command to use.
+    /// It supports dynamic completion based on the TargetFrameworks defined in the project file.
+    /// </summary>
     public static Option<string> FrameworkOption(string description) =>
         new Option<string>("--framework", "-f")
         {
