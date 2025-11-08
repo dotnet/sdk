@@ -14,9 +14,9 @@ namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
 internal class ReferenceAddCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
-            parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument);
+    private readonly string _fileOrDirectory = parseResult.HasOption(ReferenceCommandDefinition.ProjectOption) ?
+            parseResult.GetValue(ReferenceCommandDefinition.ProjectOption) :
+            parseResult.GetValue(PackageCommandDefinition.ProjectOrFileArgument);
 
     public override int Execute()
     {

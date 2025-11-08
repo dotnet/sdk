@@ -29,8 +29,8 @@ internal static class PackageRemoveCommandParser
 
         command.Arguments.Add(CmdPackageArgument);
         command.Options.Add(InteractiveOption);
-        command.Options.Add(PackageCommandParser.ProjectOption);
-        command.Options.Add(PackageCommandParser.FileOption);
+        command.Options.Add(PackageCommandDefinition.ProjectOption);
+        command.Options.Add(PackageCommandDefinition.FileOption);
 
         command.SetAction((parseResult) => new PackageRemoveCommand(parseResult).Execute());
 

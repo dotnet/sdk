@@ -25,7 +25,7 @@ internal static class AddReferenceCommandParser
         command.Arguments.Add(ReferenceAddCommandParser.ProjectPathArgument);
         command.Options.Add(ReferenceAddCommandParser.FrameworkOption);
         command.Options.Add(ReferenceAddCommandParser.InteractiveOption);
-        command.Options.Add(ReferenceCommandParser.ProjectOption);
+        command.Options.Add(ReferenceCommandDefinition.ProjectOption);
 
         command.SetAction((parseResult) => new ReferenceAddCommand(parseResult).Execute());
 

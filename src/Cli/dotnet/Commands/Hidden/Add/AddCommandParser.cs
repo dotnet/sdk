@@ -5,27 +5,22 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
 using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Add;
 
-internal static partial class AddCommandParser
+internal static class AddCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-add";
+    private static readonly Command Command = ConfigureCommand(AddCommandDefinition.Create());
 
-    public static Command CreateCommandDefinition()
+    public static Command GetCommand()
     {
-        var command = new Command("add", CliCommandStrings.NetAddCommand)
-        {
-            Hidden = true,
-            DocsLink = DocsLink
-        };
+        return Command;
+    }
 
-        command.Arguments.Add(PackageCommandParser.ProjectOrFileArgument);
-        command.Subcommands.Add(AddPackageCommandParser.GetCommand());
-        command.Subcommands.Add(AddReferenceCommandParser.GetCommand());
-
+    private static Command ConfigureCommand(Command command)
+    {
+        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
         return command;
     }
 }

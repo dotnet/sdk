@@ -1,25 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 
-internal static partial class InternalReportInstallSuccessCommandParser
+internal static class InternalReportInstallSuccessCommandParser
 {
-    public static readonly Argument<string> Argument = new("internal-reportinstallsuccess-arg");
+    private static readonly Command Command = ConfigureCommand(InternalReportInstallSuccessCommandDefinition.Create());
 
-    public static Command CreateCommandDefinition()
+    public static Command GetCommand()
     {
-        Command command = new("internal-reportinstallsuccess")
-        {
-            Hidden = true
-        };
+        return Command;
+    }
 
-        command.Arguments.Add(Argument);
-
+    private static Command ConfigureCommand(Command command)
+    {
+        command.SetAction(InternalReportInstallSuccessCommand.Run);
         return command;
     }
 }

@@ -39,7 +39,7 @@ internal class SolutionAddCommand : CommandBase
 
     public SolutionAddCommand(ParseResult parseResult) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument)!;
+        _fileOrDirectory = parseResult.GetValue(SolutionCommandDefinition.SlnArgument)!;
         _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SolutionAddCommandParser.ProjectPathArgument) ?? []);
         _inRoot = parseResult.GetValue(SolutionAddCommandParser.InRootOption);
         _solutionFolderPath = parseResult.GetValue(SolutionAddCommandParser.SolutionFolderOption);

@@ -1,46 +1,27 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Solution.Add;
 using Microsoft.DotNet.Cli.Commands.Solution.List;
 using Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 using Microsoft.DotNet.Cli.Commands.Solution.Remove;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution;
 
-internal static partial class SolutionCommandParser
+internal static class SolutionCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-sln";
+    private static readonly Command Command = ConfigureCommand(SolutionCommandDefinition.Create());
 
-    public static readonly string CommandName = "solution";
-    public static readonly string CommandAlias = "sln";
-    public static readonly Argument<string> SlnArgument = new Argument<string>(CliCommandStrings.SolutionArgumentName)
+    public static Command GetCommand()
     {
-        HelpName = CliCommandStrings.SolutionArgumentName,
-        Description = CliCommandStrings.SolutionArgumentDescription,
-        Arity = ArgumentArity.ZeroOrOne
-    }.DefaultToCurrentDirectory();
+        return Command;
+    }
 
-    public static Command CreateCommandDefinition()
+    private static Command ConfigureCommand(Command command)
     {
-        Command command = new(CommandName, CliCommandStrings.SolutionAppFullName)
-        {
-            DocsLink = DocsLink
-        };
-
-        command.Aliases.Add(CommandAlias);
-
-        command.Arguments.Add(SlnArgument);
-        command.Subcommands.Add(SolutionAddCommandParser.GetCommand());
-        command.Subcommands.Add(SolutionListCommandParser.GetCommand());
-        command.Subcommands.Add(SolutionRemoveCommandParser.GetCommand());
-        command.Subcommands.Add(SolutionMigrateCommandParser.GetCommand());
-
+        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
         return command;
     }
 }

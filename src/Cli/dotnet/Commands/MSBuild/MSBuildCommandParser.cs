@@ -2,28 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
-internal static partial class MSBuildCommandParser
+internal static class MSBuildCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-msbuild";
+    private static readonly Command Command = ConfigureCommand(MSBuildCommandDefinition.Create());
 
-    public static readonly Argument<string[]> Arguments = new("arguments");
-    public static readonly Option<string[]?> TargetOption = CommonOptions.MSBuildTargetOption();
-
-    public static Command CreateCommandDefinition()
+    public static Command GetCommand()
     {
-        var command = new Command("msbuild", CliCommandStrings.BuildAppFullName)
-        {
-            Arguments = { Arguments },
-            DocsLink = DocsLink,
-        };
+        return Command;
+    }
 
-        command.Options.Add(CommonOptions.DisableBuildServersOption);
-        command.Options.Add(TargetOption);
-
+    private static Command ConfigureCommand(Command command)
+    {
+        command.SetAction(MSBuildCommand.Run);
         return command;
     }
 }

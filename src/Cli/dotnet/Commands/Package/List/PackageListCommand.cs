@@ -19,9 +19,9 @@ internal class PackageListCommand(
 {
     //The file or directory passed down by the command
     private readonly string _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
-            parseResult.HasOption(PackageCommandParser.ProjectOption) ?
-            parseResult.GetValue(PackageCommandParser.ProjectOption) :
-            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument) ?? "");
+            parseResult.HasOption(PackageCommandDefinition.ProjectOption) ?
+            parseResult.GetValue(PackageCommandDefinition.ProjectOption) :
+            parseResult.GetValue(ListCommandDefinition.SlnOrProjectArgument) ?? "");
 
     private static string GetAbsolutePath(string currentDirectory, string relativePath)
     {

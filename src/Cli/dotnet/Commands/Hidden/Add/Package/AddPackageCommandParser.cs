@@ -28,8 +28,8 @@ internal static class AddPackageCommandParser
         command.Options.Add(PackageAddCommandParser.PackageDirOption);
         command.Options.Add(PackageAddCommandParser.InteractiveOption);
         command.Options.Add(PackageAddCommandParser.PrereleaseOption);
-        command.Options.Add(PackageCommandParser.ProjectOption);
-        command.Options.Add(PackageCommandParser.FileOption);
+        command.Options.Add(PackageCommandDefinition.ProjectOption);
+        command.Options.Add(PackageCommandDefinition.FileOption);
 
         command.SetAction((parseResult) => new PackageAddCommand(parseResult).Execute());
 

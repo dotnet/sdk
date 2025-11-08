@@ -1,41 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Package;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.List;
 
-internal static partial class ListCommandParser
+internal static class ListCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-list";
+    private static readonly Command Command = ConfigureCommand(ListCommandDefinition.Create());
 
-    public static readonly Argument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CliStrings.SolutionOrProjectArgumentName, CliStrings.SolutionOrProjectArgumentDescription);
-
-    internal static Argument<string> CreateSlnOrProjectArgument(string name, string description)
-        => new Argument<string>(name)
-        {
-            Description = description,
-            Arity = ArgumentArity.ZeroOrOne
-        }.DefaultToCurrentDirectory();
-
-    public static Command CreateCommandDefinition()
+    public static Command GetCommand()
     {
-        var command = new Command("list", CliCommandStrings.NetListCommand)
-        {
-            Hidden = true,
-            DocsLink = DocsLink
-        };
+        return Command;
+    }
 
-        command.Arguments.Add(SlnOrProjectArgument);
-        command.Subcommands.Add(ListPackageCommandParser.GetCommand());
-        command.Subcommands.Add(ListReferenceCommandParser.GetCommand());
-
+    private static Command ConfigureCommand(Command command)
+    {
+        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
         return command;
     }
 }

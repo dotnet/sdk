@@ -19,9 +19,9 @@ internal class ReferenceRemoveCommand : CommandBase
     public ReferenceRemoveCommand(
         ParseResult parseResult) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
-            parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument);
+        _fileOrDirectory = parseResult.HasOption(ReferenceCommandDefinition.ProjectOption) ?
+            parseResult.GetValue(ReferenceCommandDefinition.ProjectOption) :
+            parseResult.GetValue(PackageCommandDefinition.ProjectOrFileArgument);
         _arguments = parseResult.GetValue(ReferenceRemoveCommandParser.ProjectPathArgument).ToList().AsReadOnly();
 
         if (_arguments.Count == 0)

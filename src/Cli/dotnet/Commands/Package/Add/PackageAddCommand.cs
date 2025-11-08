@@ -23,7 +23,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
 
     public override int Execute()
     {
-        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_parseResult);
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandDefinition.ProcessPathOptions(_parseResult);
 
         if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuildingCommand.IsValidEntryPointPath(fileOrDirectory))
         {

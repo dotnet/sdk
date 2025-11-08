@@ -1,33 +1,23 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
-using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Help;
 
-internal static partial class HelpCommandParser
+internal static class HelpCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-help";
+    private static readonly Command Command = ConfigureCommand(HelpCommandDefinition.Create());
 
-    public static readonly Argument<string[]> Argument = new(CliCommandStrings.CommandArgumentName)
+    public static Command GetCommand()
     {
-        Description = CliCommandStrings.CommandArgumentDescription,
-        Arity = ArgumentArity.ZeroOrMore
-    };
+        return Command;
+    }
 
-    public static Command CreateCommandDefinition()
+    private static Command ConfigureCommand(Command command)
     {
-        Command command = new("help", CliCommandStrings.HelpAppFullName)
-        {
-            DocsLink = DocsLink
-        };
-
-        command.Arguments.Add(Argument);
-
+        command.SetAction(HelpCommand.Run);
         return command;
     }
 }
-

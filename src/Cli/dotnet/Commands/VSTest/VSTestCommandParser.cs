@@ -1,29 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
-using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.VSTest;
 
-internal static partial class VSTestCommandParser
+internal static class VSTestCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-vstest";
+    private static readonly Command Command = ConfigureCommand(VSTestCommandDefinition.Create());
 
-    public static Command CreateCommandDefinition()
+    public static Command GetCommand()
     {
-        Command command = new("vstest")
-        {
-            TreatUnmatchedTokensAsErrors = false,
-            DocsLink = DocsLink
-        };
+        return Command;
+    }
 
-        command.Options.Add(CommonOptions.TestPlatformOption);
-        command.Options.Add(CommonOptions.TestFrameworkOption);
-        command.Options.Add(CommonOptions.TestLoggerOption);
-
+    private static Command ConfigureCommand(Command command)
+    {
+        command.SetAction(VSTestCommand.Run);
         return command;
     }
 }

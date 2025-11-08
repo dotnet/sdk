@@ -1,18 +1,23 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
-internal sealed partial class RunApiCommandParser
+internal sealed class RunApiCommandParser
 {
-    public static Command CreateCommandDefinition()
+    private static readonly Command Command = ConfigureCommand(RunApiCommandDefinition.Create());
+
+
+    public static Command GetCommand()
     {
-        Command command = new("run-api")
-        {
-            Hidden = true,
-        };
+        return Command;
+    }
+
+    private static Command ConfigureCommand(Command command)
+    {
+        command.SetAction((parseResult) => new RunApiCommand(parseResult).Execute());
         return command;
     }
 }

@@ -96,8 +96,8 @@ public static class PackageAddCommandParser
         command.Options.Add(PackageDirOption);
         command.Options.Add(InteractiveOption);
         command.Options.Add(PrereleaseOption);
-        command.Options.Add(PackageCommandParser.ProjectOption);
-        command.Options.Add(PackageCommandParser.FileOption);
+        command.Options.Add(PackageCommandDefinition.ProjectOption);
+        command.Options.Add(PackageCommandDefinition.FileOption);
 
         command.SetAction((parseResult) => new PackageAddCommand(parseResult).Execute());
 

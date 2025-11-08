@@ -20,7 +20,7 @@ public static class SolutionMigrateCommandParser
     {
         Command command = new("migrate", CliCommandStrings.MigrateAppFullName);
 
-        command.Arguments.Add(SolutionCommandParser.SlnArgument);
+        command.Arguments.Add(SolutionCommandDefinition.SlnArgument);
 
         command.SetAction((parseResult) => new SolutionMigrateCommand(parseResult).Execute());
 

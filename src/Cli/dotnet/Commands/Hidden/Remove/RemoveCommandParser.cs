@@ -5,27 +5,22 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Package;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Reference;
 using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 
-internal static partial class RemoveCommandParser
+internal static class RemoveCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-remove";
+    private static readonly Command Command = ConfigureCommand(RemoveCommandDefinition.Create());
 
-    public static Command CreateCommandDefinition()
+    public static Command GetCommand()
     {
-        var command = new Command("remove", CliCommandStrings.NetRemoveCommand)
-        {
-            Hidden = true,
-            DocsLink = DocsLink
-        };
+        return Command;
+    }
 
-        command.Arguments.Add(PackageCommandParser.ProjectOrFileArgument);
-        command.Subcommands.Add(RemovePackageCommandParser.GetCommand());
-        command.Subcommands.Add(RemoveReferenceCommandParser.GetCommand());
-
+    private static Command ConfigureCommand(Command command)
+    {
+        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
         return command;
     }
 }

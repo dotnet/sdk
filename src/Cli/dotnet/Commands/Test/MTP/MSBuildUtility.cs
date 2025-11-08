@@ -104,7 +104,7 @@ internal static class MSBuildUtility
             pathOptions,
             parseResult.GetValue(CommonOptions.NoRestoreOption),
             parseResult.GetValue(MicrosoftTestingPlatformOptions.NoBuildOption),
-            parseResult.HasOption(TestCommandParser.VerbosityOption) ? parseResult.GetValue(TestCommandParser.VerbosityOption) : null,
+            parseResult.HasOption(TestCommandDefinition.VerbosityOption) ? parseResult.GetValue(TestCommandDefinition.VerbosityOption) : null,
             parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileOption),
             parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption),
             otherArgs,
@@ -124,7 +124,7 @@ internal static class MSBuildUtility
             msbuildArgs.Add($"-verbosity:quiet");
         }
 
-        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandParser.MTPTargetOption, TestCommandParser.VerbosityOption, CommonOptions.NoLogoOption());
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandDefinition.MTPTargetOption, TestCommandDefinition.VerbosityOption, CommonOptions.NoLogoOption());
 
         int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
 
