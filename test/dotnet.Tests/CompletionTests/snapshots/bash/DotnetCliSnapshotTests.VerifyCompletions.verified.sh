@@ -253,7 +253,7 @@ _testhost_clean() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -340,7 +340,7 @@ _testhost_new() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -680,7 +680,7 @@ _testhost_nuget_verify() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -704,7 +704,7 @@ _testhost_nuget_trust() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -765,7 +765,7 @@ _testhost_nuget_trust_list() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -789,7 +789,7 @@ _testhost_nuget_trust_author() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -813,7 +813,7 @@ _testhost_nuget_trust_repository() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -837,7 +837,7 @@ _testhost_nuget_trust_source() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -865,7 +865,7 @@ _testhost_nuget_trust_certificate() {
             COMPREPLY=( $(compgen -W "SHA256 SHA384 SHA512" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -889,7 +889,7 @@ _testhost_nuget_trust_remove() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -913,7 +913,7 @@ _testhost_nuget_trust_sync() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -937,7 +937,7 @@ _testhost_nuget_sign() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1153,7 +1153,7 @@ _testhost_package_update() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1359,7 +1359,7 @@ _testhost_restore() {
             COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1689,7 +1689,7 @@ _testhost_tool_install() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1735,7 +1735,7 @@ _testhost_tool_update() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1817,7 +1817,7 @@ _testhost_tool_restore() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1846,7 +1846,7 @@ _testhost_tool_execute() {
             COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -2018,7 +2018,7 @@ _testhost_workload_install() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -2050,7 +2050,7 @@ _testhost_workload_update() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -2139,7 +2139,7 @@ _testhost_workload_uninstall() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -2163,7 +2163,7 @@ _testhost_workload_repair() {
     fi
     
     case $prev in
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -2191,7 +2191,7 @@ _testhost_workload_restore() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;

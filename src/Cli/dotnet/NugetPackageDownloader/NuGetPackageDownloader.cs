@@ -157,7 +157,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         return nupkgPath;
     }
 
-    private bool VerbosityGreaterThanMinimal() => _verbosity >= Verbosity.minimal;
+    private bool VerbosityGreaterThanMinimal() => _verbosity > Verbosity.minimal;
 
     private bool DiagnosticVerbosity() => _verbosity == Verbosity.diagnostic;
 
