@@ -24,15 +24,11 @@ internal static class CleanCommandParser
         HelpName = CliCommandStrings.CleanCmdOutputDir
     }.ForwardAsOutputPath("OutputPath");
 
-    public static readonly Option<bool> NoLogoOption = new Option<bool>("--nologo")
-    {
-        Description = CliCommandStrings.CleanCmdNoLogo,
-        Arity = ArgumentArity.Zero
-    }.ForwardAs("-nologo");
+    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
 
-    public static readonly Option FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.CleanFrameworkOptionDescription);
+    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.CleanFrameworkOptionDescription);
 
-    public static readonly Option ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.CleanConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.CleanConfigurationOptionDescription);
 
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Clean");
 

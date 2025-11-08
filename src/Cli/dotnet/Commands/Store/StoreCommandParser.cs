@@ -93,6 +93,7 @@ internal static class StoreCommandParser
         command.Options.Add(CommonOptions.VerbosityOption());
         command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.NoLogoOption(true));
 
         command.SetAction(StoreCommand.Run);
 

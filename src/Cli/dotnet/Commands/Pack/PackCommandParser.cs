@@ -49,11 +49,7 @@ internal static class PackCommandParser
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:Serviceable=true");
 
-    public static readonly Option<bool> NoLogoOption = new Option<bool>("--nologo")
-    {
-        Description = CliCommandStrings.PackCmdNoLogo,
-        Arity = ArgumentArity.Zero
-    }.ForwardAs("-nologo");
+    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
