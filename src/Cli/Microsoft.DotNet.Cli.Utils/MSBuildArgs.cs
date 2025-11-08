@@ -77,7 +77,7 @@ public sealed class MSBuildArgs
     public VerbosityOptions? Verbosity { get; }
 
     /// <summary>
-    /// Wether or not the MSBuild product header text should be emitted at the start of this build
+    /// Whether or not the MSBuild product header text should be emitted at the start of this build
     /// </summary>
     public bool NoLogo { get; }
 
