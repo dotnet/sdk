@@ -3,6 +3,40 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+public class EnvironmentOptionsTests
+{
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void GetProcessCleanupTimeout_WithoutEnvironmentVariable_ReturnsDefaultTimeout(bool isHotReloadEnabled)
+    {
+        var envOptions = new EnvironmentOptions(
+            WorkingDirectory: "/test",
+            MuxerPath: "dotnet",
+            ProcessCleanupTimeout: null);
+
+        var timeout = envOptions.GetProcessCleanupTimeout(isHotReloadEnabled);
+
+        Assert.Equal(TimeSpan.FromSeconds(5), timeout);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void GetProcessCleanupTimeout_WithEnvironmentVariable_ReturnsSpecifiedTimeout(bool isHotReloadEnabled)
+    {
+        var customTimeout = TimeSpan.FromSeconds(10);
+        var envOptions = new EnvironmentOptions(
+            WorkingDirectory: "/test",
+            MuxerPath: "dotnet",
+            ProcessCleanupTimeout: customTimeout);
+
+        var timeout = envOptions.GetProcessCleanupTimeout(isHotReloadEnabled);
+
+        Assert.Equal(customTimeout, timeout);
+    }
+}
+
 public class BuildReporterTests
 {
     [Fact]
