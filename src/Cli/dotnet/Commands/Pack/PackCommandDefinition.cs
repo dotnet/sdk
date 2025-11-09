@@ -56,7 +56,7 @@ internal static class PackCommandDefinition
     public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
 
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
-    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandParser.VerbosityOption;
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandDefinition.VerbosityOption;
 
     public static Option<NuGetVersion> VersionOption =
         new Option<NuGetVersion>("--version")
@@ -106,7 +106,7 @@ internal static class PackCommandDefinition
         command.Options.Add(CommonOptions.GetResultOutputFileOption);
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
-        RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
+        RestoreCommandDefinition.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription));
 
         return command;

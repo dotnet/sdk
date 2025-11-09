@@ -8,8 +8,10 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
-internal static class PackageListCommandParser
+internal static class PackageListCommandDefinition
 {
+    public const string Name = "list";
+
     public static readonly Option OutdatedOption = new Option<bool>("--outdated")
     {
         Description = CliCommandStrings.CmdOutdatedDescription,
@@ -96,16 +98,9 @@ internal static class PackageListCommandParser
         Description = CliCommandStrings.CmdOutputVersionDescription
     }.ForwardAsSingle(o => $"--output-version:{o}");
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
+    public static Command Create()
     {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
-    {
-        Command command = new("list", CliCommandStrings.PackageListAppFullName);
+        Command command = new(Name, CliCommandStrings.PackageListAppFullName);
 
         command.Options.Add(VerbosityOption);
         command.Options.Add(OutdatedOption);
@@ -123,8 +118,6 @@ internal static class PackageListCommandParser
         command.Options.Add(OutputVersionOption);
         command.Options.Add(NoRestore);
         command.Options.Add(PackageCommandDefinition.ProjectOption);
-
-        command.SetAction((parseResult) => new PackageListCommand(parseResult).Execute());
 
         return command;
     }

@@ -6,8 +6,10 @@ using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
-internal sealed class ProjectConvertCommandParser
+internal sealed class ProjectConvertCommandDefinition
 {
+    public const string Name = "convert";
+
     public static readonly Argument<string> FileArgument = new("file")
     {
         Description = CliCommandStrings.CmdFileDescription,
@@ -26,9 +28,8 @@ internal sealed class ProjectConvertCommandParser
         Arity = ArgumentArity.Zero,
     };
 
-    public static Command GetCommand()
-    {
-        Command command = new("convert", CliCommandStrings.ProjectConvertAppFullName)
+    public static Command Create()
+        => new(Name, CliCommandStrings.ProjectConvertAppFullName)
         {
             FileArgument,
             SharedOptions.OutputOption,
@@ -36,8 +37,4 @@ internal sealed class ProjectConvertCommandParser
             CommonOptions.InteractiveOption(),
             DryRunOption,
         };
-
-        command.SetAction((parseResult) => new ProjectConvertCommand(parseResult).Execute());
-        return command;
-    }
 }

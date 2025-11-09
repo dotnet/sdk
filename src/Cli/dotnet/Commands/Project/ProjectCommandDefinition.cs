@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Project.Convert;
-using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Project;
 
@@ -12,7 +11,7 @@ internal sealed class ProjectCommandDefinition
     public static Command Create()
     {
         Command command = new("project");
-        command.Subcommands.Add(ProjectConvertCommandParser.GetCommand());
+        command.Subcommands.Add(ProjectConvertCommandDefinition.Create());
 
         return command;
     }

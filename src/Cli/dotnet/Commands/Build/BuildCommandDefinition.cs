@@ -65,7 +65,7 @@ internal static class BuildCommandDefinition
         };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
-        RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: false);
+        RestoreCommandDefinition.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: false);
         command.Options.Add(FrameworkOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(RuntimeOption);

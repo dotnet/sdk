@@ -6,8 +6,10 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 
-internal static class PackageRemoveCommandParser
+internal static class PackageRemoveCommandDefinition
 {
+    public const string Name = "remove";
+
     public static readonly Argument<string[]> CmdPackageArgument = new(CliCommandStrings.CmdPackage)
     {
         Description = CliCommandStrings.PackageRemoveAppHelpText,
@@ -16,23 +18,19 @@ internal static class PackageRemoveCommandParser
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
-    private static readonly Command Command = ConstructCommand();
+    public static readonly IEnumerable<Option> Options =
+    [
+        InteractiveOption,
+        PackageCommandDefinition.ProjectOption,
+        PackageCommandDefinition.FileOption
+    ];
 
-    public static Command GetCommand()
+    public static Command Create()
     {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
-    {
-        var command = new Command("remove", CliCommandStrings.PackageRemoveAppFullName);
+        var command = new Command(Name, CliCommandStrings.PackageRemoveAppFullName);
 
         command.Arguments.Add(CmdPackageArgument);
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(PackageCommandDefinition.ProjectOption);
-        command.Options.Add(PackageCommandDefinition.FileOption);
-
-        command.SetAction((parseResult) => new PackageRemoveCommand(parseResult).Execute());
+        command.Options.AddRange(Options);
 
         return command;
     }

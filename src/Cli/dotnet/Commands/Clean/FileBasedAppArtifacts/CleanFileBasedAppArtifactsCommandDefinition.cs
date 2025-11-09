@@ -5,8 +5,10 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 
-internal sealed class CleanFileBasedAppArtifactsCommandParser
+internal sealed class CleanFileBasedAppArtifactsCommandDefinition
 {
+    public const string Name = "file-based-apps";
+
     public static readonly Option<bool> DryRunOption = new("--dry-run")
     {
         Description = CliCommandStrings.CleanFileBasedAppArtifactsDryRun,
@@ -28,11 +30,8 @@ internal sealed class CleanFileBasedAppArtifactsCommandParser
         Hidden = true,
     };
 
-    public static Command Command => field ??= ConstructCommand();
-
-    private static Command ConstructCommand()
-    {
-        Command command = new("file-based-apps", CliCommandStrings.CleanFileBasedAppArtifactsCommandDescription)
+    public static Command Create()
+        => new(Name, CliCommandStrings.CleanFileBasedAppArtifactsCommandDescription)
         {
             Hidden = true,
             Options =
@@ -42,8 +41,4 @@ internal sealed class CleanFileBasedAppArtifactsCommandParser
                 AutomaticOption,
             },
         };
-
-        command.SetAction((parseResult) => new CleanFileBasedAppArtifactsCommand(parseResult).Execute());
-        return command;
-    }
 }

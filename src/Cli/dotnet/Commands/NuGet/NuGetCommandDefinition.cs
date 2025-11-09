@@ -28,18 +28,18 @@ internal static class NuGetCommandDefinition
         });
         command.Options.Add(new Option<string>("--verbosity", "-v"));
 
-        command.Subcommands.Add(GetDeleteCommand());
-        command.Subcommands.Add(GetLocalsCommand());
-        command.Subcommands.Add(GetPushCommand());
-        command.Subcommands.Add(GetVerifyCommand());
-        command.Subcommands.Add(GetTrustCommand());
-        command.Subcommands.Add(GetSignCommand());
+        command.Subcommands.Add(CreateDeleteCommand());
+        command.Subcommands.Add(CreateLocalsCommand());
+        command.Subcommands.Add(CreatePushCommand());
+        command.Subcommands.Add(CreateVerifyCommand());
+        command.Subcommands.Add(CreateTrustCommand());
+        command.Subcommands.Add(CreateSignCommand());
         NuGetWhyCommand.GetWhyCommand(command);
 
         return command;
     }
 
-    private static Command GetDeleteCommand()
+    private static Command CreateDeleteCommand()
     {
         Command deleteCommand = new("delete");
         deleteCommand.Arguments.Add(new Argument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
@@ -59,12 +59,10 @@ internal static class NuGetCommandDefinition
         });
         deleteCommand.Options.Add(CommonOptions.InteractiveOption());
 
-        deleteCommand.SetAction(NuGetCommand.Run);
-
         return deleteCommand;
     }
 
-    private static Command GetLocalsCommand()
+    private static Command CreateLocalsCommand()
     {
         Command localsCommand = new("locals");
 
@@ -86,12 +84,10 @@ internal static class NuGetCommandDefinition
             Arity = ArgumentArity.Zero
         });
 
-        localsCommand.SetAction(NuGetCommand.Run);
-
         return localsCommand;
     }
 
-    private static Command GetPushCommand()
+    private static Command CreatePushCommand()
     {
         Command pushCommand = new("push");
 
@@ -125,12 +121,10 @@ internal static class NuGetCommandDefinition
         });
         pushCommand.Options.Add(new Option<string>("--configfile"));
 
-        pushCommand.SetAction(NuGetCommand.Run);
-
         return pushCommand;
     }
 
-    private static Command GetVerifyCommand()
+    private static Command CreateVerifyCommand()
     {
         const string fingerprint = "--certificate-fingerprint";
         Command verifyCommand = new("verify");
@@ -146,12 +140,10 @@ internal static class NuGetCommandDefinition
             .AllowSingleArgPerToken());
         verifyCommand.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
 
-        verifyCommand.SetAction(NuGetCommand.Run);
-
         return verifyCommand;
     }
 
-    private static Command GetTrustCommand()
+    private static Command CreateTrustCommand()
     {
         Command trustCommand = new("trust");
 
@@ -162,12 +154,12 @@ internal static class NuGetCommandDefinition
         Option<string> owners = new("--owners");
 
         trustCommand.Subcommands.Add(new Command("list"));
-        trustCommand.Subcommands.Add(AuthorCommand());
-        trustCommand.Subcommands.Add(RepositoryCommand());
-        trustCommand.Subcommands.Add(SourceCommand());
-        trustCommand.Subcommands.Add(CertificateCommand());
-        trustCommand.Subcommands.Add(RemoveCommand());
-        trustCommand.Subcommands.Add(SyncCommand());
+        trustCommand.Subcommands.Add(CreateAuthorCommand());
+        trustCommand.Subcommands.Add(CreateRepositoryCommand());
+        trustCommand.Subcommands.Add(CreateSourceCommand());
+        trustCommand.Subcommands.Add(CreateCertificateCommand());
+        trustCommand.Subcommands.Add(CreateRemoveCommand());
+        trustCommand.Subcommands.Add(CreateSyncCommand());
 
         Option<string> configFile = new("--configfile");
 
@@ -176,35 +168,33 @@ internal static class NuGetCommandDefinition
 
         trustCommand.Options.Add(configFile);
         trustCommand.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
-        trustCommand.SetAction(NuGetCommand.Run);
 
         foreach (var command in trustCommand.Subcommands)
         {
             command.Options.Add(configFile);
             command.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
-
         }
 
-        Command AuthorCommand() => new("author") {
+        Command CreateAuthorCommand() => new("author") {
             new Argument<string>("NAME"),
             new Argument<string>("PACKAGE"),
             allowUntrustedRoot,
         };
 
-        Command RepositoryCommand() => new("repository") {
+        Command CreateRepositoryCommand() => new("repository") {
             new Argument<string>("NAME"),
             new Argument<string>("PACKAGE"),
             allowUntrustedRoot,
             owners
         };
 
-        Command SourceCommand() => new("source") {
+        Command CreateSourceCommand() => new("source") {
             new Argument<string>("NAME"),
             owners,
             new Option<string>("--source-url"),
         };
 
-        Command CertificateCommand()
+        Command CreateCertificateCommand()
         {
             Option<string> algorithm = new("--algorithm")
             {
@@ -221,18 +211,18 @@ internal static class NuGetCommandDefinition
         }
         ;
 
-        Command RemoveCommand() => new("remove") {
+        Command CreateRemoveCommand() => new("remove") {
             new Argument<string>("NAME"),
         };
 
-        Command SyncCommand() => new("sync") {
+        Command CreateSyncCommand() => new("sync") {
             new Argument<string>("NAME"),
         };
 
         return trustCommand;
     }
 
-    private static Command GetSignCommand()
+    private static Command CreateSignCommand()
     {
         Command signCommand = new("sign");
 
@@ -253,8 +243,6 @@ internal static class NuGetCommandDefinition
             Arity = ArgumentArity.Zero
         });
         signCommand.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
-
-        signCommand.SetAction(NuGetCommand.Run);
 
         return signCommand;
     }

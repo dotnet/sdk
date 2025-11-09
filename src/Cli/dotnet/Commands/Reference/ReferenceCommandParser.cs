@@ -21,6 +21,11 @@ internal static class ReferenceCommandParser
     private static Command ConfigureCommand(Command command)
     {
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
+
+        command.Subcommands.Single(c => c.Name == ReferenceAddCommandDefinition.Name).SetAction((parseResult) => new ReferenceAddCommand(parseResult).Execute());
+        command.Subcommands.Single(c => c.Name == ReferenceListCommandDefinition.Name).SetAction((parseResult) => new ReferenceListCommand(parseResult).Execute());
+        command.Subcommands.Single(c => c.Name == ReferenceRemoveCommandDefinition.Name).SetAction((parseResult) => new ReferenceRemoveCommand(parseResult).Execute());
+
         return command;
     }
 }

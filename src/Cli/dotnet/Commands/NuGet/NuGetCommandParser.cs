@@ -2,22 +2,27 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.NuGet;
 
 internal static class NuGetCommandParser
 {
-    private static readonly Command Command = ConfigureCommand(NuGetCommandDefinition.Create());
+    private static readonly Command Command = SetAction(NuGetCommandDefinition.Create());
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command ConfigureCommand(Command command)
+    private static Command SetAction(Command command)
     {
         command.SetAction(NuGetCommand.Run);
+
+        foreach (var subcommand in command.Subcommands)
+        {
+            subcommand.SetAction(NuGetCommand.Run);
+        }
+
         return command;
     }
 }

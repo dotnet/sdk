@@ -19,6 +19,9 @@ internal static class SdkCommandParser
     private static Command ConfigureCommand(Command command)
     {
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
+
+        command.Subcommands.Single(c => c.Name == SdkCheckCommandDefinition.Name).SetAction(SdkCheckCommand.Run);
+
         return command;
     }
 }

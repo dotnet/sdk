@@ -1,16 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Search;
 
-internal static class PackageSearchCommandParser
+internal static class PackageSearchCommandDefinition
 {
+    public const string Name = "search";
+
     public static readonly Argument<string> SearchTermArgument = new Argument<string>("SearchTerm")
     {
         HelpName = CliCommandStrings.PackageSearchSearchTermArgumentName,
@@ -69,40 +69,25 @@ internal static class PackageSearchCommandParser
         HelpName = CliCommandStrings.VerbosityArgumentName
     }.ForwardAsSingle(o => $"--verbosity:{o}");
 
-    private static readonly Command Command = ConstructCommand();
+    public static readonly IEnumerable<Option> Options =
+    [
+        Sources,
+        Take,
+        Skip,
+        ExactMatch,
+        Interactive,
+        Prerelease,
+        ConfigFile,
+        Format,
+        Verbosity
+    ];
 
-    public static Command GetCommand()
+    public static Command Create()
     {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
-    {
-        Command searchCommand = new("search", CliCommandStrings.PackageSearchCommandDescription);
+        Command searchCommand = new(Name, CliCommandStrings.PackageSearchCommandDescription);
 
         searchCommand.Arguments.Add(SearchTermArgument);
-        searchCommand.Options.Add(Sources);
-        searchCommand.Options.Add(Take);
-        searchCommand.Options.Add(Skip);
-        searchCommand.Options.Add(ExactMatch);
-        searchCommand.Options.Add(Interactive);
-        searchCommand.Options.Add(Prerelease);
-        searchCommand.Options.Add(ConfigFile);
-        searchCommand.Options.Add(Format);
-        searchCommand.Options.Add(Verbosity);
-
-        searchCommand.SetAction((parseResult) =>
-        {
-            var command = new PackageSearchCommand(parseResult);
-            int exitCode = command.Execute();
-
-            if (exitCode == 1)
-            {
-                parseResult.ShowHelp();
-            }
-            // Only return 1 or 0
-            return exitCode == 0 ? 0 : 1;
-        });
+        searchCommand.Options.AddRange(Options);
 
         return searchCommand;
     }

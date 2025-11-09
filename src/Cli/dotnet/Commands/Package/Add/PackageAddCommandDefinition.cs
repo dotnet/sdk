@@ -11,9 +11,11 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
-public static class PackageAddCommandParser
+public static class PackageAddCommandDefinition
 {
-    public static readonly Option<bool> PrereleaseOption = new Option<bool>("--prerelease")
+    public const string Name = "add";
+
+    public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
     {
         Description = CliStrings.CommandPrereleaseOptionDescription,
         Arity = ArgumentArity.Zero
@@ -76,16 +78,9 @@ public static class PackageAddCommandParser
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
+    public static Command Create()
     {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
-    {
-        Command command = new("add", CliCommandStrings.PackageAddAppFullName);
+        Command command = new(Name, CliCommandStrings.PackageAddAppFullName);
 
         VersionOption.Validators.Add(DisallowVersionIfPackageIdentityHasVersionValidator);
         command.Arguments.Add(CmdPackageArgument);
@@ -98,8 +93,6 @@ public static class PackageAddCommandParser
         command.Options.Add(PrereleaseOption);
         command.Options.Add(PackageCommandDefinition.ProjectOption);
         command.Options.Add(PackageCommandDefinition.FileOption);
-
-        command.SetAction((parseResult) => new PackageAddCommand(parseResult).Execute());
 
         return command;
     }

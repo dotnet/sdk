@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.StaticCompletions;
 
@@ -10,8 +8,10 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
-internal static class ReferenceRemoveCommandParser
+internal static class ReferenceRemoveCommandDefinition
 {
+    public const string Name = "remove";
+
     public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new Argument<IEnumerable<string>>(CliCommandStrings.ReferenceRemoveProjectPathArgumentName)
     {
         Description = CliCommandStrings.ReferenceRemoveProjectPathArgumentDescription,
@@ -25,21 +25,12 @@ internal static class ReferenceRemoveCommandParser
         HelpName = CliStrings.CommonCmdFramework
     };
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
+    public static Command Create()
     {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
-    {
-        var command = new Command("remove", CliCommandStrings.ReferenceRemoveAppFullName);
+        var command = new Command(Name, CliCommandStrings.ReferenceRemoveAppFullName);
 
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(FrameworkOption);
-
-        command.SetAction((parseResult) => new ReferenceRemoveCommand(parseResult).Execute());
 
         return command;
     }

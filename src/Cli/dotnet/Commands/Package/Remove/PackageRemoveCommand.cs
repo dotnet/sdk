@@ -15,7 +15,7 @@ internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parse
 {
     public override int Execute()
     {
-        var arguments = _parseResult.GetValue(PackageRemoveCommandParser.CmdPackageArgument) ?? [];
+        var arguments = _parseResult.GetValue(PackageRemoveCommandDefinition.CmdPackageArgument) ?? [];
 
         if (arguments is not [{ } packageToRemove])
         {
@@ -59,7 +59,7 @@ internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parse
         };
 
         args.AddRange(_parseResult
-            .OptionValuesToBeForwarded(PackageRemoveCommandParser.GetCommand())
+            .OptionValuesToBeForwarded(PackageRemoveCommandDefinition.Options)
             .SelectMany(a => a.Split(' ')));
 
         return [.. args];

@@ -8,9 +8,7 @@ namespace Microsoft.DotNet.Cli.Commands.Dnx;
 
 internal static class DnxCommandParser
 {
-
     public static readonly Command Command = ConfigureCommand(DnxCommandDefinition.Create());
-
 
     public static Command GetCommand()
     {

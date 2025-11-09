@@ -2,22 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Build;
-using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Publish;
 
 internal static class PublishCommandParser
 {
-    private static readonly Command Command = ConfigureCommand(PublishCommandDefinition.Create());
+    private static readonly Command Command = SetAction(PublishCommandDefinition.Create());
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command ConfigureCommand(Command command)
+    private static Command SetAction(Command command)
     {
         command.SetAction(PublishCommand.Run);
         return command;

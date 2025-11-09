@@ -296,8 +296,9 @@ internal static class TestCommandDefinition
         command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(VsTestTargetOption);
+        command.SetAction(TestCommand.Run);
 
-        return ConfigureCommand(command);
+        return command;
     }
 
     private static string GetSemiColonEscapedstring(string arg)

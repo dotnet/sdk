@@ -9,8 +9,10 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
-internal static class ReferenceAddCommandParser
+internal static class ReferenceAddCommandDefinition
 {
+    public const string Name = "add";
+
     public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.ReferenceAddProjectPathArgumentName)
     {
         Description = CliCommandStrings.ReferenceAddProjectPathArgumentDescription,
@@ -33,22 +35,13 @@ internal static class ReferenceAddCommandParser
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
 
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
+    public static Command Create()
     {
-        return Command;
-    }
-
-    private static Command ConstructCommand()
-    {
-        Command command = new("add", CliCommandStrings.ReferenceAddAppFullName);
+        Command command = new(Name, CliCommandStrings.ReferenceAddAppFullName);
 
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(FrameworkOption);
         command.Options.Add(InteractiveOption);
-
-        command.SetAction((parseResult) => new ReferenceAddCommand(parseResult).Execute());
 
         return command;
     }

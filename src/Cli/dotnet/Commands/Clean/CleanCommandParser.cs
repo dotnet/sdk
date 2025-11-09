@@ -3,23 +3,25 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
-using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
 
 internal static class CleanCommandParser
 {
-
-    private static readonly Command Command = ConfigureCommand(CleanCommandDefinition.Create());
+    private static readonly Command Command = SetAction(CleanCommandDefinition.Create());
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command ConfigureCommand(Command command)
+    private static Command SetAction(Command command)
     {
         command.SetAction(CleanCommand.Run);
+
+        command.Subcommands.Single(c => c.Name == CleanFileBasedAppArtifactsCommandDefinition.Name)
+            .SetAction(parseResult => new CleanFileBasedAppArtifactsCommand(parseResult).Execute());
+
         return command;
     }
 }

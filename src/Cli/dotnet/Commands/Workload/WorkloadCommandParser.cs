@@ -34,7 +34,7 @@ internal static class WorkloadCommandParser
 
     private static Command ConfigureCommand(Command command)
     {
-        command.SetAction(ProcessArgs);
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
         return command;
     }
 }

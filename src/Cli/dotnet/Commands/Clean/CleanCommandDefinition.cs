@@ -56,7 +56,7 @@ internal static class CleanCommandDefinition
         command.Options.Add(CommonOptions.GetItemOption);
         command.Options.Add(CommonOptions.GetTargetResultOption);
         command.Options.Add(CommonOptions.GetResultOutputFileOption);
-        command.Subcommands.Add(CleanFileBasedAppArtifactsCommandParser.Command);
+        command.Subcommands.Add(CleanFileBasedAppArtifactsCommandDefinition.Create());
 
         return command;
     }

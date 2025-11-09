@@ -2,14 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.Tool.Execute;
 
 namespace Microsoft.DotNet.Cli.Commands.Dnx;
 
 internal static class DnxCommandDefinition
 {
-
     public static Command Create()
     {
         Command command = new("dnx", CliCommandStrings.ToolExecuteCommandDescription);

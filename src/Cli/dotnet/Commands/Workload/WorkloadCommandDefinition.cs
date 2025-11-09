@@ -132,8 +132,6 @@ internal static class WorkloadCommandDefinition
         }
     }
 
-    private static int ProcessArgs(ParseResult parseResult) => parseResult.HandleMissingCommand();
-
     public static Command Create()
     {
         Command command = new("workload", CliCommandStrings.WorkloadCommandDescription)

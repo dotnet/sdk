@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Cli.Commands.Package;
 
 internal class PackageCommandDefinition
 {
+    public const string Name = "package";
     private const string DocsLink = "https://aka.ms/dotnet-package";
 
     public static readonly Option<string?> ProjectOption = new("--project")
@@ -42,11 +43,11 @@ internal class PackageCommandDefinition
         {
             DocsLink = DocsLink
         };
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-        command.Subcommands.Add(PackageSearchCommandParser.GetCommand());
-        command.Subcommands.Add(PackageAddCommandParser.GetCommand());
-        command.Subcommands.Add(PackageListCommandParser.GetCommand());
-        command.Subcommands.Add(PackageRemoveCommandParser.GetCommand());
+
+        command.Subcommands.Add(PackageSearchCommandDefinition.Create());
+        command.Subcommands.Add(PackageAddCommandDefinition.Create());
+        command.Subcommands.Add(PackageListCommandDefinition.Create());
+        command.Subcommands.Add(PackageRemoveCommandDefinition.Create());
 
         return command;
     }

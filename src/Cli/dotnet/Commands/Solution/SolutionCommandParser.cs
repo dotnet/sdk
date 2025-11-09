@@ -21,7 +21,13 @@ internal static class SolutionCommandParser
 
     private static Command ConfigureCommand(Command command)
     {
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
+
+        command.Subcommands.Single(c => c.Name == SolutionAddCommandDefinition.Name).SetAction(parseResult => new SolutionAddCommand(parseResult).Execute());
+        command.Subcommands.Single(c => c.Name == SolutionListCommandDefinition.Name).SetAction(parseResult => new SolutionListCommand(parseResult).Execute());
+        command.Subcommands.Single(c => c.Name == SolutionMigrateCommandDefinition.Name).SetAction(parseResult => new SolutionMigrateCommand(parseResult).Execute());
+        command.Subcommands.Single(c => c.Name == SolutionRemoveCommandDefinition.Name).SetAction(parseResult => new SolutionRemoveCommand(parseResult).Execute());
+
         return command;
     }
 }

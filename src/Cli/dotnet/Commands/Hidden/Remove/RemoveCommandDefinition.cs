@@ -5,8 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Package;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Reference;
 using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 
@@ -22,9 +20,9 @@ internal static class RemoveCommandDefinition
             DocsLink = DocsLink
         };
 
-        command.Arguments.Add(PackageCommandParser.ProjectOrFileArgument);
-        command.Subcommands.Add(RemovePackageCommandParser.GetCommand());
-        command.Subcommands.Add(RemoveReferenceCommandParser.GetCommand());
+        command.Arguments.Add(PackageCommandDefinition.ProjectOrFileArgument);
+        command.Subcommands.Add(RemovePackageCommandDefinition.Create());
+        command.Subcommands.Add(RemoveReferenceCommandDefinition.Create());
 
         return command;
     }
