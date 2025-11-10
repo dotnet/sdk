@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
@@ -18,30 +19,26 @@ internal static class PublishCommandParser
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.PublishOutputOptionDescription,
         HelpName = CliCommandStrings.PublishOutputOption
     }.ForwardAsOutputPath("PublishDir");
 
-    public static readonly Option<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest")
+    public static readonly Option<IEnumerable<string>> ManifestOption = new Option<IEnumerable<string>>("--manifest")
     {
         Description = CliCommandStrings.ManifestOptionDescription,
         HelpName = CliCommandStrings.ManifestOption
     }.ForwardAsSingle(o => $"-property:TargetManifestFiles={string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))}")
     .AllowSingleArgPerToken();
 
-    public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
+    public static readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
         Description = CliCommandStrings.NoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
-    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
-    {
-        Description = CliCommandStrings.PublishCmdNoLogo,
-        Arity = ArgumentArity.Zero
-    }.ForwardAs("-nologo");
+    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
@@ -67,7 +64,10 @@ internal static class PublishCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("publish", DocsLink, CliCommandStrings.PublishAppDescription);
+        var command = new Command("publish", CliCommandStrings.PublishAppDescription)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);

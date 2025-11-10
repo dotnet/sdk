@@ -92,7 +92,7 @@
         <target state="translated">.NET Oluşturucusu</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Başlangıç bandını veya telif hakkı iletisini görüntüleme.</target>
         <note />
@@ -227,11 +227,6 @@ Aranan yollar: '{1}', '{2}'.</target>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">.NET Clean Komutu</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Başlangıç bandını veya telif hakkı iletisini görüntüleme.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -1932,11 +1927,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">.NET Core NuGet Paketi Paketleyicisi</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Başlangıç bandını veya telif hakkı iletisini görüntüleme.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2478,11 +2468,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">.NET Platformunun yayımcısı.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Başlangıç bandını veya telif hakkı iletisini görüntüleme.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -3481,9 +3466,9 @@ and the corresponding package Ids for installed tools using the command
 'dotnet tool list'.</source>
         <target state="translated">'{0}' paket kimliğine sahip araç bulunamadı.
 
-Araçlar, aracı çağırırken kullandığınız araç adından farklı olabilen 
-paket kimlikleri kullanılarak kaldırılır. Yüklü araçların araç adlarını ve 
-karşılık gelen paket kimliklerini bulmak için 
+Araçlar, aracı çağırırken kullandığınız araç adından farklı olabilen
+paket kimlikleri kullanılarak kaldırılır. Yüklü araçların araç adlarını ve
+karşılık gelen paket kimliklerini bulmak için
 'dotnet tool list' komutunu kullanabilirsiniz.</target>
         <note />
       </trans-unit>
