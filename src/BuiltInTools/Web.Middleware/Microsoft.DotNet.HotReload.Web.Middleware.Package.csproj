@@ -38,4 +38,19 @@
   <ItemGroup>
     <Using Remove="@(Using)" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddJSFilesToSourcePackage</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <!--
+    Add .js files as embedded resources in the source package.
+  -->
+  <Target Name="_AddJSFilesToSourcePackage">
+    <ItemGroup>
+      <!-- Must be in 'cs' directory since NuGet filters the files based on consuming project language -->
+      <_File Include="$(MSBuildProjectDirectory)\**\*.js" TargetDir="contentFiles/cs/$(TargetFramework)" BuildAction="EmbeddedResource" />
+      <TfmSpecificPackageFile Include="@(_File)" PackagePath="%(_File.TargetDir)/%(_File.RecursiveDir)%(_File.FileName)%(_File.Extension)"/>
+    </ItemGroup>
+  </Target>
 </Project>

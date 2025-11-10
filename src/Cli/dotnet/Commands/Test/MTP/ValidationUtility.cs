@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;

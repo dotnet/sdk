@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -17,29 +18,25 @@ internal static class BuildCommandParser
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.BuildOutputOptionDescription,
         HelpName = CliCommandStrings.OutputOptionName
     }.ForwardAsOutputPath("OutputPath");
 
-    public static readonly Option<bool> NoIncrementalOption = new ForwardedOption<bool>("--no-incremental")
+    public static readonly Option<bool> NoIncrementalOption = new Option<bool>("--no-incremental")
     {
         Description = CliCommandStrings.NoIncrementalOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--target:Rebuild");
 
-    public static readonly Option<bool> NoDependenciesOption = new ForwardedOption<bool>("--no-dependencies")
+    public static readonly Option<bool> NoDependenciesOption = new Option<bool>("--no-dependencies")
     {
         Description = CliCommandStrings.NoDependenciesOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--property:BuildProjectReferences=false");
 
-    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
-    {
-        Description = CliCommandStrings.BuildCmdNoLogo,
-        Arity = ArgumentArity.Zero
-    }.ForwardAs("-nologo");
+    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
@@ -69,7 +66,10 @@ internal static class BuildCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("build", DocsLink, CliCommandStrings.BuildAppFullName);
+        Command command = new("build", CliCommandStrings.BuildAppFullName)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: false);
