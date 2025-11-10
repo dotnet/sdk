@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageVersion Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
     <PackageVersion Include="FluentAssertions.Json" Version="$(FluentAssertionsJsonVersion)" />
+    <PackageVersion Include="MessagePack" Version="2.5.187" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="$(MicrosoftApplicationInsightsPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)" />
