@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void InstallToolParserCanParseVerbosityOption()
         {
-            const string expectedVerbosityLevel = "diag";
+            const string expectedVerbosityLevel = "diagnotic";
 
             var result = Parser.Parse($"dotnet tool install -g --verbosity:{expectedVerbosityLevel} console.test.app");
 

@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void UpdateToolParserCanParseVerbosityOption()
         {
-            const string expectedVerbosityLevel = "diag";
+            const string expectedVerbosityLevel = "diagnostic";
 
             var result =
                 Parser.Parse($"dotnet tool update -g --verbosity:{expectedVerbosityLevel} console.test.app");

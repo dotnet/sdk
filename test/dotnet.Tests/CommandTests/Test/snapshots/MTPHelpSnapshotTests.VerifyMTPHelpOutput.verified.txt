@@ -30,7 +30,7 @@ Options:
   -f, --framework <FRAMEWORK>                     The target framework to run tests for. The target framework must also be specified in the project file.
   --os <OS>                                       The target operating system.
   -r, --runtime <RUNTIME_IDENTIFIER>              The target runtime to test for.
-  -v, -verbosity <LEVEL>                          Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
+  -v, -verbosity <LEVEL>                          Set the MSBuild verbosity level. Allowed values are: quiet, q, minimal, m, normal, n, detailed, d, diagnostic, diag.
   --no-restore                                    Do not restore the project before building. [default: False]
   --no-build                                      Do not build the project before testing. Implies --no-restore. [default: False]
   --no-ansi                                       Disable ANSI output. [default: False]

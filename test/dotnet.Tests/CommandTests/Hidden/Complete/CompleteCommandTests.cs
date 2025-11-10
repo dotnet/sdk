@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var reporter = new BufferedReporter();
             CompleteCommand.RunWithReporter(new[] { "dotnet " }, reporter).Should().Be(0);
-            reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
+            reporter.Lines.Should().BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -221,8 +221,12 @@ namespace Microsoft.DotNet.Tests.Commands
                 "--all",
                 "--certificate-fingerprint",
                 "--verbosity",
-                "--help",
+                "-verbosity",
+                "/verbosity",
                 "-v",
+                "/v",
+                "--v",
+                "--help",
                 "-?",
                 "-h",
                 "/?",
@@ -240,8 +244,12 @@ namespace Microsoft.DotNet.Tests.Commands
             var expected = new[] {
                 "--configfile",
                 "--verbosity",
-                "--help",
+                "-verbosity",
+                "/verbosity",
                 "-v",
+                "/v",
+                "--v",
+                "--help",
                 "-?",
                 "-h",
                 "/?",
@@ -274,11 +282,15 @@ namespace Microsoft.DotNet.Tests.Commands
                 "--timestamper",
                 "--timestamp-hash-algorithm",
                 "--verbosity",
+                "-verbosity",
+                "/verbosity",
+                "-v",
+                "/v",
+                "--v",
                 "--output",
                 "--overwrite",
                 "-o",
                 "--help",
-                "-v",
                 "-?",
                 "-h",
                 "/?",

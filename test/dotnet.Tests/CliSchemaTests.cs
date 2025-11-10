@@ -258,7 +258,11 @@ public class CliSchemaTests : SdkTest
       "description": "Set the MSBuild verbosity level. Allowed values are: quiet, q, minimal, m, normal, n, detailed, d, diagnostic, diag.",
       "hidden": false,
       "aliases": [
-        "-v"
+        "--v",
+        "-v",
+        "-verbosity",
+        "/v",
+        "/verbosity"
       ],
       "helpName": "LEVEL",
       "valueType": "Microsoft.DotNet.Cli.Utils.Verbosity",
@@ -431,6 +435,7 @@ public class CliSchemaTests : SdkTest
 }
 """;
 
+    
     private static readonly string WorkloadInstallJson = $$"""
 {
   "name": "install",
@@ -663,7 +668,11 @@ public class CliSchemaTests : SdkTest
       "description": "Set the MSBuild verbosity level. Allowed values are: quiet, q, minimal, m, normal, n, detailed, d, diagnostic, diag.",
       "hidden": false,
       "aliases": [
-        "-v"
+        "--v",
+        "-v",
+        "-verbosity",
+        "/v",
+        "/verbosity"
       ],
       "helpName": "LEVEL",
       "valueType": "Microsoft.DotNet.Cli.Utils.Verbosity",

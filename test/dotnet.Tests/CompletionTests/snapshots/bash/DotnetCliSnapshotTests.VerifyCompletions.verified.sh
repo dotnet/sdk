@@ -1153,7 +1153,7 @@ _testhost_package_update() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v|--v|-verbosity|/v|/verbosity)
+        --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;

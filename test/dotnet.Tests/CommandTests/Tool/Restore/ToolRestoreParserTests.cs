@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void ToolRestoreParserCanParseVerbosityOption()
         {
-            const string expectedVerbosityLevel = "diag";
+            const string expectedVerbosityLevel = "diagnostic";
 
             var result = Parser.Parse($"dotnet tool restore --verbosity {expectedVerbosityLevel}");
 
