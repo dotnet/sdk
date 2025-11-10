@@ -92,7 +92,7 @@
         <target state="translated">.NET 작성기</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
         <note />
@@ -229,11 +229,6 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">.NET 정리 명령</target>
         <note />
       </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -360,11 +355,11 @@ Example:
 
 추가 설정에 따라 중단 덤프 또는 크래시 덤프가 수집될 수도 있습니다.
 
-예: 
+예:
   테스트에 걸리는 시간이 기본 시간 제한인 1시간보다 길면 테스트 실행이 시간 초과되고, 테스트 호스트가 예기치 않게 종료되면 크래시 덤프를 수집합니다.
   (크래시 덤프에는 추가 설정이 필요합니다. 아래를 참조하세요.)
   dotnet test --blame-hang --blame-crash
-예: 
+예:
   테스트에 걸리는 시간이 20분보다 길면 테스트 실행이 시간 초과되고 중단 덤프를 수집합니다.
   dotnet test --blame-hang-timeout 20min
 </target>
@@ -1932,11 +1927,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">.NET Core NuGet 패키지 패커</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2320,7 +2310,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
       2. 특정 워크로드 버전이 인수로 제공되는 경우 지정된 워크로드 버전에 대한 다양한 워크로드 및 해당 버전의 테이블을 출력합니다. --format 옵션을 사용하여 출력 형식을 변경합니다.
-         예: 
+         예:
            dotnet workload search version 9.0.201
            워크로드 매니페스트 ID                               매니페스트 기능 밴드      매니페스트 버전
            ------------------------------------------------------------------------------------------------
@@ -2339,7 +2329,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
       3. 하나 이상의 워크로드가 해당 버전과 함께 제공되는 경우('@' 문자와 조인하여) 제공된 버전과 일치하는 워크로드 버전을 출력합니다. --take 옵션을 사용하여 얼마나 제공할지 지정하고 --format을 사용하여 형식을 변경합니다.
-         예: 
+         예:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -2478,11 +2468,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">.NET 플랫폼용 게시자입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2697,7 +2682,7 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">시작 설정 파일을 찾을 수 없으므로 시작 프로필 '{0}'을(를) 사용할 수 없습니다. 시도한 위치: 
+        <target state="translated">시작 설정 파일을 찾을 수 없으므로 시작 프로필 '{0}'을(를) 사용할 수 없습니다. 시도한 위치:
 {1}</target>
         <note />
       </trans-unit>
