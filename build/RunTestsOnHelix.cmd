@@ -10,6 +10,9 @@ set PATH=%DOTNET_ROOT%;%PATH%
 set DOTNET_MULTILEVEL_LOOKUP=0
 set TestFullMSBuild=%1
 
+REM Ensure Visual Studio instances allow preview SDKs
+PowerShell -ExecutionPolicy ByPass -NoProfile -File "%HELIX_CORRELATION_PAYLOAD%\t\eng\enable-preview-sdks.ps1"
+
 set TestExecutionDirectory=%CD%\testExecutionDirectory
 mkdir %TestExecutionDirectory%
 
