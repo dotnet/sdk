@@ -12,6 +12,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 using NuGet.ProjectModel;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
@@ -90,7 +91,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             $"-property:RestoreDotnetCliToolReferences=false",
 
             // Output should not include MSBuild version header
-            "-nologo",
+            "--nologo",
 
             // Set verbosity to quiet to avoid cluttering the output for this 'inner' build
             "-v:quiet"

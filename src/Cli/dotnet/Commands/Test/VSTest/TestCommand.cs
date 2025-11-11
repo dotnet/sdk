@@ -205,12 +205,7 @@ public class TestCommand(
 
         VSTestTrace.SafeWriteTrace(() => $"MSBuild args from forwarded options: {string.Join(", ", parsedArgs)}");
 
-        var msbuildArgs = new List<string>(additionalBuildProperties)
-        {
-            "-nologo",
-        };
-
-        msbuildArgs.AddRange(parsedArgs);
+        List<string> msbuildArgs = [.. additionalBuildProperties, .. parsedArgs];
 
         if (settings.Any())
         {
@@ -245,7 +240,9 @@ public class TestCommand(
             CommonOptions.PropertiesOption,
             CommonOptions.RestorePropertiesOption,
             TestCommandParser.VsTestTargetOption,
-            TestCommandParser.VerbosityOption);
+            TestCommandParser.VerbosityOption,
+            CommonOptions.NoLogoOption())
+            .CloneWithNoLogo(true);
 
         TestCommand testCommand = new(
             parsedMSBuildArgs,

@@ -154,11 +154,7 @@ internal static class TestCommandParser
         HelpName = CliCommandStrings.HangTimeoutArgumentName
     }.ForwardAsMany(o => ["-property:VSTestBlameHang=true", $"-property:VSTestBlameHangTimeout={o}"]);
 
-    public static readonly Option<bool> NoLogoOption = new Option<bool>("--nologo")
-    {
-        Description = CliCommandStrings.TestCmdNoLogo,
-        Arity = ArgumentArity.Zero
-    }.ForwardIfEnabled("-property:VSTestNoLogo=true");
+    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption(forwardAs: "--property:VSTestNoLogo=true", description: CliCommandStrings.TestCmdNoLogo);
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
@@ -236,7 +232,7 @@ internal static class TestCommandParser
     {
         var command = new MicrosoftTestingPlatformTestCommand("test", CliCommandStrings.DotnetTestCommandMTPDescription);
         command.SetAction(parseResult => command.Run(parseResult));
-        command.Options.Add(MicrosoftTestingPlatformOptions.ProjectOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.SolutionOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption);
