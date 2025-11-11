@@ -1083,6 +1083,16 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">套件 {0} 不是 .NET 工具。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersion">
+        <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
+        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
+        <source>To install this tool, upgrade to .NET {0} or later, or install a version of the tool that is compatible with .NET {1}.</source>
+        <target state="new">To install this tool, upgrade to .NET {0} or later, or install a version of the tool that is compatible with .NET {1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">
         <source>Command '{0}' contains one or more of the following invalid characters: {1}.</source>
         <target state="translated">命令 '{0}' 包含下列一或多個無效的字元: {1}。</target>
