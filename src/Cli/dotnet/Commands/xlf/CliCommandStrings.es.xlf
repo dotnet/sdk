@@ -92,7 +92,7 @@
         <target state="translated">Generador para .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">No mostrar la pancarta de inicio ni el mensaje de copyright.</target>
         <note />
@@ -184,11 +184,6 @@ Rutas de acceso buscadas: "{1}", "{2}".</target>
         <target state="translated">No se pueden usar las opciones {0} y {1} juntas.  Quite una de las opciones.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">Algunas directivas no se pueden convertir. Ejecute el archivo para ver todos los errores de compilación. Especifique "--force" para convertir de todos modos.</target>
-        <note>{Locked="--force"}</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">No se encuentra una herramienta en el manifiesto de archivo que tiene un comando denominado "{0}".</target>
@@ -232,11 +227,6 @@ Rutas de acceso buscadas: "{1}", "{2}".</target>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">Comando Clean de .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">No mostrar la pancarta de inicio ni el mensaje de copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -456,16 +446,6 @@ Si no se especifica, el archivo se generará dentro del directorio predeterminad
       <trans-unit id="CmdDiagnosticOutputDirectoryPath">
         <source>DIAGNOSTIC_DIR</source>
         <target state="translated">DIAGNOSTIC_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDirectoryDescription">
-        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Define la ruta de acceso del directorio que se va a ejecutar. Si no se especifica, el valor predeterminado es el directorio actual.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDirectoryPathName">
-        <source>DIRECTORY_PATH</source>
-        <target state="translated">DIRECTORY_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
@@ -744,13 +724,18 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
-        <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
-        <note>{0} is the verb (e.g., "test", "run")</note>
+        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note />
       </trans-unit>
-      <trans-unit id="CmdProjectPathName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+      <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
+        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectOrSolutionPathName">
+        <source>PROJECT_OR_SOLUTION_PATH</source>
+        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -1121,11 +1106,6 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
         <target state="translated">Permite habilitar la salida de diagnóstico.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectiveError">
-        <source>error</source>
-        <target state="translated">error</target>
-        <note>Used when reporting directive errors like "file(location): error: message".</note>
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">Se eliminaron las directivas '{0}' ({1}) para '{2}' de: {3}</target>
@@ -1187,11 +1167,6 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
         <target state="translated">Error al liberar "NamedPipeServer" y no se encontró ningún protocolo de enlace.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestPipeIncompleteSize">
-        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="translated">"dotnet" recibió inesperadamente menos de 4 bytes de la canalización con nombre "dotnet test".</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
         <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
         <target state="translated">"dotnet" recibió inesperadamente mensajes superpuestos desde la canalización con nombre "dotnet test".</target>
@@ -1225,11 +1200,6 @@ Make the profile names distinct.</source>
 {0}
 Defina nombres de perfiles distintos.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0}</source>
-        <target state="translated">No se admiten directivas duplicadas: {0}</target>
-        <note>{0} is the directive type and name.</note>
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1586,11 +1556,6 @@ Defina nombres de perfiles distintos.</target>
         <target state="translated">El método '{0}' no se cerró correctamente</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">La directiva debe contener un nombre sin caracteres especiales y un valor opcional separado por "{1}" como "#:{0} Nombre{1}Valor".</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
-      </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
         <target state="translated">El archivo especificado debe existir y tener la extensión de archivo ".cs": "{0}"</target>
@@ -1605,11 +1570,6 @@ Defina nombres de perfiles distintos.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">No se puede especificar la opción "{0}" cuando también se utiliza "-" para leer el archivo desde la entrada estándar.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive is invalid: {0}</source>
-        <target state="translated">La directiva "#:project" no es válida: {0}</target>
-        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1747,11 +1707,6 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
         <target state="translated">Se recibió un nuevo protocolo de enlace "{0}" para la aplicación de prueba que no coincide con el protocolo de enlace anterior "{1}".</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}'.</source>
-        <target state="translated">Falta el nombre de "{0}".</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
@@ -1970,11 +1925,6 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       <trans-unit id="PackAppFullName">
         <source>.NET Core NuGet Package Packer</source>
         <target state="translated">.NET Core NuGet Package Packer</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">No mostrar la pancarta de inicio ni el mensaje de copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdOutputDir">
@@ -2515,24 +2465,9 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <target state="translated">Proyectos</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name: {0}</source>
-        <target state="translated">Nombre de propiedad no válido {0}</target>
-        <note>{0} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="translated">La directiva de propiedad debe tener dos partes separadas por "=", como "#:property PropertyName=PropertyValue".</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Publicador para la plataforma .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">No mostrar la pancarta de inicio ni el mensaje de copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2565,11 +2500,6 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
 The default is to publish a framework-dependent application.</source>
         <target state="translated">El tiempo de ejecución objetivo para publicar. Esto se utiliza al crear una implementación independiente.
 El valor predeterminado es publicar una aplicación dependiente del marco.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="QuoteInDirective">
-        <source>Directives currently cannot contain double quotes (").</source>
-        <target state="translated">Las directivas no pueden contener comillas dobles ("), por ahora.</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
@@ -2752,7 +2682,7 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">No se puede usar el perfil de inicio '{0}' porque no se pudo localizar el archivo de configuración de inicio. Ubicaciones probadas: 
+        <target state="translated">No se puede usar el perfil de inicio '{0}' porque no se pudo localizar el archivo de configuración de inicio. Ubicaciones probadas:
 {1}</target>
         <note />
       </trans-unit>
@@ -3075,11 +3005,6 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <source>Standard output</source>
         <target state="translated">Salida estándar</target>
         <note />
-      </trans-unit>
-      <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="translated">No se admite la restauración de gráficos estáticos para aplicaciones basadas en archivos. Elimine "#:property".</target>
-        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
@@ -3627,11 +3552,6 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
         <target state="translated">Las filas con cambios sin registrar representan cambios de acciones distintas de los comandos de carga de trabajo de la CLI de .NET. Por lo general, esto representa una actualización del SDK de .NET o de Visual Studio.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}'.</source>
-        <target state="translated">Directiva no reconocida "{0}".</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
-      </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
         <target state="translated">Actualizar todas las herramientas.</target>
@@ -3755,16 +3675,6 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">La propiedad "{0}" debe ser un objeto si se especifica.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbRun">
-        <source>run</source>
-        <target state="new">run</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbTest">
-        <source>test</source>
-        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">

@@ -115,31 +115,6 @@ internal static class SolutionAndProjectUtility
         return (true, string.Empty);
     }
 
-    public static (bool ProjectFileFound, string Message) TryGetProjectFilePath(string directory, out string projectFilePath)
-    {
-        projectFilePath = string.Empty;
-
-        if (!Directory.Exists(directory))
-        {
-            return (false, string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directory));
-        }
-
-        var actualProjectFiles = GetProjectFilePaths(directory);
-
-        if (actualProjectFiles.Length == 0)
-        {
-            return (false, string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, directory));
-        }
-
-        if (actualProjectFiles.Length == 1)
-        {
-            projectFilePath = actualProjectFiles[0];
-            return (true, string.Empty);
-        }
-
-        return (false, string.Format(CliStrings.MoreThanOneProjectInDirectory, directory));
-    }
-
     public static (bool SolutionFileFound, string Message) TryGetSolutionFilePath(string directory, out string solutionFilePath)
     {
         solutionFilePath = string.Empty;

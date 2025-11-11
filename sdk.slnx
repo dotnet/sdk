@@ -24,7 +24,6 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Microsoft.DotNet.TemplateLocator/Microsoft.DotNet.TemplateLocator.csproj" />
-    <Project Path="src/Microsoft.Net.Sdk.AnalyzerRedirecting/Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" />
     <Project Path="src/Microsoft.Net.Sdk.Compilers.Toolset/Microsoft.Net.Sdk.Compilers.Toolset.csproj" />
     <Project Path="src/Microsoft.Win32.Msi/Microsoft.Win32.Msi.csproj" />
     <Project Path="src/System.CommandLine.StaticCompletions/System.CommandLine.StaticCompletions.csproj" />
@@ -63,8 +62,10 @@
   </Folder>
   <Folder Name="/src/Cli/">
     <Project Path="src/Cli/dotnet/dotnet.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.Cli.CommandLine/Microsoft.DotNet.Cli.CommandLine.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Configurer/Microsoft.DotNet.Configurer.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.FileBasedPrograms/Microsoft.DotNet.FileBasedPrograms.Package.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.InternalAbstractions/Microsoft.DotNet.InternalAbstractions.csproj" />
     <Project Path="src/Cli/Microsoft.TemplateEngine.Cli/Microsoft.TemplateEngine.Cli.csproj" />
   </Folder>
@@ -337,7 +338,6 @@
     <Project Path="test/Microsoft.NET.Publish.Tests/Microsoft.NET.Publish.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Rebuild.Tests/Microsoft.NET.Rebuild.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Restore.Tests/Microsoft.NET.Restore.Tests.csproj" />
-    <Project Path="test/Microsoft.Net.Sdk.AnalyzerRedirecting.Tests/Microsoft.Net.Sdk.AnalyzerRedirecting.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.Publish.Tasks.Tests/Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj" />
