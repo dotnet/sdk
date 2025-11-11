@@ -43,6 +43,7 @@
     <PackageReference Include="Microsoft.Build.Locator" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
+    <PackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.HotReload" />
     <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="All" />
 
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />

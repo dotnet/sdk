@@ -8,6 +8,8 @@
     -->
     <TargetFrameworks>net6.0;net10.0</TargetFrameworks>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+
+    <DisableTransitiveFrameworkReferenceDownloads Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</DisableTransitiveFrameworkReferenceDownloads>
   </PropertyGroup>
 
   <!-- Reference 6.0.0 targeting packs in Source Build -->
