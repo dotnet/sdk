@@ -2,14 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Evaluation.Context;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class ProjectGraphFactory(ImmutableDictionary<string, string> globalOptions)
+internal sealed class ProjectGraphFactory
 {
     /// <summary>
     /// Reuse <see cref="ProjectCollection"/> with XML element caching to improve performance.
@@ -17,30 +21,50 @@ internal sealed class ProjectGraphFactory(ImmutableDictionary<string, string> gl
     /// The cache is automatically updated when build files change.
     /// https://github.com/dotnet/msbuild/blob/b6f853defccd64ae1e9c7cf140e7e4de68bff07c/src/Build/Definition/ProjectCollection.cs#L343-L354
     /// </summary>
-    private readonly ProjectCollection _collection = new(
-        globalProperties: globalOptions,
-        loggers: [],
-        remoteLoggers: [],
-        ToolsetDefinitionLocations.Default,
-        maxNodeCount: 1,
-        onlyLogCriticalEvents: false,
-        loadProjectsReadOnly: false,
-        useAsynchronousLogging: false,
-        reuseProjectRootElementCache: true);
+    private readonly ProjectCollection _collection;
+
+    private readonly ImmutableDictionary<string, string> _globalOptions;
+    private readonly ProjectRepresentation _rootProject;
+
+    // Only the root project can be virtual. #:project does not support targeting other single-file projects.
+    private readonly VirtualProjectBuilder? _virtualRootProjectBuilder;
+
+    public ProjectGraphFactory(
+        ProjectRepresentation rootProject,
+        ImmutableDictionary<string, string> globalOptions)
+    {
+        _collection = new(
+            globalProperties: globalOptions,
+            loggers: [],
+            remoteLoggers: [],
+            ToolsetDefinitionLocations.Default,
+            maxNodeCount: 1,
+            onlyLogCriticalEvents: false,
+            loadProjectsReadOnly: false,
+            useAsynchronousLogging: false,
+            reuseProjectRootElementCache: true);
+
+        _globalOptions = globalOptions;
+        _rootProject = rootProject;
+
+        if (rootProject.EntryPointFilePath != null)
+        {
+            _virtualRootProjectBuilder = new VirtualProjectBuilder(rootProject.EntryPointFilePath);
+        }
+    }
 
     /// <summary>
     /// Tries to create a project graph by running the build evaluation phase on the <see cref="rootProjectFile"/>.
     /// </summary>
     public ProjectGraph? TryLoadProjectGraph(
-        string rootProjectFile,
         ILogger logger,
         bool projectGraphRequired,
         CancellationToken cancellationToken)
     {
-        var entryPoint = new ProjectGraphEntryPoint(rootProjectFile, globalOptions);
+        var entryPoint = new ProjectGraphEntryPoint(_rootProject.ProjectGraphPath, _globalOptions);
         try
         {
-            return new ProjectGraph([entryPoint], _collection, projectInstanceFactory: null, cancellationToken);
+            return new ProjectGraph([entryPoint], _collection, CreateProjectInstance, cancellationToken);
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {
@@ -76,5 +100,20 @@ internal sealed class ProjectGraphFactory(ImmutableDictionary<string, string> gl
         }
 
         return null;
+    }
+
+    private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection)
+    {
+        if (_virtualRootProjectBuilder != null && projectPath == _rootProject.ProjectGraphPath)
+        {
+            return _virtualRootProjectBuilder.CreateProjectInstance(projectCollection);
+        }
+
+        return new ProjectInstance(
+            projectPath,
+            globalProperties,
+            toolsVersion: "Current",
+            subToolsetVersion: null,
+            projectCollection);
     }
 }
