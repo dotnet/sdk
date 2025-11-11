@@ -99,7 +99,7 @@ internal class ToolPackageInstance : IToolPackage
 
         var installPath = new VersionFolderPathResolver(PackageDirectory.Value).GetInstallPath(ResolvedPackageId.ToString(), ResolvedPackageVersion);
         var toolsPackagePath = Path.Combine(installPath, "tools");
-        
+
         // Get available frameworks before deserializing tool configuration
         // This allows us to provide better error messages if the tool requires a higher .NET version
         List<NuGetFramework> availableFrameworks = [];
@@ -189,33 +189,33 @@ internal class ToolPackageInstance : IToolPackage
                 if (availableFrameworks.Count > 0)
                 {
                     var currentFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
-                    
+
                     // Find the minimum framework version required by the tool
                     var minRequiredFramework = availableFrameworks
                         .Where(f => f.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
                         .MinBy(f => f.Version);
-                    
+
                     // If all available frameworks require a higher version than current runtime
                     if (minRequiredFramework != null && minRequiredFramework.Version > currentFramework.Version)
                     {
                         var requiredVersionString = $".NET {minRequiredFramework.Version.Major}.{minRequiredFramework.Version.Minor}";
                         var currentVersionString = $".NET {currentFramework.Version.Major}.{currentFramework.Version.Minor}";
-                        
+
                         var errorMessage = string.Format(
                             CliStrings.ToolRequiresHigherDotNetVersion,
                             packageId,
                             requiredVersionString,
                             currentVersionString);
-                        
+
                         var suggestion = string.Format(
                             CliStrings.ToolRequiresHigherDotNetVersionSuggestion,
                             minRequiredFramework.Version.Major,
                             currentFramework.Version.Major);
-                        
+
                         throw new ToolConfigurationException($"{errorMessage} {suggestion}");
                     }
                 }
-                
+
                 throw new ToolConfigurationException(
                     CliStrings.MissingToolSettingsFile);
             }
