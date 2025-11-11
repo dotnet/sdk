@@ -51,7 +51,6 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
     /// </summary>
     public static EvaluationResult? TryCreate(
         ProjectGraphFactory factory,
-        string rootProjectPath,
         ILogger logger,
         GlobalOptions options,
         EnvironmentOptions environmentOptions,
@@ -61,7 +60,6 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
         var buildReporter = new BuildReporter(logger, options, environmentOptions);
 
         var projectGraph = factory.TryLoadProjectGraph(
-            rootProjectPath,
             logger,
             projectGraphRequired: true,
             cancellationToken);
@@ -79,7 +77,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             {
                 if (!rootNode.ProjectInstance.Build([TargetNames.Restore], loggers))
                 {
-                    logger.LogError("Failed to restore project '{Path}'.", rootProjectPath);
+                    logger.LogError("Failed to restore '{Path}'.", rootNode.ProjectInstance.FullPath);
                     loggers.ReportOutput();
                     return null;
                 }

@@ -76,6 +76,9 @@ internal sealed class VirtualProjectBuilder
         return GetTempSubpath(directoryName);
     }
 
+    public static string GetVirtualProjectPath(string entryPointFilePath)
+        => Path.ChangeExtension(entryPointFilePath, ".csproj");
+
     /// <summary>
     /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
     /// </summary>
@@ -199,7 +202,7 @@ internal sealed class VirtualProjectBuilder
 
         ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
         {
-            var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
+            var projectFileFullPath = GetVirtualProjectPath(EntryPointFileFullPath);
             var projectFileWriter = new StringWriter();
 
             WriteProjectFile(
