@@ -187,16 +187,6 @@ Examples:
         <target state="translated">CONFIGURATION</target>
         <note />
       </trans-unit>
-      <trans-unit id="CouldNotFindAnyProjectInDirectory">
-        <source>Could not find any project in `{0}`.</source>
-        <target state="translated">In "{0}" wurde kein Projekt gefunden.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotFindProjectOrDirectory">
-        <source>Could not find project or directory `{0}`.</source>
-        <target state="translated">Das Projekt oder Verzeichnis "{0}" wurde nicht gefunden.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindSolutionIn">
         <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
         <target state="translated">Die angegebene Projektmappendatei "{0}" ist nicht vorhanden, oder das Verzeichnis enthält keine Projektmappendatei.</target>
@@ -681,11 +671,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="MoreThanOnePackagedShimAvailable">
         <source>More than one packaged shim is available: {0}.</source>
         <target state="translated">Mehr als ein paketierter Shim verfügbar: {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MoreThanOneProjectInDirectory">
-        <source>Found more than one project in `{0}`. Specify which one to use.</source>
-        <target state="translated">In "{0}" wurden mehrere Projekte gefunden. Geben Sie an, welches davon verwendet werden soll.</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOneSolutionInDirectory">
