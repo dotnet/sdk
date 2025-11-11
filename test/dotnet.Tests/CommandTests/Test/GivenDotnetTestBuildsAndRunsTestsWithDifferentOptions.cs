@@ -596,7 +596,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithPlatforms", Guid.NewGuid().ToString()).WithSource();
 
-            string testSolutionPath = "MultiTestProjectSolutionWithPlatforms.sln";
+            string testSolutionPath = "MultiTestProjectSolutionWithPlatforms.slnx";
 
             // Test with x86 platform - OtherTestProject should NOT be included (no Build.0 for x86)
             CommandResult resultX86 = new DotnetTestCommand(Log, disableNewOutput: false)

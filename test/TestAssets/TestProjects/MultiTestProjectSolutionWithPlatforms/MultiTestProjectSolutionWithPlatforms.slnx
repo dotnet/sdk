@@ -7,6 +7,6 @@
   </Configurations>
   <Project Path="TestProject/TestProject.csproj" />
   <Project Path="OtherTestProject/OtherTestProject.csproj">
-    <Platform Solution="*|x86" Project="Any CPU" Build="false" />
+    <Platform Solution="*|x86" Build="false" />
   </Project>
 </Solution>
