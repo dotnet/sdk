@@ -26,30 +26,21 @@ namespace Microsoft.DotNet.Watch
         public bool LaunchBrowser { get; init; }
         public string? LaunchUrl { get; init; }
 
-        internal static LaunchSettingsProfile? ReadLaunchProfile(string projectPath, string? launchProfileName, ILogger logger)
+        internal static LaunchSettingsProfile? ReadLaunchProfile(ProjectRepresentation project, string? launchProfileName, ILogger logger)
         {
-            var projectDirectory = Path.GetDirectoryName(projectPath);
-            Debug.Assert(projectDirectory != null);
-
-            var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, "Properties");
-            bool hasLaunchSettings = File.Exists(launchSettingsPath);
-
-            var projectNameWithoutExtension = Path.GetFileNameWithoutExtension(projectPath);
-            var runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
-            bool hasRunJson = File.Exists(runJsonPath);
-
-            if (hasLaunchSettings)
+            var launchSettingsPath = CommonRunHelpers.TryFindLaunchSettings(project.ProjectOrEntryPointFilePath, launchProfileName, (message, isError) =>
             {
-                if (hasRunJson)
+                if (isError)
                 {
-                    logger.LogWarning(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath);
+                    logger.LogError(message);
                 }
-            }
-            else if (hasRunJson)
-            {
-                launchSettingsPath = runJsonPath;
-            }
-            else
+                else
+                {
+                    logger.LogWarning(message);
+                }
+            });
+
+            if (launchSettingsPath == null)
             {
                 return null;
             }

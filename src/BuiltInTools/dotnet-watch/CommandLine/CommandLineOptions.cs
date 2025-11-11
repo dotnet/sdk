@@ -23,6 +23,7 @@ internal sealed class CommandLineOptions
     public bool List { get; init; }
     public required GlobalOptions GlobalOptions { get; init; }
 
+    public string? FilePath { get; init; }
     public string? ProjectPath { get; init; }
     public string? TargetFramework { get; init; }
     public bool NoLaunchProfile { get; init; }
@@ -57,7 +58,7 @@ internal sealed class CommandLineOptions
         {
             if (v.GetValue(quietOption) && v.GetValue(verboseOption))
             {
-                v.AddError(Resources.Error_QuietAndVerboseSpecified);
+                v.AddError(string.Format(Resources.Cannot_specify_both_0_and_1_options, quietOption.Name, verboseOption.Name));
             }
         });
 
@@ -73,6 +74,7 @@ internal sealed class CommandLineOptions
         // Options we need to know about that are passed through to the subcommand:
         var shortProjectOption = new Option<string>("-p") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var longProjectOption = new Option<string>("--project") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
+        var fileOption = new Option<string>("--file") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var launchProfileOption = new Option<string>("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var noLaunchProfileOption = new Option<bool>("--no-launch-profile") { Hidden = true, Arity = ArgumentArity.Zero };
 
@@ -88,8 +90,28 @@ internal sealed class CommandLineOptions
 
         rootCommand.Options.Add(longProjectOption);
         rootCommand.Options.Add(shortProjectOption);
+        rootCommand.Options.Add(fileOption);
         rootCommand.Options.Add(launchProfileOption);
         rootCommand.Options.Add(noLaunchProfileOption);
+
+        rootCommand.Validators.Add(v =>
+        {
+            var hasLongProjectOption = v.GetValue(longProjectOption) != null;
+            var hasShortProjectOption = v.GetValue(shortProjectOption) != null;
+
+            if (hasLongProjectOption && hasShortProjectOption)
+            {
+                v.AddError(string.Format(Resources.Cannot_specify_both_0_and_1_options, longProjectOption.Name, shortProjectOption.Name));
+            }
+
+            if (v.GetValue(fileOption) != null && (hasLongProjectOption || hasShortProjectOption))
+            {
+                v.AddError(string.Format(
+                    Resources.Cannot_specify_both_0_and_1_options,
+                    fileOption.Name,
+                    hasLongProjectOption ? longProjectOption.Name : shortProjectOption.Name));
+            }
+        });
 
         // We process all tokens that do not match any of the above options
         // to find the subcommand (the first unmatched token preceding "--")
@@ -186,6 +208,7 @@ internal sealed class CommandLineOptions
             ExplicitCommand = explicitCommand?.Name,
 
             ProjectPath = projectValue,
+            FilePath = parseResult.GetValue(fileOption),
             LaunchProfileName = parseResult.GetValue(launchProfileOption),
             NoLaunchProfile = parseResult.GetValue(noLaunchProfileOption),
             BuildArguments = buildArguments,
@@ -363,11 +386,12 @@ internal sealed class CommandLineOptions
         return -1;
     }
 
-    public ProjectOptions GetProjectOptions(string projectPath, string workingDirectory)
-        => new()
+    public ProjectOptions GetProjectOptions(ProjectRepresentation project, string workingDirectory)
+    {
+        return new()
         {
             IsRootProject = true,
-            ProjectPath = projectPath,
+            Representation = project,
             WorkingDirectory = workingDirectory,
             Command = Command,
             CommandArguments = CommandArguments,
@@ -377,6 +401,7 @@ internal sealed class CommandLineOptions
             BuildArguments = BuildArguments,
             TargetFramework = TargetFramework,
         };
+    }
 
     // Parses name=value pairs passed to --property. Skips invalid input.
     public static IEnumerable<(string key, string value)> ParseBuildProperties(IEnumerable<string> arguments)
