@@ -64,7 +64,7 @@ public sealed class VirtualProjectBuilder
     /// <remarks>
     /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectConvertTests.SameAsTemplate</c>).
     /// </remarks>
-    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework) =>
+    public static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework) =>
     [
         ("OutputType", "Exe"),
         ("TargetFramework", targetFramework),
