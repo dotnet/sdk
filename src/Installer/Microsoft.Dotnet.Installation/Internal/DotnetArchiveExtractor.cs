@@ -19,7 +19,6 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
     private readonly IProgressTarget _progressTarget;
-    private readonly ReleaseManifest _releaseManifest;
     private string scratchDownloadDirectory;
     private string? _archivePath;
 
@@ -28,7 +27,6 @@ internal class DotnetArchiveExtractor : IDisposable
         _request = request;
         _resolvedVersion = resolvedVersion;
         _progressTarget = progressTarget;
-        _releaseManifest = new();
         scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
     }
 
@@ -36,7 +34,7 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
 
-        using var archiveDownloader = new DotnetArchiveDownloader(_releaseManifest);
+        using var archiveDownloader = new DotnetArchiveDownloader();
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
 
@@ -44,10 +42,14 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             var downloadTask = progressReporter.AddTask($"Downloading .NET SDK {_resolvedVersion}", 100);
             var reporter = new DownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
-            var downloadSuccess = archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
-            if (!downloadSuccess)
+
+            try
             {
-                throw new InvalidOperationException($"Failed to download .NET archive for version {_resolvedVersion}");
+                archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
             }
 
             downloadTask.Value = 100;
@@ -242,7 +244,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private void HandleMuxerUpdateFromTar(TarEntry entry, string muxerTargetPath)
     {
         // Create a temporary file for the muxer first to avoid locking issues
-        var tempMuxerPath = Directory.CreateTempSubdirectory().FullName;
+        var tempMuxerPath = Path.Combine(Directory.CreateTempSubdirectory().FullName, entry.Name);
         using (var outStream = File.Create(tempMuxerPath))
         {
             entry.DataStream?.CopyTo(outStream);
@@ -327,7 +329,7 @@ internal class DotnetArchiveExtractor : IDisposable
      */
     private void HandleMuxerUpdateFromZip(ZipArchiveEntry entry, string muxerTargetPath)
     {
-        var tempMuxerPath = Directory.CreateTempSubdirectory().FullName;
+        var tempMuxerPath = Path.Combine(Directory.CreateTempSubdirectory().FullName, entry.Name);
         entry.ExtractToFile(tempMuxerPath, overwrite: true);
 
         try

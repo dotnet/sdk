@@ -19,23 +19,33 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// <summary>
 /// Handles downloading and parsing .NET release manifests to find the correct installer/archive for a given installation.
 /// </summary>
-internal class DotnetArchiveDownloader(HttpClient httpClient) : IDisposable
+internal class DotnetArchiveDownloader : IDisposable
 {
     private const int MaxRetryCount = 3;
     private const int RetryDelayMilliseconds = 1000;
 
-    private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-    private ReleaseManifest _releaseManifest = new();
+    private readonly HttpClient _httpClient;
+    private readonly bool _shouldDisposeHttpClient;
+    private ReleaseManifest _releaseManifest;
 
     public DotnetArchiveDownloader()
-        : this(CreateDefaultHttpClient())
+        : this(new ReleaseManifest())
     {
     }
 
-    public DotnetArchiveDownloader(ReleaseManifest releaseManifest)
-        : this(CreateDefaultHttpClient())
+    public DotnetArchiveDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null)
     {
         _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
+        if (httpClient == null)
+        {
+            _httpClient = CreateDefaultHttpClient();
+            _shouldDisposeHttpClient = true;
+        }
+        else
+        {
+            _httpClient = httpClient;
+            _shouldDisposeHttpClient = false;
+        }
     }
 
     /// <summary>
@@ -69,8 +79,7 @@ internal class DotnetArchiveDownloader(HttpClient httpClient) : IDisposable
     /// <param name="downloadUrl">The URL to download from</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    /// <returns>True if download was successful, false otherwise</returns>
-    protected async Task<bool> DownloadArchiveAsync(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    async Task DownloadArchiveAsync(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         // Create temp file path in same directory for atomic move when complete
         string tempPath = $"{destinationPath}.download";
@@ -82,15 +91,14 @@ internal class DotnetArchiveDownloader(HttpClient httpClient) : IDisposable
                 // Ensure the directory exists
                 Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
 
-                // Try to get content length for progress reporting
-                long? totalBytes = await GetContentLengthAsync(downloadUrl);
+                // Content length for progress reporting
+                long? totalBytes = null;
 
                 // Make the actual download request
                 using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
 
-                // Get the total bytes if we didn't get it before
-                if (!totalBytes.HasValue && response.Content.Headers.ContentLength.HasValue)
+                if (response.Content.Headers.ContentLength.HasValue)
                 {
                     totalBytes = response.Content.Headers.ContentLength.Value;
                 }
@@ -102,7 +110,7 @@ internal class DotnetArchiveDownloader(HttpClient httpClient) : IDisposable
                 long bytesRead = 0;
                 int read;
 
-                var lastProgressReport = DateTime.UtcNow;
+                var lastProgressReport = DateTime.MinValue;
 
                 while ((read = await contentStream.ReadAsync(buffer)) > 0)
                 {
@@ -133,9 +141,20 @@ internal class DotnetArchiveDownloader(HttpClient httpClient) : IDisposable
                 }
                 File.Move(tempPath, destinationPath);
 
-                return true;
+                return;
             }
             catch (Exception)
+            {
+                if (attempt < MaxRetryCount)
+                {
+                    await Task.Delay(RetryDelayMilliseconds * attempt); // Linear backoff
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            finally
             {
                 // Delete the partial download if it exists
                 try
@@ -150,35 +169,9 @@ internal class DotnetArchiveDownloader(HttpClient httpClient) : IDisposable
                     // Ignore cleanup errors
                 }
 
-                if (attempt < MaxRetryCount)
-                {
-                    await Task.Delay(RetryDelayMilliseconds * attempt); // Exponential backoff
-                }
-                else
-                {
-                    return false;
-                }
             }
         }
 
-        return false;
-    }
-
-    /// <summary>
-    /// Gets the content length of a resource.
-    /// </summary>
-    private async Task<long?> GetContentLengthAsync(string url)
-    {
-        try
-        {
-            using var headRequest = new HttpRequestMessage(HttpMethod.Head, url);
-            using var headResponse = await _httpClient.SendAsync(headRequest);
-            return headResponse.Content.Headers.ContentLength;
-        }
-        catch
-        {
-            return null;
-        }
     }
 
     /// <summary>
@@ -187,10 +180,9 @@ internal class DotnetArchiveDownloader(HttpClient httpClient) : IDisposable
     /// <param name="downloadUrl">The URL to download from</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    /// <returns>True if download was successful, false otherwise</returns>
-    protected bool DownloadArchive(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    void DownloadArchive(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
-        return DownloadArchiveAsync(downloadUrl, destinationPath, progress).GetAwaiter().GetResult();
+        DownloadArchiveAsync(downloadUrl, destinationPath, progress).GetAwaiter().GetResult();
     }
 
     /// <summary>
@@ -200,23 +192,24 @@ internal class DotnetArchiveDownloader(HttpClient httpClient) : IDisposable
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
     /// <returns>True if download and verification were successful, false otherwise</returns>
-    public bool DownloadArchiveWithVerification(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    public void DownloadArchiveWithVerification(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         var targetFile = _releaseManifest.FindReleaseFile(installRequest, resolvedVersion);
         string? downloadUrl = targetFile?.Address.ToString();
         string? expectedHash = targetFile?.Hash.ToString();
 
-        if (string.IsNullOrEmpty(expectedHash) || string.IsNullOrEmpty(downloadUrl))
+        if (string.IsNullOrEmpty(expectedHash))
         {
-            return false;
+            throw new ArgumentException($"{nameof(expectedHash)} cannot be null or empty");
+        }
+        if (string.IsNullOrEmpty(downloadUrl))
+        {
+            throw new ArgumentException($"{nameof(downloadUrl)} cannot be null or empty");
         }
 
-        if (!DownloadArchive(downloadUrl, destinationPath, progress))
-        {
-            return false;
-        }
+        DownloadArchive(downloadUrl, destinationPath, progress);
 
-        return VerifyFileHash(destinationPath, expectedHash);
+        VerifyFileHash(destinationPath, expectedHash);
     }
 
 
@@ -240,20 +233,25 @@ internal class DotnetArchiveDownloader(HttpClient httpClient) : IDisposable
     /// </summary>
     /// <param name="filePath">Path to the file to verify</param>
     /// <param name="expectedHash">Expected hash value</param>
-    /// <returns>True if the hash matches, false otherwise</returns>
-    public static bool VerifyFileHash(string filePath, string expectedHash)
+    public static void VerifyFileHash(string filePath, string expectedHash)
     {
         if (string.IsNullOrEmpty(expectedHash))
         {
-            return false;
+            throw new ArgumentException("Expected hash cannot be null or empty", nameof(expectedHash));
         }
 
         string actualHash = ComputeFileHash(filePath);
-        return string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase);
+        if (!string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new Exception($"File hash mismatch. Expected: {expectedHash}, Actual: {actualHash}");
+        }
     }
 
     public void Dispose()
     {
-        _httpClient?.Dispose();
+        if (_shouldDisposeHttpClient)
+        {
+            _httpClient?.Dispose();
+        }
     }
 }

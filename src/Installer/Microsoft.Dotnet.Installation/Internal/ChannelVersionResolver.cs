@@ -88,7 +88,7 @@ internal class ChannelVersionResolver
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
     /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "sts", "preview")</param>
-    /// <param name="mode">InstallMode.SDK or InstallMode.Runtime</param>
+    /// <param name="component">The component to check (ie SDK or runtime)</param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
     public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
     {
@@ -143,7 +143,7 @@ internal class ChannelVersionResolver
 
     private IEnumerable<Product> GetProductsInMajorOrMajorMinor(IEnumerable<Product> index, int major, int? minor = null)
     {
-        var validProducts = index.Where(p => p.ProductVersion.StartsWith(minor is not null ? $"{major}.{minor}" : $"{major}."));
+        var validProducts = index.Where(p => minor is not null ? p.ProductVersion.Equals($"{major}.{minor}") : p.ProductVersion.StartsWith($"{major}."));
         return validProducts;
     }
 
@@ -161,8 +161,8 @@ internal class ChannelVersionResolver
     /// Gets the latest version based on support status (LTS or STS).
     /// </summary>
     /// <param name="index">The product collection to search</param>
-    /// <param name="isLts">True for LTS (Long-Term Support), false for STS (Standard-Term Support)</param>
-    /// <param name="mode">InstallComponent.SDK or InstallComponent.Runtime</param>
+    /// <param name="releaseType">The release type to filter by (LTS or STS)</param>
+    /// <param name="component">The component to check (ie SDK or runtime)</param>
     /// <returns>Latest stable version string matching the support status, or null if none found</returns>
     private static ReleaseVersion? GetLatestVersionByReleaseType(IEnumerable<Product> index, ReleaseType releaseType, InstallComponent component)
     {
@@ -174,7 +174,7 @@ internal class ChannelVersionResolver
     /// Gets the latest preview version available.
     /// </summary>
     /// <param name="index">The product collection to search</param>
-    /// <param name="mode">InstallComponent.SDK or InstallComponent.Runtime</param>
+    /// <param name="component">The component to check (ie SDK or runtime)</param>
     /// <returns>Latest preview or GoLive version string, or null if none found</returns>
     private ReleaseVersion? GetLatestPreviewVersion(IEnumerable<Product> index, InstallComponent component)
     {
