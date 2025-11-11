@@ -23,6 +23,7 @@
     <File Path="test.sh" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Cli/Microsoft.DotNet.FileBasedPrograms/Microsoft.DotNet.FileBasedPrograms.shproj" Id="374c251e-bf99-45b2-a58e-40229ed8aaca" />
     <Project Path="src/Microsoft.DotNet.ProjectTools/Microsoft.DotNet.ProjectTools.csproj" />
     <Project Path="src/Microsoft.DotNet.TemplateLocator/Microsoft.DotNet.TemplateLocator.csproj" />
     <Project Path="src/Microsoft.Net.Sdk.Compilers.Toolset/Microsoft.Net.Sdk.Compilers.Toolset.csproj" />

@@ -1291,7 +1291,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains(MessageDescriptor.BuildSucceeded.GetMessage(serviceProjectPath));
             await App.WaitUntilOutputContains(MessageDescriptor.ProjectsRebuilt);
-            await App.WaitUntilOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
+            await App.WaitUntilOutputContains($"dotnet watch ⭐ Starting: '{serviceProjectPath}'");
             App.Process.ClearOutput();
 
             App.SendControlC();
