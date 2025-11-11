@@ -120,17 +120,19 @@
   <data name="Error_ProjectPath_NotFound" xml:space="preserve">
     <value>The project file '{0}' does not exist.</value>
   </data>
+  <data name="The_specified_path_0_is_invalid_1" xml:space="preserve">
+    <value>The specified path '{0}' is invalid: {1}</value>
+  </data>
   <data name="Error_MultipleProjectsFound" xml:space="preserve">
     <value>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</value>
-    <comment>{Locked="--project"}</comment>
+    <comment>{Locked="MSBuild"}{Locked="--project"}</comment>
   </data>
-  <data name="Error_NoProjectsFound" xml:space="preserve">
+  <data name="Could_not_find_msbuild_project_file_in_0" xml:space="preserve">
     <value>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</value>
-    <comment>{Locked="--project"}</comment>
+    <comment>{Locked="MSBuild"}{Locked="--project"}</comment>
   </data>
-  <data name="Error_QuietAndVerboseSpecified" xml:space="preserve">
-    <value>Cannot specify both '--quiet' and '--verbose' options.</value>
-    <comment>{Locked="--quiet"}{Locked="--verbose"}</comment>
+  <data name="Cannot_specify_both_0_and_1_options" xml:space="preserve">
+    <value>Cannot specify both '{0}' and '{1}' options.</value>
   </data>
   <data name="Warning_ProjectAbbreviationDeprecated" xml:space="preserve">
     <value>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</value>

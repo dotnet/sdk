@@ -2,25 +2,25 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../Resources.resx">
     <body>
+      <trans-unit id="Cannot_specify_both_0_and_1_options">
+        <source>Cannot specify both '{0}' and '{1}' options.</source>
+        <target state="new">Cannot specify both '{0}' and '{1}' options.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Could_not_find_msbuild_project_file_in_0">
+        <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
+        <target state="new">Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</target>
+        <note>{Locked="MSBuild"}{Locked="--project"}</note>
+      </trans-unit>
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
-        <target state="translated">In "{0}" wurden mehrere MSBuild-Projektdateien gefunden. Geben Sie über die Option "--project" an, welche verwendet werden soll.</target>
-        <note>{Locked="--project"}</note>
-      </trans-unit>
-      <trans-unit id="Error_NoProjectsFound">
-        <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
-        <target state="translated">In "{0}" wurde keine MSBuild-Projektdatei gefunden. Geben Sie das zu verwendende Projekt über die Option "--project" an.</target>
-        <note>{Locked="--project"}</note>
+        <target state="needs-review-translation">In "{0}" wurden mehrere MSBuild-Projektdateien gefunden. Geben Sie über die Option "--project" an, welche verwendet werden soll.</target>
+        <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
         <source>The project file '{0}' does not exist.</source>
         <target state="translated">Die Projektdatei "{0}" ist nicht vorhanden.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="Error_QuietAndVerboseSpecified">
-        <source>Cannot specify both '--quiet' and '--verbose' options.</source>
-        <target state="translated">Die Optionen "--quiet" und "--verbose" können nicht gleichzeitig angegeben werden.</target>
-        <note>{Locked="--quiet"}{Locked="--verbose"}</note>
       </trans-unit>
       <trans-unit id="Help">
         <source>
@@ -140,6 +140,11 @@ Beispiele:
         <target state="translated">
       Ausführliche Ausgabe anzeigen
     </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="The_specified_path_0_is_invalid_1">
+        <source>The specified path '{0}' is invalid: {1}</source>
+        <target state="new">The specified path '{0}' is invalid: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">
