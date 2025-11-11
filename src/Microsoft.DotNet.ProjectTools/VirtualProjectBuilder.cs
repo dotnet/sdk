@@ -41,7 +41,7 @@ internal sealed class VirtualProjectBuilder
 
     public VirtualProjectBuilder(
         string entryPointFileFullPath,
-        string targetFrameworkVersion,
+        string targetFramework,
         string[]? requestedTargets = null,
         string? artifactsPath = null)
     {
@@ -50,16 +50,16 @@ internal sealed class VirtualProjectBuilder
         EntryPointFileFullPath = entryPointFileFullPath;
         RequestedTargets = requestedTargets;
         ArtifactsPath = artifactsPath;
-        _defaultProperties = GetDefaultProperties(targetFrameworkVersion);
+        _defaultProperties = GetDefaultProperties(targetFramework);
     }
 
     /// <remarks>
     /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectConvertTests.SameAsTemplate</c>).
     /// </remarks>
-    public static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFrameworkVersion) =>
+    public static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework) =>
     [
         ("OutputType", "Exe"),
-        ("TargetFramework", $"net{targetFrameworkVersion}"),
+        ("TargetFramework", targetFramework),
         ("ImplicitUsings", "enable"),
         ("Nullable", "enable"),
         ("PublishAot", "true"),
@@ -75,6 +75,9 @@ internal sealed class VirtualProjectBuilder
 
         return GetTempSubpath(directoryName);
     }
+
+    public static string GetVirtualProjectPath(string entryPointFilePath)
+        => Path.ChangeExtension(entryPointFilePath, ".csproj");
 
     /// <summary>
     /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
@@ -199,7 +202,7 @@ internal sealed class VirtualProjectBuilder
 
         ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
         {
-            var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
+            var projectFileFullPath = GetVirtualProjectPath(EntryPointFileFullPath);
             var projectFileWriter = new StringWriter();
 
             WriteProjectFile(

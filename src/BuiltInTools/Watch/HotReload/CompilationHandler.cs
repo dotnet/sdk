@@ -49,8 +49,7 @@ namespace Microsoft.DotNet.Watch
         public CompilationHandler(DotNetWatchContext context)
         {
             _context = context;
-            _processRunner = processRunner;
-            Workspace = new HotReloadMSBuildWorkspace(logger, projectFile => (instances: _projectInstances.GetValueOrDefault(projectFile, []), project: null));
+            Workspace = new HotReloadMSBuildWorkspace(context.Logger, projectFile => (instances: _projectInstances.GetValueOrDefault(projectFile, []), project: null));
             _hotReloadService = new HotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
         }
 
@@ -814,20 +813,20 @@ namespace Microsoft.DotNet.Watch
                     keySelector: static group => group.Key,
                     elementSelector: static group => group.Select(static node => node.ProjectInstance).ToImmutableArray());
 
-        public async Task UpdateProjectConeAsync(ProjectGraph projectGraph, string projectPath, CancellationToken cancellationToken)
+        public async Task UpdateProjectConeAsync(ProjectGraph projectGraph, ProjectRepresentation project, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Loading projects ...");
+            Logger.LogInformation("Loading projects ...");
             var stopwatch = Stopwatch.StartNew();
 
             _projectInstances = CreateProjectInstanceMap(projectGraph);
 
-            var solution = await Workspace.UpdateProjectConeAsync(projectPath, cancellationToken);
+            var solution = await Workspace.UpdateProjectConeAsync(project.ProjectGraphPath, cancellationToken);
             await SolutionUpdatedAsync(solution, "project update", cancellationToken);
 
-            _logger.LogInformation("Projects loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
+            Logger.LogInformation("Projects loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
         }
 
-        public async Task UpdateFileContentAsync(ImmutableList<ChangedFile> changedFiles, CancellationToken cancellationToken)
+        public async Task UpdateFileContentAsync(IReadOnlyList<ChangedFile> changedFiles, CancellationToken cancellationToken)
         {
             var solution = await Workspace.UpdateFileContentAsync(changedFiles.Select(static f => (f.Item.FilePath, f.Kind.Convert())), cancellationToken);
             await SolutionUpdatedAsync(solution, "document update", cancellationToken);
@@ -838,16 +837,16 @@ namespace Microsoft.DotNet.Watch
 
         private async Task ReportSolutionFilesAsync(Solution solution, int updateId, string operationDisplayName, CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Solution after {Operation}: v{Version}", operationDisplayName, updateId);
+            Logger.LogDebug("Solution after {Operation}: v{Version}", operationDisplayName, updateId);
 
-            if (!_logger.IsEnabled(LogLevel.Trace))
+            if (!Logger.IsEnabled(LogLevel.Trace))
             {
                 return;
             }
 
             foreach (var project in solution.Projects)
             {
-                _logger.LogDebug("  Project: {Path}", project.FilePath);
+                Logger.LogDebug("  Project: {Path}", project.FilePath);
 
                 foreach (var document in project.Documents)
                 {
@@ -868,7 +867,7 @@ namespace Microsoft.DotNet.Watch
             async ValueTask InspectDocumentAsync(TextDocument document, string kind)
             {
                 var text = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
-                _logger.LogDebug("    {Kind}: {FilePath} [{Checksum}]", kind, document.FilePath, Convert.ToBase64String(text.GetChecksum().ToArray()));
+                Logger.LogDebug("    {Kind}: {FilePath} [{Checksum}]", kind, document.FilePath, Convert.ToBase64String(text.GetChecksum().ToArray()));
             }
         }
     }

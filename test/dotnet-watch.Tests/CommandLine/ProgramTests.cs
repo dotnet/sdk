@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    public class ProgramTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+    public class ProgramTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
     {
         [Fact]
         public async Task ConsoleCancelKey()

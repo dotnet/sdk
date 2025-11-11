@@ -23,6 +23,7 @@ internal sealed class CommandLineOptions
     public bool List { get; init; }
     public required GlobalOptions GlobalOptions { get; init; }
 
+    public string? FilePath { get; init; }
     public string? ProjectPath { get; init; }
     public string? TargetFramework { get; init; }
     public bool NoLaunchProfile { get; init; }
@@ -146,6 +147,7 @@ internal sealed class CommandLineOptions
             ExplicitCommand = explicitCommand?.Name,
 
             ProjectPath = projectValue,
+            FilePath = parseResult.GetValue(definition.FileOption),
             LaunchProfileName = parseResult.GetValue(definition.LaunchProfileOption),
             NoLaunchProfile = parseResult.GetValue(definition.NoLaunchProfileOption),
             BuildArguments = buildArguments,
@@ -341,11 +343,11 @@ internal sealed class CommandLineOptions
         return -1;
     }
 
-    public ProjectOptions GetProjectOptions(string projectPath, string workingDirectory)
+    public ProjectOptions GetProjectOptions(ProjectRepresentation project, string workingDirectory)
         => new()
         {
             IsRootProject = true,
-            ProjectPath = projectPath,
+            Representation = project,
             WorkingDirectory = workingDirectory,
             Command = Command,
             CommandArguments = CommandArguments,

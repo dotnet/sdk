@@ -61,7 +61,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var projectOptions = new ProjectOptions()
         {
             IsRootProject = false,
-            ProjectPath = projectPath,
+            Representation = new ProjectRepresentation(projectPath, entryPointFilePath: null),
             WorkingDirectory = workingDirectory,
             BuildArguments = [],
             Command = "run",
