@@ -31,7 +31,7 @@
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
-/src/Cli/dotnet/commands/dotnet-format @phil-allen-msft
+/src/Cli/dotnet/Commands/Format @phil-allen-msft
 /test/dotnet-format.UnitTests @phil-allen-msft
 
 # Area-NuGet
@@ -47,12 +47,12 @@
 /test/dotnet.Tests/CommandTests/Restore @dotnet/nuget-team
 
 # Area-FSharp
-/src/Cli/dotnet/commands/dotnet-fsi @dotnet/fsharp
+/src/Cli/dotnet/Commands/Fsi @dotnet/fsharp
 /test/dotnet-fsi.Tests @dotnet/fsharp
 
 # Area-DotNet Test
-/src/Cli/dotnet/commands/dotnet-test @dotnet/dotnet-testing-admin
-/src/Cli/dotnet/commands/dotnet-vstest @dotnet/dotnet-testing-admin
+/src/Cli/dotnet/Commands/Test @dotnet/dotnet-testing-admin
+/src/Cli/dotnet/Commands/VSTest @dotnet/dotnet-testing-admin
 /test/dotnet-test.Tests @dotnet/dotnet-testing-admin
 /test/dotnet-vstest.Tests @dotnet/dotnet-testing-admin
 /test/dotnet-new.IntegrationTests @dotnet/dotnet-testing-admin
@@ -61,7 +61,7 @@
 /template_feed/Microsoft.DotNet.Common.*/content/XUnit* @dotnet/dotnet-testing-admin
 
 # Area-Templates
-/src/Cli/dotnet/commands/dotnet-new @dotnet/templating-engine-maintainers
+/src/Cli/dotnet/Commands/New @dotnet/templating-engine-maintainers
 /src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers
 /test/dotnet-new.IntegrationTests @dotnet/templating-engine-maintainers
 /test/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers
