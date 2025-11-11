@@ -276,6 +276,7 @@ namespace Analyzer.Utilities
         public const string SystemLinqEnumerable = "System.Linq.Enumerable";
         public const string SystemLinqExpressionsExpression1 = "System.Linq.Expressions.Expression`1";
         public const string SystemLinqIOrderedEnumerable1 = "System.Linq.IOrderedEnumerable`1";
+        public const string SystemLinqParallelEnumerable = "System.Linq.ParallelEnumerable";
         public const string SystemLinqQueryable = "System.Linq.Queryable";
         public const string SystemMarshalByRefObject = "System.MarshalByRefObject";
         public const string SystemMemory1 = "System.Memory`1";
@@ -438,6 +439,8 @@ namespace Analyzer.Utilities
         public const string SystemSystemException = "System.SystemException";
         public const string SystemTextCompositeFormat = "System.Text.CompositeFormat";
         public const string SystemTextEncoding = "System.Text.Encoding";
+        public const string SystemTextJsonJsonDocument = "System.Text.Json.JsonDocument";
+        public const string SystemTextJsonJsonElement = "System.Text.Json.JsonElement";
         public const string SystemTextJsonJsonSerializerOptions = "System.Text.Json.JsonSerializerOptions";
         public const string SystemTextJsonJsonSerializer = "System.Text.Json.JsonSerializer";
         public const string SystemTextRegularExpressionsGroup = "System.Text.RegularExpressions.Group";
