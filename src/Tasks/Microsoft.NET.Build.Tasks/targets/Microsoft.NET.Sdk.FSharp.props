@@ -12,10 +12,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- If any of these variables are set then we are building under the FSharp.NET.Sdk so use their logic -->
-  <PropertyGroup Condition = "'$(UseBundledFSharpTargets)' == '' ">
-    <!-- If any of these variables are set then we are building under the FSharp.NET.Sdk so use their logic -->
-    <UseBundledFSharpTargets Condition = " '$(_FscTaskAssemblyPath_net)' != '' or '$(_FscTaskAssemblyPath_netcoreapp1_0)' != '' or '$(_FscToolFullPath_net)' != '' or '$(_FscToolFullPath_netcoreapp1_0)' != '' ">false</UseBundledFSharpTargets>
+  <PropertyGroup >
     <UseBundledFSharpTargets Condition = "'$(UseBundledFSharpTargets)' == '' ">true</UseBundledFSharpTargets>
   </PropertyGroup>
 
