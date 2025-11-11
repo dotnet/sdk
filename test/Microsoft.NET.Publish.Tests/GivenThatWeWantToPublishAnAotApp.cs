@@ -78,15 +78,9 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.12.0", Skip = "https://github.com/dotnet/sdk/issues/46006")]
-        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_publishes_with_space_in_path(string targetFramework)
         {
-            if (targetFramework == "net7.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // 7.0 is not supported on Mac
-                return;
-            }
-
             var projectName = "HelloWorldNativeAotApp";
 
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
@@ -99,7 +93,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
             // Use an identifier with a space to create a path with a space
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: "with space");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: "path with spaces");
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
