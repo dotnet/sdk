@@ -1047,6 +1047,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         return CreateProjectInstance(projectCollection, addGlobalProperties: null);
     }
 
+    public static string GetVirtualProjectPath(string entryPointFilePath)
+        => Path.ChangeExtension(entryPointFilePath, ".csproj");
+
     private ProjectInstance CreateProjectInstance(
         ProjectCollection projectCollection,
         Action<IDictionary<string, string>>? addGlobalProperties)
@@ -1068,7 +1071,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
         {
-            var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
             var projectFileWriter = new StringWriter();
             WriteProjectFile(
                 projectFileWriter,
@@ -1082,7 +1084,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             using var reader = new StringReader(projectFileText);
             using var xmlReader = XmlReader.Create(reader);
             var projectRoot = ProjectRootElement.Create(xmlReader, projectCollection);
-            projectRoot.FullPath = projectFileFullPath;
+            projectRoot.FullPath = GetVirtualProjectPath(EntryPointFileFullPath);
             return projectRoot;
         }
     }

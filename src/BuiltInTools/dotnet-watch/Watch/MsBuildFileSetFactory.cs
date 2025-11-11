@@ -27,8 +27,13 @@ namespace Microsoft.DotNet.Watch
         private const string WatchTargetsFileName = "DotNetWatch.targets";
 
         public string RootProjectFile => rootProjectFile;
+
         private EnvironmentOptions EnvironmentOptions => buildReporter.EnvironmentOptions;
         private ILogger Logger => buildReporter.Logger;
+
+        private readonly ProjectGraphFactory _buildGraphFactory = new(
+            new ProjectRepresentation(rootProjectFile, entryPointFilePath: null),
+            globalOptions: CommandLineOptions.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value));
 
         internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph? projectGraph)
         {
@@ -124,10 +129,7 @@ namespace Microsoft.DotNet.Watch
                 ProjectGraph? projectGraph = null;
                 if (requireProjectGraph != null)
                 {
-                    var globalOptions = CommandLineOptions.ParseBuildProperties(buildArguments)
-                        .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value);
-
-                    projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(rootProjectFile, globalOptions, Logger, requireProjectGraph.Value, cancellationToken);
+                    projectGraph = _buildGraphFactory.TryLoadProjectGraph(Logger, requireProjectGraph.Value, cancellationToken);
                     if (projectGraph == null && requireProjectGraph == true)
                     {
                         return null;

@@ -32,12 +32,25 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
         fileWatcher.WatchFiles(BuildFiles);
     }
 
+    public static ImmutableDictionary<string, string> GetGlobalBuildOptions(IEnumerable<string> buildArguments, EnvironmentOptions environmentOptions)
+    {
+        // See https://github.com/dotnet/project-system/blob/main/docs/well-known-project-properties.md
+
+        return CommandLineOptions.ParseBuildProperties(buildArguments)
+            .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value)
+            .SetItem(PropertyNames.DotNetWatchBuild, "true")
+            .SetItem(PropertyNames.DesignTimeBuild, "true")
+            .SetItem(PropertyNames.SkipCompilerExecution, "true")
+            .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
+            // F# targets depend on host path variable:
+            .SetItem("DOTNET_HOST_PATH", environmentOptions.MuxerPath);
+    }
+
     /// <summary>
     /// Loads project graph and performs design-time build.
     /// </summary>
     public static EvaluationResult? TryCreate(
-        string rootProjectPath,
-        IEnumerable<string> buildArguments,
+        ProjectGraphFactory factory,
         ILogger logger,
         GlobalOptions options,
         EnvironmentOptions environmentOptions,
@@ -46,20 +59,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
     {
         var buildReporter = new BuildReporter(logger, options, environmentOptions);
 
-        // See https://github.com/dotnet/project-system/blob/main/docs/well-known-project-properties.md
-
-        var globalOptions = CommandLineOptions.ParseBuildProperties(buildArguments)
-            .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value)
-            .SetItem(PropertyNames.DotNetWatchBuild, "true")
-            .SetItem(PropertyNames.DesignTimeBuild, "true")
-            .SetItem(PropertyNames.SkipCompilerExecution, "true")
-            .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
-            // F# targets depend on host path variable:
-            .SetItem("DOTNET_HOST_PATH", environmentOptions.MuxerPath);
-
-        var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(
-            rootProjectPath,
-            globalOptions,
+        var projectGraph = factory.TryLoadProjectGraph(
             logger,
             projectGraphRequired: true,
             cancellationToken);
@@ -77,7 +77,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             {
                 if (!rootNode.ProjectInstance.Build([TargetNames.Restore], loggers))
                 {
-                    logger.LogError("Failed to restore project '{Path}'.", rootProjectPath);
+                    logger.LogError("Failed to restore '{Path}'.", rootProjectPath);
                     loggers.ReportOutput();
                     return null;
                 }
