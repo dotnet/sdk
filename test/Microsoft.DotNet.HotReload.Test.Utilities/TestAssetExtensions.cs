@@ -8,5 +8,5 @@ internal static class TestAssetExtensions
     public static string GetWatchTestOutputPath(this TestAsset asset)
         => Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot
             ? Path.Combine(ciOutputRoot, ".hotreload", asset.Name)
-            : asset.Path + ".hotreload";
+            : Path.Combine(asset.Path, ".hotreload");
 }
