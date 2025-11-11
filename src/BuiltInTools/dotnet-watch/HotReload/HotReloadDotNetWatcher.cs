@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Watch
         private readonly RestartPrompt? _rudeEditRestartPrompt;
 
         private readonly DotNetWatchContext _context;
+        private readonly ProjectGraphFactory _designTimeBuildGraphFactory;
 
         internal Task? Test_FileChangesCompletedTask { get; set; }
 
@@ -40,6 +41,11 @@ namespace Microsoft.DotNet.Watch
 
                 _rudeEditRestartPrompt = new RestartPrompt(context.Logger, consoleInput, noPrompt ? true : null);
             }
+
+            _designTimeBuildGraphFactory = new ProjectGraphFactory(
+                EvaluationResult.GetGlobalBuildOptions(
+                    context.RootProjectOptions.BuildArguments,
+                    context.EnvironmentOptions));
         }
 
         public async Task WatchAsync(CancellationToken shutdownCancellationToken)
@@ -824,8 +830,8 @@ namespace Microsoft.DotNet.Watch
                 var stopwatch = Stopwatch.StartNew();
 
                 var result = EvaluationResult.TryCreate(
-                    _context.RootProjectOptions.ProjectPath,
-                    _context.RootProjectOptions.BuildArguments,
+                    _designTimeBuildGraphFactory,
+                    _context.RootProjectOptions.ProjectPath,                    
                     _context.BuildLogger,
                     _context.Options,
                     _context.EnvironmentOptions,
