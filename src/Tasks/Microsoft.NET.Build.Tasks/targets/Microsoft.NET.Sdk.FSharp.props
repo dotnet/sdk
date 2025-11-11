@@ -12,10 +12,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <PropertyGroup>
-    <UseBundledFSharpTargets Condition = "'$(UseBundledFSharpTargets)' == '' ">true</UseBundledFSharpTargets>
-  </PropertyGroup>
-
   <!-- Shim to select the correct Microsoft.NET.Sdk.FSharp.props file.
        If running under desktop select Microsoft.NET.Sdk.FSharp.props file from VS deployment,
        if running core msbuild select Microsoft.NET.Sdk.FSharp.props from dotnet cli deployment -->
@@ -23,6 +19,6 @@ Copyright (c) .NET Foundation. All rights reserved.
      <FSharpPropsShim Condition = " '$(FSharpPropsShim)' == '' and Exists('$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.props') ">$(MSBuildToolsPath)\FSharp\Microsoft.FSharp.NetSdk.props</FSharpPropsShim>
      <FSharpPropsShim Condition = " '$(FSharpPropsShim)' == '' and Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.props') ">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.NetSdk.props</FSharpPropsShim>
   </PropertyGroup>
-  <Import Condition=" '$(UseBundledFSharpTargets)' == 'true' and Exists('$(FSharpPropsShim)') " Project="$(FSharpPropsShim)" />
+  <Import Condition=" Exists('$(FSharpPropsShim)') " Project="$(FSharpPropsShim)" />
 
 </Project>
