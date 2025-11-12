@@ -35,7 +35,7 @@ internal static class MSBuildUtility
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption(), CommonOptions.NoLogoOption());
-        var solutionFile = SolutionFile.Parse(solutionFilePath);
+        var solutionFile = SolutionFile.Parse(Path.GetFullPath(solutionFilePath));
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
 
         globalProperties.TryGetValue("Configuration", out var activeSolutionConfiguration);
