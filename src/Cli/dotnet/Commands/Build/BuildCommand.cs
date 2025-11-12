@@ -43,7 +43,7 @@ public static class BuildCommand
                 noRestore: noRestore,
                 msbuildPath: msbuildPath
             ),
-            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, BuildCommandParser.TargetOption, BuildCommandParser.VerbosityOption],
+            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, BuildCommandParser.TargetOption, BuildCommandParser.VerbosityOption, BuildCommandParser.NoLogoOption],
             parseResult,
             msbuildPath
         );

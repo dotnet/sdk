@@ -1,82 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
-using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.Cli;
-using Microsoft.Extensions.Logging;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.DotNet.Watch;
 
 internal static class ProjectGraphUtilities
 {
-    /// <summary>
-    /// Tries to create a project graph by running the build evaluation phase on the <see cref="rootProjectFile"/>.
-    /// </summary>
-    public static ProjectGraph? TryLoadProjectGraph(
-        string rootProjectFile,
-        ImmutableDictionary<string, string> globalOptions,
-        ILogger logger,
-        bool projectGraphRequired,
-        CancellationToken cancellationToken)
-    {
-        var entryPoint = new ProjectGraphEntryPoint(rootProjectFile, globalOptions);
-        try
-        {
-            // Create a new project collection that does not reuse element cache
-            // to work around https://github.com/dotnet/msbuild/issues/12064:
-            var collection = new ProjectCollection(
-                globalProperties: globalOptions,
-                loggers: [],
-                remoteLoggers: [],
-                ToolsetDefinitionLocations.Default,
-                maxNodeCount: 1,
-                onlyLogCriticalEvents: false,
-                loadProjectsReadOnly: false,
-                useAsynchronousLogging: false,
-                reuseProjectRootElementCache: false);
-
-            return new ProjectGraph([entryPoint], collection, projectInstanceFactory: null, cancellationToken);
-        }
-        catch (Exception e) when (e is not OperationCanceledException)
-        {
-            // ProejctGraph aggregates OperationCanceledException exception,
-            // throw here to propagate the cancellation.
-            cancellationToken.ThrowIfCancellationRequested();
-
-            logger.LogDebug("Failed to load project graph.");
-
-            if (e is AggregateException { InnerExceptions: var innerExceptions })
-            {
-                foreach (var inner in innerExceptions)
-                {
-                    Report(inner);
-                }
-            }
-            else
-            {
-                Report(e);
-            }
-
-            void Report(Exception e)
-            {
-                if (projectGraphRequired)
-                {
-                    logger.LogError(e.Message);
-                }
-                else
-                {
-                    logger.LogWarning(e.Message);
-                }
-            }
-        }
-
-        return null;
-    }
-
     public static string GetDisplayName(this ProjectGraphNode projectNode)
         => $"{Path.GetFileNameWithoutExtension(projectNode.ProjectInstance.FullPath)} ({projectNode.GetTargetFramework()})";
 

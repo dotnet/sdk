@@ -515,7 +515,7 @@ dotnet_diagnostic.IDE0040.severity = warning
 insert_final_newline = false
 
 # Verify settings
-[*.{received,verified}.{txt,xml,json}]
+[*.{received,verified}.{txt,xml,json,sh,zsh,nu,fish,ps1}]
 charset = "utf-8-bom"
 end_of_line = lf
 indent_size = unset
