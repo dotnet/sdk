@@ -1089,8 +1089,8 @@ Der Standardwert lautet FALSE. Wenn sie jedoch auf .NET 7 oder niedriger abziele
         <note />
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
-        <source>To install this tool, upgrade to .NET {0} or later, or install a version of the tool that is compatible with .NET {1}.</source>
-        <target state="new">To install this tool, upgrade to .NET {0} or later, or install a version of the tool that is compatible with .NET {1}.</target>
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

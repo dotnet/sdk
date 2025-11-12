@@ -1090,8 +1090,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <note />
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
-        <source>To install this tool, upgrade to .NET {0} or later, or install a version of the tool that is compatible with .NET {1}.</source>
-        <target state="new">To install this tool, upgrade to .NET {0} or later, or install a version of the tool that is compatible with .NET {1}.</target>
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

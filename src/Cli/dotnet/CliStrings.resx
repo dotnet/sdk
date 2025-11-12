@@ -420,7 +420,7 @@ setx PATH "%PATH%;{0}"
     <value>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</value>
   </data>
   <data name="ToolRequiresHigherDotNetVersionSuggestion" xml:space="preserve">
-    <value>To install this tool, upgrade to .NET {0} or later, or install a version of the tool that is compatible with .NET {1}.</value>
+    <value>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</value>
   </data>
   <data name="ToolPackageConflictPackageId" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') is already installed.</value>
