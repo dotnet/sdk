@@ -33,13 +33,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net10.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
   </PropertyGroup>
 
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorWebAssemblyBootJson50" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.UpgradeLegacyWasmStaticWebAssets" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BlazorWriteSatelliteAssemblyFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BlazorReadSatelliteAssemblyFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BrotliCompress" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GzipCompress" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorWebAssemblyBootJson50" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" Runtime="NET" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.UpgradeLegacyWasmStaticWebAssets" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" Runtime="NET" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BlazorWriteSatelliteAssemblyFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" Runtime="NET" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BlazorReadSatelliteAssemblyFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" Runtime="NET" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BrotliCompress" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" Runtime="NET" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GzipCompress" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" Runtime="NET" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" Runtime="NET" />
 
   <PropertyGroup>
     <SelfContained>true</SelfContained>

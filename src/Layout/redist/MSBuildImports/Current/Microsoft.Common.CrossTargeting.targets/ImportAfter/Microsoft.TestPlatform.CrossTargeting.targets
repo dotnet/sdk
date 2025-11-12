@@ -14,7 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <VSTestTaskAssemblyFile Condition="$(VSTestTaskAssemblyFile) == ''">$(MSBuildExtensionsPath)\Microsoft.TestPlatform.Build.dll</VSTestTaskAssemblyFile>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
-  <UsingTask TaskName="Microsoft.TestPlatform.Build.Tasks.VSTestLogsTask" AssemblyFile="$(VSTestTaskAssemblyFile)" />
+  <UsingTask TaskName="Microsoft.TestPlatform.Build.Tasks.VSTestLogsTask" AssemblyFile="$(VSTestTaskAssemblyFile)" Runtime="NET" />
   <!--
   ===================================================================================
                DispatchToInnerBuildsWithVSTestTarget

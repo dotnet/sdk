@@ -13,12 +13,12 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <UsingTask TaskName="TransformWebConfig" AssemblyFile="$(_PublishTaskAssemblyFullPath)"/>
-  <UsingTask TaskName="TransformAppSettings" AssemblyFile="$(_PublishTaskAssemblyFullPath)"/>
-  <UsingTask TaskName="GenerateEFSQLScripts" AssemblyFile="$(_PublishTaskAssemblyFullPath)"/>
-  <UsingTask TaskName="GenerateRunCommandFile" AssemblyFile="$(_PublishTaskAssemblyFullPath)"/>
-  <UsingTask TaskName="TransformXml" AssemblyFile="$(_PublishTaskAssemblyFullPath)"/>
-  <UsingTask TaskName="GenerateEnvTransform" AssemblyFile="$(_PublishTaskAssemblyFullPath)"/>
+  <UsingTask TaskName="TransformWebConfig" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="TransformAppSettings" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="GenerateEFSQLScripts" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="GenerateRunCommandFile" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="TransformXml" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="GenerateEnvTransform" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
 
   <PropertyGroup>
     <_DotNetPublishTransformFiles>

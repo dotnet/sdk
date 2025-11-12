@@ -30,7 +30,7 @@
     </MSBuild>
   </Target>
 
-  <UsingTask TaskName="Microsoft.NET.Build.Tasks.CollatePackageDownloads" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.CollatePackageDownloads" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
   <Target Name="AddTargetingPacksForPruneDataAsPackageDownloads"
           BeforeTargets="CollectPackageDownloads"
           DependsOnTargets="GetTargetingPacksForPruneData">

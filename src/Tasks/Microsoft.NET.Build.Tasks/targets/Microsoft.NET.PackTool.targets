@@ -29,13 +29,17 @@ NOTE: This file is imported from the following contexts, so be aware when writin
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateToolsSettingsFile"
-            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)"
+             Runtime="NET" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateShims"
-            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)"
+             Runtime="NET" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetEmbeddedApphostPaths"
-            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)"
+             Runtime="NET" />
   <UsingTask TaskName="AddPackageType"
-            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)"
+             Runtime="NET" />
 
   <PropertyGroup>
     <!-- Tools are specially-formatted packages, so we tell nuget Pack to not even try to include build output.

@@ -123,7 +123,7 @@ Copyright (c) .NET Foundation. All rights reserved.
    Cleans up and produces artifacts after completion of store
     ============================================================
     -->
-  <UsingTask TaskName="RemoveDuplicatePackageReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="RemoveDuplicatePackageReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
   <Target Name="StoreFinalizer"
           DependsOnTargets="StoreWorkerMain;
                             _CopyResolvedOptimizedFiles">
@@ -407,7 +407,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Gathers all the files that need to be copied to the publish directory.
     ============================================================
     -->
-  <UsingTask TaskName="FilterResolvedFiles" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="FilterResolvedFiles" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
   <Target Name="ComputeFilesToStore"
           DependsOnTargets="_ComputeResolvedCopyLocalPublishAssets;
                             _ComputeCopyToPublishDirectoryItems">

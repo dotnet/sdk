@@ -19,12 +19,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask
     TaskName="Microsoft.AspNetCore.Razor.Tasks.SdkRazorGenerate"
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
-    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.Razor.Tasks.SdkRazorTagHelper"
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
-    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <!--
     Consider these properties to be private to this targets file. The main Razor SDK should define all of the properties

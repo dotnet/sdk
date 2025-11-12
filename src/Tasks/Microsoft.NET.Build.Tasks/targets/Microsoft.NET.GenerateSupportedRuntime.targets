@@ -11,8 +11,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <UsingTask TaskName="WriteAppConfigWithSupportedRuntime" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <UsingTask TaskName="SetGeneratedAppConfigMetadata" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="WriteAppConfigWithSupportedRuntime" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
+  <UsingTask TaskName="SetGeneratedAppConfigMetadata" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
 
   <PropertyGroup>
     <_GenerateSupportedRuntimeIntermediateAppConfig>$(IntermediateOutputPath)$(TargetFileName).withSupportedRuntime.config</_GenerateSupportedRuntimeIntermediateAppConfig>

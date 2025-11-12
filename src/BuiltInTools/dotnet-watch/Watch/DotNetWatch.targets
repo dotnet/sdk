@@ -7,7 +7,7 @@ Main target called by dotnet-watch. It gathers MSBuild items and writes
 them to a file.
 =========================================================================
 -->
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)DotNetWatchTasks.dll" TaskName="FileSetSerializer" />
+  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)DotNetWatchTasks.dll" TaskName="FileSetSerializer" Runtime="NET" />
 
   <Target Name="GenerateWatchList"
           DependsOnTargets="_CollectWatchItems">

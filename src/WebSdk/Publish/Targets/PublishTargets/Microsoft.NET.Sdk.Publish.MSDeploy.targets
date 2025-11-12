@@ -19,14 +19,14 @@ Copyright (C) Microsoft Corporation. All rights reserved.
   Including the tasks
   ***********************************************************************************************
  -->
-  <UsingTask TaskName="MSDeploy" AssemblyFile="$(_PublishTaskAssemblyFullPath)"/>
-  <UsingTask TaskName="VSMSDeploy" AssemblyFile="$(_PublishTaskAssemblyFullPath)"/>
-  <UsingTask TaskName="NormalizeServiceUrl" AssemblyFile="$(_PublishTaskAssemblyFullPath)"/>
-  <UsingTask TaskName="ValidateParameter" AssemblyFile="$(_PublishTaskAssemblyFullPath)"/>
-  <UsingTask TaskName="CreateManifestFile" AssemblyFile="$(_PublishTaskAssemblyFullPath)" />
-  <UsingTask TaskName="ImportParameterFile" AssemblyFile="$(_PublishTaskAssemblyFullPath)" />
-  <UsingTask TaskName="CreateParameterFile" AssemblyFile="$(_PublishTaskAssemblyFullPath)" />
-  <UsingTask TaskName="GetPassword" AssemblyFile="$(_PublishTaskAssemblyFullPath)" />
+  <UsingTask TaskName="MSDeploy" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="VSMSDeploy" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="NormalizeServiceUrl" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="ValidateParameter" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="CreateManifestFile" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="ImportParameterFile" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="CreateParameterFile" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="GetPassword" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
 
   <PropertyGroup>
     <_DotNetPublishFiles>

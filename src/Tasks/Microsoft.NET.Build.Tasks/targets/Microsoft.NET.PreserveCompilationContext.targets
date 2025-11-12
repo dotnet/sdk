@@ -41,7 +41,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <UsingTask TaskName="FindItemsFromPackages" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="FindItemsFromPackages" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
   <Target Name="ComputeRefAssembliesToPublish"
           Condition="'$(PreserveCompilationReferences)' == 'true'"
           DependsOnTargets="ResolvePackageAssets;

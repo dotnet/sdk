@@ -411,7 +411,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
   </Target>
 
-  <UsingTask TaskName="ResolveReadyToRunCompilers" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="ResolveReadyToRunCompilers" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
   <Target Name="ResolveReadyToRunCompilers">
     <ResolveReadyToRunCompilers RuntimePacks="@(ResolvedRuntimePack)"
                                 Crossgen2Packs="@(ResolvedCrossgen2Pack)"
@@ -492,7 +492,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IncludeSymbolsInSingleFile Condition="'$(IncludeSymbolsInSingleFile)' == ''">false</IncludeSymbolsInSingleFile>
   </PropertyGroup>
 
-  <UsingTask TaskName="ResolveOverlappingItemGroupConflicts" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="ResolveOverlappingItemGroupConflicts" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
 
   <!--
     ============================================================
@@ -603,7 +603,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     We can just use the build's copy local assets if we can reuse the build deps file.
     ============================================================
   -->
-  <UsingTask TaskName="ResolveCopyLocalAssets" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="ResolveCopyLocalAssets" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
   <Target Name="_ResolveCopyLocalAssetsForPublish"
           DependsOnTargets="ResolveLockFileCopyLocalFiles;
                             _ComputeUseBuildDependencyFile;
@@ -652,7 +652,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     which describes which packages should be excluded from publish since they are contained in the runtime store.
     ============================================================
     -->
-  <UsingTask TaskName="ParseTargetManifests" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="ParseTargetManifests" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
   <Target Name="_ParseTargetManifestFiles"
           Condition="'$(TargetManifestFiles)' != ''"
           Returns="@(RuntimeStorePackages)">
@@ -1111,7 +1111,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       WriteOnlyWhenDifferent="true" />
   </Target>
 
-  <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
   <Target Name="GenerateSingleFileBundle"
           Condition="'$(PublishSingleFile)' == 'true' and '$(PublishAot)' != 'true'"
           DependsOnTargets="_ComputeFilesToBundle;PrepareForBundle;_GenerateSingleFileBundleInputCache"
@@ -1281,7 +1281,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetEmbeddedApphostPaths"
-          AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+          AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
   <Target Name="ComputeEmbeddedApphostPaths" Condition="'$(PackAsTool)' == 'true'">
 
     <ItemGroup>
@@ -1335,7 +1335,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetPublishItemsOutputGroupOutputs"
-          AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+          AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
 
   <Target Name="PublishItemsOutputGroup" DependsOnTargets="$(PublishItemsOutputGroupDependsOn)" Returns="@(PublishItemsOutputGroupOutputs)">
     <GetPublishItemsOutputGroupOutputs

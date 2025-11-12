@@ -23,7 +23,7 @@
     </PropertyGroup>
   </Target>
 
-  <UsingTask TaskName="Microsoft.DotNet.GenAPI.Task.GenAPITask" AssemblyFile="$(DotNetGenAPITaskAssembly)" />
+  <UsingTask TaskName="Microsoft.DotNet.GenAPI.Task.GenAPITask" AssemblyFile="$(DotNetGenAPITaskAssembly)" Runtime="NET" />
 
   <Target Name="GenAPIGenerateReferenceAssemblySource"
           DependsOnTargets="$(GenAPIGenerateReferenceAssemblySourceDependsOn)">

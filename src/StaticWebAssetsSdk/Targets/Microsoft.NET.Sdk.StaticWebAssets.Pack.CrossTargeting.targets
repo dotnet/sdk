@@ -15,17 +15,20 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.StaticWebAssetsReadPackManifest"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveStaticWebAssetsEffectiveTargetFramework"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ReadStaticWebAssetsManifestFile"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <PropertyGroup>
 

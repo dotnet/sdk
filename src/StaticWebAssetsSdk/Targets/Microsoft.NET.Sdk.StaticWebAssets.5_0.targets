@@ -30,32 +30,38 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateV1StaticWebAssetsManifest"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET"/>
 
-    <UsingTask
+  <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.UpgradeLegacyStaticWebAssetsToV2"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET"/>
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ValidateStaticWebAssetsUniquePaths"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET"/>
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetsPropsFile50"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET"/>
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.StaticWebAssetsGeneratePackagePropsFile"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET"/>
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.StaticWebAssetsGeneratePackManifest"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET"/>
 
   <PropertyGroup>
     <GenerateStaticWebAssetsManifestDependsOn>
