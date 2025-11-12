@@ -969,7 +969,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva'");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [Fact]
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -1017,7 +1017,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// Currently only works on Windows.
         /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
         /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/40006")]
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public async Task MauiBlazor()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor")

@@ -61,9 +61,8 @@ namespace Microsoft.DotNet.Watch
         );
 
         public TimeSpan GetProcessCleanupTimeout(bool isHotReloadEnabled)
-            // If Hot Reload mode is disabled the process is restarted on every file change.
-            // Waiting for graceful termination would slow down the turn around.
-            => ProcessCleanupTimeout ?? (isHotReloadEnabled ? TimeSpan.FromSeconds(5) : TimeSpan.FromSeconds(0));
+            // Allow sufficient time for the process to exit gracefully and release resources (e.g., network ports).
+            => ProcessCleanupTimeout ?? TimeSpan.FromSeconds(5);
 
         private int _uniqueLogId;
 
