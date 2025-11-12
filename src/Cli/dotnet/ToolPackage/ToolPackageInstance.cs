@@ -97,21 +97,13 @@ internal class ToolPackageInstance : IToolPackage
             ResolvedPackageVersion = Version;
         }
 
+        var toolConfiguration = DeserializeToolConfiguration(library, packageDirectory, ResolvedPackageId, _fileSystem);
+        Warnings = toolConfiguration.Warnings;
+
         var installPath = new VersionFolderPathResolver(PackageDirectory.Value).GetInstallPath(ResolvedPackageId.ToString(), ResolvedPackageVersion);
         var toolsPackagePath = Path.Combine(installPath, "tools");
-
-        // Get available frameworks before deserializing tool configuration
-        // This allows us to provide better error messages if the tool requires a higher .NET version
-        List<NuGetFramework> availableFrameworks = [];
-        if (_fileSystem.Directory.Exists(toolsPackagePath))
-        {
-            availableFrameworks = _fileSystem.Directory.EnumerateDirectories(toolsPackagePath)
-                .Select(path => NuGetFramework.ParseFolder(Path.GetFileName(path))).ToList();
-        }
-        Frameworks = availableFrameworks;
-
-        var toolConfiguration = DeserializeToolConfiguration(library, packageDirectory, ResolvedPackageId, availableFrameworks, _fileSystem);
-        Warnings = toolConfiguration.Warnings;
+        Frameworks = _fileSystem.Directory.EnumerateDirectories(toolsPackagePath)
+            .Select(path => NuGetFramework.ParseFolder(Path.GetFileName(path))).ToList();
 
         LockFileItem entryPointFromLockFile = FindItemInTargetLibrary(library, toolConfiguration.ToolAssemblyEntryPoint);
         if (entryPointFromLockFile == null)
@@ -173,12 +165,11 @@ internal class ToolPackageInstance : IToolPackage
     {
         var lockFile = new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value);
         var lockFileTargetLibrary = FindLibraryInLockFile(lockFile);
-        // For this method, we don't have framework information available, so pass empty list
-        return DeserializeToolConfiguration(lockFileTargetLibrary, packageDirectory, id, [], fileSystem);
+        return DeserializeToolConfiguration(lockFileTargetLibrary, packageDirectory, id, fileSystem);
 
     }
 
-    private static ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library, DirectoryPath packageDirectory, PackageId packageId, IReadOnlyList<NuGetFramework> availableFrameworks, IFileSystem fileSystem)
+    private static ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library, DirectoryPath packageDirectory, PackageId packageId, IFileSystem fileSystem)
     {
         try
         {
@@ -186,33 +177,43 @@ internal class ToolPackageInstance : IToolPackage
             if (dotnetToolSettings == null)
             {
                 // Check if this is because of framework incompatibility
-                if (availableFrameworks.Count > 0)
+                // Load available frameworks from the package to provide better error messages
+                var installPath = new VersionFolderPathResolver(packageDirectory.Value).GetInstallPath(library.Name, library.Version);
+                var toolsPackagePath = Path.Combine(installPath, "tools");
+                
+                if (fileSystem.Directory.Exists(toolsPackagePath))
                 {
-                    var currentFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
-
-                    // Find the minimum framework version required by the tool
-                    var minRequiredFramework = availableFrameworks
+                    var availableFrameworks = fileSystem.Directory.EnumerateDirectories(toolsPackagePath)
+                        .Select(path => NuGetFramework.ParseFolder(Path.GetFileName(path)))
                         .Where(f => f.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
-                        .MinBy(f => f.Version);
+                        .ToList();
 
-                    // If all available frameworks require a higher version than current runtime
-                    if (minRequiredFramework != null && minRequiredFramework.Version > currentFramework.Version)
+                    if (availableFrameworks.Count > 0)
                     {
-                        var requiredVersionString = $".NET {minRequiredFramework.Version.Major}.{minRequiredFramework.Version.Minor}";
-                        var currentVersionString = $".NET {currentFramework.Version.Major}.{currentFramework.Version.Minor}";
+                        var currentFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
 
-                        var errorMessage = string.Format(
-                            CliStrings.ToolRequiresHigherDotNetVersion,
-                            packageId,
-                            requiredVersionString,
-                            currentVersionString);
+                        // Find the minimum framework version required by the tool
+                        var minRequiredFramework = availableFrameworks.MinBy(f => f.Version);
 
-                        var suggestion = string.Format(
-                            CliStrings.ToolRequiresHigherDotNetVersionSuggestion,
-                            minRequiredFramework.Version.Major,
-                            currentFramework.Version.Major);
+                        // If all available frameworks require a higher version than current runtime
+                        if (minRequiredFramework != null && minRequiredFramework.Version > currentFramework.Version)
+                        {
+                            var requiredVersionString = $".NET {minRequiredFramework.Version.Major}.{minRequiredFramework.Version.Minor}";
+                            var currentVersionString = $".NET {currentFramework.Version.Major}.{currentFramework.Version.Minor}";
 
-                        throw new ToolConfigurationException($"{errorMessage} {suggestion}");
+                            var errorMessage = string.Format(
+                                CliStrings.ToolRequiresHigherDotNetVersion,
+                                packageId,
+                                requiredVersionString,
+                                currentVersionString);
+
+                            var suggestion = string.Format(
+                                CliStrings.ToolRequiresHigherDotNetVersionSuggestion,
+                                minRequiredFramework.Version.Major,
+                                currentFramework.Version.Major);
+
+                            throw new ToolConfigurationException($"{errorMessage} {suggestion}");
+                        }
                     }
                 }
 
