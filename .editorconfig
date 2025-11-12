@@ -456,7 +456,7 @@ dotnet_diagnostic.SA1601.severity = none
 dotnet_diagnostic.SA1633.severity = none
 
 # Additional rules for test source code for template engine
-[test/{Microsoft.TemplateEngine.*,dotnet-new.Tests}/**.cs]
+[test/{Microsoft.TemplateEngine.*,dotnet-new.IntegrationTests}/**.cs]
 # Test methods should not be skipped
 dotnet_diagnostic.xUnit1004.severity = warning
 # Elements should appear in the correct order
@@ -473,6 +473,10 @@ indent_brace_style = Allman
 
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]
+indent_size = 2
+
+# WiX files
+[*.{wixproj,wxs,wxi,wxl,thm}]
 indent_size = 2
 
 [*.{csproj,vbproj,proj,nativeproj,locproj}]

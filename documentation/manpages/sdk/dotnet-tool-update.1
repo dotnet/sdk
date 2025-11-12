@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-update" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-tool-update" "1" "2025-06-30" "" ".NET Documentation"
 .hy
 .SH dotnet tool update
 .PP
@@ -27,7 +27,7 @@ dotnet-tool-update - Updates the specified .NET tool on your machine.
 .nf
 \f[C]
 dotnet tool update <PACKAGE_ID> -g|--global
-    [--add-source <SOURCE>] [--allow-downgrade]
+    [--add-source <SOURCE>] [--all] [--allow-downgrade]
     [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
     [--ignore-failed-sources] [--interactive]
@@ -35,7 +35,7 @@ dotnet tool update <PACKAGE_ID> -g|--global
     [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
 dotnet tool update <PACKAGE_ID> --tool-path <PATH>
-    [--add-source <SOURCE>] [--allow-downgrade]
+    [--add-source <SOURCE>] [--all] [--allow-downgrade]
     [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
     [--ignore-failed-sources] [--interactive] 
@@ -43,7 +43,7 @@ dotnet tool update <PACKAGE_ID> --tool-path <PATH>
     [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
 dotnet tool update <PACKAGE_ID> --local
-    [--add-source <SOURCE>] [--allow-downgrade]
+    [--add-source <SOURCE>] [--all] [--allow-downgrade]
     [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
     [--ignore-failed-sources] [--interactive]
@@ -82,6 +82,12 @@ Adds an additional NuGet package source to use during installation.
 Feeds are accessed in parallel, not sequentially in some order of precedence.
 If the same package and version is in multiple feeds, the fastest feed wins.
 For more information, see What happens when a NuGet package is installed?.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--all\f[B]\f[R]
+.RS 2
+.PP
+Update all tools.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--allow-downgrade\f[B]\f[R]

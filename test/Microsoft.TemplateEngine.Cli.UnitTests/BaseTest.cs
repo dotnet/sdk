@@ -60,9 +60,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             {
                 Assert.Fail($"The repo root cannot be evaluated.");
             }
-            if (!File.Exists(Path.Combine(repoRoot, "sdk.sln")))
+            if (!File.Exists(Path.Combine(repoRoot, "sdk.slnx")))
             {
-                Assert.Fail($"The repo root doesn't contain 'sdk.sln'.");
+                Assert.Fail($"The repo root doesn't contain 'sdk.slnx'.");
             }
             return repoRoot;
         }

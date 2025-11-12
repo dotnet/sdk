@@ -58,13 +58,6 @@ namespace Microsoft.DotNet.ApiCompatibility
             {
                 Visit(@namespace);
             }
-
-            // After visiting the assembly, the assembly mapper will contain any assembly load errors that happened
-            // when trying to resolve type forwarded types. If there were any, we add them to the diagnostic bag next.
-            foreach (CompatDifference item in assembly.AssemblyLoadErrors)
-            {
-                _compatDifferences.Add(item);
-            }
         }
 
         /// <inheritdoc />
