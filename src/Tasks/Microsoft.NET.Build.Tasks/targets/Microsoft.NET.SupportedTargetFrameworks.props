@@ -32,8 +32,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
         <!-- This is for a better error experience when using an older VS (with an older SDK) to target a newer TFM. The value should be the min VS version for N+1 version-->
-        <UnsupportedTargetFrameworkVersion>10.0</UnsupportedTargetFrameworkVersion>
-        <MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>18.0</MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>
+        <UnsupportedTargetFrameworkVersion>$([MSBuild]::Add($(NETCoreAppMaximumVersion), 1)).0</UnsupportedTargetFrameworkVersion>
+        <MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>$([MSBuild]::Add($(NETCoreAppMaximumVersion), 9)).0</MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>
     </PropertyGroup>
 
     <!-- .NET Standard -->
