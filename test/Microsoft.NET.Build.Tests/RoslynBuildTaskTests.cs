@@ -65,7 +65,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         ReadOnlySpan<string> args = useFrameworkCompiler ? ["-p:RoslynCompilerType=Framework"] : [];
         var buildCommand = BuildAndRunUsingMSBuild(testAsset, args);
         VerifyCompiler(buildCommand,
-            DotNetExecCompilerFileName(language),
+            useFrameworkCompiler ? AppHostCompilerFileName(language) : DotNetExecCompilerFileName(language),
             useFrameworkCompiler ? FxTargetFrameworkName : CoreTargetFrameworkName,
             useSharedCompilation, toolsetPackage: true);
     }
