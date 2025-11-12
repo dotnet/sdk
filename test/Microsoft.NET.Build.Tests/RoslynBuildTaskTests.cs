@@ -197,6 +197,22 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
 
     private static string? GetTargetFramework(string dllPath)
     {
+        // If `dllPath` is an apphost (unmanaged exe), we need to inspect the corresponding dll instead.
+        var ext = Path.GetExtension(dllPath);
+        if (ext == ".exe")
+        {
+            var fixedDllPath = Path.ChangeExtension(dllPath, ".dll");
+            // If a `.dll` does not exist, the `.exe` is a netfx managed assembly and we can use it.
+            if (File.Exists(fixedDllPath))
+            {
+                dllPath = fixedDllPath;
+            }
+        }
+        else
+        {
+            Assert.Equal(".dll", ext);
+        }
+
         var tpa = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))?.Split(Path.PathSeparator) ?? [];
         var resolver = new PathAssemblyResolver([.. tpa, dllPath]);
         using var mlc = new MetadataLoadContext(resolver);
