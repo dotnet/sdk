@@ -199,7 +199,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     {
         // If `dllPath` is an apphost (unmanaged exe), we need to inspect the corresponding dll instead.
         var ext = Path.GetExtension(dllPath);
-        if (ext == ".exe")
+        if (ext == FileNameSuffixes.CurrentPlatform.Exe)
         {
             var fixedDllPath = Path.ChangeExtension(dllPath, ".dll");
             // If a `.dll` does not exist, the `.exe` is a netfx managed assembly and we can use it.
