@@ -77,21 +77,15 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
-        [RequiresMSBuildVersionTheory("17.12.0", Skip = "https://github.com/dotnet/sdk/issues/46006")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void NativeAot_app_publishes_with_space_in_path(string targetFramework)
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/46006")]
+        public void NativeAot_app_publishes_with_space_in_path()
         {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
             var projectName = "HelloWorldNativeAotApp";
 
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
             testProject.AdditionalProperties["PublishAot"] = "true";
-            // Linux symbol files are embedded and require additional steps to be stripped to a separate file
-            // assumes /bin (or /usr/bin) are in the PATH
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                testProject.AdditionalProperties["StripSymbols"] = "true";
-            }
             // Use an identifier with a space to create a path with a space
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: "path with spaces");
 
@@ -117,10 +111,8 @@ namespace Microsoft.NET.Publish.Tests
             DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
-            bool useRuntimePackLayout = targetFramework is not ("net7.0" or "net8.0" or "net9.0");
-
             GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
-            CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion, useRuntimePackLayout);
+            CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion, useRuntimePackLayout: true);
 
             var command = new RunExeCommand(Log, publishedExe)
                 .Execute().Should().Pass()
