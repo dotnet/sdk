@@ -563,19 +563,27 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private string CreateNet99ToolPackage()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: "net99tool");
-            var packageOutputPath = Path.Combine(testDirectory.Path, "packages");
-            Directory.CreateDirectory(packageOutputPath);
+            var projectDirectory = Path.Combine(testDirectory.Path, "toolproject");
+            Directory.CreateDirectory(projectDirectory);
 
-            // Create a minimal .nupkg with net99.0 framework
-            var nupkgPath = Path.Combine(packageOutputPath, "Net99Tool.1.0.0.nupkg");
-            
-            using (var archive = ZipFile.Open(nupkgPath, ZipArchiveMode.Create))
-            {
-                // Add nuspec file
-                var nuspecEntry = archive.CreateEntry("Net99Tool.nuspec");
-                using (var writer = new StreamWriter(nuspecEntry.Open()))
-                {
-                    writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            // Create the directory structure for the tool files
+            var toolsDir = Path.Combine(projectDirectory, "tools", "net99.0", "any");
+            Directory.CreateDirectory(toolsDir);
+
+            // Create DotnetToolSettings.xml
+            File.WriteAllText(Path.Combine(toolsDir, "DotnetToolSettings.xml"), @"<?xml version=""1.0"" encoding=""utf-8""?>
+<DotNetCliTool Version=""1"">
+  <Commands>
+    <Command Name=""net99tool"" EntryPoint=""Net99Tool.dll"" Runner=""dotnet"" />
+  </Commands>
+</DotNetCliTool>");
+
+            // Create a minimal DLL file
+            File.WriteAllText(Path.Combine(toolsDir, "Net99Tool.dll"), "");
+
+            // Create a .nuspec file
+            var nuspecPath = Path.Combine(projectDirectory, "Net99Tool.nuspec");
+            File.WriteAllText(nuspecPath, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <package xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
   <metadata>
     <id>Net99Tool</id>
@@ -586,51 +594,19 @@ namespace Microsoft.DotNet.PackageInstall.Tests
       <packageType name=""DotnetTool"" />
     </packageTypes>
   </metadata>
+  <files>
+    <file src=""tools\**"" target=""tools"" />
+  </files>
 </package>");
-                }
 
-                // Add DotnetToolSettings.xml
-                var settingsEntry = archive.CreateEntry("tools/net99.0/any/DotnetToolSettings.xml");
-                using (var writer = new StreamWriter(settingsEntry.Open()))
-                {
-                    writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
-<DotNetCliTool Version=""1"">
-  <Commands>
-    <Command Name=""net99tool"" EntryPoint=""Net99Tool.dll"" Runner=""dotnet"" />
-  </Commands>
-</DotNetCliTool>");
-                }
+            // Use NuGet pack to create the package
+            var packageOutputPath = Path.Combine(testDirectory.Path, "packages");
+            Directory.CreateDirectory(packageOutputPath);
 
-                // Add a minimal DLL (just empty file for this test)
-                var dllEntry = archive.CreateEntry("tools/net99.0/any/Net99Tool.dll");
-                using (var writer = new StreamWriter(dllEntry.Open()))
-                {
-                    writer.Write("");
-                }
-
-                // Add .rels file
-                var relsEntry = archive.CreateEntry("_rels/.rels");
-                using (var writer = new StreamWriter(relsEntry.Open()))
-                {
-                    writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
-<Relationships xmlns=""http://schemas.openxmlformats.org/package/2006/relationships"">
-  <Relationship Type=""http://schemas.microsoft.com/packaging/2010/07/manifest"" Target=""/Net99Tool.nuspec"" Id=""Re0"" />
-</Relationships>");
-                }
-
-                // Add [Content_Types].xml
-                var contentTypesEntry = archive.CreateEntry("[Content_Types].xml");
-                using (var writer = new StreamWriter(contentTypesEntry.Open()))
-                {
-                    writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
-<Types xmlns=""http://schemas.openxmlformats.org/package/2006/content-types"">
-  <Default Extension=""rels"" ContentType=""application/vnd.openxmlformats-package.relationships+xml"" />
-  <Default Extension=""nuspec"" ContentType=""application/octet-stream"" />
-  <Default Extension=""xml"" ContentType=""application/xml"" />
-  <Default Extension=""dll"" ContentType=""application/octet-stream"" />
-</Types>");
-                }
-            }
+            new DotnetCommand(Log, "pack", nuspecPath, "-o", packageOutputPath)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should().Pass();
 
             return packageOutputPath;
         }
@@ -651,9 +627,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
     {
         public static TestCommand WithEnvironmentVariables(this TestCommand command, string homeFolder)
         {
+            var nugetPackagesFolder = Path.Combine(homeFolder, ".nuget", "packages");
             return command.WithEnvironmentVariable("DOTNET_CLI_HOME", homeFolder)
                           .WithEnvironmentVariable("DOTNET_NOLOGO", "1")
-                          .WithEnvironmentVariable("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", "0");
+                          .WithEnvironmentVariable("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", "0")
+                          .WithEnvironmentVariable("NUGET_PACKAGES", nugetPackagesFolder);
         }
     }
 }

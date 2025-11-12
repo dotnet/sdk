@@ -212,7 +212,7 @@ internal class ToolPackageInstance : IToolPackage
                                 minRequiredFramework.Version.Major,
                                 currentFramework.Version.Major);
 
-                            throw new ToolConfigurationException($"{errorMessage} {suggestion}");
+                            throw new GracefulException($"{errorMessage} {suggestion}", isUserError: false);
                         }
                     }
                 }

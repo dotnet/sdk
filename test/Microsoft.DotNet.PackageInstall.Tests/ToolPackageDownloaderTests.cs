@@ -1024,7 +1024,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     fileSystem);
             };
 
-            action.Should().Throw<ToolConfigurationException>()
+            action.Should().Throw<GracefulException>()
                 .WithMessage("*requires a higher version of .NET*")
                 .WithMessage("*.NET 99*");
         }
