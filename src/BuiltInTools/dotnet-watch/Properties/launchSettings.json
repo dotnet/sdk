@@ -2,8 +2,8 @@
   "profiles": {
     "dotnet-watch": {
       "commandName": "Project",
-      "commandLineArgs": "--verbose -bl",
-      "workingDirectory": "C:\\bugs\\9756\\aspire-watch-start-issue\\Aspire.AppHost",
+      "commandLineArgs": "",
+      "workingDirectory": "C:\\temp\\Razor",
       "environmentVariables": {
         "DOTNET_WATCH_DEBUG_SDK_DIRECTORY": "$(RepoRoot)artifacts\\bin\\redist\\$(Configuration)\\dotnet\\sdk\\$(Version)",
         "DCP_IDE_REQUEST_TIMEOUT_SECONDS": "100000",
