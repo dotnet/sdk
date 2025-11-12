@@ -500,6 +500,141 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         }
 
+        [Fact]
+        public void InstallToolWithHigherFrameworkAsGlobalToolShowsAppropriateError()
+        {
+            var toolPackagesPath = CreateNet99ToolPackage();
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var homeFolder = Path.Combine(testDirectory.Path, "home");
+
+            var result = new DotnetToolCommand(Log, "install", "-g", "Net99Tool", "--add-source", toolPackagesPath)
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute();
+
+            result.Should().Fail()
+                .And.HaveStdErrContaining("requires a higher version of .NET")
+                .And.HaveStdErrContaining(".NET 99");
+        }
+
+        [Fact]
+        public void InstallToolWithHigherFrameworkAsLocalToolShowsAppropriateError()
+        {
+            var toolPackagesPath = CreateNet99ToolPackage();
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var homeFolder = Path.Combine(testDirectory.Path, "home");
+
+            new DotnetCommand(Log, "new", "tool-manifest")
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute()
+                .Should().Pass();
+
+            var result = new DotnetToolCommand(Log, "install", "Net99Tool", "--add-source", toolPackagesPath)
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute();
+
+            result.Should().Fail()
+                .And.HaveStdErrContaining("requires a higher version of .NET")
+                .And.HaveStdErrContaining(".NET 99");
+        }
+
+        [Fact]
+        public void RunToolWithHigherFrameworkUsingDnxShowsAppropriateError()
+        {
+            var toolPackagesPath = CreateNet99ToolPackage();
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var homeFolder = Path.Combine(testDirectory.Path, "home");
+
+            var result = new DotnetToolCommand(Log, "exec", "Net99Tool", "--yes", "--source", toolPackagesPath)
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute();
+
+            result.Should().Fail()
+                .And.HaveStdErrContaining("requires a higher version of .NET")
+                .And.HaveStdErrContaining(".NET 99");
+        }
+
+        /// <summary>
+        /// Creates a tool package that targets net99.0 to simulate a tool requiring a higher .NET version
+        /// </summary>
+        private string CreateNet99ToolPackage()
+        {
+            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: "net99tool");
+            var packageOutputPath = Path.Combine(testDirectory.Path, "packages");
+            Directory.CreateDirectory(packageOutputPath);
+
+            // Create a minimal .nupkg with net99.0 framework
+            var nupkgPath = Path.Combine(packageOutputPath, "Net99Tool.1.0.0.nupkg");
+            
+            using (var archive = ZipFile.Open(nupkgPath, ZipArchiveMode.Create))
+            {
+                // Add nuspec file
+                var nuspecEntry = archive.CreateEntry("Net99Tool.nuspec");
+                using (var writer = new StreamWriter(nuspecEntry.Open()))
+                {
+                    writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<package xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
+  <metadata>
+    <id>Net99Tool</id>
+    <version>1.0.0</version>
+    <authors>Test</authors>
+    <description>Test tool targeting net99.0</description>
+    <packageTypes>
+      <packageType name=""DotnetTool"" />
+    </packageTypes>
+  </metadata>
+</package>");
+                }
+
+                // Add DotnetToolSettings.xml
+                var settingsEntry = archive.CreateEntry("tools/net99.0/any/DotnetToolSettings.xml");
+                using (var writer = new StreamWriter(settingsEntry.Open()))
+                {
+                    writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<DotNetCliTool Version=""1"">
+  <Commands>
+    <Command Name=""net99tool"" EntryPoint=""Net99Tool.dll"" Runner=""dotnet"" />
+  </Commands>
+</DotNetCliTool>");
+                }
+
+                // Add a minimal DLL (just empty file for this test)
+                var dllEntry = archive.CreateEntry("tools/net99.0/any/Net99Tool.dll");
+                using (var writer = new StreamWriter(dllEntry.Open()))
+                {
+                    writer.Write("");
+                }
+
+                // Add .rels file
+                var relsEntry = archive.CreateEntry("_rels/.rels");
+                using (var writer = new StreamWriter(relsEntry.Open()))
+                {
+                    writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Relationships xmlns=""http://schemas.openxmlformats.org/package/2006/relationships"">
+  <Relationship Type=""http://schemas.microsoft.com/packaging/2010/07/manifest"" Target=""/Net99Tool.nuspec"" Id=""Re0"" />
+</Relationships>");
+                }
+
+                // Add [Content_Types].xml
+                var contentTypesEntry = archive.CreateEntry("[Content_Types].xml");
+                using (var writer = new StreamWriter(contentTypesEntry.Open()))
+                {
+                    writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Types xmlns=""http://schemas.openxmlformats.org/package/2006/content-types"">
+  <Default Extension=""rels"" ContentType=""application/vnd.openxmlformats-package.relationships+xml"" />
+  <Default Extension=""nuspec"" ContentType=""application/octet-stream"" />
+  <Default Extension=""xml"" ContentType=""application/xml"" />
+  <Default Extension=""dll"" ContentType=""application/octet-stream"" />
+</Types>");
+                }
+            }
+
+            return packageOutputPath;
+        }
+
         /// <summary>
         /// Opens the nupkg and verifies that it does not contain a dependency on the given dll.
         /// </summary>
