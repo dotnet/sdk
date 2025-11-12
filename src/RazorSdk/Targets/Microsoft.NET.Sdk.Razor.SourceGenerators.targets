@@ -10,7 +10,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project ToolsVersion="14.0">
 
-  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.EncodeRazorInputItem" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.EncodeRazorInputItem" AssemblyFile="$(RazorSdkBuildTasksAssembly)" Runtime="NET" />
 
   <Target Name="_PrepareRazorSourceGenerators"
     BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"

@@ -15,112 +15,134 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeStaticWebAssetsTargetPaths"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetsManifest"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetEndpointsManifest"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeEndpointsForReferenceStaticWebAssets"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DefineStaticWebAssetEndpoints"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetsDevelopmentManifest"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateV1StaticWebAssetsManifest"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ReadStaticWebAssetsManifestFile"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.UpdatePackageStaticWebAssets"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DefineStaticWebAssets"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.CollectStaticWebAssetsToCopy"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.MergeConfigurationProperties"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputePublishStaticWebAssetsList"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeReferenceStaticWebAssetItems"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeStaticWebAssetsForCurrentProject"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveStaticWebAssetsEmbeddedProjectConfiguration"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.MergeStaticWebAssets"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.FilterStaticWebAssetEndpoints"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.UpdateStaticWebAssetEndpoints"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveStaticWebAssetEndpointRoutes"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveFingerprintedStaticWebAssetEndpointsForAssets"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.UpdateExternallyDefinedStaticWebAssets"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <!-- Static web assets define how web content needs to be served from web applications, class libraries and packages during
        development and what and where web contents need to be served on the published application.

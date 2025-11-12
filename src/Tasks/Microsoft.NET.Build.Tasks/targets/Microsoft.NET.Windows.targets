@@ -310,7 +310,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Runs 'cswinrtgen' to produce the 'WinRT.Interop.dll' assembly.
     ============================================================
   -->
-  <UsingTask Condition="'$(CsWinRTGeneratorTasksOverriden)' != 'true'" TaskName="RunCsWinRTGenerator" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask Condition="'$(CsWinRTGeneratorTasksOverriden)' != 'true'" TaskName="RunCsWinRTGenerator" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
   <Target
     Name="_RunCsWinRTGenerator"
     DependsOnTargets="CoreCompile;$(GetTargetPathDependsOn);$(GetTargetPathWithTargetPlatformMonikerDependsOn);_ComputeRunCsWinRTGeneratorCache"

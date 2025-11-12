@@ -33,8 +33,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net10.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
   </PropertyGroup>
 
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorBootExtensionJson" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" Runtime="NET" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorBootExtensionJson" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" Runtime="NET" />
 
   <PropertyGroup>
     <_TargetingNETBefore80>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '8.0'))</_TargetingNETBefore80>

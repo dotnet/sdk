@@ -43,12 +43,12 @@ Integration with static web assets:
     removed off from the list of static web assets when the default bundling is enabled, so they won't show up in the final output.
 -->
 
-<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DiscoverDefaultScopedCssItems"  AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
-<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveAllScopedCssAssets"  AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
-<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ApplyCssScopes" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
-<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeCssScope" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
-<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.RewriteCss" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
-<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ConcatenateCssFiles" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DiscoverDefaultScopedCssItems"  AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" Runtime="NET" />
+<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveAllScopedCssAssets"  AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" Runtime="NET" />
+<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ApplyCssScopes" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" Runtime="NET" />
+<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeCssScope" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" Runtime="NET" />
+<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.RewriteCss" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" Runtime="NET" />
+<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ConcatenateCssFiles" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" Runtime="NET" />
 
 <PropertyGroup>
 

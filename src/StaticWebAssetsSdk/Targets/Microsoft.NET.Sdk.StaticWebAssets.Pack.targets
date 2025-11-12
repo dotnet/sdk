@@ -15,27 +15,32 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetsPropsFile"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetEndpointsPropsFile"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.StaticWebAssetsGeneratePackagePropsFile"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.StaticWebAssetsGeneratePackManifest"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.StaticWebAssetsReadPackManifest"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <PropertyGroup>
 

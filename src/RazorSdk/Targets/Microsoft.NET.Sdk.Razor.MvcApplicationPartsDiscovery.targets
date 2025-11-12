@@ -14,7 +14,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask
     TaskName="Microsoft.AspNetCore.Razor.Tasks.FindAssembliesWithReferencesTo"
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
-    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''"
+    Runtime="NET" />
 
   <PropertyGroup>
     <GenerateMvcApplicationPartsAssemblyAttributes Condition="'$(GenerateMvcApplicationPartsAssemblyAttributes)' == '' AND '$(OutputType)' == 'Exe'">true</GenerateMvcApplicationPartsAssemblyAttributes>

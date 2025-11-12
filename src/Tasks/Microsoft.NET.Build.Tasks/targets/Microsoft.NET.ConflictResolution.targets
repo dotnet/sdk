@@ -14,8 +14,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.DefaultPackageConflictOverrides.targets" />
 
-  <UsingTask TaskName="ResolvePackageFileConflicts" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <UsingTask TaskName="CheckForDuplicateItemMetadata" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="ResolvePackageFileConflicts" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
+  <UsingTask TaskName="CheckForDuplicateItemMetadata" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
 
   <!--
     _HandlePackageFileConflicts

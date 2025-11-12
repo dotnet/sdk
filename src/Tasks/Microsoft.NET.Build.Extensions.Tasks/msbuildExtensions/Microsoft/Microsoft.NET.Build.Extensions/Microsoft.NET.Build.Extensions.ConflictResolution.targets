@@ -21,7 +21,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.DefaultPackageConflictOverrides.targets" />
 
-  <UsingTask TaskName="ResolvePackageFileConflicts" AssemblyFile="$(MicrosoftNETBuildExtensionsTasksAssembly)" />
+  <UsingTask TaskName="ResolvePackageFileConflicts" AssemblyFile="$(MicrosoftNETBuildExtensionsTasksAssembly)" Runtime="NET" />
   <Target Name="_HandlePackageFileConflicts"
           BeforeTargets="$(_HandlePackageFileConflictsBefore)"
           AfterTargets="$(_HandlePackageFileConflictsAfter)"
