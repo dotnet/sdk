@@ -554,22 +554,22 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         /// </summary>
         public Project ResolveProjectPath(SourceFile sourceFile, DiagnosticBag diagnostics)
         {
-            var directiveText = Name;
+            var resolvedName = Name;
 
             try
             {
                 // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.
                 // Also normalize backslashes to forward slashes to ensure the directive works on all platforms.
                 var sourceDirectory = Path.GetDirectoryName(sourceFile.Path) ?? ".";
-                var resolvedProjectPath = Path.Combine(sourceDirectory, directiveText.Replace('\\', '/'));
+                var resolvedProjectPath = Path.Combine(sourceDirectory, resolvedName.Replace('\\', '/'));
                 if (Directory.Exists(resolvedProjectPath))
                 {
                     var fullFilePath = GetProjectFileFromDirectory(resolvedProjectPath).FullName;
 
                     // Keep a relative path only if the original directive was a relative path.
-                    directiveText = Path.IsPathFullyQualified(directiveText)
+                    resolvedName = ExternalHelpers.IsPathFullyQualified(resolvedName)
                         ? fullFilePath
-                        : Path.GetRelativePath(relativeTo: sourceDirectory, fullFilePath);
+                        : ExternalHelpers.GetRelativePath(relativeTo: sourceDirectory, fullFilePath);
                 }
                 else if (!File.Exists(resolvedProjectPath))
                 {
@@ -581,7 +581,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 diagnostics.AddError(sourceFile, Info.Span, string.Format(FileBasedProgramsResources.InvalidProjectDirective, e.Message), e);
             }
 
-            return WithName(directiveText, NameKind.Resolved);
+            return WithName(resolvedName, NameKind.Resolved);
         }
 
         // https://github.com/dotnet/sdk/issues/51487: Delete copies of methods from MsbuildProject and MSBuildUtilities from the source package, sharing the original method(s) under src/Cli instead.
