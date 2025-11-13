@@ -33,7 +33,16 @@ namespace Microsoft.DotNet.NativeWrapper
             string? hostFxrPath = FindHostFxrLibrary(dotnetExeDirectory);
             if (hostFxrPath != null)
             {
-                LoadLibraryExW(hostFxrPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    LoadLibraryExW(hostFxrPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
+                }
+#if NETCOREAPP
+                else
+                {
+                    AppContext.SetData(Constants.RuntimeProperty.HostFxrPath, hostFxrPath);
+                }
+#endif
             }
         }
 
