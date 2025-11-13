@@ -94,13 +94,16 @@ namespace Microsoft.DotNet.Watch
                 return null;
             }
 
-            // Look for the first profile with a supported command name (Project or Executable)
+            // Look for the first profile with a supported command name
+            // Note: These must match the command names supported by LaunchSettingsManager in src/Cli/dotnet/Commands/Run/LaunchSettings/
+            var supportedCommandNames = new[] { "Project", "Executable" };
             var defaultProfileKey = launchSettings.Profiles.FirstOrDefault(entry =>
-                entry.Value.CommandName == "Project" || entry.Value.CommandName == "Executable").Key;
+                entry.Value.CommandName != null && supportedCommandNames.Contains(entry.Value.CommandName, StringComparer.Ordinal)).Key;
 
             if (defaultProfileKey is null)
             {
-                logger.LogDebug("Unable to find 'Project' or 'Executable' command in the default launch profile.");
+                logger.LogDebug("Unable to find a supported command name in the default launch profile. Supported types: {SupportedTypes}",
+                    string.Join(", ", supportedCommandNames));
                 return null;
             }
 
