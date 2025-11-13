@@ -14,6 +14,8 @@ internal class LaunchSettingsManager
     private const string DefaultProfileCommandName = "Project";
     private static readonly IReadOnlyDictionary<string, ILaunchSettingsProvider> _providers;
 
+    public static IEnumerable<string> SupportedProfileTypes => _providers.Keys;
+
     static LaunchSettingsManager()
     {
         _providers = new Dictionary<string, ILaunchSettingsProvider>

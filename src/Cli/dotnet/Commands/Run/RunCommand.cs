@@ -124,12 +124,26 @@ public class RunCommand
             return 1;
         }
 
-        // If we have an Executable launch profile, handle it specially
-        if (launchSettings?.ExecutablePath != null)
+        // Route based on profile kind
+        if (launchSettings is ExecutableLaunchSettingsModel executableSettings)
         {
-            return ExecuteWithExecutableProfile(launchSettings);
+            return ExecuteWithExecutableProfile(executableSettings);
+        }
+        else if (launchSettings is ProjectLaunchSettingsModel projectSettings)
+        {
+            return ExecuteWithProjectProfile(projectSettings);
+        }
+        else if (launchSettings != null)
+        {
+            throw new GracefulException($"Unknown launch profile type: {launchSettings.ProfileKind}");
         }
 
+        // No launch settings, proceed with normal project execution
+        return ExecuteWithProjectProfile(null);
+    }
+
+    private int ExecuteWithProjectProfile(ProjectLaunchSettingsModel? launchSettings)
+    {
         Func<ProjectCollection, ProjectInstance>? projectFactory = null;
         RunProperties? cachedRunProperties = null;
         VirtualProjectBuildingCommand? virtualCommand = null;
@@ -188,7 +202,7 @@ public class RunCommand
         }
     }
 
-    private int ExecuteWithExecutableProfile(ProjectLaunchSettingsModel launchSettings)
+    private int ExecuteWithExecutableProfile(ExecutableLaunchSettingsModel launchSettings)
     {
         Debug.Assert(launchSettings.ExecutablePath != null);
 
@@ -243,16 +257,20 @@ public class RunCommand
         return command.Execute().ExitCode;
     }
 
-    internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
+    internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, LaunchSettingsModel? launchSettings)
     {
         if (launchSettings == null)
         {
             return;
         }
 
-        if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
+        // Handle Project-specific settings
+        if (launchSettings is ProjectLaunchSettingsModel projectSettings)
         {
-            targetCommand.EnvironmentVariable("ASPNETCORE_URLS", launchSettings.ApplicationUrl);
+            if (!string.IsNullOrEmpty(projectSettings.ApplicationUrl))
+            {
+                targetCommand.EnvironmentVariable("ASPNETCORE_URLS", projectSettings.ApplicationUrl);
+            }
         }
 
         targetCommand.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
@@ -270,7 +288,7 @@ public class RunCommand
         }
     }
 
-    internal bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
+    internal bool TryGetLaunchProfileSettingsIfNeeded(out LaunchSettingsModel? launchSettingsModel)
     {
         launchSettingsModel = default;
         if (NoLaunchProfile)
@@ -838,7 +856,7 @@ public class RunCommand
     /// Sends telemetry about the run operation.
     /// </summary>
     private void SendRunTelemetry(
-        ProjectLaunchSettingsModel? launchSettings,
+        LaunchSettingsModel? launchSettings,
         VirtualProjectBuildingCommand? virtualCommand)
     {
         try
@@ -866,7 +884,7 @@ public class RunCommand
     /// Builds and sends telemetry data for file-based app runs.
     /// </summary>
     private void SendFileBasedTelemetry(
-        ProjectLaunchSettingsModel? launchSettings,
+        LaunchSettingsModel? launchSettings,
         VirtualProjectBuildingCommand virtualCommand)
     {
         Debug.Assert(EntryPointFileFullPath != null);
@@ -895,7 +913,7 @@ public class RunCommand
     /// <summary>
     /// Builds and sends telemetry data for project-based app runs.
     /// </summary>
-    private void SendProjectBasedTelemetry(ProjectLaunchSettingsModel? launchSettings)
+    private void SendProjectBasedTelemetry(LaunchSettingsModel? launchSettings)
     {
         Debug.Assert(ProjectFileFullPath != null);
         var projectIdentifier = RunTelemetry.GetProjectBasedIdentifier(ProjectFileFullPath, GetRepositoryRoot(), Sha256Hasher.Hash);

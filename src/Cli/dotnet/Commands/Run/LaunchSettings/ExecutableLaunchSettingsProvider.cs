@@ -13,82 +13,35 @@ internal class ExecutableLaunchSettingsProvider : ILaunchSettingsProvider
 
     public LaunchSettingsApplyResult TryGetLaunchSettings(string? launchProfileName, JsonElement model)
     {
-        var config = new ProjectLaunchSettingsModel
+        try
         {
-            LaunchProfileName = launchProfileName
-        };
-
-        foreach (var property in model.EnumerateObject())
-        {
-            if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.ExecutablePath), StringComparison.OrdinalIgnoreCase))
+            var profile = JsonSerializer.Deserialize<ExecutableLaunchProfileJson>(model.GetRawText());
+            if (profile == null)
             {
-                if (!TryGetStringValue(property.Value, out var executablePathValue))
-                {
-                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToString, property.Name));
-                }
-
-                config.ExecutablePath = executablePathValue;
+                return new LaunchSettingsApplyResult(false, CliCommandStrings.LaunchProfileIsNotAJsonObject);
             }
-            else if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.CommandLineArgs), StringComparison.OrdinalIgnoreCase))
-            {
-                if (!TryGetStringValue(property.Value, out var commandLineArgsValue))
-                {
-                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToString, property.Name));
-                }
 
-                config.CommandLineArgs = commandLineArgsValue;
-            }
-            else if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.WorkingDirectory), StringComparison.OrdinalIgnoreCase))
+            var config = new ExecutableLaunchSettingsModel
             {
-                if (!TryGetStringValue(property.Value, out var workingDirectoryValue))
-                {
-                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToString, property.Name));
-                }
+                LaunchProfileName = launchProfileName,
+                ExecutablePath = profile.ExecutablePath,
+                CommandLineArgs = profile.CommandLineArgs,
+                WorkingDirectory = profile.WorkingDirectory
+            };
 
-                config.WorkingDirectory = workingDirectoryValue;
-            }
-            else if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.EnvironmentVariables), StringComparison.OrdinalIgnoreCase))
+            if (profile.EnvironmentVariables != null)
             {
-                if (property.Value.ValueKind != JsonValueKind.Object)
+                foreach (var (key, value) in profile.EnvironmentVariables)
                 {
-                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.ValueMustBeAnObject, property.Name));
-                }
-
-                foreach (var environmentVariable in property.Value.EnumerateObject())
-                {
-                    if (TryGetStringValue(environmentVariable.Value, out var environmentVariableValue))
-                    {
-                        config.EnvironmentVariables[environmentVariable.Name] = environmentVariableValue!;
-                    }
+                    config.EnvironmentVariables[key] = value;
                 }
             }
+
+            return new LaunchSettingsApplyResult(true, null, config);
         }
-
-        return new LaunchSettingsApplyResult(true, null, config);
-    }
-
-    private static bool TryGetStringValue(JsonElement element, out string? value)
-    {
-        switch (element.ValueKind)
+        catch (JsonException ex)
         {
-            case JsonValueKind.True:
-                value = bool.TrueString;
-                return true;
-            case JsonValueKind.False:
-                value = bool.FalseString;
-                return true;
-            case JsonValueKind.Null:
-                value = string.Empty;
-                return true;
-            case JsonValueKind.Number:
-                value = element.GetRawText();
-                return false;
-            case JsonValueKind.String:
-                value = element.GetString();
-                return true;
-            default:
-                value = null;
-                return false;
+            return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.DeserializationExceptionMessage, launchProfileName ?? "profile", ex.Message));
         }
     }
 }
