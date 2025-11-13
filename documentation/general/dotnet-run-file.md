@@ -56,6 +56,9 @@ Additionally, the implicit project file has the following customizations:
     in case there is a project or solution in the same directory as the file-based app.
     This ensures that items from nested projects and artifacts are not included by the app.
 
+  - `EnableDefaultEmbeddedResourceItems` and `EnableDefaultNoneItems` properties are set to `false` if the default SDK (`Microsoft.NET.Sdk`) is being used.
+    This avoids including files like `./**/*.resx` in simple file-based apps where users usually don't expect that.
+
 ## Grow up
 
 When file-based programs reach an inflection point where build customizations in a project file are needed,

@@ -462,13 +462,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     /// <summary>
-    /// Default items like <c>None</c> or <c>Content</c> are copied over.
+    /// Default items like <c>None</c> or <c>Content</c> are copied over if non-default SDK is used.
     /// </summary>
     [Fact]
-    public void DefaultItems()
+    public void DefaultItems_NonDefaultSdk()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:sdk Microsoft.NET.Sdk.Web
             Console.WriteLine();
             """);
         File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
@@ -501,6 +502,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:property EnableDefaultCompileItems=true
+            #:property EnableDefaultEmbeddedResourceItems=true
+            #:property EnableDefaultNoneItems=true
             Console.WriteLine();
             """);
         File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
@@ -555,6 +558,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property EnableDefaultEmbeddedResourceItems=true
+            #:property EnableDefaultNoneItems=true
             Console.WriteLine();
             """);
         File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
@@ -590,6 +595,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:sdk Microsoft.NET.Sdk.Web
             Console.WriteLine(Util.GetText());
             """);
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
@@ -745,6 +751,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property EnableDefaultEmbeddedResourceItems=true
+            #:property EnableDefaultNoneItems=true
             Console.WriteLine();
             """);
         File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
