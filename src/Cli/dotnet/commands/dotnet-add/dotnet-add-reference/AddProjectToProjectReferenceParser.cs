@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class AddProjectToProjectReferenceParser
     {
-        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new CliArgument<IEnumerable<string>>(LocalizableStrings.ProjectPathArgumentName)
+        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.ProjectPathArgumentName)
         {
             Description = LocalizableStrings.ProjectPathArgumentDescription,
             Arity = ArgumentArity.OneOrMore
@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.CmdFrameworkDescription,
             HelpName = Tools.Add.PackageReference.LocalizableStrings.CmdFramework
-                
+
         }.AddCompletions(Complete.TargetFrameworksFromProjectFile);
 
         public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption;

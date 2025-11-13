@@ -132,6 +132,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             public string ModuleId { get; set; } = default!;
             public string MetadataDelta { get; set; } = default!;
             public string ILDelta { get; set; } = default!;
+            public int[]? UpdatedTypes { get; set; } = default!;
         }
     }
 }

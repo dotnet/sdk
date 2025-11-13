@@ -1,0 +1,11 @@
+# Contains the list of native .dll and .exe files that shouldn't have their assembly version checked.
+#
+# This list is processed using FileSystemName.MatchesSimpleExpression
+#
+# Examples
+# 'folder/*' matches 'folder/' and 'folder/abc'
+# 'folder/?*' matches 'folder/abc' but not 'folder/'
+#
+# We do not want to filter-out folder entries, therefore, we should use: '?*' and not just '*'
+
+./shared/Microsoft.NETCore.App/x.y.z/mscordaccore_amd64_amd64_x.y.z.dll
