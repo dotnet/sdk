@@ -132,6 +132,7 @@ public class CreateNewImageTests
     /// <summary>
     /// Creates a console app that outputs the environment variable added to the image.
     /// </summary>
+
     [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49300")]
     public void Tasks_EndToEnd_With_EnvironmentVariable_Validation()
     {
@@ -296,7 +297,7 @@ public class CreateNewImageTests
     }
 
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void CanOverrideContainerImageFormat()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
