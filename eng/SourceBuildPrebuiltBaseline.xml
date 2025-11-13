@@ -35,8 +35,10 @@
 
     <!-- (Don't include these for 9.0) Allow 8.0.2xx and higher to use any version of these packages since source build
          is only applicable to 8.0.1xx. -->
+    <UsagePattern IdentityGlob="Microsoft.DotNet.Arcade.Sdk/*8.0.0*" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection/*8.0.0*" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection.Abstractions/8.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.DotNet.SourceBuild.Tasks/*8.0.0*" />
     <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Abstractions/8.0.*" />
     <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Core/8.0.*" />
     <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Core.Contracts/8.0.*" />
