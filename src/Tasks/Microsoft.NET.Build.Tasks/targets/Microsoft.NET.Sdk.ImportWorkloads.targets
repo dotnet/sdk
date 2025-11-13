@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Import workload manifests -->
   <Import Project="WorkloadManifest.targets" Sdk="Microsoft.NET.SDK.WorkloadManifestTargetsLocator"/>
 
-  <UsingTask TaskName="ShowMissingWorkloads" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="ShowMissingWorkloads" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
 
   <Target Name="GetSuggestedWorkloads"
           Returns="@(SuggestedWorkload)"

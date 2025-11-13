@@ -11,7 +11,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 
 <Project>
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateServiceWorkerAssetsManifest" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateServiceWorkerAssetsManifest" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" Runtime="NET" />
 
   <Target Name="_ComputeServiceWorkerAssets" BeforeTargets="ResolveStaticWebAssetsInputs">
 

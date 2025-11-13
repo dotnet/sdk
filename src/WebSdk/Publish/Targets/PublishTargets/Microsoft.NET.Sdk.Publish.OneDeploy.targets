@@ -9,9 +9,9 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
 -->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <UsingTask TaskName="OneDeploy" AssemblyFile="$(_PublishTaskAssemblyFullPath)" />
-  <UsingTask TaskName="CreatePackageFile" AssemblyFile="$(_PublishTaskAssemblyFullPath)" />
-  <UsingTask TaskName="GetPassword" AssemblyFile="$(_PublishTaskAssemblyFullPath)" />
+  <UsingTask TaskName="OneDeploy" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="CreatePackageFile" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
+  <UsingTask TaskName="GetPassword" AssemblyFile="$(_PublishTaskAssemblyFullPath)" Runtime="NET" />
 
   <PropertyGroup>
     <_DotNetPublishFiles>

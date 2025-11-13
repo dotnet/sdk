@@ -17,7 +17,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Generates implicit namespace imports source to intermediate directory for C# projects
     ============================================================
     -->
-  <UsingTask TaskName="GenerateGlobalUsings" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="GenerateGlobalUsings" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
 
   <PropertyGroup>
     <GeneratedGlobalUsingsFile Condition="'$(GeneratedGlobalUsingsFile)' ==''">$(IntermediateOutputPath)$(MSBuildProjectName).GlobalUsings.g$(DefaultLanguageSourceExtension)</GeneratedGlobalUsingsFile>

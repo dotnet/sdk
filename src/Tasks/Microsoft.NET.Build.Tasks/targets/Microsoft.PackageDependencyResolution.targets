@@ -168,13 +168,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.ResolvePackageDependencies"
-             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)"
+             Runtime="NET" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.CheckForTargetInAssetsFile"
-           AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)"
+            Runtime="NET" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.JoinItems"
-           AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+           AssemblyFile="$(MicrosoftNETBuildTasksAssembly)"
+           Runtime="NET" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.ResolvePackageAssets"
-            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)"
+            Runtime="NET" />
 
   <!-- The condition on this target causes it to be skipped during design-time builds if
         the restore operation hasn't run yet.  This is to avoid displaying an error in
@@ -353,7 +357,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.CollectSDKReferencesDesignTime"
-         AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+         AssemblyFile="$(MicrosoftNETBuildTasksAssembly)"
+         Runtime="NET" />
 
   <Target Name="CollectSDKReferencesDesignTime"
           Returns="@(_SDKReference)"
@@ -401,7 +406,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.ProduceContentAssets"
-             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)"
+             Runtime="NET" />
 
   <Target Name="RunProduceContentAssets"
           DependsOnTargets="ResolvePackageAssets"

@@ -12,7 +12,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project ToolsVersion="14.0">
     
-  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.OverrideHtmlAssetPlaceholders" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.OverrideHtmlAssetPlaceholders" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" Runtime="NET" />
 
   <PropertyGroup>
 

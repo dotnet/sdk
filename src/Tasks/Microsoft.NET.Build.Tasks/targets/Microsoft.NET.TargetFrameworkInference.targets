@@ -136,7 +136,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                  FormatArguments="$(TargetPlatformIdentifier)" />
   </Target>
 
-  <UsingTask TaskName="AllowEmptyTelemetry" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="AllowEmptyTelemetry" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Runtime="NET" />
 
   <Target Name="_CollectTargetFrameworkForTelemetry" AfterTargets="_CheckForUnsupportedTargetFramework">
     <ItemGroup>
