@@ -3,12 +3,8 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
-public class ProjectLaunchSettingsModel
+public class ProjectLaunchSettingsModel : LaunchSettingsModel
 {
-    public string? LaunchProfileName { get; set; }
-
-    public string? CommandLineArgs { get; set; }
-
     public bool LaunchBrowser { get; set; }
 
     public string? LaunchUrl { get; set; }
@@ -17,9 +13,5 @@ public class ProjectLaunchSettingsModel
 
     public string? DotNetRunMessages { get; set; }
 
-    public string? ExecutablePath { get; set; }
-
-    public string? WorkingDirectory { get; set; }
-
-    public Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
+    public override LaunchProfileKind ProfileKind => LaunchProfileKind.Project;
 }
