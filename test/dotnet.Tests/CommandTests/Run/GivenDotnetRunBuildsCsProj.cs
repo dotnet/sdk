@@ -1028,5 +1028,62 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 hasExpectedErrorMessage.Should().BeTrue($"Expected error message to clearly indicate file doesn't exist, but got: {stderr}");
             }
         }
+
+        [Fact]
+        public void ItCanRunWithExecutableLaunchProfile()
+        {
+            var testAppName = "AppWithExecutableLaunchSettings";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            new BuildCommand(testInstance)
+                .Execute()
+                .Should().Pass();
+
+            // The ExecutableProfile runs "dotnet --version"
+            new DotnetCommand(Log, "run", "--launch-profile", "ExecutableProfile")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("10.0.");
+        }
+
+        [Fact]
+        public void ItCanRunWithExecutableLaunchProfileAsDefault()
+        {
+            var testAppName = "AppWithExecutableLaunchSettings";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            new BuildCommand(testInstance)
+                .Execute()
+                .Should().Pass();
+
+            // ExecutableProfile is first, so it should be the default
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("10.0.");
+        }
+
+        [Fact]
+        public void ItCanRunWithProjectLaunchProfileWhenExecutableProfileExists()
+        {
+            var testAppName = "AppWithExecutableLaunchSettings";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            new BuildCommand(testInstance)
+                .Execute()
+                .Should().Pass();
+
+            // Explicitly select ProjectProfile which should run the project
+            new DotnetCommand(Log, "run", "--launch-profile", "ProjectProfile")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello from AppWithExecutableLaunchSettings!");
+        }
     }
 }

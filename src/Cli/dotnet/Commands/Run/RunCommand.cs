@@ -141,6 +141,12 @@ public class RunCommand
             return 1;
         }
 
+        // If we have an Executable launch profile, handle it specially
+        if (launchSettings?.ExecutablePath != null)
+        {
+            return ExecuteWithExecutableProfile(launchSettings);
+        }
+
         Func<ProjectCollection, ProjectInstance>? projectFactory = null;
         RunProperties? cachedRunProperties = null;
         VirtualProjectBuildingCommand? virtualCommand = null;
@@ -291,6 +297,61 @@ public class RunCommand
                 new Dictionary<string, string> { { "TargetFramework", selectedFramework } });
             MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
         }
+    }
+
+    private int ExecuteWithExecutableProfile(ProjectLaunchSettingsModel launchSettings)
+    {
+        Debug.Assert(launchSettings.ExecutablePath != null);
+
+        // Expand environment variables in the executable path
+        string executablePath = Environment.ExpandEnvironmentVariables(launchSettings.ExecutablePath);
+
+        // Determine working directory - use specified directory or project directory
+        string workingDirectory;
+        if (!string.IsNullOrEmpty(launchSettings.WorkingDirectory))
+        {
+            workingDirectory = Environment.ExpandEnvironmentVariables(launchSettings.WorkingDirectory);
+        }
+        else
+        {
+            // Default to the directory containing the project or entry point file
+            workingDirectory = Path.GetDirectoryName(ProjectFileFullPath ?? EntryPointFileFullPath ?? Directory.GetCurrentDirectory())!;
+        }
+
+        // Build command arguments
+        string commandArgs = string.Empty;
+        if (!NoLaunchProfileArguments && !string.IsNullOrEmpty(launchSettings.CommandLineArgs))
+        {
+            commandArgs = launchSettings.CommandLineArgs;
+        }
+
+        // If there are application arguments from command line, append them
+        if (ApplicationArgs.Length > 0)
+        {
+            string appArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(ApplicationArgs);
+            commandArgs = string.IsNullOrEmpty(commandArgs) ? appArgs : $"{commandArgs} {appArgs}";
+        }
+
+        var commandSpec = new CommandSpec(executablePath, commandArgs);
+        var command = CommandFactoryUsingResolver.Create(commandSpec)
+            .WorkingDirectory(workingDirectory);
+
+        // Apply environment variables from launch profile
+        ApplyLaunchSettingsProfileToCommand(command, launchSettings);
+
+        // Env variables specified on command line override those specified in launch profile:
+        foreach (var (name, value) in EnvironmentVariables)
+        {
+            command.EnvironmentVariable(name, value);
+        }
+
+        // Send telemetry about the run operation
+        SendRunTelemetry(launchSettings, virtualCommand: null);
+
+        // Ignore Ctrl-C for the remainder of the command's execution
+        Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
+
+        return command.Execute().ExitCode;
     }
 
     internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
