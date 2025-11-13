@@ -17,5 +17,9 @@ public class ProjectLaunchSettingsModel
 
     public string? DotNetRunMessages { get; set; }
 
+    public string? ExecutablePath { get; set; }
+
+    public string? WorkingDirectory { get; set; }
+
     public Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
 }

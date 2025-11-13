@@ -18,7 +18,8 @@ internal class LaunchSettingsManager
     {
         _providers = new Dictionary<string, ILaunchSettingsProvider>
         {
-            { ProjectLaunchSettingsProvider.CommandNameValue, new ProjectLaunchSettingsProvider() }
+            { ProjectLaunchSettingsProvider.CommandNameValue, new ProjectLaunchSettingsProvider() },
+            { ExecutableLaunchSettingsProvider.CommandNameValue, new ExecutableLaunchSettingsProvider() }
         };
     }
 
@@ -140,6 +141,7 @@ internal class LaunchSettingsManager
             return false;
         }
 
-        return string.Equals(commandNameElement.GetString(), DefaultProfileCommandName, StringComparison.Ordinal);
+        var commandName = commandNameElement.GetString();
+        return commandName != null && _providers.ContainsKey(commandName);
     }
 }
