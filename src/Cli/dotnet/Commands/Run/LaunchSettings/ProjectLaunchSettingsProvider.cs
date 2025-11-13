@@ -13,126 +13,37 @@ internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
 
     public LaunchSettingsApplyResult TryGetLaunchSettings(string? launchProfileName, JsonElement model)
     {
-        var config = new ProjectLaunchSettingsModel
+        try
         {
-            LaunchProfileName = launchProfileName
-        };
-
-        foreach (var property in model.EnumerateObject())
-        {
-            if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.CommandLineArgs), StringComparison.OrdinalIgnoreCase))
+            var profile = JsonSerializer.Deserialize<ProjectLaunchProfileJson>(model.GetRawText());
+            if (profile == null)
             {
-                if (!TryGetStringValue(property.Value, out var commandLineArgsValue))
-                {
-                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToString, property.Name));
-                }
-
-                config.CommandLineArgs = commandLineArgsValue;
+                return new LaunchSettingsApplyResult(false, CliCommandStrings.LaunchProfileIsNotAJsonObject);
             }
-            else if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.LaunchBrowser), StringComparison.OrdinalIgnoreCase))
-            {
-                if (!TryGetBooleanValue(property.Value, out var launchBrowserValue))
-                {
-                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToBoolean, property.Name));
-                }
 
-                config.LaunchBrowser = launchBrowserValue;
-            }
-            else if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.LaunchUrl), StringComparison.OrdinalIgnoreCase))
+            var config = new ProjectLaunchSettingsModel
             {
-                if (!TryGetStringValue(property.Value, out var launchUrlValue))
-                {
-                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToString, property.Name));
-                }
+                LaunchProfileName = launchProfileName,
+                CommandLineArgs = profile.CommandLineArgs,
+                LaunchBrowser = profile.LaunchBrowser,
+                LaunchUrl = profile.LaunchUrl,
+                ApplicationUrl = profile.ApplicationUrl,
+                DotNetRunMessages = profile.DotNetRunMessages
+            };
 
-                config.LaunchUrl = launchUrlValue;
-            }
-            else if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.ApplicationUrl), StringComparison.OrdinalIgnoreCase))
+            if (profile.EnvironmentVariables != null)
             {
-                if (!TryGetStringValue(property.Value, out var applicationUrlValue))
+                foreach (var (key, value) in profile.EnvironmentVariables)
                 {
-                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToString, property.Name));
-                }
-
-                config.ApplicationUrl = applicationUrlValue;
-            }
-            else if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.DotNetRunMessages), StringComparison.OrdinalIgnoreCase))
-            {
-                if (!TryGetStringValue(property.Value, out var dotNetRunMessages))
-                {
-                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToString, property.Name));
-                }
-
-                config.DotNetRunMessages = dotNetRunMessages;
-            }
-            else if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.EnvironmentVariables), StringComparison.OrdinalIgnoreCase))
-            {
-                if (property.Value.ValueKind != JsonValueKind.Object)
-                {
-                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.ValueMustBeAnObject, property.Name));
-                }
-
-                foreach (var environmentVariable in property.Value.EnumerateObject())
-                {
-                    if (TryGetStringValue(environmentVariable.Value, out var environmentVariableValue))
-                    {
-                        config.EnvironmentVariables[environmentVariable.Name] = environmentVariableValue!;
-                    }
+                    config.EnvironmentVariables[key] = value;
                 }
             }
+
+            return new LaunchSettingsApplyResult(true, null, config);
         }
-
-        return new LaunchSettingsApplyResult(true, null, config);
-    }
-
-    private static bool TryGetBooleanValue(JsonElement element, out bool value)
-    {
-        switch (element.ValueKind)
+        catch (JsonException ex)
         {
-            case JsonValueKind.True:
-                value = true;
-                return true;
-            case JsonValueKind.False:
-                value = false;
-                return true;
-            case JsonValueKind.Number:
-                if (element.TryGetDouble(out var doubleValue))
-                {
-                    value = doubleValue != 0;
-                    return true;
-                }
-                value = false;
-                return false;
-            case JsonValueKind.String:
-                return bool.TryParse(element.GetString(), out value);
-            default:
-                value = false;
-                return false;
-        }
-    }
-
-    private static bool TryGetStringValue(JsonElement element, out string? value)
-    {
-        switch (element.ValueKind)
-        {
-            case JsonValueKind.True:
-                value = bool.TrueString;
-                return true;
-            case JsonValueKind.False:
-                value = bool.FalseString;
-                return true;
-            case JsonValueKind.Null:
-                value = string.Empty;
-                return true;
-            case JsonValueKind.Number:
-                value = element.GetRawText();
-                return false;
-            case JsonValueKind.String:
-                value = element.GetString();
-                return true;
-            default:
-                value = null;
-                return false;
+            return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.DeserializationExceptionMessage, launchProfileName ?? "profile", ex.Message));
         }
     }
 }
