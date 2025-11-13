@@ -36,7 +36,7 @@ internal static class RunTelemetry
         string projectIdentifier,
         string? launchProfile = null,
         bool noLaunchProfile = false,
-        ProjectLaunchSettingsModel? launchSettings = null,
+        LaunchSettingsModel? launchSettings = null,
         int sdkCount = 1,
         int packageReferenceCount = 0,
         int projectReferenceCount = 0,

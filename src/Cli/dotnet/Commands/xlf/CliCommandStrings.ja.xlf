@@ -92,6 +92,11 @@
         <target state="translated">.NET ビルダー</target>
         <note />
       </trans-unit>
+      <trans-unit id="LaunchProfile0IsMissingProperty1">
+        <source>Launch profile '{0}' is missing property '{1}'</source>
+        <target state="new">Launch profile '{0}' is missing property '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">著作権情報を表示しません。</target>
@@ -1927,7 +1932,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">.NET Core NuGet パッケージ パッカー</target>
         <note />
       </trans-unit>
-
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2108,6 +2112,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       <trans-unit id="PassedLowercase">
         <source>passed</source>
         <target state="translated">合格しました</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Path0SpecifiedIn1IsInvalid">
+        <source>Path '{0}' specified in '{1}' is invalid.</source>
+        <target state="new">Path '{0}' specified in '{1}' is invalid.</target>
         <note />
       </trans-unit>
       <trans-unit id="PathToApplicationDefinition">
