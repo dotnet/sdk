@@ -2411,8 +2411,8 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">Zadejte výstupní adresář ({0}):</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="needs-review-translation">Zadejte výstupní adresář ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">

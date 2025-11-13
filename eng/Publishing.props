@@ -43,6 +43,10 @@
     <Artifact Remove="@(MsiPackages)" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(PublishingWorkloadMsiInternal)' == 'true'">
+    <Artifact Update="$(ArtifactsShippingPackagesDir)*.Msi.*.nupkg" Visibility="Internal" />
+  </ItemGroup>
+
   <Target Name="GetNonStableProductVersion">
     <!-- Retrieve the non-stable product version. -->
     <MSBuild Projects="$(RepoRoot)src\Layout\redist\redist.csproj"
