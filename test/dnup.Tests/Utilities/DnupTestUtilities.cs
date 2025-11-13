@@ -76,10 +76,16 @@ internal static class DnupTestUtilities
     /// <returns>A tuple with exit code and captured output (if requested)</returns>
     public static (int exitCode, string output) RunDnupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
     {
+#if DEBUG
+        string configuration = "Debug";
+#else
+        string configuration = "Release";
+#endif
+
         string repoRoot = GetRepositoryRoot();
         string dnupPath = Path.Combine(
             repoRoot,
-            "artifacts", "bin", "dnup", "Debug", "net10.0", "dnup.dll");
+            "artifacts", "bin", "dnup", configuration, "net10.0", "dnup.dll");
 
         // Ensure path is normalized and exists
         dnupPath = Path.GetFullPath(dnupPath);
