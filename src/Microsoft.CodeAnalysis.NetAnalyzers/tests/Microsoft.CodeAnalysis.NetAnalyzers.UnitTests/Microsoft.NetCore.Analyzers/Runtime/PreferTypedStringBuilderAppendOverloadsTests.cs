@@ -260,5 +260,82 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     private static void Append(int value) { }
                 }");
         }
+
+        [Fact]
+        public async Task Diagnostic_StringConstructorInAppend_CSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        sb.Append([|new string('c', 5)|]);
+                    }
+                }
+                ", @"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        sb.Append('c', 5);
+                    }
+                }
+                ");
+        }
+
+        [Fact]
+        public async Task Diagnostic_StringConstructorWithVariable_CSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        char c = 'a';
+                        int count = 3;
+                        sb.Append([|new string(c, count)|]);
+                    }
+                }
+                ", @"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        char c = 'a';
+                        int count = 3;
+                        sb.Append(c, count);
+                    }
+                }
+                ");
+        }
+
+        [Fact]
+        public async Task NoDiagnostic_StringConstructorWithCharArray_CSharpAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        char[] chars = new char[] { 'a', 'b', 'c' };
+                        sb.Append(new string(chars));
+                    }
+                }");
+        }
     }
 }

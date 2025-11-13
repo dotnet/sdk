@@ -100,8 +100,9 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">设置环境变量的值。
-如果该变量不存在，则创建它; 如果它已存在，则替代它。
+        <target state="needs-review-translation">设置环境变量的值。
+如果该变量不存在，则创建它；如果它已存在，则替代它。
+这将在隔离的进程中强制运行测试。
 可多次指定此参数来提供多个变量。
 
 示例:
@@ -129,12 +130,12 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">设置环境变量的值。
-如果该变量不存在，则创建它；如果它已存在，则替代它。
-这将在隔离的进程中强制运行测试。
-可多次指定此参数来提供多个变量。
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
 
-示例:
+Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"
@@ -769,7 +770,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
         <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
-        <target state="translated">包引用的格式为包标识符，如 ‘{0}’，或由 ‘@’ 分隔的包标识符和版本，如 ‘{0}@{1}’。</target>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
@@ -1018,6 +1019,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">指定的解决方案文件 {0} 不存在，或目录中没有解决方案文件。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">要操作的项目或解决方案文件。如果没有指定文件，则命令将在当前目录里搜索一个文件。</target>
@@ -1076,6 +1082,16 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">包 {0} 不是 .NET 工具。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersion">
+        <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
+        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

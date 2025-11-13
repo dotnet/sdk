@@ -100,7 +100,7 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">環境変数の値を設定します。
+        <target state="needs-review-translation">環境変数の値を設定します。
 変数が存在しない場合は作成され、存在する場合はオーバーライドされます。
 この引数は、複数の変数を指定するために複数回指定できます。
 
@@ -129,12 +129,12 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">環境変数の値を設定します。
-変数が存在しない場合は作成され、存在する場合はオーバーライドされます。
-これにより、テストは強制的に分離プロセスで実行されます。
-この引数は、複数の変数を指定するために複数回指定できます。
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
 
-例:
+Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"
@@ -769,7 +769,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
         <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
-        <target state="translated">'{0}' のようなパッケージ ID の形式のパッケージ参照、または '{0}@{1}' のように '@' で区切られたパッケージ ID とバージョンです。</target>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
@@ -1018,6 +1018,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">指定したソリューション ファイル {0} が存在しないか、ディレクトリにソリューション ファイルがありません。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">利用するプロジェクト ファイルまたはソリューション ファイル。指定しない場合、コマンドは現在のディレクトリを検索します。</target>
@@ -1076,6 +1081,16 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">パッケージ {0} は .NET ツールではありません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersion">
+        <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
+        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">
