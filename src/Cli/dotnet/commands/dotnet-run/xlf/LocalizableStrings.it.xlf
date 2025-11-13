@@ -17,6 +17,11 @@
         <target state="translated">Consente di compilare ed eseguire l'app con il framework specificato. Il framework deve essere specificato nel file di progetto. </target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="translated">Non utilizzare gli argomenti specificati nel profilo di avvio per eseguire l'applicazione.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
         <target state="translated">Percorso del file di progetto da eseguire. Se è presente un solo progetto, per impostazione predefinita viene usata la directory corrente.</target>
