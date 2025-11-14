@@ -306,7 +306,7 @@ function InstallDotNet([string] $dotnetRoot,
     if ($runtime -eq "aspnetcore") { $runtimePath = $runtimePath + "\Microsoft.AspNetCore.App" }
     if ($runtime -eq "windowsdesktop") { $runtimePath = $runtimePath + "\Microsoft.WindowsDesktop.App" }
     $runtimePath = $runtimePath + "\" + $version
-
+  
     $dotnetVersionLabel = "runtime toolset '$runtime/$architecture v$version'"
 
     if (Test-Path $runtimePath) {
@@ -560,25 +560,19 @@ function LocateVisualStudio([object]$vsRequirements = $null){
     })
   }
 
-  if (!$vsRequirements) {
-    if (Get-Member -InputObject $GlobalJson.tools -Name 'vs' -ErrorAction SilentlyContinue) {
-      $vsRequirements = $GlobalJson.tools.vs
-    } else {
-      $vsRequirements = $null
-    }
-  }
+  if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
   $args = @('-latest', '-format', 'json', '-requires', 'Microsoft.Component.MSBuild', '-products', '*')
 
   if (!$excludePrereleaseVS) {
     $args += '-prerelease'
   }
 
-  if ($vsRequirements -and (Get-Member -InputObject $vsRequirements -Name 'version' -ErrorAction SilentlyContinue)) {
+  if (Get-Member -InputObject $vsRequirements -Name 'version') {
     $args += '-version'
     $args += $vsRequirements.version
   }
 
-  if ($vsRequirements -and (Get-Member -InputObject $vsRequirements -Name 'components' -ErrorAction SilentlyContinue)) {
+  if (Get-Member -InputObject $vsRequirements -Name 'components') {
     foreach ($component in $vsRequirements.components) {
       $args += '-requires'
       $args += $component
