@@ -20,7 +20,7 @@ public class MSBuildForwardingApp : CommandBase
     /// </summary>
     private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs)
     {
-        if (Telemetry.Telemetry.CurrentSessionId != null)
+        if (Telemetry.Telemetry.s_currentSessionId != null)
         {
             try
             {
@@ -77,7 +77,7 @@ public class MSBuildForwardingApp : CommandBase
 
     private void InitializeRequiredEnvironmentVariables()
     {
-        EnvironmentVariable(TelemetrySessionIdEnvironmentVariableName, Telemetry.Telemetry.CurrentSessionId);
+        EnvironmentVariable(TelemetrySessionIdEnvironmentVariableName, Telemetry.Telemetry.s_currentSessionId);
     }
 
     /// <summary>

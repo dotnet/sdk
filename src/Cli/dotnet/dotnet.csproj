@@ -51,6 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
     <PackageReference Include="Newtonsoft.Json" />
@@ -59,6 +60,9 @@
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.NET.HostModel" />
     <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
