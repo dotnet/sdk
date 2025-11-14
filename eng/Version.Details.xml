@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.416">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.417">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>d5ddb7f6ee6f52c8e8ff512eca1cce7730b38c51</Sha>
+      <Sha>98f9e6489e60d738e2bc75dd9e2d409dd3b56821</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.416-servicing.25515.10">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.417-servicing.25563.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>d5ddb7f6ee6f52c8e8ff512eca1cce7730b38c51</Sha>
+      <Sha>98f9e6489e60d738e2bc75dd9e2d409dd3b56821</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.416-servicing.25515.10">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.417-servicing.25563.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>d5ddb7f6ee6f52c8e8ff512eca1cce7730b38c51</Sha>
+      <Sha>98f9e6489e60d738e2bc75dd9e2d409dd3b56821</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.22">
@@ -354,9 +354,9 @@
       <Sha>16bcad1c13be082bd52ce178896d1119a73081a9</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.25507.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.25522.3">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>7a3266db9e2b7422e8277f04932eff9b7064b66e</Sha>
+      <Sha>449148366d9105de8a6470ebc4ba198926e9a30a</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-rtm.1.25064.1">
@@ -491,22 +491,22 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.25555.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.25562.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>048a8c0ba5b72234301a3605c424ee9f9ff99772</Sha>
+      <Sha>e8483fe03c7d3257c68f6013441da5d72eeb8392</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.25555.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.25562.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>048a8c0ba5b72234301a3605c424ee9f9ff99772</Sha>
+      <Sha>e8483fe03c7d3257c68f6013441da5d72eeb8392</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="8.0.0-beta.25555.2">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="8.0.0-beta.25562.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>048a8c0ba5b72234301a3605c424ee9f9ff99772</Sha>
+      <Sha>e8483fe03c7d3257c68f6013441da5d72eeb8392</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="8.0.0-beta.25555.2">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="8.0.0-beta.25562.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>048a8c0ba5b72234301a3605c424ee9f9ff99772</Sha>
+      <Sha>e8483fe03c7d3257c68f6013441da5d72eeb8392</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
