@@ -198,21 +198,7 @@ public class RunCommand
         try
         {
             ICommand targetCommand = GetTargetCommand(projectFactory, cachedRunProperties);
-            ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
-
-            // Env variables specified on command line override those specified in launch profile:
-            foreach (var (name, value) in EnvironmentVariables)
-            {
-                targetCommand.EnvironmentVariable(name, value);
-            }
-
-            // Send telemetry about the run operation
-            SendRunTelemetry(launchSettings, virtualCommand);
-
-            // Ignore Ctrl-C for the remainder of the command's execution
-            Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
-
-            return targetCommand.Execute().ExitCode;
+            return ExecuteCommand(targetCommand, launchSettings, virtualCommand);
         }
         catch (InvalidProjectFileException e)
         {
@@ -367,6 +353,11 @@ public class RunCommand
         var command = CommandFactoryUsingResolver.Create(commandSpec)
             .WorkingDirectory(workingDirectory);
 
+        return ExecuteCommand(command, launchSettings, virtualCommand: null);
+    }
+
+    private int ExecuteCommand(ICommand command, LaunchSettingsModel? launchSettings, VirtualProjectBuildingCommand? virtualCommand)
+    {
         // Apply environment variables from launch profile
         ApplyLaunchSettingsProfileToCommand(command, launchSettings);
 
@@ -377,7 +368,7 @@ public class RunCommand
         }
 
         // Send telemetry about the run operation
-        SendRunTelemetry(launchSettings, virtualCommand: null);
+        SendRunTelemetry(launchSettings, virtualCommand);
 
         // Ignore Ctrl-C for the remainder of the command's execution
         Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
