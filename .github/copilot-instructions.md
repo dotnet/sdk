@@ -1,3 +1,7 @@
+Use the instructions from the main branch if available: @dotnet/sdk/files/.github/copilot-instructions.md
+
+If the instructions from main are not available, use the following as a fallback:
+
 Coding Style and Changes:
 - Code should match the style of the file it's in.
 - Changes should be minimal to resolve a problem in a clean way.
@@ -5,6 +9,9 @@ Coding Style and Changes:
 - When generating code, run `dotnet format` to ensure uniform formatting.
 - Prefer using file-based namespaces for new code.
 - Do not allow unused `using` directives to be committed.
+- Commit your changes, and then format them.
+- Add the format commit SHA to the .git-blame-ignore-revs file so that the commit doesn't dirty git blame in the future
+- Use `#if NET` blocks for .NET Core specific code, and `#if NETFRAMEWORK` for .NET Framework specific code.
 
 Testing:
 - Large changes should always include test changes.
