@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Watch
         private ILogger Logger => buildReporter.Logger;
 
         private readonly ProjectGraphFactory _buildGraphFactory = new(
-            globalOptions: CommandLineOptions.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value));
+            globalOptions: BuildUtilities.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value));
 
         internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph? projectGraph)
         {
