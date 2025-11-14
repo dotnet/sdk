@@ -1,6 +1,9 @@
 {
   "tools": {
     "dotnet": "9.0.111",
+    "vs": {
+      "version": "17.14.0"
+    },
     "runtimes": {
       "dotnet": [
         "$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)"
