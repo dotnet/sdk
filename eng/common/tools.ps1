@@ -616,7 +616,7 @@ function InitializeBuildTool() {
     } else {
       $initializeBuildToolFramework=$env:_OverrideArcadeInitializeBuildToolFramework
     }
-
+    
     $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = $initializeBuildToolFramework }
   } elseif ($msbuildEngine -eq "vs") {
     try {
