@@ -39,7 +39,8 @@ public class DockerRegistryManager
     {
         using TestLoggerFactory loggerFactory = new(testOutput);
 
-        if (!new DockerCli(loggerFactory).IsAvailable()) {
+        if (!new DockerCli(loggerFactory).IsAvailable())
+        {
             throw new InvalidOperationException("Docker is not available, tests cannot run");
         }
 
@@ -98,7 +99,7 @@ public class DockerRegistryManager
                     {
                         ContainerCli.StopCommand(testOutput, s_registryContainerId).Execute();
                     }
-                    catch(Exception ex2)
+                    catch (Exception ex2)
                     {
                         logger.LogError(ex2, "Failed to stop the registry {id}.", s_registryContainerId);
                     }
