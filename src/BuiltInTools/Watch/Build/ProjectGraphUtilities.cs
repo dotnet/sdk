@@ -1,9 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.Versioning;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -19,7 +19,16 @@ internal static class ProjectGraphUtilities
         => projectNode.GetStringListPropertyValue(PropertyNames.TargetFrameworks);
 
     public static Version? GetTargetFrameworkVersion(this ProjectGraphNode projectNode)
-        => EnvironmentVariableNames.TryParseTargetFrameworkVersion(projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetFrameworkVersion));
+    {
+        try
+        {
+            return new FrameworkName(projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetFrameworkMoniker)).Version;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     public static IEnumerable<string> GetWebAssemblyCapabilities(this ProjectGraphNode projectNode)
         => projectNode.GetStringListPropertyValue(PropertyNames.WebAssemblyHotReloadCapabilities);
