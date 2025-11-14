@@ -121,6 +121,13 @@
 
     <Copy SourceFiles="@(DotnetFormatDllFiles)" DestinationFiles="@(DotnetFormatDllFiles->'$(DotnetFormatDestinationDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(DotnetFormatConfigFiles)" DestinationFiles="@(DotnetFormatConfigFiles->'$(DotnetFormatDestinationDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <!-- Overlay newer Microsoft.Build.* assemblies from SDK for version consistency
+         this does not fix deps.json inconsistencies but ensures we don't ship vulnerable packages -->
+    <Copy SourceFiles="@(SdkMicrosoftBuildFiles)"
+          DestinationFolder="$(DotnetFormatDestinationDirectory)"
+          Condition="Exists('%(FullPath)')"
+          OverwriteReadOnlyFiles="true" />
   </Target>
 
   <Target Name="PublishMSBuildExtensions"
