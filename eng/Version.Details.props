@@ -33,7 +33,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftBclAsyncInterfacesPackageVersion>10.0.0-rc.1.25515.110</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftBuildPackageVersion>18.1.0-preview-25515-110</MicrosoftBuildPackageVersion>
     <MicrosoftBuildLocalizationPackageVersion>18.1.0-preview-25515-110</MicrosoftBuildLocalizationPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>7.0.0-preview.1.1610</MicrosoftBuildNuGetSdkResolverPackageVersion>
     <MicrosoftBuildTasksGitPackageVersion>10.0.0-beta.25515.110</MicrosoftBuildTasksGitPackageVersion>
     <MicrosoftCodeAnalysisPackageVersion>5.3.0-1.25515.110</MicrosoftCodeAnalysisPackageVersion>
     <MicrosoftCodeAnalysisBuildClientPackageVersion>5.3.0-1.25515.110</MicrosoftCodeAnalysisBuildClientPackageVersion>
@@ -99,22 +98,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftWin32SystemEventsPackageVersion>10.0.0-rc.1.25515.110</MicrosoftWin32SystemEventsPackageVersion>
     <MicrosoftWindowsDesktopAppInternalPackageVersion>10.0.0-rc.1.25515.110</MicrosoftWindowsDesktopAppInternalPackageVersion>
     <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-rc.1.25515.110</MicrosoftWindowsDesktopAppRefPackageVersion>
-    <NuGetBuildTasksPackageVersion>7.0.0-preview.1.1610</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>7.0.0-preview.1.1610</NuGetBuildTasksConsolePackageVersion>
-    <NuGetBuildTasksPackPackageVersion>7.0.0-preview.1.1610</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>7.0.0-preview.1.1610</NuGetCommandLineXPlatPackageVersion>
-    <NuGetCommandsPackageVersion>7.0.0-preview.1.1610</NuGetCommandsPackageVersion>
-    <NuGetCommonPackageVersion>7.0.0-preview.1.1610</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>7.0.0-preview.1.1610</NuGetConfigurationPackageVersion>
-    <NuGetCredentialsPackageVersion>7.0.0-preview.1.1610</NuGetCredentialsPackageVersion>
-    <NuGetDependencyResolverCorePackageVersion>7.0.0-preview.1.1610</NuGetDependencyResolverCorePackageVersion>
-    <NuGetFrameworksPackageVersion>7.0.0-preview.1.1610</NuGetFrameworksPackageVersion>
-    <NuGetLibraryModelPackageVersion>7.0.0-preview.1.1610</NuGetLibraryModelPackageVersion>
-    <NuGetLocalizationPackageVersion>7.0.0-preview.1.1610</NuGetLocalizationPackageVersion>
-    <NuGetPackagingPackageVersion>7.0.0-preview.1.1610</NuGetPackagingPackageVersion>
-    <NuGetProjectModelPackageVersion>7.0.0-preview.1.1610</NuGetProjectModelPackageVersion>
-    <NuGetProtocolPackageVersion>7.0.0-preview.1.1610</NuGetProtocolPackageVersion>
-    <NuGetVersioningPackageVersion>7.0.0-preview.1.1610</NuGetVersioningPackageVersion>
     <SystemCodeDomPackageVersion>10.0.0-rc.1.25515.110</SystemCodeDomPackageVersion>
     <SystemCommandLinePackageVersion>2.0.0-rc.1.25515.110</SystemCommandLinePackageVersion>
     <SystemComponentModelCompositionPackageVersion>10.0.0-rc.1.25515.110</SystemComponentModelCompositionPackageVersion>
@@ -139,13 +122,31 @@ This file should be imported by eng/Versions.props
     <SystemWindowsExtensionsPackageVersion>10.0.0-rc.1.25515.110</SystemWindowsExtensionsPackageVersion>
     <!-- dotnet/core-setup dependencies -->
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
+    <!-- nuget/nuget.client dependencies -->
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>7.0.0-preview.2.256</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetBuildTasksPackageVersion>7.0.0-preview.2.256</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>7.0.0-preview.2.256</NuGetBuildTasksConsolePackageVersion>
+    <NuGetBuildTasksPackPackageVersion>7.0.0-preview.2.256</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>7.0.0-preview.2.256</NuGetCommandLineXPlatPackageVersion>
+    <NuGetCommandsPackageVersion>7.0.0-preview.2.256</NuGetCommandsPackageVersion>
+    <NuGetCommonPackageVersion>7.0.0-preview.2.256</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>7.0.0-preview.2.256</NuGetConfigurationPackageVersion>
+    <NuGetCredentialsPackageVersion>7.0.0-preview.2.256</NuGetCredentialsPackageVersion>
+    <NuGetDependencyResolverCorePackageVersion>7.0.0-preview.2.256</NuGetDependencyResolverCorePackageVersion>
+    <NuGetFrameworksPackageVersion>7.0.0-preview.2.256</NuGetFrameworksPackageVersion>
+    <NuGetLibraryModelPackageVersion>7.0.0-preview.2.256</NuGetLibraryModelPackageVersion>
+    <NuGetLocalizationPackageVersion>7.0.0-preview.2.256</NuGetLocalizationPackageVersion>
+    <NuGetPackagingPackageVersion>7.0.0-preview.2.256</NuGetPackagingPackageVersion>
+    <NuGetProjectModelPackageVersion>7.0.0-preview.2.256</NuGetProjectModelPackageVersion>
+    <NuGetProtocolPackageVersion>7.0.0-preview.2.256</NuGetProtocolPackageVersion>
+    <NuGetVersioningPackageVersion>7.0.0-preview.2.256</NuGetVersioningPackageVersion>
     <!-- microsoft/testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>2.1.0-preview.25514.12</MicrosoftTestingPlatformPackageVersion>
-    <MSTestPackageVersion>4.1.0-preview.25514.12</MSTestPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>2.1.0-preview.25553.3</MicrosoftTestingPlatformPackageVersion>
+    <MSTestPackageVersion>4.1.0-preview.25553.3</MSTestPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
-    <!-- dotnet/dotnet dependencies -->
+    <!-- _git/dotnet-dotnet dependencies -->
     <dotnetdevcertsVersion>$(dotnetdevcertsPackageVersion)</dotnetdevcertsVersion>
     <dotnetuserjwtsVersion>$(dotnetuserjwtsPackageVersion)</dotnetuserjwtsVersion>
     <dotnetusersecretsVersion>$(dotnetusersecretsPackageVersion)</dotnetusersecretsVersion>
@@ -173,7 +174,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftBclAsyncInterfacesVersion>$(MicrosoftBclAsyncInterfacesPackageVersion)</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftBuildVersion>$(MicrosoftBuildPackageVersion)</MicrosoftBuildVersion>
     <MicrosoftBuildLocalizationVersion>$(MicrosoftBuildLocalizationPackageVersion)</MicrosoftBuildLocalizationVersion>
-    <MicrosoftBuildNuGetSdkResolverVersion>$(MicrosoftBuildNuGetSdkResolverPackageVersion)</MicrosoftBuildNuGetSdkResolverVersion>
     <MicrosoftBuildTasksGitVersion>$(MicrosoftBuildTasksGitPackageVersion)</MicrosoftBuildTasksGitVersion>
     <MicrosoftCodeAnalysisVersion>$(MicrosoftCodeAnalysisPackageVersion)</MicrosoftCodeAnalysisVersion>
     <MicrosoftCodeAnalysisBuildClientVersion>$(MicrosoftCodeAnalysisBuildClientPackageVersion)</MicrosoftCodeAnalysisBuildClientVersion>
@@ -187,16 +187,8 @@ This file should be imported by eng/Versions.props
     <MicrosoftCodeAnalysisWorkspacesMSBuildVersion>$(MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion)</MicrosoftCodeAnalysisWorkspacesMSBuildVersion>
     <MicrosoftDeploymentDotNetReleasesVersion>$(MicrosoftDeploymentDotNetReleasesPackageVersion)</MicrosoftDeploymentDotNetReleasesVersion>
     <MicrosoftDiaSymReaderVersion>$(MicrosoftDiaSymReaderPackageVersion)</MicrosoftDiaSymReaderVersion>
-    <MicrosoftDotNetArcadeSdkVersion>$(MicrosoftDotNetArcadeSdkPackageVersion)</MicrosoftDotNetArcadeSdkVersion>
-    <MicrosoftDotNetBuildTasksInstallersVersion>$(MicrosoftDotNetBuildTasksInstallersPackageVersion)</MicrosoftDotNetBuildTasksInstallersVersion>
-    <MicrosoftDotNetBuildTasksTemplatingVersion>$(MicrosoftDotNetBuildTasksTemplatingPackageVersion)</MicrosoftDotNetBuildTasksTemplatingVersion>
-    <MicrosoftDotNetBuildTasksWorkloadsVersion>$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)</MicrosoftDotNetBuildTasksWorkloadsVersion>
-    <MicrosoftDotNetHelixSdkVersion>$(MicrosoftDotNetHelixSdkPackageVersion)</MicrosoftDotNetHelixSdkVersion>
-    <MicrosoftDotNetSignToolVersion>$(MicrosoftDotNetSignToolPackageVersion)</MicrosoftDotNetSignToolVersion>
     <MicrosoftDotNetWebItemTemplates100Version>$(MicrosoftDotNetWebItemTemplates100PackageVersion)</MicrosoftDotNetWebItemTemplates100Version>
     <MicrosoftDotNetWebProjectTemplates100Version>$(MicrosoftDotNetWebProjectTemplates100PackageVersion)</MicrosoftDotNetWebProjectTemplates100Version>
-    <MicrosoftDotNetXliffTasksVersion>$(MicrosoftDotNetXliffTasksPackageVersion)</MicrosoftDotNetXliffTasksVersion>
-    <MicrosoftDotNetXUnitExtensionsVersion>$(MicrosoftDotNetXUnitExtensionsPackageVersion)</MicrosoftDotNetXUnitExtensionsVersion>
     <MicrosoftExtensionsConfigurationIniVersion>$(MicrosoftExtensionsConfigurationIniPackageVersion)</MicrosoftExtensionsConfigurationIniVersion>
     <MicrosoftExtensionsDependencyModelVersion>$(MicrosoftExtensionsDependencyModelPackageVersion)</MicrosoftExtensionsDependencyModelVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsVersion>$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)</MicrosoftExtensionsFileProvidersAbstractionsVersion>
@@ -213,7 +205,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftNETHostModelVersion>$(MicrosoftNETHostModelPackageVersion)</MicrosoftNETHostModelVersion>
     <MicrosoftNETILLinkTasksVersion>$(MicrosoftNETILLinkTasksPackageVersion)</MicrosoftNETILLinkTasksVersion>
     <MicrosoftNETRuntimeEmscripten3156Cachewinx64Version>$(MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion)</MicrosoftNETRuntimeEmscripten3156Cachewinx64Version>
-    <MicrosoftNETRuntimeEmscriptenSdkInternalVersion>$(MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion)</MicrosoftNETRuntimeEmscriptenSdkInternalVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)</MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>
     <MicrosoftNETSdkWindowsDesktopVersion>$(MicrosoftNETSdkWindowsDesktopPackageVersion)</MicrosoftNETSdkWindowsDesktopVersion>
     <MicrosoftNETTestSdkVersion>$(MicrosoftNETTestSdkPackageVersion)</MicrosoftNETTestSdkVersion>
@@ -239,22 +230,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftWin32SystemEventsVersion>$(MicrosoftWin32SystemEventsPackageVersion)</MicrosoftWin32SystemEventsVersion>
     <MicrosoftWindowsDesktopAppInternalVersion>$(MicrosoftWindowsDesktopAppInternalPackageVersion)</MicrosoftWindowsDesktopAppInternalVersion>
     <MicrosoftWindowsDesktopAppRefVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</MicrosoftWindowsDesktopAppRefVersion>
-    <NuGetBuildTasksVersion>$(NuGetBuildTasksPackageVersion)</NuGetBuildTasksVersion>
-    <NuGetBuildTasksConsoleVersion>$(NuGetBuildTasksConsolePackageVersion)</NuGetBuildTasksConsoleVersion>
-    <NuGetBuildTasksPackVersion>$(NuGetBuildTasksPackPackageVersion)</NuGetBuildTasksPackVersion>
-    <NuGetCommandLineXPlatVersion>$(NuGetCommandLineXPlatPackageVersion)</NuGetCommandLineXPlatVersion>
-    <NuGetCommandsVersion>$(NuGetCommandsPackageVersion)</NuGetCommandsVersion>
-    <NuGetCommonVersion>$(NuGetCommonPackageVersion)</NuGetCommonVersion>
-    <NuGetConfigurationVersion>$(NuGetConfigurationPackageVersion)</NuGetConfigurationVersion>
-    <NuGetCredentialsVersion>$(NuGetCredentialsPackageVersion)</NuGetCredentialsVersion>
-    <NuGetDependencyResolverCoreVersion>$(NuGetDependencyResolverCorePackageVersion)</NuGetDependencyResolverCoreVersion>
-    <NuGetFrameworksVersion>$(NuGetFrameworksPackageVersion)</NuGetFrameworksVersion>
-    <NuGetLibraryModelVersion>$(NuGetLibraryModelPackageVersion)</NuGetLibraryModelVersion>
-    <NuGetLocalizationVersion>$(NuGetLocalizationPackageVersion)</NuGetLocalizationVersion>
-    <NuGetPackagingVersion>$(NuGetPackagingPackageVersion)</NuGetPackagingVersion>
-    <NuGetProjectModelVersion>$(NuGetProjectModelPackageVersion)</NuGetProjectModelVersion>
-    <NuGetProtocolVersion>$(NuGetProtocolPackageVersion)</NuGetProtocolVersion>
-    <NuGetVersioningVersion>$(NuGetVersioningPackageVersion)</NuGetVersioningVersion>
     <SystemCodeDomVersion>$(SystemCodeDomPackageVersion)</SystemCodeDomVersion>
     <SystemCommandLineVersion>$(SystemCommandLinePackageVersion)</SystemCommandLineVersion>
     <SystemComponentModelCompositionVersion>$(SystemComponentModelCompositionPackageVersion)</SystemComponentModelCompositionVersion>
@@ -279,6 +254,24 @@ This file should be imported by eng/Versions.props
     <SystemWindowsExtensionsVersion>$(SystemWindowsExtensionsPackageVersion)</SystemWindowsExtensionsVersion>
     <!-- dotnet/core-setup dependencies -->
     <NETStandardLibraryRefVersion>$(NETStandardLibraryRefPackageVersion)</NETStandardLibraryRefVersion>
+    <!-- nuget/nuget.client dependencies -->
+    <MicrosoftBuildNuGetSdkResolverVersion>$(MicrosoftBuildNuGetSdkResolverPackageVersion)</MicrosoftBuildNuGetSdkResolverVersion>
+    <NuGetBuildTasksVersion>$(NuGetBuildTasksPackageVersion)</NuGetBuildTasksVersion>
+    <NuGetBuildTasksConsoleVersion>$(NuGetBuildTasksConsolePackageVersion)</NuGetBuildTasksConsoleVersion>
+    <NuGetBuildTasksPackVersion>$(NuGetBuildTasksPackPackageVersion)</NuGetBuildTasksPackVersion>
+    <NuGetCommandLineXPlatVersion>$(NuGetCommandLineXPlatPackageVersion)</NuGetCommandLineXPlatVersion>
+    <NuGetCommandsVersion>$(NuGetCommandsPackageVersion)</NuGetCommandsVersion>
+    <NuGetCommonVersion>$(NuGetCommonPackageVersion)</NuGetCommonVersion>
+    <NuGetConfigurationVersion>$(NuGetConfigurationPackageVersion)</NuGetConfigurationVersion>
+    <NuGetCredentialsVersion>$(NuGetCredentialsPackageVersion)</NuGetCredentialsVersion>
+    <NuGetDependencyResolverCoreVersion>$(NuGetDependencyResolverCorePackageVersion)</NuGetDependencyResolverCoreVersion>
+    <NuGetFrameworksVersion>$(NuGetFrameworksPackageVersion)</NuGetFrameworksVersion>
+    <NuGetLibraryModelVersion>$(NuGetLibraryModelPackageVersion)</NuGetLibraryModelVersion>
+    <NuGetLocalizationVersion>$(NuGetLocalizationPackageVersion)</NuGetLocalizationVersion>
+    <NuGetPackagingVersion>$(NuGetPackagingPackageVersion)</NuGetPackagingVersion>
+    <NuGetProjectModelVersion>$(NuGetProjectModelPackageVersion)</NuGetProjectModelVersion>
+    <NuGetProtocolVersion>$(NuGetProtocolPackageVersion)</NuGetProtocolVersion>
+    <NuGetVersioningVersion>$(NuGetVersioningPackageVersion)</NuGetVersioningVersion>
     <!-- microsoft/testfx dependencies -->
     <MicrosoftTestingPlatformVersion>$(MicrosoftTestingPlatformPackageVersion)</MicrosoftTestingPlatformVersion>
     <MSTestVersion>$(MSTestPackageVersion)</MSTestVersion>

@@ -84,6 +84,9 @@
   
   <ItemGroup>
     <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="MicrosoftSHA2" />
+
+    <!-- Roslyn apphosts -->
+    <FileSignInfo Condition="'$(TargetOS)' == 'osx'" Include="csc;vbc;VBCSCompiler" CertificateName="MacDeveloperHarden" />
   </ItemGroup>
 
   <!-- Filter out any test packages from ItemsToSign -->

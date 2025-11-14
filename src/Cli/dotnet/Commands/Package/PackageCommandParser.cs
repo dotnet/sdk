@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.Commands.Package.List;
 using Microsoft.DotNet.Cli.Commands.Package.Remove;
 using Microsoft.DotNet.Cli.Commands.Package.Search;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Command = System.CommandLine.Command;
@@ -37,7 +38,10 @@ internal class PackageCommandParser
 
     public static Command GetCommand()
     {
-        Command command = new DocumentedCommand("package", DocsLink);
+        Command command = new Command("package")
+        {
+            DocsLink = DocsLink
+        };
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
         command.Subcommands.Add(PackageSearchCommandParser.GetCommand());
         command.Subcommands.Add(PackageAddCommandParser.GetCommand());

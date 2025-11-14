@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Help;
 
@@ -26,7 +27,10 @@ internal static class HelpCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("help", DocsLink, CliCommandStrings.HelpAppFullName);
+        Command command = new("help", CliCommandStrings.HelpAppFullName)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Arguments.Add(Argument);
 
