@@ -87,9 +87,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Checks for deprecated Aspire workload usage -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.AspireWorkloadDeprecation.targets" />
 
-  <!-- Checks for deprecated RoslynCompilerType usage -->
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.RoslynCompilerTypeDeprecation.targets" />
-
   <!-- Check if the Target Framework is coreclr based -->
   <PropertyGroup Condition="'$(_IsNETCoreOrNETStandard)' == ''">
     <_IsNETCoreOrNETStandard Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</_IsNETCoreOrNETStandard>
@@ -363,6 +360,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PropertyGroup><RoslynCompilerType>Framework</RoslynCompilerType></PropertyGroup>
     </Otherwise>
   </Choose>
+
+  <!-- Warn about deprecated RoslynCompilerType=Framework -->
+  <Target Name="_CheckForDeprecatedRoslynCompilerType"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(RoslynCompilerType)' == 'Framework'">
+    <NETSdkWarning ResourceName="RoslynCompilerTypeFrameworkIsDeprecated"
+                   FormatArguments="https://github.com/dotnet/roslyn/issues/81184" />
+  </Target>
 
   <!-- NOTE: Compiler toolset packages should set the following properties on their own, hence we set them only for RoslynCompilerType being Core or Framework. -->
   <PropertyGroup Condition="'$(RoslynCompilerType)' == 'Core' or '$(RoslynCompilerType)' == 'Framework'">

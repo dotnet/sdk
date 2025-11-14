@@ -3,169 +3,162 @@
 
 #nullable disable
 
-namespace Microsoft.NET.Build.Tests
+namespace Microsoft.NET.Build.Tests;
+
+public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOutputHelper log) : SdkTest(log)
 {
-    public class GivenThatWeWantToDetectDeprecatedRoslynCompilerType : SdkTest
+    [Fact]
+    public void It_warns_when_RoslynCompilerType_is_Framework()
     {
-        public GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOutputHelper log) : base(log)
+        var testProject = new TestProject()
         {
-        }
+            Name = "DeprecatedRoslynCompilerType",
+            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            IsExe = true
+        };
 
-        [Fact]
-        public void It_warns_when_RoslynCompilerType_is_Framework()
+        testProject.AdditionalProperties["RoslynCompilerType"] = "Framework";
+
+        var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+        var buildCommand = new BuildCommand(testAsset);
+
+        var result = buildCommand
+            .Execute();
+
+        result
+            .Should()
+            .Pass()
+            .And
+            .HaveStdOutContaining("NETSDK1234");
+    }
+
+    [Fact]
+    public void It_does_not_warn_when_RoslynCompilerType_is_Core()
+    {
+        var testProject = new TestProject()
         {
-            var testProject = new TestProject()
-            {
-                Name = "DeprecatedRoslynCompilerType",
-                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
-                IsExe = true
-            };
+            Name = "RoslynCompilerTypeCore",
+            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            IsExe = true
+        };
 
-            testProject.AdditionalProperties["RoslynCompilerType"] = "Framework";
+        testProject.AdditionalProperties["RoslynCompilerType"] = "Core";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var buildCommand = new BuildCommand(testAsset);
+        var buildCommand = new BuildCommand(testAsset);
 
-            var result = buildCommand
-                .Execute();
+        var result = buildCommand
+            .Execute();
 
-            result
-                .Should()
-                .Pass()
-                .And
-                .HaveStdOutContaining("NETSDK1234")
-                .And
-                .HaveStdOutContaining("RoslynCompilerType 'Framework' is deprecated");
-        }
+        result
+            .Should()
+            .Pass()
+            .And
+            .NotHaveStdOutContaining("NETSDK1234");
+    }
 
-        [Fact]
-        public void It_does_not_warn_when_RoslynCompilerType_is_Core()
+    [Fact]
+    public void It_does_not_warn_when_RoslynCompilerType_is_FrameworkPackage()
+    {
+        var testProject = new TestProject()
         {
-            var testProject = new TestProject()
-            {
-                Name = "RoslynCompilerTypeCore",
-                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
-                IsExe = true
-            };
+            Name = "RoslynCompilerTypeFrameworkPackage",
+            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            IsExe = true
+        };
 
-            testProject.AdditionalProperties["RoslynCompilerType"] = "Core";
+        testProject.AdditionalProperties["RoslynCompilerType"] = "FrameworkPackage";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var buildCommand = new BuildCommand(testAsset);
+        var buildCommand = new BuildCommand(testAsset);
 
-            var result = buildCommand
-                .Execute();
+        var result = buildCommand
+            .Execute();
 
-            result
-                .Should()
-                .Pass()
-                .And
-                .NotHaveStdOutContaining("NETSDK1234");
-        }
+        result
+            .Should()
+            .Pass()
+            .And
+            .NotHaveStdOutContaining("NETSDK1234");
+    }
 
-        [Fact]
-        public void It_does_not_warn_when_RoslynCompilerType_is_FrameworkPackage()
+    [Fact]
+    public void It_does_not_warn_when_RoslynCompilerType_is_not_set()
+    {
+        var testProject = new TestProject()
         {
-            var testProject = new TestProject()
-            {
-                Name = "RoslynCompilerTypeFrameworkPackage",
-                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
-                IsExe = true
-            };
+            Name = "RoslynCompilerTypeNotSet",
+            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            IsExe = true
+        };
 
-            testProject.AdditionalProperties["RoslynCompilerType"] = "FrameworkPackage";
+        var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var buildCommand = new BuildCommand(testAsset);
 
-            var buildCommand = new BuildCommand(testAsset);
+        var result = buildCommand
+            .Execute();
 
-            var result = buildCommand
-                .Execute();
+        result
+            .Should()
+            .Pass()
+            .And
+            .NotHaveStdOutContaining("NETSDK1234");
+    }
 
-            result
-                .Should()
-                .Pass()
-                .And
-                .NotHaveStdOutContaining("NETSDK1234");
-        }
-
-        [Fact]
-        public void It_does_not_warn_when_RoslynCompilerType_is_not_set()
+    [Fact]
+    public void It_does_not_warn_when_suppressed_with_NoWarn()
+    {
+        var testProject = new TestProject()
         {
-            var testProject = new TestProject()
-            {
-                Name = "RoslynCompilerTypeNotSet",
-                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
-                IsExe = true
-            };
+            Name = "RoslynCompilerTypeNoWarn",
+            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            IsExe = true
+        };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        testProject.AdditionalProperties["RoslynCompilerType"] = "Framework";
+        testProject.AdditionalProperties["NoWarn"] = "NETSDK1234";
 
-            var buildCommand = new BuildCommand(testAsset);
+        var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var result = buildCommand
-                .Execute();
+        var buildCommand = new BuildCommand(testAsset);
 
-            result
-                .Should()
-                .Pass()
-                .And
-                .NotHaveStdOutContaining("NETSDK1234");
-        }
+        var result = buildCommand
+            .Execute();
 
-        [Fact]
-        public void It_does_not_warn_when_suppressed_with_NoWarn()
+        result
+            .Should()
+            .Pass()
+            .And
+            .NotHaveStdOutContaining("NETSDK1234");
+    }
+
+    [Fact]
+    public void It_can_suppress_warning_via_command_line()
+    {
+        var testProject = new TestProject()
         {
-            var testProject = new TestProject()
-            {
-                Name = "RoslynCompilerTypeNoWarn",
-                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
-                IsExe = true
-            };
+            Name = "RoslynCompilerTypeNoWarnCmdLine",
+            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            IsExe = true
+        };
 
-            testProject.AdditionalProperties["RoslynCompilerType"] = "Framework";
-            testProject.AdditionalProperties["NoWarn"] = "NETSDK1234";
+        testProject.AdditionalProperties["RoslynCompilerType"] = "Framework";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+        var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var buildCommand = new BuildCommand(testAsset);
+        var buildCommand = new BuildCommand(testAsset);
 
-            var result = buildCommand
-                .Execute();
+        var result = buildCommand
+            .Execute("/p:NoWarn=NETSDK1234");
 
-            result
-                .Should()
-                .Pass()
-                .And
-                .NotHaveStdOutContaining("NETSDK1234");
-        }
-
-        [Fact]
-        public void It_can_suppress_warning_via_command_line()
-        {
-            var testProject = new TestProject()
-            {
-                Name = "RoslynCompilerTypeNoWarnCmdLine",
-                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
-                IsExe = true
-            };
-
-            testProject.AdditionalProperties["RoslynCompilerType"] = "Framework";
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-
-            var buildCommand = new BuildCommand(testAsset);
-
-            var result = buildCommand
-                .Execute("/p:NoWarn=NETSDK1234");
-
-            result
-                .Should()
-                .Pass()
-                .And
-                .NotHaveStdOutContaining("NETSDK1234");
-        }
+        result
+            .Should()
+            .Pass()
+            .And
+            .NotHaveStdOutContaining("NETSDK1234");
     }
 }
