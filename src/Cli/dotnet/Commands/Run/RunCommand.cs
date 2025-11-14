@@ -15,6 +15,7 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -364,7 +365,7 @@ public class RunCommand
     /// <returns></returns>
     private MSBuildArgs SetupSilentBuildArgs(MSBuildArgs msbuildArgs)
     {
-        msbuildArgs = msbuildArgs.CloneWithAdditionalArgs("-nologo");
+        msbuildArgs = msbuildArgs.CloneWithNoLogo(true);
 
         if (msbuildArgs.Verbosity is VerbosityOptions userVerbosity)
         {

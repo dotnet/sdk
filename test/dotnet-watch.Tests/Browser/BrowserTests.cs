@@ -65,7 +65,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         await App.WaitForOutputLineContaining("Do you want to restart your app?");
 
         await App.WaitUntilOutputContains($$"""
-            🧪 Received: {"type":"HotReloadDiagnosticsv1","diagnostics":[{{jsonErrorMessage}}]}
+            🧪 Received: {"type":"ReportDiagnostics","diagnostics":[{{jsonErrorMessage}}]}
             """);
 
         // auto restart next time:
@@ -76,10 +76,15 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
 
         // browser page was reloaded after the app restarted:
         await App.WaitUntilOutputContains("""
-            🧪 Received: Reload
+            🧪 Received: {"type":"Reload"}
             """);
 
+        // no other browser message sent:
+        Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪")));
+
         await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+
+        App.Process.ClearOutput();
 
         // another rude edit:
         UpdateSourceFile(homePagePath, src => src.Replace("public virtual int F() => 1;", "/* member placeholder */"));
@@ -88,15 +93,20 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         await App.WaitForOutputLineContaining("[auto-restart] " + errorMessage);
 
         await App.WaitUntilOutputContains($$"""
-            🧪 Received: {"type":"HotReloadDiagnosticsv1","diagnostics":["Restarting application to apply changes ..."]}
+            🧪 Received: {"type":"ReportDiagnostics","diagnostics":["Restarting application to apply changes ..."]}
             """);
 
         await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
         // browser page was reloaded after the app restarted:
         await App.WaitUntilOutputContains("""
-            🧪 Received: Reload
+            🧪 Received: {"type":"Reload"}
             """);
+
+        // no other browser message sent:
+        Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪")));
+
+        App.Process.ClearOutput();
 
         // valid edit:
         UpdateSourceFile(homePagePath, src => src.Replace("/* member placeholder */", "public int F() => 1;"));
@@ -104,7 +114,14 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded);
 
         await App.WaitUntilOutputContains($$"""
-            🧪 Received: {"type":"AspNetCoreHotReloadApplied"}
+            🧪 Received: {"type":"ReportDiagnostics","diagnostics":[]}
             """);
+
+        await App.WaitUntilOutputContains($$"""
+            🧪 Received: {"type":"RefreshBrowser"}
+            """);
+
+        // no other browser message sent:
+        Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪")));
     }
 }

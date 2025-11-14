@@ -8,6 +8,7 @@ using System.Data;
 using System.Diagnostics;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.Logging;
@@ -119,7 +120,7 @@ internal sealed class CommandLineOptions
         // determine subcommand:
         var explicitCommand = TryGetSubcommand(parseResult);
         var command = explicitCommand ?? RunCommandParser.GetCommand();
-        var buildOptions = command.Options.Where(o => o is IForwardedOption);
+        var buildOptions = command.Options.Where(o => o.ForwardingFunction is not null);
 
         foreach (var buildOption in buildOptions)
         {
@@ -161,7 +162,7 @@ internal sealed class CommandLineOptions
         var commandArguments = GetCommandArguments(parseResult, watchOptions, explicitCommand, out var binLogToken, out var binLogPath);
 
         // We assume that forwarded options, if any, are intended for dotnet build.
-        var buildArguments = buildOptions.Select(option => ((IForwardedOption)option).GetForwardingFunction()(parseResult)).SelectMany(args => args).ToList();
+        var buildArguments = buildOptions.Select(option => option.ForwardingFunction!(parseResult)).SelectMany(args => args).ToList();
 
         if (binLogToken != null)
         {

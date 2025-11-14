@@ -1,14 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.TemplateEngine.Cli.Commands;
 using NuGetDocumentedCommand = NuGet.CommandLine.XPlat.Commands.DocumentedCommand;
 
 namespace Microsoft.DotNet.Cli.Commands.Help;
@@ -103,12 +102,12 @@ public class HelpCommand(string[] helpArgs)
         }
     }
 
-    private static bool TryGetDocsLink(string[] command, out string docsLink)
+    private static bool TryGetDocsLink(string[] command, [NotNullWhen(true)] out string? docsLink)
     {
         var parsedCommand = Parser.Parse(["dotnet", .. command]);
-        if (parsedCommand?.CommandResult?.Command is ICommandDocument dc)
+        if (parsedCommand?.CommandResult?.Command?.DocsLink is { } link)
         {
-            docsLink = dc.DocsLink;
+            docsLink = link;
             return true;
         }
         else if (parsedCommand?.CommandResult?.Command is NuGetDocumentedCommand ndc)

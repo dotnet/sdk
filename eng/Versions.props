@@ -38,14 +38,14 @@
     <VersionFeature60>36</VersionFeature60>
     <VersionFeature70>20</VersionFeature70>
     <!-- This version should be N-1 (ie the currently released version) in the preview branch but N-2 in main so that workloads stay behind the unreleased version -->
-    <VersionFeature80>19</VersionFeature80>
-    <VersionFeature90>8</VersionFeature90>
+    <VersionFeature80>21</VersionFeature80>
+    <VersionFeature90>10</VersionFeature90>
     <!-- Should be kept in sync with VersionFeature70. It should match the version of Microsoft.NET.ILLink.Tasks
          referenced by the same 7.0 SDK that references the 7.0.VersionFeature70 runtime pack. -->
     <_NET70ILLinkPackVersion>7.0.100-1.23211.1</_NET70ILLinkPackVersion>
     <!-- workload-specific version information -->
-    <VersionFeature80ForWorkloads>$([MSBuild]::Add($(VersionFeature80), 1))</VersionFeature80ForWorkloads>
-    <VersionFeature90ForWorkloads>$([MSBuild]::Add($(VersionFeature90), 1))</VersionFeature90ForWorkloads>
+    <VersionFeature80ForWorkloads>$(VersionFeature80)</VersionFeature80ForWorkloads>
+    <VersionFeature90ForWorkloads>$(VersionFeature90)</VersionFeature90ForWorkloads>
   </PropertyGroup>
   <PropertyGroup Label="Restore feeds">
     <!-- In an orchestrated build, this may be overridden to other Azure feeds. -->
@@ -88,6 +88,7 @@
     <SystemReflectionMetadataLoadContextToolsetPackageVersion>9.0.0</SystemReflectionMetadataLoadContextToolsetPackageVersion>
     <SystemReflectionMetadataToolsetPackageVersion>9.0.0</SystemReflectionMetadataToolsetPackageVersion>
     <SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>9.0.0</SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>
+    <SystemTextEncodingCodePagesToolsetPackageVersion>8.0.0</SystemTextEncodingCodePagesToolsetPackageVersion>
     <SystemTextJsonToolsetPackageVersion>9.0.0</SystemTextJsonToolsetPackageVersion>
     <SystemThreadingTasksExtensionsToolsetPackageVersion>4.5.4</SystemThreadingTasksExtensionsToolsetPackageVersion>
     <SystemResourcesExtensionsToolsetPackageVersion>8.0.0</SystemResourcesExtensionsToolsetPackageVersion>
@@ -142,13 +143,13 @@
     <BenchmarkDotNetPackageVersion>0.14.0</BenchmarkDotNetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Workload manifest package versions">
-    <MauiFeatureBand>10.0.100-preview.6</MauiFeatureBand>
-    <MauiWorkloadManifestVersion>10.0.0-preview.6.25359.8</MauiWorkloadManifestVersion>
-    <XamarinAndroidWorkloadManifestVersion>36.0.0-preview.6.169</XamarinAndroidWorkloadManifestVersion>
-    <XamarinIOSWorkloadManifestVersion>18.5.10415-net10-p6</XamarinIOSWorkloadManifestVersion>
-    <XamarinMacCatalystWorkloadManifestVersion>18.5.10415-net10-p6</XamarinMacCatalystWorkloadManifestVersion>
-    <XamarinMacOSWorkloadManifestVersion>15.5.10415-net10-p6</XamarinMacOSWorkloadManifestVersion>
-    <XamarinTvOSWorkloadManifestVersion>18.5.10415-net10-p6</XamarinTvOSWorkloadManifestVersion>
+    <MauiFeatureBand>10.0.100-rc.2</MauiFeatureBand>
+    <MauiWorkloadManifestVersion>10.0.0-rc.2.25504.7</MauiWorkloadManifestVersion>
+    <XamarinAndroidWorkloadManifestVersion>36.0.0-rc.2.332</XamarinAndroidWorkloadManifestVersion>
+    <XamarinIOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinIOSWorkloadManifestVersion>
+    <XamarinMacCatalystWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinMacCatalystWorkloadManifestVersion>
+    <XamarinMacOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinMacOSWorkloadManifestVersion>
+    <XamarinTvOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinTvOSWorkloadManifestVersion>
   </PropertyGroup>
   <PropertyGroup Label="Pinned dependency">
     <!-- This package is not being produced outside of the 2.0 branch of corefx and should not change. -->
