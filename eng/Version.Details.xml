@@ -2,41 +2,41 @@
 <Dependencies>
   <Source Uri="https://github.com/dotnet/dotnet" Mapping="sdk" Sha="6f4c060932973b6b570b8444c8dc76d38af555e8" BarId="289866" />
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-rc.2.25417.4">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.200-preview.25563.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>fcc5f2933e4ad7fbfc85a9c4e78d9bfa3e967eb7</Sha>
+      <Sha>0a93029ebf9ea28397b4291ad83ae7078134c556</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Edge" Version="10.0.100-rc.2.25417.4">
+    <Dependency Name="Microsoft.TemplateEngine.Edge" Version="10.0.200-preview.25563.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>fcc5f2933e4ad7fbfc85a9c4e78d9bfa3e967eb7</Sha>
+      <Sha>0a93029ebf9ea28397b4291ad83ae7078134c556</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="10.0.100-rc.2.25417.4">
+    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="10.0.200-preview.25563.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>fcc5f2933e4ad7fbfc85a9c4e78d9bfa3e967eb7</Sha>
+      <Sha>0a93029ebf9ea28397b4291ad83ae7078134c556</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="10.0.100-rc.2.25417.4">
+    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="10.0.200-preview.25563.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>fcc5f2933e4ad7fbfc85a9c4e78d9bfa3e967eb7</Sha>
+      <Sha>0a93029ebf9ea28397b4291ad83ae7078134c556</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.Common" Version="10.0.100-rc.2.25417.4">
+    <Dependency Name="Microsoft.TemplateSearch.Common" Version="10.0.200-preview.25563.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>fcc5f2933e4ad7fbfc85a9c4e78d9bfa3e967eb7</Sha>
+      <Sha>0a93029ebf9ea28397b4291ad83ae7078134c556</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-rc.2.25417.4">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.200-preview.25563.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>fcc5f2933e4ad7fbfc85a9c4e78d9bfa3e967eb7</Sha>
+      <Sha>0a93029ebf9ea28397b4291ad83ae7078134c556</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-rc.2.25417.4">
+    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="10.0.200-preview.25563.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>fcc5f2933e4ad7fbfc85a9c4e78d9bfa3e967eb7</Sha>
+      <Sha>0a93029ebf9ea28397b4291ad83ae7078134c556</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-rc.2.25417.4">
+    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.200-preview.25563.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>fcc5f2933e4ad7fbfc85a9c4e78d9bfa3e967eb7</Sha>
+      <Sha>0a93029ebf9ea28397b4291ad83ae7078134c556</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-rc.2.25417.4">
+    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.200-preview.25563.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>fcc5f2933e4ad7fbfc85a9c4e78d9bfa3e967eb7</Sha>
+      <Sha>0a93029ebf9ea28397b4291ad83ae7078134c556</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
@@ -402,9 +402,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
       <Sha>b0f34d51fccc69fd334253924abd8d6853fad7aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.25523.111">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
-      <Sha>b0f34d51fccc69fd334253924abd8d6853fad7aa</Sha>
+    <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.25527.1">
+      <Uri>https://github.com/dotnet/deployment-tools</Uri>
+      <Sha>84ccc0553245e90355f32ea8ddcf169d9bd8f640</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.Tasks.Git" Version="10.0.0-beta.25523.111">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
