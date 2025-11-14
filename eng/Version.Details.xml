@@ -515,6 +515,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>be28ec777bf12db631725399c442448d52093087</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.HotReload" Version="5.3.0-1.25515.110">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>be28ec777bf12db631725399c442448d52093087</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.25515.110">
