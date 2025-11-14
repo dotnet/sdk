@@ -135,7 +135,7 @@ public class RunCommand
         }
         else if (launchSettings != null)
         {
-            throw new GracefulException($"Unknown launch profile type: {launchSettings.ProfileKind}");
+            throw new GracefulException(string.Format(CliCommandStrings.LaunchProfileHandlerCannotBeLocated, launchSettings.ProfileKind));
         }
 
         // No launch settings, proceed with normal project execution
