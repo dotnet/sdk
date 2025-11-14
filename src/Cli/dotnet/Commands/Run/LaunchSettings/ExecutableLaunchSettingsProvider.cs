@@ -1,13 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
-internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
+internal class ExecutableLaunchSettingsProvider : ILaunchSettingsProvider
 {
-    public static readonly string CommandNameValue = "Project";
+    public static readonly string CommandNameValue = "Executable";
 
     public static string CommandName => CommandNameValue;
 
@@ -15,20 +15,18 @@ internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
     {
         try
         {
-            var profile = JsonSerializer.Deserialize<ProjectLaunchProfileJson>(model.GetRawText());
+            var profile = JsonSerializer.Deserialize<ExecutableLaunchProfileJson>(model.GetRawText());
             if (profile == null)
             {
                 return new LaunchSettingsApplyResult(false, CliCommandStrings.LaunchProfileIsNotAJsonObject);
             }
 
-            var config = new ProjectLaunchSettingsModel
+            var config = new ExecutableLaunchSettingsModel
             {
                 LaunchProfileName = launchProfileName,
+                ExecutablePath = profile.ExecutablePath,
                 CommandLineArgs = profile.CommandLineArgs,
-                LaunchBrowser = profile.LaunchBrowser,
-                LaunchUrl = profile.LaunchUrl,
-                ApplicationUrl = profile.ApplicationUrl,
-                DotNetRunMessages = profile.DotNetRunMessages
+                WorkingDirectory = profile.WorkingDirectory
             };
 
             if (profile.EnvironmentVariables != null)

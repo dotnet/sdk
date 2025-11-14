@@ -124,6 +124,26 @@ public class RunCommand
             return 1;
         }
 
+        // Route based on profile kind
+        if (launchSettings is ExecutableLaunchSettingsModel executableSettings)
+        {
+            return ExecuteWithExecutableProfile(executableSettings);
+        }
+        else if (launchSettings is ProjectLaunchSettingsModel projectSettings)
+        {
+            return ExecuteWithProjectProfile(projectSettings);
+        }
+        else if (launchSettings != null)
+        {
+            throw new GracefulException(string.Format(CliCommandStrings.LaunchProfileHandlerCannotBeLocated, launchSettings.ProfileKind));
+        }
+
+        // No launch settings, proceed with normal project execution
+        return ExecuteWithProjectProfile(null);
+    }
+
+    private int ExecuteWithProjectProfile(ProjectLaunchSettingsModel? launchSettings)
+    {
         Func<ProjectCollection, ProjectInstance>? projectFactory = null;
         RunProperties? cachedRunProperties = null;
         VirtualProjectBuildingCommand? virtualCommand = null;
@@ -158,21 +178,7 @@ public class RunCommand
         try
         {
             ICommand targetCommand = GetTargetCommand(projectFactory, cachedRunProperties);
-            ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
-
-            // Env variables specified on command line override those specified in launch profile:
-            foreach (var (name, value) in EnvironmentVariables)
-            {
-                targetCommand.EnvironmentVariable(name, value);
-            }
-
-            // Send telemetry about the run operation
-            SendRunTelemetry(launchSettings, virtualCommand);
-
-            // Ignore Ctrl-C for the remainder of the command's execution
-            Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
-
-            return targetCommand.Execute().ExitCode;
+            return ExecuteCommand(targetCommand, launchSettings, virtualCommand);
         }
         catch (InvalidProjectFileException e)
         {
@@ -182,16 +188,90 @@ public class RunCommand
         }
     }
 
-    internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
+    private int ExecuteWithExecutableProfile(ExecutableLaunchSettingsModel launchSettings)
+    {
+        Debug.Assert(launchSettings.ExecutablePath != null);
+
+        // Expand environment variables in the executable path
+        string executablePath = Environment.ExpandEnvironmentVariables(launchSettings.ExecutablePath);
+
+        // Determine working directory - use specified directory or project directory
+        string workingDirectory;
+        if (!string.IsNullOrEmpty(launchSettings.WorkingDirectory))
+        {
+            workingDirectory = Environment.ExpandEnvironmentVariables(launchSettings.WorkingDirectory);
+        }
+        else
+        {
+            // Default to the directory containing the project or entry point file
+            workingDirectory = Path.GetDirectoryName(ProjectFileFullPath ?? EntryPointFileFullPath ?? Directory.GetCurrentDirectory())!;
+        }
+
+        // Build command arguments by combining launch profile args with application args
+        // Note: launchSettings.CommandLineArgs is a pre-formatted string from JSON that cannot be reliably parsed
+        // ApplicationArgs are provided as separate tokens and need proper escaping
+        string commandArgs;
+        if (!NoLaunchProfileArguments && !string.IsNullOrEmpty(launchSettings.CommandLineArgs) && ApplicationArgs.Length > 0)
+        {
+            // Both launch profile args and application args - concatenate them
+            commandArgs = launchSettings.CommandLineArgs + " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(ApplicationArgs);
+        }
+        else if (!NoLaunchProfileArguments && !string.IsNullOrEmpty(launchSettings.CommandLineArgs))
+        {
+            // Only launch profile args
+            commandArgs = launchSettings.CommandLineArgs;
+        }
+        else if (ApplicationArgs.Length > 0)
+        {
+            // Only application args
+            commandArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(ApplicationArgs);
+        }
+        else
+        {
+            commandArgs = string.Empty;
+        }
+
+        var commandSpec = new CommandSpec(executablePath, commandArgs);
+        var command = CommandFactoryUsingResolver.Create(commandSpec)
+            .WorkingDirectory(workingDirectory);
+
+        return ExecuteCommand(command, launchSettings, virtualCommand: null);
+    }
+
+    private int ExecuteCommand(ICommand command, LaunchSettingsModel? launchSettings, VirtualProjectBuildingCommand? virtualCommand)
+    {
+        // Apply environment variables from launch profile
+        ApplyLaunchSettingsProfileToCommand(command, launchSettings);
+
+        // Env variables specified on command line override those specified in launch profile:
+        foreach (var (name, value) in EnvironmentVariables)
+        {
+            command.EnvironmentVariable(name, value);
+        }
+
+        // Send telemetry about the run operation
+        SendRunTelemetry(launchSettings, virtualCommand);
+
+        // Ignore Ctrl-C for the remainder of the command's execution
+        Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
+
+        return command.Execute().ExitCode;
+    }
+
+    internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, LaunchSettingsModel? launchSettings)
     {
         if (launchSettings == null)
         {
             return;
         }
 
-        if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
+        // Handle Project-specific settings
+        if (launchSettings is ProjectLaunchSettingsModel projectSettings)
         {
-            targetCommand.EnvironmentVariable("ASPNETCORE_URLS", launchSettings.ApplicationUrl);
+            if (!string.IsNullOrEmpty(projectSettings.ApplicationUrl))
+            {
+                targetCommand.EnvironmentVariable("ASPNETCORE_URLS", projectSettings.ApplicationUrl);
+            }
         }
 
         targetCommand.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
@@ -209,7 +289,7 @@ public class RunCommand
         }
     }
 
-    internal bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
+    internal bool TryGetLaunchProfileSettingsIfNeeded(out LaunchSettingsModel? launchSettingsModel)
     {
         launchSettingsModel = default;
         if (NoLaunchProfile)
@@ -777,7 +857,7 @@ public class RunCommand
     /// Sends telemetry about the run operation.
     /// </summary>
     private void SendRunTelemetry(
-        ProjectLaunchSettingsModel? launchSettings,
+        LaunchSettingsModel? launchSettings,
         VirtualProjectBuildingCommand? virtualCommand)
     {
         try
@@ -805,7 +885,7 @@ public class RunCommand
     /// Builds and sends telemetry data for file-based app runs.
     /// </summary>
     private void SendFileBasedTelemetry(
-        ProjectLaunchSettingsModel? launchSettings,
+        LaunchSettingsModel? launchSettings,
         VirtualProjectBuildingCommand virtualCommand)
     {
         Debug.Assert(EntryPointFileFullPath != null);
@@ -834,7 +914,7 @@ public class RunCommand
     /// <summary>
     /// Builds and sends telemetry data for project-based app runs.
     /// </summary>
-    private void SendProjectBasedTelemetry(ProjectLaunchSettingsModel? launchSettings)
+    private void SendProjectBasedTelemetry(LaunchSettingsModel? launchSettings)
     {
         Debug.Assert(ProjectFileFullPath != null);
         var projectIdentifier = RunTelemetry.GetProjectBasedIdentifier(ProjectFileFullPath, GetRepositoryRoot(), Sha256Hasher.Hash);
