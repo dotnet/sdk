@@ -3,15 +3,15 @@
   <ProductDependencies>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.123">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2a3d0e60b37359c350cc045fecdadb0c7b652591</Sha>
+      <Sha>7066728cb1da9d640b5350ac7082e93c17197216</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.123-servicing.25557.4">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.123-servicing.25562.11">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2a3d0e60b37359c350cc045fecdadb0c7b652591</Sha>
+      <Sha>7066728cb1da9d640b5350ac7082e93c17197216</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.123-servicing.25557.4">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.123-servicing.25562.11">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2a3d0e60b37359c350cc045fecdadb0c7b652591</Sha>
+      <Sha>7066728cb1da9d640b5350ac7082e93c17197216</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.22">
@@ -55,17 +55,17 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>9e37ff5ebf5f464d80bdae6ad9d24e7a01ee11f8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.8.43">
-      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
-      <Sha>f0cbb13971c30ad15a3f252a8d0171898a01ec11</Sha>
+    <Dependency Name="Microsoft.Build" Version="17.8.45">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>2a7a854c1b8dd412669c2c114ff18c9fa412ace7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.8.43-servicing-25466-03">
-      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
-      <Sha>f0cbb13971c30ad15a3f252a8d0171898a01ec11</Sha>
+    <Dependency Name="Microsoft.Build.Localization" Version="17.8.45-servicing-25560-07">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>2a7a854c1b8dd412669c2c114ff18c9fa412ace7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.8.43-servicing-25466-03">
-      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
-      <Sha>f0cbb13971c30ad15a3f252a8d0171898a01ec11</Sha>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.8.45-servicing-25560-07">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>2a7a854c1b8dd412669c2c114ff18c9fa412ace7</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.102-beta.24081.2">
