@@ -56,6 +56,36 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 RuleKind.op_OnesComplement => ReplaceWithUnaryOperator(currentNode, generator, generator.BitwiseNotExpression),
                 RuleKind.op_Subtraction => ReplaceWithBinaryOperator(currentNode, generator, isCommutative: false, generator.SubtractExpression),
                 RuleKind.op_UnaryNegation => ReplaceWithUnaryOperator(currentNode, generator, generator.NegateExpression),
+
+                RuleKind.Abs => ReplaceWithUnaryMethod(currentNode, generator, "Abs"),
+                RuleKind.Ceiling => ReplaceWithUnaryMethod(currentNode, generator, "Ceiling"),
+                RuleKind.ConvertToInt32 => ReplaceWithUnaryMethod(currentNode, generator, "ConvertToInt32"),
+                RuleKind.Floor => ReplaceWithUnaryMethod(currentNode, generator, "Floor"),
+                RuleKind.Negate => ReplaceWithUnaryMethod(currentNode, generator, "Negate"),
+                RuleKind.Round => ReplaceWithUnaryMethod(currentNode, generator, "Round"),
+                RuleKind.Sqrt => ReplaceWithUnaryMethod(currentNode, generator, "Sqrt"),
+                RuleKind.Truncate => ReplaceWithUnaryMethod(currentNode, generator, "Truncate"),
+
+                RuleKind.AddSaturate => ReplaceWithBinaryMethod(currentNode, generator, "AddSaturate"),
+                RuleKind.AndNot => ReplaceWithBinaryMethod(currentNode, generator, "AndNot"),
+                RuleKind.AndNot_Swapped => ReplaceWithBinaryMethodSwapped(currentNode, generator, "AndNot"),
+                RuleKind.Equals => ReplaceWithBinaryMethod(currentNode, generator, "Equals"),
+                RuleKind.GreaterThan => ReplaceWithBinaryMethod(currentNode, generator, "GreaterThan"),
+                RuleKind.GreaterThanOrEqual => ReplaceWithBinaryMethod(currentNode, generator, "GreaterThanOrEqual"),
+                RuleKind.LessThan => ReplaceWithBinaryMethod(currentNode, generator, "LessThan"),
+                RuleKind.LessThanOrEqual => ReplaceWithBinaryMethod(currentNode, generator, "LessThanOrEqual"),
+                RuleKind.Max => ReplaceWithBinaryMethod(currentNode, generator, "Max"),
+                RuleKind.MaxNative => ReplaceWithBinaryMethod(currentNode, generator, "MaxNative"),
+                RuleKind.Min => ReplaceWithBinaryMethod(currentNode, generator, "Min"),
+                RuleKind.MinNative => ReplaceWithBinaryMethod(currentNode, generator, "MinNative"),
+
+                RuleKind.ConditionalSelect => ReplaceWithTernaryMethod(currentNode, generator, "ConditionalSelect"),
+                RuleKind.FusedMultiplyAdd => ReplaceWithTernaryMethod(currentNode, generator, "FusedMultiplyAdd"),
+
+                RuleKind.Load => ReplaceWithUnaryMethod(currentNode, generator, "Load"),
+                RuleKind.Store => ReplaceWithBinaryMethod(currentNode, generator, "Store"),
+                RuleKind.Shuffle => ReplaceWithBinaryMethod(currentNode, generator, "Shuffle"),
+
                 _ => currentNode,
             };
         }
@@ -63,5 +93,13 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         protected abstract SyntaxNode ReplaceWithUnaryOperator(SyntaxNode currentNode, SyntaxGenerator generator, Func<SyntaxNode, SyntaxNode?> unaryOpFunc);
 
         protected abstract SyntaxNode ReplaceWithBinaryOperator(SyntaxNode currentNode, SyntaxGenerator generator, bool isCommutative, Func<SyntaxNode, SyntaxNode, SyntaxNode?> binaryOpFunc);
+
+        protected abstract SyntaxNode ReplaceWithUnaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
+
+        protected abstract SyntaxNode ReplaceWithBinaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
+
+        protected abstract SyntaxNode ReplaceWithBinaryMethodSwapped(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
+
+        protected abstract SyntaxNode ReplaceWithTernaryMethod(SyntaxNode currentNode, SyntaxGenerator generator, string methodName);
     }
 }
