@@ -229,7 +229,7 @@ internal static class FileLevelDirectiveHelpers
     }
 
     /// <summary>
-    /// If there are any <c>#:project</c> <paramref name="directives"/>, expand <c>$()</c> in them and then resolve the project paths.
+    /// If there are any <c>#:project</c> <paramref name="directives"/>, expands <c>$()</c> in them and ensures they point to project files (not directories).
     /// </summary>
     public static ImmutableArray<CSharpDirective> EvaluateDirectives(
         ProjectInstance? project,
@@ -244,7 +244,7 @@ internal static class FileLevelDirectiveHelpers
                     ? (project is null
                         ? p
                         : p.WithName(project.ExpandString(p.Name), CSharpDirective.Project.NameKind.Expanded))
-                       .ResolveProjectPath(sourceFile, diagnostics)
+                       .EnsureProjectFilePath(sourceFile, diagnostics)
                     : d)
                 .ToImmutableArray();
         }
@@ -504,10 +504,10 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         public string? ExpandedName { get; init; }
 
         /// <summary>
-        /// This is the <see cref="ExpandedName"/> resolved via <see cref="ResolveProjectPath"/>
+        /// This is the <see cref="ExpandedName"/> resolved via <see cref="EnsureProjectFilePath"/>
         /// (i.e., this is a file path if the original text pointed to a directory).
         /// </summary>
-        public string? ResolvedName { get; init; }
+        public string? ProjectFilePath { get; init; }
 
         public static new Project? Parse(in ParseContext context)
         {
@@ -529,9 +529,9 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             Expanded = 1,
 
             /// <summary>
-            /// Change <see cref="Named.Name"/> and <see cref="ResolvedName"/>.
+            /// Change <see cref="Named.Name"/> and <see cref="Project.ProjectFilePath"/>.
             /// </summary>
-            Resolved = 2,
+            ProjectFilePath = 2,
 
             /// <summary>
             /// Change only <see cref="Named.Name"/>.
@@ -545,14 +545,14 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             {
                 OriginalName = OriginalName,
                 ExpandedName = kind == NameKind.Expanded ? name : ExpandedName,
-                ResolvedName = kind == NameKind.Resolved ? name : ResolvedName,
+                ProjectFilePath = kind == NameKind.ProjectFilePath ? name : ProjectFilePath,
             };
         }
 
         /// <summary>
         /// If the directive points to a directory, returns a new directive pointing to the corresponding project file.
         /// </summary>
-        public Project ResolveProjectPath(SourceFile sourceFile, DiagnosticBag diagnostics)
+        public Project EnsureProjectFilePath(SourceFile sourceFile, DiagnosticBag diagnostics)
         {
             var resolvedName = Name;
 
@@ -560,7 +560,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             {
                 // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.
                 // Also normalize backslashes to forward slashes to ensure the directive works on all platforms.
-                var sourceDirectory = Path.GetDirectoryName(sourceFile.Path) ?? ".";
+                var sourceDirectory = Path.GetDirectoryName(sourceFile.Path)
+                    ?? throw new InvalidOperationException($"Source file path '{sourceFile.Path}' does not have a containing directory.");
                 var resolvedProjectPath = Path.Combine(sourceDirectory, resolvedName.Replace('\\', '/'));
                 if (Directory.Exists(resolvedProjectPath))
                 {
@@ -581,7 +582,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 diagnostics.AddError(sourceFile, Info.Span, string.Format(FileBasedProgramsResources.InvalidProjectDirective, e.Message), e);
             }
 
-            return WithName(resolvedName, NameKind.Resolved);
+            return WithName(resolvedName, NameKind.ProjectFilePath);
         }
 
         // https://github.com/dotnet/sdk/issues/51487: Delete copies of methods from MsbuildProject and MSBuildUtilities from the source package, sharing the original method(s) under src/Cli instead.

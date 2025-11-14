@@ -185,7 +185,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                 // while also pointing to the project file rather than a directory).
                 if (directive is CSharpDirective.Project project)
                 {
-                    Debug.Assert(project.ExpandedName != null && project.ResolvedName != null && project.ResolvedName == project.Name);
+                    Debug.Assert(project.ExpandedName != null && project.ProjectFilePath != null && project.ProjectFilePath == project.Name);
 
                     if (Path.IsPathFullyQualified(project.Name))
                     {
