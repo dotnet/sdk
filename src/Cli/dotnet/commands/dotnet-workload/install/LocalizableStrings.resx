@@ -237,9 +237,6 @@
   <data name="AdManifestPackageDoesNotExist" xml:space="preserve">
     <value>Advertising manifest not updated. Manifest package for {0} doesn't exist.</value>
   </data>
-  <data name="ManifestDoesNotExist" xml:space="preserve">
-    <value>No manifest with ID {0} exists.</value>
-  </data>
   <data name="FailedToInstallWorkloadManifest" xml:space="preserve">
     <value>Failed to install manifest {0} version {1}: {2}.</value>
   </data>
@@ -325,11 +322,18 @@
   <data name="CannotCombineSkipManifestAndRollback" xml:space="preserve">
     <value>Cannot use the {0} and {1} options together. If installing from a rollback file, remove {0}. Otherwise, remove {1}</value>
   </data>
+  <data name="CannotCombineSkipManifestAndVersion" xml:space="preserve">
+    <value>Cannot use the {0} and {1} options together.  Remove one of the options.</value>
+  </data>
+  <data name="CannotUseSkipManifestWithGlobalJsonWorkloadVersion" xml:space="preserve">
+    <value>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</value>
+    <comment>"workloadVersion" and "global.json" are literal values and should not be translated.</comment>
+  </data>
   <data name="SkipSignCheckOptionDescription" xml:space="preserve">
     <value>Skip signature verification of workload packages and installers.</value>
   </data>
   <data name="CheckForUpdatedWorkloadManifests" xml:space="preserve">
-    <value>Checking for updated workload manifests.</value>
+    <value>Checking for updated workload version.</value>
   </data>
   <data name="InvalidVersionForWorkload" xml:space="preserve">
     <value>Error parsing version '{1}' for workload manifest ID '{0}'</value>
@@ -349,13 +353,13 @@
   <data name="NewWorkloadSet" xml:space="preserve">
     <value>Installing workload version {0}.</value>
   </data>
-  <data name="WorkloadSetUpgrade" xml:space="preserve">
-    <value>Updating workload version from {0} to {1}.</value>
-  </data>
   <data name="CannotSpecifyVersionOnCommandLineAndInGlobalJson" xml:space="preserve">
     <value>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</value>
   </data>
   <data name="UpdatedWorkloadMode" xml:space="preserve">
     <value>Successfully updated workload install mode to use {0}.</value>
+  </data>
+  <data name="FailedToInstallWorkloadSet" xml:space="preserve">
+    <value>Failed to install workload version {0}: {1}</value>
   </data>
 </root>
