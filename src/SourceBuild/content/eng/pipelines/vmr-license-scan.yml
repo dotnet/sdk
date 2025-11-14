@@ -75,6 +75,9 @@ jobs:
 
 - job: LicenseScan
   dependsOn: Setup
+  container:
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-source-build-test-amd64
+    options: '--memory=6g'
   pool:
     name: NetCore1ESPool-Svc-Internal
     demands: ImageOverride -equals 1es-ubuntu-2204
@@ -83,23 +86,8 @@ jobs:
     matrix: $[ dependencies.Setup.outputs['GetMatrix.matrix'] ]
   steps:
 
-  - script: |
-      source ./eng/common/tools.sh
-      InitializeDotNetCli true
-    displayName: Install .NET SDK
-    workingDirectory: $(Build.SourcesDirectory)
-
-  - task: PipAuthenticate@1
-    displayName: 'Pip Authenticate'
-    inputs:
-      artifactFeeds: public/dotnet-public-pypi
-      onlyAddExtraIndex: false
-
-  - script: $(sdkRoot)/eng/install-scancode.sh
-    displayName: Install Scancode
-
   - script: >
-      $(Build.SourcesDirectory)/.dotnet/dotnet test
+      dotnet test
       $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.SmokeTests/Microsoft.DotNet.SourceBuild.SmokeTests.csproj
       --filter "FullyQualifiedName=Microsoft.DotNet.SourceBuild.SmokeTests.LicenseScanTests.ScanForLicenses"
       --logger:'trx;LogFileName=$(Agent.JobName)_LicenseScan.trx'
