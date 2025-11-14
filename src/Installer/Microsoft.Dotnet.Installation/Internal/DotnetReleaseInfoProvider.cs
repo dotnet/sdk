@@ -12,12 +12,12 @@ internal class DotnetReleaseInfoProvider : IDotnetReleaseInfoProvider
 {
     public IEnumerable<string> GetSupportedChannels()
     {
-        var releaseManifest = new ReleaseManifest();
+        var releaseManifest = new ChannelVersionResolver();
         return releaseManifest.GetSupportedChannels();
     }
     public ReleaseVersion? GetLatestVersion(InstallComponent component, string channel)
     {
-        var releaseManifest = new ReleaseManifest();
+        var releaseManifest = new ChannelVersionResolver();
         var release = releaseManifest.GetLatestVersionForChannel(new UpdateChannel(channel), component);
 
         return release;

@@ -23,8 +23,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool _noProgress = result.GetValue(SdkInstallCommandParser.NoProgressOption);
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
-    private readonly IDotnetReleaseInfoProvider _releaseInfoProvider = new DotnetReleaseInfoProvider();
-    private readonly ManifestChannelVersionResolver _channelVersionResolver = new ManifestChannelVersionResolver();
+    private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
 
     public override int Execute()
     {
@@ -113,7 +112,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             if (_interactive)
             {
 
-                SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', _releaseInfoProvider.GetSupportedChannels()));
+                SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', _channelVersionResolver.GetSupportedChannels()));
                 SpectreAnsiConsole.WriteLine("You can also specify a specific version (for example 9.0.304).");
 
                 resolvedChannel = SpectreAnsiConsole.Prompt(
