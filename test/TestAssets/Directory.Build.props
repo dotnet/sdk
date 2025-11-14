@@ -1,0 +1,10 @@
+<!-- Prevent test asset projects from picking up the repo's root Directory.Build.props. -->
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/*.tmp</DefaultItemExcludes>
+  </PropertyGroup>
+
+</Project>

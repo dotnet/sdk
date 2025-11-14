@@ -1,0 +1,14 @@
+[
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.js",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.js.br",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.js.gz",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.v4.js",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.v4.js.br",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.v4.js.gz",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.js",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.js.br",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.js.gz",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.v4.js",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.v4.js.br",
+  "${OutputPath}\\wwwroot\\js\\project-transitive-dep.v4.js.gz"
+]

@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli
     internal class PrintableTable<T>
     {
         public const string ColumnDelimiter = "      ";
-        private List<Column> _columns = new List<Column>();
+        private List<Column> _columns = new();
 
         private class Column
         {
@@ -35,7 +35,8 @@ namespace Microsoft.DotNet.Cli
             }
 
             _columns.Add(
-                new Column() {
+                new Column()
+                {
                     Header = header,
                     GetContent = getContent,
                     MaxWidth = maxWidth
@@ -179,7 +180,8 @@ namespace Microsoft.DotNet.Cli
         private int[] CalculateColumnWidths(IEnumerable<T> rows)
         {
             return _columns
-                .Select(c => {
+                .Select(c =>
+                {
                     var width = new StringInfo(c.Header ?? "").LengthInTextElements;
 
                     foreach (var row in rows)

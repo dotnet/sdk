@@ -1,0 +1,68 @@
+<Project>
+  <PropertyGroup>
+    <CollectUpToDateCheckInputDesignTimeDependsOn>
+      $(CollectUpToDateCheckInputDesignTimeDependsOn);
+      ResolveStaticWebAssetsConfiguration;
+      ResolveProjectStaticWebAssets;
+      CollectStaticWebAssetInputsDesignTime;
+    </CollectUpToDateCheckInputDesignTimeDependsOn>
+    <CollectUpToDateCheckOutputDesignTimeDependsOn>
+      $(CollectUpToDateCheckOutputDesignTimeDependsOn);
+      ResolveStaticWebAssetsConfiguration;
+      CollectStaticWebAssetOutputsDesignTime;
+    </CollectUpToDateCheckOutputDesignTimeDependsOn>
+  </PropertyGroup>
+
+  <Target Name="CollectStaticWebAssetInputsDesignTime">
+
+    <ReadLinesFromFile
+      File="$(StaticWebAssetUpToDateCheckManifestPath)"
+      Condition="Exists('$(StaticWebAssetUpToDateCheckManifestPath)')"
+    >
+      <Output TaskParameter="Lines" ItemName="_StaticWebAssetUpToDateCheckInput" />
+    </ReadLinesFromFile>
+
+    <ReadLinesFromFile
+      File="$(StaticWebAssetReferencesUpToDateCheckManifestPath)"
+      Condition="Exists('$(StaticWebAssetReferencesUpToDateCheckManifestPath)')"
+    >
+      <Output TaskParameter="Lines" ItemName="_StaticWebAssetReferenceUpToDateCheckInput" />
+    </ReadLinesFromFile>
+
+    <ItemGroup>
+      <_UpToDateCheckStaticWebAssetResolved Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Discovered'" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_UpToDateCheckStaticWebAssetResolvedCandidate Include="@(_UpToDateCheckStaticWebAssetResolved->'%(OriginalItemSpec)')" />
+      <_StaticWebAssetUpToDateCheckInput Include="@(_UpToDateCheckStaticWebAssetResolvedCandidate->Distinct()->'%(FullPath)')" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ExistingStaticWebAssetUpToDateCheckInput Include="%(_StaticWebAssetUpToDateCheckInput.FullPath)" Condition="Exists('%(_StaticWebAssetUpToDateCheckInput.FullPath)')" />
+      <_NonExistingStaticWebAssetUpToDateCheckInput Include="%(_StaticWebAssetUpToDateCheckInput.FullPath)" Condition="!Exists('%(_StaticWebAssetUpToDateCheckInput.FullPath)')" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(StaticWebAssetUpToDateCheckRemovedManifestPath)"
+      Lines="@(_NonExistingStaticWebAssetUpToDateCheckInput)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+
+    <ItemGroup>
+      <UpToDateCheckInput Condition="'@(_NonExistingStaticWebAssetUpToDateCheckInput)' != ''" Include="$(StaticWebAssetUpToDateCheckRemovedManifestPath)" Set="StaticWebAssets" />
+      <UpToDateCheckInput Include="@(_ExistingStaticWebAssetUpToDateCheckInput)" Set="StaticWebAssets" />
+      <UpToDateCheckInput Include="@(_StaticWebAssetReferenceUpToDateCheckInput)" Set="StaticWebAssets" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="CollectStaticWebAssetOutputsDesignTime">
+
+    <ItemGroup>
+      <UpToDateCheckOutput Include="$(StaticWebAssetBuildManifestPath)" Set="StaticWebAssets" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>

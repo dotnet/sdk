@@ -4,8 +4,8 @@
 using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO.Compression;
-using System.Security.Cryptography;
 using System.IO.Enumeration;
+using System.Security.Cryptography;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
@@ -185,12 +185,12 @@ internal class Layer
             }
         }
 
-        string contentHash = Convert.ToHexString(hash).ToLowerInvariant();
-        string uncompressedContentHash = Convert.ToHexString(uncompressedHash).ToLowerInvariant();
+        string contentHash = Convert.ToHexStringLower(hash);
+        string uncompressedContentHash = Convert.ToHexStringLower(uncompressedHash);
 
         string layerMediaType = manifestMediaType switch
         {
-            // TODO: configurable? gzip always?
+             // TODO: configurable? gzip always?
             SchemaTypes.DockerManifestV2 => SchemaTypes.DockerLayerGzip,
             SchemaTypes.OciManifestV1 => SchemaTypes.OciLayerGzipV1,
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), manifestMediaType))
@@ -215,7 +215,7 @@ internal class Layer
 
     internal virtual Stream OpenBackingFile() => File.OpenRead(BackingFile);
 
-    private readonly static char[] PathSeparators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
+    private static readonly char[] PathSeparators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
 
     /// <summary>
     /// A stream capable of computing the hash digest of raw uncompressed data while also compressing it.
