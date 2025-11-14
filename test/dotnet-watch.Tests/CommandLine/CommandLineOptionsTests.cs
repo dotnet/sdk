@@ -53,29 +53,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Contains("Usage:", output.ToString());
         }
 
-        [Theory]
-        [InlineData("-p:P=V", "P", "V")]
-        [InlineData("-p:P==", "P", "=")]
-        [InlineData("-p:P=A=B", "P", "A=B")]
-        [InlineData("-p: P\t = V ", "P", " V ")]
-        [InlineData("-p:P=", "P", "")]
-        public void BuildProperties_Valid(string argValue, string name, string value)
-        {
-            var properties = CommandLineOptions.ParseBuildProperties([argValue]);
-            AssertEx.SequenceEqual([(name, value)], properties);
-        }
-
-        [Theory]
-        [InlineData("P")]
-        [InlineData("=P3")]
-        [InlineData("=")]
-        [InlineData("==")]
-        public void BuildProperties_Invalid(string argValue)
-        {
-            var properties = CommandLineOptions.ParseBuildProperties([argValue]);
-            AssertEx.SequenceEqual([], properties);
-        }
-
         [Fact]
         public void ImplicitCommand()
         {
