@@ -19,13 +19,13 @@ internal class PackageSearchCommand(ParseResult parseResult) : CommandBase(parse
             "search"
         };
 
-        var searchArgument = _parseResult.GetValue(PackageSearchCommandParser.SearchTermArgument);
+        var searchArgument = _parseResult.GetValue(PackageSearchCommandDefinition.SearchTermArgument);
         if (searchArgument != null)
         {
             args.Add(searchArgument);
         }
 
-        args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageSearchCommandParser.GetCommand()));
+        args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageSearchCommandDefinition.Options));
         return NuGetCommand.Run([.. args]);
     }
 }

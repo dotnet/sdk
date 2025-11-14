@@ -14,22 +14,22 @@ namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
 internal class ReferenceAddCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
-            parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument);
+    private readonly string _fileOrDirectory = parseResult.HasOption(ReferenceCommandDefinition.ProjectOption) ?
+            parseResult.GetValue(ReferenceCommandDefinition.ProjectOption) :
+            parseResult.GetValue(PackageCommandDefinition.ProjectOrFileArgument);
 
     public override int Execute()
     {
         using var projects = new ProjectCollection();
-        bool interactive = _parseResult.GetValue(ReferenceAddCommandParser.InteractiveOption);
+        bool interactive = _parseResult.GetValue(ReferenceAddCommandDefinition.InteractiveOption);
         MsbuildProject msbuildProj = MsbuildProject.FromFileOrDirectory(
             projects,
             _fileOrDirectory,
             interactive);
 
-        var frameworkString = _parseResult.GetValue(ReferenceAddCommandParser.FrameworkOption);
+        var frameworkString = _parseResult.GetValue(ReferenceAddCommandDefinition.FrameworkOption);
 
-        var arguments = _parseResult.GetValue(ReferenceAddCommandParser.ProjectPathArgument).ToList().AsReadOnly();
+        var arguments = _parseResult.GetValue(ReferenceAddCommandDefinition.ProjectPathArgument).ToList().AsReadOnly();
         PathUtility.EnsureAllPathsExist(arguments,
             CliStrings.CouldNotFindProjectOrDirectory, true);
         List<MsbuildProject> refs = [.. arguments.Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))];

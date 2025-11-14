@@ -31,7 +31,7 @@ public class InternalReportInstallSuccessCommand
 
     public static void ProcessInputAndSendTelemetry(ParseResult result, ITelemetry telemetry)
     {
-        var exeName = Path.GetFileName(result.GetValue(InternalReportInstallSuccessCommandParser.Argument));
+        var exeName = Path.GetFileName(result.GetValue(InternalReportInstallSuccessCommandDefinition.Argument));
 
         var filter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
         foreach (var e in filter.Filter(new InstallerSuccessReport(exeName)))
