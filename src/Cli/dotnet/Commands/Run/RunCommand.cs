@@ -339,18 +339,28 @@ public class RunCommand
             workingDirectory = Path.GetDirectoryName(ProjectFileFullPath ?? EntryPointFileFullPath ?? Directory.GetCurrentDirectory())!;
         }
 
-        // Build command arguments
-        string commandArgs = string.Empty;
-        if (!NoLaunchProfileArguments && !string.IsNullOrEmpty(launchSettings.CommandLineArgs))
+        // Build command arguments by combining launch profile args with application args
+        // Note: launchSettings.CommandLineArgs is a pre-formatted string from JSON that cannot be reliably parsed
+        // ApplicationArgs are provided as separate tokens and need proper escaping
+        string commandArgs;
+        if (!NoLaunchProfileArguments && !string.IsNullOrEmpty(launchSettings.CommandLineArgs) && ApplicationArgs.Length > 0)
         {
+            // Both launch profile args and application args - concatenate them
+            commandArgs = launchSettings.CommandLineArgs + " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(ApplicationArgs);
+        }
+        else if (!NoLaunchProfileArguments && !string.IsNullOrEmpty(launchSettings.CommandLineArgs))
+        {
+            // Only launch profile args
             commandArgs = launchSettings.CommandLineArgs;
         }
-
-        // If there are application arguments from command line, append them
-        if (ApplicationArgs.Length > 0)
+        else if (ApplicationArgs.Length > 0)
         {
-            string appArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(ApplicationArgs);
-            commandArgs = string.IsNullOrEmpty(commandArgs) ? appArgs : $"{commandArgs} {appArgs}";
+            // Only application args
+            commandArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(ApplicationArgs);
+        }
+        else
+        {
+            commandArgs = string.Empty;
         }
 
         var commandSpec = new CommandSpec(executablePath, commandArgs);
