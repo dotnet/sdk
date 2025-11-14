@@ -10,11 +10,11 @@
         </packageTypes>
     </metadata>
     <files>
-        <file src="bin\Release\netcoreapp2.1\publish\*.*" target="tools\netcoreapp2.1\any\" />
-        <file src="DotnetToolSettings.xml" target="tools\netcoreapp2.1\any\DotnetToolSettings.xml" />
-        <file src="dummyshim.exe" target="tools\netcoreapp2.1\any\shims\win-x64\demo.exe" />
-        <file src="dummyshim.exe" target="tools\netcoreapp2.1\any\shims\win-x86\demo.exe" />
-        <file src="dummyshim" target="tools\netcoreapp2.1\any\shims\osx-x64\demo" />
-        <file src="dummyshim" target="tools\netcoreapp2.1\any\shims\linux\demo" />
+        <file src="bin\Release\net6.0\publish\*.*" target="tools\net6.0\any\" />
+        <file src="DotnetToolSettings.xml" target="tools\net6.0\any\DotnetToolSettings.xml" />
+        <file src="dummyshim.exe" target="tools\net6.0\any\shims\win-x64\demo.exe" />
+        <file src="dummyshim.exe" target="tools\net6.0\any\shims\win-x86\demo.exe" />
+        <file src="dummyshim" target="tools\net6.0\any\shims\osx-x64\demo" />
+        <file src="dummyshim" target="tools\net6.0\any\shims\linux\demo" />
     </files>
 </package>
