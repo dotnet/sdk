@@ -30,7 +30,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .Should()
             .Pass()
             .And
-            .HaveStdOutContaining("NETSDK1234");
+            .HaveStdOutContaining(" NETSDK1234");
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .Should()
             .Pass()
             .And
-            .NotHaveStdOutContaining("NETSDK1234");
+            .NotHaveStdOutContaining(" NETSDK1234");
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .Should()
             .Pass()
             .And
-            .NotHaveStdOutContaining("NETSDK1234");
+            .NotHaveStdOutContaining(" NETSDK1234");
     }
 
     [Fact]
@@ -106,7 +106,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .Should()
             .Pass()
             .And
-            .NotHaveStdOutContaining("NETSDK1234");
+            .NotHaveStdOutContaining(" NETSDK1234");
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .Should()
             .Pass()
             .And
-            .NotHaveStdOutContaining("NETSDK1234");
+            .NotHaveStdOutContaining(" NETSDK1234");
     }
 
     [Fact]
@@ -159,6 +159,6 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .Should()
             .Pass()
             .And
-            .NotHaveStdOutContaining("NETSDK1234");
+            .NotHaveStdOutContaining(" NETSDK1234");
     }
 }
