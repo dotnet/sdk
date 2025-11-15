@@ -598,12 +598,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             string testSolutionPath = "MultiTestProjectSolutionWithPlatforms.slnx";
 
-            // Test with x86 platform - OtherTestProject should NOT be included (no Build.0 for x86)
+            // Test with "NonWindows" platform - OtherTestProject should NOT be included
             CommandResult resultX86 = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(MicrosoftTestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                     MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
-                                    "--property:Platform=x86");
+                                    "--property:Platform=NonWindows");
 
             // Validate that TestProject ran but OtherTestProject did not (not marked for build on x86)
             resultX86.StdOut.Should().Contain("TestProject.dll");
