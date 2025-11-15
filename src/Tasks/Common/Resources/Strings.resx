@@ -1010,5 +1010,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</value>
     <comment>{StrBegins="NETSDK1233: "}</comment>
   </data>
-  <!-- The latest message added is Net10NotCompatibleWithVS17. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="MacOSAppNameEndsWithAppOrService" xml:space="preserve">
+    <value>NETSDK1234: The application name '{0}' ends with '{1}' which may prevent the application from running on macOS. Rename the application or set the AssemblyName property to a different value.</value>
+    <comment>{StrBegins="NETSDK1234: "}</comment>
+  </data>
+  <!-- The latest message added is MacOSAppNameEndsWithAppOrService. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
