@@ -177,9 +177,9 @@ internal class CommandDefinition(string name, string description) : Command(name
             return command;
         }
 
-        internal static IReadOnlyDictionary<FilterOptionDefinition, Option> CreateFilterOptions(IEnumerable<FilterOptionDefinition> supportedFilters, bool isLegacy)
+        internal static OrderedDictionary<FilterOptionDefinition, Option> CreateFilterOptions(IEnumerable<FilterOptionDefinition> supportedFilters, bool isLegacy)
         {
-            var filterOptionsMap = new Dictionary<FilterOptionDefinition, Option>();
+            var filterOptionsMap = new OrderedDictionary<FilterOptionDefinition, Option>();
 
             foreach (var filterDef in supportedFilters)
             {
@@ -232,8 +232,17 @@ internal class CommandDefinition(string name, string description) : Command(name
 
     public static class Instantiate
     {
-        public static readonly Argument<string> ShortNameArgument = New.ShortNameArgument;
-        public static readonly Argument<string[]> RemainingArguments = New.RemainingArguments;
+        public static readonly Argument<string> ShortNameArgument = new("template-short-name")
+        {
+            Description = SymbolStrings.Command_Instantiate_Argument_ShortName,
+            Arity = new ArgumentArity(0, 1)
+        };
+
+        public static readonly Argument<string[]> RemainingArguments = new("template-args")
+        {
+            Description = SymbolStrings.Command_Instantiate_Argument_TemplateOptions,
+            Arity = new ArgumentArity(0, 999)
+        };
 
         public static readonly CommandDefinition Command = new CommandDefinition("create", SymbolStrings.Command_Instantiate_Description)
         {
@@ -390,7 +399,7 @@ internal class CommandDefinition(string name, string description) : Command(name
         public Option<bool> ColumnsAllOption { get; }
         public Option<string[]> ColumnsOption { get; }
 
-        public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters { get; }
+        public OrderedDictionary<FilterOptionDefinition, Option> Filters { get; }
 
         public List(string name, bool isLegacy)
             : base(name, SymbolStrings.Command_List_Description)
@@ -402,6 +411,8 @@ internal class CommandDefinition(string name, string description) : Command(name
 
             Arguments.Add(NameArgument);
 
+            Options.AddRange(Filters.Values);
+
             Options.AddRange(
             [
                 IgnoreConstraintsOption,
@@ -411,7 +422,6 @@ internal class CommandDefinition(string name, string description) : Command(name
                 ColumnsOption,
             ]);
 
-            Options.AddRange(Filters.Values);
             this.AddNoLegacyUsageValidators(isLegacy ? [.. Filters.Values, ColumnsAllOption, ColumnsOption, New.ShortNameArgument] : []);
         }
     }
@@ -446,7 +456,7 @@ internal class CommandDefinition(string name, string description) : Command(name
         public Option<bool> ColumnsAllOption { get; }
         public Option<string[]> ColumnsOption { get; }
 
-        public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters { get; }
+        public OrderedDictionary<FilterOptionDefinition, Option> Filters { get; }
 
         public Search(string name, bool isLegacy)
             : base(name, SymbolStrings.Command_Search_Description)
@@ -458,13 +468,14 @@ internal class CommandDefinition(string name, string description) : Command(name
 
             Arguments.Add(NameArgument);
 
+            Options.AddRange(Filters.Values);
+
             Options.AddRange(
             [
                 ColumnsAllOption,
                 ColumnsOption,
             ]);
 
-            Options.AddRange(Filters.Values);
             this.AddNoLegacyUsageValidators(isLegacy ? [.. Filters.Values, ColumnsAllOption, ColumnsOption, New.ShortNameArgument] : []);
         }
     }
