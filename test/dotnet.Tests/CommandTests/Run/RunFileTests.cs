@@ -920,6 +920,39 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// 'BaseIntermediateOutputPath'/'BaseOutputPath' specified in Directory.Build.props should effectively be ignored.
+    /// We want the standard logic for determining these from an 'ArtifactsPath' to always be used.
+    /// See also https://github.com/dotnet/sdk/blob/2b9fc02a265c735f2132e4e3626e94962e48bdf5/src/Tasks/Microsoft.NET.Build.Tasks/sdk/UseArtifactsOutputPath.props#L25.
+    /// </summary>
+    [Fact]
+    public void BaseOutputPathProps_FromDirectoryBuildProps_NotUsed()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine("Hi");
+            """);
+
+        var dbPropsObjPath = Path.Join(testInstance.Path, "MyOutput", "obj");
+        var dbPropsBinPath = Path.Join(testInstance.Path, "MyOutput", "bin");
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <BaseIntermediateOutputPath>{dbPropsObjPath}</BaseIntermediateOutputPath>
+                <BaseOutputPath>{dbPropsBinPath}</BaseOutputPath>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        Assert.False(Directory.Exists(dbPropsObjPath));
+        Assert.False(Directory.Exists(dbPropsBinPath));
+    }
+
+    /// <summary>
     /// Overriding default (implicit) properties of file-based apps from custom SDKs.
     /// </summary>
     [Fact]
