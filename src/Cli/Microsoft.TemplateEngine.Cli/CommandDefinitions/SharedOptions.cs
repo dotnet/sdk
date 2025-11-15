@@ -21,6 +21,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public static Option<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption();
 
+        public static Option<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
+
+        public static Option<bool> ColumnsAllOption { get; } = SharedOptionsFactory.CreateColumnsAllOption();
+
+        public static Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption();
+
         internal static Option<bool> ForceOption { get; } = SharedOptionsFactory.CreateForceOption();
 
         internal static Option<string> NameOption { get; } = new("--name", "-n")

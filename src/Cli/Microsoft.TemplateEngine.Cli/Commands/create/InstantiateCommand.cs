@@ -15,41 +15,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs>, ICustomHelp
     {
-        internal InstantiateCommand(
-            NewCommand parentCommand,
-            Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, "create", SymbolStrings.Command_Instantiate_Description)
+        internal InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
+            : base(hostBuilder, CommandDefinition.Instantiate.Command)
         {
-            Arguments.Add(ShortNameArgument);
-            Arguments.Add(RemainingArguments);
-
-            Options.Add(SharedOptions.OutputOption);
-            Options.Add(SharedOptions.NameOption);
-            Options.Add(SharedOptions.DryRunOption);
-            Options.Add(SharedOptions.ForceOption);
-            Options.Add(SharedOptions.NoUpdateCheckOption);
-            Options.Add(SharedOptions.ProjectPathOption);
-
-            parentCommand.AddNoLegacyUsageValidators(this);
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.OutputOption));
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.NameOption));
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.DryRunOption));
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ForceOption));
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.NoUpdateCheckOption));
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ProjectPathOption));
         }
-
-        internal static Argument<string> ShortNameArgument { get; } = new Argument<string>("template-short-name")
-        {
-            Description = SymbolStrings.Command_Instantiate_Argument_ShortName,
-            Arity = new ArgumentArity(0, 1)
-        };
-
-        internal Argument<string[]> RemainingArguments { get; } = new Argument<string[]>("template-args")
-        {
-            Description = SymbolStrings.Command_Instantiate_Argument_TemplateOptions,
-            Arity = new ArgumentArity(0, 999)
-        };
 
         internal IReadOnlyList<Option> PassByOptions { get; } = new Option[]
         {
@@ -466,8 +435,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 foreach (string possibleMatch in possibleTemplateMatches)
                 {
                     Example example = useInstantiateCommand
-                        ? Example.For<InstantiateCommand>(instantiateArgs.ParseResult).WithArgument(ShortNameArgument, possibleMatch)
-                        : Example.For<NewCommand>(instantiateArgs.ParseResult).WithArgument(NewCommand.ShortNameArgument, possibleMatch);
+                        ? Example.For<InstantiateCommand>(instantiateArgs.ParseResult).WithArgument(CommandDefinition.New.ShortNameArgument, possibleMatch)
+                        : Example.For<NewCommand>(instantiateArgs.ParseResult).WithArgument(CommandDefinition.New.ShortNameArgument, possibleMatch);
                     if (helpOption)
                     {
                         example = example.WithHelpOption();
@@ -512,7 +481,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                   Example
                       .For<NewCommand>(instantiateArgs.ParseResult)
                       .WithSubcommand<ListCommand>()
-                      .WithArgument(BaseListCommand.NameArgument, instantiateArgs.ShortName));
+                      .WithArgument(CommandDefinition.List.NameArgument, instantiateArgs.ShortName));
             }
             else
             {
@@ -533,7 +502,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     Example
                         .For<NewCommand>(instantiateArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithArgument(BaseSearchCommand.NameArgument, instantiateArgs.ShortName));
+                        .WithArgument(CommandDefinition.Search.NameArgument, instantiateArgs.ShortName));
             }
         }
     }

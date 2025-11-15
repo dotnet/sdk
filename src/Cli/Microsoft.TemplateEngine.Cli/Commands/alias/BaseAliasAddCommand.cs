@@ -7,13 +7,9 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class BaseAliasAddCommand : BaseCommand<AliasAddCommandArgs>
+    internal class BaseAliasAddCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, CommandDefinition definition)
+        : BaseCommand<AliasAddCommandArgs>(hostBuilder, definition)
     {
-        internal BaseAliasAddCommand(
-            Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            string commandName)
-            : base(hostBuilder, commandName, SymbolStrings.Command_AliasAdd_Description) { }
-
         protected override Task<NewCommandStatus> ExecuteAsync(
             AliasAddCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
