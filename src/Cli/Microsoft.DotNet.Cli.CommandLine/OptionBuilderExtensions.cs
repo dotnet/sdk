@@ -42,5 +42,11 @@ public static class OptionBuilderExtensions
             option.CompletionSources.Add(completionSource);
             return option;
         }
+
+        public T Recursive(bool isRecursive = true)
+        {
+            option.Recursive = isRecursive;
+            return option;
+        }
     }
 }

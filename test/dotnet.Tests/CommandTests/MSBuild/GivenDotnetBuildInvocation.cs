@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetBuildInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo"];
+        string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:minimal", "-tlp:default=auto", "--nologo"];
         public static string[] RestoreExpectedPrefixForImplicitRestore = [.. RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--restoreProperty:{kvp.Key}={kvp.Value}")];
         public static string[] RestoreExpectedPrefixForSeparateRestore = [.. RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--property:{kvp.Key}={kvp.Value}")];
 
@@ -37,10 +37,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--configuration", "config" }, new string[] { "--property:Configuration=config" })]
         [InlineData(new string[] { "--version-suffix", "mysuffix" }, new string[] { "--property:VersionSuffix=mysuffix" })]
         [InlineData(new string[] { "--no-dependencies" }, new string[] { "--property:BuildProjectReferences=false" })]
-        [InlineData(new string[] { "-v", "diag" }, new string[] { "--verbosity:diag" })]
-        [InlineData(new string[] { "--verbosity", "diag" }, new string[] { "--verbosity:diag" })]
+        [InlineData(new string[] { "-v", "diag" }, new string[] { "--verbosity:diagnostic" })]
+        [InlineData(new string[] { "--verbosity", "diag" }, new string[] { "--verbosity:diagnostic" })]
         [InlineData(new string[] { "--no-incremental", "-o", "myoutput", "-r", "myruntime", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
-                   new string[] { "--target:Rebuild", "--property:RuntimeIdentifier=myruntime", "--property:_CommandLineDefinedRuntimeIdentifier=true", "--verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
+                   new string[] { "--target:Rebuild", "--property:RuntimeIdentifier=myruntime", "--property:_CommandLineDefinedRuntimeIdentifier=true", "--verbosity:diagnostic", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
         [InlineData(new string[] { "/t:CustomTarget" }, new string[] { "--target:CustomTarget" })]
         [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
@@ -89,8 +89,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "--property:TargetFramework=tfm", "--target:Run" })]
         [InlineData(new string[] { "-o", "myoutput", "-f", "tfm", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
-            new string[] { "--target:Restore", "-tlp:verbosity=quiet", "--verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" },
-            new string[] { "--property:TargetFramework=tfm", "--verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
+            new string[] { "--target:Restore", "-tlp:verbosity=quiet", "--verbosity:diagnostic", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" },
+            new string[] { "--property:TargetFramework=tfm", "--verbosity:diagnostic", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
         [InlineData(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet", "--nologo", "--verbosity:quiet" },
             new string[] { "--property:TargetFramework=tfm", "--getItem:Compile", "--getProperty:TargetFramework", "--getTargetResult:Build" })]

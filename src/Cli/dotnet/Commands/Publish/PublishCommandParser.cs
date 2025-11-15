@@ -53,7 +53,7 @@ internal static class PublishCommandParser
     public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PublishConfigurationOptionDescription);
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Publish", [("_IsPublishing", "true")]);
 
-    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandParser.VerbosityOption;
+    public static readonly Option<Utils.Verbosity?> VerbosityOption = BuildCommandParser.VerbosityOption;
 
     private static readonly Command Command = ConstructCommand();
 

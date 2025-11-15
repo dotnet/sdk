@@ -74,7 +74,7 @@ public class RunCommand
     /// The verbosity of the run-portion of this command specifically. If implicit builds are performed, they will always happen
     /// at a quiet verbosity by default, but it's important that we enable separate verbosity for the run command itself.
     /// </summary>
-    public VerbosityOptions RunCommandVerbosity { get; private set; }
+    public Verbosity RunCommandVerbosity { get; private set; }
 
     /// <summary>
     /// True to ignore command line arguments specified by launch profile.
@@ -367,7 +367,7 @@ public class RunCommand
     {
         msbuildArgs = msbuildArgs.CloneWithNoLogo(true);
 
-        if (msbuildArgs.Verbosity is VerbosityOptions userVerbosity)
+        if (msbuildArgs.Verbosity is Verbosity userVerbosity)
         {
             // if the user had a desired verbosity, we use that for the run command
             RunCommandVerbosity = userVerbosity;
@@ -378,8 +378,8 @@ public class RunCommand
             // Apply defaults if the user didn't expressly set the verbosity.
             // Setting RunCommandVerbosity to minimal ensures that we keep the previous launchsettings
             // and related diagnostics messages on by default.
-            RunCommandVerbosity = VerbosityOptions.minimal;
-            return msbuildArgs.CloneWithVerbosity(VerbosityOptions.quiet);
+            RunCommandVerbosity = Verbosity.minimal;
+            return msbuildArgs.CloneWithVerbosity(Verbosity.quiet);
         }
     }
 

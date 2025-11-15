@@ -10,7 +10,7 @@ internal static class WorkloadUninstallCommandParser
 {
     public static readonly Argument<IEnumerable<string>> WorkloadIdArgument = WorkloadInstallCommandParser.WorkloadIdArgument;
     public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
+    public static readonly Option<Utils.Verbosity> VerbosityOption = CommonOptions.VerbosityOption(Utils.Verbosity.normal);
 
     private static readonly Command Command = ConstructCommand();
 

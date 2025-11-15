@@ -18,7 +18,7 @@ internal static class ToolRestoreCommandParser
 
     public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption(CliCommandStrings.ToolRestoreManifestPathOptionDescription);
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
+    public static readonly Option<Utils.Verbosity> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
 
     private static readonly Command Command = ConstructCommand();
 

@@ -80,11 +80,7 @@ internal static class PackageListCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option VerbosityOption = new Option<Utils.VerbosityOptions>("--verbosity", "-v")
-    {
-        Description = CliStrings.VerbosityOptionDescription,
-        HelpName = CliStrings.LevelArgumentName
-    }.ForwardAsSingle(o => $"--verbosity:{o}");
+    public static readonly Option<Utils.Verbosity?> VerbosityOption = CommonOptions.VerbosityOption();
 
     public static readonly Option FormatOption = new Option<ReportOutputFormat>("--format")
     {

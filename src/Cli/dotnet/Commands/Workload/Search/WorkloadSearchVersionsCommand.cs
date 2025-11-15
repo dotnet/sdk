@@ -63,7 +63,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
     }
 
-    private static IInstaller GenerateInstaller(IReporter reporter, SdkFeatureBand sdkFeatureBand, IWorkloadResolver workloadResolver, VerbosityOptions verbosity, bool interactive)
+    private static IInstaller GenerateInstaller(IReporter reporter, SdkFeatureBand sdkFeatureBand, IWorkloadResolver workloadResolver, Verbosity verbosity, bool interactive)
     {
         return new FileBasedInstaller(
             reporter,
@@ -76,7 +76,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
             verbosity: verbosity,
             packageSourceLocation: null,
             restoreActionConfig: new RestoreActionConfig(interactive),
-            nugetPackageDownloaderVerbosity: VerbosityOptions.quiet
+            nugetPackageDownloaderVerbosity: Verbosity.quiet
             );
     }
 
@@ -159,7 +159,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
     private static List<string> GetVersions(int numberOfWorkloadSetsToTake, SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IWorkloadResolver resolver)
     {
-        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
+        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, Verbosity.detailed, interactive: false);
         var packageId = installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
 
         return [.. packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
@@ -174,7 +174,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
     public static IEnumerable<string> FindBestWorkloadSetsFromComponents(SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IEnumerable<string> workloadVersions, IWorkloadResolver resolver, int numberOfWorkloadSetsToTake)
     {
-        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
+        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, Verbosity.detailed, interactive: false);
         List<string> versions;
         try
         {

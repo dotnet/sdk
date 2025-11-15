@@ -368,7 +368,7 @@ internal static class SolutionAndProjectUtility
         }
 
         // If buildOptions.Verbosity is null, we still want to print the message.
-        if (buildOptions.Verbosity != VerbosityOptions.quiet)
+        if (buildOptions.Verbosity != Verbosity.quiet)
         {
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }

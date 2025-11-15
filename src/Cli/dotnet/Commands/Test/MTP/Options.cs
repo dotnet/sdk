@@ -11,7 +11,7 @@ internal record BuildOptions(
     PathOptions PathOptions,
     bool HasNoRestore,
     bool HasNoBuild,
-    Utils.VerbosityOptions? Verbosity,
+    Utils.Verbosity? Verbosity,
     bool NoLaunchProfile,
     bool NoLaunchProfileArguments,
     List<string> UnmatchedTokens,

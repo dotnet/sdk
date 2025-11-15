@@ -255,13 +255,17 @@ public class CliSchemaTests : SdkTest
       "recursive": false
     },
     "--verbosity": {
-      "description": "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].",
+      "description": "Set the MSBuild verbosity level. Allowed values are: quiet, q, minimal, m, normal, n, detailed, d, diagnostic, diag.",
       "hidden": false,
       "aliases": [
-        "-v"
+        "--v",
+        "-v",
+        "-verbosity",
+        "/v",
+        "/verbosity"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.Utils.VerbosityOptions",
+      "valueType": "Microsoft.DotNet.Cli.Utils.Verbosity",
       "hasDefaultValue": true,
       "defaultValue": "normal",
       "arity": {
@@ -431,6 +435,7 @@ public class CliSchemaTests : SdkTest
 }
 """;
 
+    
     private static readonly string WorkloadInstallJson = $$"""
 {
   "name": "install",
@@ -660,13 +665,17 @@ public class CliSchemaTests : SdkTest
       "recursive": false
     },
     "--verbosity": {
-      "description": "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].",
+      "description": "Set the MSBuild verbosity level. Allowed values are: quiet, q, minimal, m, normal, n, detailed, d, diagnostic, diag.",
       "hidden": false,
       "aliases": [
-        "-v"
+        "--v",
+        "-v",
+        "-verbosity",
+        "/v",
+        "/verbosity"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.Utils.VerbosityOptions",
+      "valueType": "Microsoft.DotNet.Cli.Utils.Verbosity",
       "hasDefaultValue": true,
       "defaultValue": "normal",
       "arity": {
@@ -1169,7 +1178,7 @@ public class CliSchemaTests : SdkTest
       "recursive": false
     },
     "--verbosity": {
-      "description": "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].",
+      "description": "Set the MSBuild verbosity level. Allowed values are: quiet, q, minimal, m, normal, n, detailed, d, diagnostic, diag.",
       "hidden": false,
       "aliases": [
         "--v",
@@ -1179,7 +1188,7 @@ public class CliSchemaTests : SdkTest
         "/verbosity"
       ],
       "helpName": "LEVEL",
-      "valueType": "System.Nullable<Microsoft.DotNet.Cli.Utils.VerbosityOptions>",
+      "valueType": "System.Nullable<Microsoft.DotNet.Cli.Utils.Verbosity>",
       "hasDefaultValue": false,
       "arity": {
         "minimum": 1,

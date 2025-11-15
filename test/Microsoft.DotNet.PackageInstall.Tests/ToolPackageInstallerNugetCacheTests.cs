@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private static string GetTestLocalFeedPath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestAssetLocalNugetFeed");
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private const string TestPackageVersion = "1.0.4";
-        private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
+        private static readonly Verbosity TestVerbosity = new Verbosity();
         private static readonly PackageId TestPackageId = new("global.tool.console.demo");
     }
 }
