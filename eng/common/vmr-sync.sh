@@ -164,7 +164,7 @@ set -e
 highlight 'Installing .NET, preparing the tooling..'
 source "./eng/common/tools.sh"
 InitializeDotNetCli true
-GetDarc
+GetDarc "1.1.0-beta.25514.2"
 dotnetDir=$( cd ./.dotnet/; pwd -P )
 dotnet=$dotnetDir/dotnet
 
