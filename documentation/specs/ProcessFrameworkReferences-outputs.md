@@ -279,11 +279,9 @@ Runtime packs should be resolved when:
 **Proposed Fix:**
 ```csharp
 var runtimeRequiredByDeployment
-    = (SelfContained || ReadyToRunEnabled || PublishTrimmed || PublishAot) &&
+    = (SelfContained || ReadyToRunEnabled || PublishAot || RequiresILLinkPack) &&
       !string.IsNullOrEmpty(EffectiveRuntimeIdentifier) &&
       !string.IsNullOrEmpty(selectedRuntimePack?.RuntimePackNamePatterns);
-```
-
 ---
 
 ## Implementation Details
