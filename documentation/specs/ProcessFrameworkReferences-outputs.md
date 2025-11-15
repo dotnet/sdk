@@ -98,7 +98,7 @@ For projects using Ready-to-Run (R2R) compilation:
 
 **Expected Outputs:**
 - ✅ `TargetingPacks`: One per framework reference per TFM
-- ✅ `RuntimePacks`: One per framework reference per TFM for the specified RID (if `SelfContained=true`)
+- ✅ `RuntimePacks`: One per framework reference per TFM for the specified RID
 - ✅ `Crossgen2Packs`: RID-specific Crossgen2 compiler for the host platform
   - Example: `Microsoft.NETCore.App.Crossgen2.linux-x64`
 - ✅ `PackagesToDownload`: Includes targeting packs, runtime packs (if applicable), and Crossgen2 pack
