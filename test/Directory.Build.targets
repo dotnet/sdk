@@ -1,9 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(IsTestProject)' == 'true' AND '$(CanRunTestAsTool)' != 'false' AND '$(OutputType)' == 'Exe' AND '$(DotNetBuildSourceOnly)' != 'true'">
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
