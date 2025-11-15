@@ -173,8 +173,7 @@ namespace Microsoft.NET.Build.Tasks
         /// If the current project is specifically targeting a platform, as opposed to being platform-agnostic.
         /// </summary>
         private bool ProjectIsPlatformSpecific =>
-            !string.IsNullOrEmpty(EffectiveRuntimeIdentifier)
-            && EffectiveRuntimeIdentifier != RuntimeIdentifierForPlatformAgnosticComponents;
+            !string.IsNullOrEmpty(EffectiveRuntimeIdentifier);
 
         /// <summary>
         /// We have several deployment models that require the use of runtime assets of various kinds.
