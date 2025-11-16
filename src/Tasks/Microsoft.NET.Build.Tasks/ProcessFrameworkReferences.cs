@@ -181,7 +181,7 @@ namespace Microsoft.NET.Build.Tasks
         /// where we didn't properly account for all of them.
         /// </summary>
         private bool DeploymentModelRequiresRuntimeComponents =>
-            SelfContained || ReadyToRunEnabled || PublishAot || RequiresILLinkPack;
+            SelfContained || ReadyToRunEnabled || RequiresILLinkPack; // RequiresILLinkPack indicates trimming/AOT scenarios, see the _ComputeToolPackInputsToProcessFrameworkReferences Target.
 
         void AddPacksForFrameworkReferences(
             List<ITaskItem> packagesToDownload,
