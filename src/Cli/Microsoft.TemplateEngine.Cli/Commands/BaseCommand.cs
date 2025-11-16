@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
 
             Reporter.Output.WriteLine(LocalizableStrings.Commands_TemplateShortNameCommandConflict_Info, usedCommandAlias);
-            Reporter.Output.WriteCommand(Example.For<InstantiateCommand>(args.ParseResult).WithArgument(CommandDefinition.New.ShortNameArgument, usedCommandAlias));
+            Reporter.Output.WriteCommand(Example.For<InstantiateCommand>(args.ParseResult).WithArgument(CommandDefinition.Instantiate.ShortNameArgument, usedCommandAlias));
             Reporter.Output.WriteLine();
         }
 
