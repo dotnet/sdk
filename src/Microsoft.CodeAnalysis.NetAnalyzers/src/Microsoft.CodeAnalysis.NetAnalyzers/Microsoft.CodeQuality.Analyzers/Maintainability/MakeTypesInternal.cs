@@ -49,7 +49,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         {
             INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
             if (namedTypeSymbol.IsPublic()
-                && GetIdentifier(namedTypeSymbol.DeclaringSyntaxReferences[0].GetSyntax()) is SyntaxToken identifier)
+                && GetIdentifier(namedTypeSymbol.DeclaringSyntaxReferences[0].GetSyntax()) is { SyntaxTree: not null } identifier)
             {
                 context.ReportDiagnostic(identifier.CreateDiagnostic(Rule));
             }
