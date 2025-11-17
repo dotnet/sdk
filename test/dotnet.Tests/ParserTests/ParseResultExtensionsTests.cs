@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [InlineData("ignore list", "ignore")] // Global tool
         public void RootSubCommandResultReturnsCorrectSubCommand(string input, string expected)
         {
-            var result = Parser.Instance.Parse(input);
+            var result = Parser.Parse(input);
 
             result.RootSubCommandResult()
                 .Should()

@@ -401,7 +401,7 @@ namespace Microsoft.NET.Build.Containers.Resources {
                 return ResourceManager.GetString("InvalidContainerImageFormat", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to CONTAINER2015: {0}: &apos;{1}&apos; was not a valid Environment Variable. Ignoring..
         /// </summary>
@@ -851,7 +851,7 @@ namespace Microsoft.NET.Build.Containers.Resources {
                 return ResourceManager.GetString("UnableToDownloadFromRepository", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to CONTAINER2021: Unknown AppCommandInstruction &apos;{0}&apos;. Valid instructions are {1}..
         /// </summary>
