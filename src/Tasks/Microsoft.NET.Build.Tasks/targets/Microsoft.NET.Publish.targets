@@ -200,7 +200,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         -->
   <Target Name="_AlignSelfContainedBeforeILLink" BeforeTargets="PrepareForPublish" Condition="">
     <PropertyGroup>
-      <SelfContained Condition="'$(SelfContained)' != 'true' and '$(_RequiresILLinkPack)' == 'true'">true</SelfContained>
+      <SelfContained Condition="'$(SelfContained)' == '' and '$(_RequiresILLinkPack)' == 'true'">true</SelfContained>
     </PropertyGroup>
   </Target>
 
