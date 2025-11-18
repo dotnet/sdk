@@ -33,7 +33,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftBclAsyncInterfacesPackageVersion>10.0.0-rc.1.25521.106</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftBuildPackageVersion>18.1.0-preview-25521-106</MicrosoftBuildPackageVersion>
     <MicrosoftBuildLocalizationPackageVersion>18.1.0-preview-25521-106</MicrosoftBuildLocalizationPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>7.0.0-preview.1.2206</MicrosoftBuildNuGetSdkResolverPackageVersion>
     <MicrosoftBuildTasksGitPackageVersion>10.0.0-beta.25521.106</MicrosoftBuildTasksGitPackageVersion>
     <MicrosoftCodeAnalysisPackageVersion>5.3.0-1.25521.106</MicrosoftCodeAnalysisPackageVersion>
     <MicrosoftCodeAnalysisBuildClientPackageVersion>5.3.0-1.25521.106</MicrosoftCodeAnalysisBuildClientPackageVersion>
@@ -99,22 +98,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftWin32SystemEventsPackageVersion>10.0.0-rc.1.25521.106</MicrosoftWin32SystemEventsPackageVersion>
     <MicrosoftWindowsDesktopAppInternalPackageVersion>10.0.0-rc.1.25521.106</MicrosoftWindowsDesktopAppInternalPackageVersion>
     <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-rc.1.25521.106</MicrosoftWindowsDesktopAppRefPackageVersion>
-    <NuGetBuildTasksPackageVersion>7.0.0-preview.1.2206</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>7.0.0-preview.1.2206</NuGetBuildTasksConsolePackageVersion>
-    <NuGetBuildTasksPackPackageVersion>7.0.0-preview.1.2206</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>7.0.0-preview.1.2206</NuGetCommandLineXPlatPackageVersion>
-    <NuGetCommandsPackageVersion>7.0.0-preview.1.2206</NuGetCommandsPackageVersion>
-    <NuGetCommonPackageVersion>7.0.0-preview.1.2206</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>7.0.0-preview.1.2206</NuGetConfigurationPackageVersion>
-    <NuGetCredentialsPackageVersion>7.0.0-preview.1.2206</NuGetCredentialsPackageVersion>
-    <NuGetDependencyResolverCorePackageVersion>7.0.0-preview.1.2206</NuGetDependencyResolverCorePackageVersion>
-    <NuGetFrameworksPackageVersion>7.0.0-preview.1.2206</NuGetFrameworksPackageVersion>
-    <NuGetLibraryModelPackageVersion>7.0.0-preview.1.2206</NuGetLibraryModelPackageVersion>
-    <NuGetLocalizationPackageVersion>7.0.0-preview.1.2206</NuGetLocalizationPackageVersion>
-    <NuGetPackagingPackageVersion>7.0.0-preview.1.2206</NuGetPackagingPackageVersion>
-    <NuGetProjectModelPackageVersion>7.0.0-preview.1.2206</NuGetProjectModelPackageVersion>
-    <NuGetProtocolPackageVersion>7.0.0-preview.1.2206</NuGetProtocolPackageVersion>
-    <NuGetVersioningPackageVersion>7.0.0-preview.1.2206</NuGetVersioningPackageVersion>
     <SystemCodeDomPackageVersion>10.0.0-rc.1.25521.106</SystemCodeDomPackageVersion>
     <SystemCommandLinePackageVersion>2.0.0-rc.1.25521.106</SystemCommandLinePackageVersion>
     <SystemComponentModelCompositionPackageVersion>10.0.0-rc.1.25521.106</SystemComponentModelCompositionPackageVersion>
