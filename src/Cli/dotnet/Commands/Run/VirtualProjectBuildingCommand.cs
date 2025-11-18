@@ -1414,7 +1414,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             writer.WriteLine($"""
                   <ItemGroup>
-                    <Compile Include="{EscapeValue(targetFilePath)}" />
+                    <Compile Condition="'$(EnableDefaultCompileItems)'!='true'" Include="{EscapeValue(targetFilePath)}" />
                   </ItemGroup>
 
                 """);
