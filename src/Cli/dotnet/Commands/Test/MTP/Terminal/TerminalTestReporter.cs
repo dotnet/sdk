@@ -496,9 +496,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.ResetColor();
         terminal.Append(' ');
         terminal.Append(displayName);
+
         if (duration.HasValue)
         {
-            terminal.SetColor(TerminalColor.DarkGray);
             terminal.Append(' ');
             AppendLongDuration(terminal, duration.Value);
         }
