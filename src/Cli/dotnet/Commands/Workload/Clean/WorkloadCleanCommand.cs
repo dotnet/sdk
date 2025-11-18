@@ -27,7 +27,7 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
     public WorkloadCleanCommand(
         ParseResult parseResult,
         IReporter? reporter = null,
-        IWorkloadResolverFactory? workloadResolverFactory = null) : base(parseResult, reporter: reporter)
+        IWorkloadResolverFactory? workloadResolverFactory = null) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter: reporter)
     {
         _cleanAll = parseResult.GetValue(WorkloadCleanCommandParser.CleanAllOption);
 

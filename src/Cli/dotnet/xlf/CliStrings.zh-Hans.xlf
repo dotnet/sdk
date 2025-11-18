@@ -1174,9 +1174,14 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <note />
       </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
-        <source>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</source>
-        <target state="translated">设置 MSBuild 详细程度。允许值为 q[uiet]、m[inimal]、n[ormal]、d[etailed] 和 diag[nostic]。</target>
-        <note />
+        <source>Set the MSBuild verbosity level. Allowed values are: {0}.</source>
+        <target state="new">Set the MSBuild verbosity level. Allowed values are: {0}.</target>
+        <note>{0} is a comma-separated list of allowed string values</note>
+      </trans-unit>
+      <trans-unit id="VerbosityParserInvalidToken">
+        <source>'{0}' is not a valid value for --verbosity. Allowed values are: {1}.</source>
+        <target state="new">'{0}' is not a valid value for --verbosity. Allowed values are: {1}.</target>
+        <note>{0} is the invalid token, {1} is a comma-separated list of allowed string values</note>
       </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
         <source>Verified that the NuGet package "{0}" has a valid signature.</source>

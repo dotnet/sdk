@@ -44,7 +44,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         IWorkloadResolver workloadResolver,
         SdkFeatureBand sdkFeatureBand,
         INuGetPackageDownloader nugetPackageDownloader = null,
-        VerbosityOptions verbosity = VerbosityOptions.normal,
+        Verbosity verbosity = Verbosity.normal,
         PackageSourceLocation packageSourceLocation = null,
         IReporter reporter = null) : base(elevationContext, logger, verifySignatures, reporter)
     {
@@ -1111,7 +1111,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         SdkFeatureBand sdkFeatureBand,
         IWorkloadResolver workloadResolver,
         INuGetPackageDownloader nugetPackageDownloader = null,
-        VerbosityOptions verbosity = VerbosityOptions.normal,
+        Verbosity verbosity = Verbosity.normal,
         PackageSourceLocation packageSourceLocation = null,
         IReporter reporter = null,
         string tempDirPath = null,

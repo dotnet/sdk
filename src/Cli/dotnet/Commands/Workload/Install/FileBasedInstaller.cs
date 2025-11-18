@@ -49,10 +49,10 @@ internal class FileBasedInstaller : IInstaller
         INuGetPackageDownloader nugetPackageDownloader = null,
         string dotnetDir = null,
         string tempDirPath = null,
-        VerbosityOptions verbosity = VerbosityOptions.normal,
+        Verbosity verbosity = Verbosity.normal,
         PackageSourceLocation packageSourceLocation = null,
         RestoreActionConfig restoreActionConfig = null,
-        VerbosityOptions nugetPackageDownloaderVerbosity = VerbosityOptions.normal)
+        Verbosity nugetPackageDownloaderVerbosity = Verbosity.normal)
     {
         _userProfileDir = userProfileDir;
         _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);

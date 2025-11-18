@@ -239,7 +239,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         {
             if (!_skipManifestUpdate)
             {
-                if (Verbosity != VerbosityOptions.quiet && Verbosity != VerbosityOptions.q)
+                if (Verbosity > Verbosity.quiet)
                 {
                     Reporter.WriteLine(CliCommandStrings.CheckForUpdatedWorkloadManifests);
                 }
@@ -292,7 +292,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         });
     }
 
-    internal static void TryRunGarbageCollection(IInstaller workloadInstaller, IReporter reporter, VerbosityOptions verbosity, Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null)
+    internal static void TryRunGarbageCollection(IInstaller workloadInstaller, IReporter reporter, Verbosity verbosity, Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null)
     {
         try
         {

@@ -957,7 +957,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new("global.tool.console.demo");
         private static readonly IEnumerable<NuGetFramework> TestFrameworks = new NuGetFramework[] { NuGetFramework.Parse(ToolPackageDownloaderMock2.DefaultTargetFramework) };
-        private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
+        private static readonly Verbosity TestVerbosity = new Verbosity();
 
         private readonly TestToolBuilder ToolBuilder;
 

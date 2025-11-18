@@ -24,7 +24,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
 
     public WorkloadInfoHelper(
         bool isInteractive,
-        VerbosityOptions verbosity = VerbosityOptions.normal,
+        Verbosity verbosity = Verbosity.normal,
         string targetSdkVersion = null,
         bool? verifySignatures = null,
         IReporter reporter = null,

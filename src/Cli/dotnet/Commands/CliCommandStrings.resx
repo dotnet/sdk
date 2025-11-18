@@ -2280,7 +2280,8 @@ and the corresponding package Ids for installed tools using the command
     <value>Shut down the VB/C# compiler build server.</value>
   </data>
   <data name="Verbosity_OptionDescription" xml:space="preserve">
-    <value>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</value>
+    <value>Sets the verbosity level. Allowed values are: {0}.</value>
+    <comment>{0} is a comma separated list of verbosity levels: quiet, minimal, normal, detailed, diagnostic</comment>
   </data>
   <data name="VerbosityArgumentName" xml:space="preserve">
     <value>Verbosity</value>

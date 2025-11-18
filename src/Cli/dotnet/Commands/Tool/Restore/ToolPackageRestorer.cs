@@ -17,7 +17,7 @@ internal class ToolPackageRestorer
     private readonly IToolPackageDownloader _toolPackageDownloader;
     private readonly string[] _additionalSources;
     private readonly string[] _overrideSources;
-    private readonly VerbosityOptions _verbosity;
+    private readonly Verbosity _verbosity;
     private readonly RestoreActionConfig _restoreActionConfig;
 
     private readonly ILocalToolsResolverCache _localToolsResolverCache;
@@ -28,7 +28,7 @@ internal class ToolPackageRestorer
     public ToolPackageRestorer(IToolPackageDownloader toolPackageDownloader,
                                string[] additionalSources,
                                string[] overrideSources,
-                               VerbosityOptions verbosity,
+                               Verbosity verbosity,
                                 RestoreActionConfig restoreActionConfig,
                                ILocalToolsResolverCache? localToolsResolverCache = null,
                                IFileSystem? fileSystem = null)

@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
 
         public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
-            VerbosityOptions verbosity,
+            Verbosity verbosity,
             VersionRange? versionRange = null,
             string? targetFramework = null,
             bool isGlobalTool = false,
@@ -312,7 +312,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         public (NuGetVersion version, PackageSource source) GetNuGetVersion(
             PackageLocation packageLocation,
             PackageId packageId,
-            VerbosityOptions verbosity,
+            Verbosity verbosity,
             VersionRange? versionRange = null,
             RestoreActionConfig? restoreActionConfig = null)
         {
@@ -333,7 +333,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             return (NuGetVersion.Parse(feedPackage.Version), new PackageSource("http://mock-feed", "MockFeed"));
         }
 
-        public bool TryGetDownloadedTool(PackageId packageId, NuGetVersion packageVersion, string? targetFramework, VerbosityOptions verbosity, [NotNullWhen(true)] out IToolPackage? toolPackage) => throw new NotImplementedException();
+        public bool TryGetDownloadedTool(PackageId packageId, NuGetVersion packageVersion, string? targetFramework, Verbosity verbosity, [NotNullWhen(true)] out IToolPackage? toolPackage) => throw new NotImplementedException();
 
         private class TestToolPackage : IToolPackage
         {

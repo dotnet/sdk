@@ -290,7 +290,12 @@
 {1}.</value>
   </data>
   <data name="VerbosityOptionDescription" xml:space="preserve">
-    <value>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</value>
+    <value>Set the MSBuild verbosity level. Allowed values are: {0}.</value>
+    <comment>{0} is a comma-separated list of allowed string values</comment>
+  </data>
+  <data name="VerbosityParserInvalidToken" xml:space="preserve">
+    <value>'{0}' is not a valid value for --verbosity. Allowed values are: {1}.</value>
+    <comment>{0} is the invalid token, {1} is a comma-separated list of allowed string values</comment>
   </data>
   <data name="CmdVersionSuffixDescription" xml:space="preserve">
     <value>Set the value of the $(VersionSuffix) property to use when building the project.</value>

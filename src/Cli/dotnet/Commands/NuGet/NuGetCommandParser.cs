@@ -153,7 +153,7 @@ internal static class NuGetCommandParser
         verifyCommand.Options.Add(new Option<IEnumerable<string>>(fingerprint)
             .ForwardAsManyArgumentsEachPrefixedByOption(fingerprint)
             .AllowSingleArgPerToken());
-        verifyCommand.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
+        verifyCommand.Options.Add(CommonOptions.VerbosityOption(Utils.Verbosity.normal));
 
         verifyCommand.SetAction(NuGetCommand.Run);
 
@@ -184,13 +184,13 @@ internal static class NuGetCommandParser
         // as well as the standard NugetCommand.Run handler
 
         trustCommand.Options.Add(configFile);
-        trustCommand.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
+        trustCommand.Options.Add(CommonOptions.VerbosityOption(Utils.Verbosity.normal));
         trustCommand.SetAction(NuGetCommand.Run);
 
         foreach (var command in trustCommand.Subcommands)
         {
             command.Options.Add(configFile);
-            command.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
+            command.Options.Add(CommonOptions.VerbosityOption(Utils.Verbosity.normal));
             command.SetAction(NuGetCommand.Run);
         }
 
@@ -261,7 +261,7 @@ internal static class NuGetCommandParser
         {
             Arity = ArgumentArity.Zero
         });
-        signCommand.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
+        signCommand.Options.Add(CommonOptions.VerbosityOption(Utils.Verbosity.normal));
 
         signCommand.SetAction(NuGetCommand.Run);
 
