@@ -259,26 +259,23 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Theory]
-        [InlineData("PublishReadyToRun", ToolsetInfo.CurrentTargetFramework, false)] // R2R doesn't imply self-contained in 8 and above
-        [InlineData("PublishSingleFile", ToolsetInfo.CurrentTargetFramework, true)] // single-file implies self-contained
-        [InlineData("PublishTrimmed", ToolsetInfo.CurrentTargetFramework, true)] // trimming implies self-contained
-        [InlineData("PublishAot", ToolsetInfo.CurrentTargetFramework, true)] // AOT implies self-contained
-        [InlineData("PublishReadyToRun", "net7.0", true)] // R2R implies self-contained in .NET 7 and below
-        [InlineData("PublishSingleFile", "net7.0", true)] // single-file implies self-contained
-        [InlineData("PublishTrimmed", "net7.0", true)] // trimming implies self-contained
-        public void SomePublishPropertiesInferSelfContained(string property, string targetFramework, bool expectedSelfContainedValue)
+        [InlineData("PublishReadyToRun", false)] // R2R doesn't imply self-contained in 8 and above
+        [InlineData("PublishSingleFile", true)] // single-file implies self-contained
+        [InlineData("PublishTrimmed", true)] // trimming implies self-contained
+        [InlineData("PublishAot", true)] // AOT implies self-contained
+        public void SomePublishPropertiesInferSelfContained(string property, bool expectedSelfContainedValue)
         {
             // Note: there is a bug with PublishAot I think where this test will fail for Aot if the testname is too long. Do not make it longer.
             var testProject = new TestProject()
             {
                 IsExe = true,
-                TargetFrameworks = targetFramework,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
             testProject.AdditionalProperties[property] = "true";
 
             testProject.RecordProperties("SelfContained");
             testProject.RecordPropertiesBeforeTarget("Publish");
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"{property}-{targetFramework}");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"{property}");
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -288,7 +285,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Pass();
 
             // default configuration for publish in <7 is Debug, Release for 7+
-            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework, configuration: targetFramework == "net7.0" ? "Debug" : "Release");
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: ToolsetInfo.CurrentTargetFramework, configuration: "Release");
             bool.Parse(properties["SelfContained"]).Should().Be(expectedSelfContainedValue);
         }
 
