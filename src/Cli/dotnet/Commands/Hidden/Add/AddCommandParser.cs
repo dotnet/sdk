@@ -4,37 +4,27 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
-using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Package.Add;
+using Microsoft.DotNet.Cli.Commands.Reference.Add;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Add;
 
 internal static class AddCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-add";
-
-    private static readonly Command Command = ConstructCommand();
+    private static readonly Command Command = SetAction(AddCommandDefinition.Create());
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command ConstructCommand()
+    private static Command SetAction(Command command)
     {
-        var command = new Command("add", CliCommandStrings.NetAddCommand)
-        {
-            Hidden = true,
-            DocsLink = DocsLink
-        };
-
-        command.Arguments.Add(PackageCommandParser.ProjectOrFileArgument);
-        command.Subcommands.Add(AddPackageCommandParser.GetCommand());
-        command.Subcommands.Add(AddReferenceCommandParser.GetCommand());
-
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
+        command.Subcommands.Single(c => c.Name == AddPackageCommandDefinition.Name).SetAction((parseResult) => new PackageAddCommand(parseResult).Execute());
+        command.Subcommands.Single(c => c.Name == AddReferenceCommandDefinition.Name).SetAction((parseResult) => new ReferenceAddCommand(parseResult).Execute());
         return command;
     }
 }
