@@ -197,10 +197,13 @@ Copyright (c) .NET Foundation. All rights reserved.
        The _RequiresILLinkPack property is set based on this expanded definition, so we can reuse it as our signal here.
        It's possible that this property is what the ILLink targets should be using directly instead of SelfContained, but
        we may want to have more 'abstract', non-private signal.
-        -->
-  <Target Name="_AlignSelfContainedBeforeILLink" BeforeTargets="PrepareForPublish" Condition="">
+
+       We try to be explicit and only override the SelfContained value when it was set to false _by the .NET SDK_,
+       not by the user.
+  -->
+  <Target Name="_AlignSelfContainedBeforeILLink" BeforeTargets="PrepareForPublish" Condition="'$(_SelfContainedWasSpecified)' != 'true' and '$(SelfContained)' == 'false' and '$(_RequiresILLinkPack)' == 'true'">
     <PropertyGroup>
-      <SelfContained Condition="'$(SelfContained)' == '' and '$(_RequiresILLinkPack)' == 'true'">true</SelfContained>
+      <SelfContained>true</SelfContained>
     </PropertyGroup>
   </Target>
 
