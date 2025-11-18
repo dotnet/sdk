@@ -51,7 +51,7 @@ internal static class MSBuildUtility
             activeSolutionPlatform = solutionFile.GetDefaultPlatformName();
         }
 
-        var solutionConfiguration = solutionFile.SolutionConfigurations.FirstOrDefault(c => c.ConfigurationName == activeSolutionConfiguration && c.PlatformName == activeSolutionPlatform)
+        var solutionConfiguration = solutionFile.SolutionConfigurations.FirstOrDefault(c => activeSolutionConfiguration.Equals(c.ConfigurationName, StringComparison.OrdinalIgnoreCase) && activeSolutionPlatform.Equals(c.PlatformName, StringComparison.OrdinalIgnoreCase))
             ?? throw new InvalidOperationException($"The solution configuration '{activeSolutionConfiguration}|{activeSolutionPlatform}' is invalid.");
 
         // TODO: What to do if the given key doesn't exist in the ProjectConfigurations?
@@ -63,7 +63,7 @@ internal static class MSBuildUtility
             .Where(p => ProjectShouldBuild(solutionFile, p.RelativePath) && p.ProjectConfigurations.ContainsKey(solutionConfiguration.FullName))
             .Select(p => (p.ProjectConfigurations[solutionConfiguration.FullName], p.AbsolutePath))
             .Where(p => p.Item1.IncludeInBuild)
-            .Select(p => (p.AbsolutePath, p.Item1.ConfigurationName, p.Item1.PlatformName));
+            .Select(p => (p.AbsolutePath, (string?)p.Item1.ConfigurationName, (string?)p.Item1.PlatformName));
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
 
@@ -163,7 +163,7 @@ internal static class MSBuildUtility
     private static ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectsProperties(
         ProjectCollection projectCollection,
         EvaluationContext evaluationContext,
-        IEnumerable<(string ProjectFilePath, string Configuration, string Platform)> projects,
+        IEnumerable<(string ProjectFilePath, string? Configuration, string? Platform)> projects,
         BuildOptions buildOptions)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
