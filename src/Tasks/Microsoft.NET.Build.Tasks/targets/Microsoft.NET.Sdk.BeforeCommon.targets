@@ -366,7 +366,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           BeforeTargets="PrepareForBuild"
           Condition="'$(RoslynCompilerType)' == 'Framework'">
     <NETSdkWarning ResourceName="RoslynCompilerTypeFrameworkIsDeprecated"
-                   FormatArguments="https://github.com/dotnet/roslyn/issues/81184" />
+                   FormatArguments="https://aka.ms/roslyn-compiler-type-framework" />
   </Target>
 
   <!-- NOTE: Compiler toolset packages should set the following properties on their own, hence we set them only for RoslynCompilerType being Core or Framework. -->
