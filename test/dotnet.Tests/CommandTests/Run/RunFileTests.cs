@@ -3965,7 +3965,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </ItemGroup>
 
                       <ItemGroup>
-                        <Compile Include="{programPath}" />
+                        <Compile Condition="'$(EnableDefaultCompileItems)' != 'true'" Include="{programPath}" />
                       </ItemGroup>
 
                       <ItemGroup>
