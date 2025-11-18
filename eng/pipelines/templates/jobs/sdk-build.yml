@@ -12,7 +12,9 @@ parameters:
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
   publishRetryConfig: false
   publishXunitResults: false
+  testRunnerAdditionalArguments: ''
   enableSbom: true
+  populateInternalRuntimeVariables: false
   timeoutInMinutes: 150
   ### ENV VARS ###
   testFullMSBuild: false
@@ -71,11 +73,11 @@ jobs:
           targetPath: $(Build.SourcesDirectory)/eng/BuildConfiguration
           artifactName: BuildConfiguration
 
-    # Populate internal runtime variables.
-    - template: /eng/common/templates/steps/enable-internal-sources.yml
-      parameters:
-        legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
-    - template: /eng/common/templates/steps/enable-internal-runtimes.yml
+    - ${{ if eq(parameters.populateInternalRuntimeVariables, true) }}:
+      - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-sources.yml
+        parameters:
+          legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+      - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-runtimes.yml
 
     - ${{ if eq(parameters.downloadManifestMsiPackages, true) }}:
       - task: DownloadBuildArtifacts@1
@@ -84,7 +86,7 @@ jobs:
           downloadPath: $(Build.SourcesDirectory)/artifacts/downloaded-manifest-msi-packages
           itemPattern: '**/*Manifest-*.Msi.*.nupkg'
           checkDownloadedFiles: true
-        displayName: Download Manifest msi packages
+        displayName: 🟣 Download Manifest MSI Packages
 
     ############### BUILDING ###############
     - ${{ if eq(parameters.pool.os, 'windows') }}:
@@ -104,10 +106,6 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
-
-      - ${{ if eq(parameters.targetArchitecture, 'x64') }}:
-        - powershell: build/RunTestTemplateTests.ps1
-          displayName: 🟣 Run Test Templates Tests
 
     - ${{ else }}:
       - script: |
@@ -141,12 +139,14 @@ jobs:
         - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(buildConfiguration)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
           workingDirectory: $(Build.SourcesDirectory)/artifacts/bin
           displayName: 🟣 Install wasm-tools Workload
+
       # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
       - ${{ if eq(parameters.pool.os, 'windows') }}:
         - powershell: eng/common/build.ps1
             -restore -test -ci -prepareMachine -nativeToolsOnMachine
             -configuration $(buildConfiguration)
             /p:Projects=\`"${{ replace(parameters.testProjects, ';', '`;') }}\`"
+            /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
@@ -159,6 +159,7 @@ jobs:
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
             TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+
       - ${{ else }}:
         # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
         # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
@@ -167,6 +168,7 @@ jobs:
             -restore -test -ci -prepareMachine
             -configuration $(buildConfiguration)
             '/p:Projects="${{ parameters.testProjects }}"'
+            /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
             /p:TargetRid=${{ parameters.runtimeIdentifier }}
             ${{ parameters.osProperties }}

@@ -248,7 +248,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
 
             var message = new StringBuilder();
-            message.AppendLine($"Expected output {(expectedPresent ? "not found" : "found")}:");
+
+            message.AppendLine(expectedPresent
+                ? "Expected text not found in the output:"
+                : "Text not expected to be found in the output:");
+
             message.AppendLine(expected);
             message.AppendLine();
             message.AppendLine("Actual output:");
@@ -275,7 +279,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
 
             var message = new StringBuilder();
-            message.AppendLine($"Expected pattern {(expectedPresent ? "not found" : "found")} in the output:");
+
+            message.AppendLine(expectedPresent
+                ? "Expected pattern found in the output:"
+                : "Pattern not expected to be found in the output:");
+
             message.AppendLine(pattern.ToString());
             message.AppendLine();
             message.AppendLine("Actual output:");

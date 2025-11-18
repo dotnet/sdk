@@ -40,14 +40,49 @@ internal sealed class StartupHook
 
         RegisterSignalHandlers();
 
-        var agent = new HotReloadAgent(assemblyResolvingHandler: (_, args) =>
-        {
-            Log($"Resolving '{args.Name}, Version={args.Version}'");
-            var path = Path.Combine(processDir, args.Name + ".dll");
-            return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
-        });
+        PipeListener? listener = null;
 
-        var listener = new PipeListener(s_namedPipeName, agent, Log);
+        var agent = new HotReloadAgent(
+            assemblyResolvingHandler: (_, args) =>
+            {
+                Log($"Resolving '{args.Name}, Version={args.Version}'");
+                var path = Path.Combine(processDir, args.Name + ".dll");
+                return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
+            },
+            hotReloadExceptionCreateHandler: (code, message) =>
+            {
+                // Continue executing the code if the debugger is attached.
+                // It will throw the exception and the debugger will handle it.
+                if (Debugger.IsAttached)
+                {
+                    return;
+                }
+
+                Debug.Assert(listener != null);
+                Log($"Runtime rude edit detected: '{message}'");
+
+                SendAndForgetAsync().Wait();
+
+                // Handle Ctrl+C to terminate gracefully:
+                Console.CancelKeyPress += (_, _) => Environment.Exit(0);
+
+                // wait for the process to be terminated by the Hot Reload client (other threads might still execute):
+                Thread.Sleep(Timeout.Infinite);
+
+                async Task SendAndForgetAsync()
+                {
+                    try
+                    {
+                        await listener.SendResponseAsync(new HotReloadExceptionCreatedNotification(code, message), CancellationToken.None);
+                    }
+                    catch
+                    {
+                        // do not crash the app
+                    }
+                }
+            });
+
+        listener = new PipeListener(s_namedPipeName, agent, Log);
 
         // fire and forget:
         _ = listener.Listen(CancellationToken.None);

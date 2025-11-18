@@ -16,9 +16,14 @@ namespace Microsoft.DotNet.Watch
             public int ProcessId;
             public bool HasExited;
 
+            // True if Ctrl+C was sent to the process on Windows.
+            public bool SentWindowsCtrlC;
+
             public void Dispose()
                 => Process.Dispose();
         }
+
+        private const int CtlrCExitCode = unchecked((int)0xC000013A);
 
         // For testing purposes only, lock on access.
         private static readonly HashSet<int> s_runningApplicationProcesses = [];
@@ -106,7 +111,7 @@ namespace Microsoft.DotNet.Watch
 
                 if (processSpec.IsUserApplication)
                 {
-                    if (exitCode == 0)
+                    if (exitCode == 0 || state.SentWindowsCtrlC && exitCode == CtlrCExitCode)
                     {
                         logger.Log(MessageDescriptor.Exited);
                     }
@@ -238,7 +243,6 @@ namespace Microsoft.DotNet.Watch
         {
             var forceOnly = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !processSpec.IsUserApplication;
 
-            // Ctrl+C hasn't been sent.
             TerminateProcess(process, state, logger, forceOnly);
 
             if (forceOnly)
@@ -358,7 +362,11 @@ namespace Microsoft.DotNet.Watch
             else
             {
                 var error = ProcessUtilities.SendWindowsCtrlCEvent(state.ProcessId);
-                if (error != null)
+                if (error == null)
+                {
+                    state.SentWindowsCtrlC = true;
+                }
+                else
                 {
                     logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);
                 }

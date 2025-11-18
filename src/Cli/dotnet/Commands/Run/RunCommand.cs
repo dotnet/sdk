@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
@@ -483,7 +484,9 @@ public class RunCommand
         static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs)
         {
             List<ILogger> loggersForBuild = [
-                TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
+                CommonRunHelpers.GetConsoleLogger(
+                    buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
+                )
             ];
             if (binaryLogger is not null)
             {
@@ -497,6 +500,7 @@ public class RunCommand
         }
     }
 
+    [DoesNotReturn]
     internal static void ThrowUnableToRunError(ProjectInstance project)
     {
         string targetFrameworks = project.GetPropertyValue("TargetFrameworks");

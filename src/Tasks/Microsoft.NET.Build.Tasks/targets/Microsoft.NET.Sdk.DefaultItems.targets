@@ -138,10 +138,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                  FormatArguments="$(SdkResolverGlobalJsonPath)" />
   </Target>
 
-  <Target Name="_WarnWhenUsingNET9AndVSPriorTo1712"
+  <!-- MSBuild was 17.15 during previews for dev18 so require that or higher -->
+  <Target Name="_WarnWhenUsingNET10AndVSPriorTo18"
         BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
-        Condition="$([MSBuild]::VersionLessThan($(MSBuildVersion), '17.12.0')) and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '9.0'))">
-    <NetSdkWarning ResourceName="Net9NotCompatibleWithDev1711"/>
+        Condition="$([MSBuild]::VersionLessThan($(MSBuildVersion), '17.15.0')) and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '10.0'))">
+    <NetSdkWarning ResourceName="Net10NotCompatibleWithVS17"/>
   </Target>
 
   <Target Name="_CheckForInvalidWindowsDesktopTargetingConfiguration"

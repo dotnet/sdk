@@ -190,7 +190,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
         var consoleLogger = minimizeStdOut
             ? new SimpleErrorLogger()
-            : TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
+            : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]));
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 
         CacheInfo? cache = null;
@@ -354,7 +354,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     Debug.Assert(buildRequest.ProjectInstance != null);
 
                     // Cache run info (to avoid re-evaluating the project instance).
-                    cache.CurrentEntry.Run = RunProperties.FromProject(buildRequest.ProjectInstance);
+                    cache.CurrentEntry.Run = RunProperties.TryFromProject(buildRequest.ProjectInstance, out var runProperties)
+                        ? runProperties
+                        : null;
 
                     if (!MSBuildUtilities.ConvertStringToBool(buildRequest.ProjectInstance.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
                     {
@@ -899,7 +901,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         if (!NeedsToBuild(out cache))
         {
-            Reporter.Verbose.WriteLine("No need to build, the output is up to date.");
+            Reporter.Verbose.WriteLine("No need to build, the output is up to date. Cache: " + ArtifactsPath);
             return BuildLevel.None;
         }
 
@@ -1154,6 +1156,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
 
+        const string defaultSdkName = "Microsoft.NET.Sdk";
         string firstSdkName;
         string? firstSdkVersion;
 
@@ -1165,7 +1168,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         else
         {
-            firstSdkName = "Microsoft.NET.Sdk";
+            firstSdkName = defaultSdkName;
             firstSdkVersion = null;
         }
 
@@ -1188,6 +1191,18 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                     <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                 """);
+
+            // Only set these to false when using the default SDK with no additional SDKs
+            // to avoid including .resx and other files that are typically not expected in simple file-based apps.
+            // When other SDKs are used (e.g., Microsoft.NET.Sdk.Web), keep the default behavior.
+            bool usingOnlyDefaultSdk = firstSdkName == defaultSdkName && sdkDirectives.Count() <= 1;
+            if (usingOnlyDefaultSdk)
+            {
+                writer.WriteLine($"""
+                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+                        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+                    """);
+            }
 
             // Write default properties before importing SDKs so they can be overridden by SDKs
             // (and implicit build files which are imported by the default .NET SDK).
@@ -1397,9 +1412,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             if (!sdkDirectives.Any())
             {
-                Debug.Assert(firstSdkName == "Microsoft.NET.Sdk" && firstSdkVersion == null);
-                writer.WriteLine("""
-                      <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+                Debug.Assert(firstSdkName == defaultSdkName && firstSdkVersion == null);
+                writer.WriteLine($"""
+                      <Import Project="Sdk.targets" Sdk="{defaultSdkName}" />
                     """);
             }
 
@@ -1505,8 +1520,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     Diagnostics = diagnostics,
                     SourceFile = sourceFile,
                     DirectiveKind = name.ToString(),
-                    DirectiveText = value.ToString()
+                    DirectiveText = value.ToString(),
                 };
+
+                // Block quotes now so we can later support quoted values without a breaking change. https://github.com/dotnet/sdk/issues/49367
+                if (value.Contains('"'))
+                {
+                    diagnostics.AddError(sourceFile, context.Info.Span, CliCommandStrings.QuoteInDirective);
+                }
+
                 if (CSharpDirective.Parse(context) is { } directive)
                 {
                     // If the directive is already present, report an error.
@@ -1748,8 +1770,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
     private static (string, string?)? ParseOptionalTwoParts(in ParseContext context, char separator)
     {
-        var i = context.DirectiveText.IndexOf(separator, StringComparison.Ordinal);
-        var firstPart = (i < 0 ? context.DirectiveText : context.DirectiveText.AsSpan(..i)).TrimEnd();
+        var separatorIndex = context.DirectiveText.IndexOf(separator, StringComparison.Ordinal);
+        var firstPart = (separatorIndex < 0 ? context.DirectiveText : context.DirectiveText.AsSpan(..separatorIndex)).TrimEnd();
 
         string directiveKind = context.DirectiveKind;
         if (firstPart.IsWhiteSpace())
@@ -1763,10 +1785,18 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, separator));
         }
 
-        var secondPart = i < 0 ? [] : context.DirectiveText.AsSpan((i + 1)..).TrimStart();
-        if (i < 0 || secondPart.IsWhiteSpace())
+        if (separatorIndex < 0)
         {
             return (firstPart.ToString(), null);
+        }
+
+        var secondPart = context.DirectiveText.AsSpan((separatorIndex + 1)..).TrimStart();
+        if (secondPart.IsWhiteSpace())
+        {
+            Debug.Assert(secondPart.Length == 0,
+                "We have trimmed the second part, so if it's white space, it should be actually empty.");
+
+            return (firstPart.ToString(), string.Empty);
         }
 
         return (firstPart.ToString(), secondPart.ToString());
