@@ -21,7 +21,8 @@ internal static class MSBuildUtility
 {
     private const string dotnetTestVerb = "dotnet-test";
 
-    // https://github.com/dotnet/msbuild/pull/7992 :/
+    // Related: https://github.com/dotnet/msbuild/pull/7992
+    // Related: https://github.com/dotnet/msbuild/issues/12711
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ProjectShouldBuild")]
     static extern bool ProjectShouldBuild(SolutionFile solutionFile, string projectFile);
 
@@ -54,10 +55,9 @@ internal static class MSBuildUtility
         var solutionConfiguration = solutionFile.SolutionConfigurations.FirstOrDefault(c => activeSolutionConfiguration.Equals(c.ConfigurationName, StringComparison.OrdinalIgnoreCase) && activeSolutionPlatform.Equals(c.PlatformName, StringComparison.OrdinalIgnoreCase))
             ?? throw new InvalidOperationException($"The solution configuration '{activeSolutionConfiguration}|{activeSolutionPlatform}' is invalid.");
 
-        // TODO: What to do if the given key doesn't exist in the ProjectConfigurations?
-        // MSBuild seems to be special casing web projects specifically!!
+        // Note: MSBuild seems to be special casing web projects specifically.
         // https://github.com/dotnet/msbuild/blob/243fb764b25affe8cc5f233001ead3b5742a297e/src/Build/Construction/Solution/SolutionProjectGenerator.cs#L659-L672
-        // It doesn't make sense to have to duplicate the MSBuild logic here and having to maintain them in sync.
+        // There is no interest to duplicate this workaround here in test command, unless MSBuild provides a public API that does it.
         // https://github.com/dotnet/msbuild/issues/12711 tracks having a better public API.
         var projectPaths = solutionFile.ProjectsInOrder
             .Where(p => ProjectShouldBuild(solutionFile, p.RelativePath) && p.ProjectConfigurations.ContainsKey(solutionConfiguration.FullName))
