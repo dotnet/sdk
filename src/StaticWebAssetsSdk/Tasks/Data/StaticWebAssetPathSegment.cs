@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -11,6 +11,7 @@ public class StaticWebAssetPathSegment : IEquatable<StaticWebAssetPathSegment>
     public IList<StaticWebAssetSegmentPart> Parts { get; set; } = [];
 
     public bool IsOptional { get; set; }
+
     public bool IsPreferred { get; set; }
 
     public override bool Equals(object obj) => Equals(obj as StaticWebAssetPathSegment);
@@ -45,18 +46,18 @@ public class StaticWebAssetPathSegment : IEquatable<StaticWebAssetPathSegment>
 
     internal string GetDebuggerDisplay()
     {
-        return Parts != null && Parts.Count == 1 && Parts[0].IsLiteral ? Parts[0].Name : ComputeParameterExpression();
+        return Parts != null && Parts.Count == 1 && Parts[0].IsLiteral ? Parts[0].Name.ToString() : ComputeParameterExpression();
 
         string ComputeParameterExpression() =>
-                string.Concat(Parts.Select(p => p.IsLiteral ? p.Name : $"{{{p.Name}}}").Prepend("#[").Append($"]{(IsOptional ? (IsPreferred ? "!" : "?") : "")}"));
+                string.Concat(Parts.Select(p => p.IsLiteral ? p.Name.ToString() : $"{{{p.Name}}}").Prepend("#[").Append($"]{(IsOptional ? (IsPreferred ? "!" : "?") : "")}"));
     }
 
-    internal ICollection<string> GetTokenNames()
+    internal ICollection<ReadOnlyMemory<char>> GetTokenNames()
     {
-        var result = new HashSet<string>();
+        var result = new HashSet<ReadOnlyMemory<char>>();
         foreach (var part in Parts)
         {
-            if (!part.IsLiteral && string.IsNullOrEmpty(part.Value))
+            if (!part.IsLiteral && part.Name.Length > 0)
             {
                 result.Add(part.Name);
             }

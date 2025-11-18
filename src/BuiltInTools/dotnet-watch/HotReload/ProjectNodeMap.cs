@@ -3,14 +3,14 @@
 
 
 using Microsoft.Build.Graph;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal readonly struct ProjectNodeMap(ProjectGraph graph, IReporter reporter)
     {
         public readonly ProjectGraph Graph = graph;
 
+        // full path of proj file to list of nodes representing all target frameworks of the project:
         public readonly IReadOnlyDictionary<string, IReadOnlyList<ProjectGraphNode>> Map = 
             graph.ProjectNodes.GroupBy(n => n.ProjectInstance.FullPath).ToDictionary(
                 keySelector: static g => g.Key,
