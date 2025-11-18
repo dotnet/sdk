@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -67,8 +68,12 @@ internal class DotnetArchiveDownloader : IDisposable
             Timeout = TimeSpan.FromMinutes(10)
         };
 
-        // Set user-agent to identify dnup in telemetry
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("dnup-dotnet-installer");
+        // Set user-agent to identify dnup in telemetry, including version
+        var informationalVersion = typeof(DotnetArchiveDownloader).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        string userAgent = informationalVersion == null ? "dotnetup-dotnet-installer" : $"dnup-dotnet-installer/{informationalVersion}";
+
+        client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
 
         return client;
     }
