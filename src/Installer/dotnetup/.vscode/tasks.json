@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/dnup.csproj",
+                "${workspaceFolder}/dotnetup.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary",
                 "${input:buildArgs}"
@@ -24,7 +24,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/dnup.csproj",
+                "${workspaceFolder}/dotnetup.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary",
                 "${input:buildArgs}"
@@ -39,7 +39,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/dnup.csproj",
+                "${workspaceFolder}/dotnetup.csproj",
                 "${input:buildArgs}"
             ],
             "problemMatcher": "$msCompile"

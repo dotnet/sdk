@@ -2,11 +2,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch dnup",
+            "name": "Launch dotnetup",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/../../../artifacts/bin/dnup/Debug/net10.0/dnup.dll",
+            "program": "${workspaceFolder}/../../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
             "args": "${input:commandLineArgs}",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",

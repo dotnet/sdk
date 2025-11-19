@@ -8,7 +8,7 @@ parameters:
     publishTaskPrefix: ''
   container: ''
   helixTargetContainer: ''
-  categoryName: dnup
+  categoryName: dotnetup
   runTests: true
   publishRetryConfig: false
   publishXunitResults: false
@@ -18,7 +18,7 @@ parameters:
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
   parameters:
-    displayName: '${{ parameters.pool.emoji }} dnup package: ${{ parameters.pool.os }} (${{ parameters.helixTargetQueue }})'
+    displayName: '${{ parameters.pool.emoji }} dotnetup package: ${{ parameters.pool.os }} (${{ parameters.helixTargetQueue }})'
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
@@ -41,16 +41,16 @@ jobs:
           analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|artifacts\bin\**\capstone.dll;
       outputs:
       - output: pipelineArtifact
-        displayName: '🌐 Publish dnup library packages'
+        displayName: '🌐 Publish dotnetup library packages'
         condition: always()
         targetPath: '$(Build.SourcesDirectory)/artifacts/packages/Release/NonShipping/'
-        artifactName: 'dnup-library-packages'
+        artifactName: 'dotnetup-library-packages'
         publishLocation: Container
       - output: pipelineArtifact
-        displayName: '📊 Publish dnup library build binlogs'
+        displayName: '📊 Publish dotnetup library build binlogs'
         condition: always()
         targetPath: '$(Build.SourcesDirectory)/artifacts/binlogs/'
-        artifactName: 'dnup-library-binlogs'
+        artifactName: 'dotnetup-library-binlogs'
         publishLocation: Container
     steps:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
@@ -58,14 +58,14 @@ jobs:
           & .\restore.cmd $(_officialBuildProperties)
         displayName: 🍱 Bootstrap toolset (Windows)
       - powershell: |
-          & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-build.binlog $(_officialBuildProperties)
+          & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -c Release -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-library-build.binlog $(_officialBuildProperties)
         displayName: 💻 Build Windows
       - powershell: |
-          & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-package.binlog $(_officialBuildProperties)
-        displayName: 📦 Package dnup library
+          & .\.dotnet\dotnet pack .\src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-library-package.binlog $(_officialBuildProperties)
+        displayName: 📦 Package dotnetup library
       - powershell: |
-          & .\.dotnet\dotnet build .\src\Installer\Installer.sign.proj /t:Sign -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dnup-library-sign.binlog $(_officialBuildProperties)
-        displayName: 🖋️ Sign dnup library packages with arcade signtool
+          & .\.dotnet\dotnet build .\src\Installer\Installer.sign.proj /t:Sign -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-library-sign.binlog $(_officialBuildProperties)
+        displayName: 🖋️ Sign dotnetup library packages with arcade signtool
       - task: 1ES.PublishNuget@1
         displayName: 🟣 Publish packages to AzDO
         inputs:

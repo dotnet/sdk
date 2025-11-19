@@ -8,7 +8,7 @@ parameters:
     publishTaskPrefix: ''
   container: ''
   helixTargetContainer: ''
-  categoryName: dnup
+  categoryName: dotnetup
   runTests: true
   publishRetryConfig: false
   publishXunitResults: false
@@ -18,7 +18,7 @@ parameters:
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
   parameters:
-    displayName: '${{ parameters.pool.emoji }} dnup tests: ${{ parameters.pool.os }} (${{ parameters.helixTargetQueue }})'
+    displayName: '${{ parameters.pool.emoji }} dotnetup tests: ${{ parameters.pool.os }} (${{ parameters.helixTargetQueue }})'
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
@@ -41,8 +41,8 @@ jobs:
       - output: pipelineArtifact
         displayName: '🌐 Publish Test Artifacts'
         condition: always()
-        targetPath: '$(Build.SourcesDirectory)/artifacts/dnupTestResults'
-        artifactName: 'dnupTestResults_${{ parameters.pool.os }}'
+        targetPath: '$(Build.SourcesDirectory)/artifacts/dotnetupTestResults'
+        artifactName: 'dotnetupTestResults_${{ parameters.pool.os }}'
         publishLocation: Container
 
     steps:
@@ -51,38 +51,38 @@ jobs:
           & .\restore.cmd
         displayName: 🍱 Bootstrap toolset (Windows)
       - powershell: |
-          & .\.dotnet\dotnet restore test\dnup.Tests\dnup.Tests.csproj
-        displayName: ♻️ Restore dnup tests (Windows)
+          & .\.dotnet\dotnet restore test\dotnetup.Tests\dotnetup.Tests.csproj
+        displayName: ♻️ Restore dotnetup tests (Windows)
       - powershell: |
-          & .\.dotnet\dotnet build test\dnup.Tests\dnup.Tests.csproj -c Release --no-restore
+          & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -c Release --no-restore
         displayName: 💻 Build Windows
       - powershell: |
-          New-Item -Path "$(Build.SourcesDirectory)/artifacts/dnupTestResults" -ItemType Directory -Force
+          New-Item -Path "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults" -ItemType Directory -Force
         displayName: 📁 Create test results directory (Windows)
       - powershell: |
-          & .\.dotnet\dotnet test test\dnup.Tests\dnup.Tests.csproj -c Release --no-build --logger "trx;LogFileName=dnup-tests.trx" --results-directory $(Build.SourcesDirectory)/artifacts/dnupTestResults
+          & .\.dotnet\dotnet test test\dotnetup.Tests\dotnetup.Tests.csproj -c Release --no-build --logger "trx;LogFileName=dotnetup-tests.trx" --results-directory $(Build.SourcesDirectory)/artifacts/dotnetupTestResults
         displayName: 🔍 Test Windows
     - ${{ if ne(parameters.pool.os, 'windows') }}:
       - script: |
           ./restore.sh
         displayName: 🍱 Bootstrap toolset (Unix)
       - script: |
-          ./.dotnet/dotnet restore test/dnup.Tests/dnup.Tests.csproj
-        displayName: ♻️ Restore dnup tests (Unix)
+          ./.dotnet/dotnet restore test/dotnetup.Tests/dotnetup.Tests.csproj
+        displayName: ♻️ Restore dotnetup tests (Unix)
       - script: |
-          ./.dotnet/dotnet build test/dnup.Tests/dnup.Tests.csproj -c Release --no-restore
+          ./.dotnet/dotnet build test/dotnetup.Tests/dotnetup.Tests.csproj -c Release --no-restore
         displayName: 🐧 Build (Unix)
       - script: |
-          mkdir -p "$(Build.SourcesDirectory)/artifacts/dnupTestResults"
+          mkdir -p "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults"
         displayName: 📁 Create test results directory (Unix)
       - script: |
-          ./.dotnet/dotnet test test/dnup.Tests/dnup.Tests.csproj -c Release --no-build --logger "trx;LogFileName=dnup-tests.trx" --results-directory $(Build.SourcesDirectory)/artifacts/dnupTestResults
+          ./.dotnet/dotnet test test/dotnetup.Tests/dotnetup.Tests.csproj -c Release --no-build --logger "trx;LogFileName=dotnetup-tests.trx" --results-directory $(Build.SourcesDirectory)/artifacts/dotnetupTestResults
         displayName: 🔎 Test (Unix)
     - task: PublishTestResults@2
       displayName: 🚀 Publish test results
       condition: always()
       inputs:
         testResultsFormat: VSTest
-        testResultsFiles: '**/dnup-tests.trx'
-        searchFolder: $(Build.SourcesDirectory)/artifacts/dnupTestResults
-        testRunTitle: 'dnup ${{ parameters.pool.os }}'
+        testResultsFiles: '**/dotnetup-tests.trx'
+        searchFolder: $(Build.SourcesDirectory)/artifacts/dotnetupTestResults
+        testRunTitle: 'dotnetup ${{ parameters.pool.os }}'

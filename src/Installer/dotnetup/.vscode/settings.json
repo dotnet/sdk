@@ -1,5 +1,5 @@
 {
-  "dotnet.defaultSolution": "dnup.csproj",
+  "dotnet.defaultSolution": "dotnetup.csproj",
   "csharp.debug.console": "externalTerminal",
   "editor.formatOnSave": true,
   "omnisharp.enableRoslynAnalyzers": true,
@@ -14,5 +14,5 @@
     "configurations": [],
     "compounds": []
   },
-  "omnisharp.defaultLaunchSolution": "dnup.csproj"
+  "omnisharp.defaultLaunchSolution": "dotnetup.csproj"
 }
