@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
 using System.Threading;
+using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
@@ -103,12 +104,11 @@ internal sealed class TestApplication(
             processStartInfo.WorkingDirectory = Module.RunProperties.WorkingDirectory;
         }
 
-        if (Module.LaunchSettings is not null)
+        if (Module.LaunchSettings is ProjectLaunchSettingsModel)
         {
             foreach (var entry in Module.LaunchSettings.EnvironmentVariables)
             {
-                string value = Environment.ExpandEnvironmentVariables(entry.Value);
-                processStartInfo.Environment[entry.Key] = value;
+                processStartInfo.Environment[entry.Key] = entry.Value;
             }
 
             // Env variables specified on command line override those specified in launch profile:
