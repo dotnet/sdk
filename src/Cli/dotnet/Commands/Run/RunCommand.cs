@@ -19,6 +19,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -262,7 +263,7 @@ public class RunCommand
     private static string[]? GetTargetFrameworksFromSourceFile(string sourceFilePath)
     {
         var sourceFile = SourceFile.Load(sourceFilePath);
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
+        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
         
         var targetFrameworksDirective = directives.OfType<CSharpDirective.Property>()
             .FirstOrDefault(p => string.Equals(p.Name, "TargetFrameworks", StringComparison.OrdinalIgnoreCase));
