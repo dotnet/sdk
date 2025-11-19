@@ -14,8 +14,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
+        // The same syntax works on Windows and Unix ($VAR does not get expanded Unix).
         private static string EnvironmentVariableReference(string name)
-            => OperatingSystem.IsWindows() ? $"%{name}%" : "$" + name;
+            => $"%{name}%";
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]

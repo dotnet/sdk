@@ -10,9 +10,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 
 public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
 {
-    private static readonly string s_environmentVariableName1 = $"TEST_VAR1_{Guid.NewGuid()}";
-    private static readonly string s_environmentVariableName2 = $"TEST_VAR1_{Guid.NewGuid()}";
-    private static readonly string s_environmentVariableNameUnset = $"TEST_VAR3_{Guid.NewGuid()}";
+    private static string GetUniqueName()
+        => Guid.NewGuid().ToString("N");
+
+    private static readonly string s_environmentVariableName1 = $"TEST_VAR1_{GetUniqueName()}";
+    private static readonly string s_environmentVariableName2 = $"TEST_VAR1_{GetUniqueName()}";
+    private static readonly string s_environmentVariableNameUnset = $"TEST_VAR3_{GetUniqueName()}";
 
     static RunCommandTests()
     {
@@ -20,8 +23,9 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         Environment.SetEnvironmentVariable(s_environmentVariableName2, "ENV_VALUE2");
     }
 
+    // The same syntax works on Windows and Unix ($VAR does not get expanded Unix).
     private static string EnvironmentVariableReference(string name)
-        => OperatingSystem.IsWindows() ? $"%{name}%" : "$" + name;
+        => $"%{name}%";
 
     private static RunCommand CreateRunCommand(
         string projectPath,

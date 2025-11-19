@@ -201,11 +201,6 @@ public class RunCommand
 
     private void SetEnvironmentVariables(ICommand command, LaunchSettingsModel? launchSettings)
     {
-        if (launchSettings == null)
-        {
-            return;
-        }
-
         // Handle Project-specific settings
         if (launchSettings is ProjectLaunchSettingsModel projectSettings)
         {
@@ -215,11 +210,14 @@ public class RunCommand
             }
         }
 
-        command.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
-
-        foreach (var entry in launchSettings.EnvironmentVariables)
+        if (launchSettings != null)
         {
-            command.EnvironmentVariable(entry.Key, entry.Value);
+            command.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
+
+            foreach (var entry in launchSettings.EnvironmentVariables)
+            {
+                command.EnvironmentVariable(entry.Key, entry.Value);
+            }
         }
 
         // Env variables specified on command line override those specified in launch profile:
