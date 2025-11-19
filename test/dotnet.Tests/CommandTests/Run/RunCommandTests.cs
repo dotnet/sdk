@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Utils;
@@ -101,12 +102,10 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             ExecutablePath = $"../path/{EnvironmentVariableReference(s_environmentVariableName1)}/executable",
             CommandLineArgs = $"arg1 {EnvironmentVariableReference(s_environmentVariableName1)} arg3",
             WorkingDirectory = Path.Combine("..", EnvironmentVariableReference(s_environmentVariableName1)),
-            EnvironmentVariables =
-            {
-                { s_environmentVariableNameUnset, EnvironmentVariableReference(s_environmentVariableName2) },
-                { "VAR1", EnvironmentVariableReference(s_environmentVariableNameUnset) },
-                { "VAR2", "ENV_VALUE2" }
-            }
+            EnvironmentVariables = ImmutableDictionary<string, string>.Empty
+                .Add(s_environmentVariableNameUnset, EnvironmentVariableReference(s_environmentVariableName2))
+                .Add("VAR1", EnvironmentVariableReference(s_environmentVariableNameUnset))
+                .Add("VAR2", "ENV_VALUE2")
         };
 
         var runCommand = CreateRunCommand(projectPath);
@@ -138,6 +137,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             LaunchProfileName = "MyProfile",
             LaunchSettingsPath = launchSettingsPath,
             ExecutablePath = "executable",
+            EnvironmentVariables = []
         };
 
         var runCommand = CreateRunCommand(projectPath);
@@ -163,6 +163,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             LaunchSettingsPath = launchSettingsPath,
             CommandLineArgs = "arg1 arg2",
             ExecutablePath = "executable",
+            EnvironmentVariables = []
         };
 
         var runCommand = CreateRunCommand(projectPath, noLaunchProfileArguments: true);
@@ -186,6 +187,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             LaunchSettingsPath = launchSettingsPath,
             CommandLineArgs = "arg1 arg2",
             ExecutablePath = "executable",
+            EnvironmentVariables = []
         };
 
         var runCommand = CreateRunCommand(projectPath, applicationArgs: ["app 1", "app 2"]);
