@@ -19,6 +19,9 @@ internal class ExecutableLaunchProfileJson
     [JsonPropertyName("workingDirectory")]
     public string? WorkingDirectory { get; set; }
 
+    [JsonPropertyName("dotnetRunMessages")]
+    public bool DotNetRunMessages { get; set; }
+
     [JsonPropertyName("environmentVariables")]
     public Dictionary<string, string>? EnvironmentVariables { get; set; }
 }

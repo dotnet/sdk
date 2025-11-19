@@ -3,11 +3,11 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
-public class ExecutableLaunchSettingsModel : LaunchSettingsModel
+public sealed class ExecutableLaunchSettingsModel : LaunchSettingsModel
 {
-    public string? ExecutablePath { get; set; }
+    public const string WorkingDirectoryPropertyName = "workingDirectory";
+    public const string ExecutablePathPropertyName = "executablePath";
 
-    public string? WorkingDirectory { get; set; }
-
-    public override LaunchProfileKind ProfileKind => LaunchProfileKind.Executable;
+    public required string ExecutablePath { get; init; }
+    public string? WorkingDirectory { get; init; }
 }

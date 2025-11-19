@@ -7,29 +7,29 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
-internal class LaunchSettingsManager
+internal sealed class LaunchSettingsManager
 {
     private const string ProfilesKey = "profiles";
     private const string CommandNameKey = "commandName";
-    private const string DefaultProfileCommandName = "Project";
-    private static readonly IReadOnlyDictionary<string, ILaunchSettingsProvider> _providers;
+    private static readonly IReadOnlyDictionary<string, LaunchProfileParser> _providers;
 
     public static IEnumerable<string> SupportedProfileTypes => _providers.Keys;
 
     static LaunchSettingsManager()
     {
-        _providers = new Dictionary<string, ILaunchSettingsProvider>
+        _providers = new Dictionary<string, LaunchProfileParser>
         {
-            { ProjectLaunchSettingsProvider.CommandNameValue, new ProjectLaunchSettingsProvider() },
-            { ExecutableLaunchSettingsProvider.CommandNameValue, new ExecutableLaunchSettingsProvider() }
+            { ProjectLaunchSettingsParser.CommandName, ProjectLaunchSettingsParser.Instance },
+            { ExecutableLaunchSettingsParser.CommandName, ExecutableLaunchSettingsParser.Instance }
         };
     }
 
-    public static LaunchSettingsApplyResult TryApplyLaunchSettings(string launchSettingsPath, string? profileName = null)
+    public static LaunchProfileSettings ReadProfileSettingsFromFile(string launchSettingsPath, string? profileName = null)
     {
-        var launchSettingsJsonContents = File.ReadAllText(launchSettingsPath);
         try
         {
+            var launchSettingsJsonContents = File.ReadAllText(launchSettingsPath);
+
             var jsonDocumentOptions = new JsonDocumentOptions
             {
                 CommentHandling = JsonCommentHandling.Skip,
@@ -42,7 +42,7 @@ internal class LaunchSettingsManager
 
                 if (model.ValueKind != JsonValueKind.Object || !model.TryGetProperty(ProfilesKey, out var profilesObject) || profilesObject.ValueKind != JsonValueKind.Object)
                 {
-                    return new LaunchSettingsApplyResult(false, CliCommandStrings.LaunchProfilesCollectionIsNotAJsonObject);
+                    return LaunchProfileSettings.Failure(CliCommandStrings.LaunchProfilesCollectionIsNotAJsonObject);
                 }
 
                 var selectedProfileName = profileName;
@@ -66,7 +66,7 @@ internal class LaunchSettingsManager
                     }
                     else if (!caseInsensitiveProfileMatches.Any())
                     {
-                        return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.LaunchProfileDoesNotExist, profileName));
+                        return LaunchProfileSettings.Failure(string.Format(CliCommandStrings.LaunchProfileDoesNotExist, profileName));
                     }
                     else
                     {
@@ -75,7 +75,7 @@ internal class LaunchSettingsManager
 
                     if (profileObject.ValueKind != JsonValueKind.Object)
                     {
-                        return new LaunchSettingsApplyResult(false, CliCommandStrings.LaunchProfileIsNotAJsonObject);
+                        return LaunchProfileSettings.Failure(CliCommandStrings.LaunchProfileIsNotAJsonObject);
                     }
                 }
 
@@ -87,7 +87,7 @@ internal class LaunchSettingsManager
                         {
                             if (prop.Value.TryGetProperty(CommandNameKey, out var commandNameElement) && commandNameElement.ValueKind == JsonValueKind.String)
                             {
-                                if (commandNameElement.GetString() is { } commandNameElementKey &&  _providers.ContainsKey(commandNameElementKey))
+                                if (commandNameElement.GetString() is { } commandNameElementKey && _providers.ContainsKey(commandNameElementKey))
                                 {
                                     profileObject = prop.Value;
                                     break;
@@ -99,31 +99,31 @@ internal class LaunchSettingsManager
 
                 if (profileObject.ValueKind == default)
                 {
-                    return new LaunchSettingsApplyResult(false, CliCommandStrings.UsableLaunchProfileCannotBeLocated);
+                    return LaunchProfileSettings.Failure(CliCommandStrings.UsableLaunchProfileCannotBeLocated);
                 }
 
                 if (!profileObject.TryGetProperty(CommandNameKey, out var finalCommandNameElement)
                     || finalCommandNameElement.ValueKind != JsonValueKind.String)
                 {
-                    return new LaunchSettingsApplyResult(false, CliCommandStrings.UsableLaunchProfileCannotBeLocated);
+                    return LaunchProfileSettings.Failure(CliCommandStrings.UsableLaunchProfileCannotBeLocated);
                 }
 
                 string? commandName = finalCommandNameElement.GetString();
-                if (!TryLocateHandler(commandName, out ILaunchSettingsProvider? provider))
+                if (!TryLocateHandler(commandName, out LaunchProfileParser? provider))
                 {
-                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.LaunchProfileHandlerCannotBeLocated, commandName));
+                    return LaunchProfileSettings.Failure(string.Format(CliCommandStrings.LaunchProfileHandlerCannotBeLocated, commandName));
                 }
 
-                return provider.TryGetLaunchSettings(selectedProfileName, profileObject);
+                return provider.ParseProfile(launchSettingsPath, selectedProfileName, profileObject.GetRawText());
             }
         }
-        catch (JsonException ex)
+        catch (Exception ex) when (ex is JsonException or IOException)
         {
-            return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.DeserializationExceptionMessage, launchSettingsPath, ex.Message));
+            return LaunchProfileSettings.Failure(string.Format(CliCommandStrings.DeserializationExceptionMessage, launchSettingsPath, ex.Message));
         }
     }
 
-    private static bool TryLocateHandler(string? commandName, [NotNullWhen(true)]out ILaunchSettingsProvider? provider)
+    private static bool TryLocateHandler(string? commandName, [NotNullWhen(true)]out LaunchProfileParser? provider)
     {
         if (commandName == null)
         {

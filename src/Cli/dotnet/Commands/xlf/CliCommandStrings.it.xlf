@@ -92,6 +92,11 @@
         <target state="translated">Generatore .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="LaunchProfile0IsMissingProperty1">
+        <source>Launch profile '{0}' is missing property '{1}'</source>
+        <target state="new">Launch profile '{0}' is missing property '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
@@ -2107,6 +2112,11 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       <trans-unit id="PassedLowercase">
         <source>passed</source>
         <target state="translated">superato</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Path0SpecifiedIn1IsInvalid">
+        <source>Path '{0}' specified in '{1}' is invalid.</source>
+        <target state="new">Path '{0}' specified in '{1}' is invalid.</target>
         <note />
       </trans-unit>
       <trans-unit id="PathToApplicationDefinition">

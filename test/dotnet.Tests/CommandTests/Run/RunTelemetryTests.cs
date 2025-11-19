@@ -258,7 +258,8 @@ public class RunTelemetryTests : SdkTest
 
         var launchSettings = new ProjectLaunchSettingsModel
         {
-            LaunchProfileName = "(Default)"
+            LaunchProfileName = "(Default)",
+            EnvironmentVariables = [],
         };
 
         try

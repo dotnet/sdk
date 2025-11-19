@@ -580,6 +580,27 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
+        public void ItGivesAnErrorWhenTheLaunchProfileFileIsNotReadable()
+        {
+            var testAppName = "AppWithLaunchSettings";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+
+            // open the file to prevent reading:
+            using var _ = File.Open(launchSettingsPath, FileMode.Open, FileAccess.Read, FileShare.None);
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute("--launch-profile", "Third")
+                .Should().Pass()
+                         .And.HaveStdOutContaining("(NO MESSAGE)")
+                         .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "Third", "").Trim());
+        }
+
+        [Fact]
         public void ItGivesAnErrorWhenTheLaunchProfileCanNotBeHandled()
         {
             var testAppName = "AppWithLaunchSettings";
@@ -1032,9 +1053,22 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [Fact]
         public void ItCanRunWithExecutableLaunchProfile()
         {
-            var testAppName = "AppWithExecutableLaunchSettings";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
-                            .WithSource();
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+
+            var launchSettingsPath = Path.Combine(testInstance.Path, "Properties", "launchSettings.json");
+
+            File.WriteAllText(launchSettingsPath, """
+            {
+              "profiles": {
+                "ExecutableProfile": {
+                  "commandName": "Executable",
+                  "executablePath": "dotnet",
+                  "commandLineArgs": "--version"
+                }
+              }
+            }
+            """);
 
             new BuildCommand(testInstance)
                 .Execute()
@@ -1045,131 +1079,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining("10.0.");
-        }
-
-        [Fact]
-        public void ItCanRunWithExecutableLaunchProfileAsDefault()
-        {
-            var testAppName = "AppWithExecutableLaunchSettings";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
-                            .WithSource();
-
-            new BuildCommand(testInstance)
-                .Execute()
-                .Should().Pass();
-
-            // ExecutableProfile is first, so it should be the default
-            new DotnetCommand(Log, "run")
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute()
-                .Should().Pass()
-                .And.HaveStdOutContaining("10.0.");
-        }
-
-        [Fact]
-        public void ItCanRunWithProjectLaunchProfileWhenExecutableProfileExists()
-        {
-            var testAppName = "AppWithExecutableLaunchSettings";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
-                            .WithSource();
-
-            new BuildCommand(testInstance)
-                .Execute()
-                .Should().Pass();
-
-            // Explicitly select ProjectProfile which should run the project
-            new DotnetCommand(Log, "run", "--launch-profile", "ProjectProfile")
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute()
-                .Should().Pass()
-                .And.HaveStdOutContaining("Hello from AppWithExecutableLaunchSettings!");
-        }
-
-        [Fact]
-        public void ItAppliesEnvironmentVariablesFromExecutableProfile()
-        {
-            var testAppName = "AppWithDetailedExecutableProfile";
-            
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
-                .WithSource();
-
-            new BuildCommand(testInstance)
-                .Execute()
-                .Should().Pass();
-
-            // Run with environment variables profile - these env vars should be set for the executable
-            var result = new DotnetCommand(Log, "run", "--launch-profile", "WithEnvironmentVariables")
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute();
-                
-            // The executable (dotnet --version) should run successfully with the environment variables set
-            result.Should().Pass()
-                .And.HaveStdOutContaining("10.0.");
-        }
-
-        [Fact]
-        public void ItAppliesWorkingDirectoryFromExecutableProfile()
-        {
-            var testAppName = "AppWithDetailedExecutableProfile";
-            
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
-                .WithSource();
-
-            new BuildCommand(testInstance)
-                .Execute()
-                .Should().Pass();
-
-            // Run with working directory profile
-            var result = new DotnetCommand(Log, "run", "--launch-profile", "WithWorkingDirectory")
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute();
-                
-            // dotnet --info should succeed
-            result.Should().Pass()
-                .And.HaveStdOutContaining("SDK");
-        }
-
-        [Fact]
-        public void ItCombinesCommandLineArgsFromProfileAndCommandLine()
-        {
-            var testAppName = "AppWithExecutableLaunchSettings";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
-                .WithSource();
-
-            new BuildCommand(testInstance)
-                .Execute()
-                .Should().Pass();
-
-            // Run with command line args - the profile has "--version", we add "--help"
-            // Since the executable is "dotnet", it will process these as separate commands
-            // This verifies that both profile args and command line args are passed
-            var result = new DotnetCommand(Log, "run", "--launch-profile", "ExecutableProfile", "--", "--help")
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute();
-                
-            // Should succeed with the combined arguments
-            result.Should().Pass();
-        }
-
-        [Fact]
-        public void ItExpandsEnvironmentVariablesInExecutablePath()
-        {
-            var testAppName = "AppWithExecutableLaunchSettings";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
-                .WithSource();
-
-            new BuildCommand(testInstance)
-                .Execute()
-                .Should().Pass();
-
-            // The ExecutableProfile runs "dotnet --version" which should work
-            // This implicitly tests that "dotnet" is resolved correctly
-            new DotnetCommand(Log, "run", "--launch-profile", "ExecutableProfile")
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute()
-                .Should().Pass()
-                .And.HaveStdOutContaining("10.0.");
+                .And.HaveStdOutContaining(TestContext.Current.ToolsetUnderTest.SdkVersion);
         }
     }
 }

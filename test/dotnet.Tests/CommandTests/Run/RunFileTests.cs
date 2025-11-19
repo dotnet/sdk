@@ -2511,7 +2511,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Message: ''
                 """);
 
-        // quiet runs here so that launch-profile useage messages don't impact test assertions
+        // quiet runs here so that launch-profile usage messages don't impact test assertions
         new DotnetCommand(Log, "run", "-v", "q", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()

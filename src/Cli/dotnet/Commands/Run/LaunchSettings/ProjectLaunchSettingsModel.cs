@@ -3,15 +3,9 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
-public class ProjectLaunchSettingsModel : LaunchSettingsModel
+public sealed class ProjectLaunchSettingsModel : LaunchSettingsModel
 {
-    public bool LaunchBrowser { get; set; }
-
-    public string? LaunchUrl { get; set; }
-
-    public string? ApplicationUrl { get; set; }
-
-    public string? DotNetRunMessages { get; set; }
-
-    public override LaunchProfileKind ProfileKind => LaunchProfileKind.Project;
+    public bool LaunchBrowser { get; init; }
+    public string? LaunchUrl { get; init; }
+    public string? ApplicationUrl { get; init; }
 }
