@@ -19,9 +19,8 @@ internal sealed class ProjectLaunchSettingsParser : LaunchProfileParser
 
         return LaunchProfileSettings.Success(new ProjectLaunchSettingsModel
         {
-            LaunchSettingsPath = launchSettingsPath,
             LaunchProfileName = launchProfileName,
-            CommandLineArgs = profile.CommandLineArgs,
+            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs),
             LaunchBrowser = profile.LaunchBrowser,
             LaunchUrl = profile.LaunchUrl,
             ApplicationUrl = profile.ApplicationUrl,

@@ -98,7 +98,6 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         var model = new ExecutableLaunchSettingsModel()
         {
             LaunchProfileName = "MyProfile",
-            LaunchSettingsPath = launchSettingsPath,
             ExecutablePath = $"../path/{EnvironmentVariableReference(s_environmentVariableName1)}/executable",
             CommandLineArgs = $"arg1 {EnvironmentVariableReference(s_environmentVariableName1)} arg3",
             WorkingDirectory = Path.Combine("..", EnvironmentVariableReference(s_environmentVariableName1)),
@@ -135,7 +134,6 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         var model = new ExecutableLaunchSettingsModel()
         {
             LaunchProfileName = "MyProfile",
-            LaunchSettingsPath = launchSettingsPath,
             ExecutablePath = "executable",
             EnvironmentVariables = []
         };
@@ -160,7 +158,6 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         var model = new ExecutableLaunchSettingsModel()
         {
             LaunchProfileName = "MyProfile",
-            LaunchSettingsPath = launchSettingsPath,
             CommandLineArgs = "arg1 arg2",
             ExecutablePath = "executable",
             EnvironmentVariables = []
@@ -184,7 +181,6 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         var model = new ExecutableLaunchSettingsModel()
         {
             LaunchProfileName = "MyProfile",
-            LaunchSettingsPath = launchSettingsPath,
             CommandLineArgs = "arg1 arg2",
             ExecutablePath = "executable",
             EnvironmentVariables = []

@@ -182,38 +182,15 @@ public class RunCommand
             _ => throw new InvalidOperationException()
         };
 
-    // TODO: Expand MSBuild variables $(...): https://github.com/dotnet/sdk/issues/50157
-    // See https://github.com/dotnet/project-system/blob/main/src/Microsoft.VisualStudio.ProjectSystem.Managed/ProjectSystem/Debug/DebugTokenReplacer.cs#L35-L57
-    private static string ExpandVariables(string value)
-        => Environment.ExpandEnvironmentVariables(value);
-
-    private static string NormalizePath(string rootDirectory, string path, string propertyName)
-    {
-        try
-        {
-            return Path.GetFullPath(Path.Combine(rootDirectory, ExpandVariables(path)));
-        }
-        catch (Exception e)
-        {
-            throw new GracefulException(string.Format(CliCommandStrings.Path0SpecifiedIn1IsInvalid, path, propertyName), e);
-        }
-    }
-
     private ICommand GetTargetCommandForExecutable(ExecutableLaunchSettingsModel launchSettings)
     {
-        var launchSettingsDirectory = Path.GetDirectoryName(launchSettings.LaunchSettingsPath)!;
-
-        var executablePath = ExpandVariables(launchSettings.ExecutablePath);
-
-        var workingDirectory = string.IsNullOrEmpty(launchSettings.WorkingDirectory)
-            ? Path.GetDirectoryName(ProjectOrEntryPointPath)
-            : NormalizePath(launchSettingsDirectory, launchSettings.WorkingDirectory, ExecutableLaunchSettingsModel.WorkingDirectoryPropertyName);
+        var workingDirectory = launchSettings.WorkingDirectory ?? Path.GetDirectoryName(ProjectOrEntryPointPath);
 
         var commandArgs = (NoLaunchProfileArguments || ApplicationArgs is not [])
             ? ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(ApplicationArgs)
-            : ExpandVariables(launchSettings.CommandLineArgs ?? "");
+            : launchSettings.CommandLineArgs ?? "";
 
-        var commandSpec = new CommandSpec(executablePath, commandArgs);
+        var commandSpec = new CommandSpec(launchSettings.ExecutablePath, commandArgs);
         var command = CommandFactoryUsingResolver.Create(commandSpec)
             .WorkingDirectory(workingDirectory);
 
@@ -242,7 +219,7 @@ public class RunCommand
 
         foreach (var entry in launchSettings.EnvironmentVariables)
         {
-            command.EnvironmentVariable(entry.Key, ExpandVariables(entry.Value));
+            command.EnvironmentVariable(entry.Key, entry.Value);
         }
 
         // Env variables specified on command line override those specified in launch profile:
@@ -446,7 +423,7 @@ public class RunCommand
 
         if (!NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs) && launchSettings?.CommandLineArgs != null)
         {
-            command.SetCommandArgs(ExpandVariables(launchSettings.CommandLineArgs));
+            command.SetCommandArgs(launchSettings.CommandLineArgs);
         }
 
         return command;

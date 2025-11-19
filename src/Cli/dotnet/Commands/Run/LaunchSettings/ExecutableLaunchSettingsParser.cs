@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
@@ -27,15 +27,44 @@ internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
                     ExecutableLaunchSettingsModel.ExecutablePathPropertyName));
         }
 
+        if (!TryParseWorkingDirectory(launchSettingsPath, profile.WorkingDirectory, out var workingDirectory, out var error))
+        {
+            return LaunchProfileSettings.Failure(error);
+        }
+
         return LaunchProfileSettings.Success(new ExecutableLaunchSettingsModel
         {
-            LaunchSettingsPath = launchSettingsPath,
             LaunchProfileName = launchProfileName,
-            ExecutablePath = profile.ExecutablePath,
-            CommandLineArgs = profile.CommandLineArgs,
-            WorkingDirectory = profile.WorkingDirectory,
+            ExecutablePath = ExpandVariables(profile.ExecutablePath),
+            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs),
+            WorkingDirectory = workingDirectory,
             DotNetRunMessages = ParseDotNetRunMessages(profile.DotNetRunMessages),
             EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables),
         });
+    }
+
+    private static bool TryParseWorkingDirectory(string launchSettingsPath, string? value, out string? workingDirectory, [NotNullWhen(false)] out string? error)
+    {
+        if (value == null)
+        {
+            workingDirectory = null;
+            error = null;
+            return true;
+        }
+
+        var expandedValue = ExpandVariables(value);
+
+        try
+        {
+            workingDirectory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(launchSettingsPath)!, expandedValue));
+            error = null;
+            return true;
+        }
+        catch
+        {
+            workingDirectory = null;
+            error = string.Format(CliCommandStrings.Path0SpecifiedIn1IsInvalid, expandedValue, ExecutableLaunchSettingsModel.WorkingDirectoryPropertyName);
+            return false;
+        }
     }
 }
