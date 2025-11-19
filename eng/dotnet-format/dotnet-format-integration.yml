@@ -50,13 +50,6 @@ parameters:
     _branchName: "main"
     _sha: "1b2ff365399ab6736a9ea4c98ab1b60acda5d917"
     _useParentSdk: 0
-  - Name: razor_tooling
-    _repo: "https://github.com/dotnet/razor"
-    _repoName: "dotnet/razor"
-    _targetSolution: "Razor.sln"
-    _branchName: "main"
-    _sha: "ecb4b595e3322a18c240f50a763868540f51eaaa"
-    _useParentSdk: 0
 
 - name: timeoutInMinutes
   type: number
