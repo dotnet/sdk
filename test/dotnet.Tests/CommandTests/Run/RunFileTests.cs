@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -135,7 +136,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     internal static string DirectiveError(string path, int line, string messageFormat, params ReadOnlySpan<object> args)
     {
-        return $"{path}({line}): {CliCommandStrings.DirectiveError}: {string.Format(messageFormat, args)}";
+        return $"{path}({line}): {FileBasedProgramsResources.DirectiveError}: {string.Format(messageFormat, args)}";
     }
 
     /// <summary>
@@ -1561,7 +1562,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErr(DirectiveError(programFile, 1, CliCommandStrings.StaticGraphRestoreNotSupported));
+            .And.HaveStdErr(DirectiveError(programFile, 1, FileBasedProgramsResources.StaticGraphRestoreNotSupported));
     }
 
     [Fact]
@@ -2487,6 +2488,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [InlineData("../Lib")]
     [InlineData(@"..\Lib\Lib.csproj")]
     [InlineData(@"..\Lib")]
+    [InlineData("$(MSBuildProjectDirectory)/../$(LibProjectName)")]
+    [InlineData(@"$(MSBuildProjectDirectory)/../Lib\$(LibProjectName).csproj")]
     public void ProjectReference(string arg)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -2515,71 +2518,155 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         File.WriteAllText(Path.Join(appDir, "Program.cs"), $"""
             #:project {arg}
+            #:property LibProjectName=Lib
             Console.WriteLine(Lib.LibClass.GetMessage());
             """);
+
+        var expectedOutput = "Hello from Lib";
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(appDir)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("Hello from Lib");
+            .And.HaveStdOut(expectedOutput);
+
+        // Running from a different working directory shouldn't affect handling of the relative project paths.
+        new DotnetCommand(Log, "run", "App/Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
-    public void ProjectReference_Errors()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("app")]
+    public void ProjectReference_Errors(string? subdir)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        var relativeFilePath = Path.Join(subdir, "Program.cs");
+        var filePath = Path.Join(testInstance.Path, relativeFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        File.WriteAllText(filePath, """
             #:project wrong.csproj
             """);
 
         // Project file does not exist.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "wrong.csproj"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "wrong.csproj"))));
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        File.WriteAllText(filePath, """
             #:project dir/
             """);
 
         // Project directory does not exist.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "dir/"))));
 
-        Directory.CreateDirectory(Path.Join(testInstance.Path, "dir"));
+        Directory.CreateDirectory(Path.Join(testInstance.Path, subdir, "dir"));
 
         // Directory exists but has no project file.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindAnyProjectInDirectory, Path.Join(testInstance.Path, subdir, "dir/"))));
 
-        File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj1.csproj"), "<Project />");
-        File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj2.csproj"), "<Project />");
+        File.WriteAllText(Path.Join(testInstance.Path, subdir, "dir", "proj1.csproj"), "<Project />");
+        File.WriteAllText(Path.Join(testInstance.Path, subdir, "dir", "proj2.csproj"), "<Project />");
 
         // Directory exists but has multiple project files.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.MoreThanOneProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.MoreThanOneProjectInDirectory, Path.Join(testInstance.Path, subdir, "dir/"))));
+
+        // Malformed MSBuild variable syntax.
+        File.WriteAllText(filePath, """
+            #:project $(Test
+            """);
+
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "$(Test"))));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("app")]
+    public void ProjectReference_Duplicate(string? subdir)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var relativeFilePath = Path.Join(subdir, "Program.cs");
+        var filePath = Path.Join(testInstance.Path, relativeFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, subdir, "dir"));
+        File.WriteAllText(Path.Join(testInstance.Path, subdir, "dir", "proj1.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project dir/
+            Console.WriteLine("Hello");
+            """);
+
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 2, FileBasedProgramsResources.DuplicateDirective, "#:project dir/"));
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project dir/proj1.csproj
+            Console.WriteLine("Hello");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate project reference
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project $(MSBuildProjectDirectory)/dir/
+            Console.WriteLine("Hello");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate project reference
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
     }
 
     [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
     [InlineData(true, null)]
-    [InlineData(false, null, Skip = "Needs https://github.com/dotnet/aspnetcore/pull/63496")]
+    [InlineData(false, null)]
     [InlineData(true, "test-id")]
-    [InlineData(false, "test-id", Skip = "Needs https://github.com/dotnet/aspnetcore/pull/63496")]
+    [InlineData(false, "test-id")]
     public void UserSecrets(bool useIdArg, string? userSecretsId)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -2600,6 +2687,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         if (useIdArg)
         {
@@ -3609,6 +3700,37 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     /// <summary>
     /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// If hard links are enabled, the <c>bin/app.dll</c> and <c>obj/app.dll</c> files are going to be the same,
+    /// so our "copy obj to bin" logic must account for that.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_HardLinks()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = $"""
+            #:property CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=true
+            #:property CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible=true
+            {s_program}
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All);
+
+        code = code.Replace("Hello", "Hi");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "Hi from Program");
+    }
+
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// This optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
     /// </summary>
     [Fact]
@@ -3902,7 +4024,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":1,"Character":0},"End":{"Line":1,"Character":30}{{nop}}}{{nop}}},
-                "Message":{{ToJson(CliCommandStrings.CannotConvertDirective)}}}]}
+                "Message":{{ToJson(FileBasedProgramsResources.CannotConvertDirective)}}}]}
                 """.ReplaceLineEndings(""));
     }
 
@@ -3972,7 +4094,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":0,"Character":0},"End":{"Line":1,"Character":0}{{nop}}}{{nop}}},
-                "Message":{{ToJson(string.Format(CliCommandStrings.UnrecognizedDirective, "unknown"))}}}]}
+                "Message":{{ToJson(string.Format(FileBasedProgramsResources.UnrecognizedDirective, "unknown"))}}}]}
                 """.ReplaceLineEndings(""));
     }
 

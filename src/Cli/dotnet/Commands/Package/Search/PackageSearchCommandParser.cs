@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Search;
@@ -17,26 +18,26 @@ internal static class PackageSearchCommandParser
         Arity = ArgumentArity.ZeroOrOne
     };
 
-    public static readonly Option Sources = new ForwardedOption<IEnumerable<string>>("--source")
+    public static readonly Option Sources = new Option<IEnumerable<string>>("--source")
     {
         Description = CliCommandStrings.SourceDescription,
         HelpName = CliCommandStrings.SourceArgumentName
     }.ForwardAsManyArgumentsEachPrefixedByOption("--source")
     .AllowSingleArgPerToken();
 
-    public static readonly Option<string> Take = new ForwardedOption<string>("--take")
+    public static readonly Option<string> Take = new Option<string>("--take")
     {
         Description = CliCommandStrings.PackageSearchTakeDescription,
         HelpName = CliCommandStrings.PackageSearchTakeArgumentName
     }.ForwardAsSingle(o => $"--take:{o}");
 
-    public static readonly Option<string> Skip = new ForwardedOption<string>("--skip")
+    public static readonly Option<string> Skip = new Option<string>("--skip")
     {
         Description = CliCommandStrings.PackageSearchSkipDescription,
         HelpName = CliCommandStrings.PackageSearchSkipArgumentName
     }.ForwardAsSingle(o => $"--skip:{o}");
 
-    public static readonly Option<bool> ExactMatch = new ForwardedOption<bool>("--exact-match")
+    public static readonly Option<bool> ExactMatch = new Option<bool>("--exact-match")
     {
         Description = CliCommandStrings.ExactMatchDescription,
         Arity = ArgumentArity.Zero
@@ -44,25 +45,25 @@ internal static class PackageSearchCommandParser
 
     public static readonly Option<bool> Interactive = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
-    public static readonly Option<bool> Prerelease = new ForwardedOption<bool>("--prerelease")
+    public static readonly Option<bool> Prerelease = new Option<bool>("--prerelease")
     {
         Description = CliCommandStrings.PackageSearchPrereleaseDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--prerelease");
 
-    public static readonly Option<string> ConfigFile = new ForwardedOption<string>("--configfile")
+    public static readonly Option<string> ConfigFile = new Option<string>("--configfile")
     {
         Description = CliCommandStrings.ConfigFileDescription,
         HelpName = CliCommandStrings.ConfigFileArgumentName
     }.ForwardAsSingle(o => $"--configfile:{o}");
 
-    public static readonly Option<string> Format = new ForwardedOption<string>("--format")
+    public static readonly Option<string> Format = new Option<string>("--format")
     {
         Description = CliCommandStrings.FormatDescription,
         HelpName = CliCommandStrings.FormatArgumentName
     }.ForwardAsSingle(o => $"--format:{o}");
 
-    public static readonly Option<string> Verbosity = new ForwardedOption<string>("--verbosity")
+    public static readonly Option<string> Verbosity = new Option<string>("--verbosity")
     {
         Description = CliCommandStrings.VerbosityDescription,
         HelpName = CliCommandStrings.VerbosityArgumentName
