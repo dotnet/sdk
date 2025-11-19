@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 /// <summary>
 /// Represents a temporary test environment with isolated directories and environment variables

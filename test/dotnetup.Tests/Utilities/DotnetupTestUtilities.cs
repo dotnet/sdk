@@ -11,21 +11,21 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 
-namespace Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 /// <summary>
-/// Common utilities for dnup tests
+/// Common utilities for dotnetup tests
 /// </summary>
-internal static class DnupTestUtilities
+internal static class DotnetupTestUtilities
 {
     /// <summary>
     /// Creates a test environment with proper temporary directories
     /// </summary>
     public static TestEnvironment CreateTestEnvironment()
     {
-        string tempRoot = Path.Combine(Path.GetTempPath(), "dnup-e2e", Guid.NewGuid().ToString("N"));
+        string tempRoot = Path.Combine(Path.GetTempPath(), "dotnetup-e2e", Guid.NewGuid().ToString("N"));
         string installPath = Path.Combine(tempRoot, "dotnet-root");
-        string manifestPath = Path.Combine(tempRoot, "dnup_manifest.json");
+        string manifestPath = Path.Combine(tempRoot, "dotnetup_manifest.json");
 
         // Create necessary directories
         Directory.CreateDirectory(tempRoot);
@@ -36,7 +36,7 @@ internal static class DnupTestUtilities
     }
 
     /// <summary>
-    /// Builds command line arguments for dnup
+    /// Builds command line arguments for dotnetup
     /// </summary>
     public static string[] BuildArguments(string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
     {
@@ -69,12 +69,12 @@ internal static class DnupTestUtilities
     }
 
     /// <summary>
-    /// Runs the dnup executable as a separate process
+    /// Runs the dotnetup executable as a separate process
     /// </summary>
-    /// <param name="args">Command line arguments for dnup</param>
+    /// <param name="args">Command line arguments for dotnetup</param>
     /// <param name="captureOutput">Whether to capture and return the output</param>
     /// <returns>A tuple with exit code and captured output (if requested)</returns>
-    public static (int exitCode, string output) RunDnupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
+    public static (int exitCode, string output) RunDotnetupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
     {
 #if DEBUG
         string configuration = "Debug";
@@ -83,21 +83,21 @@ internal static class DnupTestUtilities
 #endif
 
         string repoRoot = GetRepositoryRoot();
-        string dnupPath = Path.Combine(
+        string dotnetupPath = Path.Combine(
             repoRoot,
-            "artifacts", "bin", "dnup", configuration, "net10.0", "dnup.dll");
+            "artifacts", "bin", "dotnetup", configuration, "net10.0", "dotnetup.dll");
 
         // Ensure path is normalized and exists
-        dnupPath = Path.GetFullPath(dnupPath);
-        if (!File.Exists(dnupPath))
+        dotnetupPath = Path.GetFullPath(dotnetupPath);
+        if (!File.Exists(dotnetupPath))
         {
-            throw new FileNotFoundException($"dnup executable not found at: {dnupPath}");
+            throw new FileNotFoundException($"dotnetup executable not found at: {dotnetupPath}");
         }
 
         using var process = new Process();
-        string repoDotnet = Path.Combine(repoRoot, ".dotnet", DnupUtilities.GetDotnetExeName());
-        process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DnupUtilities.GetDotnetExeName();
-        process.StartInfo.Arguments = $"\"{dnupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
+        string repoDotnet = Path.Combine(repoRoot, ".dotnet", DotnetupUtilities.GetDotnetExeName());
+        process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DotnetupUtilities.GetDotnetExeName();
+        process.StartInfo.Arguments = $"\"{dotnetupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.CreateNoWindow = true;
         process.StartInfo.RedirectStandardOutput = captureOutput;

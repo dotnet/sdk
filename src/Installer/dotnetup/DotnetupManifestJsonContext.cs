@@ -14,5 +14,5 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
     [JsonSerializable(typeof(InstallArchitecture))]
     [JsonSerializable(typeof(InstallType))]
     [JsonSerializable(typeof(ManagementCadence))]
-    internal partial class DnupManifestJsonContext : JsonSerializerContext { }
+    internal partial class DotnetupManifestJsonContext : JsonSerializerContext { }
 }

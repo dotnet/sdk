@@ -40,7 +40,7 @@ public class DotnetInstallManager : IDotnetInstallManager
 
         var installRoot = new DotnetInstallRoot(installDir, InstallerUtilities.GetDefaultInstallArchitecture());
 
-        bool isSetAsDotnetRoot = DnupUtilities.PathsEqual(dotnetRoot, installDir);
+        bool isSetAsDotnetRoot = DotnetupUtilities.PathsEqual(dotnetRoot, installDir);
 
         return new(installRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsOnPath: true, isSetAsDotnetRoot);
     }

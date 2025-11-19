@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
-namespace Microsoft.DotNet.Tools.Dnup.Tests;
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class LibraryTests
 {
@@ -34,7 +34,7 @@ public class LibraryTests
 
         var installer = InstallerFactory.CreateInstaller(new NullProgressTarget());
 
-        using var testEnv = DnupTestUtilities.CreateTestEnvironment();
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
         Log.WriteLine($"Installing to path: {testEnv.InstallPath}");
 

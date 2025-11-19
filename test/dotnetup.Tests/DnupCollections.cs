@@ -3,13 +3,13 @@
 
 using Xunit;
 
-namespace Microsoft.DotNet.Tools.Dnup.Tests;
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
 /// Collection definition that allows tests to run in parallel.
 /// </summary>
-[CollectionDefinition("DnupInstallCollection", DisableParallelization = false)]
-public class DnupInstallCollection
+[CollectionDefinition("DotnetupInstallCollection", DisableParallelization = false)]
+public class DotnetupInstallCollection
 {
     // This class has no code, and is never created. Its purpose is to be the place to apply
     // [CollectionDefinition] and all the collection settings.
@@ -18,8 +18,8 @@ public class DnupInstallCollection
 /// <summary>
 /// Collection definition for reuse tests that allows tests to run in parallel.
 /// </summary>
-[CollectionDefinition("DnupReuseCollection", DisableParallelization = false)]
-public class DnupReuseCollection
+[CollectionDefinition("DotnetupReuseCollection", DisableParallelization = false)]
+public class DotnetupReuseCollection
 {
     // This class has no code, and is never created. Its purpose is to be the place to apply
     // [CollectionDefinition] and all the collection settings.
@@ -28,8 +28,8 @@ public class DnupReuseCollection
 /// <summary>
 /// Collection definition for concurrency tests that allows tests to run in parallel.
 /// </summary>
-[CollectionDefinition("DnupConcurrencyCollection", DisableParallelization = false)]
-public class DnupConcurrencyCollection
+[CollectionDefinition("DotnetupConcurrencyCollection", DisableParallelization = false)]
+public class DotnetupConcurrencyCollection
 {
     // This class has no code, and is never created. Its purpose is to be the place to apply
     // [CollectionDefinition] and all the collection settings.

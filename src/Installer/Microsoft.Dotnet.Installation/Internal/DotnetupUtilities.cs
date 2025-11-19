@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
-internal static class DnupUtilities
+internal static class DotnetupUtilities
 {
     public static string ExeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
 

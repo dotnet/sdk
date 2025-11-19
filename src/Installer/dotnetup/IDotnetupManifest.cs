@@ -7,7 +7,7 @@ using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
-    internal interface IDnupManifest
+    internal interface IDotnetupManifest
     {
         IEnumerable<DotnetInstall> GetInstalledVersions(IInstallationValidator? validator = null);
         IEnumerable<DotnetInstall> GetInstalledVersions(DotnetInstallRoot installRoot, IInstallationValidator? validator = null);

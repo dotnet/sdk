@@ -31,7 +31,7 @@ internal static class SdkUpdateCommandParser
         return SdkUpdateCommand;
     }
 
-    //  Trying to use the same command object for both "dnup udpate" and "dnup sdk update" causes an InvalidOperationException
+    //  Trying to use the same command object for both "dotnetup udpate" and "dotnetup sdk update" causes an InvalidOperationException
     //  So we create a separate instance for each case
     private static readonly Command RootUpdateCommand = ConstructCommand();
 

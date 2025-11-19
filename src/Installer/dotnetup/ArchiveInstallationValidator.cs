@@ -32,7 +32,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
             return false;
         }
 
-        string dotnetMuxerPath = Path.Combine(installRoot, DnupUtilities.GetDotnetExeName());
+        string dotnetMuxerPath = Path.Combine(installRoot, DotnetupUtilities.GetDotnetExeName());
         if (!File.Exists(dotnetMuxerPath))
         {
             return false;
@@ -82,7 +82,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
                 string expectedPath = Path.Combine(installRoot, "sdk", resolvedVersion.ToString());
                 return environmentInfo.SdkInfo.Any(sdk =>
                     string.Equals(sdk.Version.ToString(), resolvedVersion.ToString(), StringComparison.OrdinalIgnoreCase) &&
-                    DnupUtilities.PathsEqual(sdk.Path, expectedPath));
+                    DotnetupUtilities.PathsEqual(sdk.Path, expectedPath));
             }
 
             if (!RuntimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker))
@@ -94,7 +94,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
             return environmentInfo.RuntimeInfo.Any(runtime =>
                 string.Equals(runtime.Name, runtimeMoniker, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(runtime.Version.ToString(), resolvedVersion.ToString(), StringComparison.OrdinalIgnoreCase) &&
-                DnupUtilities.PathsEqual(runtime.Path, expectedRuntimePath));
+                DotnetupUtilities.PathsEqual(runtime.Path, expectedRuntimePath));
         }
         catch
         {

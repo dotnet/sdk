@@ -11,11 +11,11 @@ using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-internal class DnupSharedManifest : IDnupManifest
+internal class DotnetupSharedManifest : IDotnetupManifest
 {
     private string ManifestPath => GetManifestPath();
 
-    public DnupSharedManifest(string? manifestPath = null)
+    public DotnetupSharedManifest(string? manifestPath = null)
     {
         _customManifestPath = manifestPath;
         EnsureManifestExists();
@@ -26,7 +26,7 @@ internal class DnupSharedManifest : IDnupManifest
         if (!File.Exists(ManifestPath))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
-            File.WriteAllText(ManifestPath, JsonSerializer.Serialize(new List<DotnetInstall>(), DnupManifestJsonContext.Default.ListDotnetInstall));
+            File.WriteAllText(ManifestPath, JsonSerializer.Serialize(new List<DotnetInstall>(), DotnetupManifestJsonContext.Default.ListDotnetInstall));
         }
     }
 
@@ -50,8 +50,8 @@ internal class DnupSharedManifest : IDnupManifest
         // Default location
         return Path.Combine(
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            "dnup",
-            "dnup_manifest.json");
+            "dotnetup",
+            "dotnetup_manifest.json");
     }
 
     private void AssertHasFinalizationMutex()
@@ -61,7 +61,7 @@ internal class DnupSharedManifest : IDnupManifest
         // implemented in ScopedMutex. This ensures we only assert based on a lock we actually obtained.
         if (!ScopedMutex.CurrentThreadHoldsMutex)
         {
-            throw new InvalidOperationException("The dnup manifest was accessed without holding the installation state mutex.");
+            throw new InvalidOperationException("The dotnetup manifest was accessed without holding the installation state mutex.");
         }
     }
 
@@ -73,7 +73,7 @@ internal class DnupSharedManifest : IDnupManifest
         var json = File.ReadAllText(ManifestPath);
         try
         {
-            var installs = JsonSerializer.Deserialize(json, DnupManifestJsonContext.Default.ListDotnetInstall);
+            var installs = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.ListDotnetInstall);
             var validInstalls = installs ?? [];
 
             if (validator is not null)
@@ -82,7 +82,7 @@ internal class DnupSharedManifest : IDnupManifest
                 if (invalids.Count > 0)
                 {
                     validInstalls = validInstalls.Except(invalids).ToList();
-                    var newJson = JsonSerializer.Serialize(validInstalls, DnupManifestJsonContext.Default.ListDotnetInstall);
+                    var newJson = JsonSerializer.Serialize(validInstalls, DotnetupManifestJsonContext.Default.ListDotnetInstall);
                     File.WriteAllText(ManifestPath, newJson);
                 }
             }
@@ -90,7 +90,7 @@ internal class DnupSharedManifest : IDnupManifest
         }
         catch (JsonException ex)
         {
-            throw new InvalidOperationException($"The dnup manifest is corrupt or inaccessible", ex);
+            throw new InvalidOperationException($"The dotnetup manifest is corrupt or inaccessible", ex);
         }
     }
 
@@ -106,7 +106,7 @@ internal class DnupSharedManifest : IDnupManifest
         var installedVersions = GetInstalledVersions(validator);
         var expectedInstallRootPath = Path.GetFullPath(installRoot.Path);
         var installedVersionsInRoot = installedVersions
-            .Where(install => DnupUtilities.PathsEqual(Path.GetFullPath(install.InstallRoot.Path!), expectedInstallRootPath));
+            .Where(install => DotnetupUtilities.PathsEqual(Path.GetFullPath(install.InstallRoot.Path!), expectedInstallRootPath));
         return installedVersionsInRoot;
     }
 
@@ -117,7 +117,7 @@ internal class DnupSharedManifest : IDnupManifest
 
         var installs = GetInstalledVersions().ToList();
         installs.Add(version);
-        var json = JsonSerializer.Serialize(installs, DnupManifestJsonContext.Default.ListDotnetInstall);
+        var json = JsonSerializer.Serialize(installs, DotnetupManifestJsonContext.Default.ListDotnetInstall);
         Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
         File.WriteAllText(ManifestPath, json);
     }
@@ -128,8 +128,8 @@ internal class DnupSharedManifest : IDnupManifest
         EnsureManifestExists();
 
         var installs = GetInstalledVersions().ToList();
-        installs.RemoveAll(i => DnupUtilities.PathsEqual(i.InstallRoot.Path, version.InstallRoot.Path) && i.Version.Equals(version.Version));
-        var json = JsonSerializer.Serialize(installs, DnupManifestJsonContext.Default.ListDotnetInstall);
+        installs.RemoveAll(i => DotnetupUtilities.PathsEqual(i.InstallRoot.Path, version.InstallRoot.Path) && i.Version.Equals(version.Version));
+        var json = JsonSerializer.Serialize(installs, DotnetupManifestJsonContext.Default.ListDotnetInstall);
         File.WriteAllText(ManifestPath, json);
     }
 }

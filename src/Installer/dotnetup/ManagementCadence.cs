@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
 {
     public enum ManagementCadenceType
     {
-        DNUP,
+        Dotnetup,
         GlobalJson,
         Standalone
     }
@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
     {
         public ManagementCadence()
         {
-            Type = ManagementCadenceType.DNUP;
+            Type = ManagementCadenceType.Dotnetup;
             Metadata = new Dictionary<string, string>();
         }
         public ManagementCadence(ManagementCadenceType managementStyle) : this()

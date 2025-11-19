@@ -6,7 +6,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.Dotnet.Installation.Internal;
 
-namespace Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 /// <summary>
 /// Extension methods for working with UpdateChannel in tests

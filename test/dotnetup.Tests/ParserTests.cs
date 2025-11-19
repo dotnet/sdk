@@ -3,7 +3,7 @@
 
 using Microsoft.DotNet.Tools.Bootstrapper;
 
-namespace Microsoft.DotNet.Tools.Dnup.Tests;
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class ParserTests
 {

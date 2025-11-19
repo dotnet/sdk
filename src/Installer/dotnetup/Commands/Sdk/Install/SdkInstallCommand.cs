@@ -39,7 +39,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             installPathFromGlobalJson = globalJsonInfo.SdkPath;
 
             if (installPathFromGlobalJson is not null && _installPath is not null &&
-                !DnupUtilities.PathsEqual(installPathFromGlobalJson, _installPath))
+                !DotnetupUtilities.PathsEqual(installPathFromGlobalJson, _installPath))
             {
                 //  TODO: Add parameter to override error
                 Console.Error.WriteLine($"Error: The install path specified in global.json ({installPathFromGlobalJson}) does not match the install path provided ({_installPath}).");
@@ -140,7 +140,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 }
                 else if (currentDotnetInstallRoot.InstallType == InstallType.User)
                 {
-                    if (DnupUtilities.PathsEqual(resolvedInstallPath, currentDotnetInstallRoot.Path))
+                    if (DotnetupUtilities.PathsEqual(resolvedInstallPath, currentDotnetInstallRoot.Path))
                     {
                         //  No need to prompt here, the default install is already set up.
                     }

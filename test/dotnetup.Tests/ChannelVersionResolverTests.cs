@@ -3,7 +3,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Xunit;
 
-namespace Microsoft.DotNet.Tools.Dnup.Tests
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 {
     public class ChannelVersionResolverTests(ITestOutputHelper log)
     {

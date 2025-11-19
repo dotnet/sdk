@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 /// <summary>
 /// Helper class to capture console output for testing

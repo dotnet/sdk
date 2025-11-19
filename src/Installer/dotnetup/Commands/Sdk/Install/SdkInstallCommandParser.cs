@@ -52,7 +52,7 @@ internal static class SdkInstallCommandParser
         return SdkInstallCommand;
     }
 
-    //  Trying to use the same command object for both "dnup install" and "dnup sdk install" causes the following exception:
+    //  Trying to use the same command object for both "dotnetup install" and "dotnetup sdk install" causes the following exception:
     //  System.InvalidOperationException: Command install has more than one child named "channel".
     //  So we create a separate instance for each case
     private static readonly Command RootInstallCommand = ConstructCommand();

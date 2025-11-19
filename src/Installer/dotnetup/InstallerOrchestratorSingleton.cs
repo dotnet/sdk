@@ -70,7 +70,7 @@ internal class InstallerOrchestratorSingleton
             ArchiveInstallationValidator validator = new();
             if (validator.Validate(install))
             {
-                DnupSharedManifest manifestManager = new(customManifestPath);
+                DotnetupSharedManifest manifestManager = new(customManifestPath);
                 manifestManager.AddInstalledVersion(install);
             }
             else
@@ -87,7 +87,7 @@ internal class InstallerOrchestratorSingleton
     /// </summary>
     private IEnumerable<DotnetInstall> GetExistingInstalls(DotnetInstallRoot installRoot, string? customManifestPath = null)
     {
-        var manifestManager = new DnupSharedManifest(customManifestPath);
+        var manifestManager = new DotnetupSharedManifest(customManifestPath);
         // Use the overload that filters by muxer directory
         return manifestManager.GetInstalledVersions(installRoot);
     }

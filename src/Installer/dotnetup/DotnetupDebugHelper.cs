@@ -8,7 +8,7 @@ using System.Linq;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 // Copy of DebugHelper.cs in the SDK - port eventually.
-internal static class DnupDebugHelper
+internal static class DotnetupDebugHelper
 {
     [Conditional("DEBUG")]
     public static void HandleDebugSwitch(ref string[] args)
