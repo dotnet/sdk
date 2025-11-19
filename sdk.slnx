@@ -88,7 +88,7 @@
     <Project Path="src/Containers/packaging/package.csproj" />
   </Folder>
   <Folder Name="/src/Installer/">
-    <Project Path="src/Installer/dnup/dnup.csproj" />
+    <Project Path="src/Installer/dotnetup/dotnetup.csproj" />
     <Project Path="src/Installer/Microsoft.Dotnet.Installation/Microsoft.Dotnet.Installation.csproj" />
   </Folder>
   <Folder Name="/src/Layout/">
@@ -312,12 +312,12 @@
     <Project Path="test/ArgumentForwarding.Tests/ArgumentForwarding.Tests.csproj" />
     <Project Path="test/ArgumentsReflector/ArgumentsReflector.csproj" />
     <Project Path="test/containerize.UnitTests/containerize.UnitTests.csproj" />
-    <Project Path="test/dnup.Tests/dnup.Tests.csproj" />
     <Project Path="test/dotnet-format.UnitTests/dotnet-format.UnitTests.csproj" />
     <Project Path="test/dotnet-MsiInstallation.Tests/dotnet-MsiInstallation.Tests.csproj" />
     <Project Path="test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj" />
     <Project Path="test/dotnet-watch.Tests/dotnet-watch.Tests.csproj" />
     <Project Path="test/dotnet.Tests/dotnet.Tests.csproj" />
+    <Project Path="test/dotnetup.Tests/dotnetup.Tests.csproj" />
     <Project Path="test/EndToEnd.Tests/EndToEnd.Tests.csproj" />
     <Project Path="test/HelixTasks/HelixTasks.csproj" />
     <Project Path="test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj" />

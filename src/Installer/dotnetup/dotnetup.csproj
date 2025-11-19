@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="dnup.Tests" />
+    <InternalsVisibleTo Include="dotnetup.Tests" />
   </ItemGroup>
 
   <ItemGroup>
