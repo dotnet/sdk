@@ -258,6 +258,7 @@ public class RunTelemetryTests : SdkTest
 
         var launchSettings = new ProjectLaunchSettingsModel
         {
+            LaunchSettingsPath = Path.GetTempFileName(),
             LaunchProfileName = "(Default)"
         };
 
