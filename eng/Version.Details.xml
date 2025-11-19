@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
-  <Source Uri="https://github.com/dotnet/dotnet" Mapping="sdk" Sha="63901a5c8a4aeae1c7f3f9514ed242421683599f" BarId="290592" />
+  <Source Uri="https://github.com/dotnet/dotnet" Mapping="sdk" Sha="b8dba9bcdc30ab52b64295249a16f36fa1f13ce9" BarId="290770" />
   <ProductDependencies>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.200-preview.25563.5">
       <Uri>https://github.com/dotnet/templating</Uri>
@@ -72,138 +72,138 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
       <Sha>b0f34d51fccc69fd334253924abd8d6853fad7aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="18.1.0-preview-25562-107">
+    <Dependency Name="Microsoft.Build" Version="18.1.0-preview-25563-105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="18.1.0-preview-25562-107">
+    <Dependency Name="Microsoft.Build.Localization" Version="18.1.0-preview-25563-105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="15.0.200-servicing.25562.107">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="15.0.200-servicing.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="5.3.0-1.25562.107">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="5.3.0-1.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="5.3.0-1.25562.107">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="5.3.0-1.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="5.3.0-1.25562.107">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="5.3.0-1.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.BuildClient" Version="5.3.0-1.25562.107">
+    <Dependency Name="Microsoft.CodeAnalysis.BuildClient" Version="5.3.0-1.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="5.3.0-1.25562.107">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="5.3.0-1.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="5.3.0-1.25562.107">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="5.3.0-1.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="5.3.0-1.25562.107">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="5.3.0-1.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.3.0-1.25562.107">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.3.0-1.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="5.3.0-1.25562.107">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="5.3.0-1.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.3.0-1.25562.107">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.3.0-1.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="7.1.0-preview.1.6307">
+    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Build.Tasks" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
       <SourceBuildTarball RepoName="nuget-client" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Console" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Build.Tasks.Console" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Pack" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Build.Tasks.Pack" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Commands" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Commands" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.CommandLine.XPlat" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.CommandLine.XPlat" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Common" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Common" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Configuration" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Configuration" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Credentials" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Credentials" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.DependencyResolver.Core" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.DependencyResolver.Core" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Frameworks" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Frameworks" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.LibraryModel" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.LibraryModel" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.ProjectModel" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.ProjectModel" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Protocol" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Protocol" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Packaging" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Packaging" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Versioning" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Versioning" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Localization" Version="7.1.0-preview.1.6307">
+    <Dependency Name="NuGet.Localization" Version="7.1.0-preview.1.6405">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="18.1.0-preview-25562-107">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="18.1.0-preview-25563-105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="18.1.0-preview-25562-107">
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="18.1.0-preview-25563-105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="18.1.0-preview-25562-107">
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="18.1.0-preview-25563-105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="10.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
@@ -371,17 +371,17 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
       <Sha>b0f34d51fccc69fd334253924abd8d6853fad7aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="10.0.0-preview.25562.107">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="10.0.0-preview.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="10.0.0-preview.25562.107">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="10.0.0-preview.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="10.0.0-preview.25562.107">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="10.0.0-preview.25563.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>63901a5c8a4aeae1c7f3f9514ed242421683599f</Sha>
+      <Sha>b8dba9bcdc30ab52b64295249a16f36fa1f13ce9</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="3.2.0-preview.25523.111">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
@@ -557,13 +557,13 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
       <Sha>b0f34d51fccc69fd334253924abd8d6853fad7aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="2.1.0-preview.25562.1">
+    <Dependency Name="Microsoft.Testing.Platform" Version="2.1.0-preview.25564.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>ebf1bfb9fe1dd5b133bef8eb12144ace4c594b06</Sha>
+      <Sha>6a947165aab2656a97abd69cfc16e14fa89e82ed</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="4.1.0-preview.25562.1">
+    <Dependency Name="MSTest" Version="4.1.0-preview.25564.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>ebf1bfb9fe1dd5b133bef8eb12144ace4c594b06</Sha>
+      <Sha>6a947165aab2656a97abd69cfc16e14fa89e82ed</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
