@@ -58,7 +58,7 @@ public class PublishCommand : RestoringCommand
                 noRestore: noRestore,
                 msbuildPath: msbuildPath
             ),
-            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, PublishCommandParser.TargetOption, PublishCommandParser.VerbosityOption],
+            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, PublishCommandParser.TargetOption, PublishCommandParser.VerbosityOption, PublishCommandParser.NoLogoOption],
             parseResult,
             msbuildPath,
             (msbuildArgs) =>

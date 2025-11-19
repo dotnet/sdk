@@ -60,6 +60,7 @@ public class PackCommand(
                 CommonOptions.RestorePropertiesOption,
                 PackCommandParser.TargetOption,
                 PackCommandParser.VerbosityOption,
+                PackCommandParser.NoLogoOption
             ],
             parseResult,
             msbuildPath,

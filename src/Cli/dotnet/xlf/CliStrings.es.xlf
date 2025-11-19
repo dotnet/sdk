@@ -187,16 +187,6 @@ Examples:
         <target state="translated">CONFIGURATION</target>
         <note />
       </trans-unit>
-      <trans-unit id="CouldNotFindAnyProjectInDirectory">
-        <source>Could not find any project in `{0}`.</source>
-        <target state="translated">No se encuentra ningún proyecto en "{0}".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotFindProjectOrDirectory">
-        <source>Could not find project or directory `{0}`.</source>
-        <target state="translated">No se encuentra el proyecto o directorio "{0}".</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindSolutionIn">
         <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
         <target state="translated">El archivo de solución {0} especificado no existe, o bien no hay ningún archivo de solución en el directorio.</target>
@@ -683,11 +673,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Hay más de una opción de correcciones de compatibilidad (shim) empaquetadas: {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MoreThanOneProjectInDirectory">
-        <source>Found more than one project in `{0}`. Specify which one to use.</source>
-        <target state="translated">Se han encontrado varios proyectos en "{0}". Especifique el que debe usarse.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MoreThanOneSolutionInDirectory">
         <source>Found more than one solution file in {0}. Specify which one to use.</source>
         <target state="translated">Se han encontrado varios archivos de solución en {0}. Especifique el que debe usarse.</target>
@@ -1096,6 +1081,16 @@ El valor predeterminado es "false." Sin embargo, cuando el destino es .NET 7 o i
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">El paquete {0} no es una herramienta de .NET.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersion">
+        <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
+        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

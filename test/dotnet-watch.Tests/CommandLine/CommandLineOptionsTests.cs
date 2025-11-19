@@ -481,16 +481,19 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Theory]
-        [InlineData(new[] { "--property:b=1" }, new[] { "--property:b=1" }, Skip = "https://github.com/dotnet/sdk/issues/44655")]
-        [InlineData(new[] { "--property", "b=1" }, new[] { "--property", "b=1" }, Skip = "https://github.com/dotnet/sdk/issues/44655")]
-        [InlineData(new[] { "/p:b=1" }, new[] { "/p:b=1" }, Skip = "https://github.com/dotnet/sdk/issues/44655")]
+        [InlineData(new[] { "--property:b=1" }, new[] { "--property:b=1" })]
+        [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1" })]
+        [InlineData(new[] { "/p:b=1" }, new[] { "--property:b=1" })]
         [InlineData(new[] { "/bl" }, new[] { "/bl" })]
         [InlineData(new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" }, new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" })]
         public void ForwardedBuildOptions_Test(string[] args, string[] commandArgs)
         {
+            var isProperty = args[0].Contains("-p") || args[0].Contains("/p");
             var runOptions = VerifyOptions(["test", .. args]);
-            AssertEx.SequenceEqual(["--property:NuGetInteractive=false", "--target:VSTest", .. commandArgs], runOptions.BuildArguments);
-            AssertEx.SequenceEqual(commandArgs, runOptions.CommandArguments);
+            string[] expected = isProperty
+                ? ["--property:VSTestNoLogo=true", "--property:NuGetInteractive=false", .. commandArgs, "--target:VSTest"]
+                : ["--property:VSTestNoLogo=true", "--property:NuGetInteractive=false", "--target:VSTest", .. commandArgs];
+            AssertEx.SequenceEqual(expected, runOptions.BuildArguments);
         }
 
         [Fact]

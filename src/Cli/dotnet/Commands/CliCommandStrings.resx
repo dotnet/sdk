@@ -166,7 +166,7 @@
   <data name="BuildAppFullName" xml:space="preserve">
     <value>.NET Builder</value>
   </data>
-  <data name="BuildCmdNoLogo" xml:space="preserve">
+  <data name="NoLogoOptionDescription" xml:space="preserve">
     <value>Do not display the startup banner or the copyright message.</value>
   </data>
   <data name="BuildConfigurationOptionDescription" xml:space="preserve">
@@ -249,9 +249,6 @@ Paths searched: '{1}', '{2}'.</value>
   </data>
   <data name="CleanAppFullName" xml:space="preserve">
     <value>.NET Clean Command</value>
-  </data>
-  <data name="CleanCmdNoLogo" xml:space="preserve">
-    <value>Do not display the startup banner or the copyright message.</value>
   </data>
   <data name="CleanCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
@@ -377,12 +374,6 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
   </data>
   <data name="CmdDGFileIOException" xml:space="preserve">
     <value>Unable to generate a temporary file for project '{0}'. Cannot add package reference. Clear the temp directory and try again.</value>
-  </data>
-  <data name="CmdDirectoryDescription" xml:space="preserve">
-    <value>Defines the path of directory to run. If not specified, it defaults to the current directory.</value>
-  </data>
-  <data name="CmdDirectoryPathName" xml:space="preserve">
-    <value>DIRECTORY_PATH</value>
   </data>
   <data name="CmdDisableParallelOptionDescription" xml:space="preserve">
     <value>Prevent restoring multiple projects in parallel.</value>
@@ -550,11 +541,13 @@ This is equivalent to deleting project.assets.json.</value>
     <value>Consider packages with prerelease versions when searching for newer packages. Requires the '--outdated' option.</value>
   </data>
   <data name="CmdProjectDescriptionFormat" xml:space="preserve">
-    <value>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
-    <comment>{0} is the verb (e.g., "test", "run")</comment>
+    <value>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
   </data>
-  <data name="CmdProjectPathName" xml:space="preserve">
-    <value>PROJECT_PATH</value>
+  <data name="CmdProjectOrSolutionDescriptionFormat" xml:space="preserve">
+    <value>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
+  </data>
+  <data name="CmdProjectOrSolutionPathName" xml:space="preserve">
+    <value>PROJECT_OR_SOLUTION_PATH</value>
   </data>
   <data name="CmdReevaluateOptionDescription" xml:space="preserve">
     <value>Forces restore to reevaluate all dependencies even if a lock file already exists.</value>
@@ -1102,14 +1095,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Minimum expected tests policy violation, tests ran {0}, minimum expected {1}</value>
     <comment>{0}, {1} number of tests</comment>
   </data>
-  <data name="InvalidProjectDirective" xml:space="preserve">
-    <value>The '#:project' directive is invalid: {0}</value>
-    <comment>{0} is the inner error message.</comment>
-  </data>
-  <data name="MissingDirectiveName" xml:space="preserve">
-    <value>Missing name of '{0}'.</value>
-    <comment>{0} is the directive name like 'package' or 'sdk'.</comment>
-  </data>
   <data name="MsBuildDefinition" xml:space="preserve">
     <value>Run Microsoft Build Engine (MSBuild) commands.</value>
   </data>
@@ -1340,9 +1325,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="PackAppFullName" xml:space="preserve">
     <value>.NET Core NuGet Package Packer</value>
-  </data>
-  <data name="PackCmdNoLogo" xml:space="preserve">
-    <value>Do not display the startup banner or the copyright message.</value>
   </data>
   <data name="PackCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
@@ -1597,37 +1579,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="ProjectsHeader" xml:space="preserve">
     <value>Project(s)</value>
   </data>
-  <data name="PropertyDirectiveInvalidName" xml:space="preserve">
-    <value>Invalid property name: {0}</value>
-    <comment>{0} is an inner exception message.</comment>
-  </data>
-  <data name="PropertyDirectiveMissingParts" xml:space="preserve">
-    <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</value>
-    <comment>{Locked="#:property"}</comment>
-  </data>
-  <data name="StaticGraphRestoreNotSupported" xml:space="preserve">
-    <value>Static graph restore is not supported for file-based apps. Remove the '#:property'.</value>
-    <comment>{Locked="#:property"}</comment>
-  </data>
-  <data name="DirectiveError" xml:space="preserve">
-    <value>error</value>
-    <comment>Used when reporting directive errors like "file(location): error: message".</comment>
-  </data>
-  <data name="InvalidDirectiveName" xml:space="preserve">
-    <value>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
-    <comment>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</comment>
-  </data>
-  <data name="CannotConvertDirective" xml:space="preserve">
-    <value>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</value>
-    <comment>{Locked="--force"}</comment>
-  </data>
-  <data name="DuplicateDirective" xml:space="preserve">
-    <value>Duplicate directives are not supported: {0}</value>
-    <comment>{0} is the directive type and name.</comment>
-  </data>
-  <data name="QuoteInDirective" xml:space="preserve">
-    <value>Directives currently cannot contain double quotes (").</value>
-  </data>
   <data name="InvalidOptionForStdin" xml:space="preserve">
     <value>Cannot specify option '{0}' when also using '-' to read the file from standard input.</value>
     <comment>{0} is an option name like '--no-build'.</comment>
@@ -1646,9 +1597,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="PublishAppDescription" xml:space="preserve">
     <value>Publisher for the .NET Platform</value>
-  </data>
-  <data name="PublishCmdNoLogo" xml:space="preserve">
-    <value>Do not display the startup banner or the copyright message.</value>
   </data>
   <data name="PublishConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to publish for. The default is 'Release' for NET 8.0 projects and above, but 'Debug' for older projects.</value>
@@ -2280,10 +2228,6 @@ and the corresponding package Ids for installed tools using the command
   <data name="UnknownRecordsInformationalMessage" xml:space="preserve">
     <value>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</value>
   </data>
-  <data name="UnrecognizedDirective" xml:space="preserve">
-    <value>Unrecognized directive '{0}'.</value>
-    <comment>{0} is the directive name like 'package' or 'sdk'.</comment>
-  </data>
   <data name="UpdateAllOptionDescription" xml:space="preserve">
     <value>Update all tools.</value>
   </data>
@@ -2678,9 +2622,6 @@ Proceed?</value>
   </data>
   <data name="DotnetTestPipeOverlapping" xml:space="preserve">
     <value>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</value>
-  </data>
-  <data name="DotnetTestPipeIncompleteSize" xml:space="preserve">
-    <value>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</value>
   </data>
   <data name="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage" xml:space="preserve">
     <value>Method '{0}' did not exit successfully</value>
