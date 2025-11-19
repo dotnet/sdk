@@ -26,9 +26,11 @@ namespace Microsoft.Dotnet.Installation.Internal
             activity?.SetTag("install.component", component.ToString());
             activity?.SetTag("install.version", version.ToString());
 
+            ReleaseManifest releaseManifest = new();
+
             var installRequest = new DotnetInstallRequest(dotnetRoot, new UpdateChannel(version.ToString()), component, new InstallRequestOptions());
 
-            using ArchiveDotnetExtractor installer = new(installRequest, version, _progressTarget);
+            using DotnetArchiveExtractor installer = new(installRequest, version, new ReleaseManifest(), _progressTarget);
             installer.Prepare();
             installer.Commit();
         }

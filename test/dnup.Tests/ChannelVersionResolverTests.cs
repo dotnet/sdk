@@ -5,12 +5,14 @@ using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dnup.Tests
 {
-    public class ReleaseManifestTests
+    public class ChannelVersionResolverTests(ITestOutputHelper log)
     {
+        ITestOutputHelper Log = log;
+
         [Fact]
         public void GetLatestVersionForChannel_MajorOnly_ReturnsLatestVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9"), InstallComponent.SDK);
             Assert.NotNull(version);
         }
@@ -18,7 +20,7 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
         [Fact]
         public void GetLatestVersionForChannel_MajorMinor_ReturnsLatestVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9"), InstallComponent.SDK);
             Assert.NotNull(version);
             Assert.StartsWith("9.0.", version.ToString());
@@ -27,10 +29,10 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
         [Fact]
         public void GetLatestVersionForChannel_FeatureBand_ReturnsLatestVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
 
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9.0.1xx"), InstallComponent.SDK);
-            Console.WriteLine($"Version found: {version}");
+            Log.WriteLine($"Version found: {version}");
 
             // Feature band version should be returned in the format 9.0.100
             Assert.NotNull(version);
@@ -40,10 +42,10 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
         [Fact]
         public void GetLatestVersionForChannel_LTS_ReturnsLatestLTSVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("lts"), InstallComponent.SDK);
 
-            Console.WriteLine($"LTS Version found: {version}");
+            Log.WriteLine($"LTS Version found: {version}");
 
             // Check that we got a version
             Assert.NotNull(version);
@@ -58,10 +60,10 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
         [Fact]
         public void GetLatestVersionForChannel_STS_ReturnsLatestSTSVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("sts"), InstallComponent.SDK);
 
-            Console.WriteLine($"STS Version found: {version}");
+            Log.WriteLine($"STS Version found: {version}");
 
             // Check that we got a version
             Assert.NotNull(version);
@@ -73,13 +75,13 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
             Assert.Null(version.Prerelease);
         }
 
-        [Fact]
+        [Fact(Skip = "No preview releases may be available after GA of a major release and before preview 1 of the next")]
         public void GetLatestVersionForChannel_Preview_ReturnsLatestPreviewVersion()
         {
-            var manifest = new ReleaseManifest();
+            var manifest = new ChannelVersionResolver();
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("preview"), InstallComponent.SDK);
 
-            Console.WriteLine($"Preview Version found: {version}");
+            Log.WriteLine($"Preview Version found: {version}");
 
             // Check that we got a version
             Assert.NotNull(version);

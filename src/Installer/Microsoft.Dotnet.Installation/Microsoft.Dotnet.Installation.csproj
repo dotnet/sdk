@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+    <ProjectReference Include="..\..\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
   </ItemGroup>
-
 </Project>

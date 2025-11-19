@@ -10,10 +10,11 @@ using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
-internal class ArchiveDotnetExtractor : IDisposable
+internal class DotnetArchiveExtractor : IDisposable
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
@@ -21,7 +22,7 @@ internal class ArchiveDotnetExtractor : IDisposable
     private string scratchDownloadDirectory;
     private string? _archivePath;
 
-    public ArchiveDotnetExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, IProgressTarget progressTarget)
+    public DotnetArchiveExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, IProgressTarget progressTarget)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
@@ -33,7 +34,7 @@ internal class ArchiveDotnetExtractor : IDisposable
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
 
-        using var releaseManifest = new ReleaseManifest();
+        using var archiveDownloader = new DotnetArchiveDownloader();
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
 
@@ -41,51 +42,19 @@ internal class ArchiveDotnetExtractor : IDisposable
         {
             var downloadTask = progressReporter.AddTask($"Downloading .NET SDK {_resolvedVersion}", 100);
             var reporter = new DownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
-            var downloadSuccess = releaseManifest.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
-            if (!downloadSuccess)
+
+            try
             {
-                throw new InvalidOperationException($"Failed to download .NET archive for version {_resolvedVersion}");
+                archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
             }
 
             downloadTask.Value = 100;
         }
     }
-
-    /**
-    Returns a string if the archive is valid within SDL specification, false otherwise.
-    */
-    private void VerifyArchive(string archivePath)
-    {
-        if (!File.Exists(archivePath)) // Enhancement: replace this with actual verification logic once its implemented.
-        {
-            throw new InvalidOperationException("Archive verification failed.");
-        }
-    }
-
-
-
-    internal static string ConstructArchiveName(string? versionString, string rid, string suffix)
-    {
-        // If version is not specified, use a generic name
-        if (string.IsNullOrEmpty(versionString))
-        {
-            return $"dotnet-sdk-{rid}{suffix}";
-        }
-
-        // Make sure the version string doesn't have any build hash or prerelease identifiers
-        // This ensures compatibility with the official download URLs
-        string cleanVersion = versionString;
-        int dashIndex = versionString.IndexOf('-');
-        if (dashIndex >= 0)
-        {
-            cleanVersion = versionString.Substring(0, dashIndex);
-        }
-
-        return $"dotnet-sdk-{cleanVersion}-{rid}{suffix}";
-    }
-
-
-
     public void Commit()
     {
         Commit(GetExistingSdkVersions(_request.InstallRoot));
@@ -95,22 +64,13 @@ internal class ArchiveDotnetExtractor : IDisposable
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
 
-        if (_archivePath == null || !File.Exists(_archivePath))
-        {
-            throw new InvalidOperationException("Archive not found. Make sure Prepare() was called successfully.");
-        }
 
         using (var progressReporter = _progressTarget.CreateProgressReporter())
         {
             var installTask = progressReporter.AddTask($"Installing .NET SDK {_resolvedVersion}", maxValue: 100);
 
             // Extract archive directly to target directory with special handling for muxer
-            var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, existingSdkVersions, installTask);
-            if (extractResult is not null)
-            {
-                throw new InvalidOperationException($"Failed to install SDK: {extractResult}");
-            }
-
+            ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, existingSdkVersions, installTask);
             installTask.Value = installTask.MaxValue;
         }
     }
@@ -121,25 +81,17 @@ internal class ArchiveDotnetExtractor : IDisposable
      */
     private string? ExtractArchiveDirectlyToTarget(string archivePath, string targetDir, IEnumerable<ReleaseVersion> existingSdkVersions, IProgressTask? installTask)
     {
-        try
+        Directory.CreateDirectory(targetDir);
+
+        var muxerConfig = ConfigureMuxerHandling(existingSdkVersions);
+
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            // Ensure target directory exists
-            Directory.CreateDirectory(targetDir);
-
-            var muxerConfig = ConfigureMuxerHandling(existingSdkVersions);
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return ExtractTarArchive(archivePath, targetDir, muxerConfig, installTask);
-            }
-            else
-            {
-                return ExtractZipArchive(archivePath, targetDir, muxerConfig, installTask);
-            }
+            return ExtractTarArchive(archivePath, targetDir, muxerConfig, installTask);
         }
-        catch (Exception e)
+        else
         {
-            return e.Message;
+            return ExtractZipArchive(archivePath, targetDir, muxerConfig, installTask);
         }
     }
 
@@ -148,6 +100,7 @@ internal class ArchiveDotnetExtractor : IDisposable
      */
     private MuxerHandlingConfig ConfigureMuxerHandling(IEnumerable<ReleaseVersion> existingSdkVersions)
     {
+        // TODO: This is very wrong - its comparing a runtime version and sdk version, plus it needs to respect the muxer version
         ReleaseVersion? existingMuxerVersion = existingSdkVersions.Any() ? existingSdkVersions.Max() : (ReleaseVersion?)null;
         ReleaseVersion newRuntimeVersion = _resolvedVersion;
         bool shouldUpdateMuxer = existingMuxerVersion is null || newRuntimeVersion.CompareTo(existingMuxerVersion) > 0;
@@ -205,9 +158,7 @@ internal class ArchiveDotnetExtractor : IDisposable
             return archivePath;
         }
 
-        string decompressedPath = Path.Combine(
-            Path.GetDirectoryName(archivePath) ?? Directory.CreateTempSubdirectory().FullName,
-            "decompressed.tar");
+        string decompressedPath = archivePath.Replace(".gz", "");
 
         using FileStream originalFileStream = File.OpenRead(archivePath);
         using FileStream decompressedFileStream = File.Create(decompressedPath);
@@ -293,7 +244,7 @@ internal class ArchiveDotnetExtractor : IDisposable
     private void HandleMuxerUpdateFromTar(TarEntry entry, string muxerTargetPath)
     {
         // Create a temporary file for the muxer first to avoid locking issues
-        var tempMuxerPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        var tempMuxerPath = Path.Combine(Directory.CreateTempSubdirectory().FullName, entry.Name);
         using (var outStream = File.Create(tempMuxerPath))
         {
             entry.DataStream?.CopyTo(outStream);
@@ -378,7 +329,7 @@ internal class ArchiveDotnetExtractor : IDisposable
      */
     private void HandleMuxerUpdateFromZip(ZipArchiveEntry entry, string muxerTargetPath)
     {
-        var tempMuxerPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        var tempMuxerPath = Path.Combine(Directory.CreateTempSubdirectory().FullName, entry.Name);
         entry.ExtractToFile(tempMuxerPath, overwrite: true);
 
         try
@@ -427,47 +378,9 @@ internal class ArchiveDotnetExtractor : IDisposable
         }
     }
 
-    //  TODO: InstallerOrchestratorSingleton also checks existing installs via the manifest.  Which should we use and where?
-    // This should be cached and more sophisticated based on vscode logic in the future
-    private IEnumerable<ReleaseVersion> GetExistingSdkVersions(DotnetInstallRoot installRoot)
+    private static IEnumerable<ReleaseVersion> GetExistingSdkVersions(DotnetInstallRoot installRoot)
     {
-        if (installRoot.Path == null)
-            return Enumerable.Empty<ReleaseVersion>();
-
-        var dotnetExe = Path.Combine(installRoot.Path, DnupUtilities.GetDotnetExeName());
-        if (!File.Exists(dotnetExe))
-            return Enumerable.Empty<ReleaseVersion>();
-
-        try
-        {
-            var process = new System.Diagnostics.Process();
-            process.StartInfo.FileName = dotnetExe;
-            process.StartInfo.Arguments = "--list-sdks";
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.Start();
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-
-            var versions = new List<ReleaseVersion>();
-            foreach (var line in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                var parts = line.Split(' ');
-                if (parts.Length > 0)
-                {
-                    var versionStr = parts[0];
-                    if (ReleaseVersion.TryParse(versionStr, out var version))
-                    {
-                        versions.Add(version);
-                    }
-                }
-            }
-            return versions;
-        }
-        catch
-        {
-            return [];
-        }
+        var environmentInfo = HostFxrWrapper.getInfo(installRoot.Path!);
+        return environmentInfo.SdkInfo.Select(sdk => sdk.Version);
     }
 }

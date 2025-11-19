@@ -25,7 +25,8 @@ internal class InstallerOrchestratorSingleton
     public DotnetInstall? Install(DotnetInstallRequest installRequest, bool noProgress = false)
     {
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
-        ReleaseVersion? versionToInstall = new ManifestChannelVersionResolver().Resolve(installRequest);
+        ReleaseManifest releaseManifest = new();
+        ReleaseVersion? versionToInstall = new ChannelVersionResolver(releaseManifest).Resolve(installRequest);
 
         if (versionToInstall == null)
         {
@@ -53,7 +54,7 @@ internal class InstallerOrchestratorSingleton
 
         IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
 
-        using ArchiveDotnetExtractor installer = new(installRequest, versionToInstall, progressTarget);
+        using DotnetArchiveExtractor installer = new(installRequest, versionToInstall, releaseManifest, progressTarget);
         installer.Prepare();
 
         // Extract and commit the install to the directory
