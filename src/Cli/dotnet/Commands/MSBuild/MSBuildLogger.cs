@@ -119,6 +119,8 @@ public sealed class MSBuildLogger : INodeLogger
 
                 eventSource.BuildFinished += OnBuildFinished;
             }
+
+            eventSource.BuildFinished += OnBuildFinished;
         }
         catch (Exception)
         {
