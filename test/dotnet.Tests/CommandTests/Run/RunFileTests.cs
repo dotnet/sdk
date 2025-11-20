@@ -3610,7 +3610,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.Delete(binDll);
 
         // Write invalid code that causes compilation to fail
-        code = code.Replace(";", "");
+        code = code + "\n#error error";
         File.WriteAllText(programPath, code);
 
         // Try to build the invalid code
@@ -3619,8 +3619,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdOutContaining(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc)
-            // error CS1002: ; expected
-            .And.HaveStdOutContaining("error CS1002")
+            .And.HaveStdOutContaining("error CS1029: #error: 'error'")
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
 
         new FileInfo(objDll).Should().NotExist();
