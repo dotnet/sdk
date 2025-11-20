@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -59,6 +60,7 @@ public class PackCommand(
                 CommonOptions.RestorePropertiesOption,
                 PackCommandParser.TargetOption,
                 PackCommandParser.VerbosityOption,
+                PackCommandParser.NoLogoOption
             ],
             parseResult,
             msbuildPath,
@@ -92,14 +94,14 @@ public class PackCommand(
 
         if (args.Count != 1)
         {
-            Console.Error.WriteLine(CliStrings.PackCmd_OneNuspecAllowed); 
+            Console.Error.WriteLine(CliStrings.PackCmd_OneNuspecAllowed);
             return 1;
         }
 
         var nuspecPath = args[0];
 
         var packArgs = new PackArgs()
-        { 
+        {
             Logger = new NuGetConsoleLogger(),
             Exclude = new List<string>(),
             OutputDirectory = parseResult.GetValue(PackCommandParser.OutputOption),

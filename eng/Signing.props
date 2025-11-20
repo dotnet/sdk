@@ -81,9 +81,10 @@
     <FileSignInfo Include="Verify.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Verify.DiffPlex.dll" CertificateName="$(ExternalCertificateId)" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="MicrosoftSHA2" />
+    <!-- Roslyn apphosts -->
+    <FileSignInfo Condition="'$(TargetOS)' == 'osx'" Include="csc;vbc;VBCSCompiler" CertificateName="MacDeveloperHarden" />
   </ItemGroup>
 
   <!-- Filter out any test packages from ItemsToSign -->

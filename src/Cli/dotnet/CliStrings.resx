@@ -201,15 +201,6 @@
   <data name="RequiredCommandNotPassed" xml:space="preserve">
     <value>Required command was not provided.</value>
   </data>
-  <data name="CouldNotFindAnyProjectInDirectory" xml:space="preserve">
-    <value>Could not find any project in `{0}`.</value>
-  </data>
-  <data name="CouldNotFindProjectOrDirectory" xml:space="preserve">
-    <value>Could not find project or directory `{0}`.</value>
-  </data>
-  <data name="MoreThanOneProjectInDirectory" xml:space="preserve">
-    <value>Found more than one project in `{0}`. Specify which one to use.</value>
-  </data>
   <data name="FoundInvalidProject" xml:space="preserve">
     <value>Found a project `{0}` but it is invalid.</value>
   </data>
@@ -424,6 +415,12 @@ setx PATH "%PATH%;{0}"
   </data>
   <data name="MissingToolSettingsFile" xml:space="preserve">
     <value>Settings file 'DotnetToolSettings.xml' was not found in the package.</value>
+  </data>
+  <data name="ToolRequiresHigherDotNetVersion" xml:space="preserve">
+    <value>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</value>
+  </data>
+  <data name="ToolRequiresHigherDotNetVersionSuggestion" xml:space="preserve">
+    <value>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</value>
   </data>
   <data name="ToolPackageConflictPackageId" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') is already installed.</value>
@@ -840,5 +837,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   </data>
   <data name="PackCmd_OneNuspecAllowed" xml:space="preserve">
     <value>Only one .nuspec file can be packed at a time</value>
+  </data>
+  <data name="Error_NU1302_HttpSourceUsed" xml:space="preserve">
+    <value>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</value>
   </data>
 </root>

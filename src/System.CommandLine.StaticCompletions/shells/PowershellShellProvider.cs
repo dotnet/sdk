@@ -123,7 +123,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
             yield break;
         }
 
-        if (argument.IsDynamic())
+        if (argument.IsDynamic)
         {
             // if the argument is a not-static-friendly argument, we need to call into the app for completions
             // TODO: not yet supported for powershell
@@ -214,7 +214,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
 
         writer.WriteLine("$completions += $staticCompletions");
 
-        if (command.Arguments.Any(argument => argument.IsDynamic()))
+        if (command.Arguments.Any(argument => argument.IsDynamic))
         {
             GenerateDynamicCompletionsCall(writer);
         }

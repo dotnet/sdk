@@ -252,9 +252,21 @@
         android-x64;
         " />
 
+      <Net110RuntimePackRids Include="
+        @(Net100RuntimePackRids);
+        ios-arm64;
+        iossimulator-arm64;
+        iossimulator-x64;
+        tvos-arm64;
+        tvossimulator-arm64;
+        tvossimulator-x64;
+        maccatalyst-x64;
+        maccatalyst-arm64;
+        " />
+
       <NetCoreAppHostRids Include="@(Net90AppHostRids)" />
 
-      <NetCoreRuntimePackRids Include="@(Net100RuntimePackRids)" />
+      <NetCoreRuntimePackRids Include="@(Net110RuntimePackRids)" />
 
       <!--
         In source-only builds, we build the current RID from source, which may be
@@ -692,7 +704,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
                               RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(Net100RuntimePackRids, '%3B')"
                               />
 
     <KnownAppHostPack Include="Microsoft.NETCore.App"

@@ -67,32 +67,49 @@ internal abstract class SimpleTerminal : ITerminal
 
             string durationString = HumanReadableDurationFormatter.Render(p.Stopwatch.Elapsed);
 
+            int discovered = p.DiscoveredTests;
             int passed = p.PassedTests;
             int failed = p.FailedTests;
             int skipped = p.SkippedTests;
 
-            // Use just ascii here, so we don't put too many restrictions on fonts needing to
-            // properly show unicode, or logs being saved in particular encoding.
-            Append('[');
-            SetColor(TerminalColor.DarkGreen);
-            Append('+');
-            Append(passed.ToString(CultureInfo.CurrentCulture));
-            ResetColor();
+            if (!p.IsDiscovery)
+            {
+                // Use just ascii here, so we don't put too many restrictions on fonts needing to
+                // properly show unicode, or logs being saved in particular encoding.
+                Append('[');
+                SetColor(TerminalColor.DarkGreen);
+                Append('+');
+                Append(passed.ToString(CultureInfo.CurrentCulture));
+                ResetColor();
 
-            Append('/');
+                Append('/');
 
-            SetColor(TerminalColor.DarkRed);
-            Append('x');
-            Append(failed.ToString(CultureInfo.CurrentCulture));
-            ResetColor();
+                SetColor(TerminalColor.DarkRed);
+                Append('x');
+                Append(failed.ToString(CultureInfo.CurrentCulture));
+                ResetColor();
 
-            Append('/');
+                Append('/');
 
-            SetColor(TerminalColor.DarkYellow);
-            Append('?');
-            Append(skipped.ToString(CultureInfo.CurrentCulture));
-            ResetColor();
-            Append(']');
+                SetColor(TerminalColor.DarkYellow);
+                Append('?');
+                Append(skipped.ToString(CultureInfo.CurrentCulture));
+                ResetColor();
+
+                Append(']');
+            }
+            else
+            {
+                // Use just ascii here, so we don't put too many restrictions on fonts needing to
+                // properly show unicode, or logs being saved in particular encoding.
+                Append('[');
+                SetColor(TerminalColor.DarkMagenta);
+                Append('+');
+                Append(discovered.ToString(CultureInfo.CurrentCulture));
+                ResetColor();
+
+                Append(']');
+            }
 
             Append(' ');
             Append(p.AssemblyName);
