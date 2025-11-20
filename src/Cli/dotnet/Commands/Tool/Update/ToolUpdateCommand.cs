@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Extensions;

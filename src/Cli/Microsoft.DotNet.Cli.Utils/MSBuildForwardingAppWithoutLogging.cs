@@ -44,19 +44,12 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
     private readonly List<string> _msbuildRequiredParameters = ["-maxcpucount", $"--verbosity:{DefaultVerbosity}"];
 
-    public MSBuildForwardingAppWithoutLogging(MSBuildArgs msbuildArgs, string? msbuildPath = null, bool includeLogo = false, bool isRestoring = true)
+    public MSBuildForwardingAppWithoutLogging(MSBuildArgs msbuildArgs, string? msbuildPath = null)
     {
         string defaultMSBuildPath = GetMSBuildExePath();
         _msbuildArgs = msbuildArgs;
-        if (!includeLogo && !msbuildArgs.OtherMSBuildArgs.Contains("-nologo", StringComparer.OrdinalIgnoreCase))
-        {
-            // If the user didn't explicitly ask for -nologo, we add it to avoid the MSBuild logo.
-            // This is useful for scenarios like restore where we don't want to print the logo.
-            // Note that this is different from the default behavior of MSBuild, which prints the logo.
-            msbuildArgs.OtherMSBuildArgs.Add("-nologo");
-        }
+
         string? tlpDefault = TerminalLoggerDefault;
-        // new for .NET 9 - default TL to auto (aka enable in non-CI scenarios)
         if (string.IsNullOrWhiteSpace(tlpDefault))
         {
             tlpDefault = "auto";
@@ -102,6 +95,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
         .. msbuildArgs.RestoreGlobalProperties?.Select(kvp => EmitProperty(kvp, "restoreProperty")) ?? [],
         .. msbuildArgs.RequestedTargets?.Select(target => $"--target:{target}") ?? [],
         .. msbuildArgs.Verbosity is not null ? new string[1] { $"--verbosity:{msbuildArgs.Verbosity}" } : [],
+        .. msbuildArgs.NoLogo is true ? new string[1] { "--nologo" } : [],
         .. msbuildArgs.OtherMSBuildArgs
     ];
 
