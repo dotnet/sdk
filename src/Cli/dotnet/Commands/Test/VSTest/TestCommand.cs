@@ -24,8 +24,8 @@ public class TestCommand(
         parseResult.HandleDebugSwitch();
 
         CommonOptions.ValidateSelfContainedOptions(
-            parseResult.HasOption(TestCommandParser.SelfContainedOption),
-            parseResult.HasOption(TestCommandParser.NoSelfContainedOption));
+            parseResult.HasOption(TestCommandDefinition.SelfContainedOption),
+            parseResult.HasOption(TestCommandDefinition.NoSelfContainedOption));
 
         FeatureFlag.Instance.PrintFlagFeatureState();
 
@@ -237,14 +237,14 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestSessionCorrelationId={testSessionCorrelationId}");
         }
 
-        bool noRestore = result.GetValue(TestCommandParser.NoRestoreOption) || result.GetValue(TestCommandParser.NoBuildOption);
+        bool noRestore = result.GetValue(TestCommandDefinition.NoRestoreOption) || result.GetValue(TestCommandDefinition.NoBuildOption);
 
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
             CommonOptions.PropertiesOption,
             CommonOptions.RestorePropertiesOption,
-            TestCommandParser.VsTestTargetOption,
-            TestCommandParser.VerbosityOption,
+            TestCommandDefinition.VsTestTargetOption,
+            TestCommandDefinition.VerbosityOption,
             CommonOptions.NoLogoOption())
             .CloneWithNoLogo(true);
 
@@ -292,9 +292,9 @@ public class TestCommand(
 
         var artifactsPostProcessArgs = new List<string> { "--artifactsProcessingMode-postprocess", $"--testSessionCorrelationId:{testSessionCorrelationId}" };
 
-        if (parseResult.GetResult(TestCommandParser.DiagOption) is not null)
+        if (parseResult.GetResult(TestCommandDefinition.DiagOption) is not null)
         {
-            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(TestCommandParser.DiagOption)}");
+            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(TestCommandDefinition.DiagOption)}");
         }
 
         try
