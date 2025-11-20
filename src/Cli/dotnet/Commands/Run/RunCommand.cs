@@ -15,6 +15,7 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -364,7 +365,7 @@ public class RunCommand
     /// <returns></returns>
     private MSBuildArgs SetupSilentBuildArgs(MSBuildArgs msbuildArgs)
     {
-        msbuildArgs = msbuildArgs.CloneWithAdditionalArgs("-nologo");
+        msbuildArgs = msbuildArgs.CloneWithNoLogo(true);
 
         if (msbuildArgs.Verbosity is VerbosityOptions userVerbosity)
         {
@@ -536,6 +537,15 @@ public class RunCommand
         {
             emptyProjectOption = true;
             projectFileOrDirectoryPath = Directory.GetCurrentDirectory();
+        }
+
+        // Normalize path separators to handle Windows-style paths on non-Windows platforms.
+        // This is supported for backward compatibility in 'dotnet run' only, not for all CLI commands.
+        // Converting backslashes to forward slashes allows PowerShell scripts using Windows-style paths
+        // to work cross-platform, maintaining compatibility with .NET 9 behavior.
+        if (Path.DirectorySeparatorChar != '\\')
+        {
+            projectFileOrDirectoryPath = projectFileOrDirectoryPath.Replace('\\', '/');
         }
 
         string? projectFilePath = Directory.Exists(projectFileOrDirectoryPath)

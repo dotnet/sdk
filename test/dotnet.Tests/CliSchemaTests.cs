@@ -182,12 +182,17 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
-    "--nologo": {
+    "--no-logo": {
       "description": "Do not display the startup banner or the copyright message.",
       "hidden": false,
+      "aliases": [
+         "--nologo",
+         "-nologo",
+         "/nologo"
+      ],
       "valueType": "System.Boolean",
       "hasDefaultValue": true,
-      "defaultValue": false,
+      "defaultValue": true,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -964,6 +969,24 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
+    "--no-logo": {
+      "description": "Do not display the startup banner or the copyright message.",
+      "hidden": false,
+      "aliases": [
+        "--nologo",
+        "-nologo",
+        "/nologo"
+      ],
+      "valueType": "System.Boolean",
+      "hasDefaultValue": true,
+      "defaultValue": true,
+      "arity": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "required": false,
+      "recursive": false
+    },
     "--no-restore": {
       "description": "Do not restore the project before building.",
       "hidden": false,
@@ -979,19 +1002,6 @@ public class CliSchemaTests : SdkTest
     },
     "--no-self-contained": {
       "description": "Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.",
-      "hidden": false,
-      "valueType": "System.Boolean",
-      "hasDefaultValue": true,
-      "defaultValue": false,
-      "arity": {
-        "minimum": 0,
-        "maximum": 0
-      },
-      "required": false,
-      "recursive": false
-    },
-    "--nologo": {
-      "description": "Do not display the startup banner or the copyright message.",
       "hidden": false,
       "valueType": "System.Boolean",
       "hasDefaultValue": true,
