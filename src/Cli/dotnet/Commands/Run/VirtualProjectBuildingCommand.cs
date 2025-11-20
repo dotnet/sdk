@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -9,7 +8,6 @@ using System.Diagnostics;
 using System.Security;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
@@ -19,8 +17,6 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.Build.Logging.SimpleErrorLogger;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
@@ -165,14 +161,26 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     public bool NoWriteBuildMarkers { get; init; }
 
+    private SourceFile EntryPointSourceFile
+    {
+        get
+        {
+            if (field == default)
+            {
+                field = SourceFile.Load(EntryPointFileFullPath);
+            }
+
+            return field;
+        }
+    }
+
     public ImmutableArray<CSharpDirective> Directives
     {
         get
         {
             if (field.IsDefault)
             {
-                var sourceFile = SourceFile.Load(EntryPointFileFullPath);
-                field = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.ThrowOnFirst());
+                field = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, reportAllErrors: false, DiagnosticBag.ThrowOnFirst());
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -1051,6 +1059,23 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         ProjectCollection projectCollection,
         Action<IDictionary<string, string>>? addGlobalProperties)
     {
+        var project = CreateProjectInstance(projectCollection, Directives, addGlobalProperties);
+
+        var directives = FileLevelDirectiveHelpers.EvaluateDirectives(project, Directives, EntryPointSourceFile, DiagnosticBag.ThrowOnFirst());
+        if (directives != Directives)
+        {
+            Directives = directives;
+            project = CreateProjectInstance(projectCollection, directives, addGlobalProperties);
+        }
+
+        return project;
+    }
+
+    private ProjectInstance CreateProjectInstance(
+        ProjectCollection projectCollection,
+        ImmutableArray<CSharpDirective> directives,
+        Action<IDictionary<string, string>>? addGlobalProperties)
+    {
         var projectRoot = CreateProjectRootElement(projectCollection);
 
         var globalProperties = projectCollection.GlobalProperties;
@@ -1072,7 +1097,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             var projectFileWriter = new StringWriter();
             WriteProjectFile(
                 projectFileWriter,
-                Directives,
+                directives,
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
                 artifactsPath: ArtifactsPath,

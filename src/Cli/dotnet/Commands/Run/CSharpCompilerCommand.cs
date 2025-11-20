@@ -12,6 +12,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.NET.HostModel.AppHost;
 using NuGet.Configuration;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -44,6 +45,7 @@ internal sealed partial class CSharpCompilerCommand
     private static string ClientDirectory => field ??= Path.Combine(SdkPath, "Roslyn", "bincore");
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
     internal static string RuntimeVersion => field ??= RuntimeInformation.FrameworkDescription.Split(' ').Last();
+    private static string DefaultRuntimeVersion => field ??= GetDefaultRuntimeVersion();
     private static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
 
     public required string EntryPointFileFullPath { get; init; }
@@ -315,7 +317,7 @@ internal sealed partial class CSharpCompilerCommand
                     "tfm": "net{{TargetFrameworkVersion}}",
                     "framework": {
                       "name": "Microsoft.NETCore.App",
-                      "version": {{JsonSerializer.Serialize(RuntimeVersion)}}
+                      "version": {{JsonSerializer.Serialize(DefaultRuntimeVersion)}}
                     },
                     "configProperties": {
                       "EntryPointFilePath": {{JsonSerializer.Serialize(EntryPointFileFullPath)}},
@@ -416,5 +418,20 @@ internal sealed partial class CSharpCompilerCommand
 
         colonIndex = -1;
         return false;
+    }
+
+    /// <summary>
+    /// See <c>GenerateDefaultRuntimeFrameworkVersion</c>.
+    /// </summary>
+    private static string GetDefaultRuntimeVersion()
+    {
+        if (NuGetVersion.TryParse(RuntimeVersion, out var version))
+        {
+            return version.IsPrerelease && version.Patch == 0 ?
+                RuntimeVersion :
+                new NuGetVersion(version.Major, version.Minor, 0).ToFullString();
+        }
+
+        return RuntimeVersion;
     }
 }
