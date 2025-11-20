@@ -19,7 +19,7 @@ public class CompleteCommand
 
     public static int RunWithReporter(string[] args, IReporter reporter)
     {
-        var result = Parser.Parse(["dotnet", "complete", .. args]);
+        var result = Parser.Parse(["dotnet", "complete", ..args]);
         return RunWithReporter(result, reporter);
     }
 

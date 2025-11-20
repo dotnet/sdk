@@ -29,9 +29,7 @@ internal class SolutionMigrateCommand(
         {
             ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None).Wait();
             return 0;
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             throw new GracefulException(ex.Message, ex);
         }
     }

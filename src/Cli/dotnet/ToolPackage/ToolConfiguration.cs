@@ -62,7 +62,7 @@ internal class ToolConfiguration
         }
     }
 
-
+    
 
     public string CommandName { get; }
     public string ToolAssemblyEntryPoint { get; }

@@ -109,7 +109,7 @@ internal class ToolPackageRestorer
                             IReadOnlyList<ToolCommand> toolPackageCommands)
     {
         ToolCommandName[] commandsFromPackage = [.. toolPackageCommands.Select(t => t.Name)];
-        return !commandsFromManifest.Any(cmd => !commandsFromPackage.Contains(cmd)) && !commandsFromPackage.Any(cmd => !commandsFromManifest.Contains(cmd));
+return !commandsFromManifest.Any(cmd => !commandsFromPackage.Contains(cmd)) && !commandsFromPackage.Any(cmd => !commandsFromManifest.Contains(cmd));
     }
 
     public bool PackageHasBeenRestored(

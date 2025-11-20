@@ -83,7 +83,7 @@ internal class ToolInstallLocalCommand : CommandBase
         }
         else
         {
-            return ExecuteInstallCommand((PackageId)_packageId);
+            return ExecuteInstallCommand((PackageId) _packageId);
         }
     }
 
