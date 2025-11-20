@@ -36,7 +36,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
         using var archiveDownloader = new DotnetArchiveDownloader();
         var archiveName = $"dotnet-{Guid.NewGuid()}";
-        _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
+        _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
         using (var progressReporter = _progressTarget.CreateProgressReporter())
         {
@@ -105,7 +105,7 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseVersion newRuntimeVersion = _resolvedVersion;
         bool shouldUpdateMuxer = existingMuxerVersion is null || newRuntimeVersion.CompareTo(existingMuxerVersion) > 0;
 
-        string muxerName = DnupUtilities.GetDotnetExeName();
+        string muxerName = DotnetupUtilities.GetDotnetExeName();
         string muxerTargetPath = Path.Combine(_request.InstallRoot.Path!, muxerName);
 
         return new MuxerHandlingConfig(
@@ -253,7 +253,7 @@ internal class DotnetArchiveExtractor : IDisposable
         try
         {
             // Replace the muxer using the utility that handles locking
-            DnupUtilities.ForceReplaceFile(tempMuxerPath, muxerTargetPath);
+            DotnetupUtilities.ForceReplaceFile(tempMuxerPath, muxerTargetPath);
         }
         finally
         {
@@ -335,7 +335,7 @@ internal class DotnetArchiveExtractor : IDisposable
         try
         {
             // Replace the muxer using the utility that handles locking
-            DnupUtilities.ForceReplaceFile(tempMuxerPath, muxerTargetPath);
+            DotnetupUtilities.ForceReplaceFile(tempMuxerPath, muxerTargetPath);
         }
         finally
         {

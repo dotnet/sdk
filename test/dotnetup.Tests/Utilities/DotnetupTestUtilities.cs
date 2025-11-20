@@ -1,0 +1,154 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
+using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
+
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
+
+/// <summary>
+/// Common utilities for dotnetup tests
+/// </summary>
+internal static class DotnetupTestUtilities
+{
+    /// <summary>
+    /// Creates a test environment with proper temporary directories
+    /// </summary>
+    public static TestEnvironment CreateTestEnvironment()
+    {
+        string tempRoot = Path.Combine(Path.GetTempPath(), "dotnetup-e2e", Guid.NewGuid().ToString("N"));
+        string installPath = Path.Combine(tempRoot, "dotnet-root");
+        string manifestPath = Path.Combine(tempRoot, "dotnetup_manifest.json");
+
+        // Create necessary directories
+        Directory.CreateDirectory(tempRoot);
+        Directory.CreateDirectory(installPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
+
+        return new TestEnvironment(tempRoot, installPath, manifestPath);
+    }
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup
+    /// </summary>
+    public static string[] BuildArguments(string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
+    {
+        var args = new List<string>
+        {
+            "sdk",
+            "install",
+            channel
+        };
+
+        args.Add("--install-path");
+        args.Add(installPath);
+        args.Add("--interactive");
+        args.Add("false");
+
+        // Add manifest path option if specified for test isolation
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            args.Add("--manifest-path");
+            args.Add(manifestPath);
+        }
+
+        // Add no-progress option when running tests in parallel to avoid Spectre.Console exclusivity issues
+        if (disableProgress)
+        {
+            args.Add("--no-progress");
+        }
+
+        return [.. args];
+    }
+
+    /// <summary>
+    /// Runs the dotnetup executable as a separate process
+    /// </summary>
+    /// <param name="args">Command line arguments for dotnetup</param>
+    /// <param name="captureOutput">Whether to capture and return the output</param>
+    /// <returns>A tuple with exit code and captured output (if requested)</returns>
+    public static (int exitCode, string output) RunDotnetupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
+    {
+#if DEBUG
+        string configuration = "Debug";
+#else
+        string configuration = "Release";
+#endif
+
+        string repoRoot = GetRepositoryRoot();
+        string dotnetupPath = Path.Combine(
+            repoRoot,
+            "artifacts", "bin", "dotnetup", configuration, "net10.0", "dotnetup.dll");
+
+        // Ensure path is normalized and exists
+        dotnetupPath = Path.GetFullPath(dotnetupPath);
+        if (!File.Exists(dotnetupPath))
+        {
+            throw new FileNotFoundException($"dotnetup executable not found at: {dotnetupPath}");
+        }
+
+        using var process = new Process();
+        string repoDotnet = Path.Combine(repoRoot, ".dotnet", DotnetupUtilities.GetDotnetExeName());
+        process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DotnetupUtilities.GetDotnetExeName();
+        process.StartInfo.Arguments = $"\"{dotnetupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.CreateNoWindow = true;
+        process.StartInfo.RedirectStandardOutput = captureOutput;
+        process.StartInfo.RedirectStandardError = captureOutput;
+        process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
+
+        StringBuilder outputBuilder = new();
+        if (captureOutput)
+        {
+            process.OutputDataReceived += (sender, e) =>
+            {
+                if (e.Data != null)
+                {
+                    outputBuilder.AppendLine(e.Data);
+                }
+            };
+            process.ErrorDataReceived += (sender, e) =>
+            {
+                if (e.Data != null)
+                {
+                    outputBuilder.AppendLine(e.Data);
+                }
+            };
+        }
+
+        process.Start();
+
+        if (captureOutput)
+        {
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+        }
+
+        process.WaitForExit();
+        return (process.ExitCode, outputBuilder.ToString());
+    }
+
+    private static string GetRepositoryRoot()
+    {
+        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (currentDirectory != null)
+        {
+            if (File.Exists(Path.Combine(currentDirectory.FullName, "sdk.slnx")))
+            {
+                return currentDirectory.FullName;
+            }
+
+            currentDirectory = currentDirectory.Parent;
+        }
+
+        throw new InvalidOperationException($"Unable to locate repository root from base directory '{AppContext.BaseDirectory}'.");
+    }
+
+}

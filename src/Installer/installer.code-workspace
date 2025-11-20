@@ -5,15 +5,15 @@
             "name": "installer"
         },
         {
-            "path": "../../test/dnup.Tests",
-            "name": "dnup.Tests"
+            "path": "../../test/dotnetup.Tests",
+            "name": "dotnetup.Tests"
         },
         {
             "path": "../.."
         }
     ],
     "settings": {
-        "dotnet.defaultSolution": "dnup/dnup.csproj",
+        "dotnet.defaultSolution": "dotnetup/dotnetup.csproj",
         "csharp.debug.console": "integratedTerminal",
         "debug.terminal.clearBeforeReusing": true,
         "editor.formatOnSave": true,
@@ -23,16 +23,16 @@
         "version": "0.2.0",
         "configurations": [
             {
-                "name": "Launch dnup (Default)",
+                "name": "Launch dotnetup (Default)",
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build",
-                "program": "${workspaceFolder:installer}/../../artifacts/bin/dnup/Debug/net10.0/dnup.dll",
+                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
                 "args": [
                     "sdk",
                     "install"
                 ],
-                "cwd": "${workspaceFolder:installer}/dnup",
+                "cwd": "${workspaceFolder:installer}/dotnetup",
                 "console": "integratedTerminal",
                 "stopAtEntry": false,
                 "logging": {
@@ -40,32 +40,32 @@
                 }
             },
             {
-                "name": "Run dnup tests (launch)",
+                "name": "Run dotnetup tests (launch)",
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build",
                 "program": "dotnet",
                 "args": [
                     "test",
-                    "${workspaceFolder:dnup.Tests}/dnup.Tests.csproj",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
                     "/p:ContinuousIntegrationBuild=false",
                 ],
-                "cwd": "${workspaceFolder:dnup.Tests}",
+                "cwd": "${workspaceFolder:dotnetup.Tests}",
                 "console": "integratedTerminal",
                 "stopAtEntry": false,
                 "env": {
-                    "DNUP_TEST_DEBUG": "0"
+                    "DOTNETUP_TEST_DEBUG": "0"
                 }
             },
             {
-                "name": "Debug dnup test",
+                "name": "Debug dotnetup test",
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build",
                 "program": "dotnet",
                 "args": [
                     "test",
-                    "${workspaceFolder:dnup.Tests}/dnup.Tests.csproj",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
                     "--no-build",
                     "--filter",
                     "FullyQualifiedName~${input:testName}",
@@ -75,14 +75,14 @@
                     "/p:RunAnalyzers=false",
                     "/p:NoRestore=true"
                 ],
-                "cwd": "${workspaceFolder:dnup.Tests}",
+                "cwd": "${workspaceFolder:dotnetup.Tests}",
                 "console": "integratedTerminal",
                 "stopAtEntry": false,
                 "logging": {
                     "moduleLoad": false
                 },
                 "env": {
-                    "DNUP_TEST_DEBUG": "1"
+                    "DOTNETUP_TEST_DEBUG": "1"
                 }
             }
         ],
@@ -96,7 +96,7 @@
             {
                 "id": "commandLineArgs",
                 "type": "promptString",
-                "description": "Command line arguments for dnup (e.g., 'sdk install 9.0', 'runtime install lts', '--help')",
+                "description": "Command line arguments for dotnetup (e.g., 'sdk install 9.0', 'runtime install lts', '--help')",
                 "default": "sdk install"
             }
         ]
@@ -110,7 +110,7 @@
                 "command": "dotnet",
                 "args": [
                     "build",
-                    "dnup/dnup.csproj",
+                    "dotnetup/dotnetup.csproj",
                     "/property:GenerateFullPaths=true",
                     "/consoleloggerparameters:NoSummary",
                     "/p:ContinuousIntegrationBuild=false",
@@ -140,7 +140,7 @@
                 "command": "dotnet",
                 "args": [
                     "test",
-                    "${workspaceFolder:dnup.Tests}/dnup.Tests.csproj",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
                     "/property:GenerateFullPaths=true",
                     "/consoleloggerparameters:NoSummary",
                     "/p:ContinuousIntegrationBuild=false",

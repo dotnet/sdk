@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj;**\dnup.Tests.csproj" />
+    <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj;**\*.AnalyzerRedirecting.Tests.csproj;**\dotnetup.Tests.csproj" />
     <SDKCustomXUnitProject Include="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj" />
 
     <!--containers tests end with UnitTests and IntegrationTests, therefore included manually -->

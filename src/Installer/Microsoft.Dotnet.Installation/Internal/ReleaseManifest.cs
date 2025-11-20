@@ -112,8 +112,8 @@ internal class ReleaseManifest
     /// </summary>
     private static ReleaseFile? FindMatchingFile(ReleaseComponent release, DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
-        var rid = DnupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
-        var fileExtension = DnupUtilities.GetArchiveFileExtensionForPlatform();
+        var rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
+        var fileExtension = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
 
         var matchingFiles = release.Files
              .Where(f => f.Rid == rid) // TODO: Do we support musl here?
