@@ -13,7 +13,7 @@ public static class RestoreCommand
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var result = Parser.Parse(["dotnet", "restore", .. args]);
+        var result = Parser.Parse(["dotnet", "restore", ..args]);
         return FromParseResult(result, msbuildPath);
     }
 

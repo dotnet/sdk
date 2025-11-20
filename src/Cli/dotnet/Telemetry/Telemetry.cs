@@ -258,6 +258,6 @@ public class Telemetry : ITelemetry
         {
             eventMeasurements[measurement.Key] = measurement.Value;
         }
-        return eventMeasurements;
-    }
+            return eventMeasurements;
+        }
 }

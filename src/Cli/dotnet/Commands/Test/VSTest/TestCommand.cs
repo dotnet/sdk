@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
@@ -41,39 +40,19 @@ public class TestCommand(
             VSTestTrace.SafeWriteTrace(() => $"Argument list: '{commandLineParameters}'");
         }
 
-        (args, string[] settings) = SeparateSettingsFromArgs(args);
+        // settings parameters are after -- (including --), these should not be considered by the parser
+        string[] settings = [.. args.SkipWhile(a => a != "--")];
+        // all parameters before --
+        args = [.. args.TakeWhile(a => a != "--")];
 
         // Fix for https://github.com/Microsoft/vstest/issues/1453
         // Run dll/exe directly using the VSTestForwardingApp
-        // Note: ContainsBuiltTestSources need to know how many settings are there, to skip those from unmatched tokens
-        // When we don't have settings, we pass 0.
-        // When we have settings, we want to exclude the '--' as it doesn't end up in unmatched tokens, so we pass settings.Length - 1
-        if (ContainsBuiltTestSources(parseResult, GetSettingsCount(settings)))
+        if (ContainsBuiltTestSources(args))
         {
             return ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId);
         }
 
         return ForwardToMsbuild(parseResult, settings, testSessionCorrelationId);
-    }
-
-    internal /*internal for testing*/ static (string[] Args, string[] Settings) SeparateSettingsFromArgs(string[] args)
-    {
-        // settings parameters are after -- (including --), these should not be considered by the parser
-        string[] settings = [.. args.SkipWhile(a => a != "--")];
-        // all parameters before --
-        args = [.. args.TakeWhile(a => a != "--")];
-        return (args, settings);
-    }
-
-    internal /*internal for testing*/ static int GetSettingsCount(string[] settings)
-    {
-        if (settings.Length == 0)
-        {
-            return 0;
-        }
-
-        Debug.Assert(settings[0] == "--", "Settings should start with --");
-        return settings.Length - 1;
     }
 
     private static int ForwardToMsbuild(ParseResult parseResult, string[] settings, string testSessionCorrelationId)
@@ -175,7 +154,7 @@ public class TestCommand(
 
     public static TestCommand FromArgs(string[] args, string? testSessionCorrelationId = null, string? msbuildPath = null)
     {
-        var parseResult = Parser.Parse(["dotnet", "test", .. args]);
+        var parseResult = Parser.Parse(["dotnet", "test", ..args]);
 
         // settings parameters are after -- (including --), these should not be considered by the parser
         string[] settings = [.. args.SkipWhile(a => a != "--")];
@@ -258,10 +237,9 @@ public class TestCommand(
             }
         }
 
-
+        
         Dictionary<string, string> variables = VSTestForwardingApp.GetVSTestRootVariables();
-        foreach (var (rootVariableName, rootValue) in variables)
-        {
+        foreach (var (rootVariableName, rootValue) in variables) {
             testCommand.EnvironmentVariable(rootVariableName, rootValue);
             VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
         }
@@ -315,14 +293,18 @@ public class TestCommand(
         }
     }
 
-    internal /*internal for testing*/ static bool ContainsBuiltTestSources(ParseResult parseResult, int settingsLength)
+    private static bool ContainsBuiltTestSources(string[] args)
     {
-        for (int i = 0; i < parseResult.UnmatchedTokens.Count - settingsLength; i++)
+        for (int i = 0; i < args.Length; i++)
         {
-            string arg = parseResult.UnmatchedTokens[i];
-            if (!arg.StartsWith("-") &&
-                (arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)))
+            string arg = args[i];
+            if (arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
             {
+                var previousArg = i > 0 ? args[i - 1] : null;
+                if (previousArg != null &&  CommonOptions.PropertiesOption.Aliases.Contains(previousArg))
+                {
+                    return false;
+                }
                 return true;
             }
         }

@@ -4,12 +4,12 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Tool.Install;
-using Microsoft.DotNet.Cli.ShellShim;
-using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.DotNet.Cli.ToolPackage;
 using CreateShellShimRepository = Microsoft.DotNet.Cli.Commands.Tool.Install.CreateShellShimRepository;
+using Microsoft.DotNet.Cli.ShellShim;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
