@@ -74,11 +74,11 @@ namespace dotnet.Tests
             commandResult.Should().Pass();
             if (shouldWarn)
             {
-                commandResult.Should().HaveStdOutContaining("NETSDK1234");
+                commandResult.Should().HaveStdOutContaining("NETSDK1235");
             }
             else
             {
-                commandResult.Should().NotHaveStdOutContaining("NETSDK1234");
+                commandResult.Should().NotHaveStdOutContaining("NETSDK1235");
             }
         }
     }
