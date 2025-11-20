@@ -38,7 +38,7 @@ internal static class DotnetCommandCallbacks
     {
         PathUtility.EnsureAllPathsExist([pathToRestore], CliStrings.CommonFileNotFound, allowDirectories: true);
         // for the implicit restore we do not want the terminal logger to emit any output unless there are errors
-        return RestoreCommand.Run([pathToRestore, "-tlp:verbosity=quiet"]) == 0;
+        return RestoreCommand.Run([pathToRestore, "-tlp:verbosity=quiet", "--no-logo"]) == 0;
     }
 
     internal static bool AddProjectsToSolution(string solutionPath, IReadOnlyList<string> projectsToAdd, string? solutionFolder, bool? inRoot)

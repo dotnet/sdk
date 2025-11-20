@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -33,7 +34,7 @@ internal sealed class FileBasedAppSourceEditor
         {
             if (field.IsDefault)
             {
-                field = VirtualProjectBuildingCommand.FindDirectives(SourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
+                field = FileLevelDirectiveHelpers.FindDirectives(SourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -86,7 +87,8 @@ internal sealed class FileBasedAppSourceEditor
     {
         // Find one that has the same kind and name.
         // If found, we will replace it with the new directive.
-        if (directive is CSharpDirective.Named named &&
+        var named = directive as CSharpDirective.Named;
+        if (named != null &&
             Directives.OfType<CSharpDirective.Named>().FirstOrDefault(d => NamedDirectiveComparer.Instance.Equals(d, named)) is { } toReplace)
         {
             return new TextChange(toReplace.Info.Span, newText: directive.ToString() + NewLine);
@@ -99,6 +101,14 @@ internal sealed class FileBasedAppSourceEditor
         {
             if (existingDirective.GetType() == directive.GetType())
             {
+                // Add named directives in sorted order.
+                if (named != null &&
+                    existingDirective is CSharpDirective.Named existingNamed &&
+                    string.CompareOrdinal(existingNamed.Name, named.Name) > 0)
+                {
+                    break;
+                }
+
                 addAfter = existingDirective;
             }
             else if (addAfter != null)
@@ -116,11 +126,11 @@ internal sealed class FileBasedAppSourceEditor
         // Otherwise, we will add the directive to the top of the file.
         int start = 0;
 
-        var tokenizer = VirtualProjectBuildingCommand.CreateTokenizer(SourceFile.Text);
+        var tokenizer = FileLevelDirectiveHelpers.CreateTokenizer(SourceFile.Text);
         var result = tokenizer.ParseNextToken();
         var leadingTrivia = result.Token.LeadingTrivia;
 
-        // If there is a comment at the top of the file, we add the directive after it
+        // If there is a comment or #! at the top of the file, we add the directive after it
         // (the comment might be a license which should always stay at the top).
         int insertAfterIndex = -1;
         int trailingNewLines = 0;
@@ -159,6 +169,11 @@ internal sealed class FileBasedAppSourceEditor
                         trailingNewLines = 1;
                         insertAfterIndex = i;
                     }
+                    break;
+
+                case SyntaxKind.ShebangDirectiveTrivia:
+                    trailingNewLines = 1; // shebang trivia has one newline embedded in its structure
+                    insertAfterIndex = i;
                     break;
 
                 case SyntaxKind.EndOfLineTrivia:

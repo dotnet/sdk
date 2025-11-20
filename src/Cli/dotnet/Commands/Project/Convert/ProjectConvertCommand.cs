@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.CommandLine;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
@@ -29,7 +32,23 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         // Find directives (this can fail, so do this before creating the target directory).
         var sourceFile = SourceFile.Load(file);
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !_force, DiagnosticBag.ThrowOnFirst());
+        var diagnostics = DiagnosticBag.ThrowOnFirst();
+        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: !_force, diagnostics);
+
+        // Create a project instance for evaluation.
+        var projectCollection = new ProjectCollection();
+        var command = new VirtualProjectBuildingCommand(
+            entryPointFileFullPath: file,
+            msbuildArgs: MSBuildArgs.FromOtherArgs([]))
+        {
+            Directives = directives,
+        };
+        var projectInstance = command.CreateProjectInstance(projectCollection);
+
+        // Evaluate directives.
+        directives = FileLevelDirectiveHelpers.EvaluateDirectives(projectInstance, directives, sourceFile, diagnostics);
+        command.Directives = directives;
+        projectInstance = command.CreateProjectInstance(projectCollection);
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
@@ -61,7 +80,9 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         {
             using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
             using var writer = new StreamWriter(stream, Encoding.UTF8);
-            VirtualProjectBuildingCommand.WriteProjectFile(writer, directives, isVirtualProject: false);
+            VirtualProjectBuildingCommand.WriteProjectFile(writer, UpdateDirectives(directives), isVirtualProject: false,
+                userSecretsId: DetermineUserSecretsId(),
+                excludeDefaultProperties: FindDefaultPropertiesToExclude());
         }
 
         // Copy or move over included items.
@@ -112,14 +133,6 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         IEnumerable<(string FullPath, string RelativePath)> FindIncludedItems()
         {
             string entryPointFileDirectory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
-            var projectCollection = new ProjectCollection();
-            var command = new VirtualProjectBuildingCommand(
-                entryPointFileFullPath: file,
-                msbuildArgs: MSBuildArgs.FromOtherArgs([]))
-            {
-                Directives = directives,
-            };
-            var projectInstance = command.CreateProjectInstance(projectCollection);
 
             // Include only items we know are files.
             string[] itemTypes = ["Content", "None", "Compile", "EmbeddedResource"];
@@ -149,6 +162,84 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
                 string itemRelativePath = Path.GetRelativePath(relativeTo: entryPointFileDirectory, path: itemFullPath);
                 yield return (FullPath: itemFullPath, RelativePath: itemRelativePath);
+            }
+        }
+
+        string? DetermineUserSecretsId()
+        {
+            var implicitValue = projectInstance.GetPropertyValue("_ImplicitFileBasedProgramUserSecretsId");
+            var actualValue = projectInstance.GetPropertyValue("UserSecretsId");
+            return implicitValue == actualValue ? actualValue : null;
+        }
+
+        ImmutableArray<CSharpDirective> UpdateDirectives(ImmutableArray<CSharpDirective> directives)
+        {
+            var sourceDirectory = Path.GetDirectoryName(file)!;
+
+            var result = ImmutableArray.CreateBuilder<CSharpDirective>(directives.Length);
+
+            foreach (var directive in directives)
+            {
+                // Fixup relative project reference paths (they need to be relative to the output directory instead of the source directory,
+                // and preserve MSBuild interpolation variables like `$(..)`
+                // while also pointing to the project file rather than a directory).
+                if (directive is CSharpDirective.Project project)
+                {
+                    Debug.Assert(project.ExpandedName != null && project.ProjectFilePath != null && project.ProjectFilePath == project.Name);
+
+                    if (Path.IsPathFullyQualified(project.Name))
+                    {
+                        // If the path is absolute and has no `$(..)` vars, just keep it.
+                        if (project.ExpandedName == project.OriginalName)
+                        {
+                            result.Add(project);
+                            continue;
+                        }
+
+                        // If the path is absolute and it *starts* with some `$(..)` vars,
+                        // turn it into a relative path (it might be in the form `$(ProjectDir)/../Lib`
+                        // and we don't want that to be turned into an absolute path in the converted project).
+                        //
+                        // If the path is absolute but the `$(..)` vars are *inside* of it (like `C:\$(..)\Lib`),
+                        // instead of at the start, we can keep those vars, i.e., skip this `if` block.
+                        //
+                        // The `OriginalName` is absolute if there are no `$(..)` vars at the start.
+                        if (!Path.IsPathFullyQualified(project.OriginalName))
+                        {
+                            project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: project.Name), CSharpDirective.Project.NameKind.Final);
+                            result.Add(project);
+                            continue;
+                        }
+                    }
+
+                    // If the original path is to a directory, just append the resolved file name
+                    // but preserve the variables from the original, e.g., `../$(..)/Directory/Project.csproj`.
+                    if (Directory.Exists(Path.Combine(sourceDirectory, project.ExpandedName)))
+                    {
+                        var projectFileName = Path.GetFileName(project.Name);
+                        project = project.WithName(Path.Join(project.OriginalName, projectFileName), CSharpDirective.Project.NameKind.Final);
+                    }
+
+                    project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: Path.Combine(sourceDirectory, project.Name)), CSharpDirective.Project.NameKind.Final);
+                    result.Add(project);
+                    continue;
+                }
+
+                result.Add(directive);
+            }
+
+            return result.DrainToImmutable();
+        }
+
+        IEnumerable<string> FindDefaultPropertiesToExclude()
+        {
+            foreach (var (name, defaultValue) in VirtualProjectBuildingCommand.DefaultProperties)
+            {
+                string projectValue = projectInstance.GetPropertyValue(name);
+                if (!string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return name;
+                }
             }
         }
     }

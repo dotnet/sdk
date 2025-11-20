@@ -25,11 +25,11 @@
   "symbols/RollForward/choices/latestMajor/displayName": "Principal mais recente",
   "symbols/RollForward/choices/disable/description": "Não rola para frente. Correspondência exata necessária.",
   "symbols/RollForward/choices/disable/displayName": "Desabilitar rolar para frente",
-  "symbols/TestRunner/description": "The test runner to use.",
-  "symbols/TestRunner/displayName": "Test runner",
-  "symbols/TestRunner/choices/VSTest/description": "Use VSTest as test runner",
+  "symbols/TestRunner/description": "O executor de teste a ser usado.",
+  "symbols/TestRunner/displayName": "Executor de teste",
+  "symbols/TestRunner/choices/VSTest/description": "Usar VSTest como executor de teste",
   "symbols/TestRunner/choices/VSTest/displayName": "VSTest",
-  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use Microsoft.Testing.Platform as test runner",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Usar Microsoft.Testing.Platform como executor de teste",
   "symbols/TestRunner/choices/Microsoft.Testing.Platform/displayName": "Microsoft.Testing.Platform",
   "postActions/open-file/description": "Abrir global.json no editor"
 }

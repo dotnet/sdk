@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOption.Name, testProjectPath,
+                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption.Name, testProjectPath,
                                     MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "exec", addVersionAndArchPattern: false));
@@ -34,10 +34,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunWithSolutionPathWithFailingTests_ShouldReturnExitCodeGenericFailure(string configuration)
+        [Theory, CombinatorialData]
+        public void RunWithSolutionPathWithFailingTests_ShouldReturnExitCodeAtLeastOneTestFailed(
+            [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,
+            [CombinatorialValues("--solution", "--project")] string projectOrSolution)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.SolutionOption.Name, testSolutionPath,
+                                    .Execute(projectOrSolution, testSolutionPath,
                                     MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
@@ -54,10 +54,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunWithSolutionFilterPathWithFailingTests_ShouldReturnExitCodeGenericFailure(string configuration)
+        [Theory, CombinatorialData]
+        public void RunWithSolutionFilterPathWithFailingTests_ShouldReturnExitCodeGenericFailure(
+            [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,
+            [CombinatorialValues("--solution", "--project")] string projectOrSolution)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.SolutionOption.Name, testSolutionPath,
+                                    .Execute(projectOrSolution, testSolutionPath,
                                     MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOption.Name, invalidProjectPath,
+                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption.Name, invalidProjectPath,
                                              MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, invalidProjectPath));
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunWithDirectoryAsProjectOption_ShouldReturnExitCodeGenericFailure(string configuration)
+        public void RunWithDirectoryAsProjectOrSolutionOption_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOption.Name, projectPath,
+                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption.Name, projectPath,
                                              MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Validate that only TestProject ran
@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOption.Name, testProjectPath,
+                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption.Name, testProjectPath,
                                              MicrosoftTestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                              MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -182,7 +182,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOption.Name, testProjectPath,
+                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption.Name, testProjectPath,
                                     MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             string fullProjectPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}{testProjectPath}";
@@ -352,7 +352,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOption.Name, "TestProject.csproj",
+                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption.Name, "TestProject.csproj",
                                             MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
                                             CommonOptions.NoRestoreOption.Name,
                                             MicrosoftTestingPlatformOptions.NoBuildOption.Name);
@@ -388,7 +388,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOption.Name, "TestProject.csproj",
+                                    .Execute(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption.Name, "TestProject.csproj",
                                             MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
                                             "--property:WarningLevel=2", $"--property:Configuration={configuration}");
 
@@ -565,6 +565,64 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             Assert.True(File.Exists(Path.Combine(testInstance.Path, traceFile)), "Trace file should exist after test execution.");
 
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void RunWithSolutionFilterContainingSharedProject_ShouldSkipSharedProjectAndSucceed(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
+
+            string testSolutionFilterPath = "TestProjectsWithShared.slnf";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(MicrosoftTestingPlatformOptions.SolutionOption.Name, testSolutionFilterPath,
+                                    MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            // Validate that TestProject ran (shared project should be skipped automatically)
+            result.StdOut.Should().Contain("TestProject.dll");
+            // OtherTestProject should not be included since it's not in the solution filter
+            result.StdOut.Should().NotContain("OtherTestProject.dll");
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void RunWithSolutionAndPlatformConfiguration_ShouldRespectPlatform(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithPlatforms", Guid.NewGuid().ToString()).WithSource();
+
+            string testSolutionPath = "MultiTestProjectSolutionWithPlatforms.slnx";
+
+            // Test with "NonWindows" platform - OtherTestProject should NOT be included
+            CommandResult resultX86 = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(MicrosoftTestingPlatformOptions.SolutionOption.Name, testSolutionPath,
+                                    MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                    "--property:Platform=NonWindows");
+
+            // Validate that TestProject ran but OtherTestProject did not (not marked for build on x86)
+            resultX86.StdOut.Should().Contain("TestProject.dll");
+            resultX86.StdOut.Should().NotContain("OtherTestProject.dll");
+
+            resultX86.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+
+            // Test with x64 platform - both projects should be included
+            CommandResult resultX64 = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(MicrosoftTestingPlatformOptions.SolutionOption.Name, testSolutionPath,
+                                    MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                    "--property:Platform=x64");
+
+            // Validate that both TestProject and OtherTestProject ran
+            resultX64.StdOut.Should().Contain("TestProject.dll");
+            resultX64.StdOut.Should().Contain("OtherTestProject.dll");
+
+            resultX64.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
     }
 }
