@@ -278,10 +278,17 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
         try
         {
-            // Wait for the mutex with a reasonable timeout
-            if (!mutex.WaitOne(TimeSpan.FromMinutes(5)))
+            // First try a quick check to see if the mutex is immediately available
+            if (!mutex.WaitOne(TimeSpan.FromMilliseconds(50)))
             {
-                throw new ToolPackageException(string.Format(CliStrings.ToolInstallationTimeout, packageId, packageVersion));
+                // Mutex is held by another process - inform the user
+                Reporter.Error.WriteLine(string.Format(CliStrings.ToolInstallationWaiting, packageId, packageVersion));
+
+                // Now wait for the longer duration
+                if (!mutex.WaitOne(TimeSpan.FromMinutes(5)))
+                {
+                    throw new ToolPackageException(string.Format(CliStrings.ToolInstallationTimeout, packageId, packageVersion));
+                }
             }
 
             if (!IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))

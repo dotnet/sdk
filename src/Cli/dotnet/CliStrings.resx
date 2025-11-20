@@ -434,6 +434,9 @@ setx PATH "%PATH%;{0}"
   <data name="ToolInstallationTimeout" xml:space="preserve">
     <value>Timeout waiting for concurrent installation of tool '{0}' version '{1}' to complete. Please try again.</value>
   </data>
+  <data name="ToolInstallationWaiting" xml:space="preserve">
+    <value>Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete... (Press Ctrl+C to cancel)</value>
+  </data>
   <data name="ColumnMaxWidthMustBeGreaterThanZero" xml:space="preserve">
     <value>Column maximum width must be greater than zero.</value>
   </data>
