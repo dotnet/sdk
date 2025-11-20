@@ -885,7 +885,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         File.WriteAllText(programPath, code);
 
-        var workDir = Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar);
+        var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
 
         var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
@@ -934,7 +934,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         File.WriteAllText(programPath, code);
 
-        var workDir = Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar);
+        var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
 
         var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
