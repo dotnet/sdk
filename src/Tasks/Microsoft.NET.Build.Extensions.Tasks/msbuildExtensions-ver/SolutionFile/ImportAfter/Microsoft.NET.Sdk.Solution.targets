@@ -37,8 +37,20 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <!--
+  ============================================================
+                              _CheckForSolutionLevelTargetFramework
+
+    Warn when the framework option is used at the solution level.
+    
+    This only triggers when using the framework CLI option, not when
+    setting TargetFramework via -p:TargetFramework=... directly.
+    The bypass via property is intentional to allow advanced scenarios
+    while warning users about the common case that can cause issues.
+  ============================================================
+   -->
   <Target Name="_CheckForSolutionLevelTargetFramework"
-          BeforeTargets="Build;Publish;Clean;Store;VSTest;_MTPBuild"
+          BeforeTargets="Build;Publish;Clean;Pack;Store;VSTest;_MTPBuild"
           Condition="'$(_CommandLineDefinedTargetFramework)' == 'true'">
 
     <NetSdkWarning ResourceName="CannotHaveSolutionLevelTargetFramework" />
