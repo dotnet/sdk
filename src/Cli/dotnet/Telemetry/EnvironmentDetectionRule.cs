@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
@@ -33,8 +34,7 @@ internal class BooleanEnvironmentRule : EnvironmentDetectionRule
 
     public override bool IsMatch()
     {
-        return _variables.Any(variable => 
-            bool.TryParse(Environment.GetEnvironmentVariable(variable), out bool value) && value);
+        return _variables.Any(variable => Env.GetEnvironmentVariableAsBool(variable));
     }
 }
 
@@ -81,12 +81,12 @@ internal class AnyPresentEnvironmentRule : EnvironmentDetectionRule
 /// <typeparam name="T">The type of the result value.</typeparam>
 internal class EnvironmentDetectionRuleWithResult<T> where T : class
 {
-    private readonly string[] _variables;
+    private readonly EnvironmentDetectionRule _rule;
     private readonly T _result;
 
-    public EnvironmentDetectionRuleWithResult(T result, params string[] variables)
+    public EnvironmentDetectionRuleWithResult(T result, EnvironmentDetectionRule rule)
     {
-        _variables = variables ?? throw new ArgumentNullException(nameof(variables));
+        _rule = rule ?? throw new ArgumentNullException(nameof(rule));
         _result = result ?? throw new ArgumentNullException(nameof(result));
     }
 
@@ -96,8 +96,8 @@ internal class EnvironmentDetectionRuleWithResult<T> where T : class
     /// <returns>The result value if the rule matches; otherwise, null.</returns>
     public T? GetResult()
     {
-        return _variables.Any(variable => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(variable))) 
-            ? _result 
+        return _rule.IsMatch()
+            ? _result
             : null;
     }
 }
