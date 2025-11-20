@@ -1064,6 +1064,11 @@ O padrão é 'false.' No entanto, ao direcionar para .NET 7 ou inferior, o padr�
         <target state="translated">É necessário especificar pelo menos uma referência a ser removida.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallationTimeout">
+        <source>Timeout waiting for concurrent installation of tool '{0}' version '{1}' to complete. Please try again.</source>
+        <target state="new">Timeout waiting for concurrent installation of tool '{0}' version '{1}' to complete. Please try again.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0}: a biblioteca de ferramentas encontrou {1}</target>

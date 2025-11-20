@@ -1064,6 +1064,11 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
         <target state="translated">Vous devez spécifier au moins une référence à retirer.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallationTimeout">
+        <source>Timeout waiting for concurrent installation of tool '{0}' version '{1}' to complete. Please try again.</source>
+        <target state="new">Timeout waiting for concurrent installation of tool '{0}' version '{1}' to complete. Please try again.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0} : bibliothèque d'outils trouvée {1}</target>
