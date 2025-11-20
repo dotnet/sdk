@@ -76,6 +76,8 @@ internal static class ProjectProperties
     internal const string IsTestProject = "IsTestProject";
     internal const string TargetFramework = "TargetFramework";
     internal const string TargetFrameworks = "TargetFrameworks";
+    internal const string Configuration = "Configuration";
+    internal const string Platform = "Platform";
     internal const string TargetPath = "TargetPath";
     internal const string ProjectFullPath = "MSBuildProjectFullPath";
     internal const string RunCommand = "RunCommand";

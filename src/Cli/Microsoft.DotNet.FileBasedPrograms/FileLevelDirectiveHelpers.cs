@@ -6,12 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -224,6 +226,30 @@ internal static class FileLevelDirectiveHelpers
                 return false;
             }
         }
+    }
+
+    /// <summary>
+    /// If there are any <c>#:project</c> <paramref name="directives"/>, expands <c>$()</c> in them and ensures they point to project files (not directories).
+    /// </summary>
+    public static ImmutableArray<CSharpDirective> EvaluateDirectives(
+        ProjectInstance? project,
+        ImmutableArray<CSharpDirective> directives,
+        SourceFile sourceFile,
+        DiagnosticBag diagnostics)
+    {
+        if (directives.OfType<CSharpDirective.Project>().Any())
+        {
+            return directives
+                .Select(d => d is CSharpDirective.Project p
+                    ? (project is null
+                        ? p
+                        : p.WithName(project.ExpandString(p.Name), CSharpDirective.Project.NameKind.Expanded))
+                       .EnsureProjectFilePath(sourceFile, diagnostics)
+                    : d)
+                .ToImmutableArray();
+        }
+
+        return directives;
     }
 }
 
@@ -457,8 +483,32 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// <summary>
     /// <c>#:project</c> directive.
     /// </summary>
-    public sealed class Project(in ParseInfo info) : Named(info)
+    public sealed class Project : Named
     {
+        [SetsRequiredMembers]
+        public Project(in ParseInfo info, string name) : base(info)
+        {
+            Name = name;
+            OriginalName = name;
+        }
+
+        /// <summary>
+        /// Preserved across <see cref="WithName"/> calls, i.e.,
+        /// this is the original directive text as entered by the user.
+        /// </summary>
+        public string OriginalName { get; init; }
+
+        /// <summary>
+        /// This is the <see cref="OriginalName"/> with MSBuild <c>$(..)</c> vars expanded (via <see cref="ProjectInstance.ExpandString"/>).
+        /// </summary>
+        public string? ExpandedName { get; init; }
+
+        /// <summary>
+        /// This is the <see cref="ExpandedName"/> resolved via <see cref="EnsureProjectFilePath"/>
+        /// (i.e., this is a file path if the original text pointed to a directory).
+        /// </summary>
+        public string? ProjectFilePath { get; init; }
+
         public static new Project? Parse(in ParseContext context)
         {
             var directiveText = context.DirectiveText;
@@ -468,19 +518,57 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return context.Diagnostics.AddError<Project?>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
             }
 
+            return new Project(context.Info, directiveText);
+        }
+
+        public enum NameKind
+        {
+            /// <summary>
+            /// Change <see cref="Named.Name"/> and <see cref="ExpandedName"/>.
+            /// </summary>
+            Expanded = 1,
+
+            /// <summary>
+            /// Change <see cref="Named.Name"/> and <see cref="Project.ProjectFilePath"/>.
+            /// </summary>
+            ProjectFilePath = 2,
+
+            /// <summary>
+            /// Change only <see cref="Named.Name"/>.
+            /// </summary>
+            Final = 3,
+        }
+
+        public Project WithName(string name, NameKind kind)
+        {
+            return new Project(Info, name)
+            {
+                OriginalName = OriginalName,
+                ExpandedName = kind == NameKind.Expanded ? name : ExpandedName,
+                ProjectFilePath = kind == NameKind.ProjectFilePath ? name : ProjectFilePath,
+            };
+        }
+
+        /// <summary>
+        /// If the directive points to a directory, returns a new directive pointing to the corresponding project file.
+        /// </summary>
+        public Project EnsureProjectFilePath(SourceFile sourceFile, DiagnosticBag diagnostics)
+        {
+            var resolvedName = Name;
+
             try
             {
                 // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.
-                // Also normalize blackslashes to forward slashes to ensure the directive works on all platforms.
-                // https://github.com/dotnet/sdk/issues/51487: Behavior should not depend on process current directory
-                var sourceDirectory = Path.GetDirectoryName(context.SourceFile.Path) ?? ".";
-                var resolvedProjectPath = Path.Combine(sourceDirectory, directiveText.Replace('\\', '/'));
+                // Also normalize backslashes to forward slashes to ensure the directive works on all platforms.
+                var sourceDirectory = Path.GetDirectoryName(sourceFile.Path)
+                    ?? throw new InvalidOperationException($"Source file path '{sourceFile.Path}' does not have a containing directory.");
+                var resolvedProjectPath = Path.Combine(sourceDirectory, resolvedName.Replace('\\', '/'));
                 if (Directory.Exists(resolvedProjectPath))
                 {
                     var fullFilePath = GetProjectFileFromDirectory(resolvedProjectPath).FullName;
 
                     // Keep a relative path only if the original directive was a relative path.
-                    directiveText = ExternalHelpers.IsPathFullyQualified(directiveText)
+                    resolvedName = ExternalHelpers.IsPathFullyQualified(resolvedName)
                         ? fullFilePath
                         : ExternalHelpers.GetRelativePath(relativeTo: sourceDirectory, fullFilePath);
                 }
@@ -491,22 +579,14 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             }
             catch (GracefulException e)
             {
-                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.InvalidProjectDirective, e.Message), e);
+                diagnostics.AddError(sourceFile, Info.Span, string.Format(FileBasedProgramsResources.InvalidProjectDirective, e.Message), e);
             }
 
-            return new Project(context.Info)
-            {
-                Name = directiveText,
-            };
-        }
-
-        public Project WithName(string name)
-        {
-            return new Project(Info) { Name = name };
+            return WithName(resolvedName, NameKind.ProjectFilePath);
         }
 
         // https://github.com/dotnet/sdk/issues/51487: Delete copies of methods from MsbuildProject and MSBuildUtilities from the source package, sharing the original method(s) under src/Cli instead.
-        public static FileInfo GetProjectFileFromDirectory(string projectDirectory)
+        private static FileInfo GetProjectFileFromDirectory(string projectDirectory)
         {
             DirectoryInfo dir;
             try

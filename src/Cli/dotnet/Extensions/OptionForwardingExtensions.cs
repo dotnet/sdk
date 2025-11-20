@@ -30,7 +30,7 @@ public static class OptionForwardingExtensions
             {
                 //  Not sure if this is necessary, but this is what "dotnet test" previously did and so we are
                 //  preserving the behavior here after refactoring
-                argVal = TestCommandParser.SurroundWithDoubleQuotes(argVal);
+                argVal = TestCommandDefinition.SurroundWithDoubleQuotes(argVal);
             }
             return [
                 $"--property:{outputPropertyName}={argVal}",
