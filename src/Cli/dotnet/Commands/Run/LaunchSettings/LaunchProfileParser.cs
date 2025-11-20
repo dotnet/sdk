@@ -9,9 +9,6 @@ internal abstract class LaunchProfileParser
 {
     public abstract LaunchProfileSettings ParseProfile(string launchSettingsPath, string? launchProfileName, string json);
 
-    protected static bool ParseDotNetRunMessages(string? value)
-        => string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
-
     protected static string? ParseCommandLineArgs(string? value)
         => value != null ? ExpandVariables(value) : null;
 

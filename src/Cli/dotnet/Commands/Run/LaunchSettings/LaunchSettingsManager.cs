@@ -19,8 +19,8 @@ internal sealed class LaunchSettingsManager
     {
         _providers = new Dictionary<string, LaunchProfileParser>
         {
-            { ProjectLaunchSettingsParser.CommandName, new ProjectLaunchSettingsParser() },
-            { ExecutableLaunchSettingsParser.CommandName, new ExecutableLaunchSettingsParser() }
+            { ProjectLaunchSettingsParser.CommandName, ProjectLaunchSettingsParser.Instance },
+            { ExecutableLaunchSettingsParser.CommandName, ExecutableLaunchSettingsParser.Instance }
         };
     }
 

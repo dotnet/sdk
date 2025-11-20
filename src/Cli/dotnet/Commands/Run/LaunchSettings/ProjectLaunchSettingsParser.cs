@@ -9,6 +9,12 @@ internal sealed class ProjectLaunchSettingsParser : LaunchProfileParser
 {
     public const string CommandName = "Project";
 
+    public static readonly ProjectLaunchSettingsParser Instance = new();
+
+    private ProjectLaunchSettingsParser()
+    {
+    }
+
     public override LaunchProfileSettings ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
     {
         var profile = JsonSerializer.Deserialize<ProjectLaunchProfileJson>(json);
@@ -24,7 +30,7 @@ internal sealed class ProjectLaunchSettingsParser : LaunchProfileParser
             LaunchBrowser = profile.LaunchBrowser,
             LaunchUrl = profile.LaunchUrl,
             ApplicationUrl = profile.ApplicationUrl,
-            DotNetRunMessages = ParseDotNetRunMessages(profile.DotNetRunMessages),
+            DotNetRunMessages = profile.DotNetRunMessages,
             EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables),
         });
     }

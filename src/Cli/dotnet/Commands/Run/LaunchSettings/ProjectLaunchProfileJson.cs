@@ -23,7 +23,7 @@ internal class ProjectLaunchProfileJson
     public string? ApplicationUrl { get; set; }
 
     [JsonPropertyName("dotnetRunMessages")]
-    public string? DotNetRunMessages { get; set; }
+    public bool DotNetRunMessages { get; set; }
 
     [JsonPropertyName("environmentVariables")]
     public Dictionary<string, string>? EnvironmentVariables { get; set; }

@@ -10,6 +10,12 @@ internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
 {
     public const string CommandName = "Executable";
 
+    public static readonly ExecutableLaunchSettingsParser Instance = new();
+
+    private ExecutableLaunchSettingsParser()
+    {
+    }
+
     public override LaunchProfileSettings ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
     {
         var profile = JsonSerializer.Deserialize<ExecutableLaunchProfileJson>(json);
@@ -38,7 +44,7 @@ internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
             ExecutablePath = ExpandVariables(profile.ExecutablePath),
             CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs),
             WorkingDirectory = workingDirectory,
-            DotNetRunMessages = ParseDotNetRunMessages(profile.DotNetRunMessages),
+            DotNetRunMessages = profile.DotNetRunMessages,
             EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables),
         });
     }
