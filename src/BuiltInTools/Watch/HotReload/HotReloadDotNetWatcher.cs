@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
@@ -428,7 +427,7 @@ namespace Microsoft.DotNet.Watch
                                     }
 
                                     // Do not assume the change is an addition, even if the file doesn't exist in the evaluation result.
-                                    // The file could have been deleted and Add + Delete sequence could have been normalized to Update. 
+                                    // The file could have been deleted and Add + Delete sequence could have been normalized to Update.
                                     return new ChangedFile(
                                         new FileItem() { FilePath = changedPath.Path, ContainingProjectPaths = [] },
                                         changedPath.Kind);
@@ -589,7 +588,7 @@ namespace Microsoft.DotNet.Watch
                 }
 
                 using var loggers = buildReporter.GetLoggers(projectPath, targetName);
-                if (!node.ProjectInstance.BuildWithTelemetry([targetName], loggers, null, out var targetOutputs))
+                if (!node.ProjectInstance.Build([targetName], loggers, null, out var targetOutputs))
                 {
                     _context.Logger.LogDebug("{TargetName} target failed", targetName);
                     loggers.ReportOutput();
@@ -832,7 +831,7 @@ namespace Microsoft.DotNet.Watch
 
                 var result = EvaluationResult.TryCreate(
                     _designTimeBuildGraphFactory,
-                    _context.RootProjectOptions.ProjectPath,                    
+                    _context.RootProjectOptions.ProjectPath,
                     _context.BuildLogger,
                     _context.Options,
                     _context.EnvironmentOptions,
