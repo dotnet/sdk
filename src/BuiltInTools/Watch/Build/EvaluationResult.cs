@@ -3,7 +3,6 @@
 
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -78,7 +77,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
         {
             using (var loggers = buildReporter.GetLoggers(rootNode.ProjectInstance.FullPath, "Restore"))
             {
-                if (!rootNode.ProjectInstance.BuildWithTelemetry([TargetNames.Restore], loggers))
+                if (!rootNode.ProjectInstance.Build([TargetNames.Restore], loggers))
                 {
                     logger.LogError("Failed to restore project '{Path}'.", rootProjectPath);
                     loggers.ReportOutput();
@@ -106,7 +105,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
 
             using (var loggers = buildReporter.GetLoggers(projectInstance.FullPath, "DesignTimeBuild"))
             {
-                if (!projectInstance.BuildWithTelemetry([TargetNames.Compile, .. customCollectWatchItems], loggers))
+                if (!projectInstance.Build([TargetNames.Compile, .. customCollectWatchItems], loggers))
                 {
                     logger.LogError("Failed to build project '{Path}'.", projectInstance.FullPath);
                     loggers.ReportOutput();
