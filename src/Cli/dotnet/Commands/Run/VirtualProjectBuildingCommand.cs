@@ -1132,6 +1132,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             ? Path.GetTempPath()
             : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
+        if (string.IsNullOrEmpty(directory))
+        {
+            throw new InvalidOperationException("Unexpected empty temp path.");
+        }
+
         return Path.Join(directory, "dotnet", "runfile");
     }
 
