@@ -877,6 +877,31 @@ Default Value: `false`
 
 Example: `dotnet_code_quality.CA1851.assume_method_enumerates_parameters = true`
 
+### Maximum log level for expensive call analysis
+
+Option Name: `max_log_level`
+
+Configurable Rules: [CA1873](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1873)
+
+Option Values: One of the following log level values (case-insensitive):
+
+| Option Value | Summary |
+| --- | --- |
+| `trace` | Analyze expensive calls at Trace level and below. |
+| `debug` | Analyze expensive calls at Debug level and below. |
+| `information` | Analyze expensive calls at Information level and below. |
+| `warning` | Analyze expensive calls at Warning level and below. |
+| `error` | Analyze expensive calls at Error level and below. |
+| `critical` | Analyze expensive calls at Critical level. |
+
+This option configures the maximum log level for which CA1873 should flag potentially expensive operations in logging calls. Log levels higher than the configured value will not be analyzed, as they are typically always enabled in production scenarios.
+
+Default Value: `information`
+
+Example: `dotnet_code_quality.CA1873.max_log_level = warning`
+
+With the above configuration, the analyzer will flag expensive operations in log calls at Trace, Debug, Information, and Warning levels, but not at Error or Critical levels.
+
 ### Proceed with analysis even if InternalsVisibleTo is present
 
 Option Name: `ignore_internalsvisibleto`
