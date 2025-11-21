@@ -92,6 +92,11 @@
         <target state="translated">.NET Builder</target>
         <note />
       </trans-unit>
+      <trans-unit id="LaunchProfile0IsMissingProperty1">
+        <source>Launch profile '{0}' is missing property '{1}'</source>
+        <target state="new">Launch profile '{0}' is missing property '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>
@@ -2107,6 +2112,11 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       <trans-unit id="PassedLowercase">
         <source>passed</source>
         <target state="translated">úspěch</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Path0SpecifiedIn1IsInvalid">
+        <source>Path '{0}' specified in '{1}' is invalid.</source>
+        <target state="new">Path '{0}' specified in '{1}' is invalid.</target>
         <note />
       </trans-unit>
       <trans-unit id="PathToApplicationDefinition">
