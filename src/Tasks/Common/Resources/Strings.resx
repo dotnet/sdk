@@ -1010,5 +1010,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</value>
     <comment>{StrBegins="NETSDK1233: "}</comment>
   </data>
-  <!-- The latest message added is Net10NotCompatibleWithVS17. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="RoslynCompilerTypeFrameworkIsDeprecated" xml:space="preserve">
+    <value>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</value>
+    <comment>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</comment>
+  </data>
+  <!-- The latest message added is RoslynCompilerTypeFrameworkIsDeprecated. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

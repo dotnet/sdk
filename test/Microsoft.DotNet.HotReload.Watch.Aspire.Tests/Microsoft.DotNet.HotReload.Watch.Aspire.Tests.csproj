@@ -12,8 +12,4 @@
   </ItemGroup>
 
   <Import Project="..\..\src\BuiltInTools\Watch\RuntimeDependencies.props" />
-
-  <Target Name="SetExecutePermission" AfterTargets="Build" Condition="$([MSBuild]::IsOSPlatform('Linux')) or $([MSBuild]::IsOSPlatform('OSX'))">
-    <Exec Command="chmod +x $(OutDir)Microsoft.DotNet.HotReload.Watch.Aspire" />
-  </Target>
 </Project>

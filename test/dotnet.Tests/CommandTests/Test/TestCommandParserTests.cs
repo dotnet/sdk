@@ -7,13 +7,13 @@ using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
-    public class TestCommandParserTests
+    public class TestCommandDefinitionTests
     {
         [Fact]
         public void SurroundWithDoubleQuotesWithNullThrows()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                TestCommandParser.SurroundWithDoubleQuotes(null!));
+                TestCommandDefinition.SurroundWithDoubleQuotes(null!));
         }
 
         [Theory]
@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void SurroundWithDoubleQuotesWhenAlreadySurroundedDoesNothing(string input)
         {
             var escapedInput = "\"" + input + "\"";
-            var result = TestCommandParser.SurroundWithDoubleQuotes(escapedInput);
+            var result = TestCommandDefinition.SurroundWithDoubleQuotes(escapedInput);
             result.Should().Be(escapedInput);
         }
 
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("a\"")]
         public void SurroundWithDoubleQuotesWhenNotSurroundedSurrounds(string input)
         {
-            var result = TestCommandParser.SurroundWithDoubleQuotes(input);
+            var result = TestCommandDefinition.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\"");
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("/\\/\\/\\\\")]
         public void SurroundWithDoubleQuotesHandlesCorrectlyEvenCountOfTrailingBackslashes(string input)
         {
-            var result = TestCommandParser.SurroundWithDoubleQuotes(input);
+            var result = TestCommandDefinition.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\"");
         }
 
@@ -57,14 +57,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("/\\/\\/\\")]
         public void SurroundWithDoubleQuotesHandlesCorrectlyOddCountOfTrailingBackslashes(string input)
         {
-            var result = TestCommandParser.SurroundWithDoubleQuotes(input);
+            var result = TestCommandDefinition.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\\\"");
         }
 
         [Fact]
         public void VSTestCommandIncludesPropertiesOption()
         {
-            var command = TestCommandParser.GetCommand();
+            var command = TestCommandDefinition.Create();
             
             // Verify that the command includes a property option that supports the /p alias
             var propertyOption = command.Options.FirstOrDefault(o => 

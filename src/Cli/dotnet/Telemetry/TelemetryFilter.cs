@@ -118,8 +118,8 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         (
             topLevelCommandName: ["run", "clean", "test"],
             optionsToLog: [ RunCommandParser.FrameworkOption, CleanCommandParser.FrameworkOption,
-                TestCommandParser.FrameworkOption, RunCommandParser.ConfigurationOption, CleanCommandParser.ConfigurationOption,
-                TestCommandParser.ConfigurationOption ]
+                TestCommandDefinition.FrameworkOption, RunCommandParser.ConfigurationOption, CleanCommandParser.ConfigurationOption,
+                TestCommandDefinition.ConfigurationOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
