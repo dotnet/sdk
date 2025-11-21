@@ -7,6 +7,7 @@ using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
@@ -32,7 +33,8 @@ internal class ReferenceRemoveCommand : CommandBase
 
     public override int Execute()
     {
-        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false);
+        var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
+        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default), _fileOrDirectory, false);
         var references = _arguments.Select(p =>
         {
             var fullPath = Path.GetFullPath(p);

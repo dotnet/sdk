@@ -7,6 +7,7 @@ using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
@@ -20,7 +21,8 @@ internal class ReferenceAddCommand(ParseResult parseResult) : CommandBase(parseR
 
     public override int Execute()
     {
-        using var projects = new ProjectCollection();
+        var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
+        using var projects = new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         bool interactive = _parseResult.GetValue(ReferenceAddCommandParser.InteractiveOption);
         MsbuildProject msbuildProj = MsbuildProject.FromFileOrDirectory(
             projects,

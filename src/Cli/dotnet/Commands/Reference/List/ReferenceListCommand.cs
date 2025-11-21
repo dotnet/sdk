@@ -4,12 +4,11 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.List;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
@@ -30,7 +29,8 @@ internal class ReferenceListCommand : CommandBase
 
     public override int Execute()
     {
-        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false);
+        var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
+        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default), _fileOrDirectory, false);
         var p2ps = msbuildProj.GetProjectToProjectReferences();
         if (!p2ps.Any())
         {
