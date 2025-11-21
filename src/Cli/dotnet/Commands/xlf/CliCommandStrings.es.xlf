@@ -2657,6 +2657,11 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
         <target state="translated">Ejecutar comando de .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="new">Available target frameworks:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">Compilando...</target>
@@ -2666,6 +2671,11 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">Error al ejecutar el destino {0} para detectar comandos de ejecución para este proyecto. Corrija los errores y advertencias y vuelva a ejecutarlo.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="new">Example</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2714,10 +2724,25 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Su proyecto tiene como destino varias plataformas. Especifique la que quiere usar mediante "{0}".</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Advertencia NETSDK1174: La abreviatura de -p para --project está en desuso. Use --project.</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="new">Select the target framework to run:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
