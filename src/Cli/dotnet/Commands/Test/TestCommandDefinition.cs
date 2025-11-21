@@ -165,6 +165,10 @@ internal static class TestCommandDefinition
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
+    public static readonly Option<bool> SelfContainedOption = CommonOptions.SelfContainedOption;
+
+    public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
+
     public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
 
     public static readonly Option ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
@@ -265,6 +269,8 @@ internal static class TestCommandDefinition
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.NoRestoreOption);
+        command.Options.Add(SelfContainedOption);
+        command.Options.Add(NoSelfContainedOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoBuildOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoAnsiOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoProgressOption);
@@ -308,6 +314,8 @@ internal static class TestCommandDefinition
         command.Options.Add(FrameworkOption);
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(NoRestoreOption);
+        command.Options.Add(SelfContainedOption);
+        command.Options.Add(NoSelfContainedOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.ArchitectureOption);

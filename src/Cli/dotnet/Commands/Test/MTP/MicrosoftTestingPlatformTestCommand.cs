@@ -40,6 +40,10 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
         ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
 
+        CommonOptions.ValidateSelfContainedOptions(
+            parseResult.HasOption(TestCommandDefinition.SelfContainedOption),
+            parseResult.HasOption(TestCommandDefinition.NoSelfContainedOption));
+
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
         var testOptions = new TestOptions(
             IsHelp: isHelp,
