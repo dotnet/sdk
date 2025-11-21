@@ -1134,7 +1134,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         if (string.IsNullOrEmpty(directory))
         {
-            throw new InvalidOperationException("Unexpected empty temp path.");
+            throw new InvalidOperationException(FileBasedProgramsResources.EmptyTempPath);
         }
 
         return Path.Join(directory, "dotnet", "runfile");
