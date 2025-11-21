@@ -234,5 +234,13 @@ namespace Analyzer.Utilities
         /// Boolean option whether to perform the analysis even if the assembly exposes its internals.
         /// </summary>
         public const string IgnoreInternalsVisibleTo = "ignore_internalsvisibleto";
+
+        /// <summary>
+        /// String option to configure the maximum log level for which expensive calls should be flagged.
+        /// Configurable rule: CA1873 (https://learn.microsoft.com/visualstudio/code-quality/ca1873).
+        /// Allowed option values: trace, debug, information, warning, error, critical.
+        /// Default value: information.
+        /// </summary>
+        public const string MaxLogLevel = "max_log_level";
     }
 }
