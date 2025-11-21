@@ -92,7 +92,7 @@
         <target state="translated">.NET 生成器</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">不显示启动版权标志或版权消息。</target>
         <note />
@@ -227,11 +227,6 @@ Paths searched: '{1}', '{2}'.</source>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">.NET 清理命令</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">不显示启动版权标志或版权消息。</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -1932,11 +1927,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">.NET Core NuGet 包打包程序</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">不显示启动版权标志或版权消息。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2421,8 +2411,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">指定输出目录({0}):</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="needs-review-translation">指定输出目录({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2478,11 +2468,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">适用于 .NET 平台的发布服务器</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">不显示启动版权标志或版权消息。</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">

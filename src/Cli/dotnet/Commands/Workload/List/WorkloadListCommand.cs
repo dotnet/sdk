@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Extensions;

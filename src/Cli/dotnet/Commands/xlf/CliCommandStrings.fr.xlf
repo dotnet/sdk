@@ -92,7 +92,7 @@
         <target state="translated">Générateur .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">N'affiche pas la bannière de démarrage ni le message de copyright.</target>
         <note />
@@ -227,11 +227,6 @@ Les chemins d’accès ont recherché : « {1} », « {2} ».</target>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">Commande de nettoyage .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">N'affiche pas la bannière de démarrage ni le message de copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -1201,7 +1196,7 @@ Pour découvrir plus d’informations, consultez https://aka.ms/dotnet-test/mtp.
         <source>There are several launch profiles with case-sensitive names, which isn't permitted:
 {0}
 Make the profile names distinct.</source>
-        <target state="translated">Il existe plusieurs profils de lancement avec des noms sensibles à la casse, ce qui n'est pas autorisé : 
+        <target state="translated">Il existe plusieurs profils de lancement avec des noms sensibles à la casse, ce qui n'est pas autorisé :
 {0}
 Faites en sorte que les noms de profil soient distincts.</target>
         <note />
@@ -1932,11 +1927,6 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
         <target state="translated">Compresseur de package NuGet .NET Core</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">N'affiche pas la bannière de démarrage ni le message de copyright.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2421,8 +2411,8 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">Spécifiez le répertoire de sortie ({0}) :</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="needs-review-translation">Spécifiez le répertoire de sortie ({0}) :</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2478,11 +2468,6 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Éditeur pour la plateforme .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">N'affiche pas la bannière de démarrage ni le message de copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2697,7 +2682,7 @@ La valeur par défaut est de publier une application dépendante du framework.</
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">Impossible d’utiliser le profil de lancement « {0} », car le fichier de paramètres de lancement est introuvable. Emplacements essayés : 
+        <target state="translated">Impossible d’utiliser le profil de lancement « {0} », car le fichier de paramètres de lancement est introuvable. Emplacements essayés :
 {1}</target>
         <note />
       </trans-unit>

@@ -59,9 +59,12 @@
     <Project Path="src/BuiltInTools/HotReloadClient/Microsoft.DotNet.HotReload.Client.shproj" />
     <Project Path="src/BuiltInTools/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.Package.csproj" />
     <Project Path="src/BuiltInTools/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.shproj" />
+    <Project Path="src/BuiltInTools/Watch.Aspire/Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
+    <Project Path="src/BuiltInTools/Watch/Microsoft.DotNet.HotReload.Watch.csproj" />
   </Folder>
   <Folder Name="/src/Cli/">
     <Project Path="src/Cli/dotnet/dotnet.csproj" />
+    <Project Path="src/Cli/Microsoft.DotNet.Cli.CommandLine/Microsoft.DotNet.Cli.CommandLine.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Configurer/Microsoft.DotNet.Configurer.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.FileBasedPrograms/Microsoft.DotNet.FileBasedPrograms.Package.csproj" />
@@ -324,6 +327,8 @@
     <Project Path="test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.Cli.Utils.Tests/Microsoft.DotNet.Cli.Utils.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.HotReload.Client.Tests/Microsoft.DotNet.HotReload.Client.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.HotReload.Test.Utilities/Microsoft.DotNet.HotReload.Test.Utilities.csproj" />
+    <Project Path="test/Microsoft.DotNet.HotReload.Watch.Aspire.Tests/Microsoft.DotNet.HotReload.Watch.Aspire.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.MSBuildSdkResolver.Tests/Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.PackageInstall.Tests/Microsoft.DotNet.PackageInstall.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.TemplateLocator.Tests/Microsoft.DotNet.TemplateLocator.Tests.csproj" />

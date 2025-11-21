@@ -92,7 +92,7 @@
         <target state="translated">Generatore .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
         <note />
@@ -227,11 +227,6 @@ Percorsi cercati: '{1}', '{2}'.</target>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">Comando di pulizia .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -1932,11 +1927,6 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <target state="translated">Strumento di creazione pacchetti NuGet di .NET Core</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2421,8 +2411,8 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">Specifica la directory di output ({0}):</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="needs-review-translation">Specifica la directory di output ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2478,11 +2468,6 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Editore per la piattaforma .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2697,7 +2682,7 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">Non è possibile usare il profilo di avvio "{0}" perché il file delle impostazioni di avvio non è stato trovato. Posizioni tentate: 
+        <target state="translated">Non è possibile usare il profilo di avvio "{0}" perché il file delle impostazioni di avvio non è stato trovato. Posizioni tentate:
 {1}</target>
         <note />
       </trans-unit>

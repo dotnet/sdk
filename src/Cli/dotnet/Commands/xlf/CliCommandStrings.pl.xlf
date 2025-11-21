@@ -92,7 +92,7 @@
         <target state="translated">Konstruktor platformy .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Nie wyświetlaj baneru początkowego ani komunikatu o prawach autorskich.</target>
         <note />
@@ -227,11 +227,6 @@ Przeszukane ścieżki: „{1}”, „{2}”.</target>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">Polecenie clean platformy .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nie wyświetlaj baneru początkowego ani komunikatu o prawach autorskich.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -1932,11 +1927,6 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <target state="translated">Tworzenie pakietów NuGet w programie .NET Core</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nie wyświetlaj baneru początkowego ani komunikatu o prawach autorskich.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2421,8 +2411,8 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">Określ katalog wyjściowy ({0}):</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="needs-review-translation">Określ katalog wyjściowy ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2478,11 +2468,6 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Wydawca dla platformy .NET.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nie wyświetlaj baneru początkowego ani komunikatu o prawach autorskich.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">

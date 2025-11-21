@@ -28,7 +28,6 @@
          compiler API targeted by analyzer assemblies. This is mostly an issue on source-build as
          in that build mode analyzer assemblies always target the live compiler API. -->
     <UsingToolMicrosoftNetCompilers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</UsingToolMicrosoftNetCompilers>
-    <UsingToolVSSDK>true</UsingToolVSSDK>
     <FlagNetStandard1XDependencies Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</FlagNetStandard1XDependencies>
   </PropertyGroup>
   <PropertyGroup Label="Servicing version information">
@@ -112,7 +111,7 @@
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes.
 
          Additionally, set the MinimumVSVersion for the installer UI that's required for targeting NetCurrent -->
-    <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.14.8</MicrosoftBuildMinimumVersion>
+    <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.14.28</MicrosoftBuildMinimumVersion>
     <MinimumVSVersion>18.0</MinimumVSVersion>
   </PropertyGroup>
   <PropertyGroup>
@@ -126,7 +125,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Manually updated">
     <!-- Dependencies from https://github.com/microsoft/MSBuildLocator -->
-    <MicrosoftBuildLocatorPackageVersion>1.8.1</MicrosoftBuildLocatorPackageVersion>
+    <MicrosoftBuildLocatorPackageVersion>1.10.2</MicrosoftBuildLocatorPackageVersion>
     <MicrosoftCodeAnalysisCSharpAnalyzerPinnedVersionPackageVersion>4.0.1</MicrosoftCodeAnalysisCSharpAnalyzerPinnedVersionPackageVersion>
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
@@ -143,13 +142,13 @@
     <BenchmarkDotNetPackageVersion>0.14.0</BenchmarkDotNetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Workload manifest package versions">
-    <MauiFeatureBand>10.0.100-rc.2</MauiFeatureBand>
-    <MauiWorkloadManifestVersion>10.0.0-rc.2.25504.7</MauiWorkloadManifestVersion>
-    <XamarinAndroidWorkloadManifestVersion>36.0.0-rc.2.332</XamarinAndroidWorkloadManifestVersion>
-    <XamarinIOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinIOSWorkloadManifestVersion>
-    <XamarinMacCatalystWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinMacCatalystWorkloadManifestVersion>
-    <XamarinMacOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinMacOSWorkloadManifestVersion>
-    <XamarinTvOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinTvOSWorkloadManifestVersion>
+    <MauiFeatureBand>10.0.100</MauiFeatureBand>
+    <MauiWorkloadManifestVersion>10.0.0</MauiWorkloadManifestVersion>
+    <XamarinAndroidWorkloadManifestVersion>36.1.2</XamarinAndroidWorkloadManifestVersion>
+    <XamarinIOSWorkloadManifestVersion>26.0.11017</XamarinIOSWorkloadManifestVersion>
+    <XamarinMacCatalystWorkloadManifestVersion>26.0.11017</XamarinMacCatalystWorkloadManifestVersion>
+    <XamarinMacOSWorkloadManifestVersion>26.0.11017</XamarinMacOSWorkloadManifestVersion>
+    <XamarinTvOSWorkloadManifestVersion>26.0.11017</XamarinTvOSWorkloadManifestVersion>
   </PropertyGroup>
   <PropertyGroup Label="Pinned dependency">
     <!-- This package is not being produced outside of the 2.0 branch of corefx and should not change. -->

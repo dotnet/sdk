@@ -92,7 +92,7 @@
         <target state="translated">Construtor do .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Não exibe a faixa de inicialização ou a mensagem de direitos autorais.</target>
         <note />
@@ -227,11 +227,6 @@ Caminhos pesquisados: "{1}", "{2}".</target>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">Comando Clean do .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Não exibe a faixa de inicialização ou a mensagem de direitos autorais.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -1932,11 +1927,6 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
         <target state="translated">Empacotador de Pacotes NuGet do .NET Core</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Não exibe a faixa de inicialização ou a mensagem de direitos autorais.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
@@ -2421,8 +2411,8 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">Especificar o diretório de saída ({0}):</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="needs-review-translation">Especificar o diretório de saída ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2478,11 +2468,6 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Editor para a Plataforma .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Não exibe a faixa de inicialização ou a mensagem de direitos autorais.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
