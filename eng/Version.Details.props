@@ -156,8 +156,6 @@ This file should be imported by eng/Versions.props
     <!-- dotnet/msbuild dependencies -->
     <MicrosoftBuildPackageVersion>18.1.0-preview-25523-02</MicrosoftBuildPackageVersion>
     <MicrosoftBuildLocalizationPackageVersion>18.1.0-preview-25523-02</MicrosoftBuildLocalizationPackageVersion>
-    <!-- dotnet/fsharp dependencies -->
-    <MicrosoftFSharpCompilerPackageVersion>15.0.0-alpha1.25556.1</MicrosoftFSharpCompilerPackageVersion>
     <!-- dotnet/roslyn dependencies -->
     <MicrosoftCodeAnalysisPackageVersion>5.3.0-2.25560.14</MicrosoftCodeAnalysisPackageVersion>
     <MicrosoftCodeAnalysisBuildClientPackageVersion>5.3.0-2.25560.14</MicrosoftCodeAnalysisBuildClientPackageVersion>
