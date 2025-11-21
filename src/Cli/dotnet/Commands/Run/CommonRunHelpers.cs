@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -20,13 +21,6 @@ internal static class CommonRunHelpers
         globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
         return globalProperties;
     }
-
-    public static string GetPropertiesLaunchSettingsPath(string directoryPath, string propertiesDirectoryName)
-        => Path.Combine(directoryPath, propertiesDirectoryName, "launchSettings.json");
-
-    public static string GetFlatLaunchSettingsPath(string directoryPath, string projectNameWithoutExtension)
-        => Path.Join(directoryPath, $"{projectNameWithoutExtension}.run.json");
-
 
     /// <summary>
     /// Applies adjustments to MSBuild arguments to better suit LLM/agentic environments, if such an environment is detected.
