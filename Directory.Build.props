@@ -20,6 +20,7 @@
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('HAIKU'))">haiku</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND '$(IsLinux)' == 'true'">linux</HostOSName>
 
     <OSName Condition="'$(OSName)' == '' AND $(PortableTargetRid) != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
