@@ -5,14 +5,11 @@ using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public sealed class MSBuildLogger : INodeLogger
 {
-    private readonly IFirstTimeUseNoticeSentinel _sentinel =
-        new FirstTimeUseNoticeSentinel();
     private readonly ITelemetry? _telemetry;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
@@ -65,19 +62,11 @@ public sealed class MSBuildLogger : INodeLogger
     {
         try
         {
-            string? sessionId =
-                Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
+            string? sessionId = Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
 
             if (sessionId != null)
             {
-                // senderCount: 0 to disable sender.
-                // When senders in different process running at the same
-                // time they will read from the same global queue and cause
-                // sending duplicated events. Disable sender to reduce it.
-                _telemetry = new Telemetry.Telemetry(
-                    _sentinel,
-                    sessionId,
-                    senderCount: 0);
+                _telemetry = new Telemetry.Telemetry(sessionId);
             }
         }
         catch (Exception)
@@ -253,7 +242,7 @@ public sealed class MSBuildLogger : INodeLogger
         {
             foreach (var propertyToBeHashed in toBeHashed)
             {
-                if (eventProperties.TryGetValue(propertyToBeHashed, out var value))
+                if (eventProperties.TryGetValue(propertyToBeHashed, out var value) && value is not null)
                 {
                     // Lets lazy allocate in case there is tons of telemetry
                     properties ??= new(eventProperties);
@@ -281,7 +270,7 @@ public sealed class MSBuildLogger : INodeLogger
             }
         }
 
-        telemetry.TrackEvent(eventName, properties ?? eventProperties, measurements);
+        telemetry?.TrackEvent(eventName, properties ?? eventProperties, measurements);
     }
 
     private void OnTelemetryLogged(object sender, TelemetryEventArgs args)
@@ -298,14 +287,6 @@ public sealed class MSBuildLogger : INodeLogger
 
     public void Shutdown()
     {
-        try
-        {
-            _sentinel?.Dispose();
-        }
-        catch (Exception)
-        {
-            // Exceptions during telemetry shouldn't cause anything else to fail
-        }
     }
 
     public LoggerVerbosity Verbosity { get; set; }

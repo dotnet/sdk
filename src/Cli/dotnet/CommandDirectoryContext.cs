@@ -35,7 +35,7 @@ internal static class CommandDirectoryContext
                 $"Calls to {nameof(CommandDirectoryContext)}.{nameof(PerformActionWithBasePath)} cannot be nested.");
         }
         _basePath = basePath;
-        Telemetry.Telemetry.CurrentSessionId = null;
+        Telemetry.Telemetry.s_currentSessionId = null;
         try
         {
             action();

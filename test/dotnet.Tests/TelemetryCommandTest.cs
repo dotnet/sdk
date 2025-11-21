@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Tests
         public void TopLevelCommandNameShouldBeSentToTelemetryWithPerformanceData()
         {
             string[] args = { "help" };
-            Cli.Program.ProcessArgs(args, new TimeSpan(12345));
+            Cli.Program.ProcessArgs(args);
 
             _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
                               e.Properties.ContainsKey("verb") &&
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Tests
         public void TopLevelCommandNameShouldBeSentToTelemetryZeroStartupTime()
         {
             string[] args = { "help" };
-            Cli.Program.ProcessArgs(args, new TimeSpan(0));
+            Cli.Program.ProcessArgs(args);
 
             _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
                               e.Properties.ContainsKey("verb") &&
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Tests
         {
             const string argumentToSend = "console";
             string[] args = { "new", argumentToSend };
-            Cli.Program.ProcessArgs(args, new TimeSpan(23456));
+            Cli.Program.ProcessArgs(args);
             _fakeTelemetry
                 .LogEntries.Should()
                 .Contain(e => e.EventName == "sublevelparser/command" &&
@@ -272,7 +272,7 @@ namespace Microsoft.DotNet.Tests
             const string optionKey = "verbosity";
             const string optionValueToSend = "minimal";
             string[] args = { "restore", "--" + optionKey, optionValueToSend };
-            Cli.Program.ProcessArgs(args, new TimeSpan(34567));
+            Cli.Program.ProcessArgs(args);
             _fakeTelemetry
                 .LogEntries.Should()
                 .Contain(e => e.EventName == "sublevelparser/command" &&
