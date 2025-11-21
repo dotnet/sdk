@@ -861,6 +861,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1103: Nastavení RollForward je podporováno pouze pro .NET Core 3.0 nebo vyšší.</target>
         <note>{StrBegins="NETSDK1103: "}</note>
       </trans-unit>
+      <trans-unit id="RoslynCompilerTypeFrameworkIsDeprecated">
+        <source>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</source>
+        <target state="new">NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</target>
+        <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
         <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
         <target state="translated">NETSDK1231: Soubor {0} neexistuje. Ujistěte se prosím, že cesta ke grafu modulu runtime existuje.</target>
