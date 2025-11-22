@@ -925,7 +925,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <_CompileItemsToPublish Include="@(Compile->'%(FullPath)')"
-                              Condition="'%(Compile.CopyToPublishDirectory)'=='Always' or '%(Compile.CopyToPublishDirectory)'=='PreserveNewest'" or '%(Compile.CopyToPublishDirectory)'=='IfDifferent'"/>
+                              Condition="'%(Compile.CopyToPublishDirectory)'=='Always' or '%(Compile.CopyToPublishDirectory)'=='PreserveNewest' or '%(Compile.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
 
     <AssignTargetPath Files="@(_CompileItemsToPublish)" RootFolder="$(MSBuildProjectDirectory)">
