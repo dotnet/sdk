@@ -25,7 +25,8 @@ Testing:
     - `dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
 - To test CLI command changes:
   - Build the redist SDK: `./build.sh` from repo root
-  - Create a dogfood environment: `source eng/dogfood.sh` 
+    - IMPORTANT: specify `/p:SkipUsingCrossgen=true` and `/p:SkipBuildingInstallers=true` to drastically speed up the build time.
+  - Create a dogfood environment: `source eng/dogfood.sh`
   - Test commands in the dogfood shell (e.g., `dnx --help`, `dotnet tool install --help`)
   - The dogfood script sets up PATH and environment to use the newly built SDK
 
