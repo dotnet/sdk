@@ -45,7 +45,7 @@ The goal is for the vast majority if not all of the components within the SDK to
 | Disk Size    | 789 MB / 411 MB                   | 148 MB                  | 18.8% / 36.0%                    |
 | File Count   | 5,610 / 3,791                     | 908 files               | 16.2% / 24.0%                    |
 
-**Note:** The WindowsDestop runtime and target pack, along with .NET Framework support are the major reasons for the differences between Windows and Linux.
+**Note:** The WindowsDesktop runtime and target pack, along with .NET Framework support are the major reasons for the differences between Windows and Linux.
 
 ### Download impact of removing duplicates
 
