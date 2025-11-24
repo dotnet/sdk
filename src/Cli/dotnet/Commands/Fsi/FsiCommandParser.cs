@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Fsi;
 
@@ -22,8 +23,10 @@ internal static class FsiCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("fsi", DocsLink) { Arguments };
-
+        Command command = new("fsi") {
+            Arguments = { Arguments },
+            DocsLink = DocsLink,
+        };
         command.SetAction((parseResult) => FsiCommand.Run(parseResult.GetValue(Arguments)));
 
         return command;
