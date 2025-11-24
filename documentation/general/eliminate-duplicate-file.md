@@ -26,7 +26,7 @@ This deduplication work gives us the headroom needed to absorb the Native AOT ex
 A duplicate file analysis was performed on the SDK layout of .NET 10.0.100, where file uniqueness is defined by *name*, *TFM* (Target Framework Moniker), and *culture*.
 The following data is the result of this analysis using the [SdkLayoutAnalyzer](https://github.com/MichaelSimons/SdkLayoutAnalyzer) tool.
 
-The goal is for the vast mojority if not all of the components within the SDK to depend on and use the same version of their dependencies.
+The goal is for the vast majority if not all of the components within the SDK to depend on and use the same version of their dependencies.
 
 **Note:** The baseline measurements in the following tables compare the complete .NET installation (including runtimes, packs, shared frameworks, host, etc.) versus just the SDK directory contents.
 
