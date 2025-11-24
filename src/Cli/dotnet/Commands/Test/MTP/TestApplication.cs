@@ -69,7 +69,7 @@ internal sealed class TestApplication(
             // For example, if hangdump timeout is reached, the process will be killed and we will have mismatching count.
             // Or if there is a crash (e.g, Environment.FailFast), etc.
             // So this is only a safe guard to avoid passing the test run if Environment.Exit(0) is called in one of the tests for example.
-            if (exitCode != 0 && _handler.HasMismatchingTestSessionEventCount())
+            if (exitCode == 0 && _handler.HasMismatchingTestSessionEventCount())
             {
                 throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
             }
