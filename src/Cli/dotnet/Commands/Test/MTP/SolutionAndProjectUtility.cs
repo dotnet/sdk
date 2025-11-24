@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -378,10 +379,10 @@ internal static class SolutionAndProjectUtility
             return null;
         }
 
-        var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
+        var launchSettingsPath = LaunchSettingsLocator.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
         bool hasLaunchSettings = File.Exists(launchSettingsPath);
 
-        var runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+        var runJsonPath = LaunchSettingsLocator.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
         bool hasRunJson = File.Exists(runJsonPath);
 
         if (hasLaunchSettings)
