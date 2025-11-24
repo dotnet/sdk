@@ -9,9 +9,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         public UpdateCommandArgs(BaseUpdateCommand command, ParseResult parseResult) : base(command, parseResult)
         {
-            if (command is UpdateCommand updateCommand)
+            if (command is UpdateCommand)
             {
-                CheckOnly = parseResult.GetValue(UpdateCommand.CheckOnlyOption);
+                CheckOnly = parseResult.GetValue(CommandDefinition.Update.CheckOnlyOption);
             }
             else if (command is LegacyUpdateCheckCommand)
             {
@@ -26,8 +26,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 throw new ArgumentException($"Unsupported type {command.GetType().FullName}", nameof(command));
             }
 
-            Interactive = parseResult.GetValue(command.InteractiveOption);
-            AdditionalSources = parseResult.GetValue(command.AddSourceOption);
+            Interactive = parseResult.GetValue(command.Definition.InteractiveOption);
+            AdditionalSources = parseResult.GetValue(command.Definition.AddSourceOption);
         }
 
         public bool CheckOnly { get; }

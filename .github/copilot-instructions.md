@@ -1,3 +1,7 @@
+Use the instructions from the main branch if available: @dotnet/sdk/files/.github/copilot-instructions.md
+
+If the instructions from main are not available, use the following as a fallback:
+
 Coding Style and Changes:
 - Code should match the style of the file it's in.
 - Changes should be minimal to resolve a problem in a clean way.

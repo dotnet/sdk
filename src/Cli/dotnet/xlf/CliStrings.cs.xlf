@@ -1084,6 +1084,16 @@ Výchozí hodnota je false. Pokud však cílíte na .NET 7 nebo nižší a je za
         <target state="translated">Balíček {0} není nástroj .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersion">
+        <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
+        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">
         <source>Command '{0}' contains one or more of the following invalid characters: {1}.</source>
         <target state="translated">Příkaz {0} obsahuje minimálně jeden neplatný znak: {1}.</target>

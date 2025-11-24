@@ -1540,7 +1540,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Convert a file-based program to a project-based program.</value>
   </data>
   <data name="ProjectConvertAskForOutputDirectory" xml:space="preserve">
-    <value>Specify the output directory ({0}):</value>
+    <value>Specify the output directory (press Enter for default: '{0}', directory must not exist):</value>
     <comment>{0} is the default value</comment>
   </data>
   <data name="ProjectConvertDryRun" xml:space="preserve">
@@ -1745,6 +1745,21 @@ The current OutputType is '{2}'.</value>
   <data name="RunCommandExceptionUnableToRunSpecifyFramework" xml:space="preserve">
     <value>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</value>
+  </data>
+  <data name="RunCommandSelectTargetFrameworkPrompt" xml:space="preserve">
+    <value>Select the target framework to run:</value>
+  </data>
+  <data name="RunCommandMoreFrameworksText" xml:space="preserve">
+    <value>Move up and down to reveal more frameworks</value>
+  </data>
+  <data name="RunCommandSearchPlaceholderText" xml:space="preserve">
+    <value>Type to search</value>
+  </data>
+  <data name="RunCommandAvailableTargetFrameworks" xml:space="preserve">
+    <value>Available target frameworks:</value>
+  </data>
+  <data name="RunCommandExampleText" xml:space="preserve">
+    <value>Example</value>
   </data>
   <data name="RunCommandProjectAbbreviationDeprecated" xml:space="preserve">
     <value>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</value>

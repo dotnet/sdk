@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.Loader;
@@ -40,7 +41,10 @@ namespace Microsoft.DotNet.Watch
                 // Register listeners that load Roslyn-related assemblies from the `Roslyn/bincore` directory.
                 RegisterAssemblyResolutionEvents(sdkRootDirectory);
 
-                var environmentOptions = EnvironmentOptions.FromEnvironment();
+                var processPath = Environment.ProcessPath;
+                Debug.Assert(processPath != null);
+
+                var environmentOptions = EnvironmentOptions.FromEnvironment(processPath);
 
                 var program = TryCreate(
                     args,
@@ -67,7 +71,7 @@ namespace Microsoft.DotNet.Watch
         private static Program? TryCreate(IReadOnlyList<string> args, IConsole console, EnvironmentOptions environmentOptions, bool verbose, out int errorCode)
         {
             var parsingLoggerFactory = new LoggerFactory(new ConsoleReporter(console, verbose, quiet: false, environmentOptions.SuppressEmojis));
-            var options = CommandLineOptions.Parse(args, parsingLoggerFactory.CreateLogger(LogComponentName), console.Out, out errorCode);
+            var options = CommandLineOptions.Parse(args, parsingLoggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName), console.Out, out errorCode);
             if (options == null)
             {
                 // an error reported or help printed:
@@ -82,7 +86,7 @@ namespace Microsoft.DotNet.Watch
         // internal for testing
         internal static Program? TryCreate(CommandLineOptions options, IConsole console, EnvironmentOptions environmentOptions, LoggerFactory loggerFactory, IProcessOutputReporter processOutputReporter, out int errorCode)
         {
-            var logger = loggerFactory.CreateLogger(LogComponentName);
+            var logger = loggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName);
 
             var workingDirectory = environmentOptions.WorkingDirectory;
             logger.LogDebug("Working directory: '{Directory}'", workingDirectory);
@@ -151,41 +155,21 @@ namespace Microsoft.DotNet.Watch
         // internal for testing
         internal async Task<int> RunAsync()
         {
-            var shutdownCancellationSourceDisposed = false;
-            var shutdownCancellationSource = new CancellationTokenSource();
-            var shutdownCancellationToken = shutdownCancellationSource.Token;
             var isHotReloadEnabled = IsHotReloadEnabled();
             var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled));
 
-            console.KeyPressed += key =>
-            {
-                if (!shutdownCancellationSourceDisposed && key.Modifiers.HasFlag(ConsoleModifiers.Control) && key.Key == ConsoleKey.C)
-                {
-                    // if we already canceled, we force immediate shutdown:
-                    var forceShutdown = shutdownCancellationSource.IsCancellationRequested;
-
-                    if (!forceShutdown)
-                    {
-                        logger.Log(MessageDescriptor.ShutdownRequested);
-                        shutdownCancellationSource.Cancel();
-                    }
-                    else
-                    {
-                        Environment.Exit(0);
-                    }
-                }
-            };
+            using var shutdownHandler = new ShutdownHandler(console, logger);
 
             try
             {
-                if (shutdownCancellationToken.IsCancellationRequested)
+                if (shutdownHandler.CancellationToken.IsCancellationRequested)
                 {
                     return 1;
                 }
 
                 if (options.List)
                 {
-                    return await ListFilesAsync(processRunner, shutdownCancellationToken);
+                    return await ListFilesAsync(processRunner, shutdownHandler.CancellationToken);
                 }
 
                 if (environmentOptions.IsPollingEnabled)
@@ -198,16 +182,16 @@ namespace Microsoft.DotNet.Watch
                 if (isHotReloadEnabled)
                 {
                     var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
-                    await watcher.WatchAsync(shutdownCancellationToken);
+                    await watcher.WatchAsync(shutdownHandler.CancellationToken);
                 }
                 else
                 {
-                    await DotNetWatcher.WatchAsync(context, shutdownCancellationToken);
+                    await DotNetWatcher.WatchAsync(context, shutdownHandler.CancellationToken);
                 }
 
                 return 0;
             }
-            catch (OperationCanceledException) when (shutdownCancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException) when (shutdownHandler.CancellationToken.IsCancellationRequested)
             {
                 // Ctrl+C forced an exit
                 return 0;
@@ -216,11 +200,6 @@ namespace Microsoft.DotNet.Watch
             {
                 logger.LogError("An unexpected error occurred: {Exception}", e.ToString());
                 return 1;
-            }
-            finally
-            {
-                shutdownCancellationSourceDisposed = true;
-                shutdownCancellationSource.Dispose();
             }
         }
 
