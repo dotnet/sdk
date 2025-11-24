@@ -103,7 +103,7 @@ Set-StrictMode -Version Latest
 Highlight 'Installing .NET, preparing the tooling..'
 . .\eng\common\tools.ps1
 $dotnetRoot = InitializeDotNetCli -install:$true
-$darc = Get-Darc
+$darc = Get-Darc "1.1.0-beta.25514.2"
 $dotnet = "$dotnetRoot\dotnet.exe"
 
 Highlight "Starting the synchronization of VMR.."
