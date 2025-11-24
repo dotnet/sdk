@@ -1879,8 +1879,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">워크로드가 설치되어 있지 않고 복구할 것도 없습니다. ‘dotnet 워크로드 검색’을 실행하여 설치할 워크로드를 찾으세요.</target>
-        <note />
+        <target state="needs-review-translation">워크로드가 설치되어 있지 않고 복구할 것도 없습니다. ‘dotnet 워크로드 검색’을 실행하여 설치할 워크로드를 찾으세요.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2657,6 +2657,11 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">.NET 실행 명령</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="new">Available target frameworks:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">빌드하는 중...</target>
@@ -2666,6 +2671,11 @@ The default is to publish a framework-dependent application.</source>
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">이 프로젝트에 대해 실행 명령을 검색하기 위해 {0} 대상을 실행하지 못했습니다. 오류 및 경고를 수정하고 다시 실행합니다.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="new">Example</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2701,10 +2711,10 @@ The default is to publish a framework-dependent application.</source>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">프로젝트 '{0}'을(를) 진행할 수 없습니다.
-실행 가능한 프로젝트 형식이 있는지 확인하세요.
-실행 가능한 프로젝트는 실행 가능한 TFM(예: net{1})을(를) 대상으로 하고 OutputType 'Exe'가 있어야 합니다.
-현재 OutputType은(는) '{2}'입니다.</target>
+        <target state="needs-review-translation">프로젝트를 실행할 수 없습니다.
+실행 가능한 프로젝트 형식이 있고 '{0}'에서 이 프로젝트를 지원하는지 확인하세요.
+실행 가능한 프로젝트는 실행 가능한 TFM(예: net5.0)을 대상으로 하고 OutputType 'Exe'가 있어야 합니다.
+현재 {1}은(는) '{2}'입니다.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -2714,10 +2724,25 @@ Your project targets multiple frameworks. Specify which framework to run using '
 프로젝트에서 여러 프레임워크를 대상으로 합니다. '{0}'을(를) 사용하여 실행할 프레임워크를 지정하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">경고 NETSDK1174: --project에 대한 약어 -p는 더 이상 사용되지 않습니다. --project를 사용하세요.</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="new">Select the target framework to run:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -3260,6 +3285,11 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
         <target state="translated">설치 중에 사용할 모든 NuGet 패키지 원본을 이러한 패키지 원본으로 바꿉니다.</target>
@@ -3677,6 +3707,16 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">'{0}' 속성이 지정된 경우 개체여야 합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">세부 정보 표시</target>
@@ -3975,8 +4015,8 @@ To display a value, specify the corresponding command-line option without provid
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">사용 가능한 워크로드를 검색합니다.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">사용 가능한 워크로드를 검색합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">

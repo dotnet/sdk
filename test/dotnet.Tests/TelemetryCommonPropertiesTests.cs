@@ -195,7 +195,8 @@ namespace Microsoft.DotNet.Tests
         {
             try
             {
-                if (envVars is not null){
+                if (envVars is not null)
+                {
                     foreach (var (key, value) in envVars)
                     {
                         Environment.SetEnvironmentVariable(key, value);
@@ -214,7 +215,7 @@ namespace Microsoft.DotNet.Tests
                 }
             }
         }
-
+        
         [Theory]
         [InlineData("dummySessionId")]
         [InlineData(null)]
@@ -253,17 +254,17 @@ namespace Microsoft.DotNet.Tests
             { new Dictionary<string, string> { { "CI", "true"} }, true },
             { new Dictionary<string, string> { { "TRAVIS", "true"} }, true },
             { new Dictionary<string, string> { { "CIRCLECI", "true"} }, true },
-{ new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" }, { "AWS_REGION", "hi" } }, true },
+            { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" }, { "AWS_REGION", "hi" } }, true },
             { new Dictionary<string, string> { { "CODEBUILD_BUILD_ID", "hi" } }, false },
             { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "BUILD_URL", "hi" } }, true },
             { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
             { new Dictionary<string, string> { { "BUILD_ID", "hi" }, { "PROJECT_ID", "hi" } }, true },
             { new Dictionary<string, string> { { "BUILD_ID", "hi" } }, false },
-{ new Dictionary<string, string> { { "TEAMCITY_VERSION", "hi" } }, true },
+            { new Dictionary<string, string> { { "TEAMCITY_VERSION", "hi" } }, true },
             { new Dictionary<string, string> { { "TEAMCITY_VERSION", "" } }, false },
             { new Dictionary<string, string> { { "JB_SPACE_API_URL", "hi" } }, true },
             { new Dictionary<string, string> { { "JB_SPACE_API_URL", "" } }, false },
-{ new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
+            { new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
         };
 
         private class NothingCache : IUserLevelCacheWriter

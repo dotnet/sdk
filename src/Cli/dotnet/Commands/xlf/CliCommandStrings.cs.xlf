@@ -1879,8 +1879,8 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">Nejsou nainstalované žádné úlohy, nic se nedá opravit. Pokud chcete najít úlohy, které se mají nainstalovat, spusťte vyhledávání úloh dotnet.</target>
-        <note />
+        <target state="needs-review-translation">Nejsou nainstalované žádné úlohy, nic se nedá opravit. Pokud chcete najít úlohy, které se mají nainstalovat, spusťte vyhledávání úloh dotnet.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2657,6 +2657,11 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
         <target state="translated">Příkaz rozhraní .NET pro spuštění</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="new">Available target frameworks:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">Sestavování...</target>
@@ -2666,6 +2671,11 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">Spuštění cíle {0} ke zjištění příkazů spuštění pro tento projekt se nezdařilo. Opravte chyby a upozornění a spusťte je znovu.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="new">Example</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2701,10 +2711,10 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">V projektu {0} nelze pokračovat.
-Ujistěte se, že máte spustitelný typ projektu.
-Spustitelný projekt by měl cílit na spustitelný TFM (například net{1}) a mít OutputType Exe.
-Aktuální OutputType je {2}.</target>
+        <target state="needs-review-translation">Projekt se nedá spustit.
+Ověřte prosím, že máte spustitelný typ projektu, a zajistěte, aby tento projekt podporoval {0}.
+Cílem spustitelného projektu by mělo být TFM (například net5.0) a jeho OutputType by měl být Exe.
+Aktuální {1} je {2}.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -2714,10 +2724,25 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Cílem projektu je více architektur. Pomocí parametru {0} určete, která architektura se má spustit.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Upozornění NETSDK1174: Zkratka -p pro --project je zastaralá. Použijte prosím --project.</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="new">Select the target framework to run:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -3260,6 +3285,11 @@ Nástroj {1} (verze {2}) byl úspěšně nainstalován.</target>
         <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
         <target state="translated">Nahradit všechny zdroje balíčků NuGet, které se mají použít při instalaci, těmito zdroji.</target>
@@ -3677,6 +3707,16 @@ příkazu „dotnet tool list“.</target>
         <target state="translated">Vlastnost {0} musí být objektem, pokud je zadána.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Podrobnosti</target>
@@ -3975,8 +4015,8 @@ Pokud chcete zobrazit hodnotu, zadejte odpovídající volbu příkazového řá
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Vyhledávejte dostupné úlohy.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">Vyhledávejte dostupné úlohy.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">

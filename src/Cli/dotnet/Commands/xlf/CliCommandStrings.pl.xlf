@@ -1879,8 +1879,8 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">Nie zainstalowano żadnych obciążeń i nie ma nic do naprawienia. Uruchom polecenie „dotnet workload search”, aby znaleźć obciążenia do zainstalowania.</target>
-        <note />
+        <target state="needs-review-translation">Nie zainstalowano żadnych obciążeń i nie ma nic do naprawienia. Uruchom polecenie „dotnet workload search”, aby znaleźć obciążenia do zainstalowania.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2657,6 +2657,11 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
         <target state="translated">Uruchamianie polecenia platformy .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="new">Available target frameworks:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">Trwa kompilowanie...</target>
@@ -2666,6 +2671,11 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">Uruchomienie obiektu docelowego {0} w celu odnalezienia poleceń przebiegu dla tego projektu nie powiodło się. Usuń błędy i ostrzeżenia, a następnie uruchom ponownie.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="new">Example</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2701,10 +2711,10 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">Nie można kontynuować pracy z projektem „{0}”.
-Upewnij się, że masz typ projektu, który można uruchomić.
-Projekt, który można uruchomić, powinien być przeznaczony dla możliwego do uruchomienia monikera platformy docelowej (na przykład net{1}) i mieć typ OutputType „Exe”.
-Bieżący typ OutputType to „{2}”.</target>
+        <target state="needs-review-translation">Nie można uruchomić projektu.
+Upewnij się, że używany typ projektu umożliwia uruchamianie oraz że element „{0}” obsługuje ten projekt.
+Projekt z możliwością uruchamiania musi mieć moniker TFM z możliwością uruchomienia (np. net5.0) i typ OutputType „Exe”.
+Bieżący element {1}: „{2}”.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -2714,10 +2724,25 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy użyciu elementu „{0}”.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Ostrzeżenie NETSDK1174: Skrót -p dla polecenia --project jest przestarzały. Użyj polecenia --project.</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="new">Select the target framework to run:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -3260,6 +3285,11 @@ Pomyślnie zainstalowano narzędzie „{1}” (wersja: „{2}”).</target>
         <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
         <target state="translated">Zastąp je wszystkimi źródłami pakietów NuGet, które mają być używane podczas instalacji.</target>
@@ -3677,6 +3707,16 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <target state="translated">Właściwość „{0}” musi być obiektem, jeśli jest określona.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Szczegółowość</target>
@@ -3975,8 +4015,8 @@ Aby wyświetlić wartość, należy podać odpowiednią opcję wiersza poleceń 
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Wyszukaj dostępne obciążenia.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">Wyszukaj dostępne obciążenia.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
