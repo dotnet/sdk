@@ -3,19 +3,9 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
-public class ProjectLaunchSettingsModel
+public sealed class ProjectLaunchSettingsModel : LaunchSettingsModel
 {
-    public string? LaunchProfileName { get; set; }
-
-    public string? CommandLineArgs { get; set; }
-
-    public bool LaunchBrowser { get; set; }
-
-    public string? LaunchUrl { get; set; }
-
-    public string? ApplicationUrl { get; set; }
-
-    public string? DotNetRunMessages { get; set; }
-
-    public Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
+    public bool LaunchBrowser { get; init; }
+    public string? LaunchUrl { get; init; }
+    public string? ApplicationUrl { get; init; }
 }
