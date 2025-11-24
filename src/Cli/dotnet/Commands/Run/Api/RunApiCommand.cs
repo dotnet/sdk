@@ -102,6 +102,8 @@ internal abstract class RunApiInput
                 launchProfile: null,
                 noLaunchProfile: false,
                 noLaunchProfileArguments: false,
+                device: null,
+                listDevices: false,
                 noRestore: false,
                 noCache: false,
                 interactive: false,

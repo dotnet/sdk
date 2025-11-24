@@ -1,0 +1,268 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.DotNet.Cli.Commands;
+
+namespace Microsoft.DotNet.Cli.Run.Tests;
+
+/// <summary>
+/// Integration tests for device selection in dotnet run
+/// </summary>
+public class GivenDotnetRunSelectsDevice : SdkTest
+{
+    public GivenDotnetRunSelectsDevice(ITestOutputHelper log) : base(log)
+    {
+    }
+
+    string ExpectedRid => OperatingSystem.IsWindows() ? "win" : (OperatingSystem.IsMacOS() ? "osx" : "linux");
+
+    [Fact]
+    public void ItFailsInNonInteractiveMode_WhenMultipleDevicesAvailableAndNoneSpecified()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--framework", "net8.0", "--no-interactive");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+    }
+
+    [Fact]
+    public void ItListsDevicesForSpecifiedFramework()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", "net8.0", "--list-devices");
+
+        result.Should().Pass()
+            .And.HaveStdOutContaining("test-device-1")
+            .And.HaveStdOutContaining("test-device-2")
+            .And.HaveStdOutContaining("Emulator");
+    }
+
+    [Theory]
+    [InlineData("net8.0", "test-device-1")]
+    [InlineData("net8.0", "test-device-2")]
+    [InlineData("net9.0", "test-device-3")]
+    [InlineData("net9.0", "test-device-4")]
+    public void ItRunsDifferentDevicesInMultiTargetedApp(string targetFramework, string deviceId)
+    {
+        // Skip net8.0 and net9.0 on arm64 as they may not be available on CI
+        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64 &&
+            (targetFramework == "net8.0" || targetFramework == "net9.0"))
+        {
+            return;
+        }
+
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", targetFramework, "--device", deviceId)
+            .Should().Pass()
+            .And.HaveStdOutContaining($"Device: {deviceId}");
+    }
+
+    [Fact]
+    public void ItShowsErrorMessageWithAvailableDevices_InNonInteractiveMode()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--framework", "net8.0", "--no-interactive");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
+            .And.HaveStdErrContaining("test-device-1")
+            .And.HaveStdErrContaining("test-device-2");
+    }
+
+    [Fact]
+    public void ItDoesNotPromptForDeviceWhenComputeAvailableDevicesTargetDoesNotExist()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset(
+                "NETFrameworkReferenceNETStandard20",
+                testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
+            .WithSource();
+
+        string projectDirectory = Path.Combine(testInstance.Path, "MultiTFMTestApp");
+
+        // This project doesn't have ComputeAvailableDevices target, so it should just run
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(projectDirectory)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework)
+            .Should().Pass()
+            .And.HaveStdOutContaining("This string came from the test library!");
+    }
+
+    [Fact]
+    public void ItTreatsEmptyDeviceSpecificationAsNotSpecified()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--framework", "net8.0", "-p:Device=", "--no-interactive");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+    }
+
+    [Fact]
+    public void ItWorksWithDevicePropertySyntax()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        string deviceId = "test-device-1";
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", "net8.0", $"-p:Device={deviceId}")
+            .Should().Pass()
+            .And.HaveStdOutContaining($"Device: {deviceId}");
+    }
+
+    [Fact]
+    public void ItWorksWithDeviceWithoutRuntimeIdentifier()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        string deviceId = "test-device-2";
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", "net8.0", "--device", deviceId)
+            .Should().Pass()
+            .And.HaveStdOutContaining($"Device: {deviceId}")
+            .And.HaveStdOutContaining("RuntimeIdentifier:");
+    }
+
+    [Theory]
+    [InlineData(true)]  // interactive
+    [InlineData(false)] // non-interactive
+    public void ItAutoSelectsSingleDeviceWithoutPrompting(bool interactive)
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var command = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path);
+
+        var args = new List<string> { "--framework", "net8.0", "-p:SingleDevice=true" };
+        if (!interactive)
+        {
+            args.Add("--no-interactive");
+        }
+
+        var result = command.Execute(args.ToArray());
+
+        // Should auto-select the single device and run successfully
+        result.Should().Pass()
+            .And.HaveStdOutContaining("Device: single-device")
+            .And.HaveStdOutContaining($"RuntimeIdentifier: {ExpectedRid}");
+    }
+
+    [Fact]
+    public void ItCreatesBinlogWhenRequestedForDeviceSelection()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        // When /bl:device-list.binlog is specified, the verb is appended
+        string binlogPath = Path.Combine(testInstance.Path, "device-list-dotnet-run-devices.binlog");
+
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", "net8.0", "--list-devices", "/bl:device-list.binlog");
+
+        result.Should().Pass()
+            .And.HaveStdOutContaining("test-device-1");
+
+        // Verify the binlog file was created
+        File.Exists(binlogPath).Should().BeTrue("the binlog file should be created when /bl: argument is provided");
+    }
+
+    [Fact]
+    public void ItFailsWhenNoDevicesAreAvailable()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--framework", "net8.0", "-p:NoDevices=true", "--no-interactive");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.RunCommandNoDevicesAvailable);
+    }
+
+    [Theory]
+    [InlineData("--device")]
+    [InlineData("-p:Device=")]
+    public void ItDoesNotRunComputeAvailableDevicesWhenDeviceIsPreSpecified(string deviceArgPrefix)
+    {
+        string deviceId = "test-device-2";
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        string deviceSelectionBinlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run-devices.binlog");
+
+        var args = new List<string> { "--framework", "net8.0" };
+        if (deviceArgPrefix == "--device")
+        {
+            args.Add("--device");
+            args.Add(deviceId);
+        }
+        else
+        {
+            args.Add($"{deviceArgPrefix}{deviceId}");
+        }
+        args.Add("-bl");
+
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(args.ToArray());
+
+        // Should run successfully
+        result.Should().Pass()
+            .And.HaveStdOutContaining($"Device: {deviceId}");
+
+        // Verify the device selection binlog file was NOT created
+        File.Exists(deviceSelectionBinlogPath).Should().BeFalse(
+            "the device selection binlog should not be created when device is pre-specified because ComputeAvailableDevices target should not run");
+    }
+
+    [Fact]
+    public void ItPromptsForTargetFrameworkEvenWhenDeviceIsSpecified()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        string deviceId = "test-device-1";
+
+        // Don't specify --framework, only specify --device
+        // This should fail in non-interactive mode because framework selection is still needed
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--device", deviceId, "--no-interactive");
+
+        // Should fail with framework selection error, not device selection error
+        result.Should().Fail()
+            .And.HaveStdErrContaining("Your project targets multiple frameworks. Specify which framework to run using '--framework'");
+    }
+}
