@@ -5,10 +5,9 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.TemplateEngine.Cli.Commands;
 
@@ -36,20 +35,19 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: !_force, VirtualProjectBuildingCommand.ThrowingReporter);
 
         // Create a project instance for evaluation.
-        var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
-        var projectCollection = new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        using var evaluator = DotNetProjectEvaluatorFactory.CreateForCommand();
         var command = new VirtualProjectBuildingCommand(
             entryPointFileFullPath: file,
             msbuildArgs: MSBuildArgs.FromOtherArgs([]))
         {
             Directives = directives,
         };
-        var projectInstance = command.CreateProjectInstance(projectCollection);
+        var projectInstance = command.CreateVirtualProject(evaluator);
 
         // Evaluate directives.
         directives = VirtualProjectBuildingCommand.EvaluateDirectives(projectInstance, directives, sourceFile, VirtualProjectBuildingCommand.ThrowingReporter);
         command.Directives = directives;
-        projectInstance = command.CreateProjectInstance(projectCollection);
+        projectInstance = command.CreateVirtualProject(evaluator);
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
@@ -142,14 +140,14 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             foreach (var item in items)
             {
                 // Escape hatch - exclude items that have metadata `ExcludeFromFileBasedAppConversion` set to `true`.
-                string include = item.GetMetadataValue("ExcludeFromFileBasedAppConversion");
+                string? include = item.GetMetadataValue("ExcludeFromFileBasedAppConversion");
                 if (string.Equals(include, bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
                 // Exclude items that are not contained within the entry point file directory.
-                string itemFullPath = Path.GetFullPath(path: item.GetMetadataValue("FullPath"), basePath: entryPointFileDirectory);
+                string itemFullPath = Path.GetFullPath(path: item.FullPath!, basePath: entryPointFileDirectory);
                 if (!itemFullPath.StartsWith(entryPointFileDirectory, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
@@ -236,7 +234,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         {
             foreach (var (name, defaultValue) in VirtualProjectBuildingCommand.DefaultProperties)
             {
-                string projectValue = projectInstance.GetPropertyValue(name);
+                string? projectValue = projectInstance.GetPropertyValue(name);
                 if (!string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))
                 {
                     yield return name;

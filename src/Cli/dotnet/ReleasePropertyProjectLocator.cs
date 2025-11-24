@@ -7,6 +7,7 @@ using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
@@ -40,6 +41,7 @@ internal class ReleasePropertyProjectLocator
 
     private static readonly string solutionFolderGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
     private static readonly string sharedProjectGuid = "{D954291E-2A0B-460D-934E-DC6B0785DB48}";
+    private readonly DotNetProjectEvaluator _evaluator;
 
     // <summary>
     /// <param name="propertyToCheck">The boolean property to check the project for. Ex: PublishRelease, PackRelease.</param>
@@ -49,7 +51,10 @@ internal class ReleasePropertyProjectLocator
         string propertyToCheck,
         DependentCommandOptions commandOptions
      )
-     => (_parseResult, _propertyToCheck, _options, _slnOrProjectArgs) = (parseResult, propertyToCheck, commandOptions, commandOptions.SlnOrProjectArgs);
+      {
+        (_parseResult, _propertyToCheck, _options, _slnOrProjectArgs) = (parseResult, propertyToCheck, commandOptions, commandOptions.SlnOrProjectArgs);
+        _evaluator = DotNetProjectEvaluatorFactory.CreateForReleaseProperty(parseResult.GetValue(CommonOptions.PropertiesOption), commandOptions.FrameworkOption, commandOptions.ConfigurationOption);
+      }
 
     /// <summary>
     /// Return dotnet CLI command-line parameters (or an empty list) to change configuration based on ...
@@ -65,22 +70,18 @@ internal class ReleasePropertyProjectLocator
             return null;
         }
 
-        // Analyze Global Properties
-        var globalProperties = GetUserSpecifiedExplicitMSBuildProperties();
-        globalProperties = InjectTargetFrameworkIntoGlobalProperties(globalProperties);
-
         // Configuration doesn't work in a .proj file, but it does as a global property.
         // Detect either A) --configuration option usage OR /p:Configuration=Foo, if so, don't use these properties.
-        if (_options.ConfigurationOption != null || globalProperties is not null && globalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
+        if (_options.ConfigurationOption != null || _evaluator.ProjectCollection.GlobalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
             return new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase) { [EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE] = "true" }.AsReadOnly(); // Don't throw error if publish* conflicts but global config specified.
 
         // Determine the project being acted upon
-        ProjectInstance? project = GetTargetedProject(globalProperties);
+        DotNetProject? project = GetTargetedProject(_evaluator);
 
         // Determine the correct value to return
         if (project != null)
         {
-            string propertyToCheckValue = project.GetPropertyValue(_propertyToCheck);
+            string? propertyToCheckValue = project.GetPropertyValue(_propertyToCheck);
             if (!string.IsNullOrEmpty(propertyToCheckValue))
             {
                 var newConfigurationArgs = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
@@ -106,29 +107,29 @@ internal class ReleasePropertyProjectLocator
     /// </summary>
     /// <returns>A project instance that will be targeted to publish/pack, etc. null if one does not exist.
     /// Will return an arbitrary project in the solution if one exists in the solution and there's no project targeted.</returns>
-    public ProjectInstance? GetTargetedProject(ReadOnlyDictionary<string, string>? globalProps)
+    public DotNetProject? GetTargetedProject(DotNetProjectEvaluator evaluator)
     {
         foreach (string arg in _slnOrProjectArgs.Append(Directory.GetCurrentDirectory()))
         {
             if (VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
             {
-                return new VirtualProjectBuildingCommand(Path.GetFullPath(arg), MSBuildArgs.FromProperties(globalProps))
-                    .CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
+                return new VirtualProjectBuildingCommand(Path.GetFullPath(arg), MSBuildArgs.FromProperties(new Dictionary<string, string>(evaluator.ProjectCollection.GlobalProperties).AsReadOnly()))
+                    .CreateVirtualProject(evaluator);
             }
             else if (IsValidProjectFilePath(arg))
             {
-                return TryGetProjectInstance(arg, globalProps);
+                return TryGetProjectInstance(arg, evaluator);
             }
             else if (IsValidSlnFilePath(arg))
             {
-                return GetArbitraryProjectFromSolution(arg, globalProps);
+                return GetArbitraryProjectFromSolution(arg, evaluator);
             }
             else if (Directory.Exists(arg)) // Get here if the user did not provide a .proj or a .sln. (See CWD appended to args above)
             {
                 // First, look for a project in the directory.
                 if (MsbuildProject.TryGetProjectFileFromDirectory(arg, out var projectFilePath))
                 {
-                    return TryGetProjectInstance(projectFilePath, globalProps);
+                    return TryGetProjectInstance(projectFilePath, evaluator);
                 }
 
                 // Fall back to looking for a solution if multiple project files are found, or there's no project in the directory.
@@ -136,16 +137,16 @@ internal class ReleasePropertyProjectLocator
 
                 if (!string.IsNullOrEmpty(potentialSln))
                 {
-                    return GetArbitraryProjectFromSolution(potentialSln, globalProps);
+                    return GetArbitraryProjectFromSolution(potentialSln, evaluator);
                 }
             }
         }
         return null;  // If nothing can be found: that's caught by MSBuild XMake::ProcessProjectSwitch -- don't change the behavior by failing here.
     }
 
-    /// <returns>An arbitrary existant project in a solution file. Returns null if no projects exist.
+    /// <returns>An arbitrary existent project in a solution file. Returns null if no projects exist.
     /// Throws exception if two+ projects disagree in PublishRelease, PackRelease, or whatever _propertyToCheck is, and have it defined.</returns>
-    public ProjectInstance? GetArbitraryProjectFromSolution(string slnPath, ReadOnlyDictionary<string, string>? globalProps)
+    public DotNetProject? GetArbitraryProjectFromSolution(string slnPath, DotNetProjectEvaluator evaluator)
     {
         string slnFullPath = Path.GetFullPath(slnPath);
         if (!Path.Exists(slnFullPath))
@@ -163,14 +164,14 @@ internal class ReleasePropertyProjectLocator
         }
 
         _isHandlingSolution = true;
-        List<ProjectInstance> configuredProjects = [];
+        List<DotNetProject> configuredProjects = [];
         HashSet<string> configValues = [];
         object projectDataLock = new();
 
         if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS), "true", StringComparison.OrdinalIgnoreCase))
         {
             // Evaluate only one project for speed if this environment variable is used. Will break more customers if enabled (adding 8.0 project to SLN with other project TFMs with no Publish or PackRelease.)
-            return GetSingleProjectFromSolution(sln, slnFullPath, globalProps);
+            return GetSingleProjectFromSolution(sln, slnFullPath, evaluator);
         }
 
         Parallel.ForEach(sln.SolutionProjects.AsEnumerable(), (project, state) =>
@@ -181,13 +182,13 @@ internal class ReleasePropertyProjectLocator
             if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                 return;
 
-            var projectData = TryGetProjectInstance(projectFullPath, globalProps);
+            var projectData = TryGetProjectInstance(projectFullPath, evaluator);
             if (projectData == null)
             {
                 return;
             }
 
-            string pReleasePropertyValue = projectData.GetPropertyValue(_propertyToCheck);
+            string? pReleasePropertyValue = projectData.GetPropertyValue(_propertyToCheck);
             if (!string.IsNullOrEmpty(pReleasePropertyValue))
             {
                 lock (projectDataLock)
@@ -213,9 +214,9 @@ internal class ReleasePropertyProjectLocator
     /// Returns an arbitrary project for the solution. Relies on the .NET SDK PrepareForPublish or _VerifyPackReleaseConfigurations MSBuild targets to catch conflicting values of a given property, like PublishRelease or PackRelease.
     /// </summary>
     /// <param name="solution">The solution to get an arbitrary project from.</param>
-    /// <param name="globalProps">The global properties to load into the project.</param>
+    /// <param name="evaluator">The DotNetProjectEvaluator to use for loading projects.</param>
     /// <returns>null if no project exists in the solution that can be evaluated properly. Else, the first project in the solution that can be.</returns>
-    private ProjectInstance? GetSingleProjectFromSolution(SolutionModel sln, string slnPath, ReadOnlyDictionary<string, string>? globalProps)
+    private DotNetProject? GetSingleProjectFromSolution(SolutionModel sln, string slnPath, DotNetProjectEvaluator evaluator)
     {
         foreach (var project in sln.SolutionProjects.AsEnumerable())
         {
@@ -225,7 +226,7 @@ internal class ReleasePropertyProjectLocator
             if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                 continue;
 
-            var projectData = TryGetProjectInstance(projectFullPath, globalProps);
+            var projectData = TryGetProjectInstance(projectFullPath, evaluator);
             if (projectData != null)
             {
                 return projectData;
@@ -246,12 +247,12 @@ internal class ReleasePropertyProjectLocator
         return project.TypeId.ToString() == solutionFolderGuid || project.TypeId.ToString() == sharedProjectGuid || !IsValidProjectFilePath(projectFullPath);
     }
 
-    /// <returns>Creates a ProjectInstance if the project is valid, elsewise, fails.</returns>
-    private static ProjectInstance? TryGetProjectInstance(string projectPath, ReadOnlyDictionary<string, string>? globalProperties)
+    /// <returns>Creates a ProjectInstance if the project is valid, otherwise, fails.</returns>
+    private static DotNetProject? TryGetProjectInstance(string projectPath, DotNetProjectEvaluator evaluator)
     {
         try
         {
-            return new ProjectInstance(projectPath, globalProperties, "Current");
+            return evaluator.LoadProject(projectPath);
         }
         catch (Exception e) // Catch failed file access, or invalid project files that cause errors when read into memory,
         {
@@ -270,37 +271,5 @@ internal class ReleasePropertyProjectLocator
     private static bool IsValidSlnFilePath(string path)
     {
         return File.Exists(path) && (Path.GetExtension(path).Equals(".sln") || Path.GetExtension(path).Equals(".slnx"));
-    }
-
-    /// <returns>A case-insensitive dictionary of any properties passed from the user and their values.</returns>
-    private ReadOnlyDictionary<string, string>? GetUserSpecifiedExplicitMSBuildProperties() => _parseResult.GetValue(CommonOptions.PropertiesOption);
-
-    /// <summary>
-    /// Because command-line options that translate to MSBuild properties aren't in the global arguments from Properties, we need to add the TargetFramework to the collection.
-    /// The TargetFramework is the only command-line option besides Configuration that could affect the pre-evaluation.
-    /// This allows the pre-evaluation to correctly deduce its Publish or PackRelease value because it will know the actual TargetFramework being used.
-    /// </summary>
-    /// <param name="oldGlobalProperties">The set of MSBuild properties that were specified explicitly like -p:Property=Foo or in other syntax sugars.</param>
-    /// <returns>The same set of global properties for the project, but with the new potential TFM based on -f or --framework.</returns>
-    private ReadOnlyDictionary<string, string>? InjectTargetFrameworkIntoGlobalProperties(ReadOnlyDictionary<string, string>? globalProperties)
-    {
-        if (globalProperties is null || globalProperties.Count == 0)
-        {
-            if (_options.FrameworkOption != null)
-            {
-                return new(new Dictionary<string, string>() { [MSBuildPropertyNames.TARGET_FRAMEWORK] = _options.FrameworkOption });
-            }
-            return null;
-        }
-        if (_options.FrameworkOption is null)
-        {
-            return globalProperties;
-        }
-
-        var newDictionary = new Dictionary<string, string>(globalProperties, StringComparer.OrdinalIgnoreCase);
-        // Note: dotnet -f FRAMEWORK_1 --property:TargetFramework=FRAMEWORK_2 will use FRAMEWORK_1.
-        // So we can replace the value in the globals non-dubiously if it exists.
-        newDictionary[MSBuildPropertyNames.TARGET_FRAMEWORK] = _options.FrameworkOption;
-        return new(newDictionary);
     }
 }

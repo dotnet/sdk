@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Execution;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -11,19 +12,19 @@ internal sealed record RunProperties(
     string Command,
     string? Arguments,
     string? WorkingDirectory,
-    string RuntimeIdentifier,
-    string DefaultAppHostRuntimeIdentifier,
-    string TargetFrameworkVersion)
+    string? RuntimeIdentifier,
+    string? DefaultAppHostRuntimeIdentifier,
+    string? TargetFrameworkVersion)
 {
     internal RunProperties(string command, string? arguments, string? workingDirectory)
         : this(command, arguments, workingDirectory, string.Empty, string.Empty, string.Empty)
     {
     }
 
-    internal static bool TryFromProject(ProjectInstance project, [NotNullWhen(returnValue: true)] out RunProperties? result)
+    internal static bool TryFromProject(DotNetProject project, [NotNullWhen(returnValue: true)] out RunProperties? result)
     {
         result = new RunProperties(
-            Command: project.GetPropertyValue("RunCommand"),
+            Command: project.GetPropertyValue("RunCommand")!,
             Arguments: project.GetPropertyValue("RunArguments"),
             WorkingDirectory: project.GetPropertyValue("RunWorkingDirectory"),
             RuntimeIdentifier: project.GetPropertyValue("RuntimeIdentifier"),
@@ -39,7 +40,7 @@ internal sealed record RunProperties(
         return true;
     }
 
-    internal static RunProperties FromProject(ProjectInstance project)
+    internal static RunProperties FromProject(DotNetProject project)
     {
         if (!TryFromProject(project, out var result))
         {

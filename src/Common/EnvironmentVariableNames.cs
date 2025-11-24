@@ -29,13 +29,13 @@ static class EnvironmentVariableNames
 #if NET7_0_OR_GREATER
     private static readonly Version s_version6_0 = new(6, 0);
 
-    public static string? TryGetDotNetRootVariableName(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, string targetFrameworkVersion)
+    public static string? TryGetDotNetRootVariableName(string? runtimeIdentifier, string? defaultAppHostRuntimeIdentifier, string? targetFrameworkVersion)
         => TryGetDotNetRootVariableName(runtimeIdentifier, defaultAppHostRuntimeIdentifier, TryParseTargetFrameworkVersion(targetFrameworkVersion));
 
-    public static string? TryGetDotNetRootVariableName(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, Version? targetFrameworkVersion)
+    public static string? TryGetDotNetRootVariableName(string? runtimeIdentifier, string? defaultAppHostRuntimeIdentifier, Version? targetFrameworkVersion)
         => TryGetDotNetRootVariableNameImpl(runtimeIdentifier, defaultAppHostRuntimeIdentifier, targetFrameworkVersion, RuntimeInformation.ProcessArchitecture, Environment.Is64BitProcess);
 
-    internal static string? TryGetDotNetRootVariableNameImpl(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, Version? targetFrameworkVersion, Architecture currentArchitecture, bool is64bit, bool onlyUseArchSpecific = false)
+    internal static string? TryGetDotNetRootVariableNameImpl(string? runtimeIdentifier, string? defaultAppHostRuntimeIdentifier, Version? targetFrameworkVersion, Architecture currentArchitecture, bool is64bit, bool onlyUseArchSpecific = false)
     {
         // If the app targets the same architecture as SDK is running on or an unknown architecture, set DOTNET_ROOT, DOTNET_ROOT(x86) for 32-bit, DOTNET_ROOT_arch for TFM 6+.
         // If the app targets different architecture from the SDK, do not set DOTNET_ROOT.
@@ -53,13 +53,18 @@ static class EnvironmentVariableNames
         return null;
     }
 
-    internal static string? TryGetDotNetRootArchVariableName(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier)
+    internal static string? TryGetDotNetRootArchVariableName(string? runtimeIdentifier, string? defaultAppHostRuntimeIdentifier)
         => TryGetDotNetRootVariableNameImpl(runtimeIdentifier, defaultAppHostRuntimeIdentifier, null, RuntimeInformation.ProcessArchitecture, Environment.Is64BitProcess, onlyUseArchSpecific: true);
 
-    internal static bool TryParseArchitecture(string runtimeIdentifier, out Architecture architecture)
+    internal static bool TryParseArchitecture(string? runtimeIdentifier, out Architecture architecture)
     {
         // RID is [os].[version]-[architecture]-[additional qualifiers]
         // See https://learn.microsoft.com/en-us/dotnet/core/rid-catalog
+        if (runtimeIdentifier == null)
+        {
+            architecture = default;
+            return false;
+        }
 
         int archStart = runtimeIdentifier.IndexOf('-') + 1;
         if (archStart <= 0)
@@ -74,7 +79,7 @@ static class EnvironmentVariableNames
         return Enum.TryParse(span, ignoreCase: true, out architecture);
     }
 
-    public static Version? TryParseTargetFrameworkVersion(string targetFrameworkVersion)
+    public static Version? TryParseTargetFrameworkVersion(string? targetFrameworkVersion)
     {
         // TargetFrameworkVersion appears as "vX.Y" in msbuild. Ignore the leading 'v'.
         return !string.IsNullOrEmpty(targetFrameworkVersion) && Version.TryParse(targetFrameworkVersion.Substring(1), out var version) ? version : null;

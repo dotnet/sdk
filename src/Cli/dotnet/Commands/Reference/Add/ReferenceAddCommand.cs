@@ -1,40 +1,36 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
-using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
 internal class ReferenceAddCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+    private readonly string? _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
             parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
             parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument);
 
     public override int Execute()
     {
-        var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
-        using var projects = new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        using var evaluator = DotNetProjectEvaluatorFactory.CreateForCommand();
         bool interactive = _parseResult.GetValue(ReferenceAddCommandParser.InteractiveOption);
         MsbuildProject msbuildProj = MsbuildProject.FromFileOrDirectory(
-            projects,
+            evaluator.ProjectCollection,
             _fileOrDirectory,
             interactive);
 
         var frameworkString = _parseResult.GetValue(ReferenceAddCommandParser.FrameworkOption);
 
-        var arguments = _parseResult.GetValue(ReferenceAddCommandParser.ProjectPathArgument).ToList().AsReadOnly();
+        var arguments = _parseResult.GetRequiredValue(ReferenceAddCommandParser.ProjectPathArgument).ToList().AsReadOnly();
         PathUtility.EnsureAllPathsExist(arguments,
             CliStrings.CouldNotFindProjectOrDirectory, true);
-        List<MsbuildProject> refs = [.. arguments.Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))];
+        List<MsbuildProject> refs = [.. arguments.Select((r) => MsbuildProject.FromFileOrDirectory(evaluator.ProjectCollection, r, interactive))];
 
         if (string.IsNullOrEmpty(frameworkString))
         {

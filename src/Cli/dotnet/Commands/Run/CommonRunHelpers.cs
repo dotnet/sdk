@@ -42,6 +42,9 @@ internal static class CommonRunHelpers
     /// If the environment is detected to be an LLM environment, the logger is adjusted to
     /// better suit that environment.
     /// </summary>
+    /// <remarks>
+    /// Doesn't help us with 'remote logger' configuration - need https://github.com/dotnet/msbuild/pull/12827 to land for that.
+    /// </remarks>
     public static Microsoft.Build.Framework.ILogger GetConsoleLogger(MSBuildArgs args) =>
         Microsoft.Build.Logging.TerminalLogger.CreateTerminalOrConsoleLogger([.. AdjustMSBuildForLLMs(args).OtherMSBuildArgs]);
 }

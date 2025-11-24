@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
@@ -14,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
 internal class MSBuildEvaluator : IIdentifiedComponent
 {
-    private readonly ProjectCollection _projectCollection;
+    private readonly DotNetProjectEvaluator _evaluator;
     private readonly object _lockObj = new();
 
     private IEngineEnvironmentSettings? _settings;
@@ -25,16 +26,14 @@ internal class MSBuildEvaluator : IIdentifiedComponent
     internal MSBuildEvaluator()
     {
         _outputDirectory = Directory.GetCurrentDirectory();
-        var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
-        _projectCollection = new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        _evaluator = DotNetProjectEvaluatorFactory.CreateForCommand();
     }
 
     internal MSBuildEvaluator(string? outputDirectory = null, string? projectPath = null)
     {
         _outputDirectory = outputDirectory ?? Directory.GetCurrentDirectory();
         _projectFullPath = projectPath != null ? Path.GetFullPath(projectPath) : null;
-        var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
-        _projectCollection = new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        _evaluator = DotNetProjectEvaluatorFactory.CreateForCommand();
     }
 
     public Guid Id => Guid.Parse("{6C2CB5CA-06C3-460A-8ADB-5F21E113AB24}");
@@ -250,14 +249,14 @@ internal class MSBuildEvaluator : IIdentifiedComponent
                 globalProperties,
                 toolsVersion: null,
                 subToolsetVersion: null,
-                _projectCollection,
+                _evaluator.ProjectCollection,
                 ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports);
     }
 
     private MSBuildProject? GetLoadedProject(string projectToLoad, string? tfm)
     {
         MSBuildProject? project;
-        ICollection<MSBuildProject> loadedProjects = _projectCollection.GetLoadedProjects(projectToLoad);
+        ICollection<MSBuildProject> loadedProjects = _evaluator.ProjectCollection.GetLoadedProjects(projectToLoad);
         if (string.IsNullOrEmpty(tfm))
         {
             project = loadedProjects.FirstOrDefault(project => !project.GlobalProperties.ContainsKey("TargetFramework"));
@@ -277,7 +276,7 @@ internal class MSBuildEvaluator : IIdentifiedComponent
         {
             foreach (MSBuildProject loaded in loadedProjects)
             {
-                _projectCollection.UnloadProject(loaded);
+                _evaluator.ProjectCollection.UnloadProject(loaded);
             }
         }
         return null;

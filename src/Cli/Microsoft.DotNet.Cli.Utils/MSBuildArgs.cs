@@ -259,6 +259,9 @@ public sealed class MSBuildArgs
             OtherMSBuildArgs.ToArray());
     }
 
+    /// <summary>
+    /// Adds new global properties to the existing set of global properties for this MSBuild invocation.
+    /// </summary>
     public MSBuildArgs CloneWithAdditionalProperties(ReadOnlyDictionary<string, string>? additionalProperties)
     {
         if (additionalProperties is null || additionalProperties.Count == 0)

@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -69,13 +70,10 @@ internal static class MSBuildUtility
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
 
         // Include telemetry logger for evaluation and capture it for reuse in builds
-        var (loggers, telemetryCentralLogger) = ProjectInstanceExtensions.CreateLoggersWithTelemetry(logger is null ? null : [logger]);
-        using var collection = new ProjectCollection(globalProperties: globalProperties, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-        var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, telemetryCentralLogger);
+        var (loggers, telemetryCentralLogger) = MSBuildEvaluation.TelemetryUtilities.CreateLoggersWithTelemetry(logger is null ? null : [logger]);
+        using var evaluator = MSBuildEvaluation.DotNetProjectEvaluatorFactory.Create(globalProperties, logger is null ? null : [logger]);
+        ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(evaluator, projectPaths, buildOptions);
         logger?.ReallyShutdown();
-        collection.UnloadAllProjects();
-
         return (projects, isBuiltOrRestored);
     }
 
@@ -93,12 +91,9 @@ internal static class MSBuildUtility
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption(), CommonOptions.NoLogoOption());
 
         // Include telemetry logger for evaluation and capture it for reuse in builds
-        var (loggers, telemetryCentralLogger) = ProjectInstanceExtensions.CreateLoggersWithTelemetry(logger is null ? null : [logger]);
-        using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-        var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, telemetryCentralLogger, configuration: null, platform: null);
+        using var evaluator = MSBuildEvaluation.DotNetProjectEvaluatorFactory.Create(CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger]);
+        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, evaluator, buildOptions, configuration: null, platform: null);
         logger?.ReallyShutdown();
-        collection.UnloadAllProjects();
         return (projects, isBuiltOrRestored);
     }
 
@@ -166,11 +161,9 @@ internal static class MSBuildUtility
     }
 
     private static ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectsProperties(
-        ProjectCollection projectCollection,
-        EvaluationContext evaluationContext,
+        DotNetProjectEvaluator evaluator,
         IEnumerable<(string ProjectFilePath, string? Configuration, string? Platform)> projects,
-        BuildOptions buildOptions,
-        ILogger? telemetryCentralLogger)
+        BuildOptions buildOptions)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
 
@@ -181,7 +174,7 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
             (project) =>
             {
-                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, telemetryCentralLogger, project.Configuration, project.Platform);
+                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, evaluator, buildOptions, project.Configuration, project.Platform);
                 foreach (var projectMetadata in projectsMetadata)
                 {
                     allProjects.Add(projectMetadata);

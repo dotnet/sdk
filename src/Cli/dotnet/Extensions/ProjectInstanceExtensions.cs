@@ -4,7 +4,7 @@
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
-using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 
 namespace Microsoft.DotNet.Cli.Extensions;
 
@@ -57,20 +57,10 @@ public static class ProjectInstanceExtensions
     /// Returns null if telemetry is not enabled or if there's an error creating the logger.
     /// </summary>
     /// <returns>The central telemetry logger, or null if telemetry is disabled.</returns>
+    [Obsolete("Use DotNetProjectEvaluatorFactory.CreateForCommand() or DotNetProjectEvaluator constructor instead. This method will be removed in a future release.")]
     public static ILogger? CreateTelemetryCentralLogger()
     {
-        if (Telemetry.Telemetry.CurrentSessionId != null)
-        {
-            try
-            {
-                return new MSBuildLogger();
-            }
-            catch (Exception)
-            {
-                // Exceptions during telemetry shouldn't cause anything else to fail
-            }
-        }
-        return null;
+        return TelemetryUtilities.CreateTelemetryCentralLogger();
     }
 
     /// <summary>
@@ -81,29 +71,10 @@ public static class ProjectInstanceExtensions
     /// </summary>
     /// <param name="centralLogger">The central logger instance (typically the same one used in ProjectCollection).</param>
     /// <returns>An array containing the forwarding logger record, or empty array if central logger is null.</returns>
+    [Obsolete("Use DotNetProjectBuilder for build operations instead. This method will be removed in a future release.")]
     public static ForwardingLoggerRecord[] CreateTelemetryForwardingLoggerRecords(ILogger? centralLogger)
     {
-        if (centralLogger is MSBuildLogger msbuildLogger)
-        {
-            try
-            {
-                // LoggerDescription describes the forwarding logger that worker nodes will create
-                var forwardingLoggerDescription = new Microsoft.Build.Logging.LoggerDescription(
-                    loggerClassName: typeof(MSBuildForwardingLogger).FullName!,
-                    loggerAssemblyName: typeof(MSBuildForwardingLogger).Assembly.Location,
-                    loggerAssemblyFile: null,
-                    loggerSwitchParameters: null,
-                    verbosity: LoggerVerbosity.Normal);
-
-                var loggerRecord = new ForwardingLoggerRecord(msbuildLogger, forwardingLoggerDescription);
-                return [loggerRecord];
-            }
-            catch (Exception)
-            {
-                // Exceptions during telemetry shouldn't cause anything else to fail
-            }
-        }
-        return [];
+        return TelemetryUtilities.CreateTelemetryForwardingLoggerRecords(centralLogger);
     }
 
     /// <summary>
@@ -114,6 +85,7 @@ public static class ProjectInstanceExtensions
     /// <param name="targets">The targets to build.</param>
     /// <param name="additionalLoggers">Additional loggers to include.</param>
     /// <param name="telemetryCentralLogger">Optional telemetry central logger from ProjectCollection. If null, creates a new one.</param>
+    [Obsolete("Use DotNetProjectBuilder.Build() instead. This method will be removed in a future release.")]
     public static bool BuildWithTelemetry(
         this ProjectInstance projectInstance,
         string[] targets,
@@ -125,8 +97,8 @@ public static class ProjectInstanceExtensions
 
         // Add telemetry as a distributed logger via ForwardingLoggerRecord
         // Use provided central logger or create a new one
-        var centralLogger = telemetryCentralLogger ?? CreateTelemetryCentralLogger();
-        forwardingLoggers.AddRange(CreateTelemetryForwardingLoggerRecords(centralLogger));
+        var centralLogger = telemetryCentralLogger ?? TelemetryUtilities.CreateTelemetryCentralLogger();
+        forwardingLoggers.AddRange(TelemetryUtilities.CreateTelemetryForwardingLoggerRecords(centralLogger));
 
         if (additionalLoggers != null)
         {
@@ -150,6 +122,7 @@ public static class ProjectInstanceExtensions
     /// <param name="loggers">Loggers to include.</param>
     /// <param name="targetOutputs">The outputs from the build.</param>
     /// <param name="telemetryCentralLogger">Optional telemetry central logger from ProjectCollection. If null, creates a new one.</param>
+    [Obsolete("Use DotNetProjectBuilder.Build() instead. This method will be removed in a future release.")]
     public static bool BuildWithTelemetry(
         this ProjectInstance projectInstance,
         string[] targets,
@@ -162,8 +135,8 @@ public static class ProjectInstanceExtensions
 
         // Add telemetry as a distributed logger via ForwardingLoggerRecord
         // Use provided central logger or create a new one
-        var centralLogger = telemetryCentralLogger ?? CreateTelemetryCentralLogger();
-        forwardingLoggers.AddRange(CreateTelemetryForwardingLoggerRecords(centralLogger));
+        var centralLogger = telemetryCentralLogger ?? TelemetryUtilities.CreateTelemetryCentralLogger();
+        forwardingLoggers.AddRange(TelemetryUtilities.CreateTelemetryForwardingLoggerRecords(centralLogger));
 
         if (loggers != null)
         {
@@ -188,6 +161,7 @@ public static class ProjectInstanceExtensions
     /// <param name="remoteLoggers">Remote/forwarding loggers to include.</param>
     /// <param name="targetOutputs">The outputs from the build.</param>
     /// <param name="telemetryCentralLogger">Optional telemetry central logger from ProjectCollection. If null, creates a new one.</param>
+    [Obsolete("Use DotNetProjectBuilder.Build() instead. This method will be removed in a future release.")]
     public static bool BuildWithTelemetry(
         this ProjectInstance projectInstance,
         string[] targets,
@@ -201,8 +175,8 @@ public static class ProjectInstanceExtensions
 
         // Add telemetry as a distributed logger via ForwardingLoggerRecord
         // Use provided central logger or create a new one
-        var centralLogger = telemetryCentralLogger ?? CreateTelemetryCentralLogger();
-        allForwardingLoggers.AddRange(CreateTelemetryForwardingLoggerRecords(centralLogger));
+        var centralLogger = telemetryCentralLogger ?? TelemetryUtilities.CreateTelemetryCentralLogger();
+        allForwardingLoggers.AddRange(TelemetryUtilities.CreateTelemetryForwardingLoggerRecords(centralLogger));
 
         if (loggers != null)
         {
@@ -228,22 +202,9 @@ public static class ProjectInstanceExtensions
     /// </summary>
     /// <param name="additionalLoggers">Additional loggers to include in the collection.</param>
     /// <returns>A tuple containing the logger array and the telemetry central logger (or null if no telemetry).</returns>
+    [Obsolete("Use DotNetProjectEvaluatorFactory.CreateForCommand() or DotNetProjectEvaluator constructor instead. This method will be removed in a future release.")]
     public static (ILogger[]? loggers, ILogger? telemetryCentralLogger) CreateLoggersWithTelemetry(IEnumerable<ILogger>? additionalLoggers = null)
     {
-        var loggers = new List<ILogger>();
-
-        // Add central telemetry logger for evaluation
-        var telemetryCentralLogger = CreateTelemetryCentralLogger();
-        if (telemetryCentralLogger != null)
-        {
-            loggers.Add(telemetryCentralLogger);
-        }
-
-        if (additionalLoggers != null)
-        {
-            loggers.AddRange(additionalLoggers);
-        }
-
-        return (loggers.Count > 0 ? loggers.ToArray() : null, telemetryCentralLogger);
+        return TelemetryUtilities.CreateLoggersWithTelemetry(additionalLoggers);
     }
 }
