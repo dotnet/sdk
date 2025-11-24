@@ -7,9 +7,11 @@ using System.CommandLine;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
@@ -72,24 +74,19 @@ internal class WorkloadRestoreCommand(
         {
             {"SkipResolvePackageAssets", "true"}
         };
-
+        var evaluator = DotNetProjectEvaluatorFactory.Create(globalProperties);
         var allWorkloadId = new List<WorkloadId>();
         foreach (string projectFile in allProjects)
         {
-            var project = new ProjectInstance(projectFile, globalProperties, null);
-            if (!project.Targets.ContainsKey(GetRequiredWorkloadsTargetName))
+            var project = evaluator.LoadProject(projectFile);
+            if (!project.SupportsTarget(GetRequiredWorkloadsTargetName))
             {
                 continue;
             }
+            var builder = evaluator.CreateBuilder(project);
+            var buildResult = builder.Build([GetRequiredWorkloadsTargetName], [ CommonRunHelpers.GetConsoleLogger(MSBuildArgs.FromVerbosity(Verbosity))]);
 
-            bool buildResult = project.BuildWithTelemetry([GetRequiredWorkloadsTargetName],
-                loggers: [
-                    new ConsoleLogger(Verbosity.ToLoggerVerbosity())
-                ],
-                remoteLoggers: [],
-                targetOutputs: out var targetOutputs);
-
-            if (buildResult == false)
+            if (!buildResult.Success)
             {
                 throw new GracefulException(
                     string.Format(
@@ -98,7 +95,7 @@ internal class WorkloadRestoreCommand(
                     isUserError: false);
             }
 
-            var targetResult = targetOutputs[GetRequiredWorkloadsTargetName];
+            var targetResult = buildResult.TargetOutputs[GetRequiredWorkloadsTargetName];
             allWorkloadId.AddRange(targetResult.Items.Select(item => new WorkloadId(item.ItemSpec)));
         }
 

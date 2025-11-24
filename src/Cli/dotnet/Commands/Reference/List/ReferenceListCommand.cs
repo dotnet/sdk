@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
 
@@ -29,8 +30,8 @@ internal class ReferenceListCommand : CommandBase
 
     public override int Execute()
     {
-        var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
-        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default), _fileOrDirectory, false);
+        using var evaluator = DotNetProjectEvaluatorFactory.CreateForCommand();
+        var msbuildProj = MsbuildProject.FromFileOrDirectory(evaluator.ProjectCollection, _fileOrDirectory, false);
         var p2ps = msbuildProj.GetProjectToProjectReferences();
         if (!p2ps.Any())
         {

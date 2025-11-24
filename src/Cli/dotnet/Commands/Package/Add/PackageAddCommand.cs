@@ -4,14 +4,13 @@
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Construction;
-using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.FileBasedPrograms;
 using NuGet.ProjectModel;
 
@@ -194,9 +193,8 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         };
 
         // Include telemetry logger for project evaluation
-        var (loggersWithTelemetry, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry([]);
-        var projectCollection = new ProjectCollection(globalProperties: null, loggersWithTelemetry, ToolsetDefinitionLocations.Default);
-        var projectInstance = command.CreateProjectInstance(projectCollection);
+        using var evaluator = DotNetProjectEvaluatorFactory.CreateForCommand();
+        var projectInstance = command.CreateVirtualProject(evaluator);
 
         // Set initial version to Directory.Packages.props and/or C# file
         // (we always need to add the package reference to the C# file but when CPM is enabled, it's added without a version).
@@ -219,7 +217,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             // If no version was specified by the user, save the actually restored version.
             if (specifiedVersion == null && !skipUpdate)
             {
-                var projectAssetsFile = projectInstance.GetProperty("ProjectAssetsFile")?.EvaluatedValue;
+                var projectAssetsFile = projectInstance.GetPropertyValue("ProjectAssetsFile");
                 if (!File.Exists(projectAssetsFile))
                 {
                     Reporter.Verbose.WriteLine($"Assets file does not exist: {projectAssetsFile}");
@@ -276,13 +274,13 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         (Action Revert, Action<string> Update, Action Save)? SetCentralVersion(string version)
         {
             // Find out whether CPM is enabled.
-            if (!MSBuildUtilities.ConvertStringToBool(projectInstance.GetProperty("ManagePackageVersionsCentrally")?.EvaluatedValue))
+            if (!MSBuildUtilities.ConvertStringToBool(projectInstance.GetPropertyValue("ManagePackageVersionsCentrally")))
             {
                 return null;
             }
 
             // Load the Directory.Packages.props project.
-            var directoryPackagesPropsPath = projectInstance.GetProperty("DirectoryPackagesPropsPath")?.EvaluatedValue;
+            var directoryPackagesPropsPath = projectInstance.GetPropertyValue("DirectoryPackagesPropsPath");
             if (!File.Exists(directoryPackagesPropsPath))
             {
                 Reporter.Verbose.WriteLine($"Directory.Packages.props file does not exist: {directoryPackagesPropsPath}");
@@ -290,23 +288,17 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             }
 
             var snapshot = File.ReadAllText(directoryPackagesPropsPath);
-            var directoryPackagesPropsProject = projectCollection.LoadProject(directoryPackagesPropsPath);
+            var directoryPackagesPropsProject = evaluator.LoadProject(directoryPackagesPropsPath);
 
             const string packageVersionItemType = "PackageVersion";
             const string versionAttributeName = "Version";
 
             // Update existing PackageVersion if it exists.
-            var packageVersion = directoryPackagesPropsProject.GetItems(packageVersionItemType)
-                .LastOrDefault(i => string.Equals(i.EvaluatedInclude, _packageId.Id, StringComparison.OrdinalIgnoreCase));
-            if (packageVersion != null)
+            if (directoryPackagesPropsProject.TryGetPackageVersion(_packageId.Id, out var existingPackageVersion))
             {
-                var packageVersionItemElement = packageVersion.Project.GetItemProvenance(packageVersion).LastOrDefault()?.ItemElement;
-                var versionAttribute = packageVersionItemElement?.Metadata.FirstOrDefault(i => i.Name.Equals(versionAttributeName, StringComparison.OrdinalIgnoreCase));
-                if (versionAttribute != null)
+                var updateResult = existingPackageVersion.UpdateSourceItem(versionAttributeName, version);
+                if (updateResult == DotNetProjectItem.UpdateSourceItemResult.Success)
                 {
-                    versionAttribute.Value = version;
-                    directoryPackagesPropsProject.Save();
-
                     // If user didn't specify a version and a version is already specified in Directory.Packages.props,
                     // don't update the Directory.Packages.props (that's how the project-based equivalent behaves as well).
                     if (specifiedVersion == null)
@@ -317,30 +309,34 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
                         static void NoOp() { }
                         static void Unreachable(string value) => Debug.Fail("Unreachable.");
                     }
+                    else
+                    {
+                        return (Revert, v => Update(existingPackageVersion, v), Save);
+                    }
+                }
+                else
+                {
+                    return (Revert, v => { }, Save);
+                }
+            }
+            else
+            {
+                // Get the ItemGroup to add a PackageVersion to or create a new one.
+                if (directoryPackagesPropsProject.TryAddItem(packageVersionItemType, _packageId.Id, new(){
+                    [versionAttributeName] = version
+                }, out var item)) {
 
-                    return (Revert, v => Update(versionAttribute, v), Save);
+                    return (Revert, v => Update(item, v), Save);
+                }
+                else
+                {
+                    return (Revert, v => { }, Save);
                 }
             }
 
+            void Update(DotNetProjectItem item, string value)
             {
-                // Get the ItemGroup to add a PackageVersion to or create a new one.
-                var itemGroup = directoryPackagesPropsProject.Xml.ItemGroups
-                        .Where(e => e.Items.Any(i => string.Equals(i.ItemType, packageVersionItemType, StringComparison.OrdinalIgnoreCase)))
-                        .FirstOrDefault()
-                    ?? directoryPackagesPropsProject.Xml.AddItemGroup();
-
-                // Add a PackageVersion item.
-                var item = itemGroup.AddItem(packageVersionItemType, _packageId.Id);
-                var metadata = item.AddMetadata(versionAttributeName, version, expressAsAttribute: true);
-                directoryPackagesPropsProject.Save();
-
-                return (Revert, v => Update(metadata, v), Save);
-            }
-
-            void Update(ProjectMetadataElement element, string value)
-            {
-                element.Value = value;
-                directoryPackagesPropsProject.Save();
+                item.UpdateSourceItem(versionAttributeName, version);
             }
 
             void Revert()

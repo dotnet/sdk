@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine.Completions;
-using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using static System.Array;
 
 namespace Microsoft.DotNet.Cli;
@@ -66,13 +63,13 @@ internal static class CliCompletion
         }
     }
 
-    private static MsbuildProject GetMSBuildProject()
+    private static MsbuildProject? GetMSBuildProject()
     {
         try
         {
-            var (loggers, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
+            using var evaluator = DotNetProjectEvaluatorFactory.CreateForCommand();
             return MsbuildProject.FromFileOrDirectory(
-                new ProjectCollection(globalProperties: null, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default),
+                evaluator.ProjectCollection,
                 Directory.GetCurrentDirectory(), interactive: false);
         }
         catch (Exception e)
