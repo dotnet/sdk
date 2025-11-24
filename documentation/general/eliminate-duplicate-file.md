@@ -154,7 +154,7 @@ The presence of assemblies in a shared location can affect behavior.
 
 Beyond the compiler, other SDK components may have similar sensitivities to assembly placement and availability.
 These areas require careful analysis to identify potential behavioral changes when moving to a shared assembly model.
-Further ivestigation in these areas will be required.
+Further investigation in these areas will be required.
 
 ### Load from the Common Assembly Location
 
