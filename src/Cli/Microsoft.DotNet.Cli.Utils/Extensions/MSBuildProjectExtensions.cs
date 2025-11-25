@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli.Utils.Extensions;
 
 internal static class MSBuildProjectExtensions
 {
-    public static bool IsConditionalOnFramework(this ProjectElement el, string framework)
+    public static bool IsConditionalOnFramework(this ProjectElement el, string? framework)
     {
         if (!TryGetFrameworkConditionString(framework, out string? conditionStr))
         {
@@ -72,12 +72,12 @@ internal static class MSBuildProjectExtensions
         return group.Items.All((it) => it.ItemType == projectItemElementType);
     }
 
-    public static IEnumerable<ProjectItemElement> FindExistingItemsWithCondition(this ProjectRootElement root, string framework, string include)
+    public static IEnumerable<ProjectItemElement> FindExistingItemsWithCondition(this ProjectRootElement root, string? framework, string include)
     {
         return root.Items.Where((el) => el.IsConditionalOnFramework(framework) && el.HasInclude(include));
     }
 
-    public static bool HasExistingItemWithCondition(this ProjectRootElement root, string framework, string include)
+    public static bool HasExistingItemWithCondition(this ProjectRootElement root, string? framework, string include)
     {
         return root.FindExistingItemsWithCondition(framework, include).Count() != 0;
     }
@@ -113,7 +113,7 @@ internal static class MSBuildProjectExtensions
     }
 
 
-    private static bool TryGetFrameworkConditionString(string framework, out string? condition)
+    private static bool TryGetFrameworkConditionString(string? framework, out string? condition)
     {
         if (string.IsNullOrEmpty(framework))
         {

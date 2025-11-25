@@ -239,6 +239,7 @@ internal static class FileLevelDirectiveHelpers
     {
         if (directives.OfType<CSharpDirective.Project>().Any())
         {
+#pragma warning disable RS0030 // Do not use banned APIs
             return directives
                 .Select(d => d is CSharpDirective.Project p
                     ? (project is null
@@ -247,6 +248,7 @@ internal static class FileLevelDirectiveHelpers
                        .EnsureProjectFilePath(sourceFile, diagnostics)
                     : d)
                 .ToImmutableArray();
+#pragma warning restore RS0030 // Do not use banned APIs
         }
 
         return directives;

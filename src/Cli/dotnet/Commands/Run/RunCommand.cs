@@ -433,7 +433,7 @@ public class RunCommand
 
         static void ValidatePreconditions(DotNetProject project)
         {
-            if (string.IsNullOrWhiteSpace(project.TargetFramework))
+            if (project.TargetFramework is null)
             {
                 ThrowUnableToRunError(project);
             }
@@ -508,11 +508,11 @@ public class RunCommand
     [DoesNotReturn]
     internal static void ThrowUnableToRunError(DotNetProject project)
     {
-        string[]? targetFrameworks = project.TargetFrameworks;
+        var targetFrameworks = project.TargetFrameworks;
         if (targetFrameworks != null && targetFrameworks.Length > 0)
         {
-            string? targetFramework = project.TargetFramework;
-            if (string.IsNullOrEmpty(targetFramework))
+            var targetFramework = project.TargetFramework;
+            if (targetFramework is null)
             {
                 throw new GracefulException(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework");
             }

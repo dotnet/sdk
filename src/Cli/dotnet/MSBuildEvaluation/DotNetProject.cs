@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable RS0030 // OK to use MSBuild APIs in this wrapper file.
+
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.MSBuildEvaluation;
 
@@ -26,24 +29,28 @@ public sealed class DotNetProject(Project Project)
     /// <summary>
     /// Gets the full path to the project file.
     /// </summary>
-    public string FullPath => Project.FullPath;
+    public string? FullPath => Project.FullPath;
 
     /// <summary>
     /// Gets the directory containing the project file.
     /// </summary>
-    public string Directory => Path.GetDirectoryName(FullPath) ?? "";
+    public string? Directory => Path.GetDirectoryName(FullPath);
 
     // Strongly-typed access to common properties
 
     /// <summary>
     /// Gets the target framework for the project (e.g., "net8.0").
     /// </summary>
-    public string? TargetFramework => GetPropertyValue("TargetFramework");
+    public NuGetFramework? TargetFramework => GetPropertyValue("TargetFramework") is string tf ? NuGetFramework.Parse(tf) : null;
 
     /// <summary>
     /// Gets all target frameworks for multi-targeting projects.
     /// </summary>
-    public string[]? TargetFrameworks => GetPropertyValues("TargetFrameworks");
+    public NuGetFramework[]? TargetFrameworks => GetPropertyValues("TargetFrameworks")?.Select(NuGetFramework.Parse).ToArray();
+
+    public string? RuntimeIdentifier => GetPropertyValue("RuntimeIdentifier");
+
+    public string[]? RuntimeIdentifiers => GetPropertyValues("RuntimeIdentifiers");
 
     /// <summary>
     /// Gets the configuration (e.g., "Debug", "Release").
@@ -152,6 +159,8 @@ public sealed class DotNetProject(Project Project)
     public bool TryGetPackageVersion(string packageId, [NotNullWhen(true)] out DotNetProjectItem? item) =>
         TryFindItem("PackageVersion", packageId, out item);
 
+    public IEnumerable<DotNetProjectItem> ProjectReferences => GetItems("ProjectReference");
+
     /// <summary>
     /// Tries to add a new item to the project. The item will be added in the first item group that
     /// contains items of the same type, or a new item group will be created if none exist.
@@ -172,19 +181,13 @@ public sealed class DotNetProject(Project Project)
     /// <summary>
     /// Gets all available configurations for this project.
     /// </summary>
-    public IEnumerable<string> GetConfigurations()
-    {
-        string foundConfig = GetPropertyValue("Configurations") ?? "Debug;Release";
-        if (string.IsNullOrWhiteSpace(foundConfig))
-        {
-            foundConfig = "Debug;Release";
-        }
-
-        return foundConfig
+    public string[] Configurations => GetPropertyValue("Configurations") is string foundConfig
+        ? foundConfig
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .Where(c => !string.IsNullOrWhiteSpace(c))
-            .DefaultIfEmpty("Debug");
-    }
+            .DefaultIfEmpty("Debug")
+            .ToArray()
+        : ["Debug", "Release"];
 
     /// <summary>
     /// Gets all available platforms for this project.
@@ -209,13 +212,27 @@ public sealed class DotNetProject(Project Project)
         return projectGuid.ToString("B").ToUpper();
     }
 
+    public string? GetProjectTypeGuid()
+    {
+        string? projectTypeGuid = GetPropertyValue("ProjectTypeGuids");
+        if (!string.IsNullOrEmpty(projectTypeGuid))
+        {
+            var firstGuid = projectTypeGuid.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            if (!string.IsNullOrEmpty(firstGuid))
+            {
+                return firstGuid;
+            }
+        }
+        return null;
+    }
+
     /// <summary>
     /// Gets the default project type GUID for this project.
     /// </summary>
     public string? GetDefaultProjectTypeGuid()
     {
         string? projectTypeGuid = GetPropertyValue("DefaultProjectTypeGuid");
-        if (string.IsNullOrEmpty(projectTypeGuid) && FullPath.EndsWith(".shproj", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrEmpty(projectTypeGuid) && (FullPath?.EndsWith(".shproj", StringComparison.OrdinalIgnoreCase) ?? true))
         {
             projectTypeGuid = "{D954291E-2A0B-460D-934E-DC6B0785DB48}";
         }
@@ -231,7 +248,7 @@ public sealed class DotNetProject(Project Project)
     /// <summary>
     /// Returns a string representation of this project.
     /// </summary>
-    public override string ToString() => FullPath;
+    public override string ToString() => FullPath ?? "<unnamed project>";
 
     /// <summary>
     /// Builds the project with the specified targets and loggers. Delegates to the underlying ProjectInstance directly.

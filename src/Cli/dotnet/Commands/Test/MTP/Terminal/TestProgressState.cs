@@ -2,11 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
+using NuGet.Frameworks;
 using TestNodeInfoEntry = (int Passed, int Skipped, int Failed, int LastAttemptNumber);
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
-internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch, bool isDiscovery)
+internal sealed class TestProgressState(long id, string assembly, NuGetFramework? targetFramework, string? architecture, IStopwatch stopwatch, bool isDiscovery)
 {
     private readonly Dictionary<string, TestNodeInfoEntry> _testUidToResults = new();
 
@@ -18,7 +19,7 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public string AssemblyName { get; } = Path.GetFileName(assembly)!;
 
-    public string? TargetFramework { get; } = targetFramework;
+    public NuGetFramework? TargetFramework { get; } = targetFramework;
 
     public string? Architecture { get; } = architecture;
 

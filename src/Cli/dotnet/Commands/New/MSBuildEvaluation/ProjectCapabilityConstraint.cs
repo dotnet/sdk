@@ -1,13 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Newtonsoft.Json.Linq;
-using MSBuildProject = Microsoft.Build.Evaluation.Project;
 
 namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
@@ -162,20 +161,20 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
             //in case of multi-target project, consider project capabilities for all target frameworks
             if (result is MultiTargetEvaluationResult multiTargetResult)
             {
-                foreach (MSBuildProject? tfmBasedEvaluation in multiTargetResult.EvaluatedProjects.Values)
+                foreach (var tfmBasedEvaluation in multiTargetResult.EvaluatedProjects.Values)
                 {
                     AddProjectCapabilities(capabilities, tfmBasedEvaluation);
                 }
             }
             return [.. capabilities];
 
-            static void AddProjectCapabilities(HashSet<string> collection, MSBuildProject? evaluatedProject)
+            static void AddProjectCapabilities(HashSet<string> collection, DotNetProject? evaluatedProject)
             {
                 if (evaluatedProject == null)
                 {
                     return;
                 }
-                foreach (ProjectItem capability in evaluatedProject.GetItems("ProjectCapability"))
+                foreach (var capability in evaluatedProject.GetItems("ProjectCapability"))
                 {
                     if (!string.IsNullOrWhiteSpace(capability.EvaluatedInclude))
                     {

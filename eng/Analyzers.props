@@ -3,8 +3,10 @@
     <PackageReference Include="StyleCop.Analyzers" PrivateAssets="all" Condition="'$(EnableStyleCopAnalyzer)' == 'true'" />
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" Condition="$(MSBuildProjectDirectory.Contains('src\Cli')) OR $(MSBuildProjectDirectory.Contains('src/Cli'))" />
   </ItemGroup>
-  
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true' AND ($(MSBuildProjectDirectory.Contains('src\Cli')) OR $(MSBuildProjectDirectory.Contains('src/Cli')))">
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'
+      AND ($(MSBuildProjectDirectory.Contains('src\Cli')) OR $(MSBuildProjectDirectory.Contains('src/Cli')))
+      AND (!$(MSBuildProjectDirectory.Contains('FileBasedPrograms')))">
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)../BannedSymbols.txt" />
   </ItemGroup>
 </Project>

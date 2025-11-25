@@ -43,7 +43,7 @@ internal static class CliCompletion
     {
         try
         {
-            return GetMSBuildProject()?.GetProjectToProjectReferences().Select(r => ToCompletionItem(r.Include)) ?? Empty<CompletionItem>();
+            return GetMSBuildProject()?.ProjectReferences().Select(r => ToCompletionItem(r.EvaluatedInclude)) ?? Empty<CompletionItem>();
         }
         catch (Exception)
         {
@@ -69,7 +69,7 @@ internal static class CliCompletion
         {
             using var evaluator = DotNetProjectEvaluatorFactory.CreateForCommand();
             return MsbuildProject.FromFileOrDirectory(
-                evaluator.ProjectCollection,
+                evaluator,
                 Directory.GetCurrentDirectory(), interactive: false);
         }
         catch (Exception e)

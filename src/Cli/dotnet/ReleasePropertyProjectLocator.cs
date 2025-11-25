@@ -4,8 +4,6 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.Diagnostics;
-using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
@@ -72,7 +70,7 @@ internal class ReleasePropertyProjectLocator
 
         // Configuration doesn't work in a .proj file, but it does as a global property.
         // Detect either A) --configuration option usage OR /p:Configuration=Foo, if so, don't use these properties.
-        if (_options.ConfigurationOption != null || _evaluator.ProjectCollection.GlobalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
+        if (_options.ConfigurationOption != null || _evaluator.GlobalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
             return new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase) { [EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE] = "true" }.AsReadOnly(); // Don't throw error if publish* conflicts but global config specified.
 
         // Determine the project being acted upon
@@ -113,7 +111,7 @@ internal class ReleasePropertyProjectLocator
         {
             if (VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
             {
-                return new VirtualProjectBuildingCommand(Path.GetFullPath(arg), MSBuildArgs.FromProperties(new Dictionary<string, string>(evaluator.ProjectCollection.GlobalProperties).AsReadOnly()))
+                return new VirtualProjectBuildingCommand(Path.GetFullPath(arg), MSBuildArgs.FromProperties(new Dictionary<string, string>(evaluator.GlobalProperties).AsReadOnly()))
                     .CreateVirtualProject(evaluator);
             }
             else if (IsValidProjectFilePath(arg))

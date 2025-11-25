@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable RS0030 // Allowed to use MSBuild APIs in this file.
+
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 
@@ -28,11 +30,14 @@ public sealed class DotNetProjectEvaluator : IDisposable
         var (allLoggers, telemetryCentralLogger) = TelemetryUtilities.CreateLoggersWithTelemetry(loggers);
         _telemetryCentralLogger = telemetryCentralLogger;
 
+
         _projectCollection = new ProjectCollection(
             globalProperties: globalProperties,
             loggers: allLoggers,
             toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
     }
+
+    public IReadOnlyDictionary<string, string> GlobalProperties => _projectCollection.GlobalProperties.AsReadOnly();
 
     /// <summary>
     /// Gets the telemetry central logger that can be reused for build operations.
@@ -63,10 +68,11 @@ public sealed class DotNetProjectEvaluator : IDisposable
     /// </summary>
     /// <param name="projectPath">The path to the project file to load.</param>
     /// <param name="additionalGlobalProperties">Additional global properties to merge with the base properties.</param>
+    /// <param name="useFlexibleLoading">If true, allows flexible loading of projects with missing imports. Defaults to false.</param>
     /// <returns>A DotNetProject wrapper around the loaded project.</returns>
     /// <exception cref="ArgumentException">Thrown when projectPath is null or empty.</exception>
     /// <exception cref="FileNotFoundException">Thrown when the project file doesn't exist.</exception>
-    public DotNetProject LoadProject(string projectPath, IDictionary<string, string>? additionalGlobalProperties)
+    public DotNetProject LoadProject(string projectPath, IDictionary<string, string>? additionalGlobalProperties, bool useFlexibleLoading = false)
     {
         if (_disposed)
         {
@@ -109,7 +115,10 @@ public sealed class DotNetProjectEvaluator : IDisposable
 
             try
             {
-                var project = collectionToUse.LoadProject(projectPath);
+                var settings = useFlexibleLoading
+                    ? ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports
+                    : ProjectLoadSettings.Default;
+                var project = new Project(projectPath, globalProperties: null, toolsVersion: null, projectCollection: collectionToUse, loadSettings: settings);
                 cachedProject = new DotNetProject(project);
                 _projectCache[cacheKey] = cachedProject;
             }
