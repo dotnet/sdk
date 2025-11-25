@@ -159,6 +159,7 @@ jobs:
   - script: |
       source ./eng/common/tools.sh
       InitializeDotNetCli true
+      echo "##vso[task.setvariable variable=DotNetPath]$_InitializeDotNetCli"
     displayName: Install .NET SDK
     workingDirectory: $(Build.SourcesDirectory)
 
@@ -176,6 +177,7 @@ jobs:
 
   - template: templates/steps/create-baseline-update-pr.yml
     parameters:
+      dotnetPath: $(DotNetPath)
       pipeline: license
       repo: dotnet/sdk
       originalFilesDirectory: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/LicenseScanTests
