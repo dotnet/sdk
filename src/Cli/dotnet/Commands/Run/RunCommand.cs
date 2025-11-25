@@ -915,8 +915,8 @@ public class RunCommand
                 globalProperties[Constants.EnableDefaultItems] = "false";
                 globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
 
-                using var collection = new ProjectCollection(globalProperties: globalProperties);
-                var project = collection.LoadProject(ProjectFileFullPath).CreateProjectInstance();
+                using var evaluator = new DotNetProjectEvaluator(globalProperties);
+                var project = evaluator.LoadProject(ProjectFileFullPath);
 
                 packageReferenceCount = RunTelemetry.CountPackageReferences(project);
                 projectReferenceCount = RunTelemetry.CountProjectReferences(project);

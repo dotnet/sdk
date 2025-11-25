@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 
@@ -189,24 +188,25 @@ internal static class RunTelemetry
         return directives.OfType<CSharpDirective.Project>().Count();
     }
 
+
     /// <summary>
-    /// Counts the number of PackageReferences in a project-based app.
+    /// Counts the number of direct PackageReferences in a project-based app.
     /// </summary>
-    /// <param name="project">Project instance for project-based apps</param>
+    /// <param name="project">DotNet project wrapper for project-based apps</param>
     /// <returns>Number of package references</returns>
-    public static int CountPackageReferences(ProjectInstance project)
+    public static int CountPackageReferences(DotNetProject project)
     {
-        return project.GetItems("PackageReference").Count;
+        return project.GetItems("PackageReference").Count();
     }
 
     /// <summary>
     /// Counts the number of direct ProjectReferences in a project-based app.
     /// </summary>
-    /// <param name="project">Project instance for project-based apps</param>
+    /// <param name="project">DotNet project wrapper for project-based apps</param>
     /// <returns>Number of project references</returns>
-    public static int CountProjectReferences(ProjectInstance project)
+    public static int CountProjectReferences(DotNetProject project)
     {
-        return project.GetItems("ProjectReference").Count;
+        return project.GetItems("ProjectReference").Count();
     }
 
     /// <summary>
