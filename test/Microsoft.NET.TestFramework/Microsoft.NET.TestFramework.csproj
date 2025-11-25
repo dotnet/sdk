@@ -87,8 +87,4 @@
     <ProjectCapability Remove="TestContainer" />
   </ItemGroup>
 
-   <ItemGroup>
-    <ProjectCapability Remove="TestContainer" />
-  </ItemGroup>
-
 </Project>
