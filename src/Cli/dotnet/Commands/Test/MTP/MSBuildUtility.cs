@@ -153,7 +153,7 @@ internal static class MSBuildUtility
             msbuildArgs.Add($"-verbosity:quiet");
         }
 
-        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandDefinition.MTPTargetOption, TestCommandDefinition.VerbosityOption, CommonOptions.NoLogoOption());
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, MicrosoftTestingPlatformOptions.MTPTargetOption, TestCommandDefinition.VerbosityOption, CommonOptions.NoLogoOption());
 
         int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
 

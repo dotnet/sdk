@@ -27,7 +27,7 @@ internal static class TestCommandParser
     private static Command CreateTestingPlatformCommand()
     {
         var command = new MicrosoftTestingPlatformTestCommand(TestCommandDefinition.Name);
-        TestCommandDefinition.ConfigureTestingPlatformCommand(command);
+        TestCommandDefinition.ConfigureMicrosoftTestingPlatformCommand(command);
         command.SetAction(parseResult => command.Run(parseResult));
         return command;
     }
