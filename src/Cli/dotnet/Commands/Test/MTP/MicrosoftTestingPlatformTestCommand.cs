@@ -41,8 +41,8 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
 
         CommonOptions.ValidateSelfContainedOptions(
-            parseResult.HasOption(TestCommandDefinition.SelfContainedOption),
-            parseResult.HasOption(TestCommandDefinition.NoSelfContainedOption));
+            parseResult.HasOption(MicrosoftTestingPlatformOptions.SelfContainedOption),
+            parseResult.HasOption(MicrosoftTestingPlatformOptions.NoSelfContainedOption));
 
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
         var testOptions = new TestOptions(

@@ -109,6 +109,10 @@ internal static class MicrosoftTestingPlatformOptions
         Description = CliCommandStrings.CmdListTestsDescription,
         Arity = ArgumentArity.Zero
     };
+
+    public static readonly Option<bool> SelfContainedOption = CommonOptions.SelfContainedOption;
+
+    public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 }
 
 internal enum OutputOptions

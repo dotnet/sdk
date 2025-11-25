@@ -23,10 +23,6 @@ public class TestCommand(
     {
         parseResult.HandleDebugSwitch();
 
-        CommonOptions.ValidateSelfContainedOptions(
-            parseResult.HasOption(TestCommandDefinition.SelfContainedOption),
-            parseResult.HasOption(TestCommandDefinition.NoSelfContainedOption));
-
         FeatureFlag.Instance.PrintFlagFeatureState();
 
         // We use also current process id for the correlation id for possible future usage in case we need to know the parent process
