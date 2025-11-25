@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.BuildServer;
@@ -22,7 +23,10 @@ internal static class BuildServerCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("build-server", DocsLink, CliCommandStrings.BuildServerCommandDescription);
+        var command = new Command("build-server", CliCommandStrings.BuildServerCommandDescription)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Subcommands.Add(BuildServerShutdownCommandParser.GetCommand());
 

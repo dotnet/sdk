@@ -188,16 +188,6 @@ Examples:
         <target state="translated">CONFIGURATION</target>
         <note />
       </trans-unit>
-      <trans-unit id="CouldNotFindAnyProjectInDirectory">
-        <source>Could not find any project in `{0}`.</source>
-        <target state="translated">V {0} se nenašel žádný projekt.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotFindProjectOrDirectory">
-        <source>Could not find project or directory `{0}`.</source>
-        <target state="translated">Nenašel se projekt ani adresář {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindSolutionIn">
         <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
         <target state="translated">Zadaný soubor řešení {0} neexistuje nebo v adresáři není soubor řešení.</target>
@@ -371,6 +361,11 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="Error">
         <source>Error</source>
         <target state="translated">Chyba</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_NU1302_HttpSourceUsed">
+        <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
+        <target state="translated">Spouštíte operaci instalace nástroje se zdrojem HTTP: {0}. NuGet vyžaduje zdroje HTTPS. Pokud chcete použít zdroj HTTP, musíte v souboru NuGet.Config explicitně nastavit možnost allowInsecureConnections na true. Další informace najdete na https://aka.ms/nuget-https-everywhere.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectDepsJsonAt">
@@ -677,11 +672,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="MoreThanOnePackagedShimAvailable">
         <source>More than one packaged shim is available: {0}.</source>
         <target state="translated">Je k dispozici více než jedno zabalené překrytí: {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MoreThanOneProjectInDirectory">
-        <source>Found more than one project in `{0}`. Specify which one to use.</source>
-        <target state="translated">V {0} se našlo několik projektů. Vyberte, který z nich chcete použít.</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOneSolutionInDirectory">
@@ -1092,6 +1082,16 @@ Výchozí hodnota je false. Pokud však cílíte na .NET 7 nebo nižší a je za
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">Balíček {0} není nástroj .NET.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersion">
+        <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
+        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

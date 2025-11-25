@@ -118,6 +118,7 @@ jobs:
           condition: ${{ parameters.condition }}
           continueOnError: ${{ parameters.continueOnError }}
 
+
     - task: NuGetAuthenticate@1
 
     # Populate internal runtime variables.

@@ -53,7 +53,7 @@ namespace Analyzer.Utilities.Lightup
             where TSymbol : ISymbol
             => CreatePropertyAccessor<TSymbol, TProperty>(type, "symbol", propertyName, fallbackResult);
 
-        private static Func<T, TProperty> CreatePropertyAccessor<T, TProperty>(Type? type, string parameterName, string propertyName, TProperty fallbackResult)
+        internal static Func<T, TProperty> CreatePropertyAccessor<T, TProperty>(Type? type, string parameterName, string propertyName, TProperty fallbackResult)
         {
             if (!TryGetProperty<T, TProperty>(type, propertyName, out var property))
             {

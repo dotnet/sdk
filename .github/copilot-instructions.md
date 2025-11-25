@@ -1,3 +1,7 @@
+Use the instructions from the main branch if available: @dotnet/sdk/files/.github/copilot-instructions.md
+
+If the instructions from main are not available, use the following as a fallback:
+
 Coding Style and Changes:
 - Code should match the style of the file it's in.
 - Changes should be minimal to resolve a problem in a clean way.
@@ -34,3 +38,8 @@ Localization:
 
 Documentation:
 - Do not manually edit files under documentation/manpages/sdk as these are generated based on documentation and should not be manually modified.
+
+External Dependencies:
+- Changes that require modifications to the dotnet/templating repository (Microsoft.TemplateEngine packages) should be made directly in that repository, not worked around in this repo.
+- The dotnet/templating repository owns the TemplateEngine.Edge, TemplateEngine.Abstractions, and related packages.
+- If a change requires updates to template engine behavior or formatting (e.g., DisplayName properties), file an issue in dotnet/templating and make the changes there rather than adding workarounds in this SDK repository.
