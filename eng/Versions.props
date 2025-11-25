@@ -7,7 +7,7 @@
     <VersionMajor>10</VersionMajor>
     <VersionMinor>0</VersionMinor>
     <VersionSDKMinor>1</VersionSDKMinor>
-    <VersionSDKMinorPatch>1</VersionSDKMinorPatch>
+    <VersionSDKMinorPatch>2</VersionSDKMinorPatch>
     <VersionFeature>$([System.String]::Copy('$(VersionSDKMinorPatch)').PadLeft(2, '0'))</VersionFeature>
     <!-- This property powers the SdkAnalysisLevel property in end-user MSBuild code.
          It should always be the hundreds-value of the current SDK version, never any
