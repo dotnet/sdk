@@ -23,12 +23,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         {
             ScopedCss = new ITaskItem[ScopedCssInput.Length];
 
-            for (var i = 0; i < ScopedCssInput.Length; i++)
-            {
-                var input = ScopedCssInput[i];
-                var relativePath = input.ItemSpec.ToLowerInvariant().Replace("\\", "//");
-                var scope = input.GetMetadata("CssScope");
-                scope = !string.IsNullOrEmpty(scope) ? scope : GenerateScope(TargetName, relativePath);
+        for (var i = 0; i < ScopedCssInput.Length; i++)
+        {
+            var input = ScopedCssInput[i];
+            var relativePath = input.ItemSpec.ToLowerInvariant().Replace("\\", "//");
+            var scope = input.GetMetadata("CssScope");
+            scope = !string.IsNullOrEmpty(scope) ? scope : GenerateScope(TargetName, relativePath);
 
                 var outputItem = new TaskItem(input);
                 outputItem.SetMetadata("CssScope", scope);
