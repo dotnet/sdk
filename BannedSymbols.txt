@@ -1,24 +1,9 @@
 # Ban direct usage of MSBuild APIs to ensure proper telemetry integration and evaluation caching
 # Use DotNetProjectEvaluator and DotNetProjectBuilder wrapper types instead
 
-# Ban direct ProjectInstance creation - use DotNetProjectEvaluator.LoadProject instead
-M:Microsoft.Build.Execution.ProjectInstance.#ctor(System.String);Use DotNetProjectEvaluator.LoadProject() instead
-M:Microsoft.Build.Execution.ProjectInstance.#ctor(System.String,System.Collections.Generic.IDictionary`2<System.String,System.String>,System.String);Use DotNetProjectEvaluator.LoadProject() instead
-M:Microsoft.Build.Execution.ProjectInstance.#ctor(System.String,System.Collections.Generic.IDictionary`2<System.String,System.String>,System.String,Microsoft.Build.Evaluation.ProjectCollection);Use DotNetProjectEvaluator.LoadProject() instead
-
-# Ban direct ProjectInstance.Build() methods - use DotNetProjectBuilder instead
-M:Microsoft.Build.Execution.ProjectInstance.Build();Use DotNetProjectBuilder.Build() instead
-M:Microsoft.Build.Execution.ProjectInstance.Build(System.String[]);Use DotNetProjectBuilder.Build() instead
-M:Microsoft.Build.Execution.ProjectInstance.Build(System.String[],System.Collections.Generic.IEnumerable`1<Microsoft.Build.Framework.ILogger>);Use DotNetProjectBuilder.Build() instead
-M:Microsoft.Build.Execution.ProjectInstance.Build(System.String[],System.Collections.Generic.IEnumerable`1<Microsoft.Build.Framework.ILogger>,System.Collections.Generic.IEnumerable`1<Microsoft.Build.Logging.ForwardingLoggerRecord>);Use DotNetProjectBuilder.Build() instead
-
-# Ban direct Project.Build() methods - use DotNetProjectBuilder instead
-M:Microsoft.Build.Evaluation.Project.Build();Use DotNetProjectBuilder.Build() instead
-M:Microsoft.Build.Evaluation.Project.Build(Microsoft.Build.Framework.ILogger);Use DotNetProjectBuilder.Build() instead
-M:Microsoft.Build.Evaluation.Project.Build(System.String);Use DotNetProjectBuilder.Build() instead
-M:Microsoft.Build.Evaluation.Project.Build(System.String[]);Use DotNetProjectBuilder.Build() instead
+# Ban direct project creation/manipulation
+T:Microsoft.Build.Execution.ProjectInstance;Use DotNetProjectEvaluator.LoadProject() to get a DotNetProject instead
+T:Microsoft.Build.Evaluation.Project;Use DotNetProjectEvaluator.LoadProject() to get a DotNetProject instead
 
 # Ban direct ProjectCollection creation - use DotNetProjectEvaluatorFactory instead
-M:Microsoft.Build.Evaluation.ProjectCollection.#ctor();Use DotNetProjectEvaluatorFactory.Create() or CreateForCommand() instead
-M:Microsoft.Build.Evaluation.ProjectCollection.#ctor(System.Collections.Generic.IDictionary`2<System.String,System.String>);Use DotNetProjectEvaluatorFactory.Create() instead
-M:Microsoft.Build.Evaluation.ProjectCollection.#ctor(Microsoft.Build.Evaluation.ToolsetDefinitionLocations);Use DotNetProjectEvaluatorFactory.Create() instead
+T:Microsoft.Build.Evaluation.ProjectCollection;Use DotNetProjectEvaluatorFactory to get a DotNetProjectEvaluator instead
