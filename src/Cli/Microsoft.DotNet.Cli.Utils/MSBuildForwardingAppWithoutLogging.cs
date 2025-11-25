@@ -14,10 +14,10 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", false);
     private static readonly string? TerminalLoggerDefault = Env.GetEnvironmentVariable("DOTNET_CLI_CONFIGURE_MSBUILD_TERMINAL_LOGGER");
 
-    public static string MSBuildVersion
-    {
-        get => Microsoft.Build.Evaluation.ProjectCollection.DisplayVersion;
-    }
+#pragma warning disable RS0030 // This usage of ProjectCollection is OK because we're only using its DisplayVersion property.
+    public static string MSBuildVersion => Microsoft.Build.Evaluation.ProjectCollection.DisplayVersion;
+#pragma warning restore RS0030 // Do not use banned APIs
+
     private const string MSBuildExeName = "MSBuild.dll";
 
     private const string SdksDirectoryName = "Sdks";
