@@ -354,9 +354,9 @@ internal sealed class TestApplication(
             builder.Append($"{ProjectProperties.ProjectFullPath}: {Module.ProjectFullPath}");
         }
 
-        if (!string.IsNullOrEmpty(Module.TargetFramework))
+        if (Module.TargetFramework is not null)
         {
-            builder.Append($"{ProjectProperties.TargetFramework} : {Module.TargetFramework}");
+            builder.Append($"{ProjectProperties.TargetFramework} : {Module.TargetFramework.GetShortFolderName()}");
         }
 
         return builder.ToString();

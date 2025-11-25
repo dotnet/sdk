@@ -47,13 +47,13 @@ internal class ProjectContextSymbolSource : IBindSymbolSource
                 return Task.FromResult((string?)null);
             }
 
-            string? propertyValue = evaluationResult.EvaluatedProject.GetProperty(bindname)?.EvaluatedValue;
+            string? propertyValue = evaluationResult.EvaluatedProject.GetPropertyValue(bindname);
             //we check only for null as property may exist with empty value
             if (propertyValue == null && evaluationResult is MultiTargetEvaluationResult multiTargetResult)
             {
-                foreach (MSBuildProject? tfmBasedProject in multiTargetResult.EvaluatedProjects.Values)
+                foreach (var tfmBasedProject in multiTargetResult.EvaluatedProjects.Values)
                 {
-                    propertyValue = evaluationResult.EvaluatedProject.GetProperty(bindname)?.EvaluatedValue;
+                    propertyValue = tfmBasedProject.GetPropertyValue(bindname);
                     if (propertyValue != null)
                     {
                         settings.Host.Logger.LogDebug("{0}: value for {1}: {2}.", nameof(ProjectContextSymbolSource), bindname, propertyValue);

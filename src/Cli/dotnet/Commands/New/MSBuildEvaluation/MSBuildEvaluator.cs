@@ -3,13 +3,13 @@
 
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using MSBuildProject = Microsoft.Build.Evaluation.Project;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
@@ -116,26 +116,26 @@ internal class MSBuildEvaluator : IIdentifiedComponent
         Stopwatch watch = new();
         Stopwatch innerBuildWatch = new();
         bool IsSdkStyleProject = false;
-        IReadOnlyList<string>? targetFrameworks = null;
-        string? targetFramework = null;
+        IReadOnlyList<NuGetFramework>? targetFrameworks = null;
+        NuGetFramework? targetFramework = null;
         MSBuildEvaluationResult? result = null;
 
         try
         {
             watch.Start();
             _logger?.LogDebug("Evaluating project: {0}", projectPath);
-            MSBuildProject evaluatedProject = RunEvaluate(projectPath);
+            DotNetProject evaluatedProject = RunEvaluate(projectPath);
 
             //if project is using Microsoft.NET.Sdk, then it is SDK-style project.
-            IsSdkStyleProject = evaluatedProject.GetProperty("UsingMicrosoftNETSDK")?.EvaluatedValue == "true";
+            IsSdkStyleProject = evaluatedProject.GetPropertyValue("UsingMicrosoftNETSDK") == "true";
             _logger?.LogDebug("SDK-style project: {0}", IsSdkStyleProject);
 
-            targetFrameworks = evaluatedProject.GetProperty("TargetFrameworks")?.EvaluatedValue?.Split(";");
+            targetFrameworks = evaluatedProject.TargetFrameworks;
             _logger?.LogDebug("Target frameworks: {0}", string.Join("; ", targetFrameworks ?? []));
-            targetFramework = evaluatedProject.GetProperty("TargetFramework")?.EvaluatedValue;
-            _logger?.LogDebug("Target framework: {0}", targetFramework ?? "<null>");
+            targetFramework = evaluatedProject.TargetFramework;
+            _logger?.LogDebug("Target framework: {0}", targetFramework?.GetShortFolderName() ?? "<null>");
 
-            if (!IsSdkStyleProject || string.IsNullOrWhiteSpace(targetFramework) && targetFrameworks == null)
+            if (!IsSdkStyleProject || targetFramework == null && targetFrameworks == null)
             {
                 //For non SDK style project, we cannot evaluate more info. Also there is no indication, whether the project
                 //was restored or not, so it is not checked.
@@ -144,14 +144,14 @@ internal class MSBuildEvaluator : IIdentifiedComponent
             }
 
             //For SDK-style project, if the project was restored "RestoreSuccess" property will be set to true.
-            if (!evaluatedProject.GetProperty("RestoreSuccess")?.EvaluatedValue.Equals("true", StringComparison.OrdinalIgnoreCase) ?? true)
+            if (!evaluatedProject.GetPropertyValue("RestoreSuccess")?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? true)
             {
                 _logger?.LogDebug("Project is not restored, exiting.");
                 return result = MSBuildEvaluationResult.CreateNoRestore(projectPath);
             }
 
             //If target framework is set, no further evaluation is needed.
-            if (!string.IsNullOrWhiteSpace(targetFramework))
+            if (targetFramework != null)
             {
                 _logger?.LogDebug("Project is SDK style, single TFM:{0}, evaluation succeeded.", targetFramework);
                 return result = SDKStyleEvaluationResult.CreateSuccess(projectPath, targetFramework, evaluatedProject);
@@ -166,9 +166,9 @@ internal class MSBuildEvaluator : IIdentifiedComponent
             }
 
             //For multi-target project, we need to do additional evaluation for each target framework.
-            Dictionary<string, MSBuildProject?> evaluatedTfmBasedProjects = [];
+            Dictionary<NuGetFramework, DotNetProject> evaluatedTfmBasedProjects = [];
             innerBuildWatch.Start();
-            foreach (string tfm in targetFrameworks)
+            foreach (var tfm in targetFrameworks)
             {
                 _logger?.LogDebug("Evaluating project for target framework: {0}", tfm);
                 evaluatedTfmBasedProjects[tfm] = RunEvaluate(projectPath, tfm);
@@ -192,11 +192,11 @@ internal class MSBuildEvaluator : IIdentifiedComponent
 
             if (targetFrameworks != null)
             {
-                targetFrameworksString = string.Join(",", targetFrameworks.Select(tfm => Sha256Hasher.HashWithNormalizedCasing(tfm)));
+                targetFrameworksString = string.Join(",", targetFrameworks.Select(tfm => Sha256Hasher.HashWithNormalizedCasing(tfm.GetShortFolderName())));
             }
             else if (targetFramework != null)
             {
-                targetFrameworksString = Sha256Hasher.HashWithNormalizedCasing(targetFramework);
+                targetFrameworksString = Sha256Hasher.HashWithNormalizedCasing(targetFramework.GetShortFolderName());
             }
 
             Dictionary<string, string?> properties = new()
@@ -217,22 +217,11 @@ internal class MSBuildEvaluator : IIdentifiedComponent
         }
     }
 
-    private MSBuildProject RunEvaluate(string projectToLoad, string? tfm = null)
+    private DotNetProject RunEvaluate(string projectToLoad, NuGetFramework? tfm = null)
     {
         if (!File.Exists(projectToLoad))
         {
             throw new FileNotFoundException(message: null, projectToLoad);
-        }
-
-        MSBuildProject? project = GetLoadedProject(projectToLoad, tfm);
-        if (project != null)
-        {
-            return project;
-        }
-        var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        if (!string.IsNullOrWhiteSpace(tfm))
-        {
-            globalProperties["TargetFramework"] = tfm;
         }
 
         //We do only best effort here, also the evaluation should be fast vs complete; therefore ignoring imports errors.
@@ -244,41 +233,16 @@ internal class MSBuildEvaluator : IIdentifiedComponent
         //- or the template content will be corrupted and consequent build fails --> the user may fix the issues manually if needed
         //- or the user will not see that template that is expected --> but they can always override it with --force
         //Therefore, we should not fail on missing imports or invalid imports, if this is the case rather restore/build should fail.
-        return new MSBuildProject(
-                projectToLoad,
-                globalProperties,
-                toolsVersion: null,
-                subToolsetVersion: null,
-                _evaluator.ProjectCollection,
-                ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports);
+        return GetLoadedProject(projectToLoad, tfm);
     }
 
-    private MSBuildProject? GetLoadedProject(string projectToLoad, string? tfm)
+    private DotNetProject GetLoadedProject(string projectToLoad, NuGetFramework? tfm)
     {
-        MSBuildProject? project;
-        ICollection<MSBuildProject> loadedProjects = _evaluator.ProjectCollection.GetLoadedProjects(projectToLoad);
-        if (string.IsNullOrEmpty(tfm))
+        var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (tfm != null)
         {
-            project = loadedProjects.FirstOrDefault(project => !project.GlobalProperties.ContainsKey("TargetFramework"));
+            props["TargetFramework"] = tfm.GetShortFolderName();
         }
-        else
-        {
-            project = loadedProjects.FirstOrDefault(project =>
-                project.GlobalProperties.TryGetValue("TargetFramework", out string? targetFramework)
-                && targetFramework.Equals(tfm, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (project != null)
-        {
-            return project;
-        }
-        if (loadedProjects.Any())
-        {
-            foreach (MSBuildProject loaded in loadedProjects)
-            {
-                _evaluator.ProjectCollection.UnloadProject(loaded);
-            }
-        }
-        return null;
+        return _evaluator.LoadProject(projectToLoad, props, useFlexibleLoading: true);
     }
 }

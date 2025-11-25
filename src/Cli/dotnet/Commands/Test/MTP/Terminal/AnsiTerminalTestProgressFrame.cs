@@ -107,9 +107,10 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
             int lengthNeeded = 0;
 
             lengthNeeded++; // for '('
+            var tfmString = progress.TargetFramework?.GetShortFolderName();
             if (progress.TargetFramework != null)
             {
-                lengthNeeded += progress.TargetFramework.Length;
+                lengthNeeded += tfmString!.Length;
                 if (progress.Architecture != null)
                 {
                     lengthNeeded++; // for '|'
@@ -128,7 +129,7 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
                 terminal.Append(" (");
                 if (progress.TargetFramework != null)
                 {
-                    terminal.Append(progress.TargetFramework);
+                    terminal.Append(tfmString!);
                     if (progress.Architecture != null)
                     {
                         terminal.Append('|');

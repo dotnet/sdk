@@ -7,6 +7,7 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
@@ -133,23 +134,25 @@ internal class SolutionAddCommand : CommandBase
             }
         }
 
+        using var evaluator = DotNetProjectEvaluatorFactory.CreateForCommand();
+
         foreach (var projectPath in projectPaths)
         {
-            AddProject(solution, projectPath, serializer);
+            AddProject(solution, projectPath, evaluator, serializer);
         }
 
         await serializer.SaveAsync(_solutionFileFullPath, solution, cancellationToken);
     }
 
-    private void AddProject(SolutionModel solution, string fullProjectPath, ISolutionSerializer? serializer = null, bool showMessageOnDuplicate = true)
+    private void AddProject(SolutionModel solution, string fullProjectPath, DotNetProjectEvaluator evaluator, ISolutionSerializer? serializer = null, bool showMessageOnDuplicate = true)
     {
         string solutionRelativeProjectPath = Path.GetRelativePath(Path.GetDirectoryName(_solutionFileFullPath)!, fullProjectPath);
 
         // Open project instance to see if it is a valid project
-        ProjectRootElement projectRootElement;
+        DotNetProject evaluatedProject;
         try
         {
-            projectRootElement = ProjectRootElement.Open(fullProjectPath);
+            evaluatedProject = evaluator.LoadProject(fullProjectPath);
         }
         catch (InvalidProjectFileException ex)
         {
@@ -157,10 +160,8 @@ internal class SolutionAddCommand : CommandBase
             return;
         }
 
-        ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
-
-        string projectTypeGuid = solution.ProjectTypes.FirstOrDefault(t => t.Extension == Path.GetExtension(fullProjectPath))?.ProjectTypeId.ToString()
-            ?? projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
+        string? projectTypeGuid = solution.ProjectTypes.FirstOrDefault(t => t.Extension == Path.GetExtension(fullProjectPath))?.ProjectTypeId.ToString()
+            ?? evaluatedProject.GetProjectTypeGuid() ?? evaluatedProject.GetDefaultProjectTypeGuid();
 
         // Generate the solution folder path based on the project path
         SolutionFolderModel? solutionFolder = GenerateIntermediateSolutionFoldersForProjectPath(solution, solutionRelativeProjectPath);
@@ -186,15 +187,15 @@ internal class SolutionAddCommand : CommandBase
         }
 
         // Add settings based on existing project instance
-        string projectInstanceId = projectInstance.GetProjectId();
+        string projectInstanceId = evaluatedProject.GetProjectId();
 
         if (!string.IsNullOrEmpty(projectInstanceId) && serializer is ISolutionSerializer<SlnV12SerializerSettings>)
         {
             project.Id = new Guid(projectInstanceId);
         }
 
-        var projectInstanceBuildTypes = projectInstance.GetConfigurations();
-        var projectInstancePlatforms = projectInstance.GetPlatforms();
+        var projectInstanceBuildTypes = evaluatedProject.Configurations;
+        var projectInstancePlatforms = evaluatedProject.GetPlatforms();
 
         foreach (var solutionPlatform in solution.Platforms)
         {
@@ -213,14 +214,14 @@ internal class SolutionAddCommand : CommandBase
         Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
 
         // Get referencedprojects from the project instance
-        var referencedProjectsFullPaths = projectInstance.GetItems("ProjectReference")
+        var referencedProjectsFullPaths = evaluatedProject.GetItems("ProjectReference")
             .Select(item => Path.GetFullPath(item.EvaluatedInclude, Path.GetDirectoryName(fullProjectPath)!));
 
         if (_includeReferences)
         {
             foreach (var referencedProjectFullPath in referencedProjectsFullPaths)
             {
-                AddProject(solution, referencedProjectFullPath, serializer, showMessageOnDuplicate: false);
+                AddProject(solution, referencedProjectFullPath, evaluator, serializer, showMessageOnDuplicate: false);
             }
         }
     }

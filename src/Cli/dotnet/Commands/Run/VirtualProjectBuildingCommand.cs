@@ -323,7 +323,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             int exitCode = 0;
-            ProjectInstance? projectInstance = null;
             BuildResult? buildOrRestoreResult = null;
 
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
@@ -343,7 +342,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     exitCode = 1;
                 }
 
-                projectInstance = restoreRequest.ProjectInstance;
                 buildOrRestoreResult = restoreResult;
             }
 
@@ -370,7 +368,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         ? runProperties
                         : null;
 
-                    if (!MSBuildUtilities.ConvertStringToBool(buildRequest.ProjectInstance.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
+                    if (!MSBuildUtilities.ConvertStringToBool(project.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
                     {
                         Reporter.Verbose.WriteLine($"Not saving cache because there is an opt-out via MSBuild property {FileBasedProgramCanSkipMSBuild}.");
                     }
@@ -382,15 +380,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     }
                 }
 
-                projectInstance = buildRequest.ProjectInstance;
                 buildOrRestoreResult = buildResult;
             }
 
             // Print build information.
             if (msbuildGet)
             {
-                projectInstance ??= project.Instance();
-                PrintBuildInformation(projectInstance, buildOrRestoreResult);
+                PrintBuildInformation(project, buildOrRestoreResult);
             }
 
             BuildManager.DefaultBuildManager.EndBuild();
@@ -518,14 +514,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
 
-        void PrintBuildInformation(ProjectInstance projectInstance, BuildResult? buildOrRestoreResult)
+        void PrintBuildInformation(DotNetProject project, BuildResult? buildOrRestoreResult)
         {
             var resultOutputFile = MSBuildArgs.GetResultOutputFile is [{ } file, ..] ? file : null;
 
             // If a single property is requested, don't print as JSON.
             if (MSBuildArgs is { GetProperty: [{ } singlePropertyName], GetItem: null or [], GetTargetResult: null or [] })
             {
-                var result = projectInstance.GetPropertyValue(singlePropertyName);
+                var result = project.GetPropertyValue(singlePropertyName);
                 if (resultOutputFile == null)
                 {
                     Console.WriteLine(result);
@@ -550,7 +546,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                     foreach (var propertyName in MSBuildArgs.GetProperty)
                     {
-                        writer.WriteString(propertyName, projectInstance.GetPropertyValue(propertyName));
+                        writer.WriteString(propertyName, project.GetPropertyValue(propertyName));
                     }
 
                     writer.WriteEndObject();
@@ -566,12 +562,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         writer.WritePropertyName(itemName);
                         writer.WriteStartArray();
 
-                        foreach (var item in projectInstance.GetItems(itemName))
+                        foreach (var item in project.GetItems(itemName))
                         {
                             writer.WriteStartObject();
                             writer.WriteString("Identity", item.GetMetadataValue("Identity"));
 
-                            foreach (var metadatumName in item.MetadataNames)
+                            foreach (var metadatumName in item.GetMetadataNames())
                             {
                                 if (metadatumName.Equals("Identity", StringComparison.OrdinalIgnoreCase))
                                 {
@@ -1099,6 +1095,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Action<IDictionary<string, string>>? addGlobalProperties)
     {
         var projectRoot = CreateProjectRootElement(evaluator);
+#pragma warning disable RS0030 // Ok to use MSBuild APIs because we are being very limited in their scope/
         var globalProperties = evaluator.ProjectCollection.GlobalProperties;
         if (addGlobalProperties is not null)
         {
@@ -1111,6 +1108,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             ProjectCollection = evaluator.ProjectCollection,
             GlobalProperties = globalProperties,
         });
+#pragma warning restore RS0030 // Do not use banned APIs
 
         return new DotNetProject(p);
 

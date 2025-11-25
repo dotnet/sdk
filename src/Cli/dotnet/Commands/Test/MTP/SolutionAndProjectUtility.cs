@@ -298,8 +298,8 @@ internal static class SolutionAndProjectUtility
             return null;
         }
 
-        string targetFramework = project.TargetFramework!;
-        string projectFullPath = project.FullPath;
+        var targetFramework = project.TargetFramework!;
+        var projectFullPath = project.FullPath;
 
 
         // Only get run properties if IsTestingPlatformApplication is true
@@ -332,7 +332,7 @@ internal static class SolutionAndProjectUtility
         }
 
         // TODO: Support --launch-profile and pass it here.
-        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder)!, buildOptions, profileName: null);
+        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath!), project.GetPropertyValue(ProjectProperties.AppDesignerFolder)!, buildOptions, profileName: null);
 
         var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootArchVariableName(
             runProperties.RuntimeIdentifier,
@@ -344,7 +344,7 @@ internal static class SolutionAndProjectUtility
             rootVariableName = null;
         }
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath)!, rootVariableName);
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath!), targetFramework, isTestingPlatformApplication, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath)!, rootVariableName);
 
         static RunProperties GetRunProperties(DotNetProject project, DotNetProjectEvaluator evaluator)
         {

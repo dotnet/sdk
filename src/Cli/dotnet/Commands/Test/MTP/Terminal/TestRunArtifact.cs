@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using NuGet.Frameworks;
+
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 /// <summary>
 /// An artifact / attachment that was reported during run.
 /// </summary>
-internal sealed record TestRunArtifact(bool OutOfProcess, string? Assembly, string? TargetFramework, string? Architecture, string? ExecutionId, string? TestName, string Path);
+internal sealed record TestRunArtifact(bool OutOfProcess, string? Assembly, NuGetFramework? TargetFramework, string? Architecture, string? ExecutionId, string? TestName, string Path);

@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using MSBuildProject = Microsoft.Build.Evaluation.Project;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 
 namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
@@ -41,7 +41,10 @@ internal class MSBuildEvaluationResult
 
     internal string? ProjectPath { get; }
 
-    public MSBuildProject? EvaluatedProject { get; protected set; }
+    /// <summary>
+    /// The evaluated MSBuild project. Null if evaluation did not succeed (so Status will be Failed/NoProjectFound/NoRestore).
+    /// </summary>
+    public DotNetProject? EvaluatedProject { get; protected set; }
 
     public string? ErrorMessage { get; protected set; }
 

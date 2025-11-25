@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
-using Microsoft.Build.Exceptions;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using NuGet.Frameworks;
@@ -16,7 +14,9 @@ internal class ProjectFactory(IEnvironmentProvider environment)
 
     private readonly IEnvironmentProvider _environment = environment;
 
-    public IProject GetProject(
+    private readonly DotNetProjectEvaluator _evaluator = new();
+
+    public IProject? GetProject(
         string projectDirectory,
         NuGetFramework framework,
         string configuration,
@@ -26,7 +26,7 @@ internal class ProjectFactory(IEnvironmentProvider environment)
         return GetMSBuildProj(projectDirectory, framework, configuration, outputPath);
     }
 
-    private IProject GetMSBuildProj(string projectDirectory, NuGetFramework framework, string configuration, string outputPath)
+    private IProject? GetMSBuildProj(string projectDirectory, NuGetFramework framework, string configuration, string outputPath)
     {
         var msBuildExePath = _environment.GetEnvironmentVariable(Constants.MSBUILD_EXE_PATH);
 
@@ -39,7 +39,7 @@ internal class ProjectFactory(IEnvironmentProvider environment)
             ProjectFactoryName,
             msBuildExePath));
 
-        string msBuildProjectPath = GetMSBuildProjPath(projectDirectory);
+        var msBuildProjectPath = GetMSBuildProjPath(projectDirectory);
 
         Reporter.Verbose.WriteLine(string.Format(
             CliStrings.MSBuildProjectPath,
@@ -53,9 +53,9 @@ internal class ProjectFactory(IEnvironmentProvider environment)
 
         try
         {
-            return new MSBuildProject(msBuildProjectPath, framework, configuration, outputPath, msBuildExePath);
+            return new MSBuildProject(_evaluator, msBuildProjectPath, framework, configuration, outputPath, msBuildExePath);
         }
-        catch (InvalidProjectFileException ex)
+        catch (Exception ex)
         {
             Reporter.Verbose.WriteLine(ex.ToString().Red());
 
@@ -63,7 +63,7 @@ internal class ProjectFactory(IEnvironmentProvider environment)
         }
     }
 
-    private static string GetMSBuildProjPath(string projectDirectory)
+    private static string? GetMSBuildProjPath(string projectDirectory)
     {
         IEnumerable<string> projectFiles = Directory
             .GetFiles(projectDirectory, "*.*proj")

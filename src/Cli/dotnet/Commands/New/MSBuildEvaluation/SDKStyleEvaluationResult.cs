@@ -1,9 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
-using MSBuildProject = Microsoft.Build.Evaluation.Project;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
@@ -12,14 +11,14 @@ namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 /// </summary>
 internal class SDKStyleEvaluationResult : MSBuildEvaluationResult
 {
-    private SDKStyleEvaluationResult(string projectPath, string targetFramework) : base(EvalStatus.Succeeded, projectPath)
+    private SDKStyleEvaluationResult(string projectPath, NuGetFramework targetFramework) : base(EvalStatus.Succeeded, projectPath)
     {
         TargetFramework = targetFramework;
     }
 
-    internal string TargetFramework { get; }
+    internal NuGetFramework TargetFramework { get; }
 
-    internal static SDKStyleEvaluationResult CreateSuccess(string path, string targetFramework, MSBuildProject project)
+    internal static SDKStyleEvaluationResult CreateSuccess(string path, NuGetFramework targetFramework, DotNetProject project)
     {
         return new SDKStyleEvaluationResult(path, targetFramework)
         {

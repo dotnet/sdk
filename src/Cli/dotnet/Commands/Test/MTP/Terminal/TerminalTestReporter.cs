@@ -1,12 +1,13 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Collections.Concurrent;
+using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.TemplateEngine.Cli.Help;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using NuGet.Frameworks;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
-using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -105,7 +106,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
 
-    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId)
+    public void AssemblyRunStarted(string assembly, NuGetFramework? targetFramework, string? architecture, string executionId, string instanceId)
     {
         var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
         assemblyRun.NotifyHandshake(instanceId);
@@ -134,7 +135,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
     }
 
-    private TestProgressState GetOrAddAssemblyRun(string assembly, string? targetFramework, string? architecture, string executionId)
+    private TestProgressState GetOrAddAssemblyRun(string assembly, NuGetFramework? targetFramework, string? architecture, string executionId)
     {
         return _assemblies.GetOrAdd(executionId, _ =>
         {
@@ -389,7 +390,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     internal void TestCompleted(
         string assembly,
-        string? targetFramework,
+        NuGetFramework? targetFramework,
         string? architecture,
         string executionId,
         string instanceId,
@@ -453,7 +454,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         ITerminal terminal,
         string assembly,
         int attempt,
-        string? targetFramework,
+        NuGetFramework? targetFramework,
         string? architecture,
         string displayName,
         string? informativeMessage,
@@ -632,7 +633,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.ResetColor();
     }
 
-    private static void AppendAssemblyLinkTargetFrameworkAndArchitecture(ITerminal terminal, string assembly, string? targetFramework, string? architecture)
+    private static void AppendAssemblyLinkTargetFrameworkAndArchitecture(ITerminal terminal, string assembly, NuGetFramework? targetFramework, string? architecture)
     {
         terminal.AppendLink(assembly, lineNumber: null);
         if (targetFramework != null || architecture != null)
@@ -640,7 +641,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(" (");
             if (targetFramework != null)
             {
-                terminal.Append(targetFramework);
+                terminal.Append(targetFramework.GetShortFolderName());
                 if (architecture != null)
                 {
                     terminal.Append('|');
@@ -754,7 +755,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
-    internal void HandshakeFailure(string assemblyPath, string? targetFramework, int exitCode, string outputData, string errorData)
+    internal void HandshakeFailure(string assemblyPath, NuGetFramework? targetFramework, int exitCode, string outputData, string? errorData)
     {
         if (_isHelp)
         {
@@ -833,7 +834,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     public void Dispose() => _terminalWithProgress.Dispose();
 
-    public void ArtifactAdded(bool outOfProcess, string? assembly, string? targetFramework, string? architecture, string? executionId, string? testName, string path)
+    public void ArtifactAdded(bool outOfProcess, string? assembly, NuGetFramework? targetFramework, string? architecture, string? executionId, string? testName, string path)
         => _artifacts.Add(new TestRunArtifact(outOfProcess, assembly, targetFramework, architecture, executionId, testName, path));
 
     /// <summary>

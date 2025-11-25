@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
-using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using NuGet.Frameworks;
@@ -15,62 +13,20 @@ internal class MSBuildProject : IProject
 {
     private static readonly NuGetFramework s_toolPackageFramework = FrameworkConstants.CommonFrameworks.NetCoreApp10;
 
-    private readonly Project _project;
+    private readonly DotNetProject _project;
     private readonly string _msBuildExePath;
 
-    public string DepsJsonPath
-    {
-        get
-        {
-            return _project
-                .AllEvaluatedProperties
-                .FirstOrDefault(p => p.Name.Equals("ProjectDepsFilePath"))
-                .EvaluatedValue;
-        }
-    }
+    public string? DepsJsonPath => _project.GetPropertyValue("ProjectDepsFilePath");
 
-    public string RuntimeConfigJsonPath
-    {
-        get
-        {
-            return _project
-                .AllEvaluatedProperties
-                .FirstOrDefault(p => p.Name.Equals("ProjectRuntimeConfigFilePath"))
-                .EvaluatedValue;
-        }
-    }
+    public string? RuntimeConfigJsonPath => _project.GetPropertyValue("ProjectRuntimeConfigFilePath");
 
-    public string FullOutputPath
-    {
-        get
-        {
-            return _project
-                .AllEvaluatedProperties
-                .FirstOrDefault(p => p.Name.Equals("TargetDir"))
-                .EvaluatedValue;
-        }
-    }
+    public string? FullOutputPath => _project.GetPropertyValue("TargetDir");
 
     public string ProjectRoot { get; }
 
-    public NuGetFramework DotnetCliToolTargetFramework
-    {
-        get
-        {
-            var frameworkString = _project
-                .AllEvaluatedProperties
-                .FirstOrDefault(p => p.Name.Equals("DotnetCliToolTargetFramework"))
-                ?.EvaluatedValue;
-
-            if (string.IsNullOrEmpty(frameworkString))
-            {
-                return s_toolPackageFramework;
-            }
-
-            return NuGetFramework.Parse(frameworkString);
-        }
-    }
-
+    public NuGetFramework DotnetCliToolTargetFramework => _project.GetPropertyValue("DotnetCliToolTargetFramework") is string s && !string.IsNullOrEmpty(s)
+        ? NuGetFramework.Parse(s)
+        : s_toolPackageFramework;
 
     public Dictionary<string, string> EnvironmentVariables
     {
@@ -83,20 +39,10 @@ internal class MSBuildProject : IProject
         }
     }
 
-    public string ToolDepsJsonGeneratorProject
-    {
-        get
-        {
-            var generatorProject = _project
-                .AllEvaluatedProperties
-                .FirstOrDefault(p => p.Name.Equals("ToolDepsJsonGeneratorProject"))
-                ?.EvaluatedValue;
+    public string? ToolDepsJsonGeneratorProject => _project.GetPropertyValue("ToolDepsJsonGeneratorProject");
 
-            return generatorProject;
-        }
-    }
-
-    public MSBuildProject(
+    internal MSBuildProject(
+        DotNetProjectEvaluator evaluator,
         string msBuildProjectPath,
         NuGetFramework framework,
         string configuration,
@@ -107,7 +53,7 @@ internal class MSBuildProject : IProject
 
         var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-           { "MSBuildExtensionsPath", Path.GetDirectoryName(msBuildExePath) }
+           { "MSBuildExtensionsPath", Path.GetDirectoryName(msBuildExePath)! }
         };
 
         if (framework != null)
@@ -125,19 +71,17 @@ internal class MSBuildProject : IProject
             globalProperties.Add("Configuration", configuration);
         }
 
-        _project = ProjectCollection.GlobalProjectCollection.LoadProject(
+        _project = evaluator.LoadProject(
             msBuildProjectPath,
-            globalProperties,
-            null);
+            globalProperties);
 
         _msBuildExePath = msBuildExePath;
     }
 
     public IEnumerable<SingleProjectInfo> GetTools()
     {
-        var toolsReferences = _project.AllEvaluatedItems.Where(i => i.ItemType.Equals("DotNetCliToolReference"));
+        var toolsReferences = _project.GetItems("DotNetCliToolReference");
         var tools = toolsReferences.Select(t => new SingleProjectInfo(t.EvaluatedInclude, t.GetMetadataValue("Version"), []));
-
         return tools;
     }
 
@@ -147,11 +91,11 @@ internal class MSBuildProject : IProject
             GetLockFilePathFromIntermediateBaseOutputPath();
 
         return new LockFileFormat()
-            .ReadWithLock(lockFilePath)
+            .ReadWithLock(lockFilePath!)
             .Result;
     }
 
-    public bool TryGetLockFile(out LockFile lockFile)
+    public bool TryGetLockFile(out LockFile? lockFile)
     {
         lockFile = null;
 
@@ -174,21 +118,15 @@ internal class MSBuildProject : IProject
         return true;
     }
 
-    private string GetLockFilePathFromProjectLockFileProperty()
-    {
-        return _project
-            .AllEvaluatedProperties
-            .Where(p => p.Name.Equals("ProjectAssetsFile"))
-            .Select(p => p.EvaluatedValue)
-            .FirstOrDefault(p => Path.IsPathRooted(p) && File.Exists(p));
-    }
+    private string? GetLockFilePathFromProjectLockFileProperty() => _project.ProjectAssetsFile;
 
-    private string GetLockFilePathFromIntermediateBaseOutputPath()
+    private string? GetLockFilePathFromIntermediateBaseOutputPath()
     {
-        var intermediateOutputPath = _project
-                .AllEvaluatedProperties
-                .FirstOrDefault(p => p.Name.Equals("BaseIntermediateOutputPath"))
-                .EvaluatedValue;
+        var intermediateOutputPath = _project.GetPropertyValue("BaseIntermediateOutputPath");
+        if (string.IsNullOrEmpty(intermediateOutputPath))
+        {
+            return null;
+        }
         return Path.Combine(intermediateOutputPath, "project.assets.json");
     }
 }

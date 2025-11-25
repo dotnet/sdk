@@ -502,8 +502,7 @@ public class RunCommand
 
         static void ValidatePreconditions(DotNetProject project)
         {
-            // there must be some kind of TFM available to run a project
-            if (string.IsNullOrWhiteSpace(project.TargetFramework) || project.TargetFrameworks is null or { Length: 0 })
+            if (project.TargetFramework is null || project.TargetFrameworks is null or { Length: 0 })
             {
                 ThrowUnableToRunError(project);
             }

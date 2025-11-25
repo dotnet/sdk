@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -14,7 +15,7 @@ internal sealed class TestApplicationHandler
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
-    private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private (NuGetFramework? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
 
     public TestApplicationHandler(TerminalTestReporter output, TestModule module, TestOptions options)
     {
@@ -31,13 +32,13 @@ internal sealed class TestApplicationHandler
         {
             _output.HandshakeFailure(
                 _module.TargetPath,
-                string.Empty,
+                null,
                 ExitCode.GenericFailure,
                 string.Format(
                     CliCommandStrings.DotnetTestIncompatibleHandshakeVersion,
                     handshakeMessage.Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions],
                     ProtocolConstants.SupportedVersions),
-                string.Empty);
+                null);
 
             // Protocol version is not supported.
             // We don't attempt to do anything else.
@@ -46,7 +47,7 @@ internal sealed class TestApplicationHandler
 
         var executionId = handshakeMessage.Properties[HandshakeMessagePropertyNames.ExecutionId];
         var arch = handshakeMessage.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
-        var tfm = TargetFrameworkParser.GetShortTargetFramework(handshakeMessage.Properties[HandshakeMessagePropertyNames.Framework]);
+        var tfm = NuGetFramework.ParseFolder(handshakeMessage.Properties[HandshakeMessagePropertyNames.Framework]);
         var currentHandshakeInfo = (tfm, arch, executionId);
 
         if (!_handshakeInfo.HasValue)
