@@ -965,5 +965,68 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
             ToolBuilder = toolBuilder;
         }
+
+        [Fact]
+        public void GivenAToolWithHigherFrameworkItShowsAppropriateErrorMessage()
+        {
+            // Create a mock tool package with net99.0 framework to simulate a tool requiring a higher .NET version
+            var testDir = _testAssetsManager.CreateTestDirectory();
+            var fileSystem = new FileSystemWrapper();
+            var packageId = new PackageId("test.tool.higher.framework");
+            var packageVersion = new NuGetVersion("1.0.0");
+            var packageRoot = new DirectoryPath(testDir.Path).WithSubDirectories(".store", packageId.ToString(), packageVersion.ToNormalizedString());
+
+            // Create the package directory structure with net99.0 framework
+            var toolsPath = Path.Combine(packageRoot.Value, "tools", "net99.0", "any");
+            fileSystem.Directory.CreateDirectory(toolsPath);
+
+            // Create DotnetToolSettings.xml
+            var settingsContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<DotNetCliTool Version=""1"">
+  <Commands>
+    <Command Name=""test-tool"" EntryPoint=""test.dll"" Runner=""dotnet"" />
+  </Commands>
+</DotNetCliTool>";
+            fileSystem.File.WriteAllText(Path.Combine(toolsPath, "DotnetToolSettings.xml"), settingsContent);
+
+            // Create a dummy assembly file
+            fileSystem.File.WriteAllText(Path.Combine(toolsPath, "test.dll"), "dummy");
+
+            // Create an empty asset file (simulating NuGet restore with no compatible frameworks)
+            var assetFilePath = Path.Combine(packageRoot.Value, "project.assets.json");
+            var currentFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+            var assetFileContents = $$"""
+                {
+                  "version": 3,
+                  "targets": {
+                    "{{currentFramework}}/{{RuntimeInformation.RuntimeIdentifier}}": {
+                      "{{packageId}}/{{packageVersion}}": {
+                        "type": "package",
+                        "tools": {
+                        }
+                      }
+                    }
+                  },
+                  "libraries": {},
+                  "projectFileDependencyGroups": {}
+                }
+                """;
+            fileSystem.File.WriteAllText(assetFilePath, assetFileContents);
+
+            // Try to create a ToolPackageInstance, which should throw an informative error
+            Action action = () =>
+            {
+                _ = new ToolPackageInstance(
+                    packageId,
+                    packageVersion,
+                    new DirectoryPath(testDir.Path).WithSubDirectories(".store"),
+                    packageRoot,
+                    fileSystem);
+            };
+
+            action.Should().Throw<GracefulException>()
+                .WithMessage("*requires a higher version of .NET*")
+                .WithMessage("*.NET 99*");
+        }
     }
 }
