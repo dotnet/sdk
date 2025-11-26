@@ -29,6 +29,7 @@ public static class Constants
     // MSBuild targets
     public const string Build = nameof(Build);
     public const string ComputeRunArguments = nameof(ComputeRunArguments);
+    public const string ComputeAvailableDevices = nameof(ComputeAvailableDevices);
     public const string CoreCompile = nameof(CoreCompile);
 
     // MSBuild item metadata

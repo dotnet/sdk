@@ -1786,6 +1786,30 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="RunRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to run for.</value>
   </data>
+  <data name="CommandOptionDeviceDescription" xml:space="preserve">
+    <value>The device identifier to use for running the application.</value>
+  </data>
+  <data name="CommandOptionDeviceHelpName" xml:space="preserve">
+    <value>DEVICE</value>
+  </data>
+  <data name="CommandOptionListDevicesDescription" xml:space="preserve">
+    <value>List available devices for running the application.</value>
+  </data>
+  <data name="RunCommandAvailableDevices" xml:space="preserve">
+    <value>Available devices:</value>
+  </data>
+  <data name="RunCommandNoDevicesAvailable" xml:space="preserve">
+    <value>No devices are available for this project.</value>
+  </data>
+  <data name="RunCommandSelectDevicePrompt" xml:space="preserve">
+    <value>Select a device to run on:</value>
+  </data>
+  <data name="RunCommandMoreDevicesText" xml:space="preserve">
+    <value>Move up and down to reveal more devices</value>
+  </data>
+  <data name="RunCommandExceptionUnableToRunSpecifyDevice" xml:space="preserve">
+    <value>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</value>
+  </data>
   <data name="RuntimeConfigDefinition" xml:space="preserve">
     <value>Path to &lt;application&gt;.runtimeconfig.json file.</value>
   </data>
