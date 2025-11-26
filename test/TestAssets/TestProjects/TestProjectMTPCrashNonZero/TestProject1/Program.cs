@@ -40,7 +40,7 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 
 		await Task.Delay(1000);
 
-		Environment.Exit(1313);
+		Environment.Exit(47);
 
 		context.Complete();
 	}
