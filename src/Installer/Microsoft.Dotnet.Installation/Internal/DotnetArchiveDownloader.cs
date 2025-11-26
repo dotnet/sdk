@@ -68,10 +68,10 @@ internal class DotnetArchiveDownloader : IDisposable
             Timeout = TimeSpan.FromMinutes(10)
         };
 
-        // Set user-agent to identify dnup in telemetry, including version
+        // Set user-agent to identify dotnetup in telemetry, including version
         var informationalVersion = typeof(DotnetArchiveDownloader).Assembly
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        string userAgent = informationalVersion == null ? "dotnetup-dotnet-installer" : $"dnup-dotnet-installer/{informationalVersion}";
+        string userAgent = informationalVersion == null ? "dotnetup-dotnet-installer" : $"dotnetup-dotnet-installer/{informationalVersion}";
 
         client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
 

@@ -1,0 +1,11 @@
+{
+  "solution": {
+    "path": "sdk.slnx",
+    "projects": [
+      "src\\Installer\\dotnetup\\dotnetup.csproj",
+      "src\\Installer\\Microsoft.Dotnet.Installation\\Microsoft.Dotnet.Installation.csproj",
+      "test\\dotnetup.Tests\\dotnetup.Tests.csproj",
+      "src\\Resolvers\\Microsoft.DotNet.NativeWrapper\\Microsoft.DotNet.NativeWrapper.csproj"
+    ]
+  }
+}
