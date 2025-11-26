@@ -1,0 +1,152 @@
+name: Update XLF files on command
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  update-xlf:
+    # Only run on PR comments that start with /updatexlf
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/updatexlf')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: React to comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes'
+            });
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      
+      - name: Checkout PR branch
+        run: |
+          gh pr checkout ${{ github.event.issue.number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Run UpdateXlf target
+        id: update
+        run: |
+          chmod +x ./build.sh
+          # Try the fast UpdateXlf target first
+          if ./build.sh /t:UpdateXlf; then
+            echo "result=success" >> $GITHUB_OUTPUT
+          else
+            # If that fails, try a full build
+            if ./build.sh; then
+              echo "result=success" >> $GITHUB_OUTPUT
+            else
+              echo "result=failure" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+          fi
+        continue-on-error: true
+        timeout-minutes: 15
+      
+      - name: Check for XLF changes
+        id: check-changes
+        if: steps.update.outcome == 'success'
+        run: |
+          # Check if there are changes to .xlf files
+          if git diff --name-only | grep -E '\.xlf$'; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "Changed XLF files:"
+            git diff --name-only | grep -E '\.xlf$'
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push XLF changes
+        id: commit
+        if: steps.update.outcome == 'success' && steps.check-changes.outputs.changes == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Add all .xlf files
+          git add **/*.xlf
+          
+          # Create commit
+          COMMIT_DATE=$(date -u +"%Y-%m-%d")
+          git commit -m "Update XLF translation files - $COMMIT_DATE"
+          
+          # Push to the PR branch
+          git push
+        continue-on-error: true
+      
+      - name: Comment on PR - Success
+        if: steps.commit.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: '✅ XLF translation files have been updated and committed to this PR.'
+            });
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: '+1'
+            });
+      
+      - name: Comment on PR - No changes
+        if: steps.update.outcome == 'success' && steps.check-changes.outputs.changes == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: 'ℹ️ No XLF files needed to be updated.'
+            });
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: '+1'
+            });
+      
+      - name: Comment on PR - Failure
+        if: steps.update.outcome == 'failure' || (steps.check-changes.outputs.changes == 'true' && steps.commit.outcome == 'failure')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let errorMsg = '❌ Failed to update XLF files.';
+            
+            if ('${{ steps.update.outcome }}' === 'failure') {
+              errorMsg += ' The build failed.';
+            } else if ('${{ steps.commit.outcome }}' === 'failure') {
+              errorMsg += ' Could not commit changes.';
+            }
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: errorMsg + ' Please check the workflow logs for details.'
+            });
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'confused'
+            });
