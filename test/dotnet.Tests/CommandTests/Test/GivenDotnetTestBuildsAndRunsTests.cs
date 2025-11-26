@@ -486,8 +486,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute();
 
-            // The test asset exits with Environment.Exit(1313);
-            result.ExitCode.Should().Be(1313);
+            // The test asset exits with Environment.Exit(47);
+            result.ExitCode.Should().Be(47);
             if (!TestContext.IsLocalized())
             {
                 result.StdErr.Should().NotContain("A test session start event was received without a corresponding test session end");
@@ -501,7 +501,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 0");
 
-                result.StdOut.Contains("Test run completed with non-success exit code: 1313 (see: https://aka.ms/testingplatform/exitcodes)");
+                result.StdOut.Contains("Test run completed with non-success exit code: 47 (see: https://aka.ms/testingplatform/exitcodes)");
             }
         }
 
