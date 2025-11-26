@@ -107,7 +107,7 @@ internal sealed class RunCommandSelector : IDisposable
     {
         if (_project is not null)
         {
-            Debug.Assert (_projectInstance is not null);
+            Debug.Assert(_projectInstance is not null);
             projectInstance = _projectInstance;
             return true;
         }
@@ -359,8 +359,7 @@ internal sealed class RunCommandSelector : IDisposable
             return true;
         }
 
-        // If a device was already specified via command line, we've already returned above
-        // So now we need to prompt or error (multiple devices available)
+
 
         if (_isInteractive)
         {

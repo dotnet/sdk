@@ -283,7 +283,7 @@ public class RunCommand
                 var properties = new Dictionary<string, string> { { "Device", selectedDevice } };
 
                 // If the device provided a RuntimeIdentifier, add it too
-                if (!string.IsNullOrEmpty (runtimeIdentifier))
+                if (!string.IsNullOrEmpty(runtimeIdentifier))
                 {
                     properties["RuntimeIdentifier"] = runtimeIdentifier;
                 }
