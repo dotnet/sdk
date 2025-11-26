@@ -1,0 +1,157 @@
+# Contains the binaries that are allowed in the VMR
+
+# This file is used by the Binary Tool to detect new binaries that get added to the VMR
+
+# Import the allowed souce-build binaries (a stricter set).
+import:allowed-sb-binaries.txt
+
+**/testCert*.pfx
+**/TestCert*.pfx
+
+# arcade
+src/arcade/src/Microsoft.DotNet.*.Tests/**/*
+src/arcade/src/Microsoft.DotNet.NuGetRepack/tests/Resources/*.nupkg
+src/arcade/src/Microsoft.DotNet.NuGetRepack/tests/Resources/.signature.p7s
+
+# aspire
+src/aspire/tests/Shared/TestCertificates/*.pfx
+
+# aspnetcore
+src/aspnetcore/src/submodules/MessagePack-CSharp/**/*.dll
+src/aspnetcore/src/SignalR/clients/java/signalr/gradle/wrapper/gradle-wrapper.jar
+src/aspnetcore/src/Components/**/testassets/**/*.woff*
+src/aspnetcore/src/Security/Authentication/Negotiate/test/Negotiate.FunctionalTest/negotiateAuthCert.pfx
+src/aspnetcore/src/**/test/**/*.cer
+src/aspnetcore/src/Shared/TestCertificates/*.pfx
+src/aspnetcore/src/Shared/TestCertificates/*.crt
+
+# cecil
+src/cecil/Test/Resources/assemblies/*.netmodule
+src/cecil/Test/Resources/assemblies/*.winmd
+src/cecil/Test/Resources/assemblies/*.exe
+src/cecil/Test/Resources/assemblies/*.dll
+src/cecil/Test/Resources/assemblies/*.pdb
+src/cecil/Test/Resources/assemblies/*.mdb
+src/cecil/rocks/Test/Resources/assemblies/*.dll
+src/cecil/symbols/**/Test/Resources/assemblies/*.exe
+src/cecil/symbols/**/Test/Resources/assemblies/*.pdb
+src/cecil/symbols/**/Test/Resources/assemblies/*.dll
+src/cecil/symbols/**/Test/Resources/assemblies/*.mdb
+
+# diagnostics
+src/diagnostics/src/tests/Microsoft.FileFormats.UnitTests/TestBinaries/**/*
+src/diagnostics/src/tests/Microsoft.SymbolStore.UnitTests/TestBinaries/**/*
+
+# efcore
+src/efcore/test/EFCore.Sqlite.FunctionalTests/northwind.db # https://github.com/dotnet/source-build/issues/4326
+src/efcore/benchmark/EFCore.Sqlite.Benchmarks/AdventureWorks2014.db # https://github.com/dotnet/source-build/issues/4326
+
+# fsharp
+src/fsharp/tests/**/*.resources
+src/fsharp/tests/**/*.dll
+src/fsharp/tests/**/*.exe
+src/fsharp/tests/fsharp/core/resources/chimes.wav
+
+# msbuild
+src/msbuild/src/Tasks.UnitTests/TestResources/*.pfx
+src/msbuild/src/Tasks.UnitTests/AssemblyDependency/CacheFileSamples/Microsoft.VisualStudio.LanguageServices.Implementation.csprojAssemblyReference.cache
+
+# nuget-client
+src/nuget-client/test/EndToEnd/Packages/**/*.nupkg
+src/nuget-client/test/EndToEnd/Packages/**/*.zip
+src/nuget-client/test/EndToEnd/Packages/**/*.dll
+src/nuget-client/test/NuGet.Clients.Tests/NuGet.CommandLine.Test/compiler/resources/*.nupkg
+src/nuget-client/test/NuGet.Clients.Tests/NuGet.PackageManagement.UI.Test/Resources/customMetadata.jpeg
+src/nuget-client/test/NuGet.Core.Tests/NuGet.Commands.Test/compiler/resources/EmptyCertificateStore.p7b
+src/nuget-client/test/NuGet.Core.Tests/NuGet.Protocol.Tests/compiler/resources/*.dll
+src/nuget-client/test/NuGet.Core.FuncTests/NuGet.Packaging.FuncTest/compiler/resources/*.nupkg
+src/nuget-client/test/NuGet.Core.FuncTests/NuGet.Packaging.FuncTest/compiler/resources/*.zip
+src/nuget-client/test/NuGet.Core.FuncTests/Dotnet.Integration.Test/compiler/resources/*.nupkg
+src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/*.crt
+src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/.signature.p7s
+src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/*.nupkg
+src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/*.zip
+
+# razor
+src/razor/src/Razor/test/Microsoft.VisualStudio.Razor.IntegrationTests/TestFiles/BlazorProject.zip
+src/razor/src/Razor/benchmarks/Microsoft.AspNetCore.Razor.Microbenchmarks/Resources/project.razor.bin
+
+# roslyn
+src/roslyn/src/Compilers/Test/Resources/Core/**/*.metadata
+src/roslyn/src/Compilers/Test/Resources/Core/**/*.winmd
+src/roslyn/src/Compilers/Test/Resources/Core/**/*.mod
+src/roslyn/src/Compilers/Test/Resources/Core/**/*.netmodule
+src/roslyn/src/Compilers/Test/Resources/Core/**/*.obj
+src/roslyn/src/Compilers/Test/Resources/Core/**/*.dll
+src/roslyn/src/Compilers/Test/Resources/Core/**/*.exe
+src/roslyn/src/Compilers/Test/Resources/Core/**/*.Dll
+src/roslyn/src/ExpressionEvaluator/Core/Source/ExpressionCompiler/Resources/WindowsProxy.winmd
+src/roslyn/src/Workspaces/CoreTest/Resources/*
+src/roslyn/src/Workspaces/MSBuildTest/Resources/Dlls/*.dll
+src/roslyn/**/CodeAnalysisTest/**/*.res
+src/roslyn/**/CodeAnalysisTest/**/*.blah
+src/roslyn/**/CodeAnalysisTest/**/*.RES
+
+# runtime
+src/runtime/src/libraries/**/tests/**/*.dll
+src/runtime/src/libraries/**/tests/**/*.exe
+src/runtime/src/libraries/**/tests/**/*.pdb
+src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/s/screen-256color
+src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/x/xterm
+src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/Misc/CPPClassLibrary2.obj
+src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/NetModule/*.mod
+src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/WinRT/Lib.winmd
+src/runtime/src/libraries/System.Runtime.Serialization.Xml/tests/Canonicalization/baselines/ReaderWriter_C14N_BaselineXML_Binary.xml
+src/runtime/src/mono/mono/eglib/test/*.txt
+src/runtime/src/mono/mono/tests/exiting/*.out
+src/runtime/src/mono/wasm/testassets/**/*.dat
+src/runtime/src/mono/wasm/testassets/**/*.o
+src/runtime/src/native/external/LinuxTracepoints/TestOutput/EventHeaderInterceptorLE64.dat
+src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/AOT_PROFILED/*.mibc
+src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/AOT_PROFILED/*.nettrace
+src/runtime/src/tests/FunctionalTests/Android/Device_Emulator/gRPC/grpc-dotnet/testassets/Certs/InteropTests/server1.pfx
+src/runtime/src/**/tests/**/*.res
+src/runtime/src/**/tests/**/*.resources
+
+# sdk
+src/sdk/test/TestAssets/TestProjects/**/*.dat
+src/sdk/test/TestAssets/TestProjects/**/*.cache
+src/sdk/test/TestAssets/TestProjects/**/*.tlb
+src/sdk/test/TestAssets/TestPackages/dotnet-new/nupkg_templates/*
+src/sdk/test/Microsoft.DotNet.ShellShim.Tests/WpfBinaryTestAsssets/*.dll
+src/sdk/test/Microsoft.NET.Sdk.Publish.Tasks.Tests/Resources/*.zip
+
+# source-build-externals
+src/source-build-externals/src/application-insights*/WEB/Src/WindowsServer/WindowsServer.Tests/**/*.dll
+
+# symreader
+src/symreader/src/PdbTestResources/Resources/*
+
+# templating
+src/templating/test/Microsoft.TemplateEngine.TestTemplates/nupkg_templates/*.nupkg
+
+# test-templates
+src/test-templates/Templates/**/*.nupkg
+
+# vstest
+src/vstest/samples/Microsoft.TestPlatform.*/Adapter/Microsoft.VisualStudio.TestPlatform.*.dll
+src/vstest/temp/cpp/**/*.dll
+src/vstest/test/Microsoft.TestPlatform.CoreUtilities.UnitTests/TestAssets/*.exe
+src/vstest/test/Microsoft.TestPlatform.CoreUtilities.UnitTests/TestAssets/dotnetMac*
+src/vstest/test/Microsoft.TestPlatform.Utilities.UnitTests/TestFiles/fullcovered.coverage
+src/vstest/test/TestAssets/LegacySettingsUnitTestProject/DependencyAssembly/DependencyAssemblyForTest.dll
+
+# winforms
+src/winforms/src/System.Windows.Forms/tests/IntegrationTests/MauiTests/lib/*.dll
+src/winforms/src/System.Windows.Forms/tests/IntegrationTests/WinformsControlsTest/Resources/media.mpg
+src/winforms/src/System.Windows.Forms/tests/UnitTests/bitmaps/milkmateya01.emf
+src/winforms/src/System.Windows.Forms/tests/UnitTests/TestResources/VB6/SimpleControl.vb6
+src/winforms/src/System.Windows.Forms*/**/*.wmf
+src/winforms/src/System.Windows.Forms.Design/src/Resources/colordlg.data
+
+# wpf
+src/wpf/src/Microsoft.DotNet.Wpf/src/ReachFramework/Resources/generated/*.resources
+src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationFramework/Resources/Hyphenation/Hyphen_en.lex
+src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationFramework/Resources/Hyphenation/Hyphen_en.hdict
+src/wpf/src/Microsoft.DotNet.Wpf/src/Shared/Tracing/resources/*.BIN
+src/wpf/src/Microsoft.DotNet.Wpf/src/Shared/Tracing/resources/*.bin

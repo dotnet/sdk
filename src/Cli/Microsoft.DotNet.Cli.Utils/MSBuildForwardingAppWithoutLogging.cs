@@ -42,15 +42,15 @@ namespace Microsoft.DotNet.Cli.Utils
         public bool ExecuteMSBuildOutOfProc => _forwardingApp != null;
 
         private readonly Dictionary<string, string> _msbuildRequiredEnvironmentVariables =
-            new Dictionary<string, string>
-        {
+            new()
+            {
                 { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? AppContext.BaseDirectory },
                 { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
                 { "DOTNET_HOST_PATH", GetDotnetPath() },
             };
 
-        private readonly IEnumerable<string> _msbuildRequiredParameters =
-            new List<string> { "-maxcpucount", "-verbosity:m" };
+        private readonly List<string> _msbuildRequiredParameters =
+            [ "-maxcpucount", "-verbosity:m" ];
 
         public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string msbuildPath = null, bool includeLogo = false)
         {
@@ -58,15 +58,15 @@ namespace Microsoft.DotNet.Cli.Utils
 
             _argsToForward = includeLogo ? argsToForward : ["-nologo", ..argsToForward];
             string tlpDefault = TerminalLoggerDefault;
-            /* TODO: Consider to enable it for dotnet 9+ SDK
-            if (!string.IsNullOrWhiteSpace(tlpDefault))
+            // new for .NET 9 - default TL to auto (aka enable in non-CI scenarios)
+            if (string.IsNullOrWhiteSpace(tlpDefault))
             {
                 tlpDefault = "auto";
             }
-            */
+
             if (!string.IsNullOrWhiteSpace(tlpDefault))
             {
-                _argsToForward = _argsToForward.Concat(new[] { $"-tlp:default={tlpDefault}" });
+                _msbuildRequiredParameters.Add($"-tlp:default={tlpDefault}");
             }
 
             MSBuildPath = msbuildPath ?? defaultMSBuildPath;
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.Utils
         public int ExecuteInProc(string[] arguments)
         {
             // Save current environment variables before overwriting them.
-            Dictionary<string, string> savedEnvironmentVariables = new Dictionary<string, string>();
+            Dictionary<string, string> savedEnvironmentVariables = new();
             try
             {
                 foreach (KeyValuePair<string, string> kvp in _msbuildRequiredEnvironmentVariables)
@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Cli.Utils
                 try
                 {
                     // Execute MSBuild in the current process by calling its Main method.
-                    return Microsoft.Build.CommandLine.MSBuildApp.Main(arguments);
+                    return Build.CommandLine.MSBuildApp.Main(arguments);
                 }
                 catch (Exception exception)
                 {

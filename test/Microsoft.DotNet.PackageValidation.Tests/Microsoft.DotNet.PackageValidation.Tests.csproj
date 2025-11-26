@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(ToolsetTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <OutputType Condition="'$(TargetFramework)' == '$(ToolsetTargetFramework)'">Exe</OutputType>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.DotNet.ApiCompatibility.Tests\SuppressibleTestLog.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.PackageValidation\Resources.resx" GenerateSource="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.PackageValidation\Microsoft.DotNet.PackageValidation.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+</Project>

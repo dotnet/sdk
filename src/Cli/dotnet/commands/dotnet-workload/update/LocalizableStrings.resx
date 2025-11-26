@@ -138,6 +138,15 @@
   <data name="WorkloadUpdateFailed" xml:space="preserve">
     <value>Workload update failed: {0}</value>
   </data>
+  <data name="WorkloadHistoryRecordInvalidIdValue" xml:space="preserve">
+    <value>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</value>
+  </data>
+  <data name="NoWorkloadHistoryRecords" xml:space="preserve">
+    <value>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</value>
+  </data>
+  <data name="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto" xml:space="preserve">
+    <value>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</value>
+  </data>
   <data name="FromPreviousSdkOptionDescription" xml:space="preserve">
     <value>Include workloads installed with earlier SDK versions in update.</value>
   </data>
@@ -152,6 +161,12 @@
   </data>
   <data name="FromRollbackDefinitionOptionDescription" xml:space="preserve">
     <value>Update workloads based on specified rollback definition file.</value>
+  </data>
+   <data name="FromHistoryOptionDescription" xml:space="preserve">
+    <value>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</value>
+  </data>
+  <data name="HistoryManifestOnlyOptionDescription" xml:space="preserve">
+    <value>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</value>
   </data>
   <data name="UpdateFromRollbackSwitchesModeToLooseManifests" xml:space="preserve">
     <value>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</value>

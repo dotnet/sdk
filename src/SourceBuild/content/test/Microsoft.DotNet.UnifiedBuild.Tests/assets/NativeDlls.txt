@@ -1,0 +1,13 @@
+# Contains the list of native .dll and .exe files that shouldn't have their assembly version checked.
+#
+# This list is processed using FileSystemName.MatchesSimpleExpression
+#
+# Examples
+# 'folder/*' matches 'folder/' and 'folder/abc'
+# 'folder/?*' matches 'folder/abc' but not 'folder/'
+#
+# We do not want to filter-out folder entries, therefore, we should use: '?*' and not just '*'
+
+./sdk/x.y.z/TestHostNetFramework/x64/msdia140.dll
+./sdk/x.y.z/TestHostNetFramework/x86/msdia140.dll
+./sdk/x.y.z/datacollector.dll
