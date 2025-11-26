@@ -4,7 +4,7 @@
 using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.NET.Sdk.Localization;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
 
@@ -14,8 +14,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     {
         public const string WorkloadSetsFolderName = "workloadsets";
 
-        private readonly string _sdkRootPath;
-        private readonly string _sdkOrUserLocalPath;
+        private readonly string? _sdkRootPath;
+        private readonly string? _sdkOrUserLocalPath;
         private readonly SdkFeatureBand _sdkVersionBand;
         private readonly string[] _manifestRoots;
         private static HashSet<string> _outdatedManifestIds = new(StringComparer.OrdinalIgnoreCase) { "microsoft.net.workload.android", "microsoft.net.workload.blazorwebassembly", "microsoft.net.workload.ios",
@@ -29,6 +29,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private WorkloadSet? _manifestsFromInstallState;
         private string? _installStateFilePath;
         private bool _useManifestsFromInstallState = true;
+        private bool? _globalJsonSpecifiedWorkloadSets = null;
 
         //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
         //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
@@ -36,7 +37,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private Exception? _exceptionToThrow = null;
         string? _globalJsonWorkloadSetVersion;
 
-        public SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, string? userProfileDir, string? globalJsonPath)
+        public SdkDirectoryWorkloadManifestProvider(string? sdkRootPath, string? sdkVersion, string? userProfileDir, string? globalJsonPath)
             : this(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath)
         {
         }
@@ -46,7 +47,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return new SdkDirectoryWorkloadManifestProvider(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath: null, workloadSetVersion);
         }
 
-        internal SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, string? globalJsonPath = null, string? workloadSetVersion = null)
+        internal SdkDirectoryWorkloadManifestProvider(string? sdkRootPath, string? sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, string? globalJsonPath = null, string? workloadSetVersion = null)
         {
             if (string.IsNullOrWhiteSpace(sdkVersion))
             {
@@ -170,7 +171,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (workloadSet is null)
             {
-                _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
+                _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor, out _globalJsonSpecifiedWorkloadSets);
                 if (_globalJsonWorkloadSetVersion != null)
                 {
                     _useManifestsFromInstallState = false;
@@ -199,7 +200,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests!, _sdkVersionBand);
             }
 
-            if (workloadSet == null && installState.UseWorkloadSets == true && availableWorkloadSets.Any())
+            if (workloadSet == null && (_globalJsonSpecifiedWorkloadSets ?? installState.ShouldUseWorkloadSets()) && availableWorkloadSets.Any())
             {
                 var maxWorkloadSetVersion = availableWorkloadSets.Keys.Aggregate((s1, s2) => VersionCompare(s1, s2) >= 0 ? s1 : s2);
                 workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
@@ -251,14 +252,19 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 // _exceptionToThrow is set to null here if and only if the workload set is not installed.
                 // If this came from --info or workload --version, the error won't be thrown, but we should still
                 // suggest running `dotnet workload restore` to the user.
-                return new WorkloadVersionInfo(_globalJsonWorkloadSetVersion, IsInstalled: _exceptionToThrow == null, WorkloadSetsEnabledWithoutWorkloadSet: false, _globalJsonPathFromConstructor);
+                return new WorkloadVersionInfo(
+                    _globalJsonWorkloadSetVersion,
+                    IsInstalled: _exceptionToThrow == null,
+                    WorkloadSetsEnabledWithoutWorkloadSet: false,
+                    _globalJsonPathFromConstructor,
+                    GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
             }
 
             ThrowExceptionIfManifestsNotAvailable();
 
             if (_workloadSet?.Version is not null)
             {
-                return new WorkloadVersionInfo(_workloadSet.Version, IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: false);
+                return new WorkloadVersionInfo(_workloadSet.Version, IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: false, GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
             }
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
@@ -278,7 +284,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     sb.Append(bytes[b].ToString("x2"));
                 }
 
-                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: installState.UseWorkloadSets == true);
+                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: installState.ShouldUseWorkloadSets(), GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
             }
         }
 
