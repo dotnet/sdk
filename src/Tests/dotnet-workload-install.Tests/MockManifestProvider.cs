@@ -7,19 +7,19 @@ namespace ManifestReaderTests
 {
     internal class MockManifestProvider : IWorkloadManifestProvider
     {
-        readonly (string name, string path, string featureBand)[] _manifests;
+        readonly (string name, string path, string manifestVersion, string featureBand)[] _manifests;
 
         public MockManifestProvider(params string[] manifestPaths)
         {
             _manifests = Array.ConvertAll(manifestPaths, mp =>
             {
                 string manifestId = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(mp));
-                return (manifestId, mp, (string)null);
+                return (manifestId, mp, (string)null, (string)null);
             });
             SdkFeatureBand = new SdkFeatureBand("6.0.100");
         }
 
-        public MockManifestProvider(params (string name, string path, string featureBand)[] manifests)
+        public MockManifestProvider(params (string name, string path, string manifestVersion, string featureBand)[] manifests)
         {
             _manifests = manifests;
             SdkFeatureBand = new SdkFeatureBand("6.0.100");
@@ -33,14 +33,14 @@ namespace ManifestReaderTests
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
             {
-                foreach ((var id, var path, var featureBand) in _manifests)
+                foreach ((var id, var path, var manifestVersion, var featureBand) in _manifests)
                 {
                     yield return new(
                         id,
                         Path.GetDirectoryName(path),
                         path,
                         featureBand ?? SdkFeatureBand.ToString(),
-                        string.Empty,
+                        manifestVersion,
                         () => File.OpenRead(path),
                         () => WorkloadManifestReader.TryOpenLocalizationCatalogForManifest(path)
                     );

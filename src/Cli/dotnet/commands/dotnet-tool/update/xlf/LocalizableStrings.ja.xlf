@@ -37,6 +37,11 @@
         <target state="translated">更新するツール パッケージの ID を 1 つ指定してください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateAllOptionDescription">
+        <source>Update all tools.</source>
+        <target state="translated">すべてのツールを更新する。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateLocaToolSucceededVersionNoChange">
         <source>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</source>
         <target state="translated">ツール '{0}' は最新の状態です (バージョン '{1}' マニフェスト ファイル {2})。</target>
@@ -65,6 +70,16 @@
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">要求されたバージョン {0} は、既存のバージョン {1} を下回っています。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndPackageId">
+        <source>One must specify either package ID or use the update all option (--all).</source>
+        <target state="translated">パッケージ ID を指定するか、update all オプション (--all) を使用する必要があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndVersion">
+        <source>The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</source>
+        <target state="translated">version オプション (--version) と update all オプション (--all) は同時に使用できません。次のいずれかのオプションのみを指定してください:{0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToolCommandInvalidGlobalAndLocalAndToolPath">

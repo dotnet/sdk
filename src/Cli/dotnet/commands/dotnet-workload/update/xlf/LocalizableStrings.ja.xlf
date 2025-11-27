@@ -7,6 +7,11 @@
         <target state="translated">広告マニフェストのみを更新します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="translated">{0} オプションと {1} オプションを同時に使用することはできません。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">インストールされたすべてのワークロードを更新します。</target>
@@ -70,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">ワークロードの更新に失敗しました: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">ワークロード バージョン {0} が見つかりませんでした。</target>
         <note />
       </trans-unit>
     </body>
