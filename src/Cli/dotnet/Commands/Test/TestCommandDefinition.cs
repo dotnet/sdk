@@ -265,6 +265,8 @@ internal static class TestCommandDefinition
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.NoRestoreOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.SelfContainedOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.NoSelfContainedOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoBuildOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoAnsiOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoProgressOption);
