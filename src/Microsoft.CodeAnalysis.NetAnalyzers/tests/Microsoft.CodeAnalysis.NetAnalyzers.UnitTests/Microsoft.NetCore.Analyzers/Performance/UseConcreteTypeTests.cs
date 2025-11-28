@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseConcreteTypeAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -425,6 +424,45 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }";
 
             await TestCSAsync(Source, $"dotnet_code_quality.CA1859.api_surface = public,private,internal");
+        }
+
+        [Fact]
+        [WorkItem(50362, "https://github.com/dotnet/roslyn-analyzers/issues/50362")]
+        public static async Task ShouldNotTrigger_PropertyWithSetterMoreAccessibleThanGetter()
+        {
+            await TestCSAsync(@"
+                using System;
+                using System.Threading.Tasks;
+
+                public class Class1
+                {
+                    public I Prop { private get; set; } = new Impl1();
+
+                    void M()
+                    {
+                        Prop.M();
+                        Prop.MyProperty = 1;
+                        Prop[1] = 1;
+                        Prop.Evt += (s, e) => { };
+                    }
+                }
+
+                public interface I
+                {
+                    int MyProperty { get; set; }
+                    int this[int i] { get; set; }
+                    event EventHandler Evt;
+                    void M();
+                }
+
+                public class Impl1 : I
+                {
+                    public int MyProperty { get; set; }
+                    public int this[int i] { get => i; set { } }
+                    public event EventHandler Evt;
+                    public void M() { }
+                }
+            ");
         }
 
         [Theory]
@@ -1502,7 +1540,7 @@ class C
             await TestCSAsync(Source);
         }
 
-        private static async Task TestCSAsync(string source, params DiagnosticResult[] diagnosticResults)
+        private static async Task TestCSAsync([StringSyntax("C#-test")] string source, params DiagnosticResult[] diagnosticResults)
         {
             var test = new VerifyCS.Test
             {
@@ -1515,7 +1553,7 @@ class C
             await test.RunAsync();
         }
 
-        private static async Task TestCSAsync(string source, string editorConfigText, params DiagnosticResult[] diagnosticResults)
+        private static async Task TestCSAsync([StringSyntax("C#-test")] string source, string editorConfigText, params DiagnosticResult[] diagnosticResults)
         {
             var test = new VerifyCS.Test
             {
