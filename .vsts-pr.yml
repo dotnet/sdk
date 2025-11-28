@@ -9,6 +9,14 @@ pr:
     - release/*
     - internal/release/*
   paths:
+    include:
+    - eng
+    - build
+    - src
+    - test
+    - '*.yml'
+    - '*.props'
+    - '*.targets'
     exclude:
     - documentation/*
     - README.md
