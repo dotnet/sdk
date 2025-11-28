@@ -99,6 +99,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             // We are only interested in private explicit interface implementations within a public non-sealed type.
             if (method.ExplicitInterfaceImplementations.IsEmpty ||
+                method.ContainingType.TypeKind != TypeKind.Class ||
                 method.GetResultantVisibility() != SymbolVisibility.Private ||
                 method.ContainingType.IsSealed ||
                 !method.ContainingType.IsExternallyVisible())
