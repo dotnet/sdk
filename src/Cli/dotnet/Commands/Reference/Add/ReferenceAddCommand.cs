@@ -79,11 +79,6 @@ internal class ReferenceAddCommand(ParseResult parseResult) : CommandBase(parseR
             frameworkString,
             relativePathReferences);
 
-        if (numberOfAddedReferences != 0)
-        {
-            msbuildProj.ProjectRootElement.Save();
-        }
-
         return 0;
     }
 

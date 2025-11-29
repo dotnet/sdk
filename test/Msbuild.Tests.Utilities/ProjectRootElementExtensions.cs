@@ -65,5 +65,25 @@ namespace Msbuild.Tests.Utilities
         {
             return root.ItemsWithIncludeContaining("ProjectReference", includePattern).Count();
         }
+
+        public static ISet<string> ConditionChain(this ProjectElement projectElement)
+        {
+            var conditionChainSet = new HashSet<string>();
+
+            if (!string.IsNullOrEmpty(projectElement.Condition))
+            {
+                conditionChainSet.Add(projectElement.Condition);
+            }
+
+            foreach (var parent in projectElement.AllParents)
+            {
+                if (!string.IsNullOrEmpty(parent.Condition))
+                {
+                    conditionChainSet.Add(parent.Condition);
+                }
+            }
+
+            return conditionChainSet;
+        }
     }
 }

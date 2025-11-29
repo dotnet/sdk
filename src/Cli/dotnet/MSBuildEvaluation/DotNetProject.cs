@@ -4,6 +4,7 @@
 #pragma warning disable RS0030 // OK to use MSBuild APIs in this wrapper file.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using NuGet.Frameworks;
@@ -18,6 +19,11 @@ namespace Microsoft.DotNet.Cli.MSBuildEvaluation;
 public sealed class DotNetProject(Project Project)
 {
     private readonly Dictionary<string, DotNetProjectItem[]> _itemCache = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Used by raw-XML-manipulation scenarios, for example adding itemgroups/conditions.
+    /// </summary>
+    private readonly ProjectRootElement _projectRootElement = Project.Xml;
 
     /// <summary>
     /// Gets an underlying ProjectInstance for advanced scenarios.
@@ -248,7 +254,7 @@ public sealed class DotNetProject(Project Project)
     /// <summary>
     /// Returns a string representation of this project.
     /// </summary>
-    public override string ToString() => FullPath ?? "<unnamed project>";
+    public override string ToString() => FullPath ?? "<virtual project>";
 
     /// <summary>
     /// Builds the project with the specified targets and loggers. Delegates to the underlying ProjectInstance directly.
@@ -273,4 +279,215 @@ public sealed class DotNetProject(Project Project)
     public string ExpandString(string unexpandedValue) => Project.ExpandString(unexpandedValue);
 
     public bool SupportsTarget(string targetName) => Project.Targets.ContainsKey(targetName);
+
+    public enum AddType
+    {
+        Added,
+        AlreadyExists
+    }
+    public record struct ItemAddResult(List<(string Include, AddType AddType)> AddResult);
+
+    /// <summary>
+    /// Adds items of the specified type to the project, optionally conditioned on a target framework.
+    /// The items are added inside the first item group that contains only items of the same type for
+    /// the specified framework, or a new item group is created if none exist that satisfy that condition.
+    /// </summary>
+    /// <returns>An ItemAddResult containing lists of existing and added items</returns>
+    public ItemAddResult AddItemsOfType(string itemType, IEnumerable<(string include, Dictionary<string, string>? metadata)> itemsToAdd, string? tfmForCondition = null)
+    {
+        List<(string, AddType)> addResult = new();
+
+        var itemGroup = _projectRootElement.FindUniformOrCreateItemGroupWithCondition(
+            itemType,
+            tfmForCondition);
+        foreach (var itemData in itemsToAdd)
+        {
+            var normalizedItemRef = itemData.include.Replace('/', '\\');
+            if (_projectRootElement.HasExistingItemWithCondition(tfmForCondition, normalizedItemRef))
+            {
+                addResult.Add((itemData.include, AddType.AlreadyExists));
+                continue;
+            }
+
+            var itemElement = _projectRootElement.CreateItemElement(itemType, normalizedItemRef);
+            if (itemData.metadata != null)
+            {
+                foreach (var metadata in itemData.metadata)
+                {
+                    itemElement.AddMetadata(metadata.Key, metadata.Value);
+                }
+            }
+            itemGroup.AppendChild(itemElement);
+            addResult.Add((itemData.include, AddType.Added));
+        }
+        _projectRootElement.Save();
+        Project.ReevaluateIfNecessary();
+        return new(addResult);
+    }
+
+    public enum RemoveType
+    {
+        Removed,
+        NotFound
+    }
+
+    public record struct ItemRemoveResult(List<(string Include, DotNetProject.RemoveType RemoveType)> RemoveResult);
+
+    public ItemRemoveResult RemoveItemsOfType(string itemType, IEnumerable<string> itemsToRemove, string? tfmForCondition = null)
+    {
+        List<(string, RemoveType)> removeResult = new();
+        foreach (var itemData in itemsToRemove)
+        {
+            var normalizedItemRef = itemData.Replace('/', '\\');
+            var existingItems = _projectRootElement.FindExistingItemsWithCondition(tfmForCondition, normalizedItemRef);
+            if (existingItems.Any())
+            {
+                foreach (var existingItem in existingItems)
+                {
+                    ProjectElementContainer itemGroupParent = existingItem.Parent;
+                    itemGroupParent.RemoveChild(existingItem);
+                    if (itemGroupParent.Children.Count == 0)
+                    {
+                        itemGroupParent.Parent.RemoveChild(itemGroupParent);
+                    }
+                    removeResult.Add((itemData, RemoveType.Removed));
+                }
+                continue;
+            }
+            else
+            {
+                removeResult.Add((itemData, RemoveType.NotFound));
+            }
+        }
+        _projectRootElement.Save();
+        Project.ReevaluateIfNecessary();
+        return new(removeResult);
+    }
 }
+
+/// <summary>
+/// These extension methods are located here to make project file manipulation easier, but _should not_ leak out of the context of the DotNetProject.
+/// </summary>
+file static class MSBuildProjectExtensions
+{
+    public static bool IsConditionalOnFramework(this ProjectElement el, string? framework)
+    {
+        if (!TryGetFrameworkConditionString(framework, out string? conditionStr))
+        {
+            return el.ConditionChain().Count == 0;
+        }
+
+        var condChain = el.ConditionChain();
+        return condChain.Count == 1 && condChain.First().Trim() == conditionStr;
+    }
+
+    public static ISet<string> ConditionChain(this ProjectElement projectElement)
+    {
+        var conditionChainSet = new HashSet<string>();
+
+        if (!string.IsNullOrEmpty(projectElement.Condition))
+        {
+            conditionChainSet.Add(projectElement.Condition);
+        }
+
+        foreach (var parent in projectElement.AllParents)
+        {
+            if (!string.IsNullOrEmpty(parent.Condition))
+            {
+                conditionChainSet.Add(parent.Condition);
+            }
+        }
+
+        return conditionChainSet;
+    }
+
+    public static ProjectItemGroupElement? LastItemGroup(this ProjectRootElement root)
+    {
+        return root.ItemGroupsReversed.FirstOrDefault();
+    }
+
+    public static ProjectItemGroupElement FindUniformOrCreateItemGroupWithCondition(this ProjectRootElement root, string projectItemElementType, string? framework)
+    {
+        var lastMatchingItemGroup = FindExistingUniformItemGroupWithCondition(root, projectItemElementType, framework);
+
+        if (lastMatchingItemGroup != null)
+        {
+            return lastMatchingItemGroup;
+        }
+
+        ProjectItemGroupElement ret = root.CreateItemGroupElement();
+        if (TryGetFrameworkConditionString(framework, out string? condStr))
+        {
+            ret.Condition = condStr;
+        }
+
+        root.InsertAfterChild(ret, root.LastItemGroup());
+        return ret;
+    }
+
+    public static ProjectItemGroupElement? FindExistingUniformItemGroupWithCondition(this ProjectRootElement root, string projectItemElementType, string? framework)
+    {
+        return root.ItemGroupsReversed.FirstOrDefault((itemGroup) => itemGroup.IsConditionalOnFramework(framework) && itemGroup.IsUniformItemElementType(projectItemElementType));
+    }
+
+    public static bool IsUniformItemElementType(this ProjectItemGroupElement group, string projectItemElementType)
+    {
+        return group.Items.All((it) => it.ItemType == projectItemElementType);
+    }
+
+    public static IEnumerable<ProjectItemElement> FindExistingItemsWithCondition(this ProjectRootElement root, string? framework, string include)
+    {
+        return root.Items.Where((el) => el.IsConditionalOnFramework(framework) && el.HasInclude(include));
+    }
+
+    public static bool HasExistingItemWithCondition(this ProjectRootElement root, string? framework, string include)
+    {
+        return root.FindExistingItemsWithCondition(framework, include).Count() != 0;
+    }
+
+    public static IEnumerable<ProjectItemElement> GetAllItemsWithElementType(this ProjectRootElement root, string projectItemElementType)
+    {
+        return root.Items.Where((it) => it.ItemType == projectItemElementType);
+    }
+
+    public static bool HasInclude(this ProjectItemElement el, string include)
+    {
+        include = NormalizedForComparison(include);
+        foreach (var i in el.Includes())
+        {
+            if (include == NormalizedForComparison(i))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static IEnumerable<string> Includes(
+        this ProjectItemElement item)
+    {
+        return SplitSemicolonDelimitedValues(item.Include);
+    }
+
+    private static IEnumerable<string> SplitSemicolonDelimitedValues(string combinedValue)
+    {
+        return string.IsNullOrEmpty(combinedValue) ? Enumerable.Empty<string>() : combinedValue.Split(';');
+    }
+
+
+    private static bool TryGetFrameworkConditionString(string? framework, out string? condition)
+    {
+        if (string.IsNullOrEmpty(framework))
+        {
+            condition = null;
+            return false;
+        }
+
+        condition = $"'$(TargetFramework)' == '{framework}'";
+        return true;
+    }
+
+    public static string NormalizedForComparison(this string include) => include.ToLower().Replace('/', '\\');
+}
+
