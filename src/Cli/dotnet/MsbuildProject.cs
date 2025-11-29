@@ -109,31 +109,25 @@ internal class MsbuildProject
     /// <returns></returns>
     public int AddProjectToProjectReferences(string? framework, IEnumerable<string> refs)
     {
-        int numberOfAddedReferences = 0;
-
-        ProjectItemGroupElement itemGroup = ProjectRootElement.FindUniformOrCreateItemGroupWithCondition(
-            ProjectItemElementType,
-            framework);
-        foreach (var @ref in refs.Select((r) => PathUtility.GetPathWithBackSlashes(r)))
+        var addResult =_project.AddItemsOfType(ProjectItemElementType, refs.Select<string, (string, Dictionary<string, string>?)>(r => (r,null)), framework);
+        var numberOfAddedReferences = 0;
+        foreach (var addItem in addResult.AddResult)
         {
-            if (ProjectRootElement.HasExistingItemWithCondition(framework, @ref))
+            if (addItem.AddType == DotNetProject.AddType.Added)
             {
-                Reporter.Output.WriteLine(string.Format(
-                    CliStrings.ProjectAlreadyHasAreference,
-                    @ref));
-                continue;
+                Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, addItem.Include));
+                numberOfAddedReferences++;
             }
-
-            numberOfAddedReferences++;
-            itemGroup.AppendChild(ProjectRootElement.CreateItemElement(ProjectItemElementType, @ref));
-
-            Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, @ref));
+            else
+            {
+                Reporter.Output.WriteLine(string.Format(CliStrings.ProjectAlreadyHasAreference, addItem.Include));
+            }
         }
 
         return numberOfAddedReferences;
     }
 
-    public int RemoveProjectToProjectReferences(string framework, IEnumerable<string> refs)
+    public int RemoveProjectToProjectReferences(string? framework, IEnumerable<string> refs)
     {
         int totalNumberOfRemovedReferences = 0;
 
@@ -179,33 +173,27 @@ internal class MsbuildProject
         return false;
     }
 
-    private int RemoveProjectToProjectReferenceAlternatives(string framework, string reference)
+    private int RemoveProjectToProjectReferenceAlternatives(string? framework, string reference)
     {
-        int numberOfRemovedRefs = 0;
-        foreach (var r in GetIncludeAlternativesForRemoval(reference))
+        var removedCount = 0;
+        var removeResult = _project.RemoveItemsOfType(ProjectItemElementType, GetIncludeAlternativesForRemoval(reference), framework);
+        foreach (var r in removeResult.RemoveResult)
         {
-            foreach (var existingItem in ProjectRootElement.FindExistingItemsWithCondition(framework, r))
+            if (r.RemoveType == DotNetProject.RemoveType.Removed)
             {
-                ProjectElementContainer itemGroup = existingItem.Parent;
-                itemGroup.RemoveChild(existingItem);
-                if (itemGroup.Children.Count == 0)
-                {
-                    itemGroup.Parent.RemoveChild(itemGroup);
-                }
-
-                numberOfRemovedRefs++;
-                Reporter.Output.WriteLine(string.Format(CliStrings.ProjectReferenceRemoved, r));
+                Reporter.Output.WriteLine(string.Format(CliStrings.ProjectReferenceRemoved, r.Include));
+                removedCount++;
             }
         }
 
-        if (numberOfRemovedRefs == 0)
+        if (removedCount == 0)
         {
             Reporter.Output.WriteLine(string.Format(
                 CliStrings.ProjectReferenceCouldNotBeFound,
                 reference));
         }
 
-        return numberOfRemovedRefs;
+        return removedCount;
     }
 
     // Easiest way to explain rationale for this function is on the example. Let's consider following directory structure:
