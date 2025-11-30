@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Evaluation;
-using Microsoft.Build.Exceptions;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
+using NuGet.Frameworks;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -21,43 +21,31 @@ internal static class TargetFrameworkSelector
     /// <returns>True if we should continue, false if we should exit with error</returns>
     public static bool TrySelectTargetFramework(
         string projectFilePath,
-        Dictionary<string, string> globalProperties,
+        DotNetProjectEvaluator evaluator,
         bool isInteractive,
-        out string? selectedFramework)
+        out NuGetFramework? selectedFramework)
     {
         selectedFramework = null;
 
         // If a framework is already specified, no need to prompt
-        if (globalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework))
+        if (evaluator.GlobalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework))
         {
             return true;
         }
 
         // Evaluate the project to get TargetFrameworks
-        string targetFrameworks;
-        try
-        {
-            using var collection = new ProjectCollection(globalProperties: globalProperties);
-            var project = collection.LoadProject(projectFilePath);
-            targetFrameworks = project.GetPropertyValue("TargetFrameworks");
-        }
-        catch (InvalidProjectFileException)
-        {
-            // Invalid project file, return true to continue for normal error handling
-            return true;
-        }
+        var project = evaluator.LoadProject(projectFilePath, additionalGlobalProperties: null, useFlexibleLoading: true);
+        var targetFrameworks = project.TargetFrameworks;
 
         // If there's no TargetFrameworks property or only one framework, no selection needed
-        if (string.IsNullOrWhiteSpace(targetFrameworks))
+        if (targetFrameworks is null or { Length: 0 or 1 })
         {
             return true;
         }
 
         // parse the TargetFrameworks property and make sure to account for any additional whitespace
         // users may have added for formatting reasons.
-        var frameworks = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        return TrySelectTargetFramework(frameworks, isInteractive, out selectedFramework);
+        return TrySelectTargetFramework(targetFrameworks, isInteractive, out selectedFramework);
     }
 
     /// <summary>
@@ -69,7 +57,7 @@ internal static class TargetFrameworkSelector
     /// <param name="isInteractive">Whether we're running in interactive mode (can prompt user)</param>
     /// <param name="selectedFramework">The selected target framework, or null if selection was cancelled</param>
     /// <returns>True if we should continue, false if we should exit with error</returns>
-    public static bool TrySelectTargetFramework(string[] frameworks, bool isInteractive, out string? selectedFramework)
+    public static bool TrySelectTargetFramework(NuGetFramework[] frameworks, bool isInteractive, out NuGetFramework? selectedFramework)
     {
         // If there's only one framework in the TargetFrameworks, we do need to pick it to force the subsequent builds/evaluations
         // to act against the correct 'view' of the project
@@ -107,15 +95,16 @@ internal static class TargetFrameworkSelector
     /// <summary>
     /// Prompts the user to select a target framework from the available options using Spectre.Console.
     /// </summary>
-    private static string? PromptForTargetFramework(string[] frameworks)
+    private static NuGetFramework? PromptForTargetFramework(NuGetFramework[] frameworks)
     {
         try
         {
-            var prompt = new SelectionPrompt<string>()
+            var prompt = new SelectionPrompt<NuGetFramework>()
                 .Title($"[cyan]{Markup.Escape(CliCommandStrings.RunCommandSelectTargetFrameworkPrompt)}[/]")
                 .PageSize(10)
                 .MoreChoicesText($"[grey]({Markup.Escape(CliCommandStrings.RunCommandMoreFrameworksText)})[/]")
                 .AddChoices(frameworks)
+                .UseConverter(framework => framework.GetShortFolderName())
                 .EnableSearch()
                 .SearchPlaceholderText(CliCommandStrings.RunCommandSearchPlaceholderText);
 

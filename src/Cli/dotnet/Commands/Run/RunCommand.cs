@@ -21,6 +21,7 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -129,8 +130,10 @@ public class RunCommand
             return 1;
         }
 
+        using var topLevelEvaluator = DotNetProjectEvaluatorFactory.CreateForCommand(MSBuildArgs);
+
         // Pre-run evaluation: Handle target framework selection for multi-targeted projects
-        if (ProjectFileFullPath is not null && !TrySelectTargetFrameworkIfNeeded())
+        if (ProjectFileFullPath is not null && !TrySelectTargetFrameworkIfNeeded(topLevelEvaluator))
         {
             return 1;
         }
@@ -205,16 +208,15 @@ public class RunCommand
     /// If needed and we're in non-interactive mode, shows an error.
     /// </summary>
     /// <returns>True if we can continue, false if we should exit</returns>
-    private bool TrySelectTargetFrameworkIfNeeded()
+    private bool TrySelectTargetFrameworkIfNeeded(DotNetProjectEvaluator evaluator)
     {
         Debug.Assert(ProjectFileFullPath is not null);
 
-        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
         if (TargetFrameworkSelector.TrySelectTargetFramework(
             ProjectFileFullPath,
-            globalProperties,
+            evaluator,
             Interactive,
-            out string? selectedFramework))
+            out NuGetFramework? selectedFramework))
         {
             ApplySelectedFramework(selectedFramework);
             return true;
@@ -248,7 +250,7 @@ public class RunCommand
         }
 
         // Use TargetFrameworkSelector to handle multi-target selection (or single framework selection)
-        if (TargetFrameworkSelector.TrySelectTargetFramework(frameworks, Interactive, out string? selectedFramework))
+        if (TargetFrameworkSelector.TrySelectTargetFramework(frameworks, Interactive, out var selectedFramework))
         {
             ApplySelectedFramework(selectedFramework);
             return true;
@@ -261,7 +263,7 @@ public class RunCommand
     /// Parses a source file to extract target frameworks from directives.
     /// </summary>
     /// <returns>Array of frameworks if TargetFrameworks is specified, null otherwise</returns>
-    private static string[]? GetTargetFrameworksFromSourceFile(string sourceFilePath)
+    private static NuGetFramework[]? GetTargetFrameworksFromSourceFile(string sourceFilePath)
     {
         var sourceFile = SourceFile.Load(sourceFilePath);
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
@@ -274,21 +276,21 @@ public class RunCommand
             return null;
         }
 
-        return targetFrameworksDirective.Value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return targetFrameworksDirective.Value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(NuGetFramework.Parse).ToArray();
     }
 
     /// <summary>
     /// Applies the selected target framework to MSBuildArgs if a framework was provided.
     /// </summary>
     /// <param name="selectedFramework">The framework to apply, or null if no framework selection was needed</param>
-    private void ApplySelectedFramework(string? selectedFramework)
+    private void ApplySelectedFramework(NuGetFramework? selectedFramework)
     {
         // If selectedFramework is null, it means no framework selection was needed
         // (e.g., user already specified --framework, or single-target project)
         if (selectedFramework is not null)
         {
             var additionalProperties = new ReadOnlyDictionary<string, string>(
-                new Dictionary<string, string> { { "TargetFramework", selectedFramework } });
+                new Dictionary<string, string> { { "TargetFramework", selectedFramework.GetShortFolderName() } });
             MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
         }
     }
