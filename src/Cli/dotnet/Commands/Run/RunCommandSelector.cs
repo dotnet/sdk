@@ -32,6 +32,10 @@ internal sealed class RunCommandSelector : IDisposable
     private ProjectInstance? _projectInstance;
     private bool _disposed;
 
+    /// <param name="projectFilePath">Path to the project file to evaluate</param>
+    /// <param name="globalProperties">Global MSBuild properties to use during evaluation</param>
+    /// <param name="isInteractive">Whether to prompt the user for selections</param>
+    /// <param name="binaryLogger">Optional binary logger for MSBuild operations. The logger will not be disposed by this class.</param>
     public RunCommandSelector(
         string projectFilePath,
         Dictionary<string, string> globalProperties,
@@ -138,7 +142,7 @@ internal sealed class RunCommandSelector : IDisposable
             return;
         }
 
-        _binaryLogger?.ReallyShutdown();
+        // NOTE: _binaryLogger is not disposed here because it is *owned* by the caller
         _collection?.Dispose();
         _disposed = true;
     }
