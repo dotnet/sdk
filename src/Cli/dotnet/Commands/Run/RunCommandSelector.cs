@@ -30,7 +30,6 @@ internal sealed class RunCommandSelector : IDisposable
     private ProjectCollection? _collection;
     private Microsoft.Build.Evaluation.Project? _project;
     private ProjectInstance? _projectInstance;
-    private bool _disposed;
 
     /// <param name="projectFilePath">Path to the project file to evaluate</param>
     /// <param name="globalProperties">Global MSBuild properties to use during evaluation</param>
@@ -137,14 +136,8 @@ internal sealed class RunCommandSelector : IDisposable
 
     public void Dispose()
     {
-        if (_disposed)
-        {
-            return;
-        }
-
         // NOTE: _binaryLogger is not disposed here because it is *owned* by the caller
         _collection?.Dispose();
-        _disposed = true;
     }
 
     /// <summary>
