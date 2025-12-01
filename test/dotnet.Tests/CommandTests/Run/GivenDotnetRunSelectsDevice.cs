@@ -172,8 +172,8 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
-        // When /bl:device-list.binlog is specified, the verb is appended
-        string binlogPath = Path.Combine(testInstance.Path, "device-list-dotnet-run-devices.binlog");
+        // When /bl:device-list.binlog is specified, the verb "dotnet-run" is appended
+        string binlogPath = Path.Combine(testInstance.Path, "device-list-dotnet-run.binlog");
 
         var result = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
@@ -182,7 +182,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         result.Should().Pass()
             .And.HaveStdOutContaining("test-device-1");
 
-        // Verify the binlog file was created
+        // Verify the binlog file was created with the unified logger
         File.Exists(binlogPath).Should().BeTrue("the binlog file should be created when /bl: argument is provided");
     }
 

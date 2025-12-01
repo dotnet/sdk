@@ -148,16 +148,13 @@ A new `--device` switch will:
 
 ## Binary Logs for Device Selection
 
-When using the `-bl:` argument with `dotnet run`, binary logs (`.binlog` files)
-are created to help diagnose issues with device selection and the build process.
+When using `-bl` with `dotnet run`, all MSBuild operations are logged to a single
+binlog file: device selection, build, deploy, and run argument computation.
 
-For device selection operations (when calling the `ComputeAvailableDevices` target),
-the binlog files follow this naming pattern:
+File naming follows standard MSBuild conventions:
 
-* If you specify `-bl:filename.binlog`, the actual file created will be
-  `filename-dotnet-run-devices.binlog`
-* If you specify `-bl` without a filename, the file created will be
-  `msbuild-dotnet-run-devices.binlog`
+* `-bl:filename.binlog` creates `filename.binlog`
+* `-bl` creates `msbuild.binlog`
 
 ## What about Launch Profiles?
 

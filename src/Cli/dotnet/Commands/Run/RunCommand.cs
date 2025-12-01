@@ -142,53 +142,55 @@ public class RunCommand
             return 1;
         }
 
-        // Pre-run evaluation: Handle target framework and device selection for project-based scenarios
-        if (ProjectFileFullPath is not null && !TrySelectTargetFrameworkAndDeviceIfNeeded())
-        {
-            // If --list-devices was specified, this is a successful exit
-            return ListDevices ? 0 : 1;
-        }
-
-        // For file-based projects, check for multi-targeting before building
-        if (EntryPointFileFullPath is not null && !TrySelectTargetFrameworkForFileBasedProject())
-        {
-            return 1;
-        }
-
-        Func<ProjectCollection, ProjectInstance>? projectFactory = null;
-        RunProperties? cachedRunProperties = null;
-        VirtualProjectBuildingCommand? virtualCommand = null;
-        if (ShouldBuild)
-        {
-            if (string.Equals("true", launchSettings?.DotNetRunMessages, StringComparison.OrdinalIgnoreCase))
-            {
-                Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
-            }
-
-            EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out virtualCommand);
-        }
-        else
-        {
-            if (NoCache)
-            {
-                throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
-            }
-
-            if (EntryPointFileFullPath is not null)
-            {
-                Debug.Assert(!ReadCodeFromStdin);
-                virtualCommand = CreateVirtualCommand();
-                virtualCommand.MarkArtifactsFolderUsed();
-
-                var cacheEntry = virtualCommand.GetPreviousCacheEntry();
-                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : virtualCommand.CreateProjectInstance;
-                cachedRunProperties = cacheEntry?.Run;
-            }
-        }
-
+        // Create a single logger for all MSBuild operations (device selection + build/run)
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
         try
         {
-            ICommand targetCommand = GetTargetCommand(projectFactory, cachedRunProperties);
+            // Pre-run evaluation: Handle target framework and device selection for project-based scenarios
+            if (ProjectFileFullPath is not null && !TrySelectTargetFrameworkAndDeviceIfNeeded(logger))
+            {
+                // If --list-devices was specified, this is a successful exit
+                return ListDevices ? 0 : 1;
+            }
+
+            // For file-based projects, check for multi-targeting before building
+            if (EntryPointFileFullPath is not null && !TrySelectTargetFrameworkForFileBasedProject())
+            {
+                return 1;
+            }
+
+            Func<ProjectCollection, ProjectInstance>? projectFactory = null;
+            RunProperties? cachedRunProperties = null;
+            VirtualProjectBuildingCommand? virtualCommand = null;
+            if (ShouldBuild)
+            {
+                if (string.Equals("true", launchSettings?.DotNetRunMessages, StringComparison.OrdinalIgnoreCase))
+                {
+                    Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
+                }
+
+                EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out virtualCommand);
+            }
+            else
+            {
+                if (NoCache)
+                {
+                    throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
+                }
+
+                if (EntryPointFileFullPath is not null)
+                {
+                    Debug.Assert(!ReadCodeFromStdin);
+                    virtualCommand = CreateVirtualCommand();
+                    virtualCommand.MarkArtifactsFolderUsed();
+
+                    var cacheEntry = virtualCommand.GetPreviousCacheEntry();
+                    projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : virtualCommand.CreateProjectInstance;
+                    cachedRunProperties = cacheEntry?.Run;
+                }
+            }
+
+            ICommand targetCommand = GetTargetCommand(projectFactory, cachedRunProperties, logger);
             ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
 
             // Env variables specified on command line override those specified in launch profile:
@@ -211,6 +213,10 @@ public class RunCommand
                 string.Format(CliCommandStrings.RunCommandSpecifiedFileIsNotAValidProject, ProjectFileFullPath),
                 e);
         }
+        finally
+        {
+            logger?.ReallyShutdown();
+        }
     }
 
     /// <summary>
@@ -218,8 +224,9 @@ public class RunCommand
     /// Uses a single RunCommandSelector instance for both operations, re-evaluating
     /// the project after framework selection to get the correct device list.
     /// </summary>
+    /// <param name="logger">Optional logger for MSBuild operations (device selection)</param>
     /// <returns>True if we can continue, false if we should exit</returns>
-    private bool TrySelectTargetFrameworkAndDeviceIfNeeded()
+    private bool TrySelectTargetFrameworkAndDeviceIfNeeded(FacadeLogger? logger)
     {
         Debug.Assert(ProjectFileFullPath is not null);
 
@@ -246,7 +253,6 @@ public class RunCommand
         }
 
         // Create a single selector for both framework and device selection
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run-devices");
         using var selector = new RunCommandSelector(ProjectFileFullPath, globalProperties, Interactive, logger);
         
         // Step 1: Select target framework if needed
@@ -570,7 +576,7 @@ public class RunCommand
         }
     }
 
-    internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
+    internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
     {
         if (cachedRunProperties != null)
         {
@@ -590,11 +596,9 @@ public class RunCommand
         }
 
         Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
         InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
-        logger?.ReallyShutdown();
         var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
         var command = CreateCommandFromRunProperties(runProperties);
         return command;
