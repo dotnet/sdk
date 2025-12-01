@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Localization" />
+    <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
     <PackageReference Include="System.Resources.Extensions" />
   </ItemGroup>
 </Project>

@@ -248,6 +248,28 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [WindowsOnlyFact]
+        public async Task GivenANonSignedSdkItShouldNotPrintMessageInQuiet()
+        {
+            BufferedReporter bufferedReporter = new BufferedReporter();
+            NuGetPackageDownloader nuGetPackageDownloader = new NuGetPackageDownloader(_tempDirectory, null,
+                new MockFirstPartyNuGetPackageSigningVerifier(),
+                _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true), verbosityOptions: VerbosityOptions.quiet);
+            await nuGetPackageDownloader.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+
+            // download 2 packages should only print the message once
+            string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+
+            bufferedReporter.Lines.Should().BeEmpty();
+            File.Exists(packagePath).Should().BeTrue();
+        }
+
+        [WindowsOnlyFact]
         public async Task WhenCalledWithNotSignedPackageItShouldThrowWithCommandOutput()
         {
             string commandOutput = "COMMAND OUTPUT";

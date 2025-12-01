@@ -22,6 +22,11 @@
         <target state="translated">Zaktualizuj obciążenia na podstawie określonego pliku definicji wycofywania.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">Nie zainstalowano żadnych obciążeń dla tego pasma funkcji. Aby zaktualizować obciążenia zainstalowane przy użyciu wcześniejszych wersji zestawu SDK, dołącz opcję --from-previous-sdk.</target>
@@ -40,6 +45,11 @@
       <trans-unit id="UpdateFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
         <target state="translated">Aktualizacja obciążenia „{0}” nie powiodła się z następującego powodu:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Aktualizacja do pliku wycofywania nie jest zgodna z zestawami obciążeń. Zainstaluj i zaktualizuj będzie teraz używać luźnych manifestów. Aby zaktualizować do określonej wersji obciążenia, użyj opcji --version.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">

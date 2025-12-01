@@ -115,10 +115,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new DirectoryPath(Path.GetDirectoryName(_nugetConfigUnderTestRoot))),
+                        new DirectoryPath(Path.GetDirectoryName(_nugetConfigUnderTestRoot)),
+                        false),
                     new ToolManifestPackage(_packageIdB, _packageVersionB,
                         new[] {_toolCommandNameB},
-                        new DirectoryPath(Path.GetDirectoryName(_nugetConfigUnderSubDir)))
+                        new DirectoryPath(Path.GetDirectoryName(_nugetConfigUnderSubDir)),
+                        false)
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
