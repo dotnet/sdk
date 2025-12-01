@@ -8,7 +8,7 @@ In order to build and test the .NET Core Command-line Interface (CLI), you need 
 ### For Windows
 
 1. git (available from the [Git Website](http://www.git-scm.com/)) on the PATH.
-2. MSVC, C++ CMake Tools, and C++ ATL through the Visual Studio Installer via the "Desktop development with C++" workload.
+2. Visual Studio "Desktop development with C++" workload with all defaults (see [Native AOT prerequisites](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=windows%2Cnet8#prerequisites)).
 
 ### For Linux
 
