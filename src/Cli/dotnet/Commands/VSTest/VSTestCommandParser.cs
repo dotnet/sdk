@@ -8,11 +8,18 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.VSTest;
 
-internal static partial class VSTestCommandParser
+internal static class VSTestCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-vstest";
 
-    public static Command CreateCommandDefinition()
+    private static readonly Command Command = ConstructCommand();
+
+    public static Command GetCommand()
+    {
+        return Command;
+    }
+
+    private static Command ConstructCommand()
     {
         Command command = new("vstest")
         {
@@ -23,6 +30,8 @@ internal static partial class VSTestCommandParser
         command.Options.Add(CommonOptions.TestPlatformOption);
         command.Options.Add(CommonOptions.TestFrameworkOption);
         command.Options.Add(CommonOptions.TestLoggerOption);
+
+        command.SetAction(VSTestCommand.Run);
 
         return command;
     }

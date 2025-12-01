@@ -15,7 +15,7 @@ public static class PackageAddCommandDefinition
 {
     public const string Name = "add";
 
-    public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
+    public static readonly Option<bool> PrereleaseOption = new Option<bool>("--prerelease")
     {
         Description = CliStrings.CommandPrereleaseOptionDescription,
         Arity = ArgumentArity.Zero

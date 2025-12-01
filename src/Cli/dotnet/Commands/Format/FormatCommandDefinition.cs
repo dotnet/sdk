@@ -15,8 +15,7 @@ internal static class FormatCommandDefinition
     public static readonly string DocsLink = "https://aka.ms/dotnet-format";
 
     public static Command Create()
-    {
-        var formatCommand = new Command(Name)
+        => new(Name)
         {
             Arguments = { Arguments },
             DocsLink = DocsLink,

@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Parse(["dotnet", "add", "reference", "my.csproj"]);
 
-            result.GetValue<string>(PackageCommandParser.ProjectOrFileArgument)
+            result.GetValue<string>(PackageCommandDefinition.ProjectOrFileArgument)
                 .Should()
                 .BeEquivalentTo(
                     PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
