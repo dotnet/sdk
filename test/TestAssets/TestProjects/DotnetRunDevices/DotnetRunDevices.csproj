@@ -11,13 +11,13 @@
       <Devices Include="single-device" Description="Single Device" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
     </ItemGroup>
     <!-- Otherwise return multiple devices based on target framework -->
-    <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' != 'true' and '$(TargetFramework)' == 'net9.0'">
+    <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' != 'true' and '$(TargetFramework)' != 'net9.0'">
       <Devices Include="test-device-1" Description="Test Device 1" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
       <Devices Include="test-device-2" Description="Test Device 2" Type="Device" Status="Online" />
     </ItemGroup>
-    <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' != 'true' and '$(TargetFramework)' != 'net9.0'">
-      <Devices Include="test-device-current-1" Description="Test Device Current 1" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
-      <Devices Include="test-device-current-2" Description="Test Device Current 2" Type="Simulator" Status="Booted" />
+    <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' != 'true' and '$(TargetFramework)' == 'net9.0'">
+      <Devices Include="test-device-downlevel-1" Description="Test Device Downlevel 1" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
+      <Devices Include="test-device-downlevel-2" Description="Test Device Downlevel 2" Type="Simulator" Status="Booted" />
     </ItemGroup>
   </Target>
 
