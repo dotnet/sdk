@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
@@ -26,28 +25,19 @@ namespace Microsoft.DotNet.Watch
 
         internal static LaunchSettingsProfile? ReadLaunchProfile(string projectPath, string? launchProfileName, ILogger logger)
         {
-            var projectDirectory = Path.GetDirectoryName(projectPath);
-            Debug.Assert(projectDirectory != null);
-
-            var launchSettingsPath = GetPropertiesLaunchSettingsPath(projectDirectory, "Properties");
-            bool hasLaunchSettings = File.Exists(launchSettingsPath);
-
-            var projectNameWithoutExtension = Path.GetFileNameWithoutExtension(projectPath);
-            var runJsonPath = GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
-            bool hasRunJson = File.Exists(runJsonPath);
-
-            if (hasLaunchSettings)
+            var launchSettingsPath = LaunchSettingsLocator.TryFindLaunchSettings(projectPath, launchProfileName, (message, isError) =>
             {
-                if (hasRunJson)
+                if (isError)
                 {
-                    logger.LogWarning("Warning: Settings from '{JsonPath}' are not used because '{LaunchSettingsPath}' has precedence.", runJsonPath, launchSettingsPath);
+                    logger.LogError(message);
                 }
-            }
-            else if (hasRunJson)
-            {
-                launchSettingsPath = runJsonPath;
-            }
-            else
+                else
+                {
+                    logger.LogWarning(message);
+                }
+            });
+
+            if (launchSettingsPath == null)
             {
                 return null;
             }
@@ -95,12 +85,6 @@ namespace Microsoft.DotNet.Watch
             namedProfile.LaunchProfileName = launchProfileName;
             return namedProfile;
         }
-
-        private static string GetPropertiesLaunchSettingsPath(string directoryPath, string propertiesDirectoryName)
-            => Path.Combine(directoryPath, propertiesDirectoryName, "launchSettings.json");
-
-        private static string GetFlatLaunchSettingsPath(string directoryPath, string projectNameWithoutExtension)
-            => Path.Join(directoryPath, $"{projectNameWithoutExtension}.run.json");
 
         private static LaunchSettingsProfile? ReadDefaultLaunchProfile(LaunchSettingsJson? launchSettings, ILogger logger)
         {
