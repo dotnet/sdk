@@ -25,7 +25,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         var result = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
-            .Execute("--framework", "net8.0", "--no-interactive");
+            .Execute("--framework", "net9.0", "--no-interactive");
 
         result.Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
@@ -39,7 +39,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
 
         var result = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
-            .Execute("--framework", "net8.0", "--list-devices");
+            .Execute("--framework", "net9.0", "--list-devices");
 
         result.Should().Pass()
             .And.HaveStdOutContaining("test-device-1")
@@ -48,19 +48,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     }
 
     [Theory]
-    [InlineData("net8.0", "test-device-1")]
-    [InlineData("net8.0", "test-device-2")]
-    [InlineData("net9.0", "test-device-3")]
-    [InlineData("net9.0", "test-device-4")]
+    [InlineData("net9.0", "test-device-1")]
+    [InlineData("net9.0", "test-device-2")]
     public void ItRunsDifferentDevicesInMultiTargetedApp(string targetFramework, string deviceId)
     {
-        // Skip net8.0 and net9.0 on arm64 as they may not be available on CI
-        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64 &&
-            (targetFramework == "net8.0" || targetFramework == "net9.0"))
-        {
-            return;
-        }
-
         var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
@@ -80,7 +71,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         var result = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
-            .Execute("--framework", "net8.0", "--no-interactive");
+            .Execute("--framework", "net9.0", "--no-interactive");
 
         result.Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
@@ -115,7 +106,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         var result = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
-            .Execute("--framework", "net8.0", "-p:Device=", "--no-interactive");
+            .Execute("--framework", "net9.0", "-p:Device=", "--no-interactive");
 
         result.Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
@@ -130,7 +121,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         string deviceId = "test-device-1";
         new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
-            .Execute("--framework", "net8.0", $"-p:Device={deviceId}")
+            .Execute("--framework", "net9.0", $"-p:Device={deviceId}")
             .Should().Pass()
             .And.HaveStdOutContaining($"Device: {deviceId}");
     }
@@ -144,7 +135,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         string deviceId = "test-device-2";
         new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
-            .Execute("--framework", "net8.0", "--device", deviceId)
+            .Execute("--framework", "net9.0", "--device", deviceId)
             .Should().Pass()
             .And.HaveStdOutContaining($"Device: {deviceId}")
             .And.HaveStdOutContaining("RuntimeIdentifier:");
@@ -161,7 +152,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         var command = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path);
 
-        var args = new List<string> { "--framework", "net8.0", "-p:SingleDevice=true" };
+        var args = new List<string> { "--framework", "net9.0", "-p:SingleDevice=true" };
         if (!interactive)
         {
             args.Add("--no-interactive");
@@ -186,7 +177,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
 
         var result = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
-            .Execute("--framework", "net8.0", "--list-devices", "/bl:device-list.binlog");
+            .Execute("--framework", "net9.0", "--list-devices", "/bl:device-list.binlog");
 
         result.Should().Pass()
             .And.HaveStdOutContaining("test-device-1");
@@ -204,7 +195,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         var result = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
             .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
-            .Execute("--framework", "net8.0", "-p:NoDevices=true", "--no-interactive");
+            .Execute("--framework", "net9.0", "-p:NoDevices=true", "--no-interactive");
 
         result.Should().Fail()
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandNoDevicesAvailable);
@@ -221,7 +212,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
 
         string deviceSelectionBinlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run-devices.binlog");
 
-        var args = new List<string> { "--framework", "net8.0" };
+        var args = new List<string> { "--framework", "net9.0" };
         if (deviceArgPrefix == "--device")
         {
             args.Add("--device");
