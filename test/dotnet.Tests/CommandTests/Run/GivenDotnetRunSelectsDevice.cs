@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.DotNet.Cli.Commands;
+using StructuredLoggerTarget = Microsoft.Build.Logging.StructuredLogger.Target;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -15,6 +17,18 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     }
 
     string ExpectedRid => OperatingSystem.IsWindows() ? "win" : (OperatingSystem.IsMacOS() ? "osx" : "linux");
+
+    /// <summary>
+    /// Helper method to assert conditions about MSBuild target execution in a binlog file
+    /// </summary>
+    private static void AssertTargetInBinlog(string binlogPath, string targetName, Action<IEnumerable<StructuredLoggerTarget>> assertion)
+    {
+        var build = BinaryLog.ReadBuild(binlogPath);
+        var targets = build.FindChildrenRecursive<StructuredLoggerTarget>(
+            target => target.Name == targetName);
+        
+        assertion(targets);
+    }
 
     [Fact]
     public void ItFailsInNonInteractiveMode_WhenMultipleDevicesAvailableAndNoneSpecified()
@@ -149,10 +163,12 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
+        string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
+
         var command = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path);
 
-        var args = new List<string> { "--framework", ToolsetInfo.CurrentTargetFramework, "-p:SingleDevice=true" };
+        var args = new List<string> { "--framework", ToolsetInfo.CurrentTargetFramework, "-p:SingleDevice=true", "-bl" };
         if (!interactive)
         {
             args.Add("--no-interactive");
@@ -164,6 +180,11 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         result.Should().Pass()
             .And.HaveStdOutContaining("Device: single-device")
             .And.HaveStdOutContaining($"RuntimeIdentifier: {ExpectedRid}");
+
+        // Verify the binlog file was created and the ComputeAvailableDevices target ran
+        File.Exists(binlogPath).Should().BeTrue("the binlog file should be created");
+        AssertTargetInBinlog(binlogPath, "ComputeAvailableDevices", 
+            targets => targets.Should().NotBeEmpty("ComputeAvailableDevices target should run to discover available devices"));
     }
 
     [Fact]
@@ -182,8 +203,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         result.Should().Pass()
             .And.HaveStdOutContaining("test-device-1");
 
-        // Verify the binlog file was created with the unified logger
+        // Verify the binlog file was created with the unified logger and the ComputeAvailableDevices target ran
         File.Exists(binlogPath).Should().BeTrue("the binlog file should be created when /bl: argument is provided");
+        AssertTargetInBinlog(binlogPath, "ComputeAvailableDevices", 
+            targets => targets.Should().NotBeEmpty("ComputeAvailableDevices target should have been executed"));
     }
 
     [Fact]
@@ -210,7 +233,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
-        string deviceSelectionBinlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run-devices.binlog");
+        string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
 
         var args = new List<string> { "--framework", ToolsetInfo.CurrentTargetFramework };
         if (deviceArgPrefix == "--device")
@@ -232,9 +255,10 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         result.Should().Pass()
             .And.HaveStdOutContaining($"Device: {deviceId}");
 
-        // Verify the device selection binlog file was NOT created
-        File.Exists(deviceSelectionBinlogPath).Should().BeFalse(
-            "the device selection binlog should not be created when device is pre-specified because ComputeAvailableDevices target should not run");
+        // Verify the binlog file was created and the ComputeAvailableDevices target did not run
+        File.Exists(binlogPath).Should().BeTrue("the binlog file should be created");
+        AssertTargetInBinlog(binlogPath, "ComputeAvailableDevices", 
+            targets => targets.Should().BeEmpty("ComputeAvailableDevices target should not have been executed when device is pre-specified"));
     }
 
     [Fact]
