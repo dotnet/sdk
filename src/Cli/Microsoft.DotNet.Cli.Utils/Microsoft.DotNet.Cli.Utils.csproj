@@ -42,10 +42,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="NuGet.Packaging" />
-    <!-- nuget moved all type from NuGet.Packaging.Core to NuGet.Packaging and added type forwarding in 5.0.0-rtm.5821.
-        However to allow old msbuild tasks like Arcade tasks still function without recompile, NuGet.Packaging.Core need
-        to be referenced explicitly so the NuGet.Packaging.Core.dll will be part of the SDK and be available for type forwarding -->
-    <PackageReference Include="NuGet.Packaging.Core" />
     <PackageReference Include="NuGet.Frameworks" />
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" PrivateAssets="all" />

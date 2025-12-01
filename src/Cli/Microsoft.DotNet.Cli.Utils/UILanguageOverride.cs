@@ -26,7 +26,11 @@ namespace Microsoft.DotNet.Cli.Utils
 
             if (
                 !CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("en", StringComparison.InvariantCultureIgnoreCase) &&
+#if NET
+                OperatingSystemSupportsUtf8()
+#else
                 CurrentPlatformIsWindowsAndOfficiallySupportsUTF8Encoding()
+#endif
                 )
             {
                 Console.OutputEncoding = DefaultMultilingualEncoding;
@@ -34,6 +38,17 @@ namespace Microsoft.DotNet.Cli.Utils
                 // If the InputEncoding is not set, the encoding will work in CMD but not in Powershell, as the raw CHCP page won't be changed.
             }
         }
+
+#if NET
+        public static bool OperatingSystemSupportsUtf8()
+        {
+            return !OperatingSystem.IsIOS() &&
+                !OperatingSystem.IsAndroid() &&
+                !OperatingSystem.IsTvOS() &&
+                !OperatingSystem.IsBrowser() &&
+                (!OperatingSystem.IsWindows() || OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18363));
+        }
+#endif
 
         private static void ApplyOverrideToCurrentProcess(CultureInfo language)
         {

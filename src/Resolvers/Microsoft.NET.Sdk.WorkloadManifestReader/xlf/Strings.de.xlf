@@ -77,6 +77,11 @@
         <target state="translated">Die Workloadmanifestabhängigkeit „{0}“, Version „{1}“, ist niedriger als die Version „{2}“, die vom Manifest „{3}“ [{4}] benötigt wird.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManifestDoesNotExist">
+        <source>No manifest with ID {0} exists.</source>
+        <target state="translated">Es ist kein Manifest mit der ID {0} vorhanden.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManifestFromInstallStateNotFound">
         <source>Workload manifest {0}, which was specified in {1}, was not found. Running "dotnet workload repair" may resolve this.</source>
         <target state="translated">Das Arbeitsauslastungsmanifest {0}, das in {1} angegeben wurde, wurde nicht gefunden. Die Ausführung von "dotnet workload repair" kann dies beheben.</target>

@@ -94,7 +94,8 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         private IEnumerable<CimInstance> GetSnapshotInstances()
         {
-            var snapshots = _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_VirtualSystemSettingData WHERE VirtualSystemIdentifier='{VMInstance.CimInstanceProperties["Name"].Value}' And IsSaved='True'").ToList();
+            //  Note: Not querying for IsSaved='True' here, as this value was false for snapshots in at least one case
+            var snapshots = _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_VirtualSystemSettingData WHERE VirtualSystemIdentifier='{VMInstance.CimInstanceProperties["Name"].Value}'").ToList();
 
             return snapshots;
         }
