@@ -18,7 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Resolvers\Microsoft.DotNet.NativeWrapper\**\*.cs" LinkBase="Microsoft.DotNet.NativeWrapper" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
-    <ProjectReference Include="..\..\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
   </ItemGroup>
 </Project>
