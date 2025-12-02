@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Dotnet.Installation.Internal;
 using FluentAssertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
