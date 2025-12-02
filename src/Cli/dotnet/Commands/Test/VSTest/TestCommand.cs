@@ -233,13 +233,13 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestSessionCorrelationId={testSessionCorrelationId}");
         }
 
-        bool noRestore = result.GetValue(TestCommandDefinition.NoRestoreOption) || result.GetValue(TestCommandDefinition.NoBuildOption);
+        bool noRestore = result.GetValue(CommonOptions.NoRestoreOption) || result.GetValue(VSTestOptions.NoBuildOption);
 
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
             CommonOptions.PropertiesOption,
             CommonOptions.RestorePropertiesOption,
-            TestCommandDefinition.VsTestTargetOption,
+            VSTestOptions.VsTestTargetOption,
             TestCommandDefinition.VerbosityOption,
             CommonOptions.NoLogoOption())
             .CloneWithNoLogo(true);
@@ -288,9 +288,9 @@ public class TestCommand(
 
         var artifactsPostProcessArgs = new List<string> { "--artifactsProcessingMode-postprocess", $"--testSessionCorrelationId:{testSessionCorrelationId}" };
 
-        if (parseResult.GetResult(TestCommandDefinition.DiagOption) is not null)
+        if (parseResult.GetResult(VSTestOptions.DiagOption) is not null)
         {
-            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(TestCommandDefinition.DiagOption)}");
+            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(VSTestOptions.DiagOption)}");
         }
 
         try
