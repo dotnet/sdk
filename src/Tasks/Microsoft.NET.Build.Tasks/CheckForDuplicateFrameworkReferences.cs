@@ -8,6 +8,9 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks
 {
     public class CheckForDuplicateFrameworkReferences : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         [Required]
         public ITaskItem[] FrameworkReferences { get; set; }
@@ -21,6 +24,9 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] ItemsToRemove { get; set; }
 
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         protected override void ExecuteCore()
         {

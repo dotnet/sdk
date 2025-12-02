@@ -8,6 +8,9 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks
 {
     public sealed class WriteAppConfigWithSupportedRuntime : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         /// <summary>
         /// Path to the app.config source file.
@@ -28,14 +31,24 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public ITaskItem OutputAppConfigFile { get; set; }
 
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         protected override void ExecuteCore()
         {
             XDocument doc = LoadAppConfig(AppConfigFile);
 
             AddSupportedRuntimeToAppconfig(doc, TargetFrameworkIdentifier, TargetFrameworkVersion, TargetFrameworkProfile);
 
+#if NET10_0_OR_GREATER
+            string outputAppConfigFilePath = TaskEnvironment.GetAbsolutePath(OutputAppConfigFile.ItemSpec);
+#else
+            string outputAppConfigFilePath = OutputAppConfigFile.ItemSpec;
+#endif
+
             var fileStream = new FileStream(
-                OutputAppConfigFile.ItemSpec,
+                outputAppConfigFilePath,
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.Read);
@@ -156,7 +169,12 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                document = XDocument.Load(appConfigItem.ItemSpec);
+#if NET10_0_OR_GREATER
+                string appConfigPath = TaskEnvironment.GetAbsolutePath(appConfigItem.ItemSpec);
+#else
+                string appConfigPath = appConfigItem.ItemSpec;
+#endif
+                document = XDocument.Load(appConfigPath);
                 if (document.Root == null || document.Root.Name != "configuration")
                 {
                     throw new BuildErrorException(Strings.AppConfigRequiresRootConfiguration);

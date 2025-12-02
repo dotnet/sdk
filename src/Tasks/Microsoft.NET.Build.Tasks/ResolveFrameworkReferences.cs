@@ -9,6 +9,9 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.NET.Build.Tasks
 {
     public class ResolveFrameworkReferences : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         public ITaskItem[] FrameworkReferences { get; set; } = Array.Empty<ITaskItem>();
 
@@ -18,6 +21,10 @@ namespace Microsoft.NET.Build.Tasks
 
         [Output]
         public ITaskItem[] ResolvedFrameworkReferences { get; set; }
+
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         protected override void ExecuteCore()
         {

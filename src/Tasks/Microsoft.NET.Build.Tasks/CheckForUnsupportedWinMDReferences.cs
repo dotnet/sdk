@@ -12,10 +12,17 @@ namespace Microsoft.NET.Build.Tasks
     //  This task is used for projects targeting .NET 5 and higher and generates errors if there are any
     //  unsupported WinMD references.
     public class CheckForUnsupportedWinMDReferences : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         public string TargetFrameworkMoniker { get; set; }
 
         public ITaskItem[] ReferencePaths { get; set; } = Array.Empty<ITaskItem>();
+
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         protected override void ExecuteCore()
         {
@@ -76,8 +83,13 @@ namespace Microsoft.NET.Build.Tasks
 
         }
 
-        private static bool AssemblyHasWindowsRuntimeReference(string sourcePath)
+        private bool AssemblyHasWindowsRuntimeReference(string sourcePath)
         {
+#if NET10_0_OR_GREATER
+            sourcePath = TaskEnvironment.GetAbsolutePath(sourcePath);
+#else
+            sourcePath = Path.GetFullPath(sourcePath);
+#endif
             using (var assemblyStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
             {
                 try

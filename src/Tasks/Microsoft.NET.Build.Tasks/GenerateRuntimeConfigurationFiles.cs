@@ -18,6 +18,9 @@ namespace Microsoft.NET.Build.Tasks
     /// for a project.
     /// </summary>
     public class GenerateRuntimeConfigurationFiles : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         public string AssetsFilePath { get; set; }
 
@@ -74,8 +77,27 @@ namespace Microsoft.NET.Build.Tasks
             get { return _filesWritten.ToArray(); }
         }
 
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         protected override void ExecuteCore()
         {
+#if NET10_0_OR_GREATER
+            if (!string.IsNullOrEmpty(AssetsFilePath))
+            {
+                AssetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
+            }
+            RuntimeConfigPath = TaskEnvironment.GetAbsolutePath(RuntimeConfigPath);
+            if (!string.IsNullOrEmpty(RuntimeConfigDevPath))
+            {
+                RuntimeConfigDevPath = TaskEnvironment.GetAbsolutePath(RuntimeConfigDevPath);
+            }
+            if (!string.IsNullOrEmpty(UserRuntimeConfig))
+            {
+                UserRuntimeConfig = TaskEnvironment.GetAbsolutePath(UserRuntimeConfig);
+            }
+#endif
             if (!WriteAdditionalProbingPathsToMainConfig)
             {
                 // If we want to generate the runtimeconfig.dev.json file

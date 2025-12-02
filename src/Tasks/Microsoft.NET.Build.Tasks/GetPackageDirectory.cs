@@ -12,6 +12,9 @@ namespace Microsoft.NET.Build.Tasks
     //  Locates the root NuGet package directory for each of the input items that has PackageName and PackageVersion,
     //  but not PackageDirectory metadata specified
     public class GetPackageDirectory : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         public ITaskItem[] Items { get; set; } = Array.Empty<ITaskItem>();
 
@@ -21,6 +24,10 @@ namespace Microsoft.NET.Build.Tasks
 
         [Output]
         public ITaskItem[] Output { get; set; }
+
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         protected override void ExecuteCore()
         {

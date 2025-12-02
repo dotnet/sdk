@@ -13,6 +13,9 @@ using NuGet.Versioning;
 namespace Microsoft.NET.Build.Tasks
 {
     public class GetPackagesToPrune : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         [Required]
         public string TargetFrameworkIdentifier { get; set; }
@@ -37,6 +40,9 @@ namespace Microsoft.NET.Build.Tasks
 
         [Output]
         public ITaskItem[] PackagesToPrune { get; set; }
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+#endif
 
         class CacheKey
         {

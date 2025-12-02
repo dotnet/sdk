@@ -12,6 +12,9 @@ namespace Microsoft.Build.Tasks
     /// Task that logs telemetry.
     /// </summary>
     public sealed class AllowEmptyTelemetry : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         public AllowEmptyTelemetry()
         {
@@ -26,6 +29,10 @@ namespace Microsoft.Build.Tasks
         public ITaskItem[] EventData { get; set; }
 
         [Required] public string EventName { get; set; }
+
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         protected override void ExecuteCore()
         {

@@ -9,6 +9,9 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.NET.Build.Tasks
 {
     public sealed class SetGeneratedAppConfigMetadata : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         /// <summary>
         /// Path to the app.config source file.
@@ -32,6 +35,10 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         [Output]
         public ITaskItem OutputAppConfigFileWithMetadata { get; set; }
+
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         protected override void ExecuteCore()
         {

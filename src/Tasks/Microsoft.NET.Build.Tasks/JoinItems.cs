@@ -9,6 +9,9 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.NET.Build.Tasks
 {
     public class JoinItems : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         [Required]
         public ITaskItem[] Left { get; set; }
@@ -37,6 +40,10 @@ namespace Microsoft.NET.Build.Tasks
         {
             get; private set;
         }
+
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         protected override void ExecuteCore()
         {

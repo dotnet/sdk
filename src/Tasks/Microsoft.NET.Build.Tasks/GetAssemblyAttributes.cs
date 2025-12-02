@@ -10,6 +10,9 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.NET.Build.Tasks
 {
     public class GetAssemblyAttributes : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         [Required]
         public string PathToTemplateFile { get; set; }
@@ -17,10 +20,19 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] AssemblyAttributes { get; private set; }
 
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         protected override void ExecuteCore()
         {
-            var fileVersionInfo = FileVersionInfo.GetVersionInfo(Path.GetFullPath(PathToTemplateFile));
-            Version assemblyVersion = FileUtilities.TryGetAssemblyVersion(Path.GetFullPath(PathToTemplateFile));
+#if NET10_0_OR_GREATER
+            string fullPath = TaskEnvironment.GetAbsolutePath(PathToTemplateFile);
+#else
+            string fullPath = Path.GetFullPath(PathToTemplateFile);
+#endif
+            var fileVersionInfo = FileVersionInfo.GetVersionInfo(fullPath);
+            Version assemblyVersion = FileUtilities.TryGetAssemblyVersion(fullPath);
 
             AssemblyAttributes = FormatToAttributes(AssemblyAttributesNameByFieldInFileVersionInfo: new Dictionary<string, string>
             {

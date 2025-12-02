@@ -10,6 +10,9 @@ using Microsoft.DotNet.Cli;
 namespace Microsoft.NET.Build.Tasks
 {
     public class ValidateExecutableReferences : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         public bool SelfContained { get; set; }
 
@@ -18,6 +21,10 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] ReferencedProjects { get; set; } = Array.Empty<ITaskItem>();
 
         public bool UseAttributeForTargetFrameworkInfoPropertyNames { get; set; }
+
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         protected override void ExecuteCore()
         {

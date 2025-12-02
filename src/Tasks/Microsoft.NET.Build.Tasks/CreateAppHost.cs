@@ -14,6 +14,9 @@ namespace Microsoft.NET.Build.Tasks
     /// This embeds the application DLL path into the apphost and performs additional customizations as requested.
     /// </summary>
     public class CreateAppHost : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         /// <summary>
         /// The number of additional retries to attempt for creating the apphost.
@@ -54,8 +57,17 @@ namespace Microsoft.NET.Build.Tasks
 
         public string AppRelativeDotNet { get; set; } = null;
 
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         protected override void ExecuteCore()
         {
+#if NET10_0_OR_GREATER
+            AppHostSourcePath = TaskEnvironment.GetAbsolutePath(AppHostSourcePath);
+            AppHostDestinationPath = TaskEnvironment.GetAbsolutePath(AppHostDestinationPath);
+            IntermediateAssembly = TaskEnvironment.GetAbsolutePath(IntermediateAssembly);
+#endif
             try
             {
                 var isGUI = WindowsGraphicalUserInterface;

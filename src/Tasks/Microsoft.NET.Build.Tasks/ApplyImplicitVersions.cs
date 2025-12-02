@@ -8,6 +8,9 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks
 {
     public sealed class ApplyImplicitVersions : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
         public string TargetFrameworkVersion { get; set; }
 
@@ -25,6 +28,10 @@ namespace Microsoft.NET.Build.Tasks
         //  in an item where they'll be logged in a target that runs before build, but not before restore.
         [Output]
         public string[] SdkBuildWarnings { get; private set; }
+
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
 
         protected override void ExecuteCore()
         {
