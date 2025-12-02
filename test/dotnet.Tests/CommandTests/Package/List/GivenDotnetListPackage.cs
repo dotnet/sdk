@@ -454,5 +454,33 @@ class Program
                 .Should()
                 .Pass();
         }
+
+        [Fact]
+        public void ItAcceptsBinlogArgument()
+        {
+            var testAssetName = "TestAppSimple";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(testAssetName)
+                .WithSource();
+
+            var projectDirectory = testAsset.Path;
+            var binlogPath = Path.Combine(projectDirectory, "restore.binlog");
+
+            // Ensure no binlog exists initially
+            if (File.Exists(binlogPath))
+            {
+                File.Delete(binlogPath);
+            }
+
+            // Run list package with binlog argument (restore will run and create binlog)
+            new ListPackageCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("-bl:" + binlogPath)
+                .Should()
+                .Pass();
+
+            // Verify binlog was created
+            File.Exists(binlogPath).Should().BeTrue("binlog file should be created during restore");
+        }
     }
 }

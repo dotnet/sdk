@@ -62,6 +62,15 @@ internal class PackageListCommand(
 
         args.Add($"-interactive:{interactive.ToString().ToLower()}");
 
+        // Forward any binlog arguments from the command line to the restore phase
+        foreach (var token in _parseResult.UnmatchedTokens)
+        {
+            if (LoggerUtility.IsBinLogArgument(token))
+            {
+                args.Add(token);
+            }
+        }
+
         MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(rawMSBuildArgs: args);
 
         int exitCode = 0;
