@@ -537,8 +537,7 @@ public class RunCommand
             var artifactsPath = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointFileFullPath);
             var exePath = Path.Join(artifactsPath, "bin", "debug", Path.GetFileNameWithoutExtension(entryPointFileFullPath) + FileNameSuffixes.CurrentPlatform.Exe);
             var commandSpec = new CommandSpec(path: exePath, args: ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args));
-            var command = CommandFactoryUsingResolver.Create(commandSpec)
-                .WorkingDirectory(Path.GetDirectoryName(entryPointFileFullPath));
+            var command = CommandFactoryUsingResolver.Create(commandSpec);
 
             SetRootVariableName(
                 command,
