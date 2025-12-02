@@ -105,7 +105,12 @@ internal static class PackageListCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("list", CliCommandStrings.PackageListAppFullName);
+        Command command = new("list", CliCommandStrings.PackageListAppFullName)
+        {
+            // Allow unmatched tokens to support binlog arguments (e.g., --bl, -bl:output.binlog)
+            // that are forwarded to the MSBuild restore phase
+            TreatUnmatchedTokensAsErrors = false
+        };
 
         command.Options.Add(VerbosityOption);
         command.Options.Add(OutdatedOption);
