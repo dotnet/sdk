@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -76,7 +78,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
         string muxerName = DotnetupUtilities.GetDotnetExeName();
         string muxerTargetPath = Path.Combine(targetDir, muxerName);
-        var muxerConfig = new MuxerHandlingConfig(muxerName, muxerTargetPath);
+        var muxerConfig = new MuxerHandlingConfig(muxerName, muxerTargetPath, archivePath, targetDir);
 
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -93,8 +95,10 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     /// <param name="newMuxerPath">Path to the new muxer file (extracted to temp location)</param>
     /// <param name="existingMuxerPath">Path to the existing muxer file</param>
+    /// <param name="archivePath">Path to the archive being installed (used to determine runtime version on non-Windows)</param>
+    /// <param name="installRoot">Install root directory (used to find existing runtime versions on non-Windows)</param>
     /// <returns>True if the new muxer should replace the existing one</returns>
-    internal static bool ShouldUpdateMuxer(string newMuxerPath, string existingMuxerPath)
+    internal static bool ShouldUpdateMuxer(string newMuxerPath, string existingMuxerPath, string? archivePath = null, string? installRoot = null)
     {
         // If there's no existing muxer, we should install the new one
         if (!File.Exists(existingMuxerPath))
@@ -103,8 +107,8 @@ internal class DotnetArchiveExtractor : IDisposable
         }
 
         // Compare file versions
-        Version? existingVersion = GetMuxerFileVersion(existingMuxerPath);
-        Version? newVersion = GetMuxerFileVersion(newMuxerPath);
+        Version? existingVersion = GetMuxerFileVersion(existingMuxerPath, installRoot);
+        Version? newVersion = GetMuxerFileVersion(newMuxerPath, archivePath);
 
         // If we can't determine the new version, don't update (safety measure)
         if (newVersion is null)
@@ -124,8 +128,11 @@ internal class DotnetArchiveExtractor : IDisposable
 
     /// <summary>
     /// Gets the file version of a muxer executable.
+    /// On Windows, uses FileVersionInfo. On other platforms, uses runtime version from archive/install root.
     /// </summary>
-    internal static Version? GetMuxerFileVersion(string muxerPath)
+    /// <param name="muxerPath">Path to the muxer executable</param>
+    /// <param name="contextPath">Archive path or install root path for fallback version detection</param>
+    internal static Version? GetMuxerFileVersion(string muxerPath, string? contextPath = null)
     {
         if (!File.Exists(muxerPath))
         {
@@ -150,7 +157,203 @@ internal class DotnetArchiveExtractor : IDisposable
                     versionInfo.FilePrivatePart);
             }
 
+            // On non-Windows, FileVersionInfo doesn't work with ELF binaries
+            // Fall back to using runtime version from context path
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && contextPath != null)
+            {
+                return GetRuntimeVersionFromContext(contextPath);
+            }
+
             return null;
+        }
+        catch
+        {
+            // On error, try fallback for non-Windows
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && contextPath != null)
+            {
+                return GetRuntimeVersionFromContext(contextPath);
+            }
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Gets the runtime version from a context path (either an archive or install root directory).
+    /// </summary>
+    private static Version? GetRuntimeVersionFromContext(string contextPath)
+    {
+        if (string.IsNullOrEmpty(contextPath))
+        {
+            return null;
+        }
+
+        // Check if it's an archive file
+        if (File.Exists(contextPath))
+        {
+            return GetRuntimeVersionFromArchive(contextPath);
+        }
+
+        // Otherwise treat it as an install root directory
+        if (Directory.Exists(contextPath))
+        {
+            return GetLatestRuntimeVersionFromInstallRoot(contextPath);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the runtime version from an archive by examining the runtime directories.
+    /// </summary>
+    private static Version? GetRuntimeVersionFromArchive(string archivePath)
+    {
+        try
+        {
+            if (archivePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            {
+                using var zip = ZipFile.OpenRead(archivePath);
+                return GetRuntimeVersionFromZipEntries(zip.Entries);
+            }
+            else if (archivePath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) || archivePath.EndsWith(".tar", StringComparison.OrdinalIgnoreCase))
+            {
+                string tarPath = archivePath;
+                bool needsCleanup = false;
+
+                if (archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
+                {
+                    tarPath = DecompressTarGzToTemp(archivePath);
+                    needsCleanup = true;
+                }
+
+                try
+                {
+                    using var tarStream = File.OpenRead(tarPath);
+                    using var tarReader = new TarReader(tarStream);
+                    return GetRuntimeVersionFromTarEntries(tarReader);
+                }
+                finally
+                {
+                    if (needsCleanup && File.Exists(tarPath))
+                    {
+                        File.Delete(tarPath);
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // If we can't read the archive, return null
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Decompresses a .tar.gz file to a temporary location.
+    /// </summary>
+    private static string DecompressTarGzToTemp(string gzPath)
+    {
+        string tempPath = Path.Combine(Path.GetTempPath(), $"dotnet-{Guid.NewGuid()}.tar");
+        using FileStream originalFileStream = File.OpenRead(gzPath);
+        using FileStream decompressedFileStream = File.Create(tempPath);
+        using GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress);
+        decompressionStream.CopyTo(decompressedFileStream);
+        return tempPath;
+    }
+
+    /// <summary>
+    /// Gets the runtime version from zip archive entries.
+    /// </summary>
+    private static Version? GetRuntimeVersionFromZipEntries(IEnumerable<ZipArchiveEntry> entries)
+    {
+        Version? highestVersion = null;
+
+        foreach (var entry in entries)
+        {
+            // Look for shared/Microsoft.NETCore.App/{version}/ pattern
+            if (entry.FullName.Contains("shared/Microsoft.NETCore.App/", StringComparison.OrdinalIgnoreCase) ||
+                entry.FullName.Contains("shared\\Microsoft.NETCore.App\\", StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = entry.FullName.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+                var appIndex = Array.FindIndex(parts, p => p.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase));
+
+                if (appIndex >= 0 && appIndex + 1 < parts.Length)
+                {
+                    var versionString = parts[appIndex + 1];
+                    if (Version.TryParse(versionString, out Version? version))
+                    {
+                        if (highestVersion == null || version > highestVersion)
+                        {
+                            highestVersion = version;
+                        }
+                    }
+                }
+            }
+        }
+
+        return highestVersion;
+    }
+
+    /// <summary>
+    /// Gets the runtime version from tar archive entries.
+    /// </summary>
+    private static Version? GetRuntimeVersionFromTarEntries(TarReader tarReader)
+    {
+        Version? highestVersion = null;
+        TarEntry? entry;
+
+        while ((entry = tarReader.GetNextEntry()) is not null)
+        {
+            // Look for shared/Microsoft.NETCore.App/{version}/ pattern
+            if (entry.Name.Contains("shared/Microsoft.NETCore.App/", StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = entry.Name.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                var appIndex = Array.FindIndex(parts, p => p.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase));
+
+                if (appIndex >= 0 && appIndex + 1 < parts.Length)
+                {
+                    var versionString = parts[appIndex + 1];
+                    if (Version.TryParse(versionString, out Version? version))
+                    {
+                        if (highestVersion == null || version > highestVersion)
+                        {
+                            highestVersion = version;
+                        }
+                    }
+                }
+            }
+        }
+
+        return highestVersion;
+    }
+
+    /// <summary>
+    /// Gets the latest runtime version from the install root by checking the shared/Microsoft.NETCore.App directory.
+    /// </summary>
+    private static Version? GetLatestRuntimeVersionFromInstallRoot(string installRoot)
+    {
+        try
+        {
+            var runtimePath = Path.Combine(installRoot, "shared", "Microsoft.NETCore.App");
+            if (!Directory.Exists(runtimePath))
+            {
+                return null;
+            }
+
+            Version? highestVersion = null;
+            foreach (var dir in Directory.GetDirectories(runtimePath))
+            {
+                var versionString = Path.GetFileName(dir);
+                if (Version.TryParse(versionString, out Version? version))
+                {
+                    if (highestVersion == null || version > highestVersion)
+                    {
+                        highestVersion = version;
+                    }
+                }
+            }
+
+            return highestVersion;
         }
         catch
         {
@@ -265,7 +468,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
         if (string.Equals(fileName, muxerConfig.MuxerName, StringComparison.OrdinalIgnoreCase))
         {
-            HandleMuxerFromTar(entry, muxerConfig.MuxerTargetPath);
+            HandleMuxerFromTar(entry, muxerConfig);
         }
         else
         {
@@ -280,7 +483,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Handles the muxer from a tar entry, comparing file versions to determine if update is needed.
     /// </summary>
-    private void HandleMuxerFromTar(TarEntry entry, string muxerTargetPath)
+    private void HandleMuxerFromTar(TarEntry entry, MuxerHandlingConfig muxerConfig)
     {
         // Create a temporary file for the muxer first
         var tempMuxerPath = Path.Combine(Directory.CreateTempSubdirectory().FullName, entry.Name);
@@ -292,10 +495,10 @@ internal class DotnetArchiveExtractor : IDisposable
         try
         {
             // Check if we should update the muxer based on file version comparison
-            if (ShouldUpdateMuxer(tempMuxerPath, muxerTargetPath))
+            if (ShouldUpdateMuxer(tempMuxerPath, muxerConfig.MuxerTargetPath, muxerConfig.ArchivePath, muxerConfig.InstallRoot))
             {
                 // Replace the muxer using the utility that handles locking
-                DotnetupUtilities.ForceReplaceFile(tempMuxerPath, muxerTargetPath);
+                DotnetupUtilities.ForceReplaceFile(tempMuxerPath, muxerConfig.MuxerTargetPath);
             }
         }
         finally
@@ -354,7 +557,7 @@ internal class DotnetArchiveExtractor : IDisposable
         // Special handling for dotnet executable (muxer)
         if (string.Equals(fileName, muxerConfig.MuxerName, StringComparison.OrdinalIgnoreCase))
         {
-            HandleMuxerFromZip(entry, muxerConfig.MuxerTargetPath);
+            HandleMuxerFromZip(entry, muxerConfig);
         }
         else
         {
@@ -368,7 +571,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Handles the muxer from a zip entry, comparing file versions to determine if update is needed.
     /// </summary>
-    private void HandleMuxerFromZip(ZipArchiveEntry entry, string muxerTargetPath)
+    private void HandleMuxerFromZip(ZipArchiveEntry entry, MuxerHandlingConfig muxerConfig)
     {
         var tempMuxerPath = Path.Combine(Directory.CreateTempSubdirectory().FullName, entry.Name);
         entry.ExtractToFile(tempMuxerPath, overwrite: true);
@@ -376,10 +579,10 @@ internal class DotnetArchiveExtractor : IDisposable
         try
         {
             // Check if we should update the muxer based on file version comparison
-            if (ShouldUpdateMuxer(tempMuxerPath, muxerTargetPath))
+            if (ShouldUpdateMuxer(tempMuxerPath, muxerConfig.MuxerTargetPath, muxerConfig.ArchivePath, muxerConfig.InstallRoot))
             {
                 // Replace the muxer using the utility that handles locking
-                DotnetupUtilities.ForceReplaceFile(tempMuxerPath, muxerTargetPath);
+                DotnetupUtilities.ForceReplaceFile(tempMuxerPath, muxerConfig.MuxerTargetPath);
             }
         }
         finally
@@ -398,11 +601,15 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         public string MuxerName { get; }
         public string MuxerTargetPath { get; }
+        public string ArchivePath { get; }
+        public string InstallRoot { get; }
 
-        public MuxerHandlingConfig(string muxerName, string muxerTargetPath)
+        public MuxerHandlingConfig(string muxerName, string muxerTargetPath, string archivePath, string installRoot)
         {
             MuxerName = muxerName;
             MuxerTargetPath = muxerTargetPath;
+            ArchivePath = archivePath;
+            InstallRoot = installRoot;
         }
     }
 

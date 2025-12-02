@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -66,13 +65,6 @@ public class LibraryTests
     [Fact]
     public void MuxerIsUpdated_WhenInstallingNewerSdk()
     {
-        // Skip test on non-Windows as FileVersionInfo doesn't work with ELF binaries
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Log.WriteLine("Skipping test on non-Windows platform (FileVersionInfo doesn't work with ELF binaries)");
-            return;
-        }
-
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
         var installer = InstallerFactory.CreateInstaller(new NullProgressTarget());
 
@@ -89,7 +81,7 @@ public class LibraryTests
             sdk9Version!);
 
         var muxerPath = Path.Combine(testEnv.InstallPath, DotnetupUtilities.GetDotnetExeName());
-        var versionAfterSdk9 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath);
+        var versionAfterSdk9 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath, testEnv.InstallPath);
         Log.WriteLine($"Muxer version after SDK 9.0 install: {versionAfterSdk9}");
         versionAfterSdk9.Should().NotBeNull("muxer should exist after SDK 9.0 installation");
 
@@ -101,7 +93,7 @@ public class LibraryTests
             InstallComponent.SDK,
             sdk10Version!);
 
-        var versionAfterSdk10 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath);
+        var versionAfterSdk10 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath, testEnv.InstallPath);
         Log.WriteLine($"Muxer version after SDK 10.0 install: {versionAfterSdk10}");
         versionAfterSdk10.Should().NotBeNull("muxer should exist after SDK 10.0 installation");
 
@@ -112,13 +104,6 @@ public class LibraryTests
     [Fact]
     public void MuxerIsNotDowngraded_WhenInstallingOlderSdk()
     {
-        // Skip test on non-Windows as FileVersionInfo doesn't work with ELF binaries
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Log.WriteLine("Skipping test on non-Windows platform (FileVersionInfo doesn't work with ELF binaries)");
-            return;
-        }
-
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
         var installer = InstallerFactory.CreateInstaller(new NullProgressTarget());
 
@@ -135,7 +120,7 @@ public class LibraryTests
             sdk10Version!);
 
         var muxerPath = Path.Combine(testEnv.InstallPath, DotnetupUtilities.GetDotnetExeName());
-        var versionAfterSdk10 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath);
+        var versionAfterSdk10 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath, testEnv.InstallPath);
         Log.WriteLine($"Muxer version after SDK 10.0 install: {versionAfterSdk10}");
         versionAfterSdk10.Should().NotBeNull("muxer should exist after SDK 10.0 installation");
 
@@ -147,7 +132,7 @@ public class LibraryTests
             InstallComponent.SDK,
             sdk9Version!);
 
-        var versionAfterSdk9 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath);
+        var versionAfterSdk9 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath, testEnv.InstallPath);
         Log.WriteLine($"Muxer version after SDK 9.0 install: {versionAfterSdk9}");
         versionAfterSdk9.Should().NotBeNull("muxer should exist after SDK 9.0 installation");
 
