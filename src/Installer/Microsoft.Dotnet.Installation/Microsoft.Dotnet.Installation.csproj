@@ -13,7 +13,7 @@
     <PackageId>Microsoft.Dotnet.Installation</PackageId>
     <IsShipping>false</IsShipping>
     <Title>.NET Installation Library</Title>
-    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionPrefix>0.1.1</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
   </PropertyGroup>
 
