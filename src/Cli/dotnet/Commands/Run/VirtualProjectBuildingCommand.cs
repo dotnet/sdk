@@ -1412,9 +1412,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             Debug.Assert(targetFilePath is not null);
 
+            // Only add explicit Compile item when EnableDefaultCompileItems is not true.
+            // When EnableDefaultCompileItems=true, the file is included via default MSBuild globbing.
+            // See https://github.com/dotnet/sdk/issues/51785
             writer.WriteLine($"""
                   <ItemGroup>
-                    <Compile Include="{EscapeValue(targetFilePath)}" />
+                    <Compile Condition="'$(EnableDefaultCompileItems)' != 'true'" Include="{EscapeValue(targetFilePath)}" />
                   </ItemGroup>
 
                 """);
