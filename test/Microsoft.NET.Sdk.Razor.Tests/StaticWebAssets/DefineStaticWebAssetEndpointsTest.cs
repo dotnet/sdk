@@ -1,11 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
+using System.Diagnostics;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using Moq;
+using NuGet.Packaging.Core;
+using System.Net;
+using System.Globalization;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
 
@@ -26,11 +31,17 @@ public class DefineStaticWebAssetEndpointsTest
         var task = new DefineStaticWebAssetEndpoints
         {
             BuildEngine = buildEngine.Object,
-            CandidateAssets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", sourceType, "candidate.js", "All", "All")],
+            CandidateAssets = [CreateCandidate(
+                Path.Combine("wwwroot", "candidate.js"),
+                "MyPackage",
+                sourceType,
+                "candidate.js",
+                "All",
+                "All",
+                fileLength: 10,
+                lastWriteTime: lastWrite)],
             ExistingEndpoints = [],
             ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
-            TestLengthResolver = asset => asset.EndsWith("candidate.js") ? 10 : throw new InvalidOperationException(),
-            TestLastWriteResolver = asset => asset.EndsWith("candidate.js") ? lastWrite : throw new InvalidOperationException(),
         };
 
         // Act
@@ -92,11 +103,18 @@ public class DefineStaticWebAssetEndpointsTest
         var task = new DefineStaticWebAssetEndpoints
         {
             BuildEngine = buildEngine.Object,
-            CandidateAssets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate#[.{fingerprint}]?.js", "All", "All", fingerprint: "1234asdf", integrity: "asdf1234")],
+            CandidateAssets = [CreateCandidate(
+                Path.Combine("wwwroot", "candidate.js"),
+                "MyPackage",
+                "Discovered",
+                "candidate#[.{fingerprint}]?.js",
+                "All",
+                "All",
+                fingerprint: "1234asdf",
+                integrity: "asdf1234",
+                lastWriteTime: lastWrite)],
             ExistingEndpoints = [],
             ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
-            TestLengthResolver = asset => asset.EndsWith("candidate.js") ? 10 : throw new InvalidOperationException(),
-            TestLastWriteResolver = asset => asset.EndsWith("candidate.js") ? lastWrite : throw new InvalidOperationException(),
         };
 
         // Act
@@ -212,11 +230,18 @@ public class DefineStaticWebAssetEndpointsTest
         var task = new DefineStaticWebAssetEndpoints
         {
             BuildEngine = buildEngine.Object,
-            CandidateAssets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate#[.{fingerprint=yolo}]?.js", "All", "All", fingerprint: "1234asdf", integrity: "asdf1234")],
+            CandidateAssets = [CreateCandidate(
+                Path.Combine("wwwroot", "candidate.js"),
+                "MyPackage",
+                "Discovered",
+                "candidate#[.{fingerprint=yolo}]?.js",
+                "All",
+                "All",
+                fingerprint: "1234asdf",
+                integrity: "asdf1234",
+                lastWriteTime : lastWrite)],
             ExistingEndpoints = [],
             ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
-            TestLengthResolver = asset => asset.EndsWith("candidate.js") ? 10 : throw new InvalidOperationException(),
-            TestLastWriteResolver = asset => asset.EndsWith("candidate.js") ? lastWrite : throw new InvalidOperationException(),
         };
 
         // Act
@@ -355,15 +380,20 @@ public class DefineStaticWebAssetEndpointsTest
         var task = new DefineStaticWebAssetEndpoints
         {
             BuildEngine = buildEngine.Object,
-            CandidateAssets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All")],
+            CandidateAssets = [CreateCandidate(
+                Path.Combine("wwwroot", "candidate.js"),
+                "MyPackage",
+                "Discovered",
+                "candidate.js",
+                "All",
+                "All",
+                lastWriteTime : lastWrite)],
             ExistingEndpoints = [
                 CreateCandidateEndpoint(
                     "candidate.js",
                     Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")),
                     headers)],
             ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
-            TestLengthResolver = asset => asset.EndsWith("candidate.js") ? 10 : throw new InvalidOperationException(),
-            TestLastWriteResolver = asset => asset.EndsWith("candidate.js") ? lastWrite : throw new InvalidOperationException(),
         };
 
         // Act
@@ -373,6 +403,110 @@ public class DefineStaticWebAssetEndpointsTest
         result.Should().Be(true);
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
         endpoints.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ResolvesContentType_ForCompressedAssets()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [
+            new TaskItem(
+                Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed", "rdfmaxp4ta-43emfwee4b.gz"),
+                new Dictionary<string, string>
+                {
+                    ["RelativePath"] = "_framework/dotnet.timezones.blat.gz",
+                    ["BasePath"] = "/",
+                    ["AssetMode"] = "All",
+                    ["AssetKind"] = "Build",
+                    ["SourceId"] = "BlazorWasmHosted60.Client",
+                    ["CopyToOutputDirectory"] = "PreserveNewest",
+                    ["Fingerprint"] = "3ji2l2o1xa",
+                    ["RelatedAsset"] = Path.Combine(AppContext.BaseDirectory, "Client", "bin", "Debug", "net6.0", "wwwroot", "_framework", "dotnet.timezones.blat"),
+                    ["ContentRoot"] = Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed"),
+                    ["SourceType"] = "Computed",
+                    ["Integrity"] = "TwfyUDDMyF5dWUB2oRhrZaTk8sEa9o8ezAlKdxypsX4=",
+                    ["AssetRole"] = "Alternative",
+                    ["AssetTraitValue"] = "gzip",
+                    ["AssetTraitName"] = "Content-Encoding",
+                    ["OriginalItemSpec"] = Path.Combine("D:", "work", "dotnet-sdk", "artifacts", "tmp", "Release", "Publish60Host---0200F604", "Client", "bin", "Debug", "net6.0", "wwwroot", "_framework", "dotnet.timezones.blat"),
+                    ["CopyToPublishDirectory"] = "Never",
+                    ["FileLength"] = "10",
+                    ["LastWriteTime"] = lastWrite.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                })
+            ],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [],
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
+        endpoints.Length.Should().Be(1);
+        var endpoint = endpoints[0];
+        endpoint.ResponseHeaders.Should().ContainSingle(h => h.Name == "Content-Type" && h.Value == "application/x-gzip");
+    }
+
+    [Fact]
+    public void ResolvesContentType_ForFingerprintedAssets()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [
+                new TaskItem(
+                    Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed", "rdfmaxp4ta-43emfwee4b.gz"),
+                    new Dictionary<string, string>
+                    {
+                        ["RelativePath"] = "RazorPackageLibraryDirectDependency.iiugt355ct.bundle.scp.css.gz",
+                        ["BasePath"] = "_content/RazorPackageLibraryDirectDependency",
+                        ["AssetMode"] = "Reference",
+                        ["AssetKind"] = "All",
+                        ["SourceId"] = "RazorPackageLibraryDirectDependency",
+                        ["CopyToOutputDirectory"] = "Never",
+                        ["Fingerprint"] = "olx7vzw7zz",
+                        ["RelatedAsset"] = Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed", "RazorPackageLibraryDirectDependency.iiugt355ct.bundle.scp.css"),
+                        ["ContentRoot"] = Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed"),
+                        ["SourceType"] = "Package",
+                        ["Integrity"] = "JK/W3g5zqZGxAM7zbv/pJ3ngpJheT01SXQ+NofKgQcc=",
+                        ["AssetRole"] = "Alternative",
+                        ["AssetTraitValue"] = "gzip",
+                        ["AssetTraitName"] = "Content-Encoding",
+                        ["OriginalItemSpec"] = Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed", "RazorPackageLibraryDirectDependency.iiugt355ct.bundle.scp.css"),
+                        ["CopyToPublishDirectory"] = "PreserveNewest",
+                        ["FileLength"] = "10",
+                        ["LastWriteTime"] = lastWrite.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                    })
+            ],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [],
+        };
+
+        // Act
+        var result = task.Execute();
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
+        endpoints.Length.Should().Be(1);
+        var endpoint = endpoints[0];
+        endpoint.ResponseHeaders.Should().ContainSingle(h => h.Name == "Content-Type" && h.Value == "text/css");
     }
 
     [Fact]
@@ -409,13 +543,13 @@ public class DefineStaticWebAssetEndpointsTest
                         ["Integrity"] = "asdf1234",
                         ["Fingerprint"] = "C5tBAdQX",
                         ["OriginalItemSpec"] = assetIdentity,
-                        ["CopyToPublishDirectory"] = "PreserveNewest"
+                        ["CopyToPublishDirectory"] = "PreserveNewest",
+                        ["FileLength"] = "10",
+                        ["LastWriteTime"] = lastWrite.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
                     }),
                 ],
             ExistingEndpoints = [],
             ContentTypeMappings = [CreateContentMapping("**/*.css", "text/css")],
-            TestLengthResolver = asset => asset.EndsWith(".css") ? 10 : throw new InvalidOperationException(),
-            TestLastWriteResolver = asset => asset.EndsWith(".css") ? lastWrite : throw new InvalidOperationException(),
         };
 
         // Act
@@ -489,8 +623,11 @@ public class DefineStaticWebAssetEndpointsTest
         string assetKind,
         string assetMode,
         string fingerprint = null,
-        string integrity = null)
+        string integrity = null,
+        long fileLength = 10,
+        DateTimeOffset? lastWriteTime = null)
     {
+        lastWriteTime ??= DateTimeOffset.UtcNow;
         var result = new StaticWebAsset()
         {
             Identity = Path.GetFullPath(itemSpec),
@@ -511,6 +648,8 @@ public class DefineStaticWebAssetEndpointsTest
             // Add these to avoid accessing the disk to compute them
             Integrity = integrity ?? "integrity",
             Fingerprint = fingerprint ?? "fingerprint",
+            FileLength = fileLength,
+            LastWriteTime = lastWriteTime.Value,
         };
 
         result.ApplyDefaults();

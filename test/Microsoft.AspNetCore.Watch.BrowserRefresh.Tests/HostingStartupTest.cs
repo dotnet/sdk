@@ -45,18 +45,32 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         [Fact]
         public async Task PostBlazorHotReloadMiddlewareWorks()
         {
-            // Arrange
             var requestDelegate = GetRequestDelegate();
             var context = new DefaultHttpContext();
             context.Request.Path = "/_framework/blazor-hotreload";
             context.Request.Method = "POST";
-            context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("[]"));
 
-            // Act
+            var updateJson = """
+                {"id":0,"deltas":[{"moduleId":"9BBB9BBD-48F0-4EB2-B7A3-956CFC220CC4","metadataDelta":"","ilDelta":"","pdbDelta":"","updatedTypes":[1,2,3]}]}
+                """;
+
+            context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(updateJson));
+
             await requestDelegate(context);
 
-            // Assert
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            context.Request.Path = "/_framework/blazor-hotreload";
+            context.Request.Method = "GET";
+
+            var body = new MemoryStream();
+            context.Response.Body = body;
+
+            await requestDelegate(context);
+
+            var bodyJson = Encoding.UTF8.GetString(body.ToArray());
+
+            Assert.Equal($"[{updateJson}]", bodyJson);
         }
 
         [Fact]
