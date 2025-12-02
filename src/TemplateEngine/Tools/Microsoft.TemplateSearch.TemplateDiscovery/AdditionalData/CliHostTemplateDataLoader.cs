@@ -67,7 +67,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
                 Console.Error.WriteLine(
                     "Failed to load dotnet CLI host data for template {0} from {1}. The host data will be ignored.",
                     templateInfo.ShortNameList?[0] ?? templateInfo.Name,
-                    file?.GetDisplayPath() ?? templateInfo.MountPointUri + templateInfo.HostConfigPlace);
+                    file?.GetDisplayPath() ?? (templateInfo.MountPointUri + templateInfo.HostConfigPlace));
                 Console.Error.WriteLine("Details: {0}", e);
             }
             finally
