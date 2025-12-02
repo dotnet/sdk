@@ -9,6 +9,8 @@ namespace Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 
 internal static class BuildServerShutdownCommandDefinition
 {
+    public const string Name = "shutdown";
+
     public static readonly Option<bool> MSBuildOption = new("--msbuild")
     {
         Description = CliCommandStrings.MSBuildOptionDescription,
@@ -29,7 +31,7 @@ internal static class BuildServerShutdownCommandDefinition
 
     public static Command Create()
     {
-        Command command = new("shutdown", CliCommandStrings.BuildServerShutdownCommandDescription);
+        Command command = new(Name, CliCommandStrings.BuildServerShutdownCommandDescription);
 
         command.Options.Add(MSBuildOption);
         command.Options.Add(VbcsOption);

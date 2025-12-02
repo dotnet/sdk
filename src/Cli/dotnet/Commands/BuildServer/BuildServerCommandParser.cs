@@ -19,7 +19,7 @@ internal static class BuildServerCommandParser
     private static Command SetAction(Command command)
     {
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-        command.Subcommands.Single(c => c.Name == BuildServerCommandDefinition.Name).SetAction((parseResult) => new BuildServerShutdownCommand(parseResult).Execute());
+        command.Subcommands.Single(c => c.Name == BuildServerShutdownCommandDefinition.Name).SetAction((parseResult) => new BuildServerShutdownCommand(parseResult).Execute());
         return command;
     }
 }
