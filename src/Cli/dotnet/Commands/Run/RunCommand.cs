@@ -144,7 +144,10 @@ public class RunCommand
         }
 
         // Create a single logger for all MSBuild operations (device selection + build/run)
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
+        // File-based runs (.cs files) don't support device selection and should use the existing logger behavior
+        FacadeLogger? logger = ProjectFileFullPath is not null 
+            ? LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run")
+            : null;
         try
         {
             // Pre-run evaluation: Handle target framework and device selection for project-based scenarios
