@@ -20,6 +20,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -327,7 +328,13 @@ public class RunCommand
             return true;
         }
 
-        var launchSettingsPath = ReadCodeFromStdin ? null : TryFindLaunchSettings(projectOrEntryPointFilePath: ProjectFileFullPath ?? EntryPointFileFullPath!, launchProfile: LaunchProfile);
+        var launchSettingsPath = ReadCodeFromStdin
+            ? null
+            : LaunchSettingsLocator.TryFindLaunchSettings(
+                projectOrEntryPointFilePath: ProjectFileFullPath ?? EntryPointFileFullPath!,
+                launchProfile: LaunchProfile,
+                static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message));
+
         if (launchSettingsPath is null)
         {
             return true;
@@ -360,57 +367,6 @@ public class RunCommand
         }
 
         return true;
-
-        static string? TryFindLaunchSettings(string projectOrEntryPointFilePath, string? launchProfile)
-        {
-            var buildPathContainer = Path.GetDirectoryName(projectOrEntryPointFilePath)!;
-
-            string propsDirectory;
-
-            // VB.NET projects store the launch settings file in the
-            // "My Project" directory instead of a "Properties" directory.
-            // TODO: use the `AppDesignerFolder` MSBuild property instead, which captures this logic already
-            if (string.Equals(Path.GetExtension(projectOrEntryPointFilePath), ".vbproj", StringComparison.OrdinalIgnoreCase))
-            {
-                propsDirectory = "My Project";
-            }
-            else
-            {
-                propsDirectory = "Properties";
-            }
-
-            string launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(buildPathContainer, propsDirectory);
-            bool hasLaunchSetttings = File.Exists(launchSettingsPath);
-
-            string appName = Path.GetFileNameWithoutExtension(projectOrEntryPointFilePath);
-            string runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(buildPathContainer, appName);
-            bool hasRunJson = File.Exists(runJsonPath);
-
-            if (hasLaunchSetttings)
-            {
-                if (hasRunJson)
-                {
-                    Reporter.Output.WriteLine(string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath).Yellow());
-                }
-
-                return launchSettingsPath;
-            }
-
-            if (hasRunJson)
-            {
-                return runJsonPath;
-            }
-
-            if (!string.IsNullOrEmpty(launchProfile))
-            {
-                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchProfile, $"""
-                    {launchSettingsPath}
-                    {runJsonPath}
-                    """).Bold().Red());
-            }
-
-            return null;
-        }
     }
 
     private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? virtualCommand)
