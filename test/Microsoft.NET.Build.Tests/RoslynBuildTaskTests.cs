@@ -59,7 +59,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testAsset = CreateProject(useSharedCompilation, language, AddCompilersToolsetPackage);
         var buildCommand = BuildAndRunUsingMSBuild(testAsset);
-        VerifyCompiler(buildCommand, DotNetExecCompilerFileName(language), useSharedCompilation, toolsetPackage: true);
+        VerifyCompiler(buildCommand, AppHostCompilerFileName(language), useSharedCompilation, toolsetPackage: true);
     }
 
     [Theory, CombinatorialData]

@@ -4,6 +4,7 @@
 #nullable disable
 
 using NuGet.Frameworks;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
@@ -12,7 +13,11 @@ namespace Microsoft.DotNet.Build.Tasks
     /// the latest patches of different major versions are built entirely separately, and we want to have tests
     /// on downlevel versions but we can't depend on the latest patches being available in test environments.
     ///
-    /// So we copy the version numbers from stage 0 for those downlevel versions.    
+    /// So we copy the version numbers from stage 0 for those downlevel versions.
+    ///
+    /// However, if the stage 2 version is a preview version, we don't overwrite it.  This is because in this case
+    /// the version of .NET hasn't been released yet, so we want to use the later preview version.  The preview
+    /// versions should all be on the same NuGet feeds anyway.
     /// </summary>
     public sealed class OverrideAndCreateBundledNETCoreAppPackageVersion : Task
     {
@@ -70,7 +75,26 @@ namespace Microsoft.DotNet.Build.Tasks
                             var v0 = item0.Attribute(updateAttr)?.Value;
                             var v2 = item2.Attribute(updateAttr)?.Value;
                             if (v0 != null && v2 != v0)
-                                item2.SetAttributeValue(updateAttr, v0);
+                            {
+                                bool isPreview = false;
+                                if (!string.IsNullOrEmpty(v2))
+                                {
+                                    try
+                                    {
+                                        var nugetVersion = NuGetVersion.Parse(v2);
+                                        isPreview = nugetVersion.IsPrerelease;
+                                    }
+                                    catch
+                                    {
+                                        // If parsing fails, treat as non-preview
+                                        isPreview = false;
+                                    }
+                                }
+                                if (!isPreview)
+                                {
+                                    item2.SetAttributeValue(updateAttr, v0);
+                                }
+                            }
                         }
                         // Log if other metadata differs
                         foreach (var attr in item2.Attributes())
