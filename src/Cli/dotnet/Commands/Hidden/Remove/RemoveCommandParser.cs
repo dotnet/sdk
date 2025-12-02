@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Package;
+using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Reference;
 using Microsoft.DotNet.Cli.Commands.Package.Remove;
 using Microsoft.DotNet.Cli.Commands.Reference.Remove;
 using Microsoft.DotNet.Cli.Extensions;
@@ -23,7 +24,7 @@ internal static class RemoveCommandParser
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
         command.Subcommands.Single(c => c.Name == RemovePackageCommandDefinition.Name).SetAction((parseResult) => new PackageRemoveCommand(parseResult).Execute());
-        command.Subcommands.Single(c => c.Name == RemovePackageCommandDefinition.Name).SetAction((parseResult) => new ReferenceRemoveCommand(parseResult).Execute());
+        command.Subcommands.Single(c => c.Name == RemoveReferenceCommandDefinition.Name).SetAction((parseResult) => new ReferenceRemoveCommand(parseResult).Execute());
 
         return command;
     }

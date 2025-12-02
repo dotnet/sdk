@@ -11,11 +11,13 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 
 internal static class RemoveCommandDefinition
 {
+    public const string Name = "remove";
+
     public static readonly string DocsLink = "https://aka.ms/dotnet-remove";
 
     public static Command Create()
     {
-        var command = new Command("remove", CliCommandStrings.NetRemoveCommand)
+        var command = new Command(Name, CliCommandStrings.NetRemoveCommand)
         {
             Hidden = true,
             DocsLink = DocsLink
