@@ -13,7 +13,6 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -220,30 +219,6 @@ internal static class FileLevelDirectiveHelpers
                 return false;
             }
         }
-    }
-
-    /// <summary>
-    /// If there are any <c>#:project</c> <paramref name="directives"/>, expands <c>$()</c> in them and ensures they point to project files (not directories).
-    /// </summary>
-    public static ImmutableArray<CSharpDirective> EvaluateDirectives(
-        ProjectInstance? project,
-        ImmutableArray<CSharpDirective> directives,
-        SourceFile sourceFile,
-        ErrorReporter errorReporter)
-    {
-        if (directives.OfType<CSharpDirective.Project>().Any())
-        {
-            return directives
-                .Select(d => d is CSharpDirective.Project p
-                    ? (project is null
-                        ? p
-                        : p.WithName(project.ExpandString(p.Name), CSharpDirective.Project.NameKind.Expanded))
-                       .EnsureProjectFilePath(sourceFile, errorReporter)
-                    : d)
-                .ToImmutableArray();
-        }
-
-        return directives;
     }
 }
 
@@ -499,7 +474,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         public string OriginalName { get; init; }
 
         /// <summary>
-        /// This is the <see cref="OriginalName"/> with MSBuild <c>$(..)</c> vars expanded (via <see cref="ProjectInstance.ExpandString"/>).
+        /// This is the <see cref="OriginalName"/> with MSBuild <c>$(..)</c> vars expanded.
         /// </summary>
         public string? ExpandedName { get; init; }
 
