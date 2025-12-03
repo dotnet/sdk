@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
+#if NETFRAMEWORK
 using System.Net.Http;
+#endif
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine;
 using Microsoft.TemplateEngine.Abstractions;
@@ -50,7 +46,7 @@ namespace Microsoft.TemplateSearch.Common.Providers
         }
 
         /// <summary>
-        /// Test constructor allowing override search cache uris.
+        /// Test constructor allowing override search cache Uris.
         /// </summary>
         internal NuGetMetadataSearchProvider(
             ITemplateSearchProviderFactory factory,
@@ -178,40 +174,40 @@ namespace Microsoft.TemplateSearch.Common.Providers
                         AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                         CheckCertificateRevocationList = true
                     };
-                    using (HttpClient client = new(handler))
+                    using HttpClient client = new(handler);
+                    string etagFileLocation = searchMetadataFileLocation + ETagFileSuffix;
+                    if (_environmentSettings.Host.FileSystem.FileExists(etagFileLocation))
                     {
-                        string etagFileLocation = searchMetadataFileLocation + ETagFileSuffix;
-                        if (_environmentSettings.Host.FileSystem.FileExists(etagFileLocation))
+                        string etagValue = _environmentSettings.Host.FileSystem.ReadAllText(etagFileLocation);
+                        client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, $"\"{etagValue}\"");
+                    }
+                    client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, string.Empty);
+                    using HttpResponseMessage response = await client.GetAsync(searchMetadataUri, cancellationToken).ConfigureAwait(false);
+                    _logger.LogDebug(GetResponseDetails(response));
+                    if (response.IsSuccessStatusCode)
+                    {
+#if NET
+                        string resultText = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+#else
+                        string resultText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+#endif
+                        _environmentSettings.Host.FileSystem.WriteAllText(searchMetadataFileLocation, resultText);
+                        _logger.LogDebug("Search cache file was successfully downloaded to {0}.", searchMetadataFileLocation);
+                        if (response.Headers.TryGetValues(ETagHeaderName, out IEnumerable<string> etagValues))
                         {
-                            string etagValue = _environmentSettings.Host.FileSystem.ReadAllText(etagFileLocation);
-                            client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, $"\"{etagValue}\"");
-                        }
-                        client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, string.Empty);
-                        using (HttpResponseMessage response = await client.GetAsync(searchMetadataUri, cancellationToken).ConfigureAwait(false))
-                        {
-                            _logger.LogDebug(GetResponseDetails(response));
-                            if (response.IsSuccessStatusCode)
+                            if (etagValues.Count() == 1)
                             {
-                                string resultText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                                _environmentSettings.Host.FileSystem.WriteAllText(searchMetadataFileLocation, resultText);
-                                _logger.LogDebug("Search cache file was successfully downloaded to {0}.", searchMetadataFileLocation);
-                                if (response.Headers.TryGetValues(ETagHeaderName, out IEnumerable<string> etagValues))
-                                {
-                                    if (etagValues.Count() == 1)
-                                    {
-                                        _environmentSettings.Host.FileSystem.WriteAllText(etagFileLocation, etagValues.First());
-                                    }
-                                    _logger.LogDebug("ETag {0} was written to {1}.", etagValues.First(), etagFileLocation);
-                                }
-                                return;
+                                _environmentSettings.Host.FileSystem.WriteAllText(etagFileLocation, etagValues.First());
                             }
-                            else if (response.StatusCode == HttpStatusCode.NotModified)
-                            {
-                                _logger.LogDebug("Search cache file is not modified, updating the last modified date to now.");
-                                _environmentSettings.Host.FileSystem.SetLastWriteTimeUtc(searchMetadataFileLocation, DateTime.UtcNow);
-                                return;
-                            }
+                            _logger.LogDebug("ETag {0} was written to {1}.", etagValues.First(), etagFileLocation);
                         }
+                        return;
+                    }
+                    else if (response.StatusCode == HttpStatusCode.NotModified)
+                    {
+                        _logger.LogDebug("Search cache file is not modified, updating the last modified date to now.");
+                        _environmentSettings.Host.FileSystem.SetLastWriteTimeUtc(searchMetadataFileLocation, DateTime.UtcNow);
+                        return;
                     }
                 }
                 catch (TaskCanceledException)

@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Core;
@@ -28,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             : base(parent, values)
             => ParameterSetData = parameterSetData;
 
-        public IParameterSetData ParameterSetData { get; private set; }
+        public IParameterSetData ParameterSetData { get; }
 
         public static ParameterBasedVariableCollection Root(IParameterSetData parameterSetData) =>
             new(null, new Dictionary<string, object>(), parameterSetData);

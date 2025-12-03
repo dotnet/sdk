@@ -112,9 +112,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CanReadNonChoiceSymbol(
             string fileContent,
             bool errorExpected,
-            string expectedSymbolNamesStr,
-            string expectedSymbolDisplayNamesStr,
-            string expectedDescriptionsStr)
+            string? expectedSymbolNamesStr,
+            string? expectedSymbolDisplayNamesStr,
+            string? expectedDescriptionsStr)
         {
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
@@ -132,15 +132,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                     Assert.Empty(localizationModel.ParameterSymbols);
                     return;
                 }
-                string[] expectedSymbolNames = expectedSymbolNamesStr.Split('|');
-                string[] expectedDisplayNames = expectedSymbolDisplayNamesStr.Split('|');
-                string[] expectedDescriptions = expectedDescriptionsStr.Split('|');
+                string[]? expectedSymbolNames = expectedSymbolNamesStr?.Split('|');
+                string[]? expectedDisplayNames = expectedSymbolDisplayNamesStr?.Split('|');
+                string[]? expectedDescriptions = expectedDescriptionsStr?.Split('|');
 
-                for (int i = 0; i < expectedSymbolNames.Length; i++)
+                for (int i = 0; i < expectedSymbolNames?.Length; i++)
                 {
                     Assert.True(localizationModel.ParameterSymbols.ContainsKey(expectedSymbolNames[i]));
-                    Assert.Equal(expectedDisplayNames[i] == "(null)" ? null : expectedDisplayNames[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].DisplayName);
-                    Assert.Equal(expectedDescriptions[i] == "(null)" ? null : expectedDescriptions[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].Description);
+                    Assert.Equal(expectedDisplayNames?[i] == "(null)" ? null : expectedDisplayNames?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].DisplayName);
+                    Assert.Equal(expectedDescriptions?[i] == "(null)" ? null : expectedDescriptions?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].Description);
                 }
             }
             else
@@ -173,10 +173,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CanReadChoiceSymbol(
             string fileContent,
             bool errorExpected,
-            string expectedSymbolNamesStr,
-            string expectedSymbolDisplayNamesStr,
-            string expectedDescriptionsStr,
-            string expectedChoicesStr)
+            string? expectedSymbolNamesStr,
+            string? expectedSymbolDisplayNamesStr,
+            string? expectedDescriptionsStr,
+            string? expectedChoicesStr)
         {
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
@@ -194,16 +194,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                     Assert.Empty(localizationModel.ParameterSymbols);
                     return;
                 }
-                var expectedSymbolNames = expectedSymbolNamesStr.Split('|');
-                var expectedDisplayNames = expectedSymbolDisplayNamesStr.Split('|');
-                var expectedDescriptions = expectedDescriptionsStr.Split('|');
+                var expectedSymbolNames = expectedSymbolNamesStr?.Split('|');
+                var expectedDisplayNames = expectedSymbolDisplayNamesStr?.Split('|');
+                var expectedDescriptions = expectedDescriptionsStr?.Split('|');
                 var expectedChoices = expectedChoicesStr?.Split('|');
 
-                for (int i = 0; i < expectedSymbolNames.Length; i++)
+                for (int i = 0; i < expectedSymbolNames?.Length; i++)
                 {
                     Assert.True(localizationModel.ParameterSymbols.ContainsKey(expectedSymbolNames[i]));
-                    Assert.Equal(expectedDisplayNames[i] == "(null)" ? null : expectedDisplayNames[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].DisplayName);
-                    Assert.Equal(expectedDescriptions[i] == "(null)" ? null : expectedDescriptions[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].Description);
+                    Assert.Equal(expectedDisplayNames?[i] == "(null)" ? null : expectedDisplayNames?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].DisplayName);
+                    Assert.Equal(expectedDescriptions?[i] == "(null)" ? null : expectedDescriptions?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].Description);
 
                     if (expectedChoices == null || expectedChoices[i] == "(null)")
                     {
@@ -247,9 +247,9 @@ false,
         public void CanReadPostAction(
     string fileContent,
     bool errorExpected,
-    string expectedPostActionsStr,
-    string expectedDescriptionsStr,
-    string expectedManualInstructionsStr)
+    string? expectedPostActionsStr,
+    string? expectedDescriptionsStr,
+    string? expectedManualInstructionsStr)
         {
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
@@ -267,14 +267,14 @@ false,
                     Assert.Empty(localizationModel.PostActions);
                     return;
                 }
-                var expectedPostActions = expectedPostActionsStr.Split('|');
-                var expectedDescriptions = expectedDescriptionsStr.Split('|');
+                var expectedPostActions = expectedPostActionsStr?.Split('|');
+                var expectedDescriptions = expectedDescriptionsStr?.Split('|');
                 var expectedInsturctions = expectedManualInstructionsStr?.Split('|');
 
-                for (int i = 0; i < expectedPostActions.Length; i++)
+                for (int i = 0; i < expectedPostActions?.Length; i++)
                 {
                     Assert.True(localizationModel.PostActions.ContainsKey(expectedPostActions[i]));
-                    Assert.Equal(expectedDescriptions[i] == "(null)" ? null : expectedDescriptions[i], localizationModel.PostActions[expectedPostActions[i]].Description);
+                    Assert.Equal(expectedDescriptions?[i] == "(null)" ? null : expectedDescriptions?[i], localizationModel.PostActions[expectedPostActions[i]].Description);
 
                     if (expectedInsturctions == null || expectedInsturctions[i] == "(null)")
                     {
@@ -387,7 +387,6 @@ false,
 
             using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
-            string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 // template.json

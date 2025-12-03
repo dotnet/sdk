@@ -215,8 +215,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var installedPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);
 
             // implicitly populates packages metadata
-            IReadOnlyList<CheckUpdateResult> checkUpdateResults = await bootstrapper
-                .GetLatestVersionsAsync(installedPackages, CancellationToken.None);
+            await bootstrapper.GetLatestVersionsAsync(installedPackages, CancellationToken.None);
 
             var updatedPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);
 
@@ -242,8 +241,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var boxedTemplatePackage = installedPackages.FirstOrDefault(ip => ip.Identifier == "Boxed.Templates");
 
             // implicitly populates package metadata
-            IReadOnlyList<CheckUpdateResult> checkUpdateResults = await bootstrapper
-                .GetLatestVersionsAsync(new[] { boxedTemplatePackage! }, CancellationToken.None);
+            await bootstrapper.GetLatestVersionsAsync(new[] { boxedTemplatePackage! }, CancellationToken.None);
 
             var updatedPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);
             Assert.Equal(2, updatedPackages.Count);

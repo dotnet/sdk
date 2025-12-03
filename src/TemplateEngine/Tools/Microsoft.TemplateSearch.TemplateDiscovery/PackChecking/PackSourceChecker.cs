@@ -156,10 +156,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                 var packageInfo = await provider.GetPackageInfoAsync(package.Name, cancellationToken).ConfigureAwait(false);
                 if (packageInfo == default)
                 {
-                    Console.WriteLine($"Package {package.Name} cannot be verified.");
-                    throw new Exception($"Package {package.Name} is missing and cannot be verified.");
+                    Console.WriteLine($"Package {package.Name} no longer exists in the provider.");
+                    scanningStats.RemovedTemplatePacks.Add(package);
                 }
-                if (packageInfo.Removed)
+                else if (packageInfo.Removed)
                 {
                     Console.WriteLine($"Package {package.Name} was unlisted.");
                     scanningStats.RemovedTemplatePacks.Add(package);
@@ -388,7 +388,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 
                     return scanResult.Templates.Select(t => new TemplateSearchData(t.ToITemplateInfo(), t.ProduceAdditionalData(additionalDataProducers, environmentSettings)));
                 }
-                return Array.Empty<TemplateSearchData>();
+                return [];
             }
             catch (TaskCanceledException)
             {
@@ -397,7 +397,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             catch (Exception ex)
             {
                 Console.WriteLine("Failed to read package {0}::{1}, details: {2}. The package will be skipped.", packInfo.Name, packInfo.Version, ex);
-                return Array.Empty<TemplateSearchData>();
+                return [];
             }
         }
 
@@ -408,19 +408,19 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             List<TemplatePackageSearchData> removedTemplatePacks = new List<TemplatePackageSearchData>();
             List<FilteredPackageInfo> removedNonTemplatePacks = new List<FilteredPackageInfo>();
 
-            foreach (var package in _existingCache.Keys)
+            foreach (var item in _existingCache)
             {
-                if (!newCache.ContainsKey(package))
+                if (!newCache.ContainsKey(item.Key))
                 {
-                    removedTemplatePacks.Add(_existingCache[package]);
+                    removedTemplatePacks.Add(item.Value);
                 }
             }
 
-            foreach (var package in _knownFilteredPackages.Keys)
+            foreach (var item in _knownFilteredPackages)
             {
-                if (!filteredPackages.ContainsKey(package))
+                if (!filteredPackages.ContainsKey(item.Key))
                 {
-                    removedNonTemplatePacks.Add(_knownFilteredPackages[package]);
+                    removedNonTemplatePacks.Add(item.Value);
                 }
             }
             if (removedTemplatePacks.Any())

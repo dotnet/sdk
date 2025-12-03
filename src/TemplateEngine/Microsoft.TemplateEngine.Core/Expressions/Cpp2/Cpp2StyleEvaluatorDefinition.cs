@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
             {
                 TokenTrie trie = new();
 
-                //Logic
+                // Logic
                 trie.AddToken(processor.Encoding.GetBytes("&&"));
                 trie.AddToken(processor.Encoding.GetBytes("||"));
                 trie.AddToken(processor.Encoding.GetBytes("!"));
@@ -93,15 +93,15 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
                 trie.AddToken(processor.Encoding.GetBytes("=="));
                 trie.AddToken(processor.Encoding.GetBytes("!="));
 
-                //Braces
+                // Braces
                 trie.AddToken(processor.Encoding.GetBytes("("));
                 trie.AddToken(processor.Encoding.GetBytes(")"));
 
-                //Whitespace
+                // Whitespace
                 trie.AddToken(processor.Encoding.GetBytes(" "));
                 trie.AddToken(processor.Encoding.GetBytes("\t"));
 
-                //EOLs
+                // EOLs
                 trie.AddToken(processor.Encoding.GetBytes("\r\n"));
                 trie.AddToken(processor.Encoding.GetBytes("\n"));
                 trie.AddToken(processor.Encoding.GetBytes("\r"));
@@ -109,17 +109,17 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
                 // quotes
                 trie.AddToken(processor.Encoding.GetBytes("'"));
 
-                //Shifts
+                // Shifts
                 trie.AddToken(processor.Encoding.GetBytes("<<"));
                 trie.AddToken(processor.Encoding.GetBytes(">>"));
 
-                //Maths
+                // Math operators
                 trie.AddToken(processor.Encoding.GetBytes("+"));
                 trie.AddToken(processor.Encoding.GetBytes("-"));
                 trie.AddToken(processor.Encoding.GetBytes("*"));
                 trie.AddToken(processor.Encoding.GetBytes("/"));
 
-                //Bitwise operators
+                // Bitwise operators
                 trie.AddToken(processor.Encoding.GetBytes("&"));
                 trie.AddToken(processor.Encoding.GetBytes("|"));
 

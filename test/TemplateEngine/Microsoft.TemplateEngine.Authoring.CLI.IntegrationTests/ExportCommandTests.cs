@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             catch (DirectoryNotFoundException)
             {
                 // Since no templates were created, it is normal that no directory was created.
-                exportedFiles = Array.Empty<string>();
+                exportedFiles = [];
             }
             Assert.True(exportedFiles.Length > 0);
             Assert.All(exportedFiles, p =>
@@ -227,7 +227,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             catch (DirectoryNotFoundException)
             {
                 // Since no templates were created, it is normal that no directory was created.
-                return Array.Empty<string>();
+                return [];
             }
         }
 

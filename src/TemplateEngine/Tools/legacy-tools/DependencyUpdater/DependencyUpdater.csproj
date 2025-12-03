@@ -1,6 +1,0 @@
-﻿<Project Sdk="Microsoft.Net.Sdk">
-  <PropertyGroup>
-    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
-    <OutputType>Exe</OutputType>
-  </PropertyGroup>
-</Project>

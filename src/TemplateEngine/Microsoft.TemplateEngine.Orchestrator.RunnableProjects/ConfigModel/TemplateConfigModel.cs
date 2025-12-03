@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -23,7 +19,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
     public sealed class TemplateConfigModel
     {
         private const string NameSymbolName = "name";
-        private readonly ILogger? _logger;
         private readonly Dictionary<string, IValueForm> _forms = SetupValueFormMapForTemplate();
 
         // validation entries:
@@ -47,12 +42,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             }
 
             Identity = identity;
-            Symbols = Array.Empty<BaseSymbol>();
+            Symbols = [];
         }
 
         private TemplateConfigModel(JObject source, ILogger? logger, string? baselineName = null)
         {
-            _logger = logger;
+            ILogger? logger1 = logger;
 
             string? identity = source.ToString(nameof(Identity));
             if (string.IsNullOrWhiteSpace(identity))
@@ -187,14 +182,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             {
                 if (prop.Value is not JObject obj)
                 {
-                    _logger?.LogWarning(LocalizableStrings.SimpleConfigModel_Error_Constraints_InvalidSyntax, nameof(Constraints).ToLowerInvariant());
+                    logger1?.LogWarning(LocalizableStrings.SimpleConfigModel_Error_Constraints_InvalidSyntax, nameof(Constraints).ToLowerInvariant());
                     continue;
                 }
 
                 string? type = obj.ToString(nameof(TemplateConstraintInfo.Type));
                 if (string.IsNullOrWhiteSpace(type))
                 {
-                    _logger?.LogWarning(LocalizableStrings.SimpleConfigModel_Error_Constraints_MissingType, obj.ToString(), nameof(TemplateConstraintInfo.Type).ToLowerInvariant());
+                    logger1?.LogWarning(LocalizableStrings.SimpleConfigModel_Error_Constraints_MissingType, obj.ToString(), nameof(TemplateConstraintInfo.Type).ToLowerInvariant());
                     continue;
                 }
                 obj.TryGetValue(nameof(TemplateConstraintInfo.Args), StringComparison.OrdinalIgnoreCase, out JToken? args);
@@ -277,7 +272,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of template short names ("shortName" JSON property).
         /// </summary>
-        public IReadOnlyList<string> ShortNameList { get; internal init; } = Array.Empty<string>();
+        public IReadOnlyList<string> ShortNameList { get; internal init; } = [];
 
         /// <summary>
         /// Gets the list of post actions defined for the template ("postActions" JSON property).
@@ -292,7 +287,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of template primary outputs ("primaryOutputs" JSON property).
         /// </summary>
-        public IReadOnlyList<PrimaryOutputModel> PrimaryOutputs { get; internal init; } = Array.Empty<PrimaryOutputModel>();
+        public IReadOnlyList<PrimaryOutputModel> PrimaryOutputs { get; internal init; } = [];
 
         /// <summary>
         /// Gets version expression which defines which generator versions is supported by the template ("generatorVersions" JSON property).
@@ -312,12 +307,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of classifications of the template ("classifications" JSON property).
         /// </summary>
-        public IReadOnlyList<string> Classifications { get; internal init; } = Array.Empty<string>();
+        public IReadOnlyList<string> Classifications { get; internal init; } = [];
 
         /// <summary>
         /// Gets the list of guids defined in the template ("guids" JSON property).
         /// </summary>
-        public IReadOnlyList<Guid> Guids { get; internal init; } = Array.Empty<Guid>();
+        public IReadOnlyList<Guid> Guids { get; internal init; } = [];
 
         /// <summary>
         /// Gets the source name defined in the template ("sourceName" JSON property).
@@ -337,12 +332,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of sources defined in the template ("sources" JSON property).
         /// </summary>
-        public IReadOnlyList<ExtendedFileSource> Sources { get; internal init; } = Array.Empty<ExtendedFileSource>();
+        public IReadOnlyList<ExtendedFileSource> Sources { get; internal init; } = [];
 
         /// <summary>
         /// Gets the list of constraints defined in the template ("constraints" JSON property).
         /// </summary>
-        public IReadOnlyList<TemplateConstraintInfo> Constraints { get; internal init; } = Array.Empty<TemplateConstraintInfo>();
+        public IReadOnlyList<TemplateConstraintInfo> Constraints { get; internal init; } = [];
 
         /// <summary>
         /// Gets the list of symbols defined in the template ("symbols" JSON property).
@@ -394,7 +389,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of custom operations defined for the template for specific files ("specialCustomOperations" JSON property).
         /// </summary>
-        public IReadOnlyList<CustomFileGlobModel> SpecialCustomOperations { get; internal init; } = Array.Empty<CustomFileGlobModel>();
+        public IReadOnlyList<CustomFileGlobModel> SpecialCustomOperations { get; internal init; } = [];
 
         internal BaseSymbol NameSymbol { get; private init; } = SetupDefaultNameSymbol(null);
 
@@ -410,13 +405,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         /// <param name="content">The stream containing template configuration in JSON format.</param>
         /// <param name="logger">The logger to use for reporting errors/messages.</param>
-        /// <param name="filename">The filepath of template configuration (optional, used for logging).</param>
+        /// <param name="filename">The file path of template configuration (optional, used for logging).</param>
         public static TemplateConfigModel FromStream(Stream content, ILogger? logger = null, string? filename = null)
         {
-            using (TextReader tr = new StreamReader(content, System.Text.Encoding.UTF8, true))
-            {
-                return FromTextReader(tr, logger);
-            }
+            using TextReader tr = new StreamReader(content, System.Text.Encoding.UTF8, true);
+            return FromTextReader(tr, logger);
         }
 
         /// <summary>
@@ -424,7 +417,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         /// <param name="content">The string containing template configuration in JSON format.</param>
         /// <param name="logger">The logger to use for reporting errors/messages.</param>
-        /// <param name="filename">The filepath of template configuration (optional, used for logging).</param>
+        /// <param name="filename">The file path of template configuration (optional, used for logging).</param>
         public static TemplateConfigModel FromString(string content, ILogger? logger = null, string? filename = null)
         {
             if (string.IsNullOrWhiteSpace(content))
@@ -432,18 +425,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 throw new ArgumentException($"'{nameof(content)}' cannot be null or whitespace.", nameof(content));
             }
 
-            using (TextReader tr = new StringReader(content))
-            {
-                return FromTextReader(tr, logger);
-            }
+            using TextReader tr = new StringReader(content);
+            return FromTextReader(tr, logger);
         }
 
         internal static TemplateConfigModel FromTextReader(TextReader content, ILogger? logger = null)
         {
-            using (JsonReader r = new JsonTextReader(content))
-            {
-                return new TemplateConfigModel(JObject.Load(r), logger, null);
-            }
+            using JsonReader r = new JsonTextReader(content);
+            return new TemplateConfigModel(JObject.Load(r), logger, null);
         }
 
         internal static TemplateConfigModel FromJObject(JObject source, ILogger? logger = null, string? baselineName = null)
@@ -550,9 +539,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
             // setup the forms defined by the template configuration.
             // if any have the same name as a default, the default is overridden.
-            IReadOnlyDictionary<string, JToken> templateDefinedforms = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(Forms));
+            IReadOnlyDictionary<string, JToken> templateDefinedForms = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(Forms));
 
-            foreach (KeyValuePair<string, JToken> form in templateDefinedforms)
+            foreach (KeyValuePair<string, JToken> form in templateDefinedForms)
             {
                 if (form.Value is JObject o)
                 {
@@ -586,7 +575,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             if (!isWindows)
             {
-                return Array.Empty<BindSymbol>();
+                return [];
             }
             //on Windows we implicitly bind OS to avoid likely breaking change.
             //this environment variable is commonly used in conditions when using run script post action.

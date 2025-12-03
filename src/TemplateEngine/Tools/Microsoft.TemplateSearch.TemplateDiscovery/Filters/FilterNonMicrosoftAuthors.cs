@@ -34,15 +34,13 @@ internal class FilterNonMicrosoftAuthors
                     {
                         try
                         {
-                            using (var streamReader = new StreamReader(templateJson.OpenRead()))
-                            using (var jsonReader = new JsonTextReader(streamReader))
+                            using var streamReader = new StreamReader(templateJson.OpenRead());
+                            using var jsonReader = new JsonTextReader(streamReader);
+                            var jObject = JObject.Load(jsonReader);
+                            var author = jObject["author"]?.Value<string>();
+                            if (author?.Contains("microsoft", StringComparison.OrdinalIgnoreCase) ?? false)
                             {
-                                var jObject = JObject.Load(jsonReader);
-                                var author = jObject["author"]?.Value<string>();
-                                if (author?.Contains("microsoft", StringComparison.OrdinalIgnoreCase) ?? false)
-                                {
-                                    return new PreFilterResult(FilterId, isFiltered: true, $"{templateJson.FullPath} has Author=Microsoft and package id is {packInfo.Name}");
-                                }
+                                return new PreFilterResult(FilterId, isFiltered: true, $"{templateJson.FullPath} has Author=Microsoft and package id is {packInfo.Name}");
                             }
                         }
                         catch (Exception)

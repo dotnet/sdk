@@ -25,7 +25,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         public string DataUniqueName => CliHostDataName;
 
-        public object? Data => _hostDataForPackByTemplate;
+        public object Data => _hostDataForPackByTemplate;
 
         public object? CreateDataForTemplate(IScanTemplateInfo template, IEngineEnvironmentSettings environment)
         {

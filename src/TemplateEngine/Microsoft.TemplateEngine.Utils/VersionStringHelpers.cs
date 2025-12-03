@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Utils
         // -1 if version1 < version2
         // 0 if version1 == version2
         // 1 if version1 > version2
-        public static int? CompareVersions(string version1, string version2)
+        public static int? CompareVersions(string? version1, string? version2)
         {
             if (!TryParseVersionString(version1, out int[]? parts1) || !TryParseVersionString(version2, out int[]? parts2))
             {
@@ -49,15 +49,15 @@ namespace Microsoft.TemplateEngine.Utils
             return 0;
         }
 
-        public static bool IsVersionWellFormed(string version)
+        public static bool IsVersionWellFormed(string? version)
         {
             return TryParseVersionString(version, out _);
         }
 
-        // tries to parse a version into 4 int parts, zero-padding on the rght if needed.
+        // tries to parse a version into 4 int parts, zero-padding on the right if needed.
         // more than 4 parts, return false.
-        // Unparse-able, return false.
-        private static bool TryParseVersionString(string version, out int[]? parsed)
+        // Not parse-able, return false.
+        private static bool TryParseVersionString(string? version, out int[]? parsed)
         {
             if (string.IsNullOrEmpty(version))
             {
@@ -65,16 +65,20 @@ namespace Microsoft.TemplateEngine.Utils
                 return false;
             }
 
-            string[] parts = version.Split(new[] { '.' });
-            if (parts.Length is < 2 or > 4)
+            string[]? parts = version?.Split(new[] { '.' });
+
+            if (parts != null)
             {
-                parsed = null;
-                return false;
+                if (parts.Length is < 2 or > 4)
+                {
+                    parsed = null;
+                    return false;
+                }
             }
 
             parsed = new[] { 0, 0, 0, 0 };
 
-            for (int i = 0; i < parts.Length; i++)
+            for (int i = 0; i < parts?.Length; i++)
             {
                 if (int.TryParse(parts[i], out int intPart))
                 {

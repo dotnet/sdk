@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -188,7 +187,7 @@ color:red;";
 
             IOperationProvider[] operations =
             {
-                new MockOperationProvider(new MockOperation(null, ReadaheadOneByte, true, Encoding.UTF8.GetBytes("foo"))),
+                new MockOperationProvider(new MockOperation(null, ReadaheadOneByte, true, "foo"u8.ToArray())),
                 new Replacement("bar".TokenConfigBuilder().OnlyIfAfter("foot"), "b", null, true)
             };
             EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Root());

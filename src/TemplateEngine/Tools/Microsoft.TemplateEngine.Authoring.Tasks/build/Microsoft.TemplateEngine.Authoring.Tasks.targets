@@ -1,19 +1,28 @@
-﻿<Project>
+﻿<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Project>
+
   <PropertyGroup>
-    <TemplatingTasksAssembly>$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\Microsoft.TemplateEngine.Authoring.Tasks.dll</TemplatingTasksAssembly>
+    <TemplatingTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net\Microsoft.TemplateEngine.Authoring.Tasks.dll</TemplatingTasksAssembly>
+    <TemplatingTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\netframework\Microsoft.TemplateEngine.Authoring.Tasks.dll</TemplatingTasksAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="LocalizeTemplates" AssemblyFile="$(TemplatingTasksAssembly)" Condition="'$(MSBuildRuntimeType)' != 'Full'" />
   <UsingTask TaskName="LocalizeTemplates" AssemblyFile="$(TemplatingTasksAssembly)" Condition="'$(MSBuildRuntimeType)' == 'Full'" TaskFactory="TaskHostFactory"/>
-
-  <Target Name="LocalizeTemplatesAfterBuild" Condition="'$(LocalizeTemplates)' == 'true'" BeforeTargets="AfterBuild">
-    <LocalizeTemplates TemplateFolder="$(LocalizableTemplatesPath)" SearchSubfolders="true" Languages="$(TemplateLanguages)"/>
+  <Target Name="LocalizeTemplatesAfterBuild"
+          Condition="'$(LocalizeTemplates)' == 'true'"
+          BeforeTargets="AfterBuild">
+    <LocalizeTemplates TemplateFolder="$(LocalizableTemplatesPath)"
+                       SearchSubfolders="true"
+                       Languages="$(TemplateLanguages)"/>
   </Target>
 
   <UsingTask TaskName="ValidateTemplates" AssemblyFile="$(TemplatingTasksAssembly)" Condition="'$(MSBuildRuntimeType)' != 'Full'" />
   <UsingTask TaskName="ValidateTemplates" AssemblyFile="$(TemplatingTasksAssembly)" Condition="'$(MSBuildRuntimeType)' == 'Full'" TaskFactory="TaskHostFactory"/>
-
-  <Target Name="ValidateTemplatesAfterBuild" Condition="'$(ValidateTemplates)' == 'true'" BeforeTargets="AfterBuild" AfterTargets="LocalizeTemplatesAfterBuild">
+  <Target Name="ValidateTemplatesAfterBuild"
+          Condition="'$(ValidateTemplates)' == 'true'"
+          BeforeTargets="AfterBuild"
+          AfterTargets="LocalizeTemplatesAfterBuild">
     <ValidateTemplates TemplateLocation="$(ValidateTemplatesPath)"/>
   </Target>
+
 </Project>

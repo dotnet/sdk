@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
@@ -17,15 +12,13 @@ namespace Microsoft.TemplateEngine.Edge
     /// </summary>
     public class TemplateConstraintManager : IDisposable
     {
-        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
         private readonly ILogger<TemplateConstraintManager> _logger;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly Dictionary<string, Task<ITemplateConstraint>> _templateConstrains = new Dictionary<string, Task<ITemplateConstraint>>();
 
         public TemplateConstraintManager(IEngineEnvironmentSettings engineEnvironmentSettings)
         {
-            _engineEnvironmentSettings = engineEnvironmentSettings;
-            _logger = _engineEnvironmentSettings.Host.LoggerFactory.CreateLogger<TemplateConstraintManager>();
+            _logger = engineEnvironmentSettings.Host.LoggerFactory.CreateLogger<TemplateConstraintManager>();
 
             var constraintFactories = engineEnvironmentSettings.Components.OfType<ITemplateConstraintFactory>();
             _logger.LogDebug($"Found {constraintFactories.Count()} constraints factories, initializing.");
@@ -60,7 +53,7 @@ namespace Microsoft.TemplateEngine.Edge
 
             try
             {
-                _logger.LogDebug($"Waiting for {constraintsToInitialize.Count()} to be initialized initialized.");
+                _logger.LogDebug($"Waiting for {constraintsToInitialize.Count()} to be initialized.");
                 await CancellableWhenAll(constraintsToInitialize.Select(c => c.Task), cancellationToken).ConfigureAwait(false);
                 _logger.LogDebug($"{constraintsToInitialize.Count()} constraints were initialized.");
                 return constraintsToInitialize.Select(c => c.Task.Result).ToList();

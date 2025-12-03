@@ -24,7 +24,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 
         public string? Version => _info.Version;
 
-        public string Path { get; private set; }
+        public string Path { get; }
 
         public long TotalDownloads => _info.TotalDownloads;
 

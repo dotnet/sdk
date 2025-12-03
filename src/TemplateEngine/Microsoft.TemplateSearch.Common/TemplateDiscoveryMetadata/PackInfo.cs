@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Newtonsoft.Json;
 
@@ -37,7 +34,7 @@ namespace Microsoft.TemplateSearch.Common
         public long TotalDownloads { get; }
 
         [JsonProperty]
-        public IReadOnlyList<string> Owners { get; } = Array.Empty<string>();
+        public IReadOnlyList<string> Owners { get; } = [];
 
         [JsonProperty]
         public bool Reserved { get; }

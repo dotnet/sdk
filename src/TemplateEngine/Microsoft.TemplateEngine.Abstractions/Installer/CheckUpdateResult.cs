@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Abstractions.Installer
@@ -18,7 +16,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
             TemplatePackage = templatePackage;
             LatestVersion = latestVersion;
             IsLatestVersion = isLatest;
-            Vulnerabilities = Array.Empty<VulnerabilityInfo>();
+            Vulnerabilities = [];
         }
 
         private CheckUpdateResult(
@@ -40,7 +38,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <summary>
         /// True when the template package is already at the latest version.
         /// </summary>
-        /// <remarks>In some cases the version installed can be higher then identified during update check. Since only installer can correctly compare the versions, the installer returns the result if the version is latest rather than letting the caller determine it using string comparison.</remarks>
+        /// <remarks>In some cases the version installed can be higher than identified during update check. Since only installer can correctly compare the versions, the installer returns the result if the version is latest rather than letting the caller determine it using string comparison.</remarks>
         public bool IsLatestVersion { get; private set; }
 
         /// <summary>

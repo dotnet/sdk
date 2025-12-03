@@ -1,12 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
@@ -420,15 +414,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private class LegacyTemplate : ITemplate
         {
             private readonly ScannedTemplateInfo _templateInfo;
-            private readonly IGenerator _generator;
 
             internal LegacyTemplate(ScannedTemplateInfo templateInfo, IGenerator generator)
             {
                 _templateInfo = templateInfo;
-                _generator = generator;
+                Generator = generator;
             }
 
-            public IGenerator Generator => _generator;
+            public IGenerator Generator { get; }
 
             public IFileSystemInfo Configuration => _templateInfo.ConfigFile;
 
@@ -452,7 +445,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public string Identity => _templateInfo.ConfigurationModel.Identity;
 
-            public Guid GeneratorId => _generator.Id;
+            public Guid GeneratorId => Generator.Id;
 
             public string? GroupIdentity => _templateInfo.ConfigurationModel.GroupIdentity;
 
@@ -470,9 +463,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public string ConfigPlace => _templateInfo.ConfigFile.FullPath;
 
-            public string? LocaleConfigPlace => throw new NotImplementedException();
+            public string LocaleConfigPlace => throw new NotImplementedException();
 
-            public string? HostConfigPlace => throw new NotImplementedException();
+            public string HostConfigPlace => throw new NotImplementedException();
 
             public string? ThirdPartyNotices => _templateInfo.ConfigurationModel.ThirdPartyNotices;
 
@@ -488,7 +481,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IReadOnlyList<IValidationEntry> ValidationErrors => _templateInfo.ValidationErrors;
 
-            public ILocalizationLocator? Localization => throw new NotImplementedException();
+            public ILocalizationLocator Localization => throw new NotImplementedException();
 
             #region Obsolete members
 

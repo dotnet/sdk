@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -22,11 +19,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string ITemplateLocator.ConfigPlace => ConfigFile?.FullPath ?? throw new InvalidOperationException("Configuration file is not initialized, are you using test constructor?");
 
-        IFileSystemInfo? ITemplate.LocaleConfiguration => _localizationInfo?.File;
+        IFileSystemInfo? ITemplate.LocaleConfiguration => Localization?.File;
 
         IFileSystemInfo? ITemplate.HostSpecificConfiguration => _hostConfigFile;
 
-        string? IExtendedTemplateLocator.LocaleConfigPlace => _localizationInfo?.File.FullPath;
+        string? IExtendedTemplateLocator.LocaleConfigPlace => Localization?.File.FullPath;
 
         string? IExtendedTemplateLocator.HostConfigPlace => _hostConfigFile?.FullPath;
 

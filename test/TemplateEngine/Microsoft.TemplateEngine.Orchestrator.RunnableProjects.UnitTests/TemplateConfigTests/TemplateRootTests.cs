@@ -113,7 +113,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             await templateModel.ValidateAsync(ValidationScope.Instantiation, default);
 
             Assert.True(templateModel.IsValid);
-            Assert.Empty(templateModel.ValidationErrors.Where(e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning));
+            Assert.DoesNotContain(templateModel.ValidationErrors, e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning });
         }
 
         // Tests source paths when the mount point root is the same as the template root.
@@ -152,7 +152,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             if (shouldAllPathsBeValid)
             {
                 Assert.True(templateModel.IsValid);
-                Assert.Empty(templateModel.ValidationErrors.Where(e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning));
+                Assert.DoesNotContain(templateModel.ValidationErrors, e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning });
             }
             else
             {
@@ -213,7 +213,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             if (shouldAllPathsBeValid)
             {
                 Assert.True(templateModel.IsValid);
-                Assert.Empty(templateModel.ValidationErrors.Where(e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning));
+                Assert.DoesNotContain(templateModel.ValidationErrors, e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning });
             }
             else
             {

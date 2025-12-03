@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -20,13 +19,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Expand = expand;
         }
 
-        public IReadOnlyDictionary<string, string> Sources { get; private init; }
+        public IReadOnlyDictionary<string, string> Sources { get; }
 
-        public IReadOnlyList<string> Order { get; private init; }
+        public IReadOnlyList<string> Order { get; }
 
-        public string? FallbackFormat { get; private init; }
+        public string? FallbackFormat { get; }
 
-        public bool Expand { get; private init; }
+        public bool Expand { get; }
 
         internal static IVariableConfig Default { get; } =
                 new VariableConfig(

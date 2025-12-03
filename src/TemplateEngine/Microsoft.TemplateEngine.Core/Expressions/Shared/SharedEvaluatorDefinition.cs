@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -22,7 +18,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         private static readonly IOperatorMap<Operators, TTokens> Map = Instance.GenerateMap();
         private static readonly bool DereferenceInLiteralsSetting = Instance.DereferenceInLiterals;
         private static readonly string NullToken = Instance.NullTokenValue;
-        private static readonly IOperationProvider[] NoOperationProviders = Array.Empty<IOperationProvider>();
+        private static readonly IOperationProvider[] NoOperationProviders = [];
 
         protected abstract string NullTokenValue { get; }
 
@@ -60,15 +56,13 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         /// <returns>A boolean value indicating the result of the evaluation.</returns>
         public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables, out string? faultedMessage, HashSet<string>? referencedVariablesKeys = null)
         {
-            using (MemoryStream ms = new(Encoding.UTF8.GetBytes(text)))
-            using (MemoryStream res = new())
-            {
-                EngineConfig cfg = new(logger, variables);
-                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
-                int len = (int)ms.Length;
-                int pos = 0;
-                return Evaluate(state, ref len, ref pos, out faultedMessage, referencedVariablesKeys, true);
-            }
+            using MemoryStream ms = new(Encoding.UTF8.GetBytes(text));
+            using MemoryStream res = new();
+            EngineConfig cfg = new(logger, variables);
+            IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
+            int len = (int)ms.Length;
+            int pos = 0;
+            return Evaluate(state, ref len, ref pos, out faultedMessage, referencedVariablesKeys, true);
         }
 
         /// <summary>
@@ -88,16 +82,14 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             out string? evaluableExpressionError,
             HashSet<string> referencedVariablesKeys)
         {
-            using (MemoryStream ms = new(Encoding.UTF8.GetBytes(text)))
-            using (MemoryStream res = new())
-            {
-                EngineConfig cfg = new(logger, variables);
-                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
-                int len = (int)ms.Length;
-                int pos = 0;
+            using MemoryStream ms = new(Encoding.UTF8.GetBytes(text));
+            using MemoryStream res = new();
+            EngineConfig cfg = new(logger, variables);
+            IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
+            int len = (int)ms.Length;
+            int pos = 0;
 
-                return GetEvaluableExpression(state, ref len, ref pos, out evaluableExpressionError, referencedVariablesKeys);
-            }
+            return GetEvaluableExpression(state, ref len, ref pos, out evaluableExpressionError, referencedVariablesKeys);
         }
 
         protected static int Compare(object? left, object? right)
@@ -116,7 +108,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
                    ?? AttemptBooleanComparison(left, right)
                    ?? AttemptVersionComparison(left, right)
                    ?? AttemptMultiValueComparison(left, right)
-                   ?? AttemptLexographicComparison(left, right)
+                   ?? AttemptLexicographicComparison(left, right)
                    ?? AttemptComparableComparison(left, right)
                    ?? 0;
         }
@@ -236,7 +228,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             return null;
         }
 
-        private static int? AttemptLexographicComparison(object? left, object? right)
+        private static int? AttemptLexicographicComparison(object? left, object? right)
         {
             if (left is not string ls || right is not string rs)
             {

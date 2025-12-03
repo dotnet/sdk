@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
     internal interface IPhysicalFileSystemEx : IPhysicalFileSystem
     {
         /// <summary>
-        /// Same behavior as <see cref="System.IO.File.ReadAllTextAsync(string,CancellationToken)"/>.
+        /// Same behavior as <see cref="File.ReadAllTextAsync(string,CancellationToken)"/>.
         /// </summary>
         Task<string> ReadAllTextAsync(string path, CancellationToken cancellationToken = default);
 
