@@ -192,6 +192,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             NoCache = true,
             NoBuild = true,
         };
+
         var projectCollection = new ProjectCollection();
         var projectInstance = command.CreateProjectInstance(projectCollection);
 

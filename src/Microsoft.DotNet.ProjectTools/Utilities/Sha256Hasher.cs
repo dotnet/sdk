@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET
-
 using System.Security.Cryptography;
 
-namespace Microsoft.DotNet.Cli.Utils;
+namespace Microsoft.DotNet.Utilities;
 
 public static class Sha256Hasher
 {
@@ -28,5 +26,3 @@ public static class Sha256Hasher
         return Hash(text.ToUpperInvariant());
     }
 }
-
-#endif

@@ -382,4 +382,11 @@ public sealed class MSBuildArgs
             RestoreGlobalProperties = new(newdict);
         }
     }
+
+    internal string[]? GetResolvedTargets()
+        => RequestedTargets is null or { Length: 0 }
+        ? GetTargetResult
+        : GetTargetResult is null or { Length: 0 }
+        ? RequestedTargets : 
+          [.. RequestedTargets.Union(GetTargetResult, StringComparer.OrdinalIgnoreCase)];
 }
