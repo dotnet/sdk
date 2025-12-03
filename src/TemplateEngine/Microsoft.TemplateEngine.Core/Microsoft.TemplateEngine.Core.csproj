@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetCurrent);netstandard2.0;$(NetFrameworkCurrent)</TargetFrameworks>
+    <TargetFrameworks>$(NetMinimum);netstandard2.0;$(NetFrameworkMinimum)</TargetFrameworks>
     <Description>Common operations for instantiating templates using forward-only input stream operations</Description>
     <IsPackable>true</IsPackable>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
