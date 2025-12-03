@@ -7,7 +7,8 @@
     <VersionMajor>10</VersionMajor>
     <VersionMinor>0</VersionMinor>
     <VersionSDKMinor>1</VersionSDKMinor>
-    <VersionFeature>00</VersionFeature>
+    <VersionSDKMinorPatch>2</VersionSDKMinorPatch>
+    <VersionFeature>$([System.String]::Copy('$(VersionSDKMinorPatch)').PadLeft(2, '0'))</VersionFeature>
     <!-- This property powers the SdkAnalysisLevel property in end-user MSBuild code.
          It should always be the hundreds-value of the current SDK version, never any
          preview version components or anything else. E.g. 8.0.100, 9.0.300, etc. -->
@@ -20,10 +21,8 @@
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
     <!-- Calculate prerelease label -->
-    <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' != 'true'">rtm</PreReleaseVersionLabel>
-    <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' == 'true' and $(VersionPrefix.EndsWith('00'))">rtm</PreReleaseVersionLabel>
-    <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' == 'true' and !$(VersionPrefix.EndsWith('00'))">servicing</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration Condition="'$(StabilizePackageVersion)' != 'true'"></PreReleaseVersionIteration>
+    <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration></PreReleaseVersionIteration>
     <!-- In source-build the version of the compiler must be same or newer than the version of the
          compiler API targeted by analyzer assemblies. This is mostly an issue on source-build as
          in that build mode analyzer assemblies always target the live compiler API. -->
@@ -142,13 +141,13 @@
     <BenchmarkDotNetPackageVersion>0.14.0</BenchmarkDotNetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Workload manifest package versions">
-    <MauiFeatureBand>10.0.100-rc.2</MauiFeatureBand>
-    <MauiWorkloadManifestVersion>10.0.0-rc.2.25504.7</MauiWorkloadManifestVersion>
-    <XamarinAndroidWorkloadManifestVersion>36.0.0-rc.2.332</XamarinAndroidWorkloadManifestVersion>
-    <XamarinIOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinIOSWorkloadManifestVersion>
-    <XamarinMacCatalystWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinMacCatalystWorkloadManifestVersion>
-    <XamarinMacOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinMacOSWorkloadManifestVersion>
-    <XamarinTvOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinTvOSWorkloadManifestVersion>
+    <MauiFeatureBand>10.0.100</MauiFeatureBand>
+    <MauiWorkloadManifestVersion>10.0.0</MauiWorkloadManifestVersion>
+    <XamarinAndroidWorkloadManifestVersion>36.1.2</XamarinAndroidWorkloadManifestVersion>
+    <XamarinIOSWorkloadManifestVersion>26.0.11017</XamarinIOSWorkloadManifestVersion>
+    <XamarinMacCatalystWorkloadManifestVersion>26.0.11017</XamarinMacCatalystWorkloadManifestVersion>
+    <XamarinMacOSWorkloadManifestVersion>26.0.11017</XamarinMacOSWorkloadManifestVersion>
+    <XamarinTvOSWorkloadManifestVersion>26.0.11017</XamarinTvOSWorkloadManifestVersion>
   </PropertyGroup>
   <PropertyGroup Label="Pinned dependency">
     <!-- This package is not being produced outside of the 2.0 branch of corefx and should not change. -->
