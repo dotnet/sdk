@@ -53,6 +53,26 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <summary>
         /// Remove a workload installation record.
         /// </summary>
-        DeleteWorkloadInstallationRecord
+        DeleteWorkloadInstallationRecord,
+
+        /// <summary>
+        /// Creates an install state file.
+        /// </summary>
+        SaveInstallStateManifestVersions,
+
+        /// <summary>
+        /// Removes an install state file.
+        /// </summary>
+        RemoveManifestsFromInstallStateFile,
+
+        /// <summary>
+        /// Changes the workload mode
+        /// </summary>
+        AdjustWorkloadMode,
+
+        /// <summary>
+        /// Changes the workload set version
+        /// </summary>
+        AdjustWorkloadSetVersion,
     }
 }
