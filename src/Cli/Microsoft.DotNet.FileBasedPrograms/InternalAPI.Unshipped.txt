@@ -122,6 +122,7 @@ static Microsoft.DotNet.FileBasedPrograms.Patterns.Whitespace.get -> System.Text
 static Microsoft.DotNet.FileBasedPrograms.SourceFile.Load(string! filePath) -> Microsoft.DotNet.FileBasedPrograms.SourceFile
 static Microsoft.DotNet.FileBasedPrograms.SourceFile.operator !=(Microsoft.DotNet.FileBasedPrograms.SourceFile left, Microsoft.DotNet.FileBasedPrograms.SourceFile right) -> bool
 static Microsoft.DotNet.FileBasedPrograms.SourceFile.operator ==(Microsoft.DotNet.FileBasedPrograms.SourceFile left, Microsoft.DotNet.FileBasedPrograms.SourceFile right) -> bool
+static readonly Microsoft.DotNet.FileBasedPrograms.ErrorReporters.IgnoringReporter -> Microsoft.DotNet.FileBasedPrograms.ErrorReporter!
 static readonly Microsoft.DotNet.FileBasedPrograms.NamedDirectiveComparer.Instance -> Microsoft.DotNet.FileBasedPrograms.NamedDirectiveComparer!
 virtual Microsoft.DotNet.FileBasedPrograms.ErrorReporter.Invoke(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.Text.TextSpan textSpan, string! message) -> void
 ~override Microsoft.DotNet.FileBasedPrograms.SourceFile.Equals(object obj) -> bool

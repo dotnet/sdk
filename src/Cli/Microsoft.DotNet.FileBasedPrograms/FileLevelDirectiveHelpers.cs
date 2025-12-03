@@ -21,7 +21,6 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.DotNet.FileBasedPrograms;
 
-// https://github.com/dotnet/sdk/issues/51487: Use 'file class' where appropriate to reduce exposed internal API surface
 internal static class FileLevelDirectiveHelpers
 {
     public static SyntaxTokenParser CreateTokenizer(SourceText text)
@@ -682,6 +681,9 @@ internal delegate void ErrorReporter(SourceFile sourceFile, TextSpan textSpan, s
 
 internal static partial class ErrorReporters
 {
+    public static readonly ErrorReporter IgnoringReporter =
+        static (_, _, _) => { };
+
     public static ErrorReporter CreateCollectingReporter(out ImmutableArray<SimpleDiagnostic>.Builder builder)
     {
         var capturedBuilder = builder = ImmutableArray.CreateBuilder<SimpleDiagnostic>();
