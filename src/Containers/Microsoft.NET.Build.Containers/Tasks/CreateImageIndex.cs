@@ -58,7 +58,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
-        SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag);
+        SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
             Repository,

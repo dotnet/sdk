@@ -129,10 +129,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                  FormatArguments="$(SdkResolverGlobalJsonPath)" />
   </Target>
 
-  <Target Name="_WarnWhenUsingNET8AndVSPriorTo178"
+  <Target Name="_WarnWhenUsingNET9AndVSPriorTo1712"
         BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
-        Condition="$([MSBuild]::VersionLessThan($(MSBuildVersion), '17.8.0')) and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '8.0'))">
-    <NetSdkWarning ResourceName="Net8NotCompatibleWithDev177"/>
+        Condition="$([MSBuild]::VersionLessThan($(MSBuildVersion), '17.12.0')) and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '9.0'))">
+    <NetSdkWarning ResourceName="Net9NotCompatibleWithDev1711"/>
   </Target>
 
   <Target Name="_CheckForInvalidWindowsDesktopTargetingConfiguration"

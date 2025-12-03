@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Tools.Add.ProjectToProjectReference
 
         public override int Execute()
         {
-            var projects = new ProjectCollection();
+            using var projects = new ProjectCollection();
             bool interactive = _parseResult.GetValue(AddProjectToProjectReferenceParser.InteractiveOption);
             MsbuildProject msbuildProj = MsbuildProject.FromFileOrDirectory(
                 projects,

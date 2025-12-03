@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-clean" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-clean" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet clean
 .PP
@@ -26,10 +26,12 @@ dotnet-clean - Cleans the output of a project.
 .IP
 .nf
 \f[C]
-dotnet clean [<PROJECT>|<SOLUTION>] [-c|--configuration <CONFIGURATION>]
+dotnet clean [<PROJECT>|<SOLUTION>] [--artifacts-path <ARTIFACTS_DIR>]
+    [-c|--configuration <CONFIGURATION>]
     [-f|--framework <FRAMEWORK>] [--interactive]
     [--nologo] [-o|--output <OUTPUT_DIRECTORY>]
-    [-r|--runtime <RUNTIME_IDENTIFIER>] [-v|--verbosity <LEVEL>]
+    [-r|--runtime <RUNTIME_IDENTIFIER>] [--tl:[auto|on|off]]
+    [-v|--verbosity <LEVEL>]
 
 dotnet clean -h|--help
 \f[R]
@@ -47,6 +49,14 @@ Both intermediate (\f[I]obj\f[R]) and final output (\f[I]bin\f[R]) folders are c
 The MSBuild project or solution to clean.
 If a project or solution file is not specified, MSBuild searches the current working directory for a file that has a file extension that ends in \f[I]proj\f[R] or \f[I]sln\f[R], and uses that file.
 .SH OPTIONS
+.IP \[bu] 2
+\f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
+.RS 2
+.PP
+All build output files from the executed command will go in subfolders under the specified path, separated by project.
+For more information see Artifacts Output Layout.
+Available since .NET 8 SDK.
+.RE
 .IP \[bu] 2
 \f[B]\f[VB]-c|--configuration <CONFIGURATION>\f[B]\f[R]
 .RS 2
@@ -104,6 +114,34 @@ For more information, see Solution-level \f[V]--output\f[R] option no longer val
 .PP
 Cleans the output folder of the specified runtime.
 This is used when a self-contained deployment was created.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
+.RS 2
+.PP
+Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
+The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
+The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
+\f[V]on\f[R] skips the environment check and enables terminal logging.
+\f[V]off\f[R] skips the environment check and uses the default console logger.
+.PP
+The terminal logger shows you the restore phase followed by the build phase.
+During each phase, the currently building projects appear at the bottom of the terminal.
+Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
+You can search this information to learn more about the build.
+When a project is finished building, a single \[lq]build completed\[rq] section is written that captures:
+.IP \[bu] 2
+The name of the built project.
+.IP \[bu] 2
+The target framework (if multi-targeted).
+.IP \[bu] 2
+The status of that build.
+.IP \[bu] 2
+The primary output of that build (which is hyperlinked).
+.IP \[bu] 2
+Any diagnostics generated for that project.
+.PP
+This option is available starting in .NET 8.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]

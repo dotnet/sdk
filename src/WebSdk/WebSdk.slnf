@@ -6,7 +6,7 @@
       "src\\WebSdk\\Publish\\Tasks\\Microsoft.NET.Sdk.Publish.Tasks.csproj",
       "src\\WebSdk\\Web\\Tasks\\Microsoft.NET.Sdk.Web.Tasks.csproj",
       "src\\WebSdk\\Worker\\Tasks\\Microsoft.NET.Sdk.Worker.Tasks.csproj",
-      "src\\Tests\\Microsoft.NET.Sdk.Publish.Tasks.Tests\\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj"
+      "test\\Microsoft.NET.Sdk.Publish.Tasks.Tests\\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj"
     ]
   }
 }
