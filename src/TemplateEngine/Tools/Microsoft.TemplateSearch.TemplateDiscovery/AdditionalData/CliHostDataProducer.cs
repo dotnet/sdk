@@ -77,7 +77,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
                 }
 
                 return x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase)
-                    && (x.Version?.Equals(y.Version, StringComparison.OrdinalIgnoreCase) ?? x.Version == y.Version);
+                    && (x.Version?.Equals(y.Version, StringComparison.OrdinalIgnoreCase) ?? (x.Version == y.Version));
             }
 
             public int GetHashCode([DisallowNull] ITemplatePackageInfo obj)

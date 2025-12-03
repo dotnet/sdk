@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.TestHelper
 
                 var firstLinePrefix = $"| [{timestamp}] {_category} {logLevel}: ";
                 var lines = formatter(state, exception).Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
-                messageBuilder.AppendLine(firstLinePrefix + lines.FirstOrDefault() ?? string.Empty);
+                messageBuilder.AppendLine(firstLinePrefix + (lines.FirstOrDefault() ?? string.Empty));
 
                 var additionalLinePrefix = "|" + new string(' ', firstLinePrefix.Length - 1);
                 foreach (var line in lines.Skip(1))
