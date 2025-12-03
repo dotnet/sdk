@@ -7,6 +7,7 @@ using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 
@@ -60,7 +61,7 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
 
     private IEnumerable<DirectoryInfo> GetFoldersToRemove()
     {
-        var directory = new DirectoryInfo(VirtualProjectBuildingCommand.GetTempSubdirectory());
+        var directory = new DirectoryInfo(VirtualProjectBuilder.GetTempSubdirectory());
 
         if (!directory.Exists)
         {
@@ -84,7 +85,7 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
 
     private static FileInfo GetMetadataFile()
     {
-        return new FileInfo(VirtualProjectBuildingCommand.GetTempSubpath(RunFileArtifactsMetadata.FilePath));
+        return new FileInfo(VirtualProjectBuilder.GetTempSubpath(RunFileArtifactsMetadata.FilePath));
     }
 
     private FileStream? OpenMetadataFile()

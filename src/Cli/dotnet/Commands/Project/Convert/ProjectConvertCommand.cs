@@ -9,6 +9,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
@@ -79,9 +80,9 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         {
             using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
             using var writer = new StreamWriter(stream, Encoding.UTF8);
-            VirtualProjectBuildingCommand.WriteProjectFile(writer, UpdateDirectives(directives), isVirtualProject: false,
+            VirtualProjectBuilder.WriteProjectFile(writer, UpdateDirectives(directives), isVirtualProject: false,
                 userSecretsId: DetermineUserSecretsId(),
-                excludeDefaultProperties: FindDefaultPropertiesToExclude());
+                defaultProperties: GetDefaultProperties());
         }
 
         // Copy or move over included items.
@@ -230,14 +231,14 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             return result.DrainToImmutable();
         }
 
-        IEnumerable<string> FindDefaultPropertiesToExclude()
+        IEnumerable<(string name, string value)> GetDefaultProperties()
         {
-            foreach (var (name, defaultValue) in VirtualProjectBuildingCommand.DefaultProperties)
+            foreach (var (name, defaultValue) in VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion))
             {
                 string projectValue = projectInstance.GetPropertyValue(name);
-                if (!string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return name;
+                    yield return (name, defaultValue);
                 }
             }
         }

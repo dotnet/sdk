@@ -179,6 +179,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
 
         // Create restore command, used also for obtaining MSBuild properties.
         bool interactive = _parseResult.GetValue(PackageAddCommandParser.InteractiveOption);
+
         var command = new VirtualProjectBuildingCommand(
             entryPointFileFullPath: fullPath,
             msbuildArgs: MSBuildArgs.FromProperties(new Dictionary<string, string>(2)
@@ -192,6 +193,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             NoCache = true,
             NoBuild = true,
         };
+
         var projectCollection = new ProjectCollection();
         var projectInstance = command.CreateProjectInstance(projectCollection);
 
