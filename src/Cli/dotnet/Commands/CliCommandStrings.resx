@@ -1739,6 +1739,21 @@ The current OutputType is '{2}'.</value>
     <value>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</value>
   </data>
+  <data name="RunCommandSelectTargetFrameworkPrompt" xml:space="preserve">
+    <value>Select the target framework to run:</value>
+  </data>
+  <data name="RunCommandMoreFrameworksText" xml:space="preserve">
+    <value>Move up and down to reveal more frameworks</value>
+  </data>
+  <data name="RunCommandSearchPlaceholderText" xml:space="preserve">
+    <value>Type to search</value>
+  </data>
+  <data name="RunCommandAvailableTargetFrameworks" xml:space="preserve">
+    <value>Available target frameworks:</value>
+  </data>
+  <data name="RunCommandExampleText" xml:space="preserve">
+    <value>Example</value>
+  </data>
   <data name="RunCommandProjectAbbreviationDeprecated" xml:space="preserve">
     <value>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</value>
     <comment>{Locked="--project"}</comment>

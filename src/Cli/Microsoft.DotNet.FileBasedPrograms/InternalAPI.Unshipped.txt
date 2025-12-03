@@ -30,8 +30,19 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo.Span.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo.TrailingWhiteSpace.get -> Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo.TrailingWhiteSpace.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project
-Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.Project(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
-Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.WithName(string! name) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.EnsureProjectFilePath(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.DotNet.FileBasedPrograms.DiagnosticBag diagnostics) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ExpandedName.get -> string?
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ExpandedName.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind.Expanded = 1 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind.Final = 3 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind.ProjectFilePath = 2 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.OriginalName.get -> string!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.OriginalName.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.Project(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info, string! name) -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ProjectFilePath.get -> string?
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ProjectFilePath.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.WithName(string! name, Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind kind) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.Property(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.Value.get -> string!
@@ -102,7 +113,6 @@ override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Shebang.ToString() -
 override Microsoft.DotNet.FileBasedPrograms.SourceFile.GetHashCode() -> int
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named?
-static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.GetProjectFileFromDirectory(string! projectDirectory) -> System.IO.FileInfo!
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk?
@@ -113,6 +123,7 @@ static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.CombineHashCodes(int v
 static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.GetRelativePath(string! relativeTo, string! path) -> string!
 static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.IsPathFullyQualified(string! path) -> bool
 static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.CreateTokenizer(Microsoft.CodeAnalysis.Text.SourceText! text) -> Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser!
+static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.EvaluateDirectives(Microsoft.Build.Execution.ProjectInstance? project, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!> directives, Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.DotNet.FileBasedPrograms.DiagnosticBag diagnostics) -> System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>
 static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.FindDirectives(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, bool reportAllErrors, Microsoft.DotNet.FileBasedPrograms.DiagnosticBag diagnostics) -> System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>
 static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.FindLeadingDirectives(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.SyntaxTriviaList triviaList, Microsoft.DotNet.FileBasedPrograms.DiagnosticBag diagnostics, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>.Builder? builder) -> void
 static Microsoft.DotNet.FileBasedPrograms.MSBuildUtilities.ConvertStringToBool(string? parameterValue, bool defaultValue = false) -> bool
