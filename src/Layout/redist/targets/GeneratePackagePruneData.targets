@@ -22,7 +22,7 @@
       <!-- Add metadata for downloading and binplacing -->
       <TargetingPackForPruneData Version="$(TargetingPackPruneVersion).0.0" TargetFrameworkVersion="$(TargetingPackPruneVersion).0" PackageName="%(Identity).Ref" />
 
-      <!-- Add metadata for where the PackagesOverride file should be in repo source -->
+      <!-- Add metadata for where the PackageOverrides file should be in repo source -->
       <TargetingPackForPruneData RepoSourcePath="$(MSBuildProjectDirectory)\PrunePackageData\%(TargetFrameworkVersion)\%(Identity)\PackageOverrides.txt" />
       
     </ItemGroup>
