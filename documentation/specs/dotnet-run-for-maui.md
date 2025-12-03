@@ -151,10 +151,14 @@ A new `--device` switch will:
 When using `-bl` with `dotnet run`, all MSBuild operations are logged to a single
 binlog file: device selection, build, deploy, and run argument computation.
 
-File naming follows standard MSBuild conventions:
+File naming for `dotnet run` binlogs:
 
-* `-bl:filename.binlog` creates `filename.binlog`
-* `-bl` creates `msbuild.binlog`
+* `-bl:filename.binlog` creates `filename-dotnet-run.binlog`
+* `-bl` creates `msbuild-dotnet-run.binlog`
+
+Note: The build step may also create `msbuild.binlog` separately. Use
+`--no-build` with `-bl` to only capture run-specific MSBuild
+operations.
 
 ## What about Launch Profiles?
 

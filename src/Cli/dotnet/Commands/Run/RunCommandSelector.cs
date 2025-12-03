@@ -343,7 +343,7 @@ internal sealed class RunCommandSelector : IDisposable
             }
 
             Reporter.Output.WriteLine();
-            Reporter.Output.WriteLine($"{CliCommandStrings.RunCommandExampleText}: dotnet run --device {devices[0].Id}");
+            Reporter.Output.WriteLine($"{CliCommandStrings.RunCommandExampleText}: dotnet run --device {ArgumentEscaper.EscapeSingleArg(devices[0].Id)}");
             Reporter.Output.WriteLine();
             return true;
         }
@@ -391,7 +391,7 @@ internal sealed class RunCommandSelector : IDisposable
             }
 
             Reporter.Error.WriteLine();
-            Reporter.Error.WriteLine($"{CliCommandStrings.RunCommandExampleText}: dotnet run --device {devices[0].Id}");
+            Reporter.Error.WriteLine($"{CliCommandStrings.RunCommandExampleText}: dotnet run --device {ArgumentEscaper.EscapeSingleArg(devices[0].Id)}");
             Reporter.Error.WriteLine();
             return false;
         }
