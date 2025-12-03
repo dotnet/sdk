@@ -45,7 +45,6 @@
     <ProjectReference Include="..\..\Microsoft.DotNet.TemplateLocator\Microsoft.DotNet.TemplateLocator.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\..\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\..\Microsoft.Win32.Msi\Microsoft.Win32.Msi.csproj" GlobalPropertiesToRemove="PublishDir" />
-    <ProjectReference Include="..\..\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" />
     <ProjectReference Include="..\Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\..\System.CommandLine.StaticCompletions\System.CommandLine.StaticCompletions.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.DotNet.Cli.CommandLine\Microsoft.DotNet.Cli.CommandLine.csproj" />

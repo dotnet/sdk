@@ -24,8 +24,8 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
             CleanCommandParser.GetCommand(),
             CleanCommandParser.SlnOrProjectOrFileArgument,
             static (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
-                    entryPointFileFullPath: appFilePath,
-                    msbuildArgs: msbuildArgs)
+                entryPointFileFullPath: appFilePath,
+                msbuildArgs: msbuildArgs)
             {
                 NoBuild = false,
                 NoRestore = true,

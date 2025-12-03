@@ -14,6 +14,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using NuGet.ProjectModel;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
@@ -25,7 +26,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
     {
         var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_parseResult);
 
-        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuildingCommand.IsValidEntryPointPath(fileOrDirectory))
+        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
         {
             return ExecuteForFileBasedApp(fileOrDirectory);
         }
@@ -179,6 +180,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
 
         // Create restore command, used also for obtaining MSBuild properties.
         bool interactive = _parseResult.GetValue(PackageAddCommandParser.InteractiveOption);
+
         var command = new VirtualProjectBuildingCommand(
             entryPointFileFullPath: fullPath,
             msbuildArgs: MSBuildArgs.FromProperties(new Dictionary<string, string>(2)
@@ -192,6 +194,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             NoCache = true,
             NoBuild = true,
         };
+
         var projectCollection = new ProjectCollection();
         var projectInstance = command.CreateProjectInstance(projectCollection);
 

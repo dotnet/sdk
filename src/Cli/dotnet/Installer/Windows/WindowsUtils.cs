@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Utilities;
 using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;

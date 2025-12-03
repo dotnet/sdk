@@ -8,6 +8,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
@@ -110,7 +111,7 @@ internal class ReleasePropertyProjectLocator
     {
         foreach (string arg in _slnOrProjectArgs.Append(Directory.GetCurrentDirectory()))
         {
-            if (VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+            if (VirtualProjectBuilder.IsValidEntryPointPath(arg))
             {
                 return new VirtualProjectBuildingCommand(Path.GetFullPath(arg), MSBuildArgs.FromProperties(globalProps))
                     .CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
