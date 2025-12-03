@@ -11,7 +11,13 @@ using static Microsoft.DotNet.Cli.EnvironmentVariableNames;
 namespace Microsoft.NET.Build.Tasks
 {
     public class ResolveTargetingPackAssets : TaskBase
+#if NET10_0_OR_GREATER
+        , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
         public ITaskItem[] FrameworkReferences { get; set; } = Array.Empty<ITaskItem>();
 
         public ITaskItem[] ResolvedTargetingPacks { get; set; } = Array.Empty<ITaskItem>();

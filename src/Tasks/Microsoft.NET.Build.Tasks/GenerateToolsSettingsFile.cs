@@ -8,7 +8,14 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks
 {
     public class GenerateToolsSettingsFile : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         [Required]
         public string EntryPointRelativePath { get; set; }
 

@@ -18,7 +18,13 @@ namespace Microsoft.NET.Build.Tasks
     /// items, which are written to the runtimeconfig file
     /// </summary>
     public class ProcessFrameworkReferences : TaskBase
+#if NET10_0_OR_GREATER
+        , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
         public string? TargetFrameworkIdentifier { get; set; }
 
         [Required]

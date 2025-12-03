@@ -14,7 +14,14 @@ namespace Microsoft.NET.Build.Tasks
     //  Otherwise, create KnownFrameworkReference items based on WindowsSdkSupportedTargetPlatformVersion items, using WindowsSdkPackageVersion and MinimumNETVersion metadata
 
     public class CreateWindowsSdkKnownFrameworkReferences : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         public bool UseWindowsSDKPreview { get; set; }
 
         public string WindowsSdkPackageVersion { get; set; }

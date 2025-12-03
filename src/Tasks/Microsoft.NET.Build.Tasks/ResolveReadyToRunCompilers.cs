@@ -10,7 +10,14 @@ using NuGet.Versioning;
 namespace Microsoft.NET.Build.Tasks
 {
     public class ResolveReadyToRunCompilers : TaskBase
+#if NET10_0_OR_GREATER
+        , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         public bool EmitSymbols { get; set; }
         public bool ReadyToRunUseCrossgen2 { get; set; }
         public string PerfmapFormatVersion { get; set; }

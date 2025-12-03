@@ -13,7 +13,14 @@ namespace Microsoft.NET.Build.Tasks
     /// Determines the assembly version to use for a given semantic version.
     /// </summary>
     public class GetAssemblyVersion : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         /// <summary>
         /// The nuget version from which to get an assembly version portion.
         /// </summary>

@@ -11,7 +11,14 @@ namespace Microsoft.NET.Build.Tasks
     /// Provides a localizable mechanism for logging messages with different levels of importance from the SDK targets.
     /// </summary>
     public class ShowPreviewMessage : TaskBase
+#if NET10_0_OR_GREATER
+        , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         protected override void ExecuteCore()
         {
             const string previewMessageKey = "Microsoft.NET.Build.Tasks.DisplayPreviewMessageKey";

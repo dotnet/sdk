@@ -12,7 +12,14 @@ namespace Microsoft.NET.Build.Tasks;
 /// compatible with a specified Runtime Identifier, according to a given RuntimeIdentifierGraph file.
 /// </summary>
 public class SelectRuntimeIdentifierSpecificItems : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
 {
+#if NET10_0_OR_GREATER
+    public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
+
     /// <summary>
     /// The target runtime identifier to check compatibility against.
     /// </summary>

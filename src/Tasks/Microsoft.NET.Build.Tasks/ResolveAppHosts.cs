@@ -10,7 +10,14 @@ using NuGet.Frameworks;
 namespace Microsoft.NET.Build.Tasks
 {
     public class ResolveAppHosts : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         public string TargetFrameworkIdentifier { get; set; }
 
         public string TargetFrameworkVersion { get; set; }

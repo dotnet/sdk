@@ -9,7 +9,14 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.NET.Build.Tasks
 {
     public sealed class GetEmbeddedApphostPaths : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         /// <summary>
         /// The command name of the dotnet tool.
         /// </summary>

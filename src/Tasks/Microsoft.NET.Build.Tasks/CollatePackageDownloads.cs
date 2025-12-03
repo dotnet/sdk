@@ -14,7 +14,14 @@ namespace Microsoft.NET.Build.Tasks
     /// So this task groups a list of items with Version metadata into a list of items which can be used as PackageDownloads.
     /// </summary>
     public class CollatePackageDownloads : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         [Required]
         public ITaskItem[] Packages { get; set; }
         

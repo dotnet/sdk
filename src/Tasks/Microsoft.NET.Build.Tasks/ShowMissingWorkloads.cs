@@ -13,7 +13,13 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 namespace Microsoft.NET.Build.Tasks
 {
     public class ShowMissingWorkloads : TaskBase
+#if NET10_0_OR_GREATER
+        , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
         private static readonly string MauiCrossPlatTopLevelVSWorkloads = "Microsoft.VisualStudio.Workload.NetCrossPlat";
         private static readonly string MauiComponentGroupVSWorkload = "Microsoft.VisualStudio.ComponentGroup.Maui.All";
         private static readonly string WasmTopLevelVSWorkload = "Microsoft.VisualStudio.Workload.NetWeb";

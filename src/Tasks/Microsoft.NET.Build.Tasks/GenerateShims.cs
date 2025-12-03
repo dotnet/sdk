@@ -11,7 +11,14 @@ using NuGet.Versioning;
 namespace Microsoft.NET.Build.Tasks
 {
     public sealed class GenerateShims : TaskBase
+#if NET10_0_OR_GREATER
+        , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         /// <summary>
         /// Relative paths for Apphost for different ShimRuntimeIdentifiers with RuntimeIdentifier as meta data
         /// </summary>

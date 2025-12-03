@@ -13,7 +13,14 @@ namespace Microsoft.NET.Build.Tasks
     /// Parses the target manifest files into MSBuild Items.
     /// </summary>
     public sealed class ParseTargetManifests : TaskBase
+#if NET10_0_OR_GREATER
+        , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         public string TargetManifestFiles { get; set; }
 
         [Output]

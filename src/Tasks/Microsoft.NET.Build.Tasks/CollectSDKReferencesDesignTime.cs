@@ -16,7 +16,14 @@ namespace Microsoft.NET.Build.Tasks
     /// Tracking issue https://github.com/dotnet/roslyn-project-system/issues/587
     /// </summary>
     public class CollectSDKReferencesDesignTime : TaskBase
+#if NET10_0_OR_GREATER
+    , IMultiThreadableTask
+#endif
     {
+#if NET10_0_OR_GREATER
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         [Required]
         public ITaskItem[] SdkReferences { get; set; }
 
