@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -10,7 +11,17 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 public class MSBuildCommand(
     IEnumerable<string> msbuildArgs,
     string? msbuildPath = null
-) : MSBuildForwardingApp(MSBuildArgs.AnalyzeMSBuildArguments([..msbuildArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, MSBuildCommandParser.TargetOption, CommonOptions.VerbosityOption()), msbuildPath, includeLogo: true)
+) : MSBuildForwardingApp(MSBuildArgs.AnalyzeMSBuildArguments(
+        [.. msbuildArgs],
+        CommonOptions.PropertiesOption,
+        CommonOptions.RestorePropertiesOption,
+        MSBuildCommandParser.TargetOption,
+        CommonOptions.VerbosityOption(),
+        // We set the no-logo option to false here to ensure that by default the logo is shown for this command.
+        // This is different from other commands that default to hiding the logo - but this command is meant to mimic
+        // the behavior of calling MSBuild directly, which shows the logo by default.
+        CommonOptions.NoLogoOption(false)
+    ), msbuildPath)
 {
     public static MSBuildCommand FromArgs(string[] args, string? msbuildPath = null)
     {

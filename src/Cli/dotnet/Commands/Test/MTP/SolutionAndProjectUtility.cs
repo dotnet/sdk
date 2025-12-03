@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -113,31 +114,6 @@ internal static class SolutionAndProjectUtility
         }
 
         return (true, string.Empty);
-    }
-
-    public static (bool ProjectFileFound, string Message) TryGetProjectFilePath(string directory, out string projectFilePath)
-    {
-        projectFilePath = string.Empty;
-
-        if (!Directory.Exists(directory))
-        {
-            return (false, string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directory));
-        }
-
-        var actualProjectFiles = GetProjectFilePaths(directory);
-
-        if (actualProjectFiles.Length == 0)
-        {
-            return (false, string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, directory));
-        }
-
-        if (actualProjectFiles.Length == 1)
-        {
-            projectFilePath = actualProjectFiles[0];
-            return (true, string.Empty);
-        }
-
-        return (false, string.Format(CliStrings.MoreThanOneProjectInDirectory, directory));
     }
 
     public static (bool SolutionFileFound, string Message) TryGetSolutionFilePath(string directory, out string solutionFilePath)
@@ -403,10 +379,10 @@ internal static class SolutionAndProjectUtility
             return null;
         }
 
-        var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
+        var launchSettingsPath = LaunchSettingsLocator.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
         bool hasLaunchSettings = File.Exists(launchSettingsPath);
 
-        var runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+        var runJsonPath = LaunchSettingsLocator.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
         bool hasRunJson = File.Exists(runJsonPath);
 
         if (hasLaunchSettings)
