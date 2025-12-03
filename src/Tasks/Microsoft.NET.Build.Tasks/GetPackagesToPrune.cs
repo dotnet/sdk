@@ -41,7 +41,7 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] PackagesToPrune { get; set; }
 #if NET10_0_OR_GREATER
-        public TaskEnvironment TaskEnvironment { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public TaskEnvironment TaskEnvironment { get; set; }
 #endif
 
         class CacheKey
