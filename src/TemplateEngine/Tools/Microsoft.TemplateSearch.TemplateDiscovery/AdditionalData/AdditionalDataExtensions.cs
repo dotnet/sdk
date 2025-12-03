@@ -27,7 +27,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
                 }
                 catch (Exception ex)
                 {
-                    Verbose.WriteLine($"Failed to produce additional data for {package.Name}::{package.Version} with producer {producer.DataUniqueName}, details: {ex}");
+                    Verbose.WriteLine($"Failed to produce additional data for {package.Name}@{package.Version} with producer {producer.DataUniqueName}, details: {ex}");
                 }
             }
             if (additionalData.Any())
