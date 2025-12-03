@@ -16,6 +16,9 @@ namespace Microsoft.NET.Build.Tasks
     {
         // Minimum .NET Core version that supports package pruning
         private const int MinSupportedFrameworkMajorVersion = 3;
+        
+        // Minimum .NET Core version that uses prune package data instead of framework package data
+        private const int PrunePackageDataMinMajorVersion = 10;
 
         [Required]
         public string TargetFrameworkIdentifier { get; set; }
@@ -254,7 +257,7 @@ namespace Microsoft.NET.Build.Tasks
             
             // Use hard-coded / generated "framework package data" for .NET 9 and lower, .NET Framework, and .NET Standard
             // Use bundled "prune package data" for .NET 10 and higher.  During the redist build, this comes from targeting packs and is laid out in the PrunePackageData folder.
-            bool useFrameworkPackageData = !targetFrameworkIdentifier.Equals(".NETCoreApp") || targetVersion.Major < 10;
+            bool useFrameworkPackageData = !targetFrameworkIdentifier.Equals(".NETCoreApp") || targetVersion.Major < PrunePackageDataMinMajorVersion;
 
             Dictionary<string, NuGetVersion> packages = null;
 
