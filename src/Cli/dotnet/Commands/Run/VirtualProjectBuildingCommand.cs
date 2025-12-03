@@ -180,7 +180,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (field.IsDefault)
             {
-                field = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, reportAllErrors: false, DiagnosticBag.ThrowOnFirst());
+                field = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, reportAllErrors: false, ErrorReporters.ThrowingReporter);
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -1061,7 +1061,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         var project = CreateProjectInstance(projectCollection, Directives, addGlobalProperties);
 
-        var directives = FileLevelDirectiveHelpers.EvaluateDirectives(project, Directives, EntryPointSourceFile, DiagnosticBag.ThrowOnFirst());
+        var directives = FileLevelDirectiveHelpers.EvaluateDirectives(project, Directives, EntryPointSourceFile, ErrorReporters.ThrowingReporter);
         if (directives != Directives)
         {
             Directives = directives;
