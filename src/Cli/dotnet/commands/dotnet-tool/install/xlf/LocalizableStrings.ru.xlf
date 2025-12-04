@@ -58,9 +58,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">Если вы хотели установить глобальное средство, добавьте в команду параметр "--global".
-Если вы хотите создать манифест, используйте команду "dotnet new tool-manifest", которая обычно выполняется в корневом каталоге репозитория.</target>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="translated">Если вы хотели установить глобальный инструмент, добавьте "--global" в команду.
+Если вы хотите создать манифест, используйте флаг "--create-manifest-if-needed" с командой "dotnet tool install" или примените команду "dotnet new tool-manifest", которая обычно выполняется в корневом каталоге репозитория.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
