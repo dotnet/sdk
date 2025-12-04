@@ -15,9 +15,12 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -55,8 +58,11 @@ public class RunCommand
 
     /// <summary>
     /// Parsed structure representing the MSBuild arguments that will be used to build the project.
+    ///
+    /// Note: This property has a private setter and is mutated within the class when framework selection modifies it.
+    /// This mutability is necessary to allow the command to update MSBuild arguments after construction based on framework selection.
     /// </summary>
-    public MSBuildArgs MSBuildArgs { get; }
+    public MSBuildArgs MSBuildArgs { get; private set; }
     public bool Interactive { get; }
 
     /// <summary>
@@ -123,6 +129,18 @@ public class RunCommand
             return 1;
         }
 
+        // Pre-run evaluation: Handle target framework selection for multi-targeted projects
+        if (ProjectFileFullPath is not null && !TrySelectTargetFrameworkIfNeeded())
+        {
+            return 1;
+        }
+
+        // For file-based projects, check for multi-targeting before building
+        if (EntryPointFileFullPath is not null && !TrySelectTargetFrameworkForFileBasedProject())
+        {
+            return 1;
+        }
+
         Func<ProjectCollection, ProjectInstance>? projectFactory = null;
         RunProperties? cachedRunProperties = null;
         VirtualProjectBuildingCommand? virtualCommand = null;
@@ -181,6 +199,100 @@ public class RunCommand
         }
     }
 
+    /// <summary>
+    /// Checks if target framework selection is needed for multi-targeted projects.
+    /// If needed and we're in interactive mode, prompts the user to select a framework.
+    /// If needed and we're in non-interactive mode, shows an error.
+    /// </summary>
+    /// <returns>True if we can continue, false if we should exit</returns>
+    private bool TrySelectTargetFrameworkIfNeeded()
+    {
+        Debug.Assert(ProjectFileFullPath is not null);
+
+        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
+        if (TargetFrameworkSelector.TrySelectTargetFramework(
+            ProjectFileFullPath,
+            globalProperties,
+            Interactive,
+            out string? selectedFramework))
+        {
+            ApplySelectedFramework(selectedFramework);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if target framework selection is needed for file-based projects.
+    /// Parses directives from the source file to detect multi-targeting.
+    /// </summary>
+    /// <returns>True if we can continue, false if we should exit</returns>
+    private bool TrySelectTargetFrameworkForFileBasedProject()
+    {
+        Debug.Assert(EntryPointFileFullPath is not null);
+
+        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
+        
+        // If a framework is already specified via --framework, no need to check
+        if (globalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework))
+        {
+            return true;
+        }
+
+        // Get frameworks from source file directives
+        var frameworks = GetTargetFrameworksFromSourceFile(EntryPointFileFullPath);
+        if (frameworks is null || frameworks.Length == 0)
+        {
+            return true; // Not multi-targeted
+        }
+
+        // Use TargetFrameworkSelector to handle multi-target selection (or single framework selection)
+        if (TargetFrameworkSelector.TrySelectTargetFramework(frameworks, Interactive, out string? selectedFramework))
+        {
+            ApplySelectedFramework(selectedFramework);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Parses a source file to extract target frameworks from directives.
+    /// </summary>
+    /// <returns>Array of frameworks if TargetFrameworks is specified, null otherwise</returns>
+    private static string[]? GetTargetFrameworksFromSourceFile(string sourceFilePath)
+    {
+        var sourceFile = SourceFile.Load(sourceFilePath);
+        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
+        
+        var targetFrameworksDirective = directives.OfType<CSharpDirective.Property>()
+            .FirstOrDefault(p => string.Equals(p.Name, "TargetFrameworks", StringComparison.OrdinalIgnoreCase));
+        
+        if (targetFrameworksDirective is null)
+        {
+            return null;
+        }
+
+        return targetFrameworksDirective.Value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    /// <summary>
+    /// Applies the selected target framework to MSBuildArgs if a framework was provided.
+    /// </summary>
+    /// <param name="selectedFramework">The framework to apply, or null if no framework selection was needed</param>
+    private void ApplySelectedFramework(string? selectedFramework)
+    {
+        // If selectedFramework is null, it means no framework selection was needed
+        // (e.g., user already specified --framework, or single-target project)
+        if (selectedFramework is not null)
+        {
+            var additionalProperties = new ReadOnlyDictionary<string, string>(
+                new Dictionary<string, string> { { "TargetFramework", selectedFramework } });
+            MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
+        }
+    }
+
     internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
     {
         if (launchSettings == null)
@@ -216,7 +328,13 @@ public class RunCommand
             return true;
         }
 
-        var launchSettingsPath = ReadCodeFromStdin ? null : TryFindLaunchSettings(projectOrEntryPointFilePath: ProjectFileFullPath ?? EntryPointFileFullPath!, launchProfile: LaunchProfile);
+        var launchSettingsPath = ReadCodeFromStdin
+            ? null
+            : LaunchSettingsLocator.TryFindLaunchSettings(
+                projectOrEntryPointFilePath: ProjectFileFullPath ?? EntryPointFileFullPath!,
+                launchProfile: LaunchProfile,
+                static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message));
+
         if (launchSettingsPath is null)
         {
             return true;
@@ -249,57 +367,6 @@ public class RunCommand
         }
 
         return true;
-
-        static string? TryFindLaunchSettings(string projectOrEntryPointFilePath, string? launchProfile)
-        {
-            var buildPathContainer = Path.GetDirectoryName(projectOrEntryPointFilePath)!;
-
-            string propsDirectory;
-
-            // VB.NET projects store the launch settings file in the
-            // "My Project" directory instead of a "Properties" directory.
-            // TODO: use the `AppDesignerFolder` MSBuild property instead, which captures this logic already
-            if (string.Equals(Path.GetExtension(projectOrEntryPointFilePath), ".vbproj", StringComparison.OrdinalIgnoreCase))
-            {
-                propsDirectory = "My Project";
-            }
-            else
-            {
-                propsDirectory = "Properties";
-            }
-
-            string launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(buildPathContainer, propsDirectory);
-            bool hasLaunchSetttings = File.Exists(launchSettingsPath);
-
-            string appName = Path.GetFileNameWithoutExtension(projectOrEntryPointFilePath);
-            string runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(buildPathContainer, appName);
-            bool hasRunJson = File.Exists(runJsonPath);
-
-            if (hasLaunchSetttings)
-            {
-                if (hasRunJson)
-                {
-                    Reporter.Output.WriteLine(string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath).Yellow());
-                }
-
-                return launchSettingsPath;
-            }
-
-            if (hasRunJson)
-            {
-                return runJsonPath;
-            }
-
-            if (!string.IsNullOrEmpty(launchProfile))
-            {
-                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchProfile, $"""
-                    {launchSettingsPath}
-                    {runJsonPath}
-                    """).Bold().Red());
-            }
-
-            return null;
-        }
     }
 
     private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? virtualCommand)
@@ -364,7 +431,7 @@ public class RunCommand
     /// <returns></returns>
     private MSBuildArgs SetupSilentBuildArgs(MSBuildArgs msbuildArgs)
     {
-        msbuildArgs = msbuildArgs.CloneWithAdditionalArgs("-nologo");
+        msbuildArgs = msbuildArgs.CloneWithNoLogo(true);
 
         if (msbuildArgs.Verbosity is VerbosityOptions userVerbosity)
         {
@@ -430,7 +497,8 @@ public class RunCommand
 
         static void ValidatePreconditions(ProjectInstance project)
         {
-            if (string.IsNullOrWhiteSpace(project.GetPropertyValue("TargetFramework")))
+            // there must be some kind of TFM available to run a project
+            if (string.IsNullOrWhiteSpace(project.GetPropertyValue("TargetFramework")) && string.IsNullOrEmpty(project.GetPropertyValue("TargetFrameworks")))
             {
                 ThrowUnableToRunError(project);
             }
@@ -469,8 +537,7 @@ public class RunCommand
             var artifactsPath = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointFileFullPath);
             var exePath = Path.Join(artifactsPath, "bin", "debug", Path.GetFileNameWithoutExtension(entryPointFileFullPath) + FileNameSuffixes.CurrentPlatform.Exe);
             var commandSpec = new CommandSpec(path: exePath, args: ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args));
-            var command = CommandFactoryUsingResolver.Create(commandSpec)
-                .WorkingDirectory(Path.GetDirectoryName(entryPointFileFullPath));
+            var command = CommandFactoryUsingResolver.Create(commandSpec);
 
             SetRootVariableName(
                 command,
@@ -503,16 +570,6 @@ public class RunCommand
     [DoesNotReturn]
     internal static void ThrowUnableToRunError(ProjectInstance project)
     {
-        string targetFrameworks = project.GetPropertyValue("TargetFrameworks");
-        if (!string.IsNullOrEmpty(targetFrameworks))
-        {
-            string targetFramework = project.GetPropertyValue("TargetFramework");
-            if (string.IsNullOrEmpty(targetFramework))
-            {
-                throw new GracefulException(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework");
-            }
-        }
-
         throw new GracefulException(
                 string.Format(
                     CliCommandStrings.RunCommandExceptionUnableToRun,
@@ -536,6 +593,15 @@ public class RunCommand
         {
             emptyProjectOption = true;
             projectFileOrDirectoryPath = Directory.GetCurrentDirectory();
+        }
+
+        // Normalize path separators to handle Windows-style paths on non-Windows platforms.
+        // This is supported for backward compatibility in 'dotnet run' only, not for all CLI commands.
+        // Converting backslashes to forward slashes allows PowerShell scripts using Windows-style paths
+        // to work cross-platform, maintaining compatibility with .NET 9 behavior.
+        if (Path.DirectorySeparatorChar != '\\')
+        {
+            projectFileOrDirectoryPath = projectFileOrDirectoryPath.Replace('\\', '/');
         }
 
         string? projectFilePath = Directory.Exists(projectFileOrDirectoryPath)
