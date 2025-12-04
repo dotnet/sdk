@@ -122,11 +122,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
-  <UsingTask
-    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ParseAdditionalStaticWebAssetsBasePaths"
-    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
-
   <!-- Static web assets define how web content needs to be served from web applications, class libraries and packages during
        development and what and where web contents need to be served on the published application.
 
@@ -734,12 +729,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(NoBuild)' != 'true' and '$(AdditionalStaticWebAssetsBasePath)' != ''"
     DependsOnTargets="ResolveStaticWebAssetsConfiguration">
 
-    <ParseAdditionalStaticWebAssetsBasePaths
-      AdditionalStaticWebAssetsBasePaths="$(AdditionalStaticWebAssetsBasePath)"
-    >
-      <Output TaskParameter="ParsedBasePaths" ItemName="_ParsedAdditionalContentRoot" />
-      <Output TaskParameter="DiscoveredFiles" ItemName="_AdditionalContentRootCandidates" />
-    </ParseAdditionalStaticWebAssetsBasePaths>
+    <!-- Parse the semicolon-separated list into items, then extract ContentRoot and BasePath using string split -->
+    <ItemGroup>
+      <_AdditionalStaticWebAssetsBasePathEntry Include="$(AdditionalStaticWebAssetsBasePath)" />
+      <_ParsedAdditionalContentRoot Include="@(_AdditionalStaticWebAssetsBasePathEntry)">
+        <ContentRoot>$([System.String]::Copy('%(Identity)').Split(',')[0].Trim())$([System.IO.Path]::DirectorySeparatorChar)</ContentRoot>
+        <BasePath>$([System.String]::Copy('%(Identity)').Split(',')[1].Trim())</BasePath>
+      </_ParsedAdditionalContentRoot>
+    </ItemGroup>
+
+    <!-- Discover files from each content root -->
+    <ItemGroup>
+      <_AdditionalContentRootCandidates Include="%(_ParsedAdditionalContentRoot.ContentRoot)**">
+        <ContentRoot>%(_ParsedAdditionalContentRoot.ContentRoot)</ContentRoot>
+        <BasePath>%(_ParsedAdditionalContentRoot.BasePath)</BasePath>
+      </_AdditionalContentRootCandidates>
+    </ItemGroup>
 
     <DefineStaticWebAssets
       CandidateAssets="@(_AdditionalContentRootCandidates)"
