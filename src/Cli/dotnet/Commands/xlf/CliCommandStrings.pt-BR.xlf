@@ -2687,6 +2687,11 @@ O padrão é publicar uma aplicação dependente de framework.</target>
         <target state="translated">Compilando...</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">Falha na execução do destino {0} para descobrir comandos de execução para este projeto. Corrija os erros e avisos e execute novamente.</target>
