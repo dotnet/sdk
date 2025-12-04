@@ -311,6 +311,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <Target Name="_CheckForNonAnyCPUPlatformTarget"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_UsingDefaultPlatformTarget)' != 'true' and '$(PlatformTarget)' != '' and '$(PlatformTarget)' != 'AnyCPU'">
+
+    <NETSdkWarning ResourceName="PlatformTargetNotRecommendedForModernDotNet"
+                    FormatArguments="$(PlatformTarget)" />
+
+  </Target>
+
   <Target Name="_CheckForMismatchingPlatform"
           BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
           Condition="'$(RuntimeIdentifier)' != '' and '$(PlatformTarget)' != ''">
