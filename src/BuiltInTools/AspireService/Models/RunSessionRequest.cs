@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
@@ -52,10 +54,10 @@ internal class RunSessionRequest
 
     [Required]
     [JsonPropertyName("launch_configurations")]
-    public LaunchConfiguration[] LaunchConfigurations { get; set; } = Array.Empty<LaunchConfiguration>();
+    public LaunchConfiguration[] LaunchConfigurations { get; set; } = [];
 
     [JsonPropertyName("env")]
-    public EnvVar[] Environment { get; set; } = Array.Empty<EnvVar>();
+    public EnvVar[] Environment { get; set; } = [];
 
     [JsonPropertyName("args")]
     public string[]? Arguments { get; set; }
@@ -76,7 +78,7 @@ internal class RunSessionRequest
             ProjectPath = projectLaunchConfig.ProjectPath,
             Debug = string.Equals(projectLaunchConfig.LaunchMode, DebugLaunchMode, StringComparison.OrdinalIgnoreCase),
             Arguments = Arguments,
-            Environment = Environment.Select(envVar => new KeyValuePair<string, string>(envVar.Name, envVar.Value!)),
+            Environment = Environment.Select(envVar => new KeyValuePair<string, string>(envVar.Name, envVar.Value ?? "")),
             LaunchProfile = projectLaunchConfig.LaunchProfile,
             DisableLaunchProfile = projectLaunchConfig.DisableLaunchProfile
         };

@@ -8,6 +8,7 @@
     <OutputType>Exe</OutputType>
     <VersionSuffix></VersionSuffix>
     <IsPackable>true</IsPackable>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
   
 </Project>

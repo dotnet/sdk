@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Configurer
             // at the same time
             FileAccessRetrier.RetryOnIOException(() =>
             {
-                var parentDirectory = Path.GetDirectoryName(filePath);
+                var parentDirectory = Path.GetDirectoryName(filePath) ?? string.Empty;
                 if (!fileSystem.File.Exists(filePath))
                 {
                     if (!fileSystem.Directory.Exists(parentDirectory))
