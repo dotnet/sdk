@@ -33,6 +33,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('osx-'))">false</PublishReadyToRunEmitSymbols>
+
+    <CrossGenTasksPath Condition="'$(CrossGenTasksPath)' == ''">$(MicrosoftNETBuildTasksAssembly)</CrossGenTasksPath>
   </PropertyGroup>
 
   <!--
@@ -386,7 +388,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Prepare build for ReadyToRun compilations. Builds list of assemblies to compile, and computes paths to ReadyToRun compiler bits
     ============================================================
     -->
-  <UsingTask Condition="'$(Crossgen2TasksOverriden)' != 'true'" TaskName="PrepareForReadyToRunCompilation" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask Condition="'$(Crossgen2TasksOverriden)' != 'true'" TaskName="PrepareForReadyToRunCompilation" AssemblyFile="$(CrossGenTasksPath)" />
   <Target Name="_PrepareForReadyToRunCompilation" DependsOnTargets="ResolveReadyToRunCompilers;_ComputeManagedRuntimePackAssemblies;_ComputeAssembliesToPostprocessOnPublish">
 
     <PropertyGroup>
@@ -453,7 +455,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <UsingTask Condition="'$(Crossgen2TasksOverriden)' != 'true'" TaskName="ResolveReadyToRunCompilers" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask Condition="'$(Crossgen2TasksOverriden)' != 'true'" TaskName="ResolveReadyToRunCompilers" AssemblyFile="$(CrossGenTasksPath)" />
   <Target Name="ResolveReadyToRunCompilers">
     <ResolveReadyToRunCompilers RuntimePacks="@(ResolvedRuntimePack)"
                                 Crossgen2Packs="@(ResolvedCrossgen2Pack)"
@@ -476,7 +478,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Compiles assemblies in the _ReadyToRunCompileList list into ReadyToRun images
     ============================================================
     -->
-  <UsingTask Condition="'$(Crossgen2TasksOverriden)' != 'true'" TaskName="RunReadyToRunCompiler" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask Condition="'$(Crossgen2TasksOverriden)' != 'true'" TaskName="RunReadyToRunCompiler" AssemblyFile="$(CrossGenTasksPath)" />
   <Target Name="_CreateR2RImages"
           Inputs="$(MSBuildAllProjects);@(_ReadyToRunCompileList);@(_ReadyToRunCompositeBuildInput);@(_ReadyToRunPgoFiles)"
           Outputs="%(_ReadyToRunCompileList.OutputR2RImage);%(_ReadyToRunCompileList.OutputPDBImage)">
