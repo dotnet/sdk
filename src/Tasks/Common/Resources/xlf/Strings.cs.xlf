@@ -663,7 +663,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="Net10NotCompatibleWithVS17">
         <source>NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</source>
-        <target state="new">NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</target>
+        <target state="translated">NETSDK1233: Cílení na .NET 10.0 nebo vyšší se v sadě Visual Studio 2022 17.14 nepodporuje.</target>
         <note>{StrBegins="NETSDK1233: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
