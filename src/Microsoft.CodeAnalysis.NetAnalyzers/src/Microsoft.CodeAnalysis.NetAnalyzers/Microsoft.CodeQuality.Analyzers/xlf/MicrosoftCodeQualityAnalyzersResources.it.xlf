@@ -447,6 +447,136 @@
         <target state="translated">Questa regola rileva l'utilizzo di intrinseci specifici della piattaforma che possono essere sostituiti con un intrinseco equivalente multipiattaforma.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Abs">
+        <source>The cross-platform 'Abs' method should be preferred</source>
+        <target state="new">The cross-platform 'Abs' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_AddSaturate">
+        <source>The cross-platform 'AddSaturate' method should be preferred</source>
+        <target state="new">The cross-platform 'AddSaturate' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_AndNot">
+        <source>The cross-platform 'AndNot' method should be preferred</source>
+        <target state="new">The cross-platform 'AndNot' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_AndNot_Swapped">
+        <source>The cross-platform 'AndNot' method should be preferred</source>
+        <target state="new">The cross-platform 'AndNot' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Ceiling">
+        <source>The cross-platform 'Ceiling' method should be preferred</source>
+        <target state="new">The cross-platform 'Ceiling' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_ConditionalSelect">
+        <source>The cross-platform 'ConditionalSelect' method should be preferred</source>
+        <target state="new">The cross-platform 'ConditionalSelect' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_ConvertToInt32">
+        <source>The cross-platform 'ConvertToInt32' method should be preferred</source>
+        <target state="new">The cross-platform 'ConvertToInt32' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Equals">
+        <source>The cross-platform 'Equals' method should be preferred</source>
+        <target state="new">The cross-platform 'Equals' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Floor">
+        <source>The cross-platform 'Floor' method should be preferred</source>
+        <target state="new">The cross-platform 'Floor' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_FusedMultiplyAdd">
+        <source>The cross-platform 'FusedMultiplyAdd' method should be preferred</source>
+        <target state="new">The cross-platform 'FusedMultiplyAdd' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_GetElement">
+        <source>The cross-platform 'GetElement' method should be preferred</source>
+        <target state="new">The cross-platform 'GetElement' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_GreaterThan">
+        <source>The cross-platform 'GreaterThan' method should be preferred</source>
+        <target state="new">The cross-platform 'GreaterThan' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_GreaterThanOrEqual">
+        <source>The cross-platform 'GreaterThanOrEqual' method should be preferred</source>
+        <target state="new">The cross-platform 'GreaterThanOrEqual' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_LessThan">
+        <source>The cross-platform 'LessThan' method should be preferred</source>
+        <target state="new">The cross-platform 'LessThan' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_LessThanOrEqual">
+        <source>The cross-platform 'LessThanOrEqual' method should be preferred</source>
+        <target state="new">The cross-platform 'LessThanOrEqual' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Load">
+        <source>The cross-platform 'Load' method should be preferred</source>
+        <target state="new">The cross-platform 'Load' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Max">
+        <source>The cross-platform 'Max' method should be preferred</source>
+        <target state="new">The cross-platform 'Max' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_MaxNative">
+        <source>The cross-platform 'MaxNative' method should be preferred</source>
+        <target state="new">The cross-platform 'MaxNative' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Min">
+        <source>The cross-platform 'Min' method should be preferred</source>
+        <target state="new">The cross-platform 'Min' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_MinNative">
+        <source>The cross-platform 'MinNative' method should be preferred</source>
+        <target state="new">The cross-platform 'MinNative' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Negate">
+        <source>The cross-platform 'Negate' method should be preferred</source>
+        <target state="new">The cross-platform 'Negate' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Round">
+        <source>The cross-platform 'Round' method should be preferred</source>
+        <target state="new">The cross-platform 'Round' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Sqrt">
+        <source>The cross-platform 'Sqrt' method should be preferred</source>
+        <target state="new">The cross-platform 'Sqrt' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Store">
+        <source>The cross-platform 'Store' method should be preferred</source>
+        <target state="new">The cross-platform 'Store' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_Truncate">
+        <source>The cross-platform 'Truncate' method should be preferred</source>
+        <target state="new">The cross-platform 'Truncate' method should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_WithElement">
+        <source>The cross-platform 'WithElement' method should be preferred</source>
+        <target state="new">The cross-platform 'WithElement' method should be preferred</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Addition">
         <source>The addition operator should be preferred</source>
         <target state="translated">È consigliabile preferire l'operatore di addizione</target>
