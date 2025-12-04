@@ -57,6 +57,21 @@
         <target state="translated">Autoři</target>
         <note>Table lable</note>
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BuildDefinition">
         <source>Build a .NET project.</source>
         <target state="translated">Sestaví projekt .NET.</target>
@@ -917,7 +932,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">Nejsou nainstalované žádné úlohy, nic se nedá opravit. Pokud chcete najít úlohy, které se mají nainstalovat, spusťte vyhledávání úloh dotnet.</target>
+        <target state="needs-review-translation">Nejsou nainstalované žádné úlohy, nic se nedá opravit. Pokud chcete najít úlohy, které se mají nainstalovat, spusťte vyhledávání úloh dotnet.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -1234,7 +1249,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="translated">Zadejte výstupní adresář (stisknutím klávesy Enter použijete výchozí hodnotu: {0}, adresář nesmí existovat):</target>
+        <target state="needs-review-translation">Zadejte výstupní adresář ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
@@ -1342,9 +1357,14 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Vrací se zpět instalace balíčku {0}…</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="new">Available devices:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
         <source>Available target frameworks:</source>
-        <target state="translated">Dostupné cílové architektury:</target>
+        <target state="new">Available target frameworks:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -1359,7 +1379,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="RunCommandExampleText">
         <source>Example</source>
-        <target state="translated">Příklad</target>
+        <target state="new">Example</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -1396,11 +1416,16 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">V projektu {0} nelze pokračovat.
-Ujistěte se, že máte spustitelný typ projektu.
-Spustitelný projekt by měl cílit na spustitelný TFM (například net{1}) a mít OutputType Exe.
-Aktuální OutputType je {2}.</target>
+        <target state="needs-review-translation">Projekt se nedá spustit.
+Ověřte prosím, že máte spustitelný typ projektu, a zajistěte, aby tento projekt podporoval {0}.
+Cílem spustitelného projektu by mělo být TFM (například net5.0) a jeho OutputType by měl být Exe.
+Aktuální {1} je {2}.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
@@ -1409,9 +1434,19 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Cílem projektu je více architektur. Pomocí parametru {0} určete, která architektura se má spustit.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="new">Move up and down to reveal more devices</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="translated">Posunutím nahoru a dolů zobrazíte další architektury.</target>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="new">No devices are available for this project.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -1421,12 +1456,17 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
-        <target state="translated">Zadejte hledaný text</target>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="new">Select a device to run on:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="translated">Vyberte cílovou architekturu, která se má spustit:</target>
+        <target state="new">Select the target framework to run:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">

@@ -57,6 +57,21 @@
         <target state="translated">Yazarlar</target>
         <note>Table lable</note>
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BuildDefinition">
         <source>Build a .NET project.</source>
         <target state="translated">Bir .NET projesi derler.</target>
@@ -917,7 +932,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">İş yükü yüklenmediğinden onarılacak iş yükü yok. Yüklenecek iş yüklerini bulmak için `dotnet workload search` çalıştırın.</target>
+        <target state="needs-review-translation">İş yükü yüklenmediğinden onarılacak iş yükü yok. Yüklenecek iş yüklerini bulmak için `dotnet workload search` çalıştırın.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -1234,7 +1249,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="translated">Çıkış dizinini belirtin (varsayılan için Enter tuşuna basın: '{0}', dizin mevcut olmamalıdır):</target>
+        <target state="needs-review-translation">Çıkış dizinini belirtin ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
@@ -1342,9 +1357,14 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">{0} paketi için yükleme geri alınıyor...</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="new">Available devices:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
         <source>Available target frameworks:</source>
-        <target state="translated">Mevcut hedef çerçeveler:</target>
+        <target state="new">Available target frameworks:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -1359,7 +1379,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="RunCommandExampleText">
         <source>Example</source>
-        <target state="translated">Örnek</target>
+        <target state="new">Example</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -1396,11 +1416,16 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">'{0}' projesine devam edilemiyor.
-Çalıştırılabilir bir proje türüne sahip olduğunuzdan emin olun.
-Çalıştırılabilir bir proje, çalıştırılabilir bir TFM'yi (örneğin, net{1}) hedeflemeli ve OutputType ‘Exe’ değerine sahip olmalıdır.
-Geçerli OutputType '{2}'.</target>
+        <target state="needs-review-translation">Projeniz çalıştırılamıyor.
+Çalıştırılabilir bir proje türüne sahip olduğunuzdan ve bu projenin '{0}' tarafından desteklendiğinden emin olun.
+Çalıştırılabilir proje, çalıştırılabilir bir TFM’yi (örneğin, net5.0) hedeflemeli ve OutputType değeri 'Exe' olmalıdır.
+Geçerli {1}: '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
@@ -1409,9 +1434,19 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'ün çalıştırılacağını belirtin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="new">Move up and down to reveal more devices</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="translated">Yukarı ve aşağı hareket ederek daha fazla çerçeve görüntüleyin</target>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="new">No devices are available for this project.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -1421,12 +1456,17 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
       </trans-unit>
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
-        <target state="translated">Aramak için yazın</target>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="new">Select a device to run on:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="translated">Çalıştırmak için hedef çerçeveyi seçin:</target>
+        <target state="new">Select the target framework to run:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
@@ -1831,9 +1871,9 @@ and the corresponding package Ids for installed tools using the command
 'dotnet tool list'.</source>
         <target state="translated">'{0}' paket kimliğine sahip araç bulunamadı.
 
-Araçlar, aracı çağırırken kullandığınız araç adından farklı olabilen 
-paket kimlikleri kullanılarak kaldırılır. Yüklü araçların araç adlarını ve 
-karşılık gelen paket kimliklerini bulmak için 
+Araçlar, aracı çağırırken kullandığınız araç adından farklı olabilen
+paket kimlikleri kullanılarak kaldırılır. Yüklü araçların araç adlarını ve
+karşılık gelen paket kimliklerini bulmak için
 'dotnet tool list' komutunu kullanabilirsiniz.</target>
         <note />
       </trans-unit>

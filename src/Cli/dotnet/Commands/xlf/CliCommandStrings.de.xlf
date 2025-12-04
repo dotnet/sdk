@@ -57,6 +57,21 @@
         <target state="translated">Autoren</target>
         <note>Table lable</note>
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BuildDefinition">
         <source>Build a .NET project.</source>
         <target state="translated">Hiermit wird ein .NET-Projekt erstellt.</target>
@@ -917,7 +932,7 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">Es sind keine Workloads installiert, es ist keine Reparatur erforderlich. Führen Sie „dotnet workload search“ aus, um zu installierende Workloads zu finden.</target>
+        <target state="needs-review-translation">Es sind keine Workloads installiert, es ist keine Reparatur erforderlich. Führen Sie „dotnet workload search“ aus, um zu installierende Workloads zu finden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -1234,7 +1249,7 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="translated">Geben Sie das Ausgabeverzeichnis an (drücken Sie die EINGABETASTE, um die Standardeinstellung zu verwenden: „{0}“, das Verzeichnis darf nicht vorhanden sein):</target>
+        <target state="needs-review-translation">Ausgabeverzeichnis ({0}) angeben:</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
@@ -1342,9 +1357,14 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
         <target state="translated">Für die Installation von {0} wird ein Rollback ausgeführt...</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="new">Available devices:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
         <source>Available target frameworks:</source>
-        <target state="translated">Verfügbare Zielframeworks:</target>
+        <target state="new">Available target frameworks:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -1359,7 +1379,7 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
       </trans-unit>
       <trans-unit id="RunCommandExampleText">
         <source>Example</source>
-        <target state="translated">Beispiel</target>
+        <target state="new">Example</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -1396,11 +1416,16 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">Ihr Projekt „{0}“ kann nicht fortgesetzt werden.
-Stellen Sie sicher, dass der Projekttyp ausführbar ist.
-Ein ausführbares Projekt muss ein ausführbares TFM (z. B. net{1}) und den OutputType „Exe“ verwenden.
-Der aktuelle OutputType lautet „{2}“.</target>
+        <target state="needs-review-translation">Ihr Projekt kann nicht ausgeführt werden.
+Stellen Sie sicher, dass der Projekttyp ausführbar ist und "{0}" dieses Projekt unterstützt.
+Ein ausführbares Projekt muss ein ausführbares TFM (z. B. net5.0) und den OutputType "Exe" verwenden.
+{1} lautet aktuell "{2}".</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
@@ -1409,9 +1434,19 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches Framework ausgeführt werden soll.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="new">Move up and down to reveal more devices</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="translated">Nach oben und unten bewegen, um weitere Frameworks anzuzeigen</target>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="new">No devices are available for this project.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -1421,12 +1456,17 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
       </trans-unit>
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
-        <target state="translated">Zum Suchen eingeben</target>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="new">Select a device to run on:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="translated">Wählen Sie das auszuführende Zielframework aus:</target>
+        <target state="new">Select the target framework to run:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">

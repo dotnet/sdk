@@ -743,6 +743,16 @@ Examples:
         <target state="new">COMMAND_NAME</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionFileDescription">
         <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
         <target state="new">The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</target>
@@ -761,6 +771,11 @@ Examples:
       <trans-unit id="CommandOptionLaunchProfileHelpName">
         <source>LAUNCH_PROFILE</source>
         <target state="new">LAUNCH_PROFILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
