@@ -100,7 +100,7 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Ustawia wartość zmiennej środowiskowej. 
+        <target state="needs-review-translation">Ustawia wartość zmiennej środowiskowej. 
 Jeśli zmienna nie istnieje, tworzy ją, a jeśli istnieje, przesłania. 
 Ten argument można określić wiele razy w celu podania wielu wartości.
 
@@ -129,16 +129,16 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Ustawia wartość zmiennej środowiskowej. 
-Jeśli zmienna nie istnieje, tworzy ją, a jeśli istnieje, przesłania. 
-Wymusi to uruchamianie testów w izolowanym procesie. 
-Ten argument można określić wiele razy w celu podania wielu wartości.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
 
-Przykłady:
--e ZMIENNA=abc
--e ZMIENNA="wartość ze spacjami"
--e ZMIENNA="wartości;rozdzielone;średnikami"
--e ZM1=abc -e ZM2=def -e ZM3=ghi
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
       </trans-unit>
@@ -769,7 +769,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
         <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
-        <target state="translated">Odwołanie do pakietu w formie identyfikatora pakietu, takiego jak „{0}” lub identyfikatora pakietu i wersji, rozdzielonych znakiem „@”, np. „{0}@{1}”.</target>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
@@ -1018,6 +1018,11 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
         <target state="translated">Określony plik rozwiązania {0} nie istnieje bądź w katalogu nie ma żadnego pliku rozwiązania.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">Plik projektu lub rozwiązania, dla którego ma zostać wykonana operacja. Jeśli plik nie zostanie podany, polecenie wyszuka go w bieżącym katalogu.</target>
@@ -1076,6 +1081,16 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">Pakiet {0} nie jest narzędziem platformy .NET.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersion">
+        <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
+        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">
