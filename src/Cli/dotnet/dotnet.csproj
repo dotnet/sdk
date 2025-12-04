@@ -57,6 +57,7 @@
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NuGet.CommandLine.XPlat" />
     <PackageReference Include="Microsoft.ApplicationInsights" />
+    <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.NET.HostModel" />
     <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" />
     <PackageReference Include="Spectre.Console" />
