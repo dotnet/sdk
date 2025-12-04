@@ -112,7 +112,7 @@ namespace Microsoft.NET.Build.Tasks
             };
 
             //  Cache framework package values per build
-            var existingResult = BuildEngine4.GetRegisteredTaskObject(key, RegisteredTaskObjectLifetime.Build);
+            var existingResult = BuildEngine4?.GetRegisteredTaskObject(key, RegisteredTaskObjectLifetime.Build);
             if (existingResult != null)
             {
                 PackagesToPrune = (TaskItem[])existingResult;
@@ -121,7 +121,7 @@ namespace Microsoft.NET.Build.Tasks
 
             PackagesToPrune = LoadPackagesToPrune(key, TargetingPackRoots, PrunePackageDataRoot, Log, AllowMissingPrunePackageData);
 
-            BuildEngine4.RegisterTaskObject(key, PackagesToPrune, RegisteredTaskObjectLifetime.Build, true);
+            BuildEngine4?.RegisterTaskObject(key, PackagesToPrune, RegisteredTaskObjectLifetime.Build, true);
         }
 
         static TaskItem[] LoadPackagesToPrune(CacheKey key, string[] targetingPackRoots, string prunePackageDataRoot, Logger log, bool allowMissingPrunePackageData)
