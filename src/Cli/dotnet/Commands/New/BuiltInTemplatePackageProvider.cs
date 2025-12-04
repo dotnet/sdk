@@ -85,7 +85,7 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
         return versionFileInfo;
     }
 
-    private static IList<string> GetBestVersionsByMajorMinor(IReadOnlyDictionary<string, SemanticVersion> versionDirInfo)
+    internal static IList<string> GetBestVersionsByMajorMinor(IReadOnlyDictionary<string, SemanticVersion> versionDirInfo)
     {
         IDictionary<string, (string path, SemanticVersion version)> bestVersionsByBucket = new Dictionary<string, (string path, SemanticVersion version)>();
 
@@ -105,6 +105,6 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
             }
         }
 
-        return [.. bestVersionsByBucket.OrderBy(x => x.Key).Select(x => x.Value.path)];
+        return [.. bestVersionsByBucket.OrderBy(x => x.Value.version).Select(x => x.Value.path)];
     }
 }
