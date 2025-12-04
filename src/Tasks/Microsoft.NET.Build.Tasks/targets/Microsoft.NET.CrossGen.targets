@@ -33,7 +33,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('osx-'))">false</PublishReadyToRunEmitSymbols>
+  </PropertyGroup>
 
+  <PropertyGroup>
     <CrossGenTasksPath Condition="'$(CrossGenTasksPath)' == ''">$(MicrosoftNETBuildTasksAssembly)</CrossGenTasksPath>
   </PropertyGroup>
 
