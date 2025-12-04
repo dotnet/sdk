@@ -1,7 +1,30 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
-<Project>
+<!-- Platform needs to be set with TreatAsLocalProperty since it is a global property and cannot be overridden otherwise. -->
+<Project TreatAsLocalProperty="Platform">
+
+  <PropertyGroup>
+    <BuildArchitecture Condition="'$(BuildArchitecture)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
+    <Architecture Condition="'$(Architecture)' == '' AND ('$(BuildArchitecture)' == 'arm64')">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == ''">x64</Architecture>
+
+    <!--
+      The finalizer.nativeproject needs to have Platform set to build for the correct architecture, but this value being set below isn't used by the project because of the build hierarchy when using the CMake SDK.
+      Instead, the Platform being set here is prior to calling the Arcade SDK, which sets PlatformName in RepoDefaults.props and modifies the OutputPath in ProjectLayout.props to include a PlatformName folder in the path.
+      Note: The redist-installer project does use Architecture. The Arcade SDK does not use either BuildArchitecture or Architecture.
+    -->
+    <Platform Condition="'$(SetPlatformFromArchitecture)' == 'true' And ('$(Platform)' == '' Or '$(Platform)' == 'AnyCPU')">$(Architecture)</Platform>
+  </PropertyGroup>
+
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
+
+  <PropertyGroup Condition="'$(PgoInstrument)' == 'true'">
+    <SkipBuildingInstallers>true</SkipBuildingInstallers>
+    <PgoTerm>-pgo</PgoTerm>
+  </PropertyGroup>
 
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -11,31 +34,26 @@
     <!-- Default to all packages generating a corresponding symbol package -->
     <IncludeSymbols>true</IncludeSymbols>
     <IsShippingPackage>false</IsShippingPackage>
-    <SdkTargetFramework>net8.0</SdkTargetFramework>
+    <SdkTargetFramework>net9.0</SdkTargetFramework>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
-    
-    <!-- VS for Mac may run on a lower version of .NET than the SDK is targeting, but needs to load the resolvers.  So the resolvers and dependencies
-         may target a lower version of .NET -->
-    <ResolverTargetFramework>net8.0</ResolverTargetFramework>
-    <!-- Source build does not need to worry about running on VS for Mac -->
-    <ResolverTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">$(SdkTargetFramework)</ResolverTargetFramework>
+    <VisualStudioServiceTargetFramework>net8.0</VisualStudioServiceTargetFramework>
+
+    <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
+    <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
 
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
     <!-- NU1507 Disable multi-feed check as .NET uses multiple internal feeds intentionally -->
     <NoWarn>$(NoWarn);NU1701;NU1507</NoWarn>
-    <!-- Temporarily NoWarn to avoid regression in preview 1.
-         https://github.com/dotnet/roslyn-analyzers/pull/6236/files -->
-    <NoWarn>$(NoWarn);CA2009</NoWarn>
     <!-- do not enable analyzers on source build-->
-    <EnforceCodeStyleInBuild Condition="'$(DotNetBuildFromSource)' != 'true'">true</EnforceCodeStyleInBuild>
+    <EnforceCodeStyleInBuild Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnforceCodeStyleInBuild>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
 
     <!-- <ArtifactsShippingSymbolsDir>$(ArtifactsDir)symbols\$(Configuration)\Shipping</ArtifactsShippingSymbolsDir> -->
 
     <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants);CI_BUILD</DefineConstants>
     <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants);MICROSOFT_ENABLE_TELEMETRY</DefineConstants>
-    <DefineConstants Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefineConstants);DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
+    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants);DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
 
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>

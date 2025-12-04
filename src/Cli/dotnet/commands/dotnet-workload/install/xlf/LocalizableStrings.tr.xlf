@@ -52,6 +52,11 @@
         <target state="translated">{0} iş yükü paketi sürüm {1} kaldırılıyor...</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">{0} iş yükü sürümü siliniyor.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">DİZİN</target>

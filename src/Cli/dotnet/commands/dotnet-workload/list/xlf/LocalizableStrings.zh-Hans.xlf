@@ -32,6 +32,11 @@
         <target state="translated">以下工作负载有可用的更新: {0}。请运行 `dotnet workload update` 以获取最新版本。</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotInstalledShort">
+        <source>(not installed)</source>
+        <target state="translated">(未安装)</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

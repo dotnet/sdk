@@ -52,6 +52,11 @@
         <target state="translated">Probíhá odinstalace sady funkcí {0} verze {1}...</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">Odstraňuje se verze úlohy {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">ADRESÁŘ</target>
