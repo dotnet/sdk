@@ -71,8 +71,13 @@ public class ParseAdditionalStaticWebAssetsBasePaths : Task
             }
 
             // Normalize content root path to end with directory separator
+#if NET
+            if (!contentRoot.EndsWith(Path.DirectorySeparatorChar) &&
+                !contentRoot.EndsWith(Path.AltDirectorySeparatorChar))
+#else
             if (!contentRoot.EndsWith(Path.DirectorySeparatorChar.ToString()) &&
                 !contentRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+#endif
             {
                 contentRoot += Path.DirectorySeparatorChar;
             }
@@ -101,7 +106,14 @@ public class ParseAdditionalStaticWebAssetsBasePaths : Task
                 foreach (var file in files)
                 {
                     var fullPath = Path.GetFullPath(file);
-                    var relativePath = fullPath.Substring(contentRoot.Length);
+#if NET
+                    var relativePath = Path.GetRelativePath(contentRoot, fullPath);
+#else
+                    // For .NET Framework, manually compute relative path
+                    var relativePath = fullPath.StartsWith(contentRoot, StringComparison.OrdinalIgnoreCase)
+                        ? fullPath.Substring(contentRoot.Length)
+                        : fullPath;
+#endif
 
                     // Normalize path separators
                     relativePath = relativePath.Replace(Path.DirectorySeparatorChar, '/');
