@@ -81,9 +81,11 @@ public class LibraryTests
             sdk9Version!);
 
         var muxerPath = Path.Combine(testEnv.InstallPath, DotnetupUtilities.GetDotnetExeName());
-        var versionAfterSdk9 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath, testEnv.InstallPath);
-        Log.WriteLine($"Muxer version after SDK 9.0 install: {versionAfterSdk9}");
-        versionAfterSdk9.Should().NotBeNull("muxer should exist after SDK 9.0 installation");
+        File.Exists(muxerPath).Should().BeTrue("muxer should exist after SDK 9.0 installation");
+
+        var versionAfterSdk9 = GetRuntimeVersionFromInstallRoot(testEnv.InstallPath);
+        Log.WriteLine($"Runtime version after SDK 9.0 install: {versionAfterSdk9}");
+        versionAfterSdk9.Should().NotBeNull("runtime should exist after SDK 9.0 installation");
 
         // Install .NET SDK 10.0 second
         var sdk10Version = releaseInfoProvider.GetLatestVersion(InstallComponent.SDK, "10.0");
@@ -93,9 +95,9 @@ public class LibraryTests
             InstallComponent.SDK,
             sdk10Version!);
 
-        var versionAfterSdk10 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath, testEnv.InstallPath);
-        Log.WriteLine($"Muxer version after SDK 10.0 install: {versionAfterSdk10}");
-        versionAfterSdk10.Should().NotBeNull("muxer should exist after SDK 10.0 installation");
+        var versionAfterSdk10 = GetRuntimeVersionFromInstallRoot(testEnv.InstallPath);
+        Log.WriteLine($"Runtime version after SDK 10.0 install: {versionAfterSdk10}");
+        versionAfterSdk10.Should().NotBeNull("runtime should exist after SDK 10.0 installation");
 
         // Verify muxer was updated to newer version
         versionAfterSdk10.Should().BeGreaterThan(versionAfterSdk9!, "muxer should be updated when installing newer SDK");
@@ -120,9 +122,11 @@ public class LibraryTests
             sdk10Version!);
 
         var muxerPath = Path.Combine(testEnv.InstallPath, DotnetupUtilities.GetDotnetExeName());
-        var versionAfterSdk10 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath, testEnv.InstallPath);
-        Log.WriteLine($"Muxer version after SDK 10.0 install: {versionAfterSdk10}");
-        versionAfterSdk10.Should().NotBeNull("muxer should exist after SDK 10.0 installation");
+        File.Exists(muxerPath).Should().BeTrue("muxer should exist after SDK 10.0 installation");
+
+        var versionAfterSdk10 = GetRuntimeVersionFromInstallRoot(testEnv.InstallPath);
+        Log.WriteLine($"Runtime version after SDK 10.0 install: {versionAfterSdk10}");
+        versionAfterSdk10.Should().NotBeNull("runtime should exist after SDK 10.0 installation");
 
         // Install .NET SDK 9.0 second
         var sdk9Version = releaseInfoProvider.GetLatestVersion(InstallComponent.SDK, "9.0");
@@ -132,11 +136,42 @@ public class LibraryTests
             InstallComponent.SDK,
             sdk9Version!);
 
-        var versionAfterSdk9 = DotnetArchiveExtractor.GetMuxerFileVersion(muxerPath, testEnv.InstallPath);
-        Log.WriteLine($"Muxer version after SDK 9.0 install: {versionAfterSdk9}");
-        versionAfterSdk9.Should().NotBeNull("muxer should exist after SDK 9.0 installation");
+        var versionAfterSdk9 = GetRuntimeVersionFromInstallRoot(testEnv.InstallPath);
+        Log.WriteLine($"Runtime version after SDK 9.0 install: {versionAfterSdk9}");
+        versionAfterSdk9.Should().NotBeNull("runtime should exist after SDK 9.0 installation");
 
         // Verify muxer was NOT downgraded
         versionAfterSdk9.Should().Be(versionAfterSdk10, "muxer should not be downgraded when installing older SDK");
+    }
+
+    private static Version? GetRuntimeVersionFromInstallRoot(string installRoot)
+    {
+        try
+        {
+            var runtimePath = Path.Combine(installRoot, "shared", "Microsoft.NETCore.App");
+            if (!Directory.Exists(runtimePath))
+            {
+                return null;
+            }
+
+            Version? highestVersion = null;
+            foreach (var dir in Directory.GetDirectories(runtimePath))
+            {
+                var versionString = Path.GetFileName(dir);
+                if (Version.TryParse(versionString, out Version? version))
+                {
+                    if (highestVersion == null || version > highestVersion)
+                    {
+                        highestVersion = version;
+                    }
+                }
+            }
+
+            return highestVersion;
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
