@@ -95,6 +95,7 @@ Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo
 Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.LineBreaks -> int
 Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.TotalLength -> int
 Microsoft.DotNet.FileBasedPrograms.WhiteSpaceInfo.WhiteSpaceInfo() -> void
+Microsoft.DotNet.ProjectTools.ProjectLocator
 override abstract Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ToString() -> string!
@@ -122,6 +123,7 @@ static Microsoft.DotNet.FileBasedPrograms.Patterns.Whitespace.get -> System.Text
 static Microsoft.DotNet.FileBasedPrograms.SourceFile.Load(string! filePath) -> Microsoft.DotNet.FileBasedPrograms.SourceFile
 static Microsoft.DotNet.FileBasedPrograms.SourceFile.operator !=(Microsoft.DotNet.FileBasedPrograms.SourceFile left, Microsoft.DotNet.FileBasedPrograms.SourceFile right) -> bool
 static Microsoft.DotNet.FileBasedPrograms.SourceFile.operator ==(Microsoft.DotNet.FileBasedPrograms.SourceFile left, Microsoft.DotNet.FileBasedPrograms.SourceFile right) -> bool
+static Microsoft.DotNet.ProjectTools.ProjectLocator.TryGetProjectFileFromDirectory(string! projectDirectory, out string? projectFilePath, out string? error) -> bool
 static readonly Microsoft.DotNet.FileBasedPrograms.ErrorReporters.IgnoringReporter -> Microsoft.DotNet.FileBasedPrograms.ErrorReporter!
 static readonly Microsoft.DotNet.FileBasedPrograms.NamedDirectiveComparer.Instance -> Microsoft.DotNet.FileBasedPrograms.NamedDirectiveComparer!
 virtual Microsoft.DotNet.FileBasedPrograms.ErrorReporter.Invoke(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.Text.TextSpan textSpan, string! message) -> void
