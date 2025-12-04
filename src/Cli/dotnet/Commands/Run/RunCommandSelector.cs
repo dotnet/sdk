@@ -433,4 +433,34 @@ internal sealed class RunCommandSelector : IDisposable
             return null;
         }
     }
+
+    /// <summary>
+    /// Attempts to deploy to a device by calling the DeployToDevice MSBuild target if it exists.
+    /// This reuses the already-loaded project instance for performance.
+    /// </summary>
+    /// <returns>True if deployment succeeded or was skipped (no target), false if deployment failed</returns>
+    public bool TryDeployToDevice()
+    {
+        if (!OpenProjectIfNeeded(out var projectInstance))
+        {
+            // Invalid project file
+            return false;
+        }
+
+        // Check if the DeployToDevice target exists in the project
+        if (!projectInstance.Targets.ContainsKey(Constants.DeployToDevice))
+        {
+            // Target doesn't exist, skip deploy step
+            return true;
+        }
+
+        // Build the DeployToDevice target
+        var buildResult = projectInstance.Build(
+            targets: [Constants.DeployToDevice],
+            loggers: _binaryLogger is null ? null : [_binaryLogger],
+            remoteLoggers: null,
+            out _);
+
+        return buildResult;
+    }
 }
