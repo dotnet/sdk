@@ -636,5 +636,65 @@ namespace Microsoft.NET.Build.Tests
                 .And
                 .HaveStdOutContaining("Hello World!");
         }
+
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void It_warns_when_PlatformTarget_is_explicitly_set_to_non_AnyCPU(string targetFramework)
+        {
+            if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
+            {
+                return;
+            }
+
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "PlatformTarget", "x64"));
+                });
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("NETSDK1235");
+        }
+
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void It_does_not_warn_when_PlatformTarget_is_set_to_AnyCPU(string targetFramework)
+        {
+            if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
+            {
+                return;
+            }
+
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "PlatformTarget", "AnyCPU"));
+                });
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .NotHaveStdOutContaining("NETSDK1235");
+        }
     }
 }
