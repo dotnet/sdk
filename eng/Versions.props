@@ -76,7 +76,6 @@
     <MicrosoftWindowsCsWin32PackageVersion>0.3.49-beta</MicrosoftWindowsCsWin32PackageVersion>
     <!-- When updating MicrosoftVisualStudioSolutionPersistenceVersion make sure to sync with dotnet/msbuild, dotnet/source-build-externals and NuGet/NuGet.Client -->
     <MicrosoftVisualStudioSolutionPersistenceVersion>1.0.52</MicrosoftVisualStudioSolutionPersistenceVersion>
-    <MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>5.3.0-1.25575.110</MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="MicroBuild.Core version">
