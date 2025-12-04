@@ -253,62 +253,79 @@ namespace Microsoft.NET.Build.Tasks
 
         static Dictionary<string, NuGetVersion> TryLoadPackagesToPruneForVersion(Logger log, string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string[] targetingPackRoots, string prunePackageDataRoot, bool loadPrunePackageDataFromNearestFramework)
         {
-            var targetVersion = Version.Parse(targetFrameworkVersion);
+            var currentVersion = Version.Parse(targetFrameworkVersion);
             
-            // Use hard-coded / generated "framework package data" for .NET 9 and lower, .NET Framework, and .NET Standard
-            // Use bundled "prune package data" for .NET 10 and higher.  During the redist build, this comes from targeting packs and is laid out in the PrunePackageData folder.
-            bool useFrameworkPackageData = !targetFrameworkIdentifier.Equals(".NETCoreApp") || targetVersion.Major < PrunePackageDataMinMajorVersion;
-
-            Dictionary<string, NuGetVersion> packages = null;
-
-            if (useFrameworkPackageData)
+            // Try loading for the current version and then iteratively try previous versions if enabled
+            while (true)
             {
-                packages = LoadPackagesToPruneFromFrameworkPackages(targetFrameworkIdentifier, targetFrameworkVersion, frameworkReference);
-                if (packages != null)
+                string currentVersionString = $"{currentVersion.Major}.{currentVersion.Minor}";
+                
+                // Use hard-coded / generated "framework package data" for .NET 9 and lower, .NET Framework, and .NET Standard
+                // Use bundled "prune package data" for .NET 10 and higher.  During the redist build, this comes from targeting packs and is laid out in the PrunePackageData folder.
+                bool useFrameworkPackageData = !targetFrameworkIdentifier.Equals(".NETCoreApp") || currentVersion.Major < PrunePackageDataMinMajorVersion;
+
+                Dictionary<string, NuGetVersion> packages = null;
+
+                if (useFrameworkPackageData)
                 {
-                    log.LogMessage("Loaded prune package data from framework packages");
+                    packages = LoadPackagesToPruneFromFrameworkPackages(targetFrameworkIdentifier, currentVersionString, frameworkReference);
+                    if (packages != null)
+                    {
+                        log.LogMessage("Loaded prune package data from framework packages");
+                    }
+                    else
+                    {
+                        log.LogMessage("Failed to load prune package data from framework packages");
+                    }
                 }
                 else
                 {
-                    log.LogMessage("Failed to load prune package data from framework packages");
+                    log.LogMessage("Loading prune package data from PrunePackageData folder");
+                    packages = LoadPackagesToPruneFromPrunePackageData(targetFrameworkIdentifier, currentVersionString, frameworkReference, prunePackageDataRoot);
+
+                    //  For the version of the runtime that matches the current SDK version, we don't include the prune package data in the PrunePackageData folder.  Rather,
+                    //  we can load it from the targeting packs that are packaged with the SDK.
+                    if (packages == null)
+                    {
+                        log.LogMessage("Failed to load prune package data from PrunePackageData folder, loading from targeting packs instead");
+                        packages = LoadPackagesToPruneFromTargetingPack(log, targetFrameworkIdentifier, currentVersionString, frameworkReference, targetingPackRoots);
+                    }
+
+                    //  Fall back to framework packages data for older framework for WindowsDesktop if necessary
+                    //  https://github.com/dotnet/windowsdesktop/issues/4904
+                    if (packages == null && frameworkReference.Equals("Microsoft.WindowsDesktop.App", StringComparison.OrdinalIgnoreCase))
+                    {
+                        log.LogMessage("Failed to load prune package data for WindowsDesktop from targeting packs, loading from framework packages instead");
+                        packages = LoadPackagesToPruneFromFrameworkPackages(targetFrameworkIdentifier, currentVersionString, frameworkReference,
+                            acceptNearestMatch: true);
+                    }
+                }
+
+                // If we found packages or we're not supposed to fall back, return what we have
+                if (packages != null || !loadPrunePackageDataFromNearestFramework)
+                {
+                    return packages;
+                }
+
+                // Determine the next version to try
+                // If minor version is non-zero, decrement it first
+                if (currentVersion.Minor > 0)
+                {
+                    currentVersion = new Version(currentVersion.Major, currentVersion.Minor - 1);
+                    log.LogMessage($"LoadPrunePackageDataFromNearestFramework is enabled, trying to load from framework version {currentVersion.Major}.{currentVersion.Minor}");
+                }
+                // Otherwise, decrement major version and reset minor to 0
+                else if (currentVersion.Major > MinSupportedFrameworkMajorVersion)
+                {
+                    currentVersion = new Version(currentVersion.Major - 1, 0);
+                    log.LogMessage($"LoadPrunePackageDataFromNearestFramework is enabled, trying to load from framework version {currentVersion.Major}.{currentVersion.Minor}");
+                }
+                else
+                {
+                    // We've exhausted all versions to try
+                    return null;
                 }
             }
-            else
-            {
-                log.LogMessage("Loading prune package data from PrunePackageData folder");
-                packages = LoadPackagesToPruneFromPrunePackageData(targetFrameworkIdentifier, targetFrameworkVersion, frameworkReference, prunePackageDataRoot);
-
-                //  For the version of the runtime that matches the current SDK version, we don't include the prune package data in the PrunePackageData folder.  Rather,
-                //  we can load it from the targeting packs that are packaged with the SDK.
-                if (packages == null)
-                {
-                    log.LogMessage("Failed to load prune package data from PrunePackageData folder, loading from targeting packs instead");
-                    packages = LoadPackagesToPruneFromTargetingPack(log, targetFrameworkIdentifier, targetFrameworkVersion, frameworkReference, targetingPackRoots);
-                }
-
-                //  Fall back to framework packages data for older framework for WindowsDesktop if necessary
-                //  https://github.com/dotnet/windowsdesktop/issues/4904
-                if (packages == null && frameworkReference.Equals("Microsoft.WindowsDesktop.App", StringComparison.OrdinalIgnoreCase))
-                {
-                    log.LogMessage("Failed to load prune package data for WindowsDesktop from targeting packs, loading from framework packages instead");
-                    packages = LoadPackagesToPruneFromFrameworkPackages(targetFrameworkIdentifier, targetFrameworkVersion, frameworkReference,
-                        acceptNearestMatch: true);
-                }
-            }
-
-            //  If LoadPrunePackageDataFromNearestFramework is true and we still haven't found data, try the previous framework version
-            if (packages == null && loadPrunePackageDataFromNearestFramework)
-            {
-                // If we can go to a lower version, recursively try it
-                if (targetVersion.Major > MinSupportedFrameworkMajorVersion)
-                {
-                    string fallbackVersion = $"{targetVersion.Major - 1}.0";
-                    log.LogMessage($"LoadPrunePackageDataFromNearestFramework is enabled, trying to load from framework version {fallbackVersion}");
-                    packages = TryLoadPackagesToPruneForVersion(log, targetFrameworkIdentifier, fallbackVersion, frameworkReference, targetingPackRoots, prunePackageDataRoot, loadPrunePackageDataFromNearestFramework);
-                }
-            }
-
-            return packages;
         }
 
         static void AddPackagesToPrune(Dictionary<string, NuGetVersion> packagesToPrune, IEnumerable<(string id, NuGetVersion version)> packagesToAdd, Logger log)
