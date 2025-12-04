@@ -881,6 +881,124 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// See <see href="https://github.com/dotnet/sdk/issues/51778"/>.
+    /// </summary>
+    [Theory, CombinatorialData]
+    public void WorkingDirectory(bool cscOnly)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = """
+            Console.WriteLine("v1");
+            Console.WriteLine(Environment.CurrentDirectory);
+            Console.WriteLine(Directory.GetCurrentDirectory());
+            Console.WriteLine(new DirectoryInfo(".").FullName);
+            Console.WriteLine(AppContext.GetData("EntryPointFileDirectoryPath"));
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance,
+            expectedLevel: cscOnly ? BuildLevel.Csc : BuildLevel.All,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v1", workDir));
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.Csc,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v2", workDir));
+
+        string GetExpectedOutput(string version, string workDir) => $"""
+            {version}
+            {workDir}
+            {workDir}
+            {workDir}
+            {Path.GetDirectoryName(programPath)}
+            """;
+    }
+
+    /// <summary>
+    /// Combination of <see cref="WorkingDirectory"/> and <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
+    [Fact]
+    public void WorkingDirectory_CscOnly_AfterMSBuild()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = """
+            #:property Configuration=Release
+            Console.WriteLine("v1");
+            Console.WriteLine(Environment.CurrentDirectory);
+            Console.WriteLine(Directory.GetCurrentDirectory());
+            Console.WriteLine(new DirectoryInfo(".").FullName);
+            Console.WriteLine(AppContext.GetData("EntryPointFileDirectoryPath"));
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.All,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v1", workDir));
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.None,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v1", workDir));
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.Csc,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v2", workDir));
+
+        // Can be overridden with a #:property.
+        var workDir2 = Path.Join(testInstance.Path, "dir2");
+        Directory.CreateDirectory(workDir2);
+        code = $"""
+            #:property RunWorkingDirectory={workDir2}
+            {code}
+            """;
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.All,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v2", workDir2));
+
+        string GetExpectedOutput(string version, string workDir) => $"""
+            {version}
+            {workDir}
+            {workDir}
+            {workDir}
+            {Path.GetDirectoryName(programPath)}
+            """;
+    }
+
+    /// <summary>
     /// Implicit build files have an effect.
     /// </summary>
     [Fact]
@@ -3238,7 +3356,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc);
     }
 
-    private void Build(TestDirectory testInstance, BuildLevel expectedLevel, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program", string programFileName = "Program.cs")
+    private void Build(TestDirectory testInstance, BuildLevel expectedLevel, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program", string programFileName = "Program.cs", string? workDir = null)
     {
         string prefix = expectedLevel switch
         {
@@ -3249,12 +3367,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         };
 
         new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
-            .WithWorkingDirectory(testInstance.Path)
+            .WithWorkingDirectory(workDir ?? testInstance.Path)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut(prefix + expectedOutput);
 
-        var binlogs = new DirectoryInfo(testInstance.Path)
+        var binlogs = new DirectoryInfo(workDir ?? testInstance.Path)
             .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly);
 
         binlogs.Select(f => f.Name)

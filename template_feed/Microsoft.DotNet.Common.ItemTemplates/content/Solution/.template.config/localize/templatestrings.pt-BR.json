@@ -3,7 +3,7 @@
   "name": "Arquivo de Solução",
   "description": "Uma solução vazia sem projetos",
   "symbols/Format/description": "Escolha o formato do arquivo de solução: sln ou slnx.",
-  "symbols/Format/displayName": "Formato do arquivo de solução",
+  "symbols/Format/displayName": "Formato de arquivo de solução",
   "symbols/Format/choices/sln/description": "Arquivo de solução",
   "symbols/Format/choices/sln/displayName": "Formato .sln",
   "symbols/Format/choices/slnx/description": "Arquivo de Solução XML",

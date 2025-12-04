@@ -48,6 +48,18 @@ internal static class RunCommandParser
         Description = CliCommandStrings.CommandOptionNoLaunchProfileArgumentsDescription
     };
 
+    public static readonly Option<string> DeviceOption = new("--device")
+    {
+        Description = CliCommandStrings.CommandOptionDeviceDescription,
+        HelpName = CliCommandStrings.CommandOptionDeviceHelpName
+    };
+
+    public static readonly Option<bool> ListDevicesOption = new("--list-devices")
+    {
+        Description = CliCommandStrings.CommandOptionListDevicesDescription,
+        Arity = ArgumentArity.Zero
+    };
+
     public static readonly Option<bool> NoBuildOption = new("--no-build")
     {
         Description = CliCommandStrings.CommandOptionNoBuildDescription,
@@ -98,6 +110,8 @@ internal static class RunCommandParser
         command.Options.Add(PropertyOption);
         command.Options.Add(LaunchProfileOption);
         command.Options.Add(NoLaunchProfileOption);
+        command.Options.Add(DeviceOption);
+        command.Options.Add(ListDevicesOption);
         command.Options.Add(NoBuildOption);
         command.Options.Add(InteractiveOption);
         command.Options.Add(NoRestoreOption);
