@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(NetMinimum)</TargetFramework>
+    <TargetFramework>$(NetToolCurrent)</TargetFramework>
     <OutputType>Exe</OutputType>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
