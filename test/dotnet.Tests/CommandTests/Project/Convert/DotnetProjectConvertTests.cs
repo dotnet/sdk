@@ -1696,7 +1696,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var sourceFile = new SourceFile(filePath ?? programPath, SourceText.From(inputCSharp, Encoding.UTF8));
         actualDiagnostics = null;
-        var diagnosticBag = collectDiagnostics ? ErrorReporters.CreateCollectingReporter(out actualDiagnostics) : CliErrorReporters.ThrowingReporter;
+        var diagnosticBag = collectDiagnostics ? ErrorReporters.CreateCollectingReporter(out actualDiagnostics) : VirtualProjectBuildingCommand.ThrowingReporter;
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: !force, diagnosticBag);
         directives = VirtualProjectBuildingCommand.EvaluateDirectives(project: null, directives, sourceFile, diagnosticBag);
         var projectWriter = new StringWriter();

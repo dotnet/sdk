@@ -180,7 +180,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (field.IsDefault)
             {
-                field = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, reportAllErrors: false, CliErrorReporters.ThrowingReporter);
+                field = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, reportAllErrors: false, VirtualProjectBuildingCommand.ThrowingReporter);
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -1085,7 +1085,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         var project = CreateProjectInstance(projectCollection, Directives, addGlobalProperties);
 
-        var directives = EvaluateDirectives(project, Directives, EntryPointSourceFile, CliErrorReporters.ThrowingReporter);
+        var directives = EvaluateDirectives(project, Directives, EntryPointSourceFile, VirtualProjectBuildingCommand.ThrowingReporter);
         if (directives != Directives)
         {
             Directives = directives;
@@ -1553,6 +1553,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return false;
         }
     }
+
+    public static readonly ErrorReporter ThrowingReporter =
+        static (sourceFile, textSpan, message) => throw new GracefulException($"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}");
 }
 
 internal sealed class RunFileBuildCacheEntry

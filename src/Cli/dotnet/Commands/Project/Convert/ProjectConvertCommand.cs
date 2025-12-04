@@ -32,7 +32,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         // Find directives (this can fail, so do this before creating the target directory).
         var sourceFile = SourceFile.Load(file);
-        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: !_force, CliErrorReporters.ThrowingReporter);
+        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: !_force, VirtualProjectBuildingCommand.ThrowingReporter);
 
         // Create a project instance for evaluation.
         var projectCollection = new ProjectCollection();
@@ -45,7 +45,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         var projectInstance = command.CreateProjectInstance(projectCollection);
 
         // Evaluate directives.
-        directives = VirtualProjectBuildingCommand.EvaluateDirectives(projectInstance, directives, sourceFile, CliErrorReporters.ThrowingReporter);
+        directives = VirtualProjectBuildingCommand.EvaluateDirectives(projectInstance, directives, sourceFile, VirtualProjectBuildingCommand.ThrowingReporter);
         command.Directives = directives;
         projectInstance = command.CreateProjectInstance(projectCollection);
 

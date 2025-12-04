@@ -475,6 +475,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
         /// <summary>
         /// This is the <see cref="OriginalName"/> with MSBuild <c>$(..)</c> vars expanded.
+        /// E.g. The expansion might be implemented via ProjectInstance.ExpandString.
         /// </summary>
         public string? ExpandedName { get; init; }
 
@@ -540,7 +541,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             var resolvedProjectPath = Path.Combine(sourceDirectory, resolvedName.Replace('\\', '/'));
             if (Directory.Exists(resolvedProjectPath))
             {
-                if (TryGetProjectFileFromDirectory(resolvedProjectPath, out var projectFilePath, out var error))
+                if (ProjectLocator.TryGetProjectFileFromDirectory(resolvedProjectPath, out var projectFilePath, out var error))
                 {
                     // Keep a relative path only if the original directive was a relative path.
                     resolvedName = ExternalHelpers.IsPathFullyQualified(resolvedName)
@@ -559,45 +560,6 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             }
 
             return WithName(resolvedName, NameKind.ProjectFilePath);
-        }
-
-        // https://github.com/dotnet/sdk/issues/51487: Delete copies of methods from MsbuildProject and MSBuildUtilities from the source package, sharing the original method(s) under src/Cli instead.
-        private static bool TryGetProjectFileFromDirectory(string projectDirectory, [NotNullWhen(true)] out string? projectFilePath, [NotNullWhen(false)] out string? error)
-        {
-            projectFilePath = null;
-            error = null;
-
-            DirectoryInfo? dir;
-            try
-            {
-                dir = new DirectoryInfo(projectDirectory);
-            }
-            catch (ArgumentException)
-            {
-                dir = null;
-            }
-
-            if (dir == null || !dir.Exists)
-            {
-                error = string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, projectDirectory);
-                return false;
-            }
-
-            FileInfo[] files = dir.GetFiles("*proj");
-            if (files.Length == 0)
-            {
-                error = string.Format(FileBasedProgramsResources.CouldNotFindAnyProjectInDirectory, projectDirectory);
-                return false;
-            }
-
-            if (files.Length > 1)
-            {
-                error = string.Format(FileBasedProgramsResources.MoreThanOneProjectInDirectory, projectDirectory);
-                return false;
-            }
-
-            projectFilePath = files.First().FullName;
-            return true;
         }
 
         public override string ToString() => $"#:project {Name}";
