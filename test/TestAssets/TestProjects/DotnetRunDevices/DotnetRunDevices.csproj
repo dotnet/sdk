@@ -49,4 +49,9 @@
     </ItemGroup>
   </Target>
 
+  <!-- DeployToDevice target for testing deployment functionality -->
+  <Target Name="DeployToDevice">
+    <Message Text="DeployToDevice: Deployed to device $(Device) with RuntimeIdentifier $(RuntimeIdentifier)" Importance="high" />
+  </Target>
+
 </Project>
