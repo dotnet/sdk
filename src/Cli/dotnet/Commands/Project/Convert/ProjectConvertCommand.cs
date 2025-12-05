@@ -31,24 +31,17 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         string targetDirectory = DetermineOutputDirectory(file);
 
-        // Find directives (this can fail, so do this before creating the target directory).
-        var sourceFile = SourceFile.Load(file);
-        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: !_force, VirtualProjectBuildingCommand.ThrowingReporter);
-
         // Create a project instance for evaluation.
         var projectCollection = new ProjectCollection();
-        var command = new VirtualProjectBuildingCommand(
-            entryPointFileFullPath: file,
-            msbuildArgs: MSBuildArgs.FromOtherArgs([]))
-        {
-            Directives = directives,
-        };
-        var projectInstance = command.CreateProjectInstance(projectCollection);
 
-        // Evaluate directives.
-        directives = VirtualProjectBuilder.EvaluateDirectives(projectInstance, directives, sourceFile, VirtualProjectBuildingCommand.ThrowingReporter);
-        command.Directives = directives;
-        projectInstance = command.CreateProjectInstance(projectCollection);
+        var builder = new VirtualProjectBuilder(file, VirtualProjectBuildingCommand.TargetFrameworkVersion);
+
+        builder.CreateProjectInstance(
+            projectCollection,
+            VirtualProjectBuildingCommand.ThrowingReporter,
+            out var projectInstance,
+            out var evaluatedDirectives,
+            validateAllDirectives: true);
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
@@ -67,7 +60,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         }
         else
         {
-            VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, sourceFile.Text, targetFile);
+            VirtualProjectBuildingCommand.RemoveDirectivesFromFile(evaluatedDirectives, builder.EntryPointSourceFile.Text, targetFile);
         }
 
         // Create project file.
@@ -80,7 +73,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         {
             using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
             using var writer = new StreamWriter(stream, Encoding.UTF8);
-            VirtualProjectBuilder.WriteProjectFile(writer, UpdateDirectives(directives), isVirtualProject: false,
+            VirtualProjectBuilder.WriteProjectFile(writer, UpdateDirectives(evaluatedDirectives), isVirtualProject: false,
                 userSecretsId: DetermineUserSecretsId(),
                 defaultProperties: GetDefaultProperties());
         }
