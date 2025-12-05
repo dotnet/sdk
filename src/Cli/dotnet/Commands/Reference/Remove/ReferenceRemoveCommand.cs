@@ -43,7 +43,7 @@ internal class ReferenceRemoveCommand : CommandBase
 
             return Path.GetRelativePath(
                 msbuildProj.ProjectRootElement.FullPath,
-                MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName
+                MsbuildProject.GetProjectFileFromDirectory(fullPath)
             );
         });
 

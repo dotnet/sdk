@@ -61,7 +61,7 @@ internal class SolutionAddCommand : CommandBase
         IEnumerable<string> fullProjectPaths = _projects.Select(project =>
         {
             var fullPath = Path.GetFullPath(project);
-            return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
+            return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath) : fullPath;
         });
 
         // Add projects to the solution
