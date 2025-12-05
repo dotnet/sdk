@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Watch
 
         internal static LaunchSettingsProfile? ReadLaunchProfile(string projectPath, string? launchProfileName, ILogger logger)
         {
-            var launchSettingsPath = LaunchSettingsLocator.TryFindLaunchSettings(projectPath, launchProfileName, (message, isError) =>
+            var launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(projectPath, launchProfileName, (message, isError) =>
             {
                 if (isError)
                 {

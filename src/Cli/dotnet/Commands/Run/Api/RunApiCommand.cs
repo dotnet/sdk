@@ -112,7 +112,7 @@ internal abstract class RunApiInput
                 msbuildRestoreProperties: ReadOnlyDictionary<string, string>.Empty);
 
             var result = runCommand.ReadLaunchProfileSettings();
-            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Model, buildCommand.CreateProjectInstance, cachedRunProperties: null);
+            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null);
 
             return new RunApiOutput.RunCommand
             {

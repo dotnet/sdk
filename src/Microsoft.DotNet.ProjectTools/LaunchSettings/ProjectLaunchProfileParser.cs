@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.DotNet.ProjectTools;
 
-internal sealed class ProjectLaunchSettingsParser : LaunchProfileParser
+internal sealed class ProjectLaunchProfileParser : LaunchProfileParser
 {
     internal sealed class Json
     {
@@ -34,21 +34,21 @@ internal sealed class ProjectLaunchSettingsParser : LaunchProfileParser
 
     public const string CommandName = "Project";
 
-    public static readonly ProjectLaunchSettingsParser Instance = new();
+    public static readonly ProjectLaunchProfileParser Instance = new();
 
-    private ProjectLaunchSettingsParser()
+    private ProjectLaunchProfileParser()
     {
     }
 
-    public override LaunchProfileSettings ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
+    public override LaunchProfileParseResult ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
     {
         var profile = JsonSerializer.Deserialize<Json>(json);
         if (profile == null)
         {
-            return LaunchProfileSettings.Failure(Resources.LaunchProfileIsNotAJsonObject);
+            return LaunchProfileParseResult.Failure(Resources.LaunchProfileIsNotAJsonObject);
         }
 
-        return LaunchProfileSettings.Success(new ProjectLaunchSettings
+        return LaunchProfileParseResult.Success(new ProjectLaunchProfile
         {
             LaunchProfileName = launchProfileName,
             CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs),

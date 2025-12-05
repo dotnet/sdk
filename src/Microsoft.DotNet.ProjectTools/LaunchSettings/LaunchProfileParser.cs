@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.ProjectTools;
 
 internal abstract class LaunchProfileParser
 {
-    public abstract LaunchProfileSettings ParseProfile(string launchSettingsPath, string? launchProfileName, string json);
+    public abstract LaunchProfileParseResult ParseProfile(string launchSettingsPath, string? launchProfileName, string json);
 
     protected static string? ParseCommandLineArgs(string? value)
         => value != null ? ExpandVariables(value) : null;

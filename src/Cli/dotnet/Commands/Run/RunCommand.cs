@@ -142,10 +142,10 @@ public class RunCommand
             return 1;
         }
 
-        var launchProfileSettings = ReadLaunchProfileSettings();
-        if (launchProfileSettings.FailureReason != null)
+        var launchProfileParseResult = ReadLaunchProfileSettings();
+        if (launchProfileParseResult.FailureReason != null)
         {
-            Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, LaunchProfileParser.GetLaunchProfileDisplayName(LaunchProfile), launchProfileSettings.FailureReason).Bold().Red());
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, LaunchProfileParser.GetLaunchProfileDisplayName(LaunchProfile), launchProfileParseResult.FailureReason).Bold().Red());
         }
 
         Func<ProjectCollection, ProjectInstance>? projectFactory = null;
@@ -153,14 +153,14 @@ public class RunCommand
         VirtualProjectBuildingCommand? projectBuilder = null;
         if (ShouldBuild)
         {
-            if (launchProfileSettings.Model?.DotNetRunMessages == true)
+            if (launchProfileParseResult.Profile?.DotNetRunMessages == true)
             {
                 Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
             }
 
             EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out projectBuilder);
         }
-        else if (EntryPointFileFullPath is not null && launchProfileSettings.Model is not ExecutableLaunchSettings)
+        else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
         {
             // The entry-point is not used to run the application if the launch profile specifies Executable command. 
 
@@ -173,10 +173,10 @@ public class RunCommand
             cachedRunProperties = cacheEntry?.Run;
         }
 
-        var targetCommand = GetTargetCommand(launchProfileSettings.Model, projectFactory, cachedRunProperties);
+        var targetCommand = GetTargetCommand(launchProfileParseResult.Profile, projectFactory, cachedRunProperties);
 
         // Send telemetry about the run operation
-        SendRunTelemetry(launchProfileSettings.Model, projectBuilder);
+        SendRunTelemetry(launchProfileParseResult.Profile, projectBuilder);
 
         // Ignore Ctrl-C for the remainder of the command's execution
         Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
@@ -184,12 +184,12 @@ public class RunCommand
         return targetCommand.Execute().ExitCode;
     }
 
-    internal ICommand GetTargetCommand(LaunchSettings? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
+    internal ICommand GetTargetCommand(LaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
         => launchSettings switch
         {
             null => GetTargetCommandForProject(launchSettings: null, projectFactory, cachedRunProperties),
-            ProjectLaunchSettings projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties),
-            ExecutableLaunchSettings executableSettings => GetTargetCommandForExecutable(executableSettings),
+            ProjectLaunchProfile projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties),
+            ExecutableLaunchProfile executableSettings => GetTargetCommandForExecutable(executableSettings),
             _ => throw new InvalidOperationException()
         };
 
@@ -287,7 +287,7 @@ public class RunCommand
         }
     }
 
-    private ICommand GetTargetCommandForExecutable(ExecutableLaunchSettings launchSettings)
+    private ICommand GetTargetCommandForExecutable(ExecutableLaunchProfile launchSettings)
     {
         var workingDirectory = launchSettings.WorkingDirectory ?? Path.GetDirectoryName(ProjectOrEntryPointPath);
 
@@ -304,10 +304,10 @@ public class RunCommand
         return command;
     }
 
-    private void SetEnvironmentVariables(ICommand command, LaunchSettings? launchSettings)
+    private void SetEnvironmentVariables(ICommand command, LaunchProfile? launchSettings)
     {
         // Handle Project-specific settings
-        if (launchSettings is ProjectLaunchSettings projectSettings)
+        if (launchSettings is ProjectLaunchProfile projectSettings)
         {
             if (!string.IsNullOrEmpty(projectSettings.ApplicationUrl))
             {
@@ -332,23 +332,23 @@ public class RunCommand
         }
     }
 
-    internal LaunchProfileSettings ReadLaunchProfileSettings()
+    internal LaunchProfileParseResult ReadLaunchProfileSettings()
     {
         if (NoLaunchProfile)
         {
-            return LaunchProfileSettings.Success(model: null);
+            return LaunchProfileParseResult.Success(model: null);
         }
 
         var launchSettingsPath = ReadCodeFromStdin
             ? null
-            : LaunchSettingsLocator.TryFindLaunchSettings(
+            : LaunchSettings.TryFindLaunchSettingsFile(
                 projectOrEntryPointFilePath: ProjectFileFullPath ?? EntryPointFileFullPath!,
                 launchProfile: LaunchProfile,
                 static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message));
 
         if (launchSettingsPath is null)
         {
-            return LaunchProfileSettings.Success(model: null);
+            return LaunchProfileParseResult.Success(model: null);
         }
 
         if (!RunCommandVerbosity.IsQuiet())
@@ -356,7 +356,7 @@ public class RunCommand
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        return LaunchSettingsManager.ReadProfileSettingsFromFile(launchSettingsPath, LaunchProfile);
+        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, LaunchProfile);
     }
 
     private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? projectBuilder)
@@ -438,7 +438,7 @@ public class RunCommand
         }
     }
 
-    private ICommand GetTargetCommandForProject(ProjectLaunchSettings? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
+    private ICommand GetTargetCommandForProject(ProjectLaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
     {
         ICommand command;
         if (cachedRunProperties != null)
@@ -844,7 +844,7 @@ public class RunCommand
     /// Sends telemetry about the run operation.
     /// </summary>
     private void SendRunTelemetry(
-        LaunchSettings? launchSettings,
+        LaunchProfile? launchSettings,
         VirtualProjectBuildingCommand? projectBuilder)
     {
         try
@@ -872,7 +872,7 @@ public class RunCommand
     /// Builds and sends telemetry data for file-based app runs.
     /// </summary>
     private void SendFileBasedTelemetry(
-        LaunchSettings? launchSettings,
+        LaunchProfile? launchSettings,
         VirtualProjectBuildingCommand projectBuilder)
     {
         Debug.Assert(EntryPointFileFullPath != null);
@@ -901,7 +901,7 @@ public class RunCommand
     /// <summary>
     /// Builds and sends telemetry data for project-based app runs.
     /// </summary>
-    private void SendProjectBasedTelemetry(LaunchSettings? launchSettings)
+    private void SendProjectBasedTelemetry(LaunchProfile? launchSettings)
     {
         Debug.Assert(ProjectFileFullPath != null);
         var projectIdentifier = RunTelemetry.GetProjectBasedIdentifier(ProjectFileFullPath, GetRepositoryRoot(), Sha256Hasher.Hash);

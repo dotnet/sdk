@@ -79,7 +79,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         var launchSettingsPath = Path.Combine(dir, "launchSettings.json");
         var projectPath = Path.Combine(dir, "myproj.csproj");
 
-        var model = new ExecutableLaunchSettings()
+        var model = new ExecutableLaunchProfile()
         {
             LaunchProfileName = "MyProfile",
             ExecutablePath = "executable",
@@ -103,7 +103,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         var launchSettingsPath = Path.Combine(dir, "launchSettings.json");
         var projectPath = Path.Combine(dir, "myproj.csproj");
 
-        var model = new ExecutableLaunchSettings()
+        var model = new ExecutableLaunchProfile()
         {
             LaunchProfileName = "MyProfile",
             CommandLineArgs = "arg1 arg2",
@@ -126,7 +126,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
         var launchSettingsPath = Path.Combine(dir, "launchSettings.json");
         var projectPath = Path.Combine(dir, "myproj.csproj");
 
-        var model = new ExecutableLaunchSettings()
+        var model = new ExecutableLaunchProfile()
         {
             LaunchProfileName = "MyProfile",
             CommandLineArgs = "arg1 arg2",
