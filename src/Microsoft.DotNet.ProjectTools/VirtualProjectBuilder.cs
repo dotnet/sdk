@@ -122,12 +122,17 @@ internal sealed class VirtualProjectBuilder
 
     public void CreateProjectInstance(
         ProjectCollection projectCollection,
-        ImmutableArray<CSharpDirective> directives,
-        Action<IDictionary<string, string>>? addGlobalProperties,
         ErrorReporter errorReporter,
         out ProjectInstance project,
-        out ImmutableArray<CSharpDirective> evaluatedDirectives)
+        out ImmutableArray<CSharpDirective> evaluatedDirectives,
+        ImmutableArray<CSharpDirective> directives = default,
+        Action<IDictionary<string, string>>? addGlobalProperties = null)
     {
+        if (directives.IsDefault)
+        {
+            directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, reportAllErrors: false, errorReporter);
+        }
+
         project = CreateProjectInstance(projectCollection, directives, addGlobalProperties);
 
         evaluatedDirectives = EvaluateDirectives(project, directives, EntryPointSourceFile, errorReporter);
