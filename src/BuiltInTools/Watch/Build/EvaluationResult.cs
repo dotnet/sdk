@@ -95,8 +95,13 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             // populated by design-time build.
             var projectInstance = project.ProjectInstance.DeepCopy();
 
-            // skip outer build project nodes:
-            if (projectInstance.GetPropertyValue(PropertyNames.TargetFramework) == "")
+            var compileTarget = projectInstance.Targets.ContainsKey(TargetNames.CompileDesignTime)
+                ? TargetNames.CompileDesignTime
+                : projectInstance.Targets.ContainsKey(TargetNames.Compile)
+                ? TargetNames.Compile
+                : null;
+
+            if (compileTarget == null)
             {
                 continue;
             }
@@ -105,7 +110,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
 
             using (var loggers = buildReporter.GetLoggers(projectInstance.FullPath, "DesignTimeBuild"))
             {
-                if (!projectInstance.Build([TargetNames.Compile, .. customCollectWatchItems], loggers))
+                if (!projectInstance.Build([compileTarget, .. customCollectWatchItems], loggers))
                 {
                     logger.LogError("Failed to build project '{Path}'.", projectInstance.FullPath);
                     loggers.ReportOutput();
@@ -116,7 +121,6 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             var projectPath = projectInstance.FullPath;
             var projectDirectory = Path.GetDirectoryName(projectPath)!;
 
-            // TODO: Compile and AdditionalItems should be provided by Roslyn
             var items = projectInstance.GetItems(ItemNames.Compile)
                 .Concat(projectInstance.GetItems(ItemNames.AdditionalFiles))
                 .Concat(projectInstance.GetItems(ItemNames.Watch));
