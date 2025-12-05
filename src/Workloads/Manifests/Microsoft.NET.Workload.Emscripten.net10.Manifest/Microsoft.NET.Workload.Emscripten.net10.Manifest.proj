@@ -16,10 +16,10 @@
 
   <Target Name="_GenerateWorkloadManifestFiles">
     <ItemGroup>
-      <_WorkloadManifestValues Include="NetVersion" Value="net11" />
+      <_WorkloadManifestValues Include="NetVersion" Value="net10" />
       <_WorkloadManifestValues Include="WorkloadVersion" Value="$(PackageVersion)" />
-      <_WorkloadManifestValues Include="EmsdkVersion" Value="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
-      <_WorkloadManifestValues Include="EmscriptenVersion" Value="$(EmscriptenVersionCurrent)" />
+      <_WorkloadManifestValues Include="EmsdkVersion" Value="10.0.$(VersionFeature100ForWorkloads)" />
+      <_WorkloadManifestValues Include="EmscriptenVersion" Value="$(EmscriptenVersionNet10)" />
     </ItemGroup>
 
     <Error Condition="'%(_WorkloadManifestValues.Value)' == ''"
