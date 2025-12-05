@@ -3,9 +3,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+namespace Microsoft.DotNet.ProjectTools;
 
 internal sealed class LaunchSettingsManager
 {
@@ -42,7 +41,7 @@ internal sealed class LaunchSettingsManager
 
                 if (model.ValueKind != JsonValueKind.Object || !model.TryGetProperty(ProfilesKey, out var profilesObject) || profilesObject.ValueKind != JsonValueKind.Object)
                 {
-                    return LaunchProfileSettings.Failure(CliCommandStrings.LaunchProfilesCollectionIsNotAJsonObject);
+                    return LaunchProfileSettings.Failure(Resources.LaunchProfilesCollectionIsNotAJsonObject);
                 }
 
                 var selectedProfileName = profileName;
@@ -61,21 +60,20 @@ internal sealed class LaunchSettingsManager
 
                     if (caseInsensitiveProfileMatches.Count() > 1)
                     {
-                        throw new GracefulException(CliCommandStrings.DuplicateCaseInsensitiveLaunchProfileNames,
-                            string.Join(",\n", caseInsensitiveProfileMatches.Select(p => $"\t{p.Name}").ToArray()));
+                        return LaunchProfileSettings.Failure(string.Format(Resources.DuplicateCaseInsensitiveLaunchProfileNames,
+                            string.Join(",\n", caseInsensitiveProfileMatches.Select(p => $"\t{p.Name}"))));
                     }
-                    else if (!caseInsensitiveProfileMatches.Any())
+
+                    if (!caseInsensitiveProfileMatches.Any())
                     {
-                        return LaunchProfileSettings.Failure(string.Format(CliCommandStrings.LaunchProfileDoesNotExist, profileName));
+                        return LaunchProfileSettings.Failure(string.Format(Resources.LaunchProfileDoesNotExist, profileName));
                     }
-                    else
-                    {
-                        profileObject = profilesObject.GetProperty(caseInsensitiveProfileMatches.First().Name);
-                    }
+
+                    profileObject = profilesObject.GetProperty(caseInsensitiveProfileMatches.First().Name);
 
                     if (profileObject.ValueKind != JsonValueKind.Object)
                     {
-                        return LaunchProfileSettings.Failure(CliCommandStrings.LaunchProfileIsNotAJsonObject);
+                        return LaunchProfileSettings.Failure(Resources.LaunchProfileIsNotAJsonObject);
                     }
                 }
 
@@ -99,19 +97,19 @@ internal sealed class LaunchSettingsManager
 
                 if (profileObject.ValueKind == default)
                 {
-                    return LaunchProfileSettings.Failure(CliCommandStrings.UsableLaunchProfileCannotBeLocated);
+                    return LaunchProfileSettings.Failure(Resources.UsableLaunchProfileCannotBeLocated);
                 }
 
                 if (!profileObject.TryGetProperty(CommandNameKey, out var finalCommandNameElement)
                     || finalCommandNameElement.ValueKind != JsonValueKind.String)
                 {
-                    return LaunchProfileSettings.Failure(CliCommandStrings.UsableLaunchProfileCannotBeLocated);
+                    return LaunchProfileSettings.Failure(Resources.UsableLaunchProfileCannotBeLocated);
                 }
 
                 string? commandName = finalCommandNameElement.GetString();
                 if (!TryLocateHandler(commandName, out LaunchProfileParser? provider))
                 {
-                    return LaunchProfileSettings.Failure(string.Format(CliCommandStrings.LaunchProfileHandlerCannotBeLocated, commandName));
+                    return LaunchProfileSettings.Failure(string.Format(Resources.LaunchProfileHandlerCannotBeLocated, commandName));
                 }
 
                 return provider.ParseProfile(launchSettingsPath, selectedProfileName, profileObject.GetRawText());
@@ -119,7 +117,7 @@ internal sealed class LaunchSettingsManager
         }
         catch (Exception ex) when (ex is JsonException or IOException)
         {
-            return LaunchProfileSettings.Failure(string.Format(CliCommandStrings.DeserializationExceptionMessage, launchSettingsPath, ex.Message));
+            return LaunchProfileSettings.Failure(string.Format(Resources.DeserializationExceptionMessage, launchSettingsPath, ex.Message));
         }
     }
 

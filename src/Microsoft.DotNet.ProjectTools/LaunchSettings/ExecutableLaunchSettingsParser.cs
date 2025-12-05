@@ -4,7 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+namespace Microsoft.DotNet.ProjectTools;
 
 internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
 {
@@ -21,15 +21,15 @@ internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
         var profile = JsonSerializer.Deserialize<ExecutableLaunchProfileJson>(json);
         if (profile == null)
         {
-            return LaunchProfileSettings.Failure(CliCommandStrings.LaunchProfileIsNotAJsonObject);
+            return LaunchProfileSettings.Failure(Resources.LaunchProfileIsNotAJsonObject);
         }
 
         if (profile.ExecutablePath == null)
         {
             return LaunchProfileSettings.Failure(
                 string.Format(
-                    CliCommandStrings.LaunchProfile0IsMissingProperty1,
-                    RunCommand.GetLaunchProfileDisplayName(launchProfileName),
+                    Resources.LaunchProfile0IsMissingProperty1,
+                    LaunchProfileParser.GetLaunchProfileDisplayName(launchProfileName),
                     ExecutableLaunchSettingsModel.ExecutablePathPropertyName));
         }
 
@@ -69,7 +69,7 @@ internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
         catch
         {
             workingDirectory = null;
-            error = string.Format(CliCommandStrings.Path0SpecifiedIn1IsInvalid, expandedValue, ExecutableLaunchSettingsModel.WorkingDirectoryPropertyName);
+            error = string.Format(Resources.Path0SpecifiedIn1IsInvalid, expandedValue, ExecutableLaunchSettingsModel.WorkingDirectoryPropertyName);
             return false;
         }
     }

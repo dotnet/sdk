@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.DotNet.Cli.Commands;
-using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
-namespace Microsoft.DotNet.Cli.Run.Tests;
+namespace Microsoft.DotNet.ProjectTools.Tests;
 
 public class LaunchSettingsParserTests
 {
@@ -38,7 +36,7 @@ public class LaunchSettingsParserTests
             """);
 
         Assert.False(result.Successful);
-        Assert.Equal(string.Format(CliCommandStrings.LaunchProfile0IsMissingProperty1, "Execute", "executablePath"), result.FailureReason);
+        Assert.Equal(string.Format(Resources.LaunchProfile0IsMissingProperty1, "Execute", "executablePath"), result.FailureReason);
     }
 
     [Theory]
