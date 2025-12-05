@@ -3,7 +3,7 @@
 
 using System.Text.Json;
 
-namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+namespace Microsoft.DotNet.ProjectTools;
 
 internal sealed class ProjectLaunchSettingsParser : LaunchProfileParser
 {
@@ -20,7 +20,7 @@ internal sealed class ProjectLaunchSettingsParser : LaunchProfileParser
         var profile = JsonSerializer.Deserialize<ProjectLaunchProfileJson>(json);
         if (profile == null)
         {
-            return LaunchProfileSettings.Failure(CliCommandStrings.LaunchProfileIsNotAJsonObject);
+            return LaunchProfileSettings.Failure(Resources.LaunchProfileIsNotAJsonObject);
         }
 
         return LaunchProfileSettings.Success(new ProjectLaunchSettingsModel

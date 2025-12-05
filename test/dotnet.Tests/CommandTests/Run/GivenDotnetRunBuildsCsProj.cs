@@ -670,7 +670,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("(NO MESSAGE)")
-                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, CliCommandStrings.DefaultLaunchProfileDisplayName, "").Trim());
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, ProjectTools.Resources.DefaultLaunchProfileDisplayName, "").Trim());
         }
 
         [Fact]
@@ -688,7 +688,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("(NO MESSAGE)")
-                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, CliCommandStrings.DefaultLaunchProfileDisplayName, "").Trim());
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, ProjectTools.Resources.DefaultLaunchProfileDisplayName, "").Trim());
         }
 
         [Fact]
