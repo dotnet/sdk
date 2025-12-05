@@ -1035,11 +1035,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         Builder.CreateProjectInstance(
             projectCollection,
-            Directives,
-            addGlobalProperties,
             ThrowingReporter,
             out var project,
-            out var evaluatedDirectives);
+            out var evaluatedDirectives,
+            Directives,
+            addGlobalProperties);
 
         Directives = evaluatedDirectives;
 
