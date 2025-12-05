@@ -89,8 +89,8 @@ This file should be imported by eng/Versions.props
     <MicrosoftDiaSymReaderPackageVersion>2.2.0-beta.25523.111</MicrosoftDiaSymReaderPackageVersion>
     <MicrosoftDotNetWebItemTemplates100PackageVersion>10.0.0</MicrosoftDotNetWebItemTemplates100PackageVersion>
     <MicrosoftDotNetWebProjectTemplates100PackageVersion>10.0.0</MicrosoftDotNetWebProjectTemplates100PackageVersion>
-    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>10.0.0</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
-    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>10.0.0</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
+    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>10.0.2-servicing.25601.110</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
+    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>10.0.2-servicing.25601.110</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
     <MicrosoftExtensionsConfigurationIniPackageVersion>10.0.0</MicrosoftExtensionsConfigurationIniPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>10.0.0</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>10.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
