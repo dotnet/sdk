@@ -3,11 +3,33 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.DotNet.ProjectTools;
 
 internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
 {
+    private sealed class Json
+    {
+        [JsonPropertyName("commandName")]
+        public string? CommandName { get; set; }
+
+        [JsonPropertyName("executablePath")]
+        public string? ExecutablePath { get; set; }
+
+        [JsonPropertyName("commandLineArgs")]
+        public string? CommandLineArgs { get; set; }
+
+        [JsonPropertyName("workingDirectory")]
+        public string? WorkingDirectory { get; set; }
+
+        [JsonPropertyName("dotnetRunMessages")]
+        public bool DotNetRunMessages { get; set; }
+
+        [JsonPropertyName("environmentVariables")]
+        public Dictionary<string, string>? EnvironmentVariables { get; set; }
+    }
+
     public const string CommandName = "Executable";
 
     public static readonly ExecutableLaunchSettingsParser Instance = new();
@@ -18,7 +40,7 @@ internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
 
     public override LaunchProfileSettings ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
     {
-        var profile = JsonSerializer.Deserialize<ExecutableLaunchProfileJson>(json);
+        var profile = JsonSerializer.Deserialize<Json>(json);
         if (profile == null)
         {
             return LaunchProfileSettings.Failure(Resources.LaunchProfileIsNotAJsonObject);
@@ -30,7 +52,7 @@ internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
                 string.Format(
                     Resources.LaunchProfile0IsMissingProperty1,
                     LaunchProfileParser.GetLaunchProfileDisplayName(launchProfileName),
-                    ExecutableLaunchSettingsModel.ExecutablePathPropertyName));
+                    ExecutableLaunchSettings.ExecutablePathPropertyName));
         }
 
         if (!TryParseWorkingDirectory(launchSettingsPath, profile.WorkingDirectory, out var workingDirectory, out var error))
@@ -38,7 +60,7 @@ internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
             return LaunchProfileSettings.Failure(error);
         }
 
-        return LaunchProfileSettings.Success(new ExecutableLaunchSettingsModel
+        return LaunchProfileSettings.Success(new ExecutableLaunchSettings
         {
             LaunchProfileName = launchProfileName,
             ExecutablePath = ExpandVariables(profile.ExecutablePath),
@@ -69,7 +91,7 @@ internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
         catch
         {
             workingDirectory = null;
-            error = string.Format(Resources.Path0SpecifiedIn1IsInvalid, expandedValue, ExecutableLaunchSettingsModel.WorkingDirectoryPropertyName);
+            error = string.Format(Resources.Path0SpecifiedIn1IsInvalid, expandedValue, ExecutableLaunchSettings.WorkingDirectoryPropertyName);
             return false;
         }
     }

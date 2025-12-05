@@ -9,9 +9,9 @@ public sealed class LaunchProfileSettings
 {
     public string? FailureReason { get; }
 
-    public LaunchSettingsModel? Model { get; }
+    public LaunchSettings? Model { get; }
 
-    private LaunchProfileSettings(string? failureReason, LaunchSettingsModel? launchSettings)
+    private LaunchProfileSettings(string? failureReason, LaunchSettings? launchSettings)
     {
         FailureReason = failureReason;
         Model = launchSettings;
@@ -24,6 +24,6 @@ public sealed class LaunchProfileSettings
     public static LaunchProfileSettings Failure(string reason)
         => new(reason, launchSettings: null);
 
-    public static LaunchProfileSettings Success(LaunchSettingsModel? model)
+    public static LaunchProfileSettings Success(LaunchSettings? model)
         => new(failureReason: null, launchSettings: model);
 }

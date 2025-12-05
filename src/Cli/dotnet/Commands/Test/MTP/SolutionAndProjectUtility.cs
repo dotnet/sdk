@@ -371,7 +371,7 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static LaunchSettingsModel? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, BuildOptions buildOptions, string? profileName)
+    private static LaunchSettings? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, BuildOptions buildOptions, string? profileName)
     {
         if (buildOptions.NoLaunchProfile)
         {
