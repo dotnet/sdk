@@ -14,13 +14,13 @@ namespace Microsoft.DotNet.Installer.Windows
     [SupportedOSPlatform("windows")]
     internal sealed class InstallClientElevationContext : InstallElevationContextBase
     {
-        private TimestampedFileLogger _log;
+        private ISynchronizingLogger _log;
 
         private Process _serverProcess;
 
         public override bool IsClient => true;
 
-        public InstallClientElevationContext(TimestampedFileLogger logger)
+        public InstallClientElevationContext(ISynchronizingLogger logger)
         {
             _log = logger;
         }
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Installer.Windows
 
                     // Add a pipe to the logger to allow the server to send log requests. This avoids having an elevated process writing
                     // to a less privileged location. It also simplifies troubleshooting because log events will be chronologically
-                    // ordered in a single file. 
+                    // ordered in a single file.
                     _log.AddNamedPipe(WindowsUtils.CreatePipeName(_serverProcess.Id, "log"));
 
                     HasElevated = true;

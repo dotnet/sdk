@@ -3,7 +3,7 @@ trigger:
   branches:
     include:
     - main
-    - release/8.0.1xx
+    - release/8.0.3xx
     - internal/release/*
     - exp/*
 
@@ -85,12 +85,6 @@ stages:
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: real
               _Test: ''
-  - template: /eng/common/templates/job/source-build.yml
-    parameters:
-      enableInternalSources: true
-      platform:
-        name: 'Managed'
-        container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9'
   - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/build-pr.yml
       parameters:
@@ -177,7 +171,6 @@ stages:
         publishAssetsImmediately: true
         dependsOn:
           - Windows_NT
-          - Source_Build_Managed
         pool:
           name: $(DncEngInternalBuildPool)
           demands: ImageOverride -equals windows.vs2019.amd64
