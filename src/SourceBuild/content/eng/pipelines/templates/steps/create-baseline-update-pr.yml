@@ -1,4 +1,8 @@
 parameters:
+- name: dotnetPath
+  type: string
+  default: '$(Build.SourcesDirectory)/.dotnet'
+
 # The pipeline that is being run
 # Used to determine the correct baseline update tool to run
 # Currently only supports "sdk" and "license"
@@ -31,7 +35,7 @@ steps:
 
       branchName=$(echo "$(Build.SourceBranch)" | sed 's/refs\/heads\///g')
 
-      .dotnet/dotnet run \
+      ${{ parameters.dotnetPath }}/dotnet run \
         --project eng/tools/CreateBaselineUpdatePR/ \
         --property:RestoreSources="$restoreSources" \
         "${{ parameters.pipeline }}" \
