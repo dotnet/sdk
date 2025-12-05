@@ -9,7 +9,7 @@ The feature is available for both `dotnet new` and Visual Studio.
 
 The symbol binds value from external sources. 
 By default, the following sources are available:
-- host parameters - parameters defined at certain host. For .NET SDK the following parameters are defined: `HostIdentifier: dotnetcli`, `GlobalJsonExists: true/false`.  Binding syntax is `host:<param name>`, example: `host:HostIdentifier`. 
+- host parameters - parameters defined at certain host. For .NET SDK the following parameters are defined: `HostIdentifier: dotnetcli`, `GlobalJsonExists: true/false`, `WorkingDirectory: <dotnet_new_context_directory>`.  Binding syntax is `host:<param name>`, example: `host:HostIdentifier`. 
 - environment variables - allows to bind environment variables. Binding syntax is `env:<environment variable name>`, example: `env:MYENVVAR`.
 
 It is also possible to bind the parameter without the prefix as a fallback behavior: `HostIdentifier`, `MYENVVAR`.
@@ -37,6 +37,10 @@ The higher value indicates higher priority.
    "HostIdentifier": {
       "type": "bind",
       "binding": "host:HostIdentifier"
+    },
+   "WorkingDirectory": {
+      "type": "bind",
+      "binding": "host:WorkingDirectory"
     }
 }
 ```  

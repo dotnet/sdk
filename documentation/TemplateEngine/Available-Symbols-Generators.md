@@ -53,7 +53,7 @@ This is a sample of definition of a generated symbol, the `port` generator, that
 },   
 ```
 
-Most of the generators need to be configured via parameters that let you select the source of the data and select among the options available. Below is a sample of a symbol that use the `now` generator to replace a fixed year indication present in the source files with the current year.
+Most of the generators need to be configured via parameters that let you select the source of the data and select among the options available. Below is a sample of a symbol that uses the `now` generator to replace a fixed year indication present in the source files with the current year.
 
 ```json
 "copyrightYear": {
@@ -643,14 +643,14 @@ This sample will rename folder called `Api` into `Source/Api/Microsoft/Visual St
 
 `Program.cs`:
 ```C#
-// This file is generated for platfrom: SupportedPlatforms
+// This file is generated for platform: SupportedPlatforms
 ```
 
 This sample will expand and join values of `Platform` argument and replace `SupportedPlatforms` string with `MacOS, iOS`:
 
 `Program.cs`:
 ```C#
-// This file is generated for platfrom: MacOS, iOS
+// This file is generated for platform: MacOS, iOS
 ```
 
 ### Related

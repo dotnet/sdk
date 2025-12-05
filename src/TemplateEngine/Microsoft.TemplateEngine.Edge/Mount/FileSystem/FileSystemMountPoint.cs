@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Settings;
@@ -40,7 +38,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         /// </summary>
         internal string MountPointRootPath { get; }
 
-        public IFile? FileInfo(string path)
+        public IFile FileInfo(string path)
         {
             string fullPath = Path.Combine(MountPointRootPath, path.TrimStart('/'));
 

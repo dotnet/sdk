@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Castle.Core.Internal;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -101,7 +100,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData(true, XmlConditionWithinMsBuildConditionSource, XmlConditionWithinMsBuildConditionOutputOnTrue)]
         [InlineData(false, MsBuildConditionWithinXmlConditionSource, MsBuildConditionWithinXmlConditionOutputOnFalse)]
         [InlineData(true, MsBuildConditionWithinXmlConditionSource, MsBuildConditionWithinXmlConditionOutputOnTrue)]
-        public async void InstantiateAsync_XmlConditionsAndComments(bool paramA, string sourceSnippet, string expectedOutput)
+        public async Task InstantiateAsync_XmlConditionsAndComments(bool paramA, string sourceSnippet, string expectedOutput)
         {
             IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
             {
@@ -160,7 +159,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData(null, "SECOND", false)]
         // explicit unset
         [InlineData("", "UNKNOWN", false)]
-        public async void InstantiateAsync_ParamsProperlyHonored(string? parameterValue, string expectedOutput, bool instantiateShouldFail)
+        public async Task InstantiateAsync_ParamsProperlyHonored(string? parameterValue, string expectedOutput, bool instantiateShouldFail)
         {
             string sourceSnippet = """
                 #if( ChoiceParam == FirstChoice )
@@ -216,7 +215,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData(true, false, false, "A,", true)]
         // Theoretically the result is deterministic, but we'd need to understand the expression tree as well (and purge it)
         [InlineData(true, false, true, "B,C", true)]
-        public async void InstantiateAsync_ConditionalParametersCycleEvaluation(bool a_val, bool b_val, bool c_val, string expectedOutput, bool instantiateShouldFail)
+        public async Task InstantiateAsync_ConditionalParametersCycleEvaluation(bool a_val, bool b_val, bool c_val, string expectedOutput, bool instantiateShouldFail)
         {
             //
             // Template content preparation
@@ -290,7 +289,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
         [InlineData(null, false, null, "", false, null)]
         [InlineData(false, false, false, "", false, null)]
         [InlineData(true, false, true, "A,C", false, null)]
-        public async void InstantiateAsync_ConditionalParametersIsRequiredEvaluation(bool? a_val, bool? b_val, bool? c_val, string expectedOutput, bool instantiateShouldFail, string expectedErrorMessage)
+        public async Task InstantiateAsync_ConditionalParametersIsRequiredEvaluation(bool? a_val, bool? b_val, bool? c_val, string expectedOutput, bool instantiateShouldFail, string? expectedErrorMessage)
         {
             //
             // Template content preparation
@@ -371,14 +370,14 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
         [InlineData(true, null, "true", "false", "A,", false, null)]
         [InlineData(true, null, "true", null, "A,", false, null)]
         [InlineData(null, true, null, null, "", true, "B")]
-        public async void InstantiateAsync_ConditionalParametersRequiredOverwrittenByDisabled(
+        public async Task InstantiateAsync_ConditionalParametersRequiredOverwrittenByDisabled(
             bool? a_enable_val,
             bool? b_enable_val,
             string? a,
             string? b,
             string expectedOutput,
             bool instantiateShouldFail,
-            string expectedErrorMessage)
+            string? expectedErrorMessage)
         {
             //
             // Template content preparation
@@ -445,12 +444,12 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
         [InlineData(true, true, "", false, null)]
         [InlineData(null, false, "", false, null)]
         [InlineData(null, true, "A,", false, null)]
-        public async void InstantiateAsync_ConditionalParametersInversedEnablingCondition(
+        public async Task InstantiateAsync_ConditionalParametersInversedEnablingCondition(
             bool? a_disable_val,
             bool? a,
             string expectedOutput,
             bool instantiateShouldFail,
-            string expectedErrorMessage)
+            string? expectedErrorMessage)
         {
             //
             // Template content preparation
@@ -546,11 +545,11 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
         [InlineData(ParamSnippetBooleanDefaultFalse, "A,", false, null)]
         [InlineData(ParamSnippetBooleanDefaultTrue, "notA,", false, null)]
         //[InlineData(false, true, "A,", false, null)]
-        public async void InstantiateAsync_ConditionalParametersEvaluationBehavior(
+        public async Task InstantiateAsync_ConditionalParametersEvaluationBehavior(
             string paramSnippet,
             string expectedOutput,
             bool instantiateShouldFail,
-            string expectedErrorMessage)
+            string? expectedErrorMessage)
         {
             //
             // Template content preparation
@@ -627,7 +626,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
         [InlineData(null, true, false, null, true, null, /*c_val*/ true, "", true, "parB")]
         [InlineData(null, true, true, null, false, null, /*c_val*/ true, "", true, "parA")]
         [InlineData(null, true, false, null, false, false, /*c_val*/ false, "", true, @"Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition): B (parameter)")]
-        public async void InstantiateAsync_ConditionalParametersWithExternalEvaluation(
+        public async Task InstantiateAsync_ConditionalParametersWithExternalEvaluation(
             bool? a_val,
             bool? a_enabled,
             bool? a_required,
@@ -710,7 +709,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
         [InlineData(TemplateConfigPreferDefaultNameWithDefaultName, null, "./defaultName.cs", false, "")]
         [InlineData(TemplateConfigNoPreferDefaultNameWithDefaultName, null, "./tst2.cs", false, "")]
         [InlineData(TemplateConfigPreferDefaultNameWithoutDefaultName, null, "./tst2.cs", true, "Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.")]
-        public async void InstantiateAsync_PreferDefaultName(string templateConfig, string? name, string expectedOutputName, bool instanceFailure, string errorMessage)
+        public async Task InstantiateAsync_PreferDefaultName(string templateConfig, string? name, string expectedOutputName, bool instanceFailure, string errorMessage)
         {
             string sourceSnippet = """
                 using System;
@@ -729,7 +728,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
         }
 
         [Fact]
-        public async void InstantiateAsync_InvalidTemplate()
+        public async Task InstantiateAsync_InvalidTemplate()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
@@ -801,7 +800,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
         }
 
         [Fact]
-        public async void InstantiateAsync_InvalidLocalization()
+        public async Task InstantiateAsync_InvalidLocalization()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
@@ -876,7 +875,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             string templateSnippet,
             string sourceSnippet,
             string expectedOutput,
-            string expectedErrorMessage,
+            string? expectedErrorMessage,
             bool instantiateShouldFail,
             string? name = "sourceFile",
             string expectedOutputName = "./sourceFile.cs",
@@ -980,7 +979,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 res.ErrorMessage.Should().NotBeNullOrEmpty();
                 res.ErrorMessage.Should().Contain(expectedErrorMessage);
                 res.OutputBaseDirectory.Should().Match(s =>
-                    s.IsNullOrEmpty() || !_engineEnvironmentSettings.Host.FileSystem.FileExists(s));
+                    string.IsNullOrEmpty(s) || !_engineEnvironmentSettings.Host.FileSystem.FileExists(s));
             }
             else
             {

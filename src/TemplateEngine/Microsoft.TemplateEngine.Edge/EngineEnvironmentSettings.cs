@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
@@ -25,7 +24,7 @@ namespace Microsoft.TemplateEngine.Edge
         /// </param>
         /// <param name="environment">implementation of <see cref="IEnvironment"/> to use. If not specified, <see cref="DefaultEnvironment"/> will be used.</param>
         /// <param name="componentManager">implementation of <see cref="IComponentManager"/> to use. If not specified, built-in implementation will be used.</param>
-        /// <param name="pathInfo">implememtation of <see cref="IPathInfo"/> to use. If not specified, <see cref="DefaultPathInfo"/> will be used (if <paramref name="settingsLocation"/> is used, settings location will be overriden as mentioned in <paramref name="settingsLocation"/> description). <br/>
+        /// <param name="pathInfo">implementation of <see cref="IPathInfo"/> to use. If not specified, <see cref="DefaultPathInfo"/> will be used (if <paramref name="settingsLocation"/> is used, settings location will be overridden as mentioned in <paramref name="settingsLocation"/> description). <br/>
         /// If <paramref name="pathInfo"/> is specified, do not provide <paramref name="settingsLocation"/>.
         /// </param>
         public EngineEnvironmentSettings(

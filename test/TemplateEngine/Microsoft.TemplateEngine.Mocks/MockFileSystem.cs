@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Utils;
@@ -68,7 +64,7 @@ namespace Microsoft.TemplateEngine.Mocks
             {
                 _files[path] = new FileSystemFile();
             }
-            _files[path].Data = Array.Empty<byte>();
+            _files[path].Data = [];
             return new MockFileStream(d => _files[path].Data = d);
         }
 
@@ -76,7 +72,7 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             if (!_files.TryGetValue(path, out FileSystemFile file))
             {
-                throw new Exception($"File {path} does no texist");
+                throw new Exception($"File {path} does not exist");
             }
 
             MemoryStream s = new MemoryStream(file.Data);
@@ -120,7 +116,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public byte[] ReadAllBytes(string path)
         {
-            return _files[path].Data ?? Array.Empty<byte>();
+            return _files[path].Data ?? [];
         }
 
         public void DirectoryDelete(string path, bool recursive)

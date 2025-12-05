@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 
@@ -11,17 +9,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
     public class PhasedOperation : IOperationProvider
     {
         private readonly IReadOnlyList<Phase> _config;
-        private readonly string? _id;
         private readonly bool _initialState;
 
         public PhasedOperation(string? id, IReadOnlyList<Phase> config, bool initialState)
         {
-            _id = id;
+            Id = id;
             _config = config;
             _initialState = initialState;
         }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -86,24 +83,24 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 }
             }
 
-            return new Impl(this, tokens, currentTarget, _initialState);
+            return new Implementation(this, tokens, currentTarget, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly PhasedOperation _definition;
             private readonly IReadOnlyList<SpecializedPhase> _entryPoints;
             private SpecializedPhase? _currentPhase;
 
-            public Impl(PhasedOperation definition, IReadOnlyList<IToken> config, IReadOnlyList<SpecializedPhase> entryPoints, bool initialState)
+            public Implementation(PhasedOperation definition, IReadOnlyList<IToken> config, IReadOnlyList<SpecializedPhase> entryPoints, bool initialState)
             {
                 _definition = definition;
                 Tokens = config;
                 _entryPoints = entryPoints;
-                IsInitialStateOn = string.IsNullOrEmpty(_definition._id) || initialState;
+                IsInitialStateOn = string.IsNullOrEmpty(_definition.Id) || initialState;
             }
 
-            public string? Id => _definition._id;
+            public string? Id => _definition.Id;
 
             public IReadOnlyList<IToken> Tokens { get; }
 
@@ -112,7 +109,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
             {
                 IReadOnlyList<SpecializedPhase> nextPhases = _currentPhase?.Next ?? _entryPoints;
-                SpecializedPhase match = nextPhases.FirstOrDefault(x => x.Match == token);
+                SpecializedPhase? match = nextPhases.FirstOrDefault(x => x.Match == token);
 
                 if (match != null)
                 {
@@ -146,13 +143,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
             public byte[]? Replacement { get; set; }
 
             public List<int> ResetsWith { get; }
-        }
-
-        private class SpecializedPhasedOperationConfig
-        {
-            public IReadOnlyList<SpecializedPhase>? EntryPoints { get; set; }
-
-            public IReadOnlyList<ITokenConfig>? Tokens { get; set; }
         }
     }
 }

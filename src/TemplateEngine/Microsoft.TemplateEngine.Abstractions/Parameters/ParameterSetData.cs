@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.TemplateEngine.Abstractions.Parameters;
 
@@ -63,7 +61,7 @@ public class ParameterSetData : IParameterSetData
     /// Empty instance.
     /// </summary>
     public static IParameterSetData Empty =>
-        new ParameterSetData(new ParameterDefinitionSet((IReadOnlyDictionary<string, ITemplateParameter>?)null), System.Array.Empty<ParameterData>());
+        new ParameterSetData(new ParameterDefinitionSet((IReadOnlyDictionary<string, ITemplateParameter>?)null), []);
 
     /// <inheritdoc/>
     public IParameterDefinitionSet ParametersDefinition { get; }

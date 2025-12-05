@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
@@ -13,13 +9,12 @@ namespace Microsoft.TemplateEngine.Core.Operations
 {
     public class InlineMarkupConditional : IOperationProvider
     {
-        private readonly string? _id;
         private readonly bool _initialState;
 
         public InlineMarkupConditional(MarkupTokens tokens, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string variableFormat, string? id, bool initialState)
         {
             Tokens = tokens;
-            _id = id;
+            Id = id;
             Evaluator = evaluator;
             WholeLine = wholeLine;
             TrimWhitespace = trimWhitespace;
@@ -29,7 +24,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public ConditionEvaluator Evaluator { get; }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public MarkupTokens Tokens { get; }
 
@@ -69,10 +64,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 closeCommentToken);
 
             IReadOnlyList<IToken> start = new[] { Tokens.OpenConditionExpression.ToToken(processorState.Encoding) };
-            return new Impl(this, start, structureTrie, closeConditionTrie, scanBackTrie, mapping, _id, _initialState);
+            return new Implementation(this, start, structureTrie, closeConditionTrie, scanBackTrie, mapping, Id, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly ITokenTrie _closeConditionTrie;
             private readonly InlineMarkupConditional _definition;
@@ -80,7 +75,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly ITokenTrie _scanBackTrie;
             private readonly ITokenTrie _structureTrie;
 
-            internal Impl(InlineMarkupConditional definition, IReadOnlyList<IToken> tokens, ITokenTrie structureTrie, ITokenTrie closeConditionTrie, ITokenTrie scanBackTrie, MarkupTokenMapping mapping, string? id, bool initialState)
+            internal Implementation(InlineMarkupConditional definition, IReadOnlyList<IToken> tokens, ITokenTrie structureTrie, ITokenTrie closeConditionTrie, ITokenTrie scanBackTrie, MarkupTokenMapping mapping, string? id, bool initialState)
             {
                 _definition = definition;
                 Id = id;
@@ -110,7 +105,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 ScanToCloseCondition(processor, conditionBytes, ref bufferLength, ref currentBufferPosition);
                 byte[] condition = conditionBytes.ToArray();
                 EngineConfig adjustedConfig = new EngineConfig(processor.Config.Logger, processor.Config.Whitespaces, processor.Config.LineEndings, processor.Config.Variables, _definition.VariableFormat);
-                IProcessorState localState = new ProcessorState(new MemoryStream(condition), new MemoryStream(), conditionBytes.Count, int.MaxValue, adjustedConfig, Array.Empty<IOperationProvider>());
+                IProcessorState localState = new ProcessorState(new MemoryStream(condition), new MemoryStream(), conditionBytes.Count, int.MaxValue, adjustedConfig, []);
                 int pos = 0;
                 int len = conditionBytes.Count;
 

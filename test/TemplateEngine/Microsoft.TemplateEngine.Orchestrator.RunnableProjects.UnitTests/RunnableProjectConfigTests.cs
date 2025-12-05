@@ -154,7 +154,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             if (expectedToBeValid)
             {
                 Assert.True(templateConfig.IsValid);
-                Assert.Empty(templateConfig.ValidationErrors.Where(e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning));
+                Assert.DoesNotContain(templateConfig.ValidationErrors, e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning });
             }
             else
             {

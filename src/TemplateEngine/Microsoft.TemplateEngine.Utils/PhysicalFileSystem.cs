@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 
 namespace Microsoft.TemplateEngine.Utils
@@ -126,9 +123,9 @@ namespace Microsoft.TemplateEngine.Utils
             return resultPath;
         }
 
-        public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged)
+        public IDisposable WatchFileChanges(string filePath, FileSystemEventHandler fileChanged)
         {
-            FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(filepath), Path.GetFileName(filepath));
+            FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(filePath), Path.GetFileName(filePath));
             watcher.Changed += fileChanged;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.EnableRaisingEvents = true;

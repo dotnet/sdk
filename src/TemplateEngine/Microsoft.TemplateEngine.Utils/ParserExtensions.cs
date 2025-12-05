@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 
 namespace Microsoft.TemplateEngine.Utils
@@ -17,7 +16,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// true when <paramref name="stringValue"/> can be parsed in current or invariant culture.
         /// false when <paramref name="stringValue"/> cannot be parsed in current or invariant culture.
         /// </returns>
-        public static bool DoubleTryParseСurrentOrInvariant(string? stringValue, out double doubleValue)
+        public static bool DoubleTryParseCurrentOrInvariant(string? stringValue, out double doubleValue)
         {
             if (double.TryParse(stringValue, NumberStyles.Float, CultureInfo.CurrentCulture, out doubleValue))
             {

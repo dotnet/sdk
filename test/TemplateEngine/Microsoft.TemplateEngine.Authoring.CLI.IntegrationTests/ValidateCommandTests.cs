@@ -9,7 +9,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 {
-    [UsesVerify]
     [Collection("Verify Tests")]
     public class ValidateCommandTests : TestBase
     {

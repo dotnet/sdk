@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
@@ -28,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public Guid ActionId { get; }
 
-        public bool ContinueOnError { get; private set; }
+        public bool ContinueOnError { get; }
 
         public IReadOnlyDictionary<string, string> Args { get; } = new Dictionary<string, string>();
 

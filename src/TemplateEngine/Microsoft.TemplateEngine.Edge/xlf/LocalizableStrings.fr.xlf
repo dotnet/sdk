@@ -25,7 +25,7 @@
         <target state="translated">Les conditions de paramètre contiennent une dépendance cyclique : [{0}]. Avec les valeurs actuelles des paramètres, il est possible d'évaluer les paramètres de manière déterministe – donc aller plus loin. Cependant, le modèle doit être revu car l'instanciation avec des paramètres différents peut entraîner des erreurs.</target>
         <note>{0} is the dependency chain</note>
       </trans-unit>
-      <trans-unit id="Constaint_Error_ArgumentHasEmptyString">
+      <trans-unit id="Constraint_Error_ArgumentHasEmptyString">
         <source>'{0}' should not contain empty items</source>
         <target state="translated">« {0} » ne doit pas contenir d’éléments vides</target>
         <note>{0} is JSON configuration for constraint</note>
@@ -232,61 +232,61 @@
         <target state="translated">Le fichier {0} existe déjà.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_DownloadFailed">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_DownloadFailed">
         <source>Failed to download {0} from {1}.</source>
         <target state="translated">Échec du téléchargement de {0} à partir de {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_InstallGeneric">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_InstallGeneric">
         <source>Failed to install the package {0}.
 Details: {1}.</source>
         <target state="translated">Échec de l’installation du package {0}.
 Détails : {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_InstallRequestNotSupported">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_InstallRequestNotSupported">
         <source>The install request {0} cannot be processed by installer {1}.</source>
         <target state="translated">La demande d’installation {0} ne peut pas être traitée par le programme d’installation {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidPackage">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_InvalidPackage">
         <source>The NuGet package {0} is invalid.</source>
         <target state="translated">Le package NuGet {0} est non valide.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_InvalidSources">
         <source>The configured NuGet sources are invalid: {0}.</source>
         <target state="translated">Les sources NuGet configurées sont non valides : {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources_None">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_InvalidSources_None">
         <source>No NuGet sources are configured.</source>
         <target state="translated">Aucune source NuGet n’est configurée.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_OperationCancelled">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_OperationCancelled">
         <source>The operation was cancelled.</source>
         <target state="translated">L'opération a été annulée.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotFound">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_PackageNotFound">
         <source>{0} was not found in NuGet feeds {1}.</source>
         <target state="translated">{0} est introuvable dans les flux NuGet {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotSupported">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_PackageNotSupported">
         <source>The package {0} is not supported by installer {1}.</source>
         <target state="translated">Le package {0} n’est pas pris en charge par le programme d’installation {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_UninstallGeneric">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_UninstallGeneric">
         <source>Failed to uninstall the package {0}.
 Details: {1}.</source>
         <target state="translated">Échec de la désinstallation du package {0}.
 Détails : {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_UpdateCheckGeneric">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_UpdateCheckGeneric">
         <source>Failed to check the update for the package {0}.
 Details: {1}.</source>
         <target state="translated">Échec de la vérification de la mise à jour du package {0}.

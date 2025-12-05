@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
@@ -77,7 +72,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
             if (!_environmentSettings.Host.FileSystem.FileExists(_globalSettingsFile))
             {
-                return Array.Empty<TemplatePackageData>();
+                return [];
             }
 
             for (int i = 0; i < FileReadWriteRetries; i++)

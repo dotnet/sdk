@@ -2,11 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
     <Description>A dotnet CLI tool with commands for template authoring.</Description>
     <IsPackable>true</IsPackable>
-    <ImplicitUsings>enable</ImplicitUsings>
-
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-template-authoring</ToolCommandName>
   </PropertyGroup>
@@ -28,22 +26,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="LocalizableStrings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>LocalizableStrings.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="LocalizableStrings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>LocalizableStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <EmbeddedResource Update="LocalizableStrings.resx"
+                      GenerateSource="true" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests" Key="$(TemplateEnginePublicKey)" />
     <InternalsVisibleTo Include="Microsoft.TemplateEngine.Authoring.CLI.UnitTests" Key="$(TemplateEnginePublicKey)" />
   </ItemGroup>
+
 </Project>

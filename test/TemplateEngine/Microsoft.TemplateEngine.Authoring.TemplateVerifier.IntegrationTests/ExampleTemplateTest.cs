@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
         // The identity of snapshots ilustrates that execution through API and through full blown command leads to identical results
 
         [Fact]
-        public async void VerificationEngineSampleDogfoodTest()
+        public async Task VerificationEngineSampleDogfoodTest()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
             string templateShortName = "TestAssets.SampleTestTemplate";
@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
         }
 
         [Fact]
-        public async void VerificationEngineSampleDogfoodTest_ExecThroughApi()
+        public async Task VerificationEngineSampleDogfoodTest_ExecThroughApi()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
             string templateShortName = "TestAssets.SampleTestTemplate";

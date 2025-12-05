@@ -185,11 +185,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             A.CallTo(() => customGeneratedConfig.VariableName).Returns(customMacroName);
 
             var customMacroConfig = new FakeMacroConfig(new FakeMacro(), customGeneratedConfig);
-            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(
+            _environmentSettingsHelper.CreateEnvironment(
                 virtualize: true,
                 environment: A.Fake<IEnvironment>(),
                 additionalComponents: new[] { (typeof(IMacro), (IIdentifiedComponent)new FakeMacro()) });
-            var variableCollection = new VariableCollection();
 
             var sortedItems = MacroProcessor.SortMacroConfigsByDependencies(new[] { customMacroName, switchMacroName, coalesceMacroName }, new[] { (BaseMacroConfig)switchMacroConfig, customMacroConfig, coalesceMacroConfig });
 
@@ -361,8 +360,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             public void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, FailMacroConfig config) => throw new Exception("Failed to evaluate");
 
-            public void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IGeneratedSymbolConfig generatedSymbolConfig) => throw new Exception("Failed to evaluate");
-
             public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig config) => throw new Exception("Failed to evaluate");
         }
 
@@ -375,8 +372,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig generatedSymbolConfig) => new FailMacroConfig(generatedSymbolConfig.VariableName);
 
             public void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, FailMacroConfig config) => throw new Exception("Failed to evaluate");
-
-            public void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IGeneratedSymbolConfig generatedSymbolConfig) => throw new TemplateAuthoringException("bad config");
 
             public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig config) => throw new TemplateAuthoringException("bad config");
         }

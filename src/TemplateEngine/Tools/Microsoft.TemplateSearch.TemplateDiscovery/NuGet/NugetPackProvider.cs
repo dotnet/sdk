@@ -45,17 +45,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
             _searchUriFormat = $"{searchResources[0].Uri}?{query}&skip={{0}}&take={{1}}&prerelease={includePreviewPacks}&semVerLevel=2.0.0";
 
-            if (Directory.Exists(_packageTempPath))
-            {
-                throw new Exception($"temp storage path for NuGet packages already exists: {_packageTempPath}");
-            }
-            else
+            if (!Directory.Exists(_packageTempPath))
             {
                 Directory.CreateDirectory(_packageTempPath);
             }
         }
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
         public bool SupportsGetPackageInfoViaApi => true;
 
@@ -92,45 +88,43 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                 string queryString = string.Format(_searchUriFormat, skip, pageSize);
 
                 Uri queryUri = new Uri(queryString);
-                using (HttpClient client = new HttpClient(new HttpClientHandler() { CheckCertificateRevocationList = true }))
-                using (HttpResponseMessage response = await client.GetAsync(queryUri, token).ConfigureAwait(false))
+                using HttpClient client = new HttpClient(new HttpClientHandler() { CheckCertificateRevocationList = true });
+                using HttpResponseMessage response = await client.GetAsync(queryUri, token).ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
                 {
-                    if (response.IsSuccessStatusCode)
+                    string responseText = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+
+                    NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JObject.Parse(responseText));
+                    totalPackCount = resultsForPage.TotalHits;
+                    if (resultsForPage.Data.Count > 0)
                     {
-                        string responseText = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-
-                        NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JObject.Parse(responseText));
-                        totalPackCount = resultsForPage.TotalHits;
-                        if (resultsForPage.Data.Count > 0)
+                        skip += pageSize;
+                        packCount += resultsForPage.Data.Count;
+                        foreach (NuGetPackageSourceInfo sourceInfo in resultsForPage.Data)
                         {
-                            skip += pageSize;
-                            packCount += resultsForPage.Data.Count;
-                            foreach (NuGetPackageSourceInfo sourceInfo in resultsForPage.Data)
-                            {
-                                yield return sourceInfo;
-                            }
+                            yield return sourceInfo;
                         }
-                        //4000 is NuGet limit, stop after 4000 is processed.
-                        if (totalPackCount == packCount || (totalPackCount > 4000 && packCount == 4000))
-                        {
-                            if (totalPackCount > 4000)
-                            {
-                                Console.WriteLine($"Warning: {totalPackCount} packages were found, but only first 4000 packages can be retrieved. Other packages will be skipped.");
-                            }
-                            done = true;
-                        }
-                        else if (skip > 3000 || skip >= totalPackCount)
-                        {
-                            Console.WriteLine($"Failed to get all search results from NuGet: expected {totalPackCount}, retrieved: {packCount}.");
-                            throw new Exception("Failed to get search results from NuGet search API.");
-                        }
-
                     }
-                    else
+                    //4000 is NuGet limit, stop after 4000 is processed.
+                    if (totalPackCount == packCount || (totalPackCount > 4000 && packCount == 4000))
                     {
-                        Console.WriteLine($"Unexpected response from NuGet: code {response.StatusCode}, details: {response}.");
+                        if (totalPackCount > 4000)
+                        {
+                            Console.WriteLine($"Warning: {totalPackCount} packages were found, but only first 4000 packages can be retrieved. Other packages will be skipped.");
+                        }
+                        done = true;
+                    }
+                    else if (skip > 3000 || skip >= totalPackCount)
+                    {
+                        Console.WriteLine($"Failed to get all search results from NuGet: expected {totalPackCount}, retrieved: {packCount}.");
                         throw new Exception("Failed to get search results from NuGet search API.");
                     }
+
+                }
+                else
+                {
+                    Console.WriteLine($"Unexpected response from NuGet: code {response.StatusCode}, details: {response}.");
+                    throw new Exception("Failed to get search results from NuGet search API.");
                 }
             }
             while (!done && !_runOnlyOnePage);
@@ -143,20 +137,27 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
             try
             {
-                using Stream packageStream = File.Create(outputPackageFileNameFullPath);
-                if (await _downloadResource.CopyNupkgToStreamAsync(
-                    packinfo.Name,
-                    new NuGetVersion(packinfo.Version!),
-                    packageStream,
-                    _cacheContext,
-                    NullLogger.Instance,
-                    token).ConfigureAwait(false))
+                if (File.Exists(outputPackageFileNameFullPath))
                 {
                     return new DownloadedPackInfo(packinfo, outputPackageFileNameFullPath);
                 }
                 else
                 {
-                    throw new Exception($"Download failed: {nameof(_downloadResource.CopyNupkgToStreamAsync)} returned false.");
+                    using Stream packageStream = File.Create(outputPackageFileNameFullPath);
+                    if (await _downloadResource.CopyNupkgToStreamAsync(
+                        packinfo.Name,
+                        new NuGetVersion(packinfo.Version!),
+                        packageStream,
+                        _cacheContext,
+                        NullLogger.Instance,
+                        token).ConfigureAwait(false))
+                    {
+                        return new DownloadedPackInfo(packinfo, outputPackageFileNameFullPath);
+                    }
+                    else
+                    {
+                        throw new Exception($"Download failed: {nameof(_downloadResource.CopyNupkgToStreamAsync)} returned false.");
+                    }
                 }
             }
             catch (TaskCanceledException)
@@ -174,14 +175,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
         {
             string queryString = string.Format(_searchUriFormat, 0, _pageSize);
             Uri queryUri = new Uri(queryString);
-            using (HttpClient client = new HttpClient(new HttpClientHandler() { CheckCertificateRevocationList = true }))
-            using (HttpResponseMessage response = await client.GetAsync(queryUri, token).ConfigureAwait(false))
-            {
-                response.EnsureSuccessStatusCode();
-                string responseText = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-                NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JObject.Parse(responseText));
-                return resultsForPage.TotalHits;
-            }
+            using HttpClient client = new HttpClient(new HttpClientHandler() { CheckCertificateRevocationList = true });
+            using HttpResponseMessage response = await client.GetAsync(queryUri, token).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            string responseText = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+            NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JObject.Parse(responseText));
+            return resultsForPage.TotalHits;
         }
 
         public async Task DeleteDownloadedPacksAsync()
@@ -275,7 +274,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
             public long TotalDownloads { get; }
 
-            public IReadOnlyList<string> Owners => Array.Empty<string>();
+            public IReadOnlyList<string> Owners => [];
 
             public bool Reserved { get; }
 

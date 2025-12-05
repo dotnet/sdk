@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Utils;
@@ -76,14 +71,14 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
             {
                 List<HostInformation> hostInformation = new List<HostInformation>();
 
-                foreach (JObject jobj in args.ParseArrayOfConstraintJObjects())
+                foreach (JObject jObj in args.ParseArrayOfConstraintJObjects())
                 {
-                    string? hostName = jobj.ToString("hostname");
-                    string? version = jobj.ToString("version");
+                    string? hostName = jObj.ToString("hostname");
+                    string? version = jObj.ToString("version");
 
                     if (string.IsNullOrWhiteSpace(hostName))
                     {
-                        throw new ConfigurationException(string.Format(LocalizableStrings.HostConstraint_Error_MissingMandatoryProperty, jobj, "hostname"));
+                        throw new ConfigurationException(string.Format(LocalizableStrings.HostConstraint_Error_MissingMandatoryProperty, jObj, "hostname"));
                     }
                     if (string.IsNullOrWhiteSpace(version))
                     {

@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Microsoft.TemplateEngine.Utils
 {
     /// <summary>
@@ -34,7 +30,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <summary>
         /// The actual atomic values specified for the parameter.
         /// </summary>
-        public IReadOnlyList<string> Values { get; private init; }
+        public IReadOnlyList<string> Values { get; }
 
         public static bool TryPerformMultiValueEqual(object x, object y, out bool result)
         {
@@ -50,7 +46,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 if (x is MultiValueParameter mv && y is string sv)
                 {
-                    result = MultivalueEquals(mv, sv);
+                    result = MultiValueEquals(mv, sv);
                     return true;
                 }
             }
@@ -58,7 +54,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 if (y is MultiValueParameter mv && x is string sv)
                 {
-                    result = MultivalueEquals(mv, sv);
+                    result = MultiValueEquals(mv, sv);
                     return true;
                 }
             }
@@ -98,7 +94,7 @@ namespace Microsoft.TemplateEngine.Utils
             return set1.SetEquals(set2);
         }
 
-        private static bool MultivalueEquals(MultiValueParameter mv, string comparand)
+        private static bool MultiValueEquals(MultiValueParameter mv, string comparand)
         {
             foreach (string s in mv.Values)
             {

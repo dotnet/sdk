@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation;
@@ -64,7 +62,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of arguments to which file renames should be applied.
         /// </summary>
-        public IReadOnlyList<string> ApplyFileRenamesToArgs { get; internal init; } = Array.Empty<string>();
+        public IReadOnlyList<string> ApplyFileRenamesToArgs { get; internal init; } = [];
 
         /// <summary>
         /// Gets a value indicating whether the file renames should be applied to manual instructions.
@@ -96,7 +94,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 bool continueOnError = action.ToBool(nameof(ContinueOnError));
                 string? postActionCondition = action.ToString(nameof(Condition));
                 bool applyFileRenamesToManualInstructions = action.ToBool(nameof(ApplyFileRenamesToManualInstructions));
-                IReadOnlyList<string> applyFileRenamesToArgs = action.ArrayAsStrings(nameof(ApplyFileRenamesToArgs)) ?? Array.Empty<string>();
+                IReadOnlyList<string> applyFileRenamesToArgs = action.ArrayAsStrings(nameof(ApplyFileRenamesToArgs)) ?? [];
 
                 if (postActionId != null && !postActionIds.Add(postActionId))
                 {
