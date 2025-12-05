@@ -115,7 +115,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public VirtualProjectBuilder Builder { get; }
     public MSBuildArgs MSBuildArgs { get; }
-    public string[]? RequestedTargets { get; }
 
     public ImmutableArray<CSharpDirective> Directives
     {
@@ -123,7 +122,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (field.IsDefault)
             {
-                field = FileLevelDirectiveHelpers.FindDirectives(Builder.EntryPointSourceFile, reportAllErrors: false, VirtualProjectBuildingCommand.ThrowingReporter);
+                field = FileLevelDirectiveHelpers.FindDirectives(Builder.EntryPointSourceFile, reportAllErrors: false, ThrowingReporter);
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -138,8 +137,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         MSBuildArgs msbuildArgs,
         string? artifactsPath = null)
     {
-        Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFrameworkVersion, artifactsPath);
-
         MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
@@ -149,13 +146,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         .AsReadOnly());
 
-        RequestedTargets = MSBuildArgs.GetResolvedTargets();
+        Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFrameworkVersion, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
     public override int Execute()
     {
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
-        bool evalOnly = msbuildGet && RequestedTargets is null or [];
+        bool evalOnly = msbuildGet && Builder.RequestedTargets is null or [];
         bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
 
         var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
@@ -311,7 +308,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: RequestedTargets ?? [Constants.Build, Constants.CoreCompile]);
+                    targetsToBuild: Builder.RequestedTargets ?? [Constants.Build, Constants.CoreCompile]);
 
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
@@ -1036,14 +1033,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, Action<IDictionary<string, string>>? addGlobalProperties)
     {
-        var includeRuntimeConfigInformation = RequestedTargets?.ContainsAny("Publish", "Pack") != true;
-
         Builder.CreateProjectInstance(
             projectCollection,
             Directives,
             addGlobalProperties,
             ThrowingReporter,
-            includeRuntimeConfigInformation,
             out var project,
             out var evaluatedDirectives);
 
