@@ -5,8 +5,8 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
@@ -43,7 +43,7 @@ internal class ReferenceRemoveCommand : CommandBase
 
             return Path.GetRelativePath(
                 msbuildProj.ProjectRootElement.FullPath,
-                MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName
+                MsbuildProject.GetProjectFileFromDirectory(fullPath)
             );
         });
 

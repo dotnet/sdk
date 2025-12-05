@@ -7,6 +7,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Package;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.List;
 
@@ -32,9 +33,10 @@ internal static class ListCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("list", DocsLink, CliCommandStrings.NetListCommand)
+        var command = new Command("list", CliCommandStrings.NetListCommand)
         {
-            Hidden = true
+            Hidden = true,
+            DocsLink = DocsLink
         };
 
         command.Arguments.Add(SlnOrProjectArgument);

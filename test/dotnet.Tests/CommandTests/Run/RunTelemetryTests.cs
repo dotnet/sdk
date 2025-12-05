@@ -7,6 +7,7 @@ using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -114,8 +115,8 @@ public class RunTelemetryTests : SdkTest
     {
         // Arrange
         var directives = ImmutableArray.Create<CSharpDirective>(
-            new CSharpDirective.Project(default) { Name = "../lib/Library.csproj" },
-            new CSharpDirective.Project(default) { Name = "../common/Common.csproj" }
+            new CSharpDirective.Project(default, "../lib/Library.csproj"),
+            new CSharpDirective.Project(default, "../common/Common.csproj")
         );
 
         // Act

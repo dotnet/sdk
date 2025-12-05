@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -204,12 +205,7 @@ public class TestCommand(
 
         VSTestTrace.SafeWriteTrace(() => $"MSBuild args from forwarded options: {string.Join(", ", parsedArgs)}");
 
-        var msbuildArgs = new List<string>(additionalBuildProperties)
-        {
-            "-nologo",
-        };
-
-        msbuildArgs.AddRange(parsedArgs);
+        List<string> msbuildArgs = [.. additionalBuildProperties, .. parsedArgs];
 
         if (settings.Any())
         {
@@ -220,7 +216,7 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{runSettingsArg}\"");
         }
 
-        string? verbosityArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--verbosity")?.SingleOrDefault() ?? null;
+        string? verbosityArg = result.ForwardedOptionValues(TestCommandParser.GetCommand(), "--verbosity")?.SingleOrDefault() ?? null;
         if (verbosityArg != null)
         {
             string[] verbosity = verbosityArg.Split(':', 2);
@@ -237,14 +233,16 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestSessionCorrelationId={testSessionCorrelationId}");
         }
 
-        bool noRestore = result.GetValue(TestCommandParser.NoRestoreOption) || result.GetValue(TestCommandParser.NoBuildOption);
+        bool noRestore = result.GetValue(CommonOptions.NoRestoreOption) || result.GetValue(VSTestOptions.NoBuildOption);
 
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
             CommonOptions.PropertiesOption,
             CommonOptions.RestorePropertiesOption,
-            TestCommandParser.VsTestTargetOption,
-            TestCommandParser.VerbosityOption);
+            VSTestOptions.VsTestTargetOption,
+            TestCommandDefinition.VerbosityOption,
+            CommonOptions.NoLogoOption())
+            .CloneWithNoLogo(true);
 
         TestCommand testCommand = new(
             parsedMSBuildArgs,
@@ -260,7 +258,7 @@ public class TestCommand(
             }
         }
 
-        
+
         Dictionary<string, string> variables = VSTestForwardingApp.GetVSTestRootVariables();
         foreach (var (rootVariableName, rootValue) in variables) {
             testCommand.EnvironmentVariable(rootVariableName, rootValue);
@@ -290,9 +288,9 @@ public class TestCommand(
 
         var artifactsPostProcessArgs = new List<string> { "--artifactsProcessingMode-postprocess", $"--testSessionCorrelationId:{testSessionCorrelationId}" };
 
-        if (parseResult.GetResult(TestCommandParser.DiagOption) is not null)
+        if (parseResult.GetResult(VSTestOptions.DiagOption) is not null)
         {
-            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(TestCommandParser.DiagOption)}");
+            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(VSTestOptions.DiagOption)}");
         }
 
         try
