@@ -36,14 +36,18 @@ internal sealed class VirtualProjectBuilder
     public string ArtifactsPath
         => field ??= GetArtifactsPath(EntryPointFileFullPath);
 
+    public string[]? RequestedTargets { get; }
+
     public VirtualProjectBuilder(
         string entryPointFileFullPath,
         string targetFrameworkVersion,
+        string[]? requestedTargets = null,
         string? artifactsPath = null)
     {
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
+        RequestedTargets = requestedTargets;
         ArtifactsPath = artifactsPath;
         _defaultProperties = GetDefaultProperties(targetFrameworkVersion);
     }
@@ -121,23 +125,21 @@ internal sealed class VirtualProjectBuilder
         ImmutableArray<CSharpDirective> directives,
         Action<IDictionary<string, string>>? addGlobalProperties,
         ErrorReporter errorReporter,
-        bool includeRuntimeConfigInformation,
         out ProjectInstance project,
         out ImmutableArray<CSharpDirective> evaluatedDirectives)
     {
-        project = CreateProjectInstance(projectCollection, directives, includeRuntimeConfigInformation, addGlobalProperties);
+        project = CreateProjectInstance(projectCollection, directives, addGlobalProperties);
 
         evaluatedDirectives = EvaluateDirectives(project, directives, EntryPointSourceFile, errorReporter);
         if (evaluatedDirectives != directives)
         {
-            project = CreateProjectInstance(projectCollection, evaluatedDirectives, includeRuntimeConfigInformation, addGlobalProperties);
+            project = CreateProjectInstance(projectCollection, evaluatedDirectives, addGlobalProperties);
         }
     }
 
-    public ProjectInstance CreateProjectInstance(
+    private ProjectInstance CreateProjectInstance(
         ProjectCollection projectCollection,
         ImmutableArray<CSharpDirective> directives,
-        bool includeRuntimeConfigInformation,
         Action<IDictionary<string, string>>? addGlobalProperties = null)
     {
         var projectRoot = CreateProjectRootElement(projectCollection);
@@ -167,7 +169,7 @@ internal sealed class VirtualProjectBuilder
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
                 artifactsPath: ArtifactsPath,
-                includeRuntimeConfigInformation: includeRuntimeConfigInformation);
+                includeRuntimeConfigInformation: RequestedTargets?.ContainsAny("Publish", "Pack") != true);
 
             var projectFileText = projectFileWriter.ToString();
 
