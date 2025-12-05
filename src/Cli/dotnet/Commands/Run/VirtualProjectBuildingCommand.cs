@@ -1103,6 +1103,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             addGlobalProperties(globalProperties);
         }
 
+        // don't load duplicate projects into the project collection
+        if (evaluator.ProjectCollection.LoadedProjects.FirstOrDefault(loadedProj => HasSameGlobalProperties(loadedProj, globalProperties)) is { } firstProject)
+        {
+            return new DotNetProject(firstProject);
+        }
+
         var p = Microsoft.Build.Evaluation.Project.FromProjectRootElement(projectRoot, new ProjectOptions
         {
             ProjectCollection = evaluator.ProjectCollection,
@@ -1111,6 +1117,27 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 #pragma warning restore RS0030 // Do not use banned APIs
 
         return new DotNetProject(p);
+
+        static bool HasSameGlobalProperties(Microsoft.Build.Evaluation.Project loadedProject, IDictionary<string, string> globalProperties)
+        {
+#pragma warning disable RS0030 // Ok to use MSBuild APIs because we are being very limited in their scope/
+            if (loadedProject.Properties.Count != globalProperties.Count)
+            {
+                return false;
+            }
+
+            foreach (var (key, value) in globalProperties)
+            {
+                var loadedPropertyValue = loadedProject.GetPropertyValue(key);
+                if (loadedPropertyValue != value)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+#pragma warning restore RS0030 // Do not use banned APIs
+        }
 
         ProjectRootElement CreateProjectRootElement(DotNetProjectEvaluator evaluator)
         {

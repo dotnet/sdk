@@ -47,7 +47,6 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         // Evaluate directives.
         directives = VirtualProjectBuildingCommand.EvaluateDirectives(projectInstance, directives, sourceFile, VirtualProjectBuildingCommand.ThrowingReporter);
         command.Directives = directives;
-        projectInstance = command.CreateVirtualProject(evaluator);
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
