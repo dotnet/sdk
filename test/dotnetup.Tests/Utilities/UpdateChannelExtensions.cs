@@ -3,8 +3,8 @@
 
 using System;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 

@@ -8,11 +8,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Microsoft.Dotnet.Installation;
 using Xunit;
-using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -60,9 +60,9 @@ public class InstallEndToEndTests
         Console.WriteLine($"Channel '{channel}' resolved to version: {expectedVersion}");
 
         // Execute the command with explicit manifest path as a separate process
-    var args = DotnetupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
-    (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
-    exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
+        var args = DotnetupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
 
         Directory.Exists(testEnv.InstallPath).Should().BeTrue();
         Directory.Exists(Path.GetDirectoryName(testEnv.ManifestPath)).Should().BeTrue();
