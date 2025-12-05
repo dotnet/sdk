@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.DotNet.ProjectTools;
 
-internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
+internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
 {
     private sealed class Json
     {
@@ -32,35 +32,35 @@ internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
 
     public const string CommandName = "Executable";
 
-    public static readonly ExecutableLaunchSettingsParser Instance = new();
+    public static readonly ExecutableLaunchProfileParser Instance = new();
 
-    private ExecutableLaunchSettingsParser()
+    private ExecutableLaunchProfileParser()
     {
     }
 
-    public override LaunchProfileSettings ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
+    public override LaunchProfileParseResult ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
     {
         var profile = JsonSerializer.Deserialize<Json>(json);
         if (profile == null)
         {
-            return LaunchProfileSettings.Failure(Resources.LaunchProfileIsNotAJsonObject);
+            return LaunchProfileParseResult.Failure(Resources.LaunchProfileIsNotAJsonObject);
         }
 
         if (profile.ExecutablePath == null)
         {
-            return LaunchProfileSettings.Failure(
+            return LaunchProfileParseResult.Failure(
                 string.Format(
                     Resources.LaunchProfile0IsMissingProperty1,
                     LaunchProfileParser.GetLaunchProfileDisplayName(launchProfileName),
-                    ExecutableLaunchSettings.ExecutablePathPropertyName));
+                    ExecutableLaunchProfile.ExecutablePathPropertyName));
         }
 
         if (!TryParseWorkingDirectory(launchSettingsPath, profile.WorkingDirectory, out var workingDirectory, out var error))
         {
-            return LaunchProfileSettings.Failure(error);
+            return LaunchProfileParseResult.Failure(error);
         }
 
-        return LaunchProfileSettings.Success(new ExecutableLaunchSettings
+        return LaunchProfileParseResult.Success(new ExecutableLaunchProfile
         {
             LaunchProfileName = launchProfileName,
             ExecutablePath = ExpandVariables(profile.ExecutablePath),
@@ -91,7 +91,7 @@ internal sealed class ExecutableLaunchSettingsParser : LaunchProfileParser
         catch
         {
             workingDirectory = null;
-            error = string.Format(Resources.Path0SpecifiedIn1IsInvalid, expandedValue, ExecutableLaunchSettings.WorkingDirectoryPropertyName);
+            error = string.Format(Resources.Path0SpecifiedIn1IsInvalid, expandedValue, ExecutableLaunchProfile.WorkingDirectoryPropertyName);
             return false;
         }
     }

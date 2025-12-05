@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.ProjectTools;
 
-public sealed class ProjectLaunchSettings : LaunchSettings
+public sealed class ProjectLaunchProfile : LaunchProfile
 {
     public bool LaunchBrowser { get; init; }
     public string? LaunchUrl { get; init; }
