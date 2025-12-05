@@ -112,8 +112,10 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             Version? newMuxerVersion = GetLatestRuntimeVersionFromInstallRoot(targetDir);
 
-            // If the new version is less than the old version, restore the old muxer
-            if (newMuxerVersion != null && existingMuxerVersion != null && newMuxerVersion < existingMuxerVersion)
+            // If the latest runtime version after extraction is the same as before,
+            // then a newer runtime was NOT installed, so the new muxer is actually older.
+            // In that case, restore the old muxer.
+            if (newMuxerVersion != null && existingMuxerVersion != null && newMuxerVersion == existingMuxerVersion)
             {
                 if (File.Exists(muxerTargetPath))
                 {
@@ -123,7 +125,7 @@ internal class DotnetArchiveExtractor : IDisposable
             }
             else
             {
-                // New version is >= old version, or we couldn't determine versions - keep new muxer
+                // Latest runtime version increased (or we couldn't determine versions) - keep new muxer
                 if (File.Exists(muxerTempPath))
                 {
                     File.Delete(muxerTempPath);
