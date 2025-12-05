@@ -11,6 +11,8 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
 {
     public sealed class WorkloadConstraintFactory : ITemplateConstraintFactory
     {
+        private static readonly SemaphoreSlim Mutex = new(1);
+
         Guid IIdentifiedComponent.Id { get; } = Guid.Parse("{F8BA5B13-7BD6-47C8-838C-66626526817B}");
 
         string ITemplateConstraintFactory.Type => "workload";
@@ -97,8 +99,17 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
                 }
 
                 token.ThrowIfCancellationRequested();
-                IEnumerable<WorkloadInfo> currentProviderWorkloads = await providers[0].GetInstalledWorkloadsAsync(token).ConfigureAwait(false);
-                workloads = currentProviderWorkloads.ToList();
+
+                await Mutex.WaitAsync(token).ConfigureAwait(false);
+                try
+                {
+                    IEnumerable<WorkloadInfo> currentProviderWorkloads = await providers[0].GetInstalledWorkloadsAsync(token).ConfigureAwait(false);
+                    workloads = currentProviderWorkloads.ToList();
+                }
+                finally
+                {
+                    Mutex.Release();
+                }
 
                 if (workloads.Select(w => w.Id).HasDuplicates(StringComparer.InvariantCultureIgnoreCase))
                 {
