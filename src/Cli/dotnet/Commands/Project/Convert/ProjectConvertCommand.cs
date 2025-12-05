@@ -46,7 +46,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         var projectInstance = command.CreateProjectInstance(projectCollection);
 
         // Evaluate directives.
-        directives = VirtualProjectBuildingCommand.EvaluateDirectives(projectInstance, directives, sourceFile, VirtualProjectBuildingCommand.ThrowingReporter);
+        directives = VirtualProjectBuilder.EvaluateDirectives(projectInstance, directives, sourceFile, VirtualProjectBuildingCommand.ThrowingReporter);
         command.Directives = directives;
         projectInstance = command.CreateProjectInstance(projectCollection);
 

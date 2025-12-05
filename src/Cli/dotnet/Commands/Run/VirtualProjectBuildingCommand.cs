@@ -1029,48 +1029,25 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
 
-    /// <summary>
-    /// If there are any <c>#:project</c> <paramref name="directives"/>, expands <c>$()</c> in them and ensures they point to project files (not directories).
-    /// </summary>
-    public static ImmutableArray<CSharpDirective> EvaluateDirectives(
-        ProjectInstance? project,
-        ImmutableArray<CSharpDirective> directives,
-        SourceFile sourceFile,
-        ErrorReporter errorReporter)
-    {
-        if (directives.OfType<CSharpDirective.Project>().Any())
-        {
-            return directives
-                .Select(d => d is CSharpDirective.Project p
-                    ? (project is null
-                        ? p
-                        : p.WithName(project.ExpandString(p.Name), CSharpDirective.Project.NameKind.Expanded))
-                       .EnsureProjectFilePath(sourceFile, errorReporter)
-                    : d)
-                .ToImmutableArray();
-        }
-
-        return directives;
-    }
-
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
         return CreateProjectInstance(projectCollection, addGlobalProperties: null);
     }
 
-    private ProjectInstance CreateProjectInstance(
-        ProjectCollection projectCollection,
-        Action<IDictionary<string, string>>? addGlobalProperties)
+    public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, Action<IDictionary<string, string>>? addGlobalProperties)
     {
         var includeRuntimeConfigInformation = RequestedTargets?.ContainsAny("Publish", "Pack") != true;
-        var project = Builder.CreateProjectInstance(projectCollection, Directives, includeRuntimeConfigInformation, addGlobalProperties);
 
-        var directives = EvaluateDirectives(project, Directives, Builder.EntryPointSourceFile, ThrowingReporter);
-        if (directives != Directives)
-        {
-            Directives = directives;
-            project = Builder.CreateProjectInstance(projectCollection, directives, includeRuntimeConfigInformation, addGlobalProperties);
-        }
+        Builder.CreateProjectInstance(
+            projectCollection,
+            Directives,
+            addGlobalProperties,
+            ThrowingReporter,
+            includeRuntimeConfigInformation,
+            out var project,
+            out var evaluatedDirectives);
+
+        Directives = evaluatedDirectives;
 
         return project;
     }
