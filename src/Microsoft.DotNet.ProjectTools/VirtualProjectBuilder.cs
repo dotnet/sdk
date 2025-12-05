@@ -92,6 +92,48 @@ internal sealed class VirtualProjectBuilder
         return Path.Join(GetTempSubdirectory(), name);
     }
 
+    /// <summary>
+    /// If there are any <c>#:project</c> <paramref name="directives"/>, expands <c>$()</c> in them and ensures they point to project files (not directories).
+    /// </summary>
+    public static ImmutableArray<CSharpDirective> EvaluateDirectives(
+        ProjectInstance? project,
+        ImmutableArray<CSharpDirective> directives,
+        SourceFile sourceFile,
+        ErrorReporter errorReporter)
+    {
+        if (directives.OfType<CSharpDirective.Project>().Any())
+        {
+            return directives
+                .Select(d => d is CSharpDirective.Project p
+                    ? (project is null
+                        ? p
+                        : p.WithName(project.ExpandString(p.Name), CSharpDirective.Project.NameKind.Expanded))
+                       .EnsureProjectFilePath(sourceFile, errorReporter)
+                    : d)
+                .ToImmutableArray();
+        }
+
+        return directives;
+    }
+
+    public void CreateProjectInstance(
+        ProjectCollection projectCollection,
+        ImmutableArray<CSharpDirective> directives,
+        Action<IDictionary<string, string>>? addGlobalProperties,
+        ErrorReporter errorReporter,
+        bool includeRuntimeConfigInformation,
+        out ProjectInstance project,
+        out ImmutableArray<CSharpDirective> evaluatedDirectives)
+    {
+        project = CreateProjectInstance(projectCollection, directives, includeRuntimeConfigInformation, addGlobalProperties);
+
+        evaluatedDirectives = EvaluateDirectives(project, directives, EntryPointSourceFile, errorReporter);
+        if (evaluatedDirectives != directives)
+        {
+            project = CreateProjectInstance(projectCollection, evaluatedDirectives, includeRuntimeConfigInformation, addGlobalProperties);
+        }
+    }
+
     public ProjectInstance CreateProjectInstance(
         ProjectCollection projectCollection,
         ImmutableArray<CSharpDirective> directives,

@@ -1699,7 +1699,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         actualDiagnostics = null;
         var diagnosticBag = collectDiagnostics ? ErrorReporters.CreateCollectingReporter(out actualDiagnostics) : VirtualProjectBuildingCommand.ThrowingReporter;
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: !force, diagnosticBag);
-        directives = VirtualProjectBuildingCommand.EvaluateDirectives(project: null, directives, sourceFile, diagnosticBag);
+        directives = VirtualProjectBuilder.EvaluateDirectives(project: null, directives, sourceFile, diagnosticBag);
         var projectWriter = new StringWriter();
         VirtualProjectBuilder.WriteProjectFile(projectWriter, directives, VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion), isVirtualProject: false);
         actualProject = projectWriter.ToString();
