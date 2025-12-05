@@ -14,6 +14,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using NuGet.ProjectModel;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
@@ -25,7 +26,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
     {
         var (fileOrDirectory, allowedAppKinds) = PackageCommandDefinition.ProcessPathOptions(_parseResult);
 
-        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuildingCommand.IsValidEntryPointPath(fileOrDirectory))
+        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
         {
             return ExecuteForFileBasedApp(fileOrDirectory);
         }

@@ -666,7 +666,7 @@ public class RunCommand
 
             if (!readCodeFromStdin)
             {
-                if (VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+                if (VirtualProjectBuilder.IsValidEntryPointPath(arg))
                 {
                     arg = Path.GetFullPath(arg);
                 }

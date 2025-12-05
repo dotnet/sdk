@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 
@@ -24,7 +25,7 @@ internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parse
 
         var (fileOrDirectory, allowedAppKinds) = PackageCommandDefinition.ProcessPathOptions(_parseResult);
 
-        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuildingCommand.IsValidEntryPointPath(fileOrDirectory))
+        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
         {
             return ExecuteForFileBasedApp(path: fileOrDirectory, packageId: packageToRemove);
         }
