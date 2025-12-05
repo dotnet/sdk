@@ -119,8 +119,10 @@ public class LibraryTests
         muxerHashAfterSdk10.Should().NotBe(muxerHashAfterSdk9, "muxer file should be updated when installing newer SDK");
 
         // On Windows, also verify FileVersion was upgraded
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && fileVersionAfterSdk9 != null && fileVersionAfterSdk10 != null)
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
+            fileVersionAfterSdk9.Should().NotBeNull("file version should be readable on Windows after SDK 9.0 install");
+            fileVersionAfterSdk10.Should().NotBeNull("file version should be readable on Windows after SDK 10.0 install");
             fileVersionAfterSdk10.Should().BeGreaterThan(fileVersionAfterSdk9, "muxer FileVersion should be upgraded when installing newer SDK");
         }
     }
@@ -181,8 +183,10 @@ public class LibraryTests
         muxerSizeAfterSdk9.Should().Be(muxerSizeAfterSdk10, "muxer file size should not change when installing older SDK");
 
         // On Windows, also verify FileVersion was not downgraded
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && fileVersionAfterSdk9 != null && fileVersionAfterSdk10 != null)
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
+            fileVersionAfterSdk10.Should().NotBeNull("file version should be readable on Windows after SDK 10.0 install");
+            fileVersionAfterSdk9.Should().NotBeNull("file version should be readable on Windows after SDK 9.0 install");
             fileVersionAfterSdk9.Should().Be(fileVersionAfterSdk10, "muxer FileVersion should not be downgraded when installing older SDK");
         }
     }
