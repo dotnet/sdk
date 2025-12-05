@@ -24,7 +24,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
     {
         // Check the entry point file path.
         string file = Path.GetFullPath(_file);
-        if (!VirtualProjectBuildingCommand.IsValidEntryPointPath(file))
+        if (!VirtualProjectBuilder.IsValidEntryPointPath(file))
         {
             throw new GracefulException(CliCommandStrings.InvalidFilePath, file);
         }

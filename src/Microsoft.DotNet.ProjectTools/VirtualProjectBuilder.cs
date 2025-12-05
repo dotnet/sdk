@@ -96,6 +96,32 @@ internal sealed class VirtualProjectBuilder
         return Path.Join(GetTempSubdirectory(), name);
     }
 
+    public static bool IsValidEntryPointPath(string entryPointFilePath)
+    {
+        if (!File.Exists(entryPointFilePath))
+        {
+            return false;
+        }
+
+        if (entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Check if the first two characters are #!
+        try
+        {
+            using var stream = File.OpenRead(entryPointFilePath);
+            int first = stream.ReadByte();
+            int second = stream.ReadByte();
+            return first == '#' && second == '!';
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /// <summary>
     /// If there are any <c>#:project</c> <paramref name="directives"/>, expands <c>$()</c> in them and ensures they point to project files (not directories).
     /// </summary>
