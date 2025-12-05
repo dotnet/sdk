@@ -7,7 +7,7 @@
     "errorMessage": "The .NET SDK is not installed or is not configured correctly. Please run ./build to install the correct SDK version locally."
   },
   "tools": {
-    "dotnet": "10.0.100-rc.2.25502.107",
+    "dotnet": "10.0.100",
     "runtimes": {
       "dotnet": [
         "$(MicrosoftNETCorePlatformsPackageVersion)"

@@ -180,7 +180,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (field.IsDefault)
             {
-                field = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, reportAllErrors: false, DiagnosticBag.ThrowOnFirst());
+                field = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, reportAllErrors: false, VirtualProjectBuildingCommand.ThrowingReporter);
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -1050,6 +1050,30 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
 
+    /// <summary>
+    /// If there are any <c>#:project</c> <paramref name="directives"/>, expands <c>$()</c> in them and ensures they point to project files (not directories).
+    /// </summary>
+    public static ImmutableArray<CSharpDirective> EvaluateDirectives(
+        ProjectInstance? project,
+        ImmutableArray<CSharpDirective> directives,
+        SourceFile sourceFile,
+        ErrorReporter errorReporter)
+    {
+        if (directives.OfType<CSharpDirective.Project>().Any())
+        {
+            return directives
+                .Select(d => d is CSharpDirective.Project p
+                    ? (project is null
+                        ? p
+                        : p.WithName(project.ExpandString(p.Name), CSharpDirective.Project.NameKind.Expanded))
+                       .EnsureProjectFilePath(sourceFile, errorReporter)
+                    : d)
+                .ToImmutableArray();
+        }
+
+        return directives;
+    }
+
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
         return CreateProjectInstance(projectCollection, addGlobalProperties: null);
@@ -1061,7 +1085,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         var project = CreateProjectInstance(projectCollection, Directives, addGlobalProperties);
 
-        var directives = FileLevelDirectiveHelpers.EvaluateDirectives(project, Directives, EntryPointSourceFile, DiagnosticBag.ThrowOnFirst());
+        var directives = EvaluateDirectives(project, Directives, EntryPointSourceFile, VirtualProjectBuildingCommand.ThrowingReporter);
         if (directives != Directives)
         {
             Directives = directives;
@@ -1131,6 +1155,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? Path.GetTempPath()
             : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        if (string.IsNullOrEmpty(directory))
+        {
+            throw new InvalidOperationException(FileBasedProgramsResources.EmptyTempPath);
+        }
 
         return Path.Join(directory, "dotnet", "runfile");
     }
@@ -1412,9 +1441,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             Debug.Assert(targetFilePath is not null);
 
+            // Only add explicit Compile item when EnableDefaultCompileItems is not true.
+            // When EnableDefaultCompileItems=true, the file is included via default MSBuild globbing.
+            // See https://github.com/dotnet/sdk/issues/51785
             writer.WriteLine($"""
                   <ItemGroup>
-                    <Compile Include="{EscapeValue(targetFilePath)}" />
+                    <Compile Condition="'$(EnableDefaultCompileItems)' != 'true'" Include="{EscapeValue(targetFilePath)}" />
                   </ItemGroup>
 
                 """);
@@ -1521,6 +1553,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return false;
         }
     }
+
+    public static readonly ErrorReporter ThrowingReporter =
+        static (sourceFile, textSpan, message) => throw new GracefulException($"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}");
 }
 
 internal sealed class RunFileBuildCacheEntry
