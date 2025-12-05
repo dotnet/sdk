@@ -99,7 +99,7 @@ internal sealed class VirtualProjectBuilder
     /// <summary>
     /// If there are any <c>#:project</c> <paramref name="directives"/>, expands <c>$()</c> in them and ensures they point to project files (not directories).
     /// </summary>
-    public static ImmutableArray<CSharpDirective> EvaluateDirectives(
+    internal static ImmutableArray<CSharpDirective> EvaluateDirectives(
         ProjectInstance? project,
         ImmutableArray<CSharpDirective> directives,
         SourceFile sourceFile,
@@ -126,11 +126,12 @@ internal sealed class VirtualProjectBuilder
         out ProjectInstance project,
         out ImmutableArray<CSharpDirective> evaluatedDirectives,
         ImmutableArray<CSharpDirective> directives = default,
-        Action<IDictionary<string, string>>? addGlobalProperties = null)
+        Action<IDictionary<string, string>>? addGlobalProperties = null,
+        bool validateAllDirectives = false)
     {
         if (directives.IsDefault)
         {
-            directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, reportAllErrors: false, errorReporter);
+            directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, validateAllDirectives, errorReporter);
         }
 
         project = CreateProjectInstance(projectCollection, directives, addGlobalProperties);
