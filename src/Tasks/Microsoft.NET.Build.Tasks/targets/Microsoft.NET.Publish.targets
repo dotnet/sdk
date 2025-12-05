@@ -832,6 +832,30 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+                                        _IncludeContentItemsWithOnlyPublishMetadata
+    
+    Content items with CopyToPublishDirectory set but without CopyToOutputDirectory are not
+    included in ContentWithTargetPath by AssignTargetPaths. This target ensures they are included
+    so they can be processed by GetCopyToPublishDirectoryItems.
+    ============================================================
+    -->
+<!--
+  <Target Name="_IncludeContentItemsWithOnlyPublishMetadata"
+          AfterTargets="AssignTargetPaths">
+    <ItemGroup>
+      <_ContentWithPublishMetadata Include="@(Content)"
+                                   Condition="'%(Content.CopyToPublishDirectory)' != '' and '%(Content.CopyToPublishDirectory)' != 'Never' and '%(Content.CopyToOutputDirectory)' == ''">
+        <TargetPath Condition="'%(Content.Link)' != ''">%(Content.Link)</TargetPath>
+        <TargetPath Condition="'%(Content.Link)' == '' and '%(Content.DefiningProjectDirectory)' != '' and '%(Content.DefiningProjectFullPath)' != ''">$([MSBuild]::MakeRelative(%(Content.DefiningProjectDirectory), %(Content.FullPath)))</TargetPath>
+        <TargetPath Condition="'%(Content.Link)' == '' and ('%(Content.DefiningProjectDirectory)' == '' or '%(Content.DefiningProjectFullPath)' == '')">$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(Content.FullPath)))</TargetPath>
+      </_ContentWithPublishMetadata>
+      
+      <ContentWithTargetPath Include="@(_ContentWithPublishMetadata)" />
+    </ItemGroup>
+  </Target>
+-->
+  <!--
+    ============================================================
                                         GetCopyToPublishDirectoryItems
 
     Get all project items that may need to be transferred to the publish directory.
