@@ -1,26 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Security;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Xml;
-using Microsoft.Build.Construction;
-using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.Build.Logging.SimpleErrorLogger;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
