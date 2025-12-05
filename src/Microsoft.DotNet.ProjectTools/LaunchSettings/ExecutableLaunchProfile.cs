@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.ProjectTools;
 
-public sealed class ExecutableLaunchSettings : LaunchSettings
+public sealed class ExecutableLaunchProfile : LaunchProfile
 {
     public const string WorkingDirectoryPropertyName = "workingDirectory";
     public const string ExecutablePathPropertyName = "executablePath";

@@ -27,7 +27,7 @@ public class LaunchSettingsParserTests
     [Fact]
     public void MissingExecutablePath()
     {
-        var parser = ExecutableLaunchSettingsParser.Instance;
+        var parser = ExecutableLaunchProfileParser.Instance;
 
         var result = parser.ParseProfile("path", "Execute", """
             {
@@ -44,7 +44,7 @@ public class LaunchSettingsParserTests
     [InlineData("false", false)]
     public void DotNetRunMessages_Executable(string value, bool expected)
     {
-        var parser = ExecutableLaunchSettingsParser.Instance;
+        var parser = ExecutableLaunchProfileParser.Instance;
 
         var result = parser.ParseProfile("path", "name", $$"""
             {
@@ -55,14 +55,14 @@ public class LaunchSettingsParserTests
             """);
 
         Assert.True(result.Successful);
-        Assert.NotNull(result.Model);
-        Assert.Equal(expected, result.Model.DotNetRunMessages);
+        Assert.NotNull(result.Profile);
+        Assert.Equal(expected, result.Profile.DotNetRunMessages);
     }
 
     [Fact]
     public void DotNetRunMessages_Error_Executable()
     {
-        var parser = ProjectLaunchSettingsParser.Instance;
+        var parser = ProjectLaunchProfileParser.Instance;
 
         Assert.Throws<JsonException>(() => parser.ParseProfile("path", "name", $$"""
             {
@@ -76,7 +76,7 @@ public class LaunchSettingsParserTests
     [Fact]
     public void DotNetRunMessages_Error_Project()
     {
-        var parser = ProjectLaunchSettingsParser.Instance;
+        var parser = ProjectLaunchProfileParser.Instance;
 
         Assert.Throws<JsonException>(() => parser.ParseProfile("path", "name", $$"""
             {
@@ -93,7 +93,7 @@ public class LaunchSettingsParserTests
         var dir = Path.Combine(root, Guid.NewGuid().ToString());
         var launchSettingsPath = Path.Combine(dir, "launchSettings.json");
 
-        var parser = ExecutableLaunchSettingsParser.Instance;
+        var parser = ExecutableLaunchProfileParser.Instance;
 
         var settings = parser.ParseProfile(launchSettingsPath, "MyProfile", $$"""
             {
@@ -109,7 +109,7 @@ public class LaunchSettingsParserTests
             }
             """);
 
-        var model = Assert.IsType<ExecutableLaunchSettings>(settings.Model);
+        var model = Assert.IsType<ExecutableLaunchProfile>(settings.Profile);
 
         Assert.Equal("../path/ENV_VALUE1/executable", model.ExecutablePath);
         Assert.Equal(Path.Combine(root, "ENV_VALUE1"), model.WorkingDirectory);
@@ -129,7 +129,7 @@ public class LaunchSettingsParserTests
         var dir = Path.Combine(root, Guid.NewGuid().ToString());
         var launchSettingsPath = Path.Combine(dir, "launchSettings.json");
 
-        var parser = ProjectLaunchSettingsParser.Instance;
+        var parser = ProjectLaunchProfileParser.Instance;
 
         var settings = parser.ParseProfile(launchSettingsPath, "MyProfile", $$"""
             {
@@ -143,7 +143,7 @@ public class LaunchSettingsParserTests
             }
             """);
 
-        var model = Assert.IsType<ProjectLaunchSettings>(settings.Model);
+        var model = Assert.IsType<ProjectLaunchProfile>(settings.Profile);
 
         Assert.Equal("arg1 ENV_VALUE1 arg3", model.CommandLineArgs);
         Assert.Equal(

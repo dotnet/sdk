@@ -371,17 +371,17 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static LaunchSettings? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, BuildOptions buildOptions, string? profileName)
+    private static LaunchProfile? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, BuildOptions buildOptions, string? profileName)
     {
         if (buildOptions.NoLaunchProfile)
         {
             return null;
         }
 
-        var launchSettingsPath = LaunchSettingsLocator.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
+        var launchSettingsPath = LaunchSettings.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
         bool hasLaunchSettings = File.Exists(launchSettingsPath);
 
-        var runJsonPath = LaunchSettingsLocator.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+        var runJsonPath = LaunchSettings.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
         bool hasRunJson = File.Exists(runJsonPath);
 
         if (hasLaunchSettings)
@@ -406,13 +406,13 @@ internal static class SolutionAndProjectUtility
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        var result = LaunchSettingsManager.ReadProfileSettingsFromFile(launchSettingsPath, profileName);
+        var result = LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, profileName);
         if (!result.Successful)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());
             return null;
         }
 
-        return result.Model;
+        return result.Profile;
     }
 }
