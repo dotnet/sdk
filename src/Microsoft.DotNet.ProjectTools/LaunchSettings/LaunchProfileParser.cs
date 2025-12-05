@@ -3,7 +3,7 @@
 
 using System.Collections.Immutable;
 
-namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+namespace Microsoft.DotNet.ProjectTools;
 
 internal abstract class LaunchProfileParser
 {
@@ -11,6 +11,9 @@ internal abstract class LaunchProfileParser
 
     protected static string? ParseCommandLineArgs(string? value)
         => value != null ? ExpandVariables(value) : null;
+
+    public static string GetLaunchProfileDisplayName(string? launchProfile)
+        => string.IsNullOrEmpty(launchProfile) ? Resources.DefaultLaunchProfileDisplayName : launchProfile;
 
     protected static ImmutableDictionary<string, string> ParseEnvironmentVariables(Dictionary<string, string>? values)
     {

@@ -11,17 +11,14 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.CommandFactory;
-using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -126,9 +123,6 @@ public class RunCommand
         RestoreProperties = msbuildRestoreProperties;
     }
 
-    internal static string GetLaunchProfileDisplayName(string? launchProfile)
-        => string.IsNullOrEmpty(launchProfile) ? CliCommandStrings.DefaultLaunchProfileDisplayName : launchProfile;
-
     public int Execute()
     {
         if (NoBuild && NoCache)
@@ -151,7 +145,7 @@ public class RunCommand
         var launchProfileSettings = ReadLaunchProfileSettings();
         if (launchProfileSettings.FailureReason != null)
         {
-            Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, GetLaunchProfileDisplayName(LaunchProfile), launchProfileSettings.FailureReason).Bold().Red());
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, LaunchProfileParser.GetLaunchProfileDisplayName(LaunchProfile), launchProfileSettings.FailureReason).Bold().Red());
         }
 
         Func<ProjectCollection, ProjectInstance>? projectFactory = null;
