@@ -121,6 +121,7 @@
     <!-- Dependencies from https://github.com/dotnet/emsdk -->
     <!-- emscripten versions, these are are included in package IDs and need to be kept in sync with emsdk -->
     <EmscriptenVersionCurrent>3.1.56</EmscriptenVersionCurrent>
+    <EmscriptenVersionNet10>3.1.56</EmscriptenVersionNet10>
     <EmscriptenVersionNet9>3.1.56</EmscriptenVersionNet9>
     <EmscriptenVersionNet8>3.1.34</EmscriptenVersionNet8>
     <EmscriptenVersionNet7>3.1.12</EmscriptenVersionNet7>
