@@ -1703,7 +1703,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var projectWriter = new StringWriter();
         VirtualProjectBuilder.WriteProjectFile(projectWriter, directives, VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion), isVirtualProject: false);
         actualProject = projectWriter.ToString();
-        actualCSharp = VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, sourceFile.Text)?.ToString();
+        actualCSharp = VirtualProjectBuilder.RemoveDirectivesFromFile(directives, sourceFile.Text)?.ToString();
     }
 
     /// <param name="expectedCSharp">
