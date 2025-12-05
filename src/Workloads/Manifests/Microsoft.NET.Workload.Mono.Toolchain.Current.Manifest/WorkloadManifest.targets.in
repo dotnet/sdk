@@ -1,12 +1,12 @@
 <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
 <Project>
   <PropertyGroup>
-    <_RuntimePackInWorkloadVersionCurrent>${PackageVersion}</_RuntimePackInWorkloadVersionCurrent>
-    <_RuntimePackInWorkloadVersion10>${PackageVersionNet10}</_RuntimePackInWorkloadVersion10>
-    <_RuntimePackInWorkloadVersion9>${PackageVersionNet9}</_RuntimePackInWorkloadVersion9>
-    <_RuntimePackInWorkloadVersion8>${PackageVersionNet8}</_RuntimePackInWorkloadVersion8>
-    <_RuntimePackInWorkloadVersion7>${PackageVersionNet7}</_RuntimePackInWorkloadVersion7>
-    <_RuntimePackInWorkloadVersion6>${PackageVersionNet6}</_RuntimePackInWorkloadVersion6>
+    <_RuntimePackInWorkloadVersionCurrent>${RuntimeVersion}</_RuntimePackInWorkloadVersionCurrent>
+    <_RuntimePackInWorkloadVersion10>${RuntimeVersionNet10}</_RuntimePackInWorkloadVersion10>
+    <_RuntimePackInWorkloadVersion9>${RuntimeVersionNet9}</_RuntimePackInWorkloadVersion9>
+    <_RuntimePackInWorkloadVersion8>${RuntimeVersionNet8}</_RuntimePackInWorkloadVersion8>
+    <_RuntimePackInWorkloadVersion7>${RuntimeVersionNet7}</_RuntimePackInWorkloadVersion7>
+    <_RuntimePackInWorkloadVersion6>${RuntimeVersionNet6}</_RuntimePackInWorkloadVersion6>
 
     <TargetsCurrent Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '${FrameworkVersionCurrent}'))">true</TargetsCurrent>
 
@@ -24,7 +24,7 @@
     <TargetsNet6    Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '6.0'))">true</TargetsNet6>
 
     <!-- override WorkloadDetectionWhen net7 == net8 -->
-    <WasmNativeWorkload7 Condition="'${PackageVersionNet7}' == '${PackageVersion}'">$(WasmNativeWorkload8)</WasmNativeWorkload7>
+    <WasmNativeWorkload7 Condition="'${RuntimeVersionNet7}' == '${RuntimeVersion}'">$(WasmNativeWorkload8)</WasmNativeWorkload7>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)WorkloadManifest.Wasi.targets" Condition="'$(RuntimeIdentifier)' == 'wasi-wasm'" />
