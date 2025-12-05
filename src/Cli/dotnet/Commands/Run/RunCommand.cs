@@ -160,7 +160,7 @@ public class RunCommand
 
             EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out projectBuilder);
         }
-        else if (EntryPointFileFullPath is not null && launchProfileSettings.Model is not ExecutableLaunchSettingsModel)
+        else if (EntryPointFileFullPath is not null && launchProfileSettings.Model is not ExecutableLaunchSettings)
         {
             // The entry-point is not used to run the application if the launch profile specifies Executable command. 
 
@@ -184,12 +184,12 @@ public class RunCommand
         return targetCommand.Execute().ExitCode;
     }
 
-    internal ICommand GetTargetCommand(LaunchSettingsModel? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
+    internal ICommand GetTargetCommand(LaunchSettings? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
         => launchSettings switch
         {
             null => GetTargetCommandForProject(launchSettings: null, projectFactory, cachedRunProperties),
-            ProjectLaunchSettingsModel projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties),
-            ExecutableLaunchSettingsModel executableSettings => GetTargetCommandForExecutable(executableSettings),
+            ProjectLaunchSettings projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties),
+            ExecutableLaunchSettings executableSettings => GetTargetCommandForExecutable(executableSettings),
             _ => throw new InvalidOperationException()
         };
 
@@ -287,7 +287,7 @@ public class RunCommand
         }
     }
 
-    private ICommand GetTargetCommandForExecutable(ExecutableLaunchSettingsModel launchSettings)
+    private ICommand GetTargetCommandForExecutable(ExecutableLaunchSettings launchSettings)
     {
         var workingDirectory = launchSettings.WorkingDirectory ?? Path.GetDirectoryName(ProjectOrEntryPointPath);
 
@@ -304,10 +304,10 @@ public class RunCommand
         return command;
     }
 
-    private void SetEnvironmentVariables(ICommand command, LaunchSettingsModel? launchSettings)
+    private void SetEnvironmentVariables(ICommand command, LaunchSettings? launchSettings)
     {
         // Handle Project-specific settings
-        if (launchSettings is ProjectLaunchSettingsModel projectSettings)
+        if (launchSettings is ProjectLaunchSettings projectSettings)
         {
             if (!string.IsNullOrEmpty(projectSettings.ApplicationUrl))
             {
@@ -438,7 +438,7 @@ public class RunCommand
         }
     }
 
-    private ICommand GetTargetCommandForProject(ProjectLaunchSettingsModel? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
+    private ICommand GetTargetCommandForProject(ProjectLaunchSettings? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
     {
         ICommand command;
         if (cachedRunProperties != null)
@@ -844,7 +844,7 @@ public class RunCommand
     /// Sends telemetry about the run operation.
     /// </summary>
     private void SendRunTelemetry(
-        LaunchSettingsModel? launchSettings,
+        LaunchSettings? launchSettings,
         VirtualProjectBuildingCommand? projectBuilder)
     {
         try
@@ -872,7 +872,7 @@ public class RunCommand
     /// Builds and sends telemetry data for file-based app runs.
     /// </summary>
     private void SendFileBasedTelemetry(
-        LaunchSettingsModel? launchSettings,
+        LaunchSettings? launchSettings,
         VirtualProjectBuildingCommand projectBuilder)
     {
         Debug.Assert(EntryPointFileFullPath != null);
@@ -901,7 +901,7 @@ public class RunCommand
     /// <summary>
     /// Builds and sends telemetry data for project-based app runs.
     /// </summary>
-    private void SendProjectBasedTelemetry(LaunchSettingsModel? launchSettings)
+    private void SendProjectBasedTelemetry(LaunchSettings? launchSettings)
     {
         Debug.Assert(ProjectFileFullPath != null);
         var projectIdentifier = RunTelemetry.GetProjectBasedIdentifier(ProjectFileFullPath, GetRepositoryRoot(), Sha256Hasher.Hash);

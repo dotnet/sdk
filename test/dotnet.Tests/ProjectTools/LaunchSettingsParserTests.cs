@@ -109,7 +109,7 @@ public class LaunchSettingsParserTests
             }
             """);
 
-        var model = Assert.IsType<ExecutableLaunchSettingsModel>(settings.Model);
+        var model = Assert.IsType<ExecutableLaunchSettings>(settings.Model);
 
         Assert.Equal("../path/ENV_VALUE1/executable", model.ExecutablePath);
         Assert.Equal(Path.Combine(root, "ENV_VALUE1"), model.WorkingDirectory);
@@ -143,7 +143,7 @@ public class LaunchSettingsParserTests
             }
             """);
 
-        var model = Assert.IsType<ProjectLaunchSettingsModel>(settings.Model);
+        var model = Assert.IsType<ProjectLaunchSettings>(settings.Model);
 
         Assert.Equal("arg1 ENV_VALUE1 arg3", model.CommandLineArgs);
         Assert.Equal(

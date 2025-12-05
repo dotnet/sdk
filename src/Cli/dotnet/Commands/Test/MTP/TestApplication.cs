@@ -104,7 +104,7 @@ internal sealed class TestApplication(
             processStartInfo.WorkingDirectory = Module.RunProperties.WorkingDirectory;
         }
 
-        if (Module.LaunchSettings is ProjectLaunchSettingsModel)
+        if (Module.LaunchSettings is ProjectLaunchSettings)
         {
             foreach (var entry in Module.LaunchSettings.EnvironmentVariables)
             {

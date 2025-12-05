@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 
 namespace Microsoft.DotNet.ProjectTools;
 
-public abstract class LaunchSettingsModel
+public abstract class LaunchSettings
 {
     public string? LaunchProfileName { get; init; }
 
