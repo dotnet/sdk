@@ -1,13 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
-using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
@@ -19,10 +17,10 @@ internal class ReferenceRemoveCommand : CommandBase
     public ReferenceRemoveCommand(
         ParseResult parseResult) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+        _fileOrDirectory = (parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
             parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument);
-        _arguments = parseResult.GetValue(ReferenceRemoveCommandParser.ProjectPathArgument).ToList().AsReadOnly();
+            parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument)) ?? Directory.GetCurrentDirectory();
+        _arguments = parseResult.GetRequiredValue(ReferenceRemoveCommandParser.ProjectPathArgument).ToList().AsReadOnly();
 
         if (_arguments.Count == 0)
         {
@@ -32,7 +30,8 @@ internal class ReferenceRemoveCommand : CommandBase
 
     public override int Execute()
     {
-        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false);
+        using var evaluator = DotNetProjectEvaluatorFactory.CreateForCommand();
+        var msbuildProj = MsbuildProject.FromFileOrDirectory(evaluator, _fileOrDirectory, false);
         var references = _arguments.Select(p =>
         {
             var fullPath = Path.GetFullPath(p);
@@ -42,7 +41,7 @@ internal class ReferenceRemoveCommand : CommandBase
             }
 
             return Path.GetRelativePath(
-                msbuildProj.ProjectRootElement.FullPath,
+                msbuildProj.FullPath,
                 MsbuildProject.GetProjectFileFromDirectory(fullPath)
             );
         });
@@ -50,11 +49,6 @@ internal class ReferenceRemoveCommand : CommandBase
         int numberOfRemovedReferences = msbuildProj.RemoveProjectToProjectReferences(
             _parseResult.GetValue(ReferenceRemoveCommandParser.FrameworkOption),
             references);
-
-        if (numberOfRemovedReferences != 0)
-        {
-            msbuildProj.ProjectRootElement.Save();
-        }
 
         return 0;
     }

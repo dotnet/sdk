@@ -1,17 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Build.Construction;
-using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Logging;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.ProjectTools;
 using NuGet.Frameworks;
 
@@ -21,62 +14,58 @@ internal class MsbuildProject
 {
     const string ProjectItemElementType = "ProjectReference";
 
-    public ProjectRootElement ProjectRootElement { get; private set; }
-    public string ProjectDirectory { get; private set; }
-
-    private readonly ProjectCollection _projects;
-    private List<NuGetFramework> _cachedTfms = null;
-    private IEnumerable<string> cachedRuntimeIdentifiers;
-    private IEnumerable<string> cachedConfigurations;
+    private DotNetProject _project;
+    private readonly DotNetProjectEvaluator _evaluator;
     private readonly bool _interactive = false;
 
-    private MsbuildProject(ProjectCollection projects, ProjectRootElement project, bool interactive)
+    private MsbuildProject(DotNetProjectEvaluator evaluator, DotNetProject project, bool interactive)
     {
-        _projects = projects;
-        ProjectRootElement = project;
-        ProjectDirectory = PathUtility.EnsureTrailingSlash(ProjectRootElement.DirectoryPath);
+        _evaluator = evaluator;
+        _project = project;
         _interactive = interactive;
     }
+    public string ProjectDirectory => PathUtility.EnsureTrailingSlash(_project.Directory!);
+    public string FullPath => _project.FullPath!;
 
-    public static MsbuildProject FromFileOrDirectory(ProjectCollection projects, string fileOrDirectory, bool interactive)
+    public static MsbuildProject FromFileOrDirectory(DotNetProjectEvaluator evaluator, string fileOrDirectory, bool interactive)
     {
         if (File.Exists(fileOrDirectory))
         {
-            return FromFile(projects, fileOrDirectory, interactive);
+            return FromFile(evaluator, fileOrDirectory, interactive);
         }
         else
         {
-            return FromDirectory(projects, fileOrDirectory, interactive);
+            return FromDirectory(evaluator, fileOrDirectory, interactive);
         }
     }
 
-    public static MsbuildProject FromFile(ProjectCollection projects, string projectPath, bool interactive)
+    public static MsbuildProject FromFile(DotNetProjectEvaluator evaluator, string projectPath, bool interactive)
     {
         if (!File.Exists(projectPath))
         {
             throw new GracefulException(CliStrings.ProjectDoesNotExist, projectPath);
         }
 
-        var project = TryOpenProject(projects, projectPath);
+        var project = TryOpenProject(evaluator, projectPath, interactive);
         if (project == null)
         {
             throw new GracefulException(CliStrings.ProjectIsInvalid, projectPath);
         }
 
-        return new MsbuildProject(projects, project, interactive);
+        return new MsbuildProject(evaluator, project, interactive);
     }
 
-    public static MsbuildProject FromDirectory(ProjectCollection projects, string projectDirectory, bool interactive)
+    public static MsbuildProject FromDirectory(DotNetProjectEvaluator evaluator, string projectDirectory, bool interactive)
     {
         var projectFilePath = GetProjectFileFromDirectory(projectDirectory);
 
-        var project = TryOpenProject(projects, projectFilePath);
+        var project = TryOpenProject(evaluator, projectFilePath, interactive);
         if (project == null)
         {
             throw new GracefulException(CliStrings.FoundInvalidProject, projectFilePath);
         }
 
-        return new MsbuildProject(projects, project, interactive);
+        return new MsbuildProject(evaluator, project, interactive);
     }
 
     public static string GetProjectFileFromDirectory(string projectDirectory)
@@ -84,36 +73,36 @@ internal class MsbuildProject
             ? projectFilePath
             : throw new GracefulException(error);
 
-    public static bool TryGetProjectFileFromDirectory(string projectDirectory, [NotNullWhen(true)] out string projectFilePath)
+    public static bool TryGetProjectFileFromDirectory(string projectDirectory, [NotNullWhen(true)] out string? projectFilePath)
         => ProjectLocator.TryGetProjectFileFromDirectory(projectDirectory, out projectFilePath, out _);
 
-    public int AddProjectToProjectReferences(string framework, IEnumerable<string> refs)
+    /// <summary>
+    /// Adds project-to-project references to the project.
+    /// </summary>
+    /// <param name="framework">If set, the reference will be conditional on this framework.</param>
+    /// <param name="refs">The projects to add references to.</param>
+    /// <returns></returns>
+    public int AddProjectToProjectReferences(string? framework, IEnumerable<string> refs)
     {
-        int numberOfAddedReferences = 0;
-
-        ProjectItemGroupElement itemGroup = ProjectRootElement.FindUniformOrCreateItemGroupWithCondition(
-            ProjectItemElementType,
-            framework);
-        foreach (var @ref in refs.Select((r) => PathUtility.GetPathWithBackSlashes(r)))
+        var addResult =_project.AddItemsOfType(ProjectItemElementType, refs.Select<string, (string, Dictionary<string, string>?)>(r => (r,null)), framework);
+        var numberOfAddedReferences = 0;
+        foreach (var addItem in addResult.AddResult)
         {
-            if (ProjectRootElement.HasExistingItemWithCondition(framework, @ref))
+            if (addItem.AddType == DotNetProject.AddType.Added)
             {
-                Reporter.Output.WriteLine(string.Format(
-                    CliStrings.ProjectAlreadyHasAreference,
-                    @ref));
-                continue;
+                Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, addItem.Include));
+                numberOfAddedReferences++;
             }
-
-            numberOfAddedReferences++;
-            itemGroup.AppendChild(ProjectRootElement.CreateItemElement(ProjectItemElementType, @ref));
-
-            Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, @ref));
+            else
+            {
+                Reporter.Output.WriteLine(string.Format(CliStrings.ProjectAlreadyHasAreference, addItem.Include));
+            }
         }
 
         return numberOfAddedReferences;
     }
 
-    public int RemoveProjectToProjectReferences(string framework, IEnumerable<string> refs)
+    public int RemoveProjectToProjectReferences(string? framework, IEnumerable<string> refs)
     {
         int totalNumberOfRemovedReferences = 0;
 
@@ -125,32 +114,13 @@ internal class MsbuildProject
         return totalNumberOfRemovedReferences;
     }
 
-    public IEnumerable<ProjectItemElement> GetProjectToProjectReferences()
-    {
-        return ProjectRootElement.GetAllItemsWithElementType(ProjectItemElementType);
-    }
+    public IEnumerable<DotNetProjectItem> ProjectReferences() => _project.ProjectReferences;
 
-    public IEnumerable<string> GetRuntimeIdentifiers()
-    {
-        return cachedRuntimeIdentifiers ??= GetEvaluatedProject().GetRuntimeIdentifiers();
-    }
+    public IEnumerable<string> GetRuntimeIdentifiers() => _project.RuntimeIdentifiers ?? [];
 
-    public IEnumerable<NuGetFramework> GetTargetFrameworks()
-    {
-        if (_cachedTfms != null)
-        {
-            return _cachedTfms;
-        }
+    public IEnumerable<NuGetFramework> GetTargetFrameworks() => _project.TargetFrameworks ?? [];
 
-        var project = GetEvaluatedProject();
-        _cachedTfms = [.. project.GetTargetFrameworks()];
-        return _cachedTfms;
-    }
-
-    public IEnumerable<string> GetConfigurations()
-    {
-        return cachedConfigurations ??= GetEvaluatedProject().GetConfigurations();
-    }
+    public IEnumerable<string> GetConfigurations() => _project.Configurations ?? [];
 
     public bool CanWorkOnFramework(NuGetFramework framework)
     {
@@ -178,69 +148,27 @@ internal class MsbuildProject
         return false;
     }
 
-    private Project GetEvaluatedProject()
+    private int RemoveProjectToProjectReferenceAlternatives(string? framework, string reference)
     {
-        try
+        var removedCount = 0;
+        var removeResult = _project.RemoveItemsOfType(ProjectItemElementType, GetIncludeAlternativesForRemoval(reference), framework);
+        foreach (var r in removeResult.RemoveResult)
         {
-            Project project;
-            if (_interactive)
+            if (r.RemoveType == DotNetProject.RemoveType.Removed)
             {
-                // NuGet need this environment variable to call plugin dll
-                Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
-                // Even during evaluation time, the SDK resolver may need to output auth instructions, so set a logger.
-                _projects.RegisterLogger(new ConsoleLogger(LoggerVerbosity.Minimal));
-                project = _projects.LoadProject(
-                    ProjectRootElement.FullPath,
-                    new Dictionary<string, string>
-                    { ["NuGetInteractive"] = "true" },
-                    null);
-            }
-            else
-            {
-                project = _projects.LoadProject(ProjectRootElement.FullPath);
-            }
-
-            return project;
-        }
-        catch (InvalidProjectFileException e)
-        {
-            throw new GracefulException(string.Format(
-                CliStrings.ProjectCouldNotBeEvaluated,
-                ProjectRootElement.FullPath, e.Message));
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", null);
-        }
-    }
-
-    private int RemoveProjectToProjectReferenceAlternatives(string framework, string reference)
-    {
-        int numberOfRemovedRefs = 0;
-        foreach (var r in GetIncludeAlternativesForRemoval(reference))
-        {
-            foreach (var existingItem in ProjectRootElement.FindExistingItemsWithCondition(framework, r))
-            {
-                ProjectElementContainer itemGroup = existingItem.Parent;
-                itemGroup.RemoveChild(existingItem);
-                if (itemGroup.Children.Count == 0)
-                {
-                    itemGroup.Parent.RemoveChild(itemGroup);
-                }
-
-                numberOfRemovedRefs++;
-                Reporter.Output.WriteLine(string.Format(CliStrings.ProjectReferenceRemoved, r));
+                Reporter.Output.WriteLine(string.Format(CliStrings.ProjectReferenceRemoved, r.Include));
+                removedCount++;
             }
         }
 
-        if (numberOfRemovedRefs == 0)
+        if (removedCount == 0)
         {
             Reporter.Output.WriteLine(string.Format(
                 CliStrings.ProjectReferenceCouldNotBeFound,
                 reference));
         }
 
-        return numberOfRemovedRefs;
+        return removedCount;
     }
 
     // Easiest way to explain rationale for this function is on the example. Let's consider following directory structure:
@@ -268,15 +196,34 @@ internal class MsbuildProject
 
     // There is ProjectRootElement.TryOpen but it does not work as expected
     // I.e. it returns null for some valid projects
-    private static ProjectRootElement TryOpenProject(ProjectCollection projects, string filename)
+    private static DotNetProject TryOpenProject(DotNetProjectEvaluator evaluator, string filename, bool interactive)
     {
         try
         {
-            return ProjectRootElement.Open(filename, projects, preserveFormatting: true);
+            DotNetProject project;
+            if (interactive)
+            {
+                // NuGet need this environment variable to call plugin dll
+                Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
+                // Even during evaluation time, the SDK resolver may need to output auth instructions, so set a logger.
+                project = evaluator.LoadProject(filename, new Dictionary<string, string>(){ ["NuGetInteractive"] = "true" });
+            }
+            else
+            {
+                project = evaluator.LoadProject(filename);
+            }
+
+            return project;
         }
-        catch (InvalidProjectFileException)
+        catch (InvalidProjectFileException e)
         {
-            return null;
+            throw new GracefulException(string.Format(
+                CliStrings.ProjectCouldNotBeEvaluated,
+                filename, e.Message));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", null);
         }
     }
 }

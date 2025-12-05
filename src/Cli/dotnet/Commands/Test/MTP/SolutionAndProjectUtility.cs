@@ -6,8 +6,11 @@ using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.ProjectTools;
@@ -153,9 +156,8 @@ internal static class SolutionAndProjectUtility
 
     private static string[] GetProjectFilePaths(string directory) => Directory.GetFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly);
 
-    private static ProjectInstance EvaluateProject(
-        ProjectCollection collection,
-        EvaluationContext evaluationContext,
+    private static DotNetProject EvaluateProject(
+        DotNetProjectEvaluator evaluator,
         string projectFilePath,
         string? tfm,
         string? configuration,
@@ -200,35 +202,25 @@ internal static class SolutionAndProjectUtility
             }
         }
 
-        // Merge the global properties from the project collection.
-        // It's unclear why MSBuild isn't considering the global properties defined in the ProjectCollection when
-        // the collection is passed in ProjectOptions below.
-        foreach (var property in collection.GlobalProperties)
-        {
-            if (!(globalProperties ??= new Dictionary<string, string>()).ContainsKey(property.Key))
-            {
-                globalProperties.Add(property.Key, property.Value);
-            }
-        }
+        return evaluator.LoadProject(projectFilePath, globalProperties);
+    }
 
-        return ProjectInstance.FromFile(projectFilePath, new ProjectOptions
-        {
-            GlobalProperties = globalProperties,
-            EvaluationContext = evaluationContext,
-            ProjectCollection = collection,
-        });
+    public static string GetRootDirectory(string solutionOrProjectFilePath)
+    {
+        string? fileDirectory = Path.GetDirectoryName(solutionOrProjectFilePath);
+        Debug.Assert(fileDirectory is not null);
+        return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
     public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(
         string projectFilePath,
-        ProjectCollection projectCollection,
-        EvaluationContext evaluationContext,
+        DotNetProjectEvaluator evaluator,
         BuildOptions buildOptions,
-        string? configuration,
-        string? platform)
+        string? configuration = null,
+        string? platform = null)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm: null, configuration, platform);
+        DotNetProject projectInstance = EvaluateProject(evaluator, projectFilePath, tfm: null, configuration, platform);
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
@@ -237,7 +229,7 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
+            if (GetModuleFromProject(projectInstance, buildOptions, evaluator) is { } module)
             {
                 projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
             }
@@ -262,10 +254,10 @@ internal static class SolutionAndProjectUtility
             {
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
+                    projectInstance = EvaluateProject(evaluator, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, evaluator) is { } module)
                     {
                         projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
                     }
@@ -276,10 +268,10 @@ internal static class SolutionAndProjectUtility
                 List<TestModule>? innerModules = null;
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
+                    projectInstance = EvaluateProject(evaluator, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, evaluator) is { } module)
                     {
                         innerModules ??= new List<TestModule>();
                         innerModules.Add(module);
@@ -296,7 +288,7 @@ internal static class SolutionAndProjectUtility
         return projects;
     }
 
-    private static TestModule? GetModuleFromProject(ProjectInstance project, BuildOptions buildOptions)
+    private static TestModule? GetModuleFromProject(DotNetProject project, BuildOptions buildOptions, DotNetProjectEvaluator evaluator)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
@@ -306,15 +298,15 @@ internal static class SolutionAndProjectUtility
             return null;
         }
 
-        string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-        string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
+        var targetFramework = project.TargetFramework!;
+        var projectFullPath = project.FullPath;
 
 
         // Only get run properties if IsTestingPlatformApplication is true
         RunProperties runProperties;
         if (isTestingPlatformApplication)
         {
-            runProperties = GetRunProperties(project);
+            runProperties = GetRunProperties(project, evaluator);
 
             // dotnet run throws the same if RunCommand is null or empty.
             // In dotnet test, we are additionally checking that RunCommand is not dll.
@@ -334,13 +326,13 @@ internal static class SolutionAndProjectUtility
         {
             // For VSTest test projects, create minimal RunProperties
             runProperties = new RunProperties(
-                project.GetPropertyValue(ProjectProperties.TargetPath),
+                project.GetPropertyValue(ProjectProperties.TargetPath)!,
                 null,
                 null);
         }
 
         // TODO: Support --launch-profile and pass it here.
-        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), buildOptions, profileName: null);
+        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath!), project.GetPropertyValue(ProjectProperties.AppDesignerFolder)!, buildOptions, profileName: null);
 
         var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootArchVariableName(
             runProperties.RuntimeIdentifier,
@@ -352,9 +344,9 @@ internal static class SolutionAndProjectUtility
             rootVariableName = null;
         }
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath), rootVariableName);
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath!), targetFramework, isTestingPlatformApplication, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath)!, rootVariableName);
 
-        static RunProperties GetRunProperties(ProjectInstance project)
+        static RunProperties GetRunProperties(DotNetProject project, DotNetProjectEvaluator evaluator)
         {
             // Build API cannot be called in parallel, even if the projects are different.
             // Otherwise, BuildManager in MSBuild will fail:
@@ -362,7 +354,8 @@ internal static class SolutionAndProjectUtility
             // NOTE: BuildManager is singleton.
             lock (s_buildLock)
             {
-                if (!project.Build(s_computeRunArgumentsTarget, loggers: null))
+                var result = evaluator.CreateBuilder(project).Build(s_computeRunArgumentsTarget);
+                if (!result.Success)
                 {
                     throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget[0]);
                 }

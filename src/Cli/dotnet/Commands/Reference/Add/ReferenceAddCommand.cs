@@ -1,38 +1,36 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
-using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
 internal class ReferenceAddCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+    private readonly string _fileOrDirectory = (parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
             parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument);
+            parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument)) ?? Directory.GetCurrentDirectory();
 
     public override int Execute()
     {
-        using var projects = new ProjectCollection();
+        using var evaluator = DotNetProjectEvaluatorFactory.CreateForCommand();
         bool interactive = _parseResult.GetValue(ReferenceAddCommandParser.InteractiveOption);
         MsbuildProject msbuildProj = MsbuildProject.FromFileOrDirectory(
-            projects,
+            evaluator,
             _fileOrDirectory,
             interactive);
 
         var frameworkString = _parseResult.GetValue(ReferenceAddCommandParser.FrameworkOption);
 
-        var arguments = _parseResult.GetValue(ReferenceAddCommandParser.ProjectPathArgument).ToList().AsReadOnly();
+        var arguments = _parseResult.GetRequiredValue(ReferenceAddCommandParser.ProjectPathArgument).ToList().AsReadOnly();
         PathUtility.EnsureAllPathsExist(arguments,
             CliStrings.CouldNotFindProjectOrDirectory, true);
-        List<MsbuildProject> refs = [.. arguments.Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))];
+        List<MsbuildProject> refs = [.. arguments.Select((r) => MsbuildProject.FromFileOrDirectory(evaluator, r, interactive))];
 
         if (string.IsNullOrEmpty(frameworkString))
         {
@@ -57,7 +55,7 @@ internal class ReferenceAddCommand(ParseResult parseResult) : CommandBase(parseR
             {
                 Reporter.Error.WriteLine(string.Format(
                                              CliStrings.ProjectDoesNotTargetFramework,
-                                             msbuildProj.ProjectRootElement.FullPath,
+                                             msbuildProj.FullPath,
                                              frameworkString));
                 return 1;
             }
@@ -75,16 +73,11 @@ internal class ReferenceAddCommand(ParseResult parseResult) : CommandBase(parseR
         var relativePathReferences = refs.Select((r) =>
                                                     Path.GetRelativePath(
                                                         msbuildProj.ProjectDirectory,
-                                                        r.ProjectRootElement.FullPath)).ToList();
+                                                        r.FullPath)).ToList();
 
         int numberOfAddedReferences = msbuildProj.AddProjectToProjectReferences(
             frameworkString,
             relativePathReferences);
-
-        if (numberOfAddedReferences != 0)
-        {
-            msbuildProj.ProjectRootElement.Save();
-        }
 
         return 0;
     }
@@ -92,7 +85,7 @@ internal class ReferenceAddCommand(ParseResult parseResult) : CommandBase(parseR
     private static string GetProjectNotCompatibleWithFrameworksDisplayString(MsbuildProject project, IEnumerable<string> frameworksDisplayStrings)
     {
         var sb = new StringBuilder();
-        sb.AppendLine(string.Format(CliStrings.ProjectNotCompatibleWithFrameworks, project.ProjectRootElement.FullPath));
+        sb.AppendLine(string.Format(CliStrings.ProjectNotCompatibleWithFrameworks, project.FullPath));
         foreach (var tfm in frameworksDisplayStrings)
         {
             sb.AppendLine($"    - {tfm}");

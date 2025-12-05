@@ -1,0 +1,9 @@
+# Ban direct usage of MSBuild APIs to ensure proper telemetry integration and evaluation caching
+# Use DotNetProjectEvaluator and DotNetProjectBuilder wrapper types instead
+
+# Ban direct project creation/manipulation
+T:Microsoft.Build.Execution.ProjectInstance;Use DotNetProjectEvaluator.LoadProject() to get a DotNetProject instead
+T:Microsoft.Build.Evaluation.Project;Use DotNetProjectEvaluator.LoadProject() to get a DotNetProject instead
+
+# Ban direct ProjectCollection creation - use DotNetProjectEvaluatorFactory instead
+T:Microsoft.Build.Evaluation.ProjectCollection;Use DotNetProjectEvaluatorFactory to get a DotNetProjectEvaluator instead

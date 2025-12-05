@@ -11,7 +11,6 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
@@ -19,8 +18,10 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -129,8 +130,10 @@ public class RunCommand
             return 1;
         }
 
+        using var topLevelEvaluator = DotNetProjectEvaluatorFactory.CreateForCommand(MSBuildArgs);
+
         // Pre-run evaluation: Handle target framework selection for multi-targeted projects
-        if (ProjectFileFullPath is not null && !TrySelectTargetFrameworkIfNeeded())
+        if (ProjectFileFullPath is not null && !TrySelectTargetFrameworkIfNeeded(topLevelEvaluator))
         {
             return 1;
         }
@@ -141,7 +144,7 @@ public class RunCommand
             return 1;
         }
 
-        Func<ProjectCollection, ProjectInstance>? projectFactory = null;
+        Func<DotNetProjectEvaluator, DotNetProject>? projectFactory = null;
         RunProperties? cachedRunProperties = null;
         VirtualProjectBuildingCommand? virtualCommand = null;
         if (ShouldBuild)
@@ -151,7 +154,7 @@ public class RunCommand
                 Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
             }
 
-            EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out virtualCommand);
+            (projectFactory, cachedRunProperties, virtualCommand) = EnsureProjectIsBuilt();
         }
         else
         {
@@ -167,7 +170,7 @@ public class RunCommand
                 virtualCommand.MarkArtifactsFolderUsed();
 
                 var cacheEntry = virtualCommand.GetPreviousCacheEntry();
-                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : virtualCommand.CreateProjectInstance;
+                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : (eval => virtualCommand.CreateVirtualProject(eval));
                 cachedRunProperties = cacheEntry?.Run;
             }
         }
@@ -205,16 +208,15 @@ public class RunCommand
     /// If needed and we're in non-interactive mode, shows an error.
     /// </summary>
     /// <returns>True if we can continue, false if we should exit</returns>
-    private bool TrySelectTargetFrameworkIfNeeded()
+    private bool TrySelectTargetFrameworkIfNeeded(DotNetProjectEvaluator evaluator)
     {
         Debug.Assert(ProjectFileFullPath is not null);
 
-        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
         if (TargetFrameworkSelector.TrySelectTargetFramework(
             ProjectFileFullPath,
-            globalProperties,
+            evaluator,
             Interactive,
-            out string? selectedFramework))
+            out NuGetFramework? selectedFramework))
         {
             ApplySelectedFramework(selectedFramework);
             return true;
@@ -233,7 +235,7 @@ public class RunCommand
         Debug.Assert(EntryPointFileFullPath is not null);
 
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
-        
+
         // If a framework is already specified via --framework, no need to check
         if (globalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework))
         {
@@ -248,7 +250,7 @@ public class RunCommand
         }
 
         // Use TargetFrameworkSelector to handle multi-target selection (or single framework selection)
-        if (TargetFrameworkSelector.TrySelectTargetFramework(frameworks, Interactive, out string? selectedFramework))
+        if (TargetFrameworkSelector.TrySelectTargetFramework(frameworks, Interactive, out var selectedFramework))
         {
             ApplySelectedFramework(selectedFramework);
             return true;
@@ -261,34 +263,34 @@ public class RunCommand
     /// Parses a source file to extract target frameworks from directives.
     /// </summary>
     /// <returns>Array of frameworks if TargetFrameworks is specified, null otherwise</returns>
-    private static string[]? GetTargetFrameworksFromSourceFile(string sourceFilePath)
+    private static NuGetFramework[]? GetTargetFrameworksFromSourceFile(string sourceFilePath)
     {
         var sourceFile = SourceFile.Load(sourceFilePath);
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
-        
+
         var targetFrameworksDirective = directives.OfType<CSharpDirective.Property>()
             .FirstOrDefault(p => string.Equals(p.Name, "TargetFrameworks", StringComparison.OrdinalIgnoreCase));
-        
+
         if (targetFrameworksDirective is null)
         {
             return null;
         }
 
-        return targetFrameworksDirective.Value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return targetFrameworksDirective.Value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(NuGetFramework.Parse).ToArray();
     }
 
     /// <summary>
     /// Applies the selected target framework to MSBuildArgs if a framework was provided.
     /// </summary>
     /// <param name="selectedFramework">The framework to apply, or null if no framework selection was needed</param>
-    private void ApplySelectedFramework(string? selectedFramework)
+    private void ApplySelectedFramework(NuGetFramework? selectedFramework)
     {
         // If selectedFramework is null, it means no framework selection was needed
         // (e.g., user already specified --framework, or single-target project)
         if (selectedFramework is not null)
         {
             var additionalProperties = new ReadOnlyDictionary<string, string>(
-                new Dictionary<string, string> { { "TargetFramework", selectedFramework } });
+                new Dictionary<string, string> { { "TargetFramework", selectedFramework.GetShortFolderName() } });
             MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
         }
     }
@@ -369,23 +371,25 @@ public class RunCommand
         return true;
     }
 
-    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? virtualCommand)
+    private (Func<DotNetProjectEvaluator, DotNetProject>? projectFactory, RunProperties? cachedRunProperties, VirtualProjectBuildingCommand? virtualCommand) EnsureProjectIsBuilt()
     {
         int buildResult;
+        VirtualProjectBuildingCommand? virtualCommand;
+        Func<DotNetProjectEvaluator, DotNetProject>? projectFactory;
+        RunProperties? cachedRunProperties;
         if (EntryPointFileFullPath is not null)
         {
             virtualCommand = CreateVirtualCommand();
             buildResult = virtualCommand.Execute();
-            projectFactory = CanUseRunPropertiesForCscBuiltProgram(virtualCommand.LastBuild.Level, virtualCommand.LastBuild.Cache?.PreviousEntry) ? null : virtualCommand.CreateProjectInstance;
+            projectFactory = CanUseRunPropertiesForCscBuiltProgram(virtualCommand.LastBuild.Level, virtualCommand.LastBuild.Cache?.PreviousEntry) ? null : eval => virtualCommand.CreateVirtualProject(eval);
             cachedRunProperties = virtualCommand.LastBuild.Cache?.CurrentEntry.Run;
         }
         else
         {
             Debug.Assert(ProjectFileFullPath is not null);
-
+            virtualCommand = null;
             projectFactory = null;
             cachedRunProperties = null;
-            virtualCommand = null;
             buildResult = new RestoringCommand(
                 MSBuildArgs.CloneWithExplicitArgs([ProjectFileFullPath, .. MSBuildArgs.OtherMSBuildArgs]),
                 NoRestore,
@@ -398,6 +402,7 @@ public class RunCommand
             Reporter.Error.WriteLine();
             throw new GracefulException(CliCommandStrings.RunCommandException);
         }
+        return (projectFactory, cachedRunProperties, virtualCommand);
     }
 
     private static bool CanUseRunPropertiesForCscBuiltProgram(BuildLevel level, RunFileBuildCacheEntry? previousCache)
@@ -449,7 +454,7 @@ public class RunCommand
         }
     }
 
-    internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
+    internal ICommand GetTargetCommand(Func<DotNetProjectEvaluator, DotNetProject>? projectFactory, RunProperties? cachedRunProperties)
     {
         if (cachedRunProperties != null)
         {
@@ -470,35 +475,36 @@ public class RunCommand
 
         Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
-        var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
+        using var evaluator = DotNetProjectEvaluatorFactory.CreateForCommand(MSBuildArgs, logger is null ? null : [logger]);
+        var project = EvaluateProject(ProjectFileFullPath, evaluator, projectFactory);
         ValidatePreconditions(project);
-        InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
+        InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, evaluator);
         logger?.ReallyShutdown();
         var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
         var command = CreateCommandFromRunProperties(runProperties);
         return command;
 
-        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, MSBuildArgs msbuildArgs, ILogger? binaryLogger)
+        static DotNetProject EvaluateProject(string? projectFilePath, DotNetProjectEvaluator evaluator, Func<DotNetProjectEvaluator, DotNetProject>? projectFactory)
         {
             Debug.Assert(projectFilePath is not null || projectFactory is not null);
-
-            var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
-
-            var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-
+            DotNetProject project;
             if (projectFilePath is not null)
             {
-                return collection.LoadProject(projectFilePath).CreateProjectInstance();
+                project = evaluator.LoadProject(projectFilePath);
+            }
+            else
+            {
+                Debug.Assert(projectFactory is not null);
+                project = projectFactory(evaluator);
             }
 
-            Debug.Assert(projectFactory is not null);
-            return projectFactory(collection);
+            // We don't dispose the evaluator here because the telemetryCentralLogger is used later
+            return project;
         }
 
-        static void ValidatePreconditions(ProjectInstance project)
+        static void ValidatePreconditions(DotNetProject project)
         {
-            // there must be some kind of TFM available to run a project
-            if (string.IsNullOrWhiteSpace(project.GetPropertyValue("TargetFramework")) && string.IsNullOrEmpty(project.GetPropertyValue("TargetFrameworks")))
+            if (project.TargetFramework is null || project.TargetFrameworks is null or { Length: 0 })
             {
                 ThrowUnableToRunError(project);
             }
@@ -520,7 +526,7 @@ public class RunCommand
             return command;
         }
 
-        static void SetRootVariableName(ICommand command, string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, string targetFrameworkVersion)
+        static void SetRootVariableName(ICommand command, string? runtimeIdentifier, string? defaultAppHostRuntimeIdentifier, string? targetFrameworkVersion)
         {
             var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
                 runtimeIdentifier,
@@ -548,7 +554,7 @@ public class RunCommand
             return command;
         }
 
-        static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs)
+        static void InvokeRunArgumentsTarget(DotNetProject project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, DotNetProjectEvaluator evaluator)
         {
             List<ILogger> loggersForBuild = [
                 CommonRunHelpers.GetConsoleLogger(
@@ -560,7 +566,9 @@ public class RunCommand
                 loggersForBuild.Add(binaryLogger);
             }
 
-            if (!project.Build([Constants.ComputeRunArguments], loggers: loggersForBuild, remoteLoggers: null, out _))
+            var builder = evaluator.CreateBuilder(project);
+            var result = builder.Build([Constants.ComputeRunArguments], loggersForBuild);
+            if (!result.Success)
             {
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, Constants.ComputeRunArguments);
             }
@@ -568,14 +576,14 @@ public class RunCommand
     }
 
     [DoesNotReturn]
-    internal static void ThrowUnableToRunError(ProjectInstance project)
+    internal static void ThrowUnableToRunError(DotNetProject project)
     {
         throw new GracefulException(
                 string.Format(
                     CliCommandStrings.RunCommandExceptionUnableToRun,
-                    project.GetPropertyValue("MSBuildProjectFullPath"),
+                    project.FullPath,
                     Product.TargetFrameworkVersion,
-                    project.GetPropertyValue("OutputType")));
+                    project.OutputType));
     }
 
     private static string? DiscoverProjectFilePath(string? filePath, string? projectFileOrDirectoryPath, bool readCodeFromStdin, ref string[] args, out string? entryPointFilePath)
@@ -908,8 +916,8 @@ public class RunCommand
                 globalProperties[Constants.EnableDefaultItems] = "false";
                 globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
 
-                using var collection = new ProjectCollection(globalProperties: globalProperties);
-                var project = collection.LoadProject(ProjectFileFullPath).CreateProjectInstance();
+                using var evaluator = new DotNetProjectEvaluator(globalProperties);
+                var project = evaluator.LoadProject(ProjectFileFullPath);
 
                 packageReferenceCount = RunTelemetry.CountPackageReferences(project);
                 projectReferenceCount = RunTelemetry.CountProjectReferences(project);

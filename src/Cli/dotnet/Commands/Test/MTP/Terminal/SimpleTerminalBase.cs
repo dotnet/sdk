@@ -119,7 +119,7 @@ internal abstract class SimpleTerminal : ITerminal
                 Append(" (");
                 if (p.TargetFramework != null)
                 {
-                    Append(p.TargetFramework);
+                    Append(p.TargetFramework.GetShortFolderName());
                     Append('|');
                 }
 

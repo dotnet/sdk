@@ -25,7 +25,8 @@ Testing:
     - `dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
 - To test CLI command changes:
   - Build the redist SDK: `./build.sh` from repo root
-  - Create a dogfood environment: `source eng/dogfood.sh` 
+    - IMPORTANT: specify `/p:SkipUsingCrossgen=true` and `/p:SkipBuildingInstallers=true` to drastically speed up the build time.
+  - Create a dogfood environment: `source eng/dogfood.sh`
   - Test commands in the dogfood shell (e.g., `dnx --help`, `dotnet tool install --help`)
   - The dogfood script sets up PATH and environment to use the newly built SDK
 
@@ -43,3 +44,9 @@ External Dependencies:
 - Changes that require modifications to the dotnet/templating repository (Microsoft.TemplateEngine packages) should be made directly in that repository, not worked around in this repo.
 - The dotnet/templating repository owns the TemplateEngine.Edge, TemplateEngine.Abstractions, and related packages.
 - If a change requires updates to template engine behavior or formatting (e.g., DisplayName properties), file an issue in dotnet/templating and make the changes there rather than adding workarounds in this SDK repository.
+
+Package Versioning:
+- Package versions should be managed through version property files, not hard-coded in Directory.Packages.props.
+- For packages from .NET repos (dotnet/runtime, dotnet/roslyn, etc.): Add version to eng/Version.Details.xml and eng/Version.Details.props. These are auto-updated by Maestro dependency flow.
+- For packages from other sources: Add version to eng/Versions.props for manual version management.
+- In Directory.Packages.props, always reference the version property (e.g., $(MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion)) instead of hard-coding version numbers.

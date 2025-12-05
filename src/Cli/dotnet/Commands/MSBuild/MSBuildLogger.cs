@@ -135,10 +135,9 @@ public sealed class MSBuildLogger : INodeLogger
 
     internal void SendAggregatedEventsOnBuildFinished(ITelemetry? telemetry)
     {
-        if (telemetry is null) return;
         if (_aggregatedEvents.TryGetValue(TaskFactoryTelemetryAggregatedEventName, out var taskFactoryData))
         {
-            Dictionary<string, string?> taskFactoryProperties = ConvertToStringDictionary(taskFactoryData);
+            var taskFactoryProperties = ConvertToStringDictionary(taskFactoryData);
 
             TrackEvent(telemetry, $"msbuild/{TaskFactoryTelemetryAggregatedEventName}", taskFactoryProperties, toBeHashed: [], toBeMeasured: []);
             _aggregatedEvents.Remove(TaskFactoryTelemetryAggregatedEventName);
@@ -146,7 +145,7 @@ public sealed class MSBuildLogger : INodeLogger
 
         if (_aggregatedEvents.TryGetValue(TasksTelemetryAggregatedEventName, out var tasksData))
         {
-            Dictionary<string, string?> tasksProperties = ConvertToStringDictionary(tasksData);
+            var tasksProperties = ConvertToStringDictionary(tasksData);
 
             TrackEvent(telemetry, $"msbuild/{TasksTelemetryAggregatedEventName}", tasksProperties, toBeHashed: [], toBeMeasured: []);
             _aggregatedEvents.Remove(TasksTelemetryAggregatedEventName);
@@ -166,10 +165,14 @@ public sealed class MSBuildLogger : INodeLogger
 
     internal void AggregateEvent(TelemetryEventArgs args)
     {
-        if (args.EventName is null) return;
-        if (!_aggregatedEvents.TryGetValue(args.EventName, out Dictionary<string, int>? eventData) || eventData is null)
+        if (args.EventName is null)
         {
-            eventData = new Dictionary<string, int>();
+            return;
+        }
+
+        if (!_aggregatedEvents.TryGetValue(args.EventName, out var eventData))
+        {
+            eventData = [];
             _aggregatedEvents[args.EventName] = eventData;
         }
 

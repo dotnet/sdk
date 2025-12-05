@@ -11,7 +11,6 @@ using System.Text.Json.Serialization;
 using System.Xml;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
-using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
@@ -20,9 +19,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
+using BuildResult = Microsoft.Build.Execution.BuildResult;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -306,21 +307,22 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];
-            IEnumerable<ILogger> loggers = [.. binaryLoggers, consoleLogger];
-            var projectCollection = new ProjectCollection(
-                MSBuildArgs.GlobalProperties,
-                loggers,
-                ToolsetDefinitionLocations.Default);
-            var parameters = new BuildParameters(projectCollection)
+            IEnumerable<ILogger> existingLoggers = [.. binaryLoggers, consoleLogger];
+
+            // Include telemetry logger for evaluation and capture it for potential future use
+            var evaluator = DotNetProjectEvaluatorFactory.CreateForCommand(MSBuildArgs, existingLoggers);
+            var project = CreateVirtualProject(evaluator, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties));
+            var builder = evaluator.CreateBuilder(project);
+            var parameters = new BuildParameters(evaluator.ProjectCollection)
             {
-                Loggers = loggers,
+                Loggers = [evaluator.TelemetryCentralLogger, .. existingLoggers],
+                ForwardingLoggers = TelemetryUtilities.CreateTelemetryForwardingLoggerRecords(evaluator.TelemetryCentralLogger),
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
 
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             int exitCode = 0;
-            ProjectInstance? projectInstance = null;
             BuildResult? buildOrRestoreResult = null;
 
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
@@ -329,10 +331,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (!NoRestore && !evalOnly)
             {
                 var restoreRequest = new BuildRequestData(
-                    CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
+                    project.Instance(),
                     targetsToBuild: ["Restore"],
                     hostServices: null,
-                    BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
+                    flags: BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
 
                 var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
                 if (restoreResult.OverallResult != BuildResultCode.Success)
@@ -340,7 +342,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     exitCode = 1;
                 }
 
-                projectInstance = restoreRequest.ProjectInstance;
                 buildOrRestoreResult = restoreResult;
             }
 
@@ -348,7 +349,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (exitCode == 0 && !NoBuild && !evalOnly)
             {
                 var buildRequest = new BuildRequestData(
-                    CreateProjectInstance(projectCollection),
+                    project.Instance(),
                     targetsToBuild: RequestedTargets ?? [Constants.Build, Constants.CoreCompile]);
 
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
@@ -363,11 +364,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     Debug.Assert(buildRequest.ProjectInstance != null);
 
                     // Cache run info (to avoid re-evaluating the project instance).
-                    cache.CurrentEntry.Run = RunProperties.TryFromProject(buildRequest.ProjectInstance, out var runProperties)
+                    cache.CurrentEntry.Run = RunProperties.TryFromProject(project, out var runProperties)
                         ? runProperties
                         : null;
 
-                    if (!MSBuildUtilities.ConvertStringToBool(buildRequest.ProjectInstance.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
+                    if (!MSBuildUtilities.ConvertStringToBool(project.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
                     {
                         Reporter.Verbose.WriteLine($"Not saving cache because there is an opt-out via MSBuild property {FileBasedProgramCanSkipMSBuild}.");
                     }
@@ -379,15 +380,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     }
                 }
 
-                projectInstance = buildRequest.ProjectInstance;
                 buildOrRestoreResult = buildResult;
             }
 
             // Print build information.
             if (msbuildGet)
             {
-                projectInstance ??= CreateProjectInstance(projectCollection);
-                PrintBuildInformation(projectCollection, projectInstance, buildOrRestoreResult);
+                PrintBuildInformation(project, buildOrRestoreResult);
             }
 
             BuildManager.DefaultBuildManager.EndBuild();
@@ -515,14 +514,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
 
-        void PrintBuildInformation(ProjectCollection projectCollection, ProjectInstance projectInstance, BuildResult? buildOrRestoreResult)
+        void PrintBuildInformation(DotNetProject project, BuildResult? buildOrRestoreResult)
         {
             var resultOutputFile = MSBuildArgs.GetResultOutputFile is [{ } file, ..] ? file : null;
 
             // If a single property is requested, don't print as JSON.
             if (MSBuildArgs is { GetProperty: [{ } singlePropertyName], GetItem: null or [], GetTargetResult: null or [] })
             {
-                var result = projectInstance.GetPropertyValue(singlePropertyName);
+                var result = project.GetPropertyValue(singlePropertyName);
                 if (resultOutputFile == null)
                 {
                     Console.WriteLine(result);
@@ -547,7 +546,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                     foreach (var propertyName in MSBuildArgs.GetProperty)
                     {
-                        writer.WriteString(propertyName, projectInstance.GetPropertyValue(propertyName));
+                        writer.WriteString(propertyName, project.GetPropertyValue(propertyName));
                     }
 
                     writer.WriteEndObject();
@@ -563,12 +562,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         writer.WritePropertyName(itemName);
                         writer.WriteStartArray();
 
-                        foreach (var item in projectInstance.GetItems(itemName))
+                        foreach (var item in project.GetItems(itemName))
                         {
                             writer.WriteStartObject();
                             writer.WriteString("Identity", item.GetMetadataValue("Identity"));
 
-                            foreach (var metadatumName in item.MetadataNames)
+                            foreach (var metadatumName in item.GetMetadataNames())
                             {
                                 if (metadatumName.Equals("Identity", StringComparison.OrdinalIgnoreCase))
                                 {
@@ -1054,7 +1053,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// If there are any <c>#:project</c> <paramref name="directives"/>, expands <c>$()</c> in them and ensures they point to project files (not directories).
     /// </summary>
     public static ImmutableArray<CSharpDirective> EvaluateDirectives(
-        ProjectInstance? project,
+        DotNetProject? project,
         ImmutableArray<CSharpDirective> directives,
         SourceFile sourceFile,
         ErrorReporter errorReporter)
@@ -1074,48 +1073,73 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         return directives;
     }
 
-    public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
+    internal DotNetProject CreateVirtualProject(
+        DotNetProjectEvaluator evaluator,
+        Action<IDictionary<string, string>>? addGlobalProperties = null)
     {
-        return CreateProjectInstance(projectCollection, addGlobalProperties: null);
-    }
-
-    private ProjectInstance CreateProjectInstance(
-        ProjectCollection projectCollection,
-        Action<IDictionary<string, string>>? addGlobalProperties)
-    {
-        var project = CreateProjectInstance(projectCollection, Directives, addGlobalProperties);
+        var project = CreateVirtualProject(evaluator, Directives, addGlobalProperties);
 
         var directives = EvaluateDirectives(project, Directives, EntryPointSourceFile, VirtualProjectBuildingCommand.ThrowingReporter);
         if (directives != Directives)
         {
             Directives = directives;
-            project = CreateProjectInstance(projectCollection, directives, addGlobalProperties);
+            project = CreateVirtualProject(evaluator, directives, addGlobalProperties);
         }
 
         return project;
     }
 
-    private ProjectInstance CreateProjectInstance(
-        ProjectCollection projectCollection,
+    private DotNetProject CreateVirtualProject(
+        DotNetProjectEvaluator evaluator,
         ImmutableArray<CSharpDirective> directives,
         Action<IDictionary<string, string>>? addGlobalProperties)
     {
-        var projectRoot = CreateProjectRootElement(projectCollection);
-
-        var globalProperties = projectCollection.GlobalProperties;
+        var projectRoot = CreateProjectRootElement(evaluator);
+#pragma warning disable RS0030 // Ok to use MSBuild APIs because we are being very limited in their scope/
+        var globalProperties = evaluator.ProjectCollection.GlobalProperties;
         if (addGlobalProperties is not null)
         {
-            globalProperties = new Dictionary<string, string>(projectCollection.GlobalProperties, StringComparer.OrdinalIgnoreCase);
+            globalProperties = new Dictionary<string, string>(evaluator.ProjectCollection.GlobalProperties, StringComparer.OrdinalIgnoreCase);
             addGlobalProperties(globalProperties);
         }
 
-        return ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
+        // don't load duplicate projects into the project collection
+        if (evaluator.ProjectCollection.LoadedProjects.FirstOrDefault(loadedProj => HasSameGlobalProperties(loadedProj, globalProperties)) is { } firstProject)
         {
-            ProjectCollection = projectCollection,
+            return new DotNetProject(firstProject);
+        }
+
+        var p = Microsoft.Build.Evaluation.Project.FromProjectRootElement(projectRoot, new ProjectOptions
+        {
+            ProjectCollection = evaluator.ProjectCollection,
             GlobalProperties = globalProperties,
         });
+#pragma warning restore RS0030 // Do not use banned APIs
 
-        ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
+        return new DotNetProject(p);
+
+        static bool HasSameGlobalProperties(Microsoft.Build.Evaluation.Project loadedProject, IDictionary<string, string> globalProperties)
+        {
+#pragma warning disable RS0030 // Ok to use MSBuild APIs because we are being very limited in their scope/
+            if (loadedProject.Properties.Count != globalProperties.Count)
+            {
+                return false;
+            }
+
+            foreach (var (key, value) in globalProperties)
+            {
+                var loadedPropertyValue = loadedProject.GetPropertyValue(key);
+                if (loadedPropertyValue != value)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+#pragma warning restore RS0030 // Do not use banned APIs
+        }
+
+        ProjectRootElement CreateProjectRootElement(DotNetProjectEvaluator evaluator)
         {
             var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
             var projectFileWriter = new StringWriter();
@@ -1130,7 +1154,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             using var reader = new StringReader(projectFileText);
             using var xmlReader = XmlReader.Create(reader);
-            var projectRoot = ProjectRootElement.Create(xmlReader, projectCollection);
+            var projectRoot = ProjectRootElement.Create(xmlReader, evaluator.ProjectCollection);
             projectRoot.FullPath = projectFileFullPath;
             return projectRoot;
         }
