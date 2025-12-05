@@ -1051,11 +1051,6 @@ Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Data</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(Domyślne)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">Odinstalowanie manifestu obciążenia {0} w wersji {1}...</target>
@@ -1085,11 +1080,6 @@ Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
         <source>Description</source>
         <target state="translated">Opis</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">Napotkano błąd podczas odczytywania elementu „{0}”: {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1191,15 +1181,6 @@ Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
         <source>Downloads</source>
         <target state="translated">Pliki do pobrania</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">Istnieje kilka profilów uruchamiania z nazwami z uwzględnieniem wielkości liter, co jest niedozwolone:
-{0}
-Rozróżnij nazwy profilów.</target>
-        <note />
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1590,26 +1571,6 @@ Rozróżnij nazwy profilów.</target>
         <source>Latest Version</source>
         <target state="translated">Najnowsza wersja</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">Profil uruchamiania o nazwie „{0}” nie istnieje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">Typ profilu uruchamiania „{0}” nie jest obsługiwany.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">Profil o określonej nazwie nie jest prawidłowym obiektem JSON.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">Właściwość „profiles” dokumentu ustawień uruchamiania nie jest obiektem JSON.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -3650,11 +3611,6 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
         <target state="translated">Pomyślnie zaktualizowano tryb instalacji obciążenia w celu użycia {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Nie można odnaleźć nadającego się do użytku profilu uruchamiania.</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">

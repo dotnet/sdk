@@ -1,0 +1,11 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Microsoft.DotNet.ProjectTools;
+
+public sealed class ProjectLaunchProfile : LaunchProfile
+{
+    public bool LaunchBrowser { get; init; }
+    public string? LaunchUrl { get; init; }
+    public string? ApplicationUrl { get; init; }
+}

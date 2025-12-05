@@ -14,6 +14,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
+        // The same syntax works on Windows and Unix ($VAR does not get expanded Unix).
+        private static string EnvironmentVariableReference(string name)
+            => $"%{name}%";
+
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
@@ -122,16 +126,34 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void RunTestProjectWithTestsAndLaunchSettings_ShouldReturnExitCodeSuccess(
             [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration, bool runJson)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", Guid.NewGuid().ToString())
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: $"{configuration}_{runJson}")
                 .WithSource();
+
+            var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+            var runJsonPath = Path.Join(testInstance.Path, "TestProjectWithLaunchSettings.run.json");
+
+            File.WriteAllText(launchSettingsPath, $$"""
+                {
+                    "profiles": {
+                        "ConsoleApp25": {
+                            "commandName": "Project",
+                            "commandLineArgs": "--from-launch-settings",
+                            "environmentVariables": {
+                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "{{EnvironmentVariableReference("TEST_ENV_VAR")}}"
+                            }
+                        }
+                    }
+                }
+                """);
 
             if (runJson)
             {
-                File.Move(Path.Join(testInstance.Path, "Properties", "launchSettings.json"), Path.Join(testInstance.Path, "TestProjectWithLaunchSettings.run.json"));
+                File.Move(launchSettingsPath, runJsonPath);
             }
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TEST_ENV_VAR", "TestValue1")
                                     .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -140,6 +162,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .Should().Contain("Using launch settings from")
                     .And.Contain(runJson ? "TestProjectWithLaunchSettings.run.json..." : $"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
                     .And.Contain("Test run summary: Passed!")
+                    .And.Contain("MY_VARIABLE_FROM_LAUNCH_SETTINGS=TestValue1")
                     .And.Contain("skipped Test1")
                     .And.Contain("total: 2")
                     .And.Contain("succeeded: 1")
@@ -155,7 +178,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithTestsAndNoLaunchSettings_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", Guid.NewGuid().ToString())
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: configuration)
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -169,12 +192,43 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .And.NotContain("Using launch settings from");
         }
 
+        [Fact]
+        public void RunTestProjectWithTestsAndLaunchSettingsAndExecutableProfile()
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings")
+                .WithSource();
+
+            var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+
+            File.WriteAllText(launchSettingsPath, """
+                {
+                    "profiles": {
+                        "Execute": {
+                            "commandName": "Executable",
+                            "executablePath": "dotnet",
+                            "commandLineArgs": "--version"
+                        }
+                    }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    TestCommandDefinition.ConfigurationOption.Name, TestingConstants.Debug);
+
+            result.StdOut.Should()
+                .Contain("Using launch settings from")
+                .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
+                .And.Contain("FAILED to find argument from launchSettings.json");
+        }
+
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunTestProjectWithTestsAndNoLaunchSettingsArguments_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", Guid.NewGuid().ToString())
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: configuration)
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
