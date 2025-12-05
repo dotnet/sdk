@@ -17,9 +17,9 @@
 
   <Target Name="_GenerateWorkloadManifestFiles">
     <ItemGroup>
-      <_WorkloadManifestValues Include="NetVersion" Value="net9" />
+      <_WorkloadManifestValues Include="NetVersion" Value="net10" />
       <_WorkloadManifestValues Include="WorkloadVersion" Value="$(PackageVersion)" />
-      <_WorkloadManifestValues Include="RuntimeVersion" Value="9.0.$(VersionFeature90ForWorkloads)" />
+      <_WorkloadManifestValues Include="RuntimeVersion" Value="10.0.$(VersionFeature100ForWorkloads)" />
     </ItemGroup>
 
     <Error Condition="'%(_WorkloadManifestValues.Value)' == ''"
