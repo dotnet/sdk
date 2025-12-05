@@ -1,10 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
+using Microsoft.DotNet.ProjectTools;
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch;
 
 internal sealed record ProjectOptions
 {
+    private StrongBox<LaunchProfile?>? _lazyLaunchProfile;
+
     public required bool IsRootProject { get; init; }
     public required string ProjectPath { get; init; }
     public required string WorkingDirectory { get; init; }
@@ -33,4 +39,42 @@ internal sealed record ProjectOptions
     /// </summary>
     public bool IsCodeExecutionCommand
         => Command is "run" or "test";
+
+    public LaunchProfile? GetLaunchProfile(ILogger logger)
+    {
+        return (_lazyLaunchProfile ??= new StrongBox<LaunchProfile?>(ReadProfile())).Value;
+
+        LaunchProfile? ReadProfile()
+        {
+            if (NoLaunchProfile)
+            {
+                return null;
+            }
+
+            var launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(ProjectPath, LaunchProfileName, (message, isError) =>
+            {
+                if (isError)
+                {
+                    logger.LogError(message);
+                }
+                else
+                {
+                    logger.LogWarning(message);
+                }
+            });
+
+            if (launchSettingsPath == null)
+            {
+                return null;
+            }
+
+            var result = LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, LaunchProfileName);
+            if (result.FailureReason != null)
+            {
+                logger.LogError("Failed to read launch settings from '{LaunchSettingsPath}': {FailureReason}", launchSettingsPath, result.FailureReason);
+            }
+
+            return result.Profile;
+        }
+    }
 }
