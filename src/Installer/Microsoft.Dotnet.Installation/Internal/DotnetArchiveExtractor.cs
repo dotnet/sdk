@@ -92,45 +92,83 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             if (File.Exists(muxerTempPath))
             {
-                File.Delete(muxerTempPath);
-            }
-            File.Move(muxerTargetPath, muxerTempPath);
-        }
-
-        // Step 3: Extract the archive (all files directly since muxer has been renamed)
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            ExtractTarArchive(archivePath, targetDir, installTask);
-        }
-        else
-        {
-            ExtractZipArchive(archivePath, targetDir, installTask);
-        }
-
-        // Step 4: If there was a previous muxer, compare versions and restore if needed
-        if (hadExistingMuxer && File.Exists(muxerTempPath))
-        {
-            Version? newMuxerVersion = GetLatestRuntimeVersionFromInstallRoot(targetDir);
-
-            // If the latest runtime version after extraction is the same as before,
-            // then a newer runtime was NOT installed, so the new muxer is actually older.
-            // In that case, restore the old muxer.
-            if (newMuxerVersion != null && existingMuxerVersion != null && newMuxerVersion == existingMuxerVersion)
-            {
-                if (File.Exists(muxerTargetPath))
-                {
-                    File.Delete(muxerTargetPath);
-                }
-                File.Move(muxerTempPath, muxerTargetPath);
-            }
-            else
-            {
-                // Latest runtime version increased (or we couldn't determine versions) - keep new muxer
-                if (File.Exists(muxerTempPath))
+                try
                 {
                     File.Delete(muxerTempPath);
                 }
+                catch (UnauthorizedAccessException)
+                {
+                    // If we can't delete the existing temp file, we can't proceed with muxer version handling
+                    // Just extract without version comparison
+                    hadExistingMuxer = false;
+                }
+                catch (IOException)
+                {
+                    // If we can't delete the existing temp file, we can't proceed with muxer version handling
+                    // Just extract without version comparison
+                    hadExistingMuxer = false;
+                }
             }
+
+            if (hadExistingMuxer)
+            {
+                File.Move(muxerTargetPath, muxerTempPath);
+            }
+        }
+
+        try
+        {
+            // Step 3: Extract the archive (all files directly since muxer has been renamed)
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                ExtractTarArchive(archivePath, targetDir, installTask);
+            }
+            else
+            {
+                ExtractZipArchive(archivePath, targetDir, installTask);
+            }
+
+            // Step 4: If there was a previous muxer, compare versions and restore if needed
+            if (hadExistingMuxer && File.Exists(muxerTempPath))
+            {
+                Version? newMuxerVersion = GetLatestRuntimeVersionFromInstallRoot(targetDir);
+
+                // If the latest runtime version after extraction is the same as before,
+                // then a newer runtime was NOT installed, so the new muxer is actually older.
+                // In that case, restore the old muxer.
+                if (newMuxerVersion != null && existingMuxerVersion != null && newMuxerVersion == existingMuxerVersion)
+                {
+                    if (File.Exists(muxerTargetPath))
+                    {
+                        File.Delete(muxerTargetPath);
+                    }
+                    File.Move(muxerTempPath, muxerTargetPath);
+                }
+                else
+                {
+                    // Latest runtime version increased (or we couldn't determine versions) - keep new muxer
+                    if (File.Exists(muxerTempPath))
+                    {
+                        File.Delete(muxerTempPath);
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // If an exception occurs during extraction or version comparison, restore the original muxer if it exists
+            if (hadExistingMuxer && File.Exists(muxerTempPath) && !File.Exists(muxerTargetPath))
+            {
+                try
+                {
+                    File.Move(muxerTempPath, muxerTargetPath);
+                }
+                catch
+                {
+                    // Ignore errors during cleanup - the original exception is more important
+                }
+            }
+            throw;
         }
     }
 
