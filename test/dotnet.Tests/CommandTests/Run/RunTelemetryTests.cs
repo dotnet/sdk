@@ -254,7 +254,7 @@ public class RunTelemetryTests : SdkTest
 
         TelemetryEventEntry.EntryPosted += handler;
 
-        var launchSettings = new ProjectLaunchSettingsModel
+        var launchSettings = new ProjectLaunchSettings
         {
             LaunchProfileName = "(Default)",
             EnvironmentVariables = [],

@@ -2,11 +2,36 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.DotNet.ProjectTools;
 
 internal sealed class ProjectLaunchSettingsParser : LaunchProfileParser
 {
+    internal sealed class Json
+    {
+        [JsonPropertyName("commandName")]
+        public string? CommandName { get; set; }
+
+        [JsonPropertyName("commandLineArgs")]
+        public string? CommandLineArgs { get; set; }
+
+        [JsonPropertyName("launchBrowser")]
+        public bool LaunchBrowser { get; set; }
+
+        [JsonPropertyName("launchUrl")]
+        public string? LaunchUrl { get; set; }
+
+        [JsonPropertyName("applicationUrl")]
+        public string? ApplicationUrl { get; set; }
+
+        [JsonPropertyName("dotnetRunMessages")]
+        public bool DotNetRunMessages { get; set; }
+
+        [JsonPropertyName("environmentVariables")]
+        public Dictionary<string, string>? EnvironmentVariables { get; set; }
+    }
+
     public const string CommandName = "Project";
 
     public static readonly ProjectLaunchSettingsParser Instance = new();
@@ -17,13 +42,13 @@ internal sealed class ProjectLaunchSettingsParser : LaunchProfileParser
 
     public override LaunchProfileSettings ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
     {
-        var profile = JsonSerializer.Deserialize<ProjectLaunchProfileJson>(json);
+        var profile = JsonSerializer.Deserialize<Json>(json);
         if (profile == null)
         {
             return LaunchProfileSettings.Failure(Resources.LaunchProfileIsNotAJsonObject);
         }
 
-        return LaunchProfileSettings.Success(new ProjectLaunchSettingsModel
+        return LaunchProfileSettings.Success(new ProjectLaunchSettings
         {
             LaunchProfileName = launchProfileName,
             CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs),
