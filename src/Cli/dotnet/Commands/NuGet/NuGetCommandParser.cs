@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 using NuGetWhyCommand = NuGet.CommandLine.XPlat.Commands.Why.WhyCommand;
 
 namespace Microsoft.DotNet.Cli.Commands.NuGet;
@@ -22,10 +22,11 @@ internal static class NuGetCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("nuget", DocsLink)
+        var command = new Command("nuget")
         {
             // some subcommands are not defined here and just forwarded to NuGet app
-            TreatUnmatchedTokensAsErrors = false
+            TreatUnmatchedTokensAsErrors = false,
+            DocsLink = DocsLink
         };
 
         command.Options.Add(new Option<bool>("--version")
@@ -149,7 +150,7 @@ internal static class NuGetCommandParser
         {
             Arity = ArgumentArity.Zero
         });
-        verifyCommand.Options.Add(new ForwardedOption<IEnumerable<string>>(fingerprint)
+        verifyCommand.Options.Add(new Option<IEnumerable<string>>(fingerprint)
             .ForwardAsManyArgumentsEachPrefixedByOption(fingerprint)
             .AllowSingleArgPerToken());
         verifyCommand.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));

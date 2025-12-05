@@ -16,6 +16,7 @@ internal static class HumanReadableDurationFormatter
             terminal.Append('(');
         }
 
+        // TODO: Do these abbrevations (d for days, h for hours, etc) need to be localized?
         if (duration.Days > 0)
         {
             terminal.Append($"{duration.Days}d");

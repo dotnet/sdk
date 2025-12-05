@@ -166,7 +166,7 @@
   <data name="BuildAppFullName" xml:space="preserve">
     <value>.NET Builder</value>
   </data>
-  <data name="BuildCmdNoLogo" xml:space="preserve">
+  <data name="NoLogoOptionDescription" xml:space="preserve">
     <value>Do not display the startup banner or the copyright message.</value>
   </data>
   <data name="BuildConfigurationOptionDescription" xml:space="preserve">
@@ -249,9 +249,6 @@ Paths searched: '{1}', '{2}'.</value>
   </data>
   <data name="CleanAppFullName" xml:space="preserve">
     <value>.NET Clean Command</value>
-  </data>
-  <data name="CleanCmdNoLogo" xml:space="preserve">
-    <value>Do not display the startup banner or the copyright message.</value>
   </data>
   <data name="CleanCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
@@ -377,12 +374,6 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
   </data>
   <data name="CmdDGFileIOException" xml:space="preserve">
     <value>Unable to generate a temporary file for project '{0}'. Cannot add package reference. Clear the temp directory and try again.</value>
-  </data>
-  <data name="CmdDirectoryDescription" xml:space="preserve">
-    <value>Defines the path of directory to run. If not specified, it defaults to the current directory.</value>
-  </data>
-  <data name="CmdDirectoryPathName" xml:space="preserve">
-    <value>DIRECTORY_PATH</value>
   </data>
   <data name="CmdDisableParallelOptionDescription" xml:space="preserve">
     <value>Prevent restoring multiple projects in parallel.</value>
@@ -549,11 +540,14 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdPrereleaseDescription" xml:space="preserve">
     <value>Consider packages with prerelease versions when searching for newer packages. Requires the '--outdated' option.</value>
   </data>
-  <data name="CmdProjectDescription" xml:space="preserve">
-    <value>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</value>
+  <data name="CmdProjectDescriptionFormat" xml:space="preserve">
+    <value>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
   </data>
-  <data name="CmdProjectPathName" xml:space="preserve">
-    <value>PROJECT_PATH</value>
+  <data name="CmdProjectOrSolutionDescriptionFormat" xml:space="preserve">
+    <value>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
+  </data>
+  <data name="CmdProjectOrSolutionPathName" xml:space="preserve">
+    <value>PROJECT_OR_SOLUTION_PATH</value>
   </data>
   <data name="CmdReevaluateOptionDescription" xml:space="preserve">
     <value>Forces restore to reevaluate all dependencies even if a lock file already exists.</value>
@@ -594,10 +588,16 @@ If not specified the file will be generated inside the default 'TestResults' dir
     <value>SETTINGS_FILE</value>
   </data>
   <data name="CmdSolutionDescription" xml:space="preserve">
-    <value>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</value>
+    <value>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="CmdSolutionPathName" xml:space="preserve">
     <value>SOLUTION_PATH</value>
+  </data>
+  <data name="VerbRun" xml:space="preserve">
+    <value>run</value>
+  </data>
+  <data name="VerbTest" xml:space="preserve">
+    <value>test</value>
   </data>
   <data name="CmdSourceOption" xml:space="preserve">
     <value>SOURCE</value>
@@ -704,9 +704,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
     <value>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</value>
     <comment>{Locked="launchSettings.json"}{Locked=".run.json"}</comment>
   </data>
-  <data name="CommandOptionProjectDescription" xml:space="preserve">
-    <value>The path to the project file to run (defaults to the current directory if there is only one project).</value>
-  </data>
   <data name="CommandOptionProjectHelpName" xml:space="preserve">
     <value>PROJECT_PATH</value>
   </data>
@@ -804,8 +801,9 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   <data name="DiscoveringTestsFrom" xml:space="preserve">
     <value>Discovering tests from</value>
   </data>
-  <data name="DotnetTestCommand" xml:space="preserve">
-    <value>.NET Test Command</value>
+  <data name="DotnetTestCommandMTPDescription" xml:space="preserve">
+    <value>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</value>
+    <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</comment>
   </data>
   <data name="DownloadingPackToCacheMessage" xml:space="preserve">
     <value>Downloading pack {0} version {1} to offline cache {2}...</value>
@@ -1097,14 +1095,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Minimum expected tests policy violation, tests ran {0}, minimum expected {1}</value>
     <comment>{0}, {1} number of tests</comment>
   </data>
-  <data name="InvalidProjectDirective" xml:space="preserve">
-    <value>The '#:project' directive is invalid: {0}</value>
-    <comment>{0} is the inner error message.</comment>
-  </data>
-  <data name="MissingDirectiveName" xml:space="preserve">
-    <value>Missing name of '{0}'.</value>
-    <comment>{0} is the directive name like 'package' or 'sdk'.</comment>
-  </data>
   <data name="MsBuildDefinition" xml:space="preserve">
     <value>Run Microsoft Build Engine (MSBuild) commands.</value>
   </data>
@@ -1336,9 +1326,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="PackAppFullName" xml:space="preserve">
     <value>.NET Core NuGet Package Packer</value>
   </data>
-  <data name="PackCmdNoLogo" xml:space="preserve">
-    <value>Do not display the startup banner or the copyright message.</value>
-  </data>
   <data name="PackCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>
@@ -1553,7 +1540,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Convert a file-based program to a project-based program.</value>
   </data>
   <data name="ProjectConvertAskForOutputDirectory" xml:space="preserve">
-    <value>Specify the output directory ({0}):</value>
+    <value>Specify the output directory (press Enter for default: '{0}', directory must not exist):</value>
     <comment>{0} is the default value</comment>
   </data>
   <data name="ProjectConvertDryRun" xml:space="preserve">
@@ -1592,34 +1579,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="ProjectsHeader" xml:space="preserve">
     <value>Project(s)</value>
   </data>
-  <data name="PropertyDirectiveInvalidName" xml:space="preserve">
-    <value>Invalid property name: {0}</value>
-    <comment>{0} is an inner exception message.</comment>
-  </data>
-  <data name="PropertyDirectiveMissingParts" xml:space="preserve">
-    <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</value>
-    <comment>{Locked="#:property"}</comment>
-  </data>
-  <data name="StaticGraphRestoreNotSupported" xml:space="preserve">
-    <value>Static graph restore is not supported for file-based apps. Remove the '#:property'.</value>
-    <comment>{Locked="#:property"}</comment>
-  </data>
-  <data name="DirectiveError" xml:space="preserve">
-    <value>error</value>
-    <comment>Used when reporting directive errors like "file(location): error: message".</comment>
-  </data>
-  <data name="InvalidDirectiveName" xml:space="preserve">
-    <value>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
-    <comment>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</comment>
-  </data>
-  <data name="CannotConvertDirective" xml:space="preserve">
-    <value>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</value>
-    <comment>{Locked="--force"}</comment>
-  </data>
-  <data name="DuplicateDirective" xml:space="preserve">
-    <value>Duplicate directives are not supported: {0}</value>
-    <comment>{0} is the directive type and name.</comment>
-  </data>
   <data name="InvalidOptionForStdin" xml:space="preserve">
     <value>Cannot specify option '{0}' when also using '-' to read the file from standard input.</value>
     <comment>{0} is an option name like '--no-build'.</comment>
@@ -1638,9 +1597,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="PublishAppDescription" xml:space="preserve">
     <value>Publisher for the .NET Platform</value>
-  </data>
-  <data name="PublishCmdNoLogo" xml:space="preserve">
-    <value>Do not display the startup banner or the copyright message.</value>
   </data>
   <data name="PublishConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to publish for. The default is 'Release' for NET 8.0 projects and above, but 'Debug' for older projects.</value>
@@ -1790,6 +1746,21 @@ The current OutputType is '{2}'.</value>
     <value>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</value>
   </data>
+  <data name="RunCommandSelectTargetFrameworkPrompt" xml:space="preserve">
+    <value>Select the target framework to run:</value>
+  </data>
+  <data name="RunCommandMoreFrameworksText" xml:space="preserve">
+    <value>Move up and down to reveal more frameworks</value>
+  </data>
+  <data name="RunCommandSearchPlaceholderText" xml:space="preserve">
+    <value>Type to search</value>
+  </data>
+  <data name="RunCommandAvailableTargetFrameworks" xml:space="preserve">
+    <value>Available target frameworks:</value>
+  </data>
+  <data name="RunCommandExampleText" xml:space="preserve">
+    <value>Example</value>
+  </data>
   <data name="RunCommandProjectAbbreviationDeprecated" xml:space="preserve">
     <value>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</value>
     <comment>{Locked="--project"}</comment>
@@ -1814,6 +1785,30 @@ Your project targets multiple frameworks. Specify which framework to run using '
   </data>
   <data name="RunRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to run for.</value>
+  </data>
+  <data name="CommandOptionDeviceDescription" xml:space="preserve">
+    <value>The device identifier to use for running the application.</value>
+  </data>
+  <data name="CommandOptionDeviceHelpName" xml:space="preserve">
+    <value>DEVICE</value>
+  </data>
+  <data name="CommandOptionListDevicesDescription" xml:space="preserve">
+    <value>List available devices for running the application.</value>
+  </data>
+  <data name="RunCommandAvailableDevices" xml:space="preserve">
+    <value>Available devices:</value>
+  </data>
+  <data name="RunCommandNoDevicesAvailable" xml:space="preserve">
+    <value>No devices are available for this project.</value>
+  </data>
+  <data name="RunCommandSelectDevicePrompt" xml:space="preserve">
+    <value>Select a device to run on:</value>
+  </data>
+  <data name="RunCommandMoreDevicesText" xml:space="preserve">
+    <value>Move up and down to reveal more devices</value>
+  </data>
+  <data name="RunCommandExceptionUnableToRunSpecifyDevice" xml:space="preserve">
+    <value>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</value>
   </data>
   <data name="RuntimeConfigDefinition" xml:space="preserve">
     <value>Path to &lt;application&gt;.runtimeconfig.json file.</value>
@@ -1995,8 +1990,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="TempDirOptionDescription" xml:space="preserve">
     <value>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</value>
   </data>
-  <data name="TestAppFullName" xml:space="preserve">
-    <value>.NET Test Driver</value>
+  <data name="DotnetTestCommandVSTestDescription" xml:space="preserve">
+    <value>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</value>
+    <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</comment>
   </data>
   <data name="TestCmdNoLogo" xml:space="preserve">
     <value>Run test(s), without displaying Microsoft Testplatform banner</value>
@@ -2255,10 +2251,6 @@ and the corresponding package Ids for installed tools using the command
   </data>
   <data name="UnknownRecordsInformationalMessage" xml:space="preserve">
     <value>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</value>
-  </data>
-  <data name="UnrecognizedDirective" xml:space="preserve">
-    <value>Unrecognized directive '{0}'.</value>
-    <comment>{0} is the directive name like 'package' or 'sdk'.</comment>
   </data>
   <data name="UpdateAllOptionDescription" xml:space="preserve">
     <value>Update all tools.</value>
@@ -2655,9 +2647,6 @@ Proceed?</value>
   <data name="DotnetTestPipeOverlapping" xml:space="preserve">
     <value>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</value>
   </data>
-  <data name="DotnetTestPipeIncompleteSize" xml:space="preserve">
-    <value>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</value>
-  </data>
   <data name="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage" xml:space="preserve">
     <value>Method '{0}' did not exit successfully</value>
   </data>
@@ -2701,5 +2690,26 @@ Proceed?</value>
   <data name="DotnetTestMismatchingExecutionId" xml:space="preserve">
     <value>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</value>
     <comment>{Locked="ExecutionId"}</comment>
+  </data>
+  <data name="ErrorColon" xml:space="preserve">
+    <value>error:</value>
+  </data>
+  <data name="TotalColon" xml:space="preserve">
+    <value>total:</value>
+  </data>
+  <data name="Retried" xml:space="preserve">
+    <value>retried</value>
+  </data>
+  <data name="FailedColon" xml:space="preserve">
+    <value>failed:</value>
+  </data>
+  <data name="SucceededColon" xml:space="preserve">
+    <value>succeeded:</value>
+  </data>
+  <data name="SkippedColon" xml:space="preserve">
+    <value>skipped:</value>
+  </data>
+  <data name="DurationColon" xml:space="preserve">
+    <value>duration:</value>
   </data>
 </root>
