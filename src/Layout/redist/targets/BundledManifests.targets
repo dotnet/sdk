@@ -132,7 +132,7 @@
     </GetWorkloadSetFeatureBand>
 
     <PropertyGroup>
-      <RealFormattedManifestPaths>$(RedistInstallerLayoutPath)sdk-manifests\$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>      
+      <RealFormattedManifestPaths>$(RedistInstallerLayoutPath)sdk-manifests\$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>
     </PropertyGroup>
 
     <ItemGroup>

@@ -28,7 +28,7 @@
       <_WorkloadManifestValues Include="FrameworkVersionCurrent" Value="11.0" />
       <_WorkloadManifestValues Include="WorkloadVersion" Value="$(PackageVersion)" />
       <_WorkloadManifestValues Include="RuntimeVersion" Value="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
-      <_WorkloadManifestValues Include="PackageVersionNet10" Value="10.0.$(VersionFeature100ForWorkloads)" />
+      <_WorkloadManifestValues Include="RuntimeVersionNet10" Value="10.0.$(VersionFeature100ForWorkloads)" />
       <_WorkloadManifestValues Include="RuntimeVersionNet9" Value="9.0.$(VersionFeature90ForWorkloads)" />
       <_WorkloadManifestValues Include="RuntimeVersionNet8" Value="8.0.$(VersionFeature80ForWorkloads)" />
       <_WorkloadManifestValues Include="RuntimeVersionNet7" Value="7.0.$(VersionFeature70)" />
