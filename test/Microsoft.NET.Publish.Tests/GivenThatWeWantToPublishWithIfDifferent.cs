@@ -21,6 +21,10 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true
             };
 
+            // Add Program.cs to fix compilation
+            testProject.SourceFiles["Program.cs"] = @"using System;
+class Program { static void Main() => Console.WriteLine(""Hello""); }";
+            
             // Add content files with different CopyToPublishDirectory metadata values
             testProject.SourceFiles["data1.txt"] = "Data file 1 content";
             testProject.SourceFiles["data2.txt"] = "Data file 2 content";
@@ -67,6 +71,10 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true
             };
+
+            // Add Program.cs to fix compilation
+            testProject.SourceFiles["Program.cs"] = @"using System;
+class Program { static void Main() => Console.WriteLine(""Hello""); }";
 
             testProject.SourceFiles["unchangedData.txt"] = "Original content";
             testProject.SourceFiles["changedData.txt"] = "Original content";
@@ -134,6 +142,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true
             };
 
+            testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles["config.json"] = "{ \"setting\": \"value\" }";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -169,6 +178,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true
             };
 
+            testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles["SourceFile.cs"] = @"
 namespace PublishCompileWithIfDifferent
 {
@@ -214,6 +224,10 @@ namespace PublishCompileWithIfDifferent
                 ReferencedProjects = { referencedProject }
             };
 
+            // Add Program.cs to fix compilation
+            mainProject.SourceFiles["Program.cs"] = @"using System;
+class Program { static void Main() => Console.WriteLine(""Hello""); }";
+            
             mainProject.SourceFiles["main.txt"] = "Main project content";
 
             var testAsset = _testAssetsManager.CreateTestProject(mainProject);
@@ -261,6 +275,7 @@ namespace PublishCompileWithIfDifferent
                 IsExe = true
             };
 
+            testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles["always.txt"] = "Always copy";
             testProject.SourceFiles["preserveNewest.txt"] = "PreserveNewest copy";
             testProject.SourceFiles["ifDifferent.txt"] = "IfDifferent copy";
@@ -302,6 +317,7 @@ namespace PublishCompileWithIfDifferent
                 IsExe = true
             };
 
+            testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles["source\\data.txt"] = "Data in subfolder";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -340,6 +356,7 @@ namespace PublishCompileWithIfDifferent
             };
 
             testProject.AdditionalProperties["SelfContained"] = "true";
+            testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
             testProject.SourceFiles["appdata.txt"] = "Application data";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
