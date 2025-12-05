@@ -9,12 +9,12 @@ namespace Microsoft.NET.TestFramework.Commands
     {
         //  Encourage use of the other overload, which is generally simpler to use
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public BuildCommand(ITestOutputHelper log, string projectRootPath, string relativePathToProject = null)
+        public BuildCommand(ITestOutputHelper log, string projectRootPath, string? relativePathToProject = null)
             : base(log, "Build", projectRootPath, relativePathToProject)
         {
         }
 
-        public BuildCommand(TestAsset testAsset, string relativePathToProject = null)
+        public BuildCommand(TestAsset testAsset, string? relativePathToProject = null)
             : base(testAsset, "Build", relativePathToProject)
         {
         }
