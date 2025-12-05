@@ -896,6 +896,8 @@ _testhost() {
                         '--launch-profile=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
                         '-lp=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
                         '--no-launch-profile[Do not attempt to use launchSettings.json or \[app\].run.json to configure the application.]' \
+                        '--device=[The device identifier to use for running the application.]:DEVICE: ' \
+                        '--list-devices[List available devices for running the application.]' \
                         '--no-build[Do not build the project before running. Implies --no-restore.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--no-restore[Do not restore the project before building.]' \
@@ -1984,7 +1986,7 @@ _testhost__workload_commands() {
         'install:Install one or more workloads.' \
         'update:Update all installed workloads.' \
         'list:List workloads available.' \
-        'search:Search for available workloads.' \
+        'search:Search for available workloads or workload versions.' \
         'uninstall:Uninstall one or more workloads.' \
         'repair:Repair workload installations.' \
         'restore:Restore workloads required for a project.' \
