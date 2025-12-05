@@ -318,16 +318,16 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             };
 
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
-            testProject.SourceFiles["source\\data.txt"] = "Data in subfolder";
+            testProject.SourceFiles[Path.Combine("source", "data.txt")] = "Data in subfolder";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var projectFile = Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
-            projectContent = projectContent.Replace("</Project>", @"
+            projectContent = projectContent.Replace("</Project>", $@"
   <ItemGroup>
-    <Content Include=""source\data.txt"" CopyToPublishDirectory=""IfDifferent"">
-      <TargetPath>output\data.txt</TargetPath>
+    <Content Include=""{Path.Combine("source", "data.txt")}"" CopyToPublishDirectory=""IfDifferent"">
+      <TargetPath>{Path.Combine("output", "data.txt")}</TargetPath>
     </Content>
   </ItemGroup>
 </Project>");

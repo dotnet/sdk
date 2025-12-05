@@ -839,21 +839,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     so they can be processed by GetCopyToPublishDirectoryItems.
     ============================================================
     -->
-<!--
   <Target Name="_IncludeContentItemsWithOnlyPublishMetadata"
           AfterTargets="AssignTargetPaths">
     <ItemGroup>
       <_ContentWithPublishMetadata Include="@(Content)"
                                    Condition="'%(Content.CopyToPublishDirectory)' != '' and '%(Content.CopyToPublishDirectory)' != 'Never' and '%(Content.CopyToOutputDirectory)' == ''">
-        <TargetPath Condition="'%(Content.Link)' != ''">%(Content.Link)</TargetPath>
-        <TargetPath Condition="'%(Content.Link)' == '' and '%(Content.DefiningProjectDirectory)' != '' and '%(Content.DefiningProjectFullPath)' != ''">$([MSBuild]::MakeRelative(%(Content.DefiningProjectDirectory), %(Content.FullPath)))</TargetPath>
-        <TargetPath Condition="'%(Content.Link)' == '' and ('%(Content.DefiningProjectDirectory)' == '' or '%(Content.DefiningProjectFullPath)' == '')">$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(Content.FullPath)))</TargetPath>
+        <!-- Preserve existing TargetPath if already set, otherwise compute it -->
+        <TargetPath Condition="'%(Content.TargetPath)' != ''">%(Content.TargetPath)</TargetPath>
+        <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' != ''">%(Content.Link)</TargetPath>
+        <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' == '' and '%(Content.DefiningProjectDirectory)' != '' and '%(Content.DefiningProjectFullPath)' != ''">$([MSBuild]::MakeRelative(%(Content.DefiningProjectDirectory), %(Content.FullPath)))</TargetPath>
+        <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' == '' and ('%(Content.DefiningProjectDirectory)' == '' or '%(Content.DefiningProjectFullPath)' == '')">$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(Content.FullPath)))</TargetPath>
       </_ContentWithPublishMetadata>
       
       <ContentWithTargetPath Include="@(_ContentWithPublishMetadata)" />
     </ItemGroup>
   </Target>
--->
   <!--
     ============================================================
                                         GetCopyToPublishDirectoryItems
