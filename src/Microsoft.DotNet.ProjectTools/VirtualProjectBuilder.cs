@@ -9,6 +9,7 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.Utilities;
 
@@ -520,6 +521,32 @@ internal sealed class VirtualProjectBuilder
                       <Import Project="{EscapeValue(project)}" Sdk="{EscapeValue(sdk.Name)}" Version="{EscapeValue(sdk.Version)}" />
                     """);
             }
+        }
+    }
+
+    public static SourceText? RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text)
+    {
+        if (directives.Length == 0)
+        {
+            return null;
+        }
+
+        Debug.Assert(directives.OrderBy(d => d.Info.Span.Start).SequenceEqual(directives), "Directives should be ordered by source location.");
+
+        for (int i = directives.Length - 1; i >= 0; i--)
+        {
+            var directive = directives[i];
+            text = text.Replace(directive.Info.Span, string.Empty);
+        }
+
+        return text;
+    }
+
+    public static void RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text, string filePath)
+    {
+        if (RemoveDirectivesFromFile(directives, text) is { } modifiedText)
+        {
+            new SourceFile(filePath, modifiedText).Save();
         }
     }
 }

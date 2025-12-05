@@ -1065,32 +1065,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-    public static SourceText? RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text)
-    {
-        if (directives.Length == 0)
-        {
-            return null;
-        }
-
-        Debug.Assert(directives.OrderBy(d => d.Info.Span.Start).SequenceEqual(directives), "Directives should be ordered by source location.");
-
-        for (int i = directives.Length - 1; i >= 0; i--)
-        {
-            var directive = directives[i];
-            text = text.Replace(directive.Info.Span, string.Empty);
-        }
-
-        return text;
-    }
-
-    public static void RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text, string filePath)
-    {
-        if (RemoveDirectivesFromFile(directives, text) is { } modifiedText)
-        {
-            new SourceFile(filePath, modifiedText).Save();
-        }
-    }
-
     public static readonly ErrorReporter ThrowingReporter =
         static (sourceFile, textSpan, message) => throw new GracefulException($"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}");
 }
