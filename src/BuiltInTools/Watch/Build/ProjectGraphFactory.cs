@@ -2,12 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -49,7 +47,7 @@ internal sealed class ProjectGraphFactory
 
         if (rootProject.EntryPointFilePath != null)
         {
-            _virtualRootProjectBuilder = new VirtualProjectBuilder(rootProject.EntryPointFilePath);
+            _virtualRootProjectBuilder = new VirtualProjectBuilder(rootProject.EntryPointFilePath, "net10.0"); // TODO
         }
     }
 
@@ -64,7 +62,11 @@ internal sealed class ProjectGraphFactory
         var entryPoint = new ProjectGraphEntryPoint(_rootProject.ProjectGraphPath, _globalOptions);
         try
         {
-            return new ProjectGraph([entryPoint], _collection, CreateProjectInstance, cancellationToken);
+            return new ProjectGraph([entryPoint], _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, logger), cancellationToken);
+        }
+        catch (ProjectCreationFailedException)
+        {
+            // Errors have already been reported.
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {
@@ -102,11 +104,28 @@ internal sealed class ProjectGraphFactory
         return null;
     }
 
-    private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection)
+    private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection, ILogger logger)
     {
         if (_virtualRootProjectBuilder != null && projectPath == _rootProject.ProjectGraphPath)
         {
-            return _virtualRootProjectBuilder.CreateProjectInstance(projectCollection);
+            var anyError = false;
+
+            _virtualRootProjectBuilder.CreateProjectInstance(
+                projectCollection,
+                (sourceFile, textSpan, message) =>
+                {
+                    anyError = true;
+                    logger.LogError("{Location}: {Message}", sourceFile.GetLocationString(textSpan), message);
+                },
+                out var projectInstance,
+                out _);
+
+            if (anyError)
+            {
+                throw new ProjectCreationFailedException();
+            }
+
+            return projectInstance;
         }
 
         return new ProjectInstance(
@@ -116,4 +135,6 @@ internal sealed class ProjectGraphFactory
             subToolsetVersion: null,
             projectCollection);
     }
+
+    private sealed class ProjectCreationFailedException() : Exception();
 }

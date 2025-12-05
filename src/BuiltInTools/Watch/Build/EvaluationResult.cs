@@ -77,7 +77,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             {
                 if (!rootNode.ProjectInstance.Build([TargetNames.Restore], loggers))
                 {
-                    logger.LogError("Failed to restore '{Path}'.", rootProjectPath);
+                    logger.LogError("Failed to restore '{Path}'.", rootNode.ProjectInstance.FullPath);
                     loggers.ReportOutput();
                     return null;
                 }
