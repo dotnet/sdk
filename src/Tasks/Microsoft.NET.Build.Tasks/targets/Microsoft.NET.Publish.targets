@@ -411,22 +411,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
   </Target>
 
-  <UsingTask TaskName="ResolveReadyToRunCompilers" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <Target Name="ResolveReadyToRunCompilers">
-    <ResolveReadyToRunCompilers RuntimePacks="@(ResolvedRuntimePack)"
-                                Crossgen2Packs="@(ResolvedCrossgen2Pack)"
-                                TargetingPacks="@(ResolvedTargetingPack)"
-                                RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
-                                NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
-                                EmitSymbols="$(PublishReadyToRunEmitSymbols)"
-                                ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
-                                PerfmapFormatVersion="$(PublishReadyToRunPerfmapFormatVersion)">
-
-      <Output TaskParameter="CrossgenTool" ItemName="CrossgenTool" />
-      <Output TaskParameter="Crossgen2Tool" ItemName="Crossgen2Tool" />
-    </ResolveReadyToRunCompilers>
-  </Target>
-
   <!--
     ============================================================
                                         _ComputeResolvedFilesToPublishTypes
