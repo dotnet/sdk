@@ -90,18 +90,11 @@ internal class DotnetArchiveExtractor : IDisposable
         // Step 2: If there is an existing muxer, rename it to .tmp
         if (hadExistingMuxer)
         {
-            try
+            if (File.Exists(muxerTempPath))
             {
-                if (File.Exists(muxerTempPath))
-                {
-                    File.Delete(muxerTempPath);
-                }
-                File.Move(muxerTargetPath, muxerTempPath);
+                File.Delete(muxerTempPath);
             }
-            catch
-            {
-                // If we can't rename, just continue - extraction will overwrite
-            }
+            File.Move(muxerTargetPath, muxerTempPath);
         }
 
         // Step 3: Extract the archive (all files directly since muxer has been renamed)
@@ -117,37 +110,24 @@ internal class DotnetArchiveExtractor : IDisposable
         // Step 4: If there was a previous muxer, compare versions and restore if needed
         if (hadExistingMuxer && File.Exists(muxerTempPath))
         {
-            Version? newMuxerVersion = GetLatestRuntimeVersionFromInstallRoot(targetDir);
+            // Get the runtime version from the archive we just extracted
+            Version? newMuxerVersion = GetRuntimeVersionFromArchive(archivePath);
 
             // If the new version is less than the old version, restore the old muxer
             if (newMuxerVersion != null && existingMuxerVersion != null && newMuxerVersion < existingMuxerVersion)
             {
-                try
+                if (File.Exists(muxerTargetPath))
                 {
-                    if (File.Exists(muxerTargetPath))
-                    {
-                        File.Delete(muxerTargetPath);
-                    }
-                    File.Move(muxerTempPath, muxerTargetPath);
+                    File.Delete(muxerTargetPath);
                 }
-                catch
-                {
-                    // If we can't restore, the new muxer will remain
-                }
+                File.Move(muxerTempPath, muxerTargetPath);
             }
             else
             {
                 // New version is >= old version, or we couldn't determine versions - keep new muxer
-                try
+                if (File.Exists(muxerTempPath))
                 {
-                    if (File.Exists(muxerTempPath))
-                    {
-                        File.Delete(muxerTempPath);
-                    }
-                }
-                catch
-                {
-                    // Ignore cleanup errors
+                    File.Delete(muxerTempPath);
                 }
             }
         }
@@ -158,33 +138,144 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     private static Version? GetLatestRuntimeVersionFromInstallRoot(string installRoot)
     {
-        try
-        {
-            var runtimePath = Path.Combine(installRoot, "shared", "Microsoft.NETCore.App");
-            if (!Directory.Exists(runtimePath))
-            {
-                return null;
-            }
-
-            Version? highestVersion = null;
-            foreach (var dir in Directory.GetDirectories(runtimePath))
-            {
-                var versionString = Path.GetFileName(dir);
-                if (Version.TryParse(versionString, out Version? version))
-                {
-                    if (highestVersion == null || version > highestVersion)
-                    {
-                        highestVersion = version;
-                    }
-                }
-            }
-
-            return highestVersion;
-        }
-        catch
+        var runtimePath = Path.Combine(installRoot, "shared", "Microsoft.NETCore.App");
+        if (!Directory.Exists(runtimePath))
         {
             return null;
         }
+
+        Version? highestVersion = null;
+        foreach (var dir in Directory.GetDirectories(runtimePath))
+        {
+            var versionString = Path.GetFileName(dir);
+            if (Version.TryParse(versionString, out Version? version))
+            {
+                if (highestVersion == null || version > highestVersion)
+                {
+                    highestVersion = version;
+                }
+            }
+        }
+
+        return highestVersion;
+    }
+
+    /// <summary>
+    /// Gets the runtime version from an archive by examining the runtime directories.
+    /// </summary>
+    private static Version? GetRuntimeVersionFromArchive(string archivePath)
+    {
+        if (archivePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            using var zip = ZipFile.OpenRead(archivePath);
+            return GetRuntimeVersionFromZipEntries(zip.Entries);
+        }
+        else if (archivePath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) || archivePath.EndsWith(".tar", StringComparison.OrdinalIgnoreCase))
+        {
+            string tarPath = archivePath;
+            bool needsCleanup = false;
+
+            if (archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
+            {
+                tarPath = DecompressTarGzToTemp(archivePath);
+                needsCleanup = true;
+            }
+
+            try
+            {
+                using var tarStream = File.OpenRead(tarPath);
+                using var tarReader = new TarReader(tarStream);
+                return GetRuntimeVersionFromTarEntries(tarReader);
+            }
+            finally
+            {
+                if (needsCleanup && File.Exists(tarPath))
+                {
+                    File.Delete(tarPath);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Decompresses a .tar.gz file to a temporary location.
+    /// </summary>
+    private static string DecompressTarGzToTemp(string gzPath)
+    {
+        string tempPath = Path.Combine(Path.GetTempPath(), $"dotnet-{Guid.NewGuid()}.tar");
+        using FileStream originalFileStream = File.OpenRead(gzPath);
+        using FileStream decompressedFileStream = File.Create(tempPath);
+        using GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress);
+        decompressionStream.CopyTo(decompressedFileStream);
+        return tempPath;
+    }
+
+    /// <summary>
+    /// Gets the runtime version from zip archive entries.
+    /// </summary>
+    private static Version? GetRuntimeVersionFromZipEntries(IEnumerable<ZipArchiveEntry> entries)
+    {
+        Version? highestVersion = null;
+
+        foreach (var entry in entries)
+        {
+            // Look for shared/Microsoft.NETCore.App/{version}/ pattern
+            if (entry.FullName.Contains("shared/Microsoft.NETCore.App/", StringComparison.OrdinalIgnoreCase) ||
+                entry.FullName.Contains("shared\\Microsoft.NETCore.App\\", StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = entry.FullName.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+                var appIndex = Array.FindIndex(parts, p => p.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase));
+
+                if (appIndex >= 0 && appIndex + 1 < parts.Length)
+                {
+                    var versionString = parts[appIndex + 1];
+                    if (Version.TryParse(versionString, out Version? version))
+                    {
+                        if (highestVersion == null || version > highestVersion)
+                        {
+                            highestVersion = version;
+                        }
+                    }
+                }
+            }
+        }
+
+        return highestVersion;
+    }
+
+    /// <summary>
+    /// Gets the runtime version from tar archive entries.
+    /// </summary>
+    private static Version? GetRuntimeVersionFromTarEntries(TarReader tarReader)
+    {
+        Version? highestVersion = null;
+        TarEntry? entry;
+
+        while ((entry = tarReader.GetNextEntry()) is not null)
+        {
+            // Look for shared/Microsoft.NETCore.App/{version}/ pattern
+            if (entry.Name.Contains("shared/Microsoft.NETCore.App/", StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = entry.Name.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                var appIndex = Array.FindIndex(parts, p => p.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase));
+
+                if (appIndex >= 0 && appIndex + 1 < parts.Length)
+                {
+                    var versionString = parts[appIndex + 1];
+                    if (Version.TryParse(versionString, out Version? version))
+                    {
+                        if (highestVersion == null || version > highestVersion)
+                        {
+                            highestVersion = version;
+                        }
+                    }
+                }
+            }
+        }
+
+        return highestVersion;
     }
 
     /// <summary>

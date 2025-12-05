@@ -83,9 +83,9 @@ public class LibraryTests
         var muxerPath = Path.Combine(testEnv.InstallPath, DotnetupUtilities.GetDotnetExeName());
         File.Exists(muxerPath).Should().BeTrue("muxer should exist after SDK 9.0 installation");
 
-        var versionAfterSdk9 = GetRuntimeVersionFromInstallRoot(testEnv.InstallPath);
-        Log.WriteLine($"Runtime version after SDK 9.0 install: {versionAfterSdk9}");
-        versionAfterSdk9.Should().NotBeNull("runtime should exist after SDK 9.0 installation");
+        var muxerHashAfterSdk9 = GetFileHash(muxerPath);
+        var muxerSizeAfterSdk9 = new FileInfo(muxerPath).Length;
+        Log.WriteLine($"Muxer after SDK 9.0 install - Size: {muxerSizeAfterSdk9}, Hash: {muxerHashAfterSdk9}");
 
         // Install .NET SDK 10.0 second
         var sdk10Version = releaseInfoProvider.GetLatestVersion(InstallComponent.SDK, "10.0");
@@ -95,12 +95,12 @@ public class LibraryTests
             InstallComponent.SDK,
             sdk10Version!);
 
-        var versionAfterSdk10 = GetRuntimeVersionFromInstallRoot(testEnv.InstallPath);
-        Log.WriteLine($"Runtime version after SDK 10.0 install: {versionAfterSdk10}");
-        versionAfterSdk10.Should().NotBeNull("runtime should exist after SDK 10.0 installation");
+        var muxerHashAfterSdk10 = GetFileHash(muxerPath);
+        var muxerSizeAfterSdk10 = new FileInfo(muxerPath).Length;
+        Log.WriteLine($"Muxer after SDK 10.0 install - Size: {muxerSizeAfterSdk10}, Hash: {muxerHashAfterSdk10}");
 
-        // Verify muxer was updated to newer version
-        versionAfterSdk10.Should().BeGreaterThan(versionAfterSdk9!, "muxer should be updated when installing newer SDK");
+        // Verify muxer was updated (file changed)
+        muxerHashAfterSdk10.Should().NotBe(muxerHashAfterSdk9, "muxer file should be updated when installing newer SDK");
     }
 
     [Fact]
@@ -124,9 +124,9 @@ public class LibraryTests
         var muxerPath = Path.Combine(testEnv.InstallPath, DotnetupUtilities.GetDotnetExeName());
         File.Exists(muxerPath).Should().BeTrue("muxer should exist after SDK 10.0 installation");
 
-        var versionAfterSdk10 = GetRuntimeVersionFromInstallRoot(testEnv.InstallPath);
-        Log.WriteLine($"Runtime version after SDK 10.0 install: {versionAfterSdk10}");
-        versionAfterSdk10.Should().NotBeNull("runtime should exist after SDK 10.0 installation");
+        var muxerHashAfterSdk10 = GetFileHash(muxerPath);
+        var muxerSizeAfterSdk10 = new FileInfo(muxerPath).Length;
+        Log.WriteLine($"Muxer after SDK 10.0 install - Size: {muxerSizeAfterSdk10}, Hash: {muxerHashAfterSdk10}");
 
         // Install .NET SDK 9.0 second
         var sdk9Version = releaseInfoProvider.GetLatestVersion(InstallComponent.SDK, "9.0");
@@ -136,42 +136,20 @@ public class LibraryTests
             InstallComponent.SDK,
             sdk9Version!);
 
-        var versionAfterSdk9 = GetRuntimeVersionFromInstallRoot(testEnv.InstallPath);
-        Log.WriteLine($"Runtime version after SDK 9.0 install: {versionAfterSdk9}");
-        versionAfterSdk9.Should().NotBeNull("runtime should exist after SDK 9.0 installation");
+        var muxerHashAfterSdk9 = GetFileHash(muxerPath);
+        var muxerSizeAfterSdk9 = new FileInfo(muxerPath).Length;
+        Log.WriteLine($"Muxer after SDK 9.0 install - Size: {muxerSizeAfterSdk9}, Hash: {muxerHashAfterSdk9}");
 
-        // Verify muxer was NOT downgraded
-        versionAfterSdk9.Should().Be(versionAfterSdk10, "muxer should not be downgraded when installing older SDK");
+        // Verify muxer was NOT downgraded (file unchanged)
+        muxerHashAfterSdk9.Should().Be(muxerHashAfterSdk10, "muxer file should not be downgraded when installing older SDK");
+        muxerSizeAfterSdk9.Should().Be(muxerSizeAfterSdk10, "muxer file size should not change when installing older SDK");
     }
 
-    private static Version? GetRuntimeVersionFromInstallRoot(string installRoot)
+    private static string GetFileHash(string filePath)
     {
-        try
-        {
-            var runtimePath = Path.Combine(installRoot, "shared", "Microsoft.NETCore.App");
-            if (!Directory.Exists(runtimePath))
-            {
-                return null;
-            }
-
-            Version? highestVersion = null;
-            foreach (var dir in Directory.GetDirectories(runtimePath))
-            {
-                var versionString = Path.GetFileName(dir);
-                if (Version.TryParse(versionString, out Version? version))
-                {
-                    if (highestVersion == null || version > highestVersion)
-                    {
-                        highestVersion = version;
-                    }
-                }
-            }
-
-            return highestVersion;
-        }
-        catch
-        {
-            return null;
-        }
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        using var stream = File.OpenRead(filePath);
+        var hash = sha256.ComputeHash(stream);
+        return BitConverter.ToString(hash).Replace("-", "");
     }
 }
