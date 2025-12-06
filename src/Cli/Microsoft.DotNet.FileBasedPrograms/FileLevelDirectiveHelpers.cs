@@ -223,23 +223,40 @@ internal static class FileLevelDirectiveHelpers
     }
 }
 
-internal readonly record struct SourceFile(string Path, SourceText Text)
+internal readonly record struct SourceFile(string Path, SourceText Text, bool HasUtf8Bom = false)
 {
     public static SourceFile Load(string filePath)
     {
         using var stream = File.OpenRead(filePath);
-        return new SourceFile(filePath, SourceText.From(stream, Encoding.UTF8));
+        bool hasUtf8Bom = DetectUtf8Bom(stream);
+        stream.Position = 0; // Reset stream position after BOM detection
+        return new SourceFile(filePath, SourceText.From(stream, Encoding.UTF8), hasUtf8Bom);
+    }
+
+    private static bool DetectUtf8Bom(Stream stream)
+    {
+        // UTF-8 BOM is 0xEF 0xBB 0xBF
+        if (stream.Length < 3)
+        {
+            return false;
+        }
+
+        byte[] buffer = new byte[3];
+        int bytesRead = stream.Read(buffer, 0, 3);
+        return bytesRead == 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF;
     }
 
     public SourceFile WithText(SourceText newText)
     {
-        return new SourceFile(Path, newText);
+        return new SourceFile(Path, newText, HasUtf8Bom);
     }
 
     public void Save()
     {
         using var stream = File.Open(Path, FileMode.Create, FileAccess.Write);
-        using var writer = new StreamWriter(stream, Encoding.UTF8);
+        // Use UTF8Encoding with encoderShouldEmitUTF8Identifier set to match the original file
+        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: HasUtf8Bom);
+        using var writer = new StreamWriter(stream, encoding);
         Text.Write(writer);
     }
 

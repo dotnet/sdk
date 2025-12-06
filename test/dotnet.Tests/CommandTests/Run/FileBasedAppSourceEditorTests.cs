@@ -517,6 +517,77 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
+    /// <summary>
+    /// Verifies that files without UTF-8 BOM don't get one added when saved.
+    /// This is critical for shebang (#!) scripts on Unix-like systems.
+    /// </summary>
+    [Fact]
+    public void PreservesNoBomEncoding()
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.cs");
+        try
+        {
+            // Create a file without BOM
+            var content = "#!/usr/bin/env dotnet run\nConsole.WriteLine();";
+            File.WriteAllText(tempFile, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            // Load, modify, and save
+            var sourceFile = SourceFile.Load(tempFile);
+            var editor = FileBasedAppSourceEditor.Load(sourceFile);
+            editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" });
+            editor.SourceFile.Save();
+
+            // Verify no BOM was added
+            var bytes = File.ReadAllBytes(tempFile);
+            Assert.False(bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF,
+                "File should not have UTF-8 BOM");
+
+            // Verify shebang is still first
+            var savedContent = File.ReadAllText(tempFile);
+            Assert.StartsWith("#!/usr/bin/env dotnet run", savedContent);
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Verifies that files with UTF-8 BOM preserve it when saved.
+    /// </summary>
+    [Fact]
+    public void PreservesBomEncoding()
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.cs");
+        try
+        {
+            // Create a file with BOM
+            var content = "Console.WriteLine();";
+            File.WriteAllText(tempFile, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+            // Load, modify, and save
+            var sourceFile = SourceFile.Load(tempFile);
+            var editor = FileBasedAppSourceEditor.Load(sourceFile);
+            editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" });
+            editor.SourceFile.Save();
+
+            // Verify BOM is still present
+            var bytes = File.ReadAllBytes(tempFile);
+            Assert.True(bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF,
+                "File should have UTF-8 BOM");
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
+        }
+    }
+
     private void Verify(
         string input,
         params ReadOnlySpan<(Action<FileBasedAppSourceEditor> action, string expectedOutput)> verify)
