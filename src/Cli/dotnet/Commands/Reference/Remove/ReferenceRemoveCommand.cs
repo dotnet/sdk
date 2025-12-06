@@ -19,10 +19,10 @@ internal class ReferenceRemoveCommand : CommandBase
     public ReferenceRemoveCommand(
         ParseResult parseResult) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
-            parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument);
-        _arguments = parseResult.GetValue(ReferenceRemoveCommandParser.ProjectPathArgument).ToList().AsReadOnly();
+        _fileOrDirectory = parseResult.HasOption(ReferenceCommandDefinition.ProjectOption) ?
+            parseResult.GetValue(ReferenceCommandDefinition.ProjectOption) :
+            parseResult.GetValue(PackageCommandDefinition.ProjectOrFileArgument);
+        _arguments = parseResult.GetValue(ReferenceRemoveCommandDefinition.ProjectPathArgument).ToList().AsReadOnly();
 
         if (_arguments.Count == 0)
         {
@@ -48,7 +48,7 @@ internal class ReferenceRemoveCommand : CommandBase
         });
 
         int numberOfRemovedReferences = msbuildProj.RemoveProjectToProjectReferences(
-            _parseResult.GetValue(ReferenceRemoveCommandParser.FrameworkOption),
+            _parseResult.GetValue(ReferenceRemoveCommandDefinition.FrameworkOption),
             references);
 
         if (numberOfRemovedReferences != 0)

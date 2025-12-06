@@ -14,7 +14,7 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
 {
     public override int Execute()
     {
-        bool dryRun = _parseResult.GetValue(CleanFileBasedAppArtifactsCommandParser.DryRunOption);
+        bool dryRun = _parseResult.GetValue(CleanFileBasedAppArtifactsCommandDefinition.DryRunOption);
 
         using var metadataFileStream = OpenMetadataFile();
 
@@ -70,7 +70,7 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
 
         Reporter.Output.WriteLine(CliCommandStrings.CleanFileBasedAppArtifactsScanning, directory.FullName);
 
-        var days = _parseResult.GetValue(CleanFileBasedAppArtifactsCommandParser.DaysOption);
+        var days = _parseResult.GetValue(CleanFileBasedAppArtifactsCommandDefinition.DaysOption);
         var cutoff = DateTime.UtcNow.AddDays(-days);
 
         foreach (var subdir in directory.GetDirectories())
@@ -89,7 +89,7 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
 
     private FileStream? OpenMetadataFile()
     {
-        if (!_parseResult.GetValue(CleanFileBasedAppArtifactsCommandParser.AutomaticOption))
+        if (!_parseResult.GetValue(CleanFileBasedAppArtifactsCommandDefinition.AutomaticOption))
         {
             return null;
         }
@@ -127,8 +127,8 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
                 Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
                 [
                     CleanCommandParser.GetCommand().Name,
-                    CleanFileBasedAppArtifactsCommandParser.Command.Name,
-                    CleanFileBasedAppArtifactsCommandParser.AutomaticOption.Name,
+                    CleanFileBasedAppArtifactsCommandDefinition.Name,
+                    CleanFileBasedAppArtifactsCommandDefinition.AutomaticOption.Name,
                 ]),
                 UseShellExecute = false,
                 RedirectStandardInput = true,

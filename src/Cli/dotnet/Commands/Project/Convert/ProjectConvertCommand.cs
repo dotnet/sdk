@@ -15,9 +15,9 @@ namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
 internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
+    private readonly string _file = parseResult.GetValue(ProjectConvertCommandDefinition.FileArgument) ?? string.Empty;
     private readonly string? _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
-    private readonly bool _force = parseResult.GetValue(ProjectConvertCommandParser.ForceOption);
+    private readonly bool _force = parseResult.GetValue(ProjectConvertCommandDefinition.ForceOption);
 
     public override int Execute()
     {
@@ -52,7 +52,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
 
-        bool dryRun = _parseResult.GetValue(ProjectConvertCommandParser.DryRunOption);
+        bool dryRun = _parseResult.GetValue(ProjectConvertCommandDefinition.DryRunOption);
 
         CreateDirectory(targetDirectory);
 

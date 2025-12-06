@@ -369,12 +369,12 @@ public static class Parser
             {
                 new VSTestForwardingApp(helpArgs).Execute();
             }
-            else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
+            else if (command.Name.Equals(FormatCommandDefinition.Name))
             {
-                var arguments = context.ParseResult.GetValue(FormatCommandParser.Arguments);
+                var arguments = context.ParseResult.GetValue(FormatCommandDefinition.Arguments);
                 new FormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
-            else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
+            else if (command.Name.Equals(FsiCommandDefinition.Name))
             {
                 new FsiForwardingApp(helpArgs).Execute();
             }
@@ -386,17 +386,17 @@ public static class Parser
                     block(context);
                 }
             }
-            else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
+            else if (command.Name.Equals(FormatCommandDefinition.Name))
             {
                 new FormatForwardingApp(helpArgs).Execute();
             }
-            else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
+            else if (command.Name.Equals(FsiCommandDefinition.Name))
             {
                 new FsiForwardingApp(helpArgs).Execute();
             }
             else
             {
-                if (command.Name.Equals(ListReferenceCommandParser.GetCommand().Name))
+                if (command.Name.Equals(ListReferenceCommandDefinition.Name))
                 {
                     Command listCommand = command.Parents.Single() as Command;
 
@@ -405,14 +405,14 @@ public static class Parser
                         if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
                         {
                             // Name is immutable now, so we create a new Argument with the right name..
-                            listCommand.Arguments[i] = ListCommandParser.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
+                            listCommand.Arguments[i] = ListCommandDefinition.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
                         }
                     }
                 }
-                else if (command.Name.Equals(AddPackageCommandParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
+                else if (command.Name.Equals(AddPackageCommandDefinition.Name) || command.Name.Equals(AddCommandDefinition.Name))
                 {
                     // Don't show package completions in help
-                    PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
+                    PackageAddCommandDefinition.CmdPackageArgument.CompletionSources.Clear();
                 }
                 else if (command.Name.Equals(WorkloadSearchCommandParser.GetCommand().Name))
                 {
