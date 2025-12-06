@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.DotNet.Cli.Commands.Workload.Clean;
@@ -43,7 +41,7 @@ internal static class WorkloadCommandDefinition
         Action = new ShowWorkloadsVersionOption()
     };
 
-    internal static string GetWorkloadsVersion(WorkloadInfoHelper workloadInfoHelper = null)
+    internal static string GetWorkloadsVersion(WorkloadInfoHelper? workloadInfoHelper = null)
     {
         workloadInfoHelper ??= new WorkloadInfoHelper(false);
 
@@ -53,7 +51,7 @@ internal static class WorkloadCommandDefinition
         return versionInfo.Version + (versionInfo.IsInstalled ? string.Empty : ' ' + CliCommandStrings.WorkloadVersionNotInstalledShort);
     }
 
-    internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null, bool showVersion = true)
+    internal static void ShowWorkloadsInfo(ParseResult? parseResult = null, WorkloadInfoHelper? workloadInfoHelper = null, IReporter? reporter = null, string? dotnetDir = null, bool showVersion = true)
     {
         workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
         reporter ??= Reporter.Output;
@@ -87,9 +85,9 @@ internal static class WorkloadCommandDefinition
 
         if (versionInfo.IsInstalled)
         {
-            IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
-            InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
-            string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
+            var installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
+            var installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
+            var dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
 
             if (installedWorkloads.Count == 0)
             {
