@@ -35,7 +35,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         string projectFilePath;
         if (!File.Exists(fileOrDirectory))
         {
-            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory).FullName;
+            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory);
         }
         else
         {

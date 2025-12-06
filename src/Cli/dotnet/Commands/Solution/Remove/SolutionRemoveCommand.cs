@@ -40,7 +40,7 @@ internal class SolutionRemoveCommand : CommandBase
                 .Select(p => Path.GetRelativePath(
                     Path.GetDirectoryName(solutionFileFullPath),
                     Directory.Exists(p)
-                        ? MsbuildProject.GetProjectFileFromDirectory(p).FullName
+                        ? MsbuildProject.GetProjectFileFromDirectory(p)
                         : p));
 
             RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();

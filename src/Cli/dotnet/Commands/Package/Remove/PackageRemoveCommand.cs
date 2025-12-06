@@ -34,7 +34,7 @@ internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parse
         string projectFilePath;
         if (!File.Exists(fileOrDirectory))
         {
-            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory).FullName;
+            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory);
         }
         else
         {
