@@ -520,8 +520,8 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     /// <summary>
     /// Verifies that files without UTF-8 BOM don't get one added when saved.
     /// This is critical for shebang (#!) scripts on Unix-like systems.
-    /// </summary>
     /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
+    /// </summary>
     [Fact]
     public void PreservesNoBomEncoding()
     {
@@ -550,8 +550,8 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
 
     /// <summary>
     /// Verifies that files with UTF-8 BOM preserve it when saved.
-    /// </summary>
     /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
+    /// </summary>
     [Fact]
     public void PreservesBomEncoding()
     {
