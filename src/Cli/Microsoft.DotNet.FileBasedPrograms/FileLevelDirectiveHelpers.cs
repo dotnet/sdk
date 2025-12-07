@@ -258,30 +258,8 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
     public static SourceFile Load(string filePath)
     {
         using var stream = File.OpenRead(filePath);
-        // Detect BOM to determine the appropriate encoding
-        Encoding encoding = DetectEncoding(stream);
-        stream.Position = 0; // Reset stream position after BOM detection
-        return new SourceFile(filePath, SourceText.From(stream, encoding));
-    }
-
-    private static Encoding DetectEncoding(Stream stream)
-    {
-        // UTF-8 BOM is 0xEF 0xBB 0xBF
-        if (stream.Length < 3)
-        {
-            return new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
-        }
-
-#if NETCOREAPP
-        Span<byte> buffer = stackalloc byte[3];
-        int bytesRead = stream.Read(buffer);
-#else
-        byte[] buffer = new byte[3];
-        int bytesRead = stream.Read(buffer, 0, 3);
-#endif
-        bool hasUtf8Bom = bytesRead == 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF;
-        
-        return new UTF8Encoding(encoderShouldEmitUTF8Identifier: hasUtf8Bom);
+        // Let SourceText.From auto-detect the encoding (including BOM detection)
+        return new SourceFile(filePath, SourceText.From(stream, encoding: null));
     }
 
     public SourceFile WithText(SourceText newText)
