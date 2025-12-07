@@ -53,6 +53,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <CompilerVisibleProperty Include="GenerateRazorMetadataSourceChecksumAttributes" />
       <CompilerVisibleProperty Include="MSBuildProjectDirectory" />
       <CompilerVisibleProperty Include="_RazorSourceGeneratorDebug" />
+      <CompilerVisibleProperty Include="RazorWarningLevel" />
     </ItemGroup>
 
     <ItemGroup>
