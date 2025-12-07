@@ -223,39 +223,47 @@ internal static class FileLevelDirectiveHelpers
     }
 }
 
-internal readonly record struct SourceFile(string Path, SourceText Text, bool HasUtf8Bom = false)
+internal readonly record struct SourceFile(string Path, SourceText Text)
 {
     public static SourceFile Load(string filePath)
     {
         using var stream = File.OpenRead(filePath);
-        bool hasUtf8Bom = DetectUtf8Bom(stream);
+        // Detect BOM to determine the appropriate encoding
+        Encoding encoding = DetectEncoding(stream);
         stream.Position = 0; // Reset stream position after BOM detection
-        return new SourceFile(filePath, SourceText.From(stream, Encoding.UTF8), hasUtf8Bom);
+        return new SourceFile(filePath, SourceText.From(stream, encoding));
     }
 
-    private static bool DetectUtf8Bom(Stream stream)
+    private static Encoding DetectEncoding(Stream stream)
     {
         // UTF-8 BOM is 0xEF 0xBB 0xBF
         if (stream.Length < 3)
         {
-            return false;
+            return new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         }
 
+#if NETCOREAPP
+        Span<byte> buffer = stackalloc byte[3];
+        int bytesRead = stream.Read(buffer);
+#else
         byte[] buffer = new byte[3];
         int bytesRead = stream.Read(buffer, 0, 3);
-        return bytesRead == 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF;
+#endif
+        bool hasUtf8Bom = bytesRead == 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF;
+        
+        return new UTF8Encoding(encoderShouldEmitUTF8Identifier: hasUtf8Bom);
     }
 
     public SourceFile WithText(SourceText newText)
     {
-        return new SourceFile(Path, newText, HasUtf8Bom);
+        return new SourceFile(Path, newText);
     }
 
     public void Save()
     {
         using var stream = File.Open(Path, FileMode.Create, FileAccess.Write);
-        // Use UTF8Encoding with encoderShouldEmitUTF8Identifier set to match the original file
-        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: HasUtf8Bom);
+        // Use the encoding from SourceText, which preserves the original BOM state
+        var encoding = Text.Encoding ?? new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         using var writer = new StreamWriter(stream, encoding);
         Text.Write(writer);
     }

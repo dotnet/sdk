@@ -80,18 +80,14 @@ Microsoft.DotNet.FileBasedPrograms.SimpleDiagnostic.Position.TextSpan.init -> vo
 Microsoft.DotNet.FileBasedPrograms.SimpleDiagnostic.SimpleDiagnostic() -> void
 Microsoft.DotNet.FileBasedPrograms.SourceFile
 Microsoft.DotNet.FileBasedPrograms.SourceFile.Deconstruct(out string! Path, out Microsoft.CodeAnalysis.Text.SourceText! Text) -> void
-Microsoft.DotNet.FileBasedPrograms.SourceFile.Deconstruct(out string! Path, out Microsoft.CodeAnalysis.Text.SourceText! Text, out bool HasUtf8Bom) -> void
 Microsoft.DotNet.FileBasedPrograms.SourceFile.Equals(Microsoft.DotNet.FileBasedPrograms.SourceFile other) -> bool
 Microsoft.DotNet.FileBasedPrograms.SourceFile.GetFileLinePositionSpan(Microsoft.CodeAnalysis.Text.TextSpan span) -> Microsoft.CodeAnalysis.FileLinePositionSpan
 Microsoft.DotNet.FileBasedPrograms.SourceFile.GetLocationString(Microsoft.CodeAnalysis.Text.TextSpan span) -> string!
-Microsoft.DotNet.FileBasedPrograms.SourceFile.HasUtf8Bom.get -> bool
-Microsoft.DotNet.FileBasedPrograms.SourceFile.HasUtf8Bom.init -> void
 Microsoft.DotNet.FileBasedPrograms.SourceFile.Path.get -> string!
 Microsoft.DotNet.FileBasedPrograms.SourceFile.Path.init -> void
 Microsoft.DotNet.FileBasedPrograms.SourceFile.Save() -> void
 Microsoft.DotNet.FileBasedPrograms.SourceFile.SourceFile() -> void
 Microsoft.DotNet.FileBasedPrograms.SourceFile.SourceFile(string! Path, Microsoft.CodeAnalysis.Text.SourceText! Text) -> void
-Microsoft.DotNet.FileBasedPrograms.SourceFile.SourceFile(string! Path, Microsoft.CodeAnalysis.Text.SourceText! Text, bool HasUtf8Bom = false) -> void
 Microsoft.DotNet.FileBasedPrograms.SourceFile.Text.get -> Microsoft.CodeAnalysis.Text.SourceText!
 Microsoft.DotNet.FileBasedPrograms.SourceFile.Text.init -> void
 Microsoft.DotNet.FileBasedPrograms.SourceFile.WithText(Microsoft.CodeAnalysis.Text.SourceText! newText) -> Microsoft.DotNet.FileBasedPrograms.SourceFile
