@@ -157,7 +157,7 @@ public class RunCommand
         {
             if (NoCache)
             {
-                throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
+                throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandDefinition.NoCacheOption.Name, RunCommandDefinition.NoBuildOption.Name);
             }
 
             if (EntryPointFileFullPath is not null)
@@ -686,7 +686,7 @@ public class RunCommand
         // them to the restore args.
         // this is because we can't model the binlog command structure in MSbuild in the System.CommandLine parser, but we need
         // bl information to synchronize the restore and build logger configurations
-        var applicationArguments = parseResult.GetValue(RunCommandParser.ApplicationArguments)?.ToList();
+        var applicationArguments = parseResult.GetValue(RunCommandDefinition.ApplicationArguments)?.ToList();
 
         LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
 
@@ -702,12 +702,12 @@ public class RunCommand
             parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
-        string? projectOption = parseResult.GetValue(RunCommandParser.ProjectOption);
-        string? fileOption = parseResult.GetValue(RunCommandParser.FileOption);
+        string? projectOption = parseResult.GetValue(RunCommandDefinition.ProjectOption);
+        string? fileOption = parseResult.GetValue(RunCommandDefinition.FileOption);
 
         if (projectOption != null && fileOption != null)
         {
-            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.ProjectOption.Name, RunCommandParser.FileOption.Name);
+            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandDefinition.ProjectOption.Name, RunCommandDefinition.FileOption.Name);
         }
 
         string[] args = [.. nonBinLogArgs];
@@ -718,8 +718,8 @@ public class RunCommand
             ref args,
             out string? entryPointFilePath);
 
-        bool noBuild = parseResult.HasOption(RunCommandParser.NoBuildOption);
-        string launchProfile = parseResult.GetValue(RunCommandParser.LaunchProfileOption) ?? string.Empty;
+        bool noBuild = parseResult.HasOption(RunCommandDefinition.NoBuildOption);
+        string launchProfile = parseResult.GetValue(RunCommandDefinition.LaunchProfileOption) ?? string.Empty;
 
         if (readCodeFromStdin && entryPointFilePath != null)
         {
@@ -727,12 +727,12 @@ public class RunCommand
 
             if (noBuild)
             {
-                throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name);
+                throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandDefinition.NoBuildOption.Name);
             }
 
             if (!string.IsNullOrWhiteSpace(launchProfile))
             {
-                throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.LaunchProfileOption.Name);
+                throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandDefinition.LaunchProfileOption.Name);
             }
 
             // If '-' is specified as the input file, read all text from stdin into a temporary file and use that as the entry point.
@@ -751,18 +751,18 @@ public class RunCommand
             nonBinLogArgs[0] = entryPointFilePath;
         }
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), RunCommandParser.VerbosityOption);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), RunCommandDefinition.VerbosityOption);
 
         var command = new RunCommand(
             noBuild: noBuild,
             projectFileFullPath: projectFilePath,
             entryPointFileFullPath: entryPointFilePath,
             launchProfile: launchProfile,
-            noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
-            noLaunchProfileArguments: parseResult.HasOption(RunCommandParser.NoLaunchProfileArgumentsOption),
-            noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
-            noCache: parseResult.HasOption(RunCommandParser.NoCacheOption),
-            interactive: parseResult.GetValue(RunCommandParser.InteractiveOption),
+            noLaunchProfile: parseResult.HasOption(RunCommandDefinition.NoLaunchProfileOption),
+            noLaunchProfileArguments: parseResult.HasOption(RunCommandDefinition.NoLaunchProfileArgumentsOption),
+            noRestore: parseResult.HasOption(RunCommandDefinition.NoRestoreOption) || parseResult.HasOption(RunCommandDefinition.NoBuildOption),
+            noCache: parseResult.HasOption(RunCommandDefinition.NoCacheOption),
+            interactive: parseResult.GetValue(RunCommandDefinition.InteractiveOption),
             msbuildArgs: msbuildArgs,
             applicationArgs: args,
             readCodeFromStdin: readCodeFromStdin,
