@@ -20,11 +20,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var reporter = new ConsoleReporter(testConsole, suppressEmojis: suppressEmojis);
 
             reporter.Report(id: default, Emoji.Watch, LogLevel.Trace, "trace {0}");
-            Assert.Empty(testConsole.GetError());
+            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "⌚")} trace {{0}}" + EOL, testConsole.GetError());
             testConsole.Clear();
 
-            reporter.Report(id: default, Emoji.Watch, LogLevel.Debug, "verbose {0}");
-            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "⌚")} verbose {{0}}" + EOL, testConsole.GetError());
+            reporter.Report(id: default, Emoji.Watch, LogLevel.Debug, "verbose");
+            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "⌚")} verbose" + EOL, testConsole.GetError());
             testConsole.Clear();
 
             reporter.Report(id: default, Emoji.Watch, LogLevel.Information, "out");
