@@ -847,17 +847,18 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         // Check that the source file is not modified.
-        if (entryPointFile.LastWriteTimeUtc > buildTimeUtc)
+        var targetFile = ResolveLinkTarget(entryPointFile);
+        if (targetFile.LastWriteTimeUtc > buildTimeUtc)
         {
             cache.CanUseCscViaPreviousArguments = true;
-            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + entryPointFile.FullName);
+            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
             return true;
         }
 
         // Check that implicit build files are not modified.
         foreach (var implicitBuildFilePath in previousCacheEntry.ImplicitBuildFiles)
         {
-            var implicitBuildFileInfo = new FileInfo(implicitBuildFilePath);
+            var implicitBuildFileInfo = ResolveLinkTarget(new FileInfo(implicitBuildFilePath));
             if (!implicitBuildFileInfo.Exists || implicitBuildFileInfo.LastWriteTimeUtc > buildTimeUtc)
             {
                 Reporter.Verbose.WriteLine("Building because implicit build file is missing or modified: " + implicitBuildFileInfo.FullName);
@@ -876,6 +877,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         return false;
+
+        static FileSystemInfo ResolveLinkTarget(FileSystemInfo fileSystemInfo)
+        {
+            return fileSystemInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileSystemInfo;
+        }
     }
 
     private static RunFileBuildCacheEntry? DeserializeCacheEntry(string path)

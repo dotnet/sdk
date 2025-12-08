@@ -3404,6 +3404,42 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// <see cref="UpToDate"/> optimization should see through symlinks.
+    /// See <see href="https://github.com/dotnet/sdk/issues/52063"/>.
+    /// </summary>
+    [Fact]
+    public void UpToDate_SymbolicLink()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var originalPath = Path.Join(testInstance.Path, "original.cs");
+        var code = """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("v1");
+            """;
+        var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        var programFileName = "linked";
+        var programPath = Path.Join(testInstance.Path, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "v1", programFileName: programFileName);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
+    }
+
+    /// <summary>
     /// Up-to-date checks and optimizations currently don't support other included files.
     /// </summary>
     [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
@@ -3713,6 +3749,41 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// Combination of <see cref="UpToDate_SymbolicLink"/> and <see cref="CscOnly"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_SymbolicLink()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var originalPath = Path.Join(testInstance.Path, "original.cs");
+        var code = """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("v1");
+            """;
+        var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        var programFileName = "linked";
+        var programPath = Path.Join(testInstance.Path, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v1", programFileName: programFileName);
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "v1", programFileName: programFileName);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
+    }
+
+    /// <summary>
     /// Tests an optimization which remembers CSC args from prior MSBuild runs and can skip subsequent MSBuild invocations and call CSC directly.
     /// This optimization kicks in when the file has some <c>#:</c> directives (then the simpler "hard-coded CSC args" optimization cannot be used).
     /// </summary>
@@ -3869,6 +3940,40 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "Hi from Program");
+    }
+
+    /// <summary>
+    /// Combination of <see cref="UpToDate_SymbolicLink"/> and <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_SymbolicLink()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var originalPath = Path.Join(testInstance.Path, "original.cs");
+        var code = """
+            #!/usr/bin/env dotnet
+            #:property Configuration=Release
+            Console.WriteLine("v1");
+            """;
+        var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        var programFileName = "linked";
+        var programPath = Path.Join(testInstance.Path, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
     }
 
     /// <summary>
@@ -4396,6 +4501,35 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($"EntryPointFilePath: {filePath}");
+    }
+
+    [Fact]
+    public void EntryPointFilePath_SymbolicLink()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var fileName = "Program.cs";
+        var programPath = Path.Join(testInstance.Path, fileName);
+        File.WriteAllText(programPath, """
+            #!/usr/bin/env dotnet
+            var entryPointFilePath = AppContext.GetData("EntryPointFilePath") as string;
+            Console.WriteLine($"EntryPointFilePath: {entryPointFilePath}");
+            """);
+
+        new DotnetCommand(Log, "run", fileName)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"EntryPointFilePath: {programPath}");
+
+        var linkName = "linked";
+        var linkPath = Path.Join(testInstance.Path, linkName);
+        File.CreateSymbolicLink(linkPath, programPath);
+
+        new DotnetCommand(Log, "run", linkName)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"EntryPointFilePath: {linkPath}");
     }
 
     [Fact]
