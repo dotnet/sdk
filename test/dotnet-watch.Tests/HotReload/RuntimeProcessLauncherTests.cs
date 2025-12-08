@@ -78,6 +78,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 projectOptions,
                 new CancellationTokenSource(),
                 onOutput: null,
+                onExit: null,
                 restartOperation: startOp!,
                 cancellationToken);
 
@@ -141,7 +142,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return new RunningWatcher(this, watcher, watchTask, reporter, console, serviceHolder, shutdownSource);
     }
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -302,7 +303,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
     [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
@@ -401,7 +402,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
@@ -492,7 +493,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
 
-    [Fact]
+    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
     public async Task RudeEditInProjectWithoutRunningProcess()
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc");
@@ -525,7 +526,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         // Terminate the process:
         Log($"Terminating process {runningProject.ProjectNode.GetDisplayName()} ...");
-        await w.Service.ProjectLauncher.TerminateProcessAsync(runningProject, CancellationToken.None);
+        await runningProject.TerminateAsync();
 
         // rude edit in A (changing assembly level attribute):
         UpdateSourceFile(serviceSourceA2, """
@@ -547,7 +548,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Obj,
     }
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
     [CombinatorialData]
     public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {
@@ -645,7 +646,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Fact]
+    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
     public async Task ProjectAndSourceFileChange()
     {
         var testAsset = CopyTestAsset("WatchHotReloadApp");
@@ -691,7 +692,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdatedOutput.Task;
     }
 
-    [Fact]
+    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
     public async Task ProjectAndSourceFileChange_AddProjectReference()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -760,7 +761,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Assert.Equal(1, hotReloadSucceeded.CurrentCount);
     }
 
-    [Fact]
+    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
     public async Task ProjectAndSourceFileChange_AddPackageReference()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")

@@ -124,6 +124,12 @@ namespace Microsoft.DotNet.NativeWrapper
             hostfxr_get_dotnet_environment_info_result_fn result,
             IntPtr result_context);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate void hostfxr_error_writer_fn(IntPtr message);
+
+        [DllImport(Constants.HostFxr, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr hostfxr_set_error_writer(IntPtr error_writer);
+
         public static class Windows
         {
             private const CharSet UTF16 = CharSet.Unicode;

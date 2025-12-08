@@ -195,6 +195,15 @@
   <data name="DoNotUseCountWhenAnyCanBeUsedTitle" xml:space="preserve">
     <value>Do not use Count() or LongCount() when Any() can be used</value>
   </data>
+  <data name="DoNotUseAsParallelInForEachLoopTitle" xml:space="preserve">
+    <value>Do not use 'AsParallel' in 'foreach'</value>
+  </data>
+  <data name="DoNotUseAsParallelInForEachLoopMessage" xml:space="preserve">
+    <value>Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</value>
+  </data>
+  <data name="DoNotUseAsParallelInForEachLoopDescription" xml:space="preserve">
+    <value>Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</value>
+  </data>
   <data name="PreferConvertToHexStringOverBitConverterTitle" xml:space="preserve">
     <value>Prefer 'Convert.ToHexString' and 'Convert.ToHexStringLower' over call chains based on 'BitConverter.ToString'</value>
   </data>
@@ -1287,13 +1296,16 @@
     <value>Prefer strongly-typed Append and Insert method overloads on StringBuilder</value>
   </data>
   <data name="PreferTypedStringBuilderAppendOverloadsDescription" xml:space="preserve">
-    <value>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</value>
+    <value>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</value>
   </data>
   <data name="PreferTypedStringBuilderAppendOverloadsMessage" xml:space="preserve">
-    <value>Remove the ToString call in order to use a strongly-typed StringBuilder overload</value>
+    <value>Prefer strongly-typed StringBuilder overload</value>
   </data>
   <data name="PreferTypedStringBuilderAppendOverloadsRemoveToString" xml:space="preserve">
     <value>Remove the ToString call</value>
+  </data>
+  <data name="PreferTypedStringBuilderAppendOverloadsReplaceStringConstructor" xml:space="preserve">
+    <value>Use StringBuilder.Append(char, int) overload</value>
   </data>
   <data name="PreferStringContainsOverIndexOfDescription" xml:space="preserve">
     <value>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</value>
@@ -1633,6 +1645,15 @@
   </data>
   <data name="DoNotUseWhenAllWithSingleTaskFix" xml:space="preserve">
     <value>Replace 'WhenAll' call with argument</value>
+  </data>
+  <data name="DoNotUseNonCancelableTaskDelayWithWhenAnyTitle" xml:space="preserve">
+    <value>Cancel Task.Delay after Task.WhenAny completes</value>
+  </data>
+  <data name="DoNotUseNonCancelableTaskDelayWithWhenAnyMessage" xml:space="preserve">
+    <value>Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</value>
+  </data>
+  <data name="DoNotUseNonCancelableTaskDelayWithWhenAnyDescription" xml:space="preserve">
+    <value>When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</value>
   </data>
   <data name="UseStringEqualsOverStringCompareCodeFixTitle" xml:space="preserve">
     <value>Use 'string.Equals'</value>
@@ -2227,5 +2248,29 @@ Widening and user defined conversions are not supported with generic types.</val
   </data>
   <data name="DoNotUseThreadVolatileReadWriteCodeFixTitle" xml:space="preserve">
     <value>Replace obsolete call</value>
+  </data>
+  <data name="CollapseMultiplePathOperationsTitle" xml:space="preserve">
+    <value>Collapse consecutive Path.Combine or Path.Join operations</value>
+  </data>
+  <data name="CollapseMultiplePathOperationsMessage" xml:space="preserve">
+    <value>Multiple consecutive Path.{0} operations can be collapsed into a single operation</value>
+  </data>
+  <data name="CollapseMultiplePathOperationsDescription" xml:space="preserve">
+    <value>When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</value>
+  </data>
+  <data name="CollapseMultiplePathOperationsCodeFixTitle" xml:space="preserve">
+    <value>Collapse into single Path.{0} operation</value>
+  </data>
+  <data name="PreferReadOnlySpanOverSpanTitle" xml:space="preserve">
+    <value>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</value>
+  </data>
+  <data name="PreferReadOnlySpanOverSpanMessage" xml:space="preserve">
+    <value>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</value>
+  </data>
+  <data name="PreferReadOnlySpanOverSpanDescription" xml:space="preserve">
+    <value>Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</value>
+  </data>
+  <data name="PreferReadOnlySpanOverSpanCodeFixTitle" xml:space="preserve">
+    <value>Change to '{0}'</value>
   </data>
 </root>
