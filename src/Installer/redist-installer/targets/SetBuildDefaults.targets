@@ -1,0 +1,38 @@
+<Project>
+
+  <Target Name="SetBuildDefaults" DependsOnTargets="GetCurrentRuntimeInformation">
+    <PropertyGroup>
+      <!-- Currently, 'arm*' SDK's do not include the LZMA for performance upon extraction of the NuGet archive. -->
+      <!-- https://github.com/dotnet/cli/issues/8800 -->
+      <SkipBuildingInstallers Condition=" '$(SkipBuildingInstallers)' == '' AND
+        ($(Rid.StartsWith('rhel.6'))
+        OR $(Rid.StartsWith('freebsd'))
+        OR $(Rid.StartsWith('illumos'))
+        OR $(Rid.StartsWith('linux-musl'))
+        OR $(Rid.StartsWith('ubuntu.18.04')))">true</SkipBuildingInstallers>
+      <SkipBuildingInstallers Condition=" '$(SkipBuildingInstallers)' == '' ">false</SkipBuildingInstallers>
+
+      <UsePortableLinuxSharedFramework Condition=" '$(UsePortableLinuxSharedFramework)' == '' AND '$(IsLinux)' == 'True' AND '$(Rid)' != 'rhel.6-x64' AND !$(Rid.StartsWith('linux-musl')) ">true</UsePortableLinuxSharedFramework>
+      <HighEntropyVA>true</HighEntropyVA>
+
+      <!-- Only use asset target fallback that we set (not implicit one to net461). -->
+      <!--<DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>-->
+
+      <!-- NU1701: Disable asset target fallback warning globally since it does not work transitively on NoWarn of individual packages -->
+      <!-- Since we disabled the implicit fallback to net461, this will only kick in when we have an explicit fallback and we don't need to be warned about it doing what we asked it to do. -->
+      <!-- NU5104: Disable 'A stable release of a package should not have a prerelease dependency' warning globally -->
+      <!-- The "pack" command under 'buildCrossTargeting' for 'Microsoft.DotNet.MSBuildSdkResolver' throws a "NU5104" warning/error while using a "2.1.300" stage0 SDK. For: Linux-x64, Linux-arm, and Linux-arm64 -->
+      <!--<NoWarn>NU1701;NU5104</NoWarn>-->
+
+      <!--<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+      <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
+
+      <IncludeWpfAndWinForms Condition=" '$(IncludeWpfAndWinForms)' == '' AND '$(OS)' == 'Windows_NT' ">true</IncludeWpfAndWinForms>
+      <IncludeWpfAndWinForms Condition=" '$(IncludeWpfAndWinForms)' == '' ">false</IncludeWpfAndWinForms>-->
+
+      <PathListSeparator>:</PathListSeparator>
+      <PathListSeparator Condition=" '$(OS)' == 'Windows_NT' ">%3b</PathListSeparator>
+    </PropertyGroup>
+  </Target>
+
+</Project>
