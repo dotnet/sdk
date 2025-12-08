@@ -3404,6 +3404,64 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// <see cref="UpToDate"/> optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
+    /// See <see href="https://github.com/dotnet/sdk/issues/52057"/>.
+    /// </summary>
+    [Fact]
+    public void UpToDate_ProjectReferences()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var libPath = Path.Join(libDir, "Lib.cs");
+        var libCode = """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib v1";
+            }
+            """;
+        File.WriteAllText(libPath, libCode);
+
+        var appDir = Path.Join(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+
+        var code = """
+            #:project ../Lib
+            Console.WriteLine("v1 " + Lib.LibClass.GetMessage());
+            """;
+
+        var programPath = Path.Join(appDir, "Program.cs");
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var programFileName = "App/Program.cs";
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1 Hello from Lib v1", programFileName: programFileName);
+
+        // We cannot detect changes in referenced projects, so we always rebuild.
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1 Hello from Lib v1", programFileName: programFileName);
+
+        libCode = libCode.Replace("v1", "v2");
+        File.WriteAllText(libPath, libCode);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1 Hello from Lib v2", programFileName: programFileName);
+    }
+
+    /// <summary>
     /// Up-to-date checks and optimizations currently don't support other included files.
     /// </summary>
     [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
