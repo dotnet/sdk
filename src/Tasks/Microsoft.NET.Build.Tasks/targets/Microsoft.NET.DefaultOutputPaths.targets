@@ -133,6 +133,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
   </PropertyGroup>
 
+  <!-- Add ArtifactsPath to SourceRoot for deterministic builds when ArtifactsPath is outside the repo -->
+  <ItemGroup Condition="'$(ArtifactsPath)' != ''">
+    <SourceRoot Condition="!HasTrailingSlash('$(ArtifactsPath)')" Include="$(ArtifactsPath)\" />
+    <SourceRoot Condition="HasTrailingSlash('$(ArtifactsPath)')" Include="$(ArtifactsPath)" />
+  </ItemGroup>
+
   <!--
     Append $(TargetFramework) directory to output and intermediate paths to prevent bin clashes between
     targets.
