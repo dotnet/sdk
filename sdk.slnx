@@ -23,6 +23,7 @@
     <File Path="test.sh" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Microsoft.DotNet.ProjectTools/Microsoft.DotNet.ProjectTools.csproj" />
     <Project Path="src/Microsoft.DotNet.TemplateLocator/Microsoft.DotNet.TemplateLocator.csproj" />
     <Project Path="src/Microsoft.Net.Sdk.Compilers.Toolset/Microsoft.Net.Sdk.Compilers.Toolset.csproj" />
     <Project Path="src/Microsoft.Win32.Msi/Microsoft.Win32.Msi.csproj" />
@@ -57,10 +58,10 @@
     <Project Path="src/BuiltInTools/HotReloadAgent/Microsoft.DotNet.HotReload.Agent.shproj" />
     <Project Path="src/BuiltInTools/HotReloadClient/Microsoft.DotNet.HotReload.Client.Package.csproj" />
     <Project Path="src/BuiltInTools/HotReloadClient/Microsoft.DotNet.HotReload.Client.shproj" />
-    <Project Path="src/BuiltInTools/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.Package.csproj" />
-    <Project Path="src/BuiltInTools/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.shproj" />
     <Project Path="src/BuiltInTools/Watch.Aspire/Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
     <Project Path="src/BuiltInTools/Watch/Microsoft.DotNet.HotReload.Watch.csproj" />
+    <Project Path="src/BuiltInTools/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.Package.csproj" />
+    <Project Path="src/BuiltInTools/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.shproj" />
   </Folder>
   <Folder Name="/src/Cli/">
     <Project Path="src/Cli/dotnet/dotnet.csproj" />
