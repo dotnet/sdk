@@ -15,14 +15,14 @@ internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parse
 {
     public override int Execute()
     {
-        var arguments = _parseResult.GetValue(PackageRemoveCommandParser.CmdPackageArgument) ?? [];
+        var arguments = _parseResult.GetValue(PackageRemoveCommandDefinition.CmdPackageArgument) ?? [];
 
         if (arguments is not [{ } packageToRemove])
         {
             throw new GracefulException(CliCommandStrings.PackageRemoveSpecifyExactlyOnePackageReference);
         }
 
-        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_parseResult);
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandDefinition.ProcessPathOptions(_parseResult);
 
         if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuildingCommand.IsValidEntryPointPath(fileOrDirectory))
         {
@@ -59,7 +59,7 @@ internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parse
         };
 
         args.AddRange(_parseResult
-            .OptionValuesToBeForwarded(PackageRemoveCommandParser.GetCommand())
+            .OptionValuesToBeForwarded(PackageRemoveCommandDefinition.Options)
             .SelectMany(a => a.Split(' ')));
 
         return [.. args];
