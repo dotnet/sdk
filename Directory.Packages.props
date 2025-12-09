@@ -10,14 +10,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)"/>
-    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.NuGetSdkResolver" Version="$(MicrosoftBuildNuGetSdkResolverPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildRuntimePackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftCodeAnalysisCSharpFeaturesPackageVersion)" />
@@ -43,7 +36,6 @@
     <PackageVersion Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
     <PackageVersion Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
     <PackageVersion Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)" />
-    <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftNETStringToolsPackageVersion)" />
     <PackageVersion Include="Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="Microsoft.NETCore.Targets" Version="2.1.0" />
     <PackageVersion Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="$(MicrosoftTemplateEngineAuthoringTemplateVerifierVersion)" />
@@ -112,5 +104,37 @@
     <PackageVersion Include="xunit" Version="$(XUnitVersion)" />
     <PackageVersion Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
     <PackageVersion Include="xunit.console" Version="$(XUnitVersion)"/>
+  </ItemGroup>
+
+  <!-- Use different versions of Microsoft.Build.* depending on whether the output will be used in
+       .NET Framework (VS) or only in the .NET SDK.
+
+       Note: This is not abstracted in Versions.props because source-only
+       modes will import a version override file after Versions.props. -->
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(TargetFramework)' != 'net472'">
+    <!-- MSBuild-y stuff that runs in the CLI can always reference the latest MSBuild since
+         that is what will be packaged with the .NET SDK. -->
+    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
+    <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
+    <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildPackageVersion)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(TargetFramework)' == 'net472'">
+    <!-- MSBuild-y stuff that runs in VS/MSBuild.exe should reference the lagging minimum version so
+         it works in that slightly-older Visual Studio. -->
+    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildMinimumVersion)" />
+    <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
+    <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftNETStringToolsPackageVersion)" />
   </ItemGroup>
 </Project>

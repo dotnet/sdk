@@ -22,14 +22,24 @@
         <target state="translated">Impossible d’utiliser les options {0} et {1} ensemble. Si vous installez à partir d’un fichier de restauration, supprimez {0}. Sinon, supprimez {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineSkipManifestAndVersion">
+        <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
+        <target state="translated">Impossible d’utiliser les options {0} et {1} ensemble.  Supprimez l’une des options.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">Impossible de spécifier une version de charge de travail particulière sur la ligne de commande via --version ou --from-history lorsqu’une version est déjà spécifiée dans global.json fichier {0}. Pour mettre à jour la version de la charge de travail installée globalement, exécutez la commande en dehors du chemin contenant ce fichier global.json ou mettez à jour la version spécifiée dans le fichier global.json et exécutez « dotnet workload update »</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
+        <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
+        <target state="translated">Impossible d’utiliser l’option {0} lorsque la version de la charge de travail est spécifiée dans global.json.  Supprimez l’option {0} ou supprimez l’élément « workloadVersion » de {1}.</target>
+        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
-        <source>Checking for updated workload manifests.</source>
-        <target state="translated">Recherche de manifestes de charge de travail mis à jour</target>
+        <source>Checking for updated workload version.</source>
+        <target state="translated">Vérification de la version mise à jour de la charge de travail.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -80,6 +90,11 @@
       <trans-unit id="FailedToInstallWorkloadManifest">
         <source>Failed to install manifest {0} version {1}: {2}.</source>
         <target state="translated">Impossible d'installer la {0} version de manifeste {1}: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadSet">
+        <source>Failed to install workload version {0}: {1}</source>
+        <target state="translated">Échec de l’installation de la version de charge de travail {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
@@ -155,11 +170,6 @@
       <trans-unit id="FrameworkOptionDescription">
         <source>The target framework to install the workload for.</source>
         <target state="translated">Framework cible pour lequel la charge de travail doit être installée.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ManifestDoesNotExist">
-        <source>No manifest with ID {0} exists.</source>
-        <target state="translated">Aucun manifeste ayant l’ID {0} existe.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
@@ -375,11 +385,6 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">Mise à jour de la version de la charge de travail de {0} à {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
