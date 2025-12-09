@@ -574,6 +574,37 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             "File should have UTF-8 BOM");
     }
 
+    /// <summary>
+    /// Verifies that files with non-UTF-8 encodings (like UTF-16) preserve their encoding when saved.
+    /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
+    /// </summary>
+    [Fact]
+    public void PreservesNonUtf8Encoding()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var tempFile = Path.Join(testInstance.Path, "test.cs");
+
+        // Create a file with UTF-16 encoding (includes BOM by default)
+        var content = "Console.WriteLine(\"UTF-16 test\");";
+        File.WriteAllText(tempFile, content, Encoding.Unicode);
+
+        // Load, modify, and save
+        var sourceFile = SourceFile.Load(tempFile);
+        var editor = FileBasedAppSourceEditor.Load(sourceFile);
+        editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" });
+        editor.SourceFile.Save();
+
+        // Verify UTF-16 BOM is still present (0xFF 0xFE for UTF-16 LE)
+        var bytes = File.ReadAllBytes(tempFile);
+        Assert.True(bytes.Length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE,
+            "File should have UTF-16 LE BOM");
+
+        // Verify content is still readable as UTF-16
+        var savedContent = File.ReadAllText(tempFile, Encoding.Unicode);
+        Assert.Contains("#:package MyPackage@1.0.0", savedContent);
+        Assert.Contains("Console.WriteLine", savedContent);
+    }
+
     private void Verify(
         string input,
         params ReadOnlySpan<(Action<FileBasedAppSourceEditor> action, string expectedOutput)> verify)
