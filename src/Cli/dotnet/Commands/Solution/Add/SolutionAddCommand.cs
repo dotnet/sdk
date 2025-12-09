@@ -108,8 +108,9 @@ internal class SolutionAddCommand : CommandBase
         }
 
         // Check if a solution folder with this path already exists
+        // Solution folder paths should be unique, so use SingleOrDefault
         var solutionFolderPath = GetSolutionFolderPathWithForwardSlashes(relativeSolutionFolderPath);
-        var existingFolder = solution.SolutionFolders.FirstOrDefault(f => f.Path == solutionFolderPath);
+        var existingFolder = solution.SolutionFolders.SingleOrDefault(f => f.Path == solutionFolderPath);
         
         return existingFolder ?? solution.AddFolder(solutionFolderPath);
     }
