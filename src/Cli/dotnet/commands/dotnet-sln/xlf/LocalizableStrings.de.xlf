@@ -27,6 +27,11 @@
         <target state="translated">Fügt einer Projektmappendatei ein oder mehrere Projekte hinzu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotMigrateSlnx">
+        <source>Only .sln files can be migrated to .slnx format.</source>
+        <target state="translated">Nur .sln Dateien können in das SLNX-Format migriert werden.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InRoot">
         <source>Place project in root of the solution, rather than creating a solution folder.</source>
         <target state="translated">Platzieren Sie das Projekt im Stamm der Projektmappe, statt einen Projektmappenordner zu erstellen.</target>
@@ -35,6 +40,11 @@
       <trans-unit id="ListSolutionFoldersArgumentDescription">
         <source>Display solution folder paths.</source>
         <target state="translated">Projektmappenordnerpfade anzeigen.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MigrateAppFullName">
+        <source>Generate a .slnx file from a .sln file.</source>
+        <target state="translated">Generiert eine SLNX-Datei aus einer .sln Datei.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveAppFullName">
@@ -55,6 +65,16 @@
       <trans-unit id="ListSubcommandHelpText">
         <source>List all projects in the solution.</source>
         <target state="translated">Listet alle Projekte in der Projektmappe auf.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SerializerNotFound">
+        <source>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</source>
+        <target state="translated">Die Projektmappendatei konnte nicht {0} gelesen werden. Unterstützte Dateien sind .sln und SLNX gültige Lösungen.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SlnxGenerated">
+        <source>.slnx file {0} generated.</source>
+        <target state="translated">Die SLNX-Datei {0} generiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">

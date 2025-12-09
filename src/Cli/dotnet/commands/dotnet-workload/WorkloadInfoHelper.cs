@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 #if !DOT_NET_BUILD_FROM_SOURCE
             if (OperatingSystem.IsWindows())
             {
-                VisualStudioWorkloads.GetInstalledWorkloads(WorkloadResolver, installedWorkloads);
+                VisualStudioWorkloads.GetInstalledWorkloads(WorkloadResolver, installedWorkloads, _currentSdkFeatureBand);
             }
 #endif
             return installedWorkloads;
