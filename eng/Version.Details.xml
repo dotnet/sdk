@@ -116,6 +116,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5bb147b254d359d7cbf7fb4e5ccc231d5ebe3a4a</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.HotReload" Version="5.3.0-1.25603.106">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>5bb147b254d359d7cbf7fb4e5ccc231d5ebe3a4a</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="5.3.0-1.25603.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5bb147b254d359d7cbf7fb4e5ccc231d5ebe3a4a</Sha>
