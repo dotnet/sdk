@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
 using Microsoft.Build.Framework;
 using NuGet.Versioning;
 #if NETFRAMEWORK
@@ -41,7 +40,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
 
     /// <summary>
     /// If this is set to linux-ARCH then we use noble-chiseled for the AOT/Extra/etc decisions.
-    /// If this is set to linux-musl-ARCH then we need to use `alpine` for all containers, and tag on `aot` or `extra` as necessary.
+    /// If this is set to linux-musl-ARCH then we need to use `alpine` for all containers, and tag on `extra` as necessary.
     /// </summary>
     [Required]
     public string[] TargetRuntimeIdentifiers { get; set; }
@@ -52,7 +51,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     public bool IsSelfContained { get; set; }
 
     /// <summary>
-    /// If a project is AOT-published then not only is it self-contained, but it can also remove some other deps - we can use the dotnet/nightly/runtime-deps variant here aot
+    /// If a project is AOT-published then not only is it self-contained, but it can also remove some other deps.
     /// </summary>
     public bool IsAotPublished { get; set; }
 
@@ -88,10 +87,6 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     private bool IsBundledRuntime => IsSelfContained;
 
     private bool RequiresInference => String.IsNullOrEmpty(UserBaseImage);
-
-    // as of March 2024, the -extra images are on stable MCR, but the -aot images are still on nightly. This means AOT, invariant apps need the /nightly/ base.
-    private bool NeedsNightlyImages => IsAotPublished && UsesInvariantGlobalization;
-    private bool AllowsExperimentalTagInference => String.IsNullOrEmpty(ContainerFamily);
 
     public ComputeDotnetBaseImageAndTag()
     {
@@ -171,12 +166,11 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                 return false;
             }
 
-            var detectedRepository = (NeedsNightlyImages, IsSelfContained, IsAspNetCoreProject) switch
+            var detectedRepository = (IsSelfContained, IsAspNetCoreProject) switch
             {
-                (true, true, _) when AllowsExperimentalTagInference && versionAllowsUsingAOTAndExtrasImages => "dotnet/nightly/runtime-deps",
-                (_, true, _) => "dotnet/runtime-deps",
-                (_, _, true) => "dotnet/aspnet",
-                (_, _, false) => "dotnet/runtime"
+                (true, _) => "dotnet/runtime-deps",
+                (_, true) => "dotnet/aspnet",
+                (_, false) => "dotnet/runtime"
             };
             Log.LogMessage("Chose base image repository {0}", detectedRepository);
             repository = detectedRepository;
@@ -229,12 +223,12 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                         false => ""
                     };
 
-                    // now choose the variant, if any - if globalization then -extra, else -aot
+                    // now choose the variant, if any - if globalization then -extra
+                    // as of March 2025, the -aot tag is no longer used, and for .NET 8 and 9 the nightly/runtime-deps images with aot tags point at the regular runtime-deps images 
                     tag += (IsAotPublished, IsTrimmed, UsesInvariantGlobalization) switch
                     {
                         (true, _, false) => "-extra",
                         (_, true, false) => "-extra",
-                        (true, _, true) => "-aot",
                         _ => ""
                     };
                     Log.LogMessage("Selected base image tag {0}", tag);
@@ -254,7 +248,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     {
         if (SemanticVersion.TryParse(TargetFrameworkVersion, out var tfm) && tfm.Major < FirstVersionWithNewTaggingScheme)
         {
-            // < 8 TFMs don't support the -aot and -extras images
+            // < 8 TFMs don't support the -extras images
             return ($"{tfm.Major}.{tfm.Minor}", tfm, false);
         }
         else if (SemanticVersion.TryParse(SdkVersion, out var version))
