@@ -74,16 +74,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 return Task.FromResult(ExitCodeFailure);
             }
 
-            // Loading all of the extensions should succeed as the dependency checker will have already
-            // loaded them.
-            var extensions = new RazorExtension[ExtensionNames.Values.Count];
-            for (var i = 0; i < ExtensionNames.Values.Count; i++)
-            {
-                extensions[i] = new AssemblyExtension(ExtensionNames.Values[i], Parent.Loader.LoadFromPath(ExtensionFilePaths.Values[i]));
-            }
-
             var version = RazorLanguageVersion.Parse(Version.Value());
-            var configuration = RazorConfiguration.Create(version, Configuration.Value(), extensions);
+            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: []);
 
             var sourceItems = GetSourceItems(
                 Sources.Values, Outputs.Values, RelativePaths.Values,
@@ -194,6 +186,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             var engine = RazorProjectEngine.Create(configuration, compositeFileSystem, b =>
             {
+                b.RegisterExtensions();
+
                 b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
                 b.Features.Add(new DefaultTypeNameFeature());
 

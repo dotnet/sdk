@@ -22,6 +22,11 @@
         <target state="translated">Možnosti {0} a {1} nelze použít společně. Při instalaci ze souboru vráceného zpět odeberte {0}. V opačném případě odeberte {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
+        <target state="new">Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload manifests.</source>
         <target state="translated">Kontrolují se aktualizované manifesty úloh.</target>
@@ -182,6 +187,11 @@
         <target state="translated">Odebírání {0}. </target>
         <note />
       </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">Probíhá instalace verze úlohy {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">Nepovedlo se navázat vztah důvěryhodnosti s nadřazeným procesem ({0}).</target>
@@ -277,6 +287,11 @@
         <target state="translated">Vytiskne pouze seznam odkazů, které se mají stáhnout, aniž by se tento seznam stahoval.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="new">Successfully updated workload install mode to use {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
         <source>Installing package {0} version {1} from offline cache {2}.</source>
         <target state="translated">Instaluje se balíček {0} verze {1} z offline mezipaměti {2}.</target>
@@ -360,6 +375,16 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">CESTA</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetUpgrade">
+        <source>Updating workload version from {0} to {1}.</source>
+        <target state="translated">Aktualizuje se verze úlohy z {0} na {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload version.</source>
+        <target state="translated">Aktualizuje verzi na zadanou verzi úlohy.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

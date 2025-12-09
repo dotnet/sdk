@@ -19,6 +19,10 @@ namespace Microsoft.DotNet.Cli.Utils
         private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", false);
         private static readonly string TerminalLoggerDefault = Env.GetEnvironmentVariable("DOTNET_CLI_CONFIGURE_MSBUILD_TERMINAL_LOGGER");
 
+        public static string MSBuildVersion
+        {
+            get => Microsoft.Build.Evaluation.ProjectCollection.DisplayVersion;
+        }
         private const string MSBuildExeName = "MSBuild.dll";
 
         private const string SdksDirectoryName = "Sdks";
@@ -39,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         private readonly Dictionary<string, string> _msbuildRequiredEnvironmentVariables =
             new Dictionary<string, string>
-            {
+        {
                 { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? AppContext.BaseDirectory },
                 { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
                 { "DOTNET_HOST_PATH", GetDotnetPath() },
@@ -48,11 +52,11 @@ namespace Microsoft.DotNet.Cli.Utils
         private readonly IEnumerable<string> _msbuildRequiredParameters =
             new List<string> { "-maxcpucount", "-verbosity:m" };
 
-        public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string msbuildPath = null)
+        public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string msbuildPath = null, bool includeLogo = false)
         {
             string defaultMSBuildPath = GetMSBuildExePath();
 
-            _argsToForward = argsToForward;
+            _argsToForward = includeLogo ? argsToForward : ["-nologo", ..argsToForward];
             string tlpDefault = TerminalLoggerDefault;
             /* TODO: Consider to enable it for dotnet 9+ SDK
             if (!string.IsNullOrWhiteSpace(tlpDefault))
