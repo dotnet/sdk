@@ -54,7 +54,7 @@ internal sealed class VirtualProjectBuilder
     }
 
     /// <remarks>
-    /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectAddTests.SameAsTemplate</c>).
+    /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectConvertTests.SameAsTemplate</c>).
     /// </remarks>
     public static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFrameworkVersion) =>
     [
@@ -125,7 +125,7 @@ internal sealed class VirtualProjectBuilder
 
     /// <summary>
     /// If there are any <c>#:project</c> <paramref name="directives"/>,
-    /// evaluates their values as MSBuild expressions (i.e. substitutes <c>$()</c> and <c>@()</c> with property and item values) and
+    /// evaluates their values as MSBuild expressions (i.e. substitutes <c>$()</c> and <c>@()</c> with property and item values, etc.) and
     /// resolves the evaluated values to full project file paths (e.g. if the evaluted value is a directory finds a project in that directory).
     /// </summary>
     internal static ImmutableArray<CSharpDirective> EvaluateDirectives(

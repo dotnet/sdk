@@ -41,7 +41,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             VirtualProjectBuildingCommand.ThrowingReporter,
             out var projectInstance,
             out var evaluatedDirectives,
-            validateAllDirectives: true);
+            validateAllDirectives: !_force);
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();

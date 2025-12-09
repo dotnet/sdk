@@ -6,15 +6,14 @@ using System.Diagnostics;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
-using NuGet.ProjectModel;
 using Microsoft.DotNet.ProjectTools;
+using NuGet.ProjectModel;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 

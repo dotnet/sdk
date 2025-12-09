@@ -19,7 +19,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="dotnet" />
     <InternalsVisibleTo Include="dotnet.Tests" />
-    <InternalsVisibleTo Include="Microsoft.DotNet.Cli.Utils"/>
     <InternalsVisibleTo Include="Microsoft.DotNet.HotReload.Watch" />
   </ItemGroup>
 
