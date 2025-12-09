@@ -632,16 +632,21 @@ namespace Microsoft.NET.Build.Tests
                     </Project>
                     """);
 
-                // Build with diagnostic output to capture SourceRoot items
+                // Build the project
                 var buildResult = new BuildCommand(testAsset)
-                    .ExecuteWithCapturedOutput("/p:_DumpSourceRoots=true");
+                    .Execute();
 
                 buildResult.Should().Pass();
 
                 // Verify that the SourceRoot was added by checking that the build succeeded
-                // and that the ArtifactsPath was used
-                var outputDirectory = Path.Combine(tempArtifactsPath, "bin", testProject.Name, "debug", ToolsetInfo.CurrentTargetFramework);
+                // and that the ArtifactsPath was used. The output path should be under ArtifactsPath.
+                var outputDirectory = Path.Combine(tempArtifactsPath, "bin", testProject.Name, "debug");
                 new DirectoryInfo(outputDirectory)
+                    .Should()
+                    .Exist();
+                
+                // Verify that the dll was created
+                new FileInfo(Path.Combine(outputDirectory, testProject.Name + ".dll"))
                     .Should()
                     .Exist();
             }
