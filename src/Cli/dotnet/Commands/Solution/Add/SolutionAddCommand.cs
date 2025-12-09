@@ -102,9 +102,16 @@ internal class SolutionAddCommand : CommandBase
             relativeSolutionFolderPath = _solutionFolderPath;
         }
 
-        return string.IsNullOrEmpty(relativeSolutionFolderPath)
-            ? null
-            : solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativeSolutionFolderPath));
+        if (string.IsNullOrEmpty(relativeSolutionFolderPath))
+        {
+            return null;
+        }
+
+        // Check if a solution folder with this path already exists
+        var solutionFolderPath = GetSolutionFolderPathWithForwardSlashes(relativeSolutionFolderPath);
+        var existingFolder = solution.SolutionFolders.FirstOrDefault(f => f.Path == solutionFolderPath);
+        
+        return existingFolder ?? solution.AddFolder(solutionFolderPath);
     }
 
     private async Task AddProjectsToSolutionAsync(IEnumerable<string> projectPaths, CancellationToken cancellationToken)
