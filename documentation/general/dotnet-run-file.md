@@ -32,6 +32,8 @@ Additionally, the implicit project file has the following customizations:
 
 - `PublishAot` is set to `true`, see [`dotnet publish file.cs`](#other-commands) for more details.
 
+- `PackAsTool` is set to `true`, see [`dotnet pack file.cs`](#other-commands) for more details.
+
 - `UserSecretsId` is set to a hash of the entry point file path.
 
 - [File-level directives](#directives-for-project-metadata) are applied.
@@ -103,7 +105,10 @@ If a dash (`-`) is given instead of the target path (i.e., `dotnet run -`), the 
 In this case, the current working directory is not used to search for other files (launch profiles, other sources in case of multi-file apps);
 the compilation consists solely of the single file read from the standard input.
 
-`dotnet path.cs` is a shortcut for `dotnet run --file path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported).
+`dotnet path.cs` is a shortcut for `dotnet run --file path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported)
+and it is not a DLL path, built-in command, or a NuGet tool (e.g., `dotnet watch` invokes the `dotnet-watch` tool
+even if a valid `watch` file-based app exists in the current directory;
+one can use `dotnet ./watch` to run the file-based app).
 
 ### Other commands
 
@@ -112,6 +117,8 @@ Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE 
 Commands `dotnet publish file.cs` and `dotnet pack file.cs` are also supported for file-based programs.
 Note that file-based apps have implicitly set `PublishAot=true`, so publishing uses Native AOT (and building reports AOT warnings).
 To opt out, use `#:property PublishAot=false` directive in your `.cs` file.
+Additionally, file-based apps have implicitly set `PackAsTool=true` because file-based apps are usually tools;
+again, you can opt out via `#:property PackAsTool=false`.
 
 Command `dotnet clean file.cs` can be used to clean build artifacts of the file-based program.
 
