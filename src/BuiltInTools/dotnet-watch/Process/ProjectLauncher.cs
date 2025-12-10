@@ -91,7 +91,7 @@ internal sealed class ProjectLauncher(
         environmentBuilder[EnvironmentVariables.Names.DotnetWatch] = "1";
         environmentBuilder[EnvironmentVariables.Names.DotnetWatchIteration] = (Iteration + 1).ToString(CultureInfo.InvariantCulture);
 
-        if (Logger.IsEnabled(LogLevel.Debug))
+        if (Logger.IsEnabled(LogLevel.Trace))
         {
             environmentBuilder[EnvironmentVariables.Names.HotReloadDeltaClientLogMessages] =
                 (EnvironmentOptions.SuppressEmojis ? Emoji.Default : Emoji.Agent).GetLogMessagePrefix() + $"[{projectDisplayName}]";

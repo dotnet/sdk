@@ -249,9 +249,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var message = new StringBuilder();
 
-
             message.AppendLine(expectedPresent
-                ? "Expected text found in the output:"
+                ? "Expected text not found in the output:"
                 : "Text not expected to be found in the output:");
 
             message.AppendLine(expected);

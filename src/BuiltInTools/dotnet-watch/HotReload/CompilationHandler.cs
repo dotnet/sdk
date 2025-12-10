@@ -77,7 +77,23 @@ namespace Microsoft.DotNet.Watch
         {
             _logger.Log(MessageDescriptor.HotReloadSessionStarting);
 
-            await _hotReloadService.StartSessionAsync(Workspace.CurrentSolution, cancellationToken);
+            var solution = Workspace.CurrentSolution;
+
+            await _hotReloadService.StartSessionAsync(solution, cancellationToken);
+
+            // TODO: StartSessionAsync should do this: https://github.com/dotnet/roslyn/issues/80687
+            foreach (var project in solution.Projects)
+            {
+                foreach (var document in project.AdditionalDocuments)
+                {
+                    await document.GetTextAsync(cancellationToken);
+                }
+
+                foreach (var document in project.AnalyzerConfigDocuments)
+                {
+                    await document.GetTextAsync(cancellationToken);
+                }
+            }
 
             _logger.Log(MessageDescriptor.HotReloadSessionStarted);
         }
@@ -163,7 +179,7 @@ namespace Microsoft.DotNet.Watch
                     var updatesToApply = _previousUpdates.Skip(appliedUpdateCount).ToImmutableArray();
                     if (updatesToApply.Any())
                     {
-                        await clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updatesToApply), isProcessSuspended: false, processCommunicationCancellationToken);
+                        await clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updatesToApply), isProcessSuspended: false, isInitial: true, processCommunicationCancellationToken);
                     }
 
                     appliedUpdateCount += updatesToApply.Length;
@@ -195,6 +211,12 @@ namespace Microsoft.DotNet.Watch
                     }
                 }
 
+                clients.OnRuntimeRudeEdit += (code, message) =>
+                {
+                    // fire and forget:
+                    _ = HandleRuntimeRudeEditAsync(runningProject, message, cancellationToken);
+                };
+
                 // Notifies the agent that it can unblock the execution of the process:
                 await clients.InitialUpdatesAppliedAsync(processCommunicationCancellationToken);
 
@@ -212,6 +234,41 @@ namespace Microsoft.DotNet.Watch
                 // Process exited during initialization. This should not happen since we control the process during this time.
                 _logger.LogError("Failed to launch '{ProjectPath}'. Process {PID} exited during initialization.", projectPath, launchResult.ProcessId);
                 return null;
+            }
+        }
+
+        private async Task HandleRuntimeRudeEditAsync(RunningProject runningProject, string rudeEditMessage, CancellationToken cancellationToken)
+        {
+            var logger = runningProject.Clients.ClientLogger;
+
+            try
+            {
+                // Always auto-restart on runtime rude edits regardless of the settings.
+                // Since there is no debugger attached the process would crash on an unhandled HotReloadException if
+                // we let it continue executing.
+                logger.LogWarning(rudeEditMessage);
+                logger.Log(MessageDescriptor.RestartingApplication);
+
+                if (!runningProject.InitiateRestart())
+                {
+                    // Already in the process of restarting, possibly because of another runtime rude edit.
+                    return;
+                }
+
+                await runningProject.Clients.ReportCompilationErrorsInApplicationAsync([rudeEditMessage, MessageDescriptor.RestartingApplication.GetMessage()], cancellationToken);
+
+                // Terminate the process.
+                await runningProject.TerminateAsync();
+
+                // Creates a new running project and launches it:
+                await runningProject.RestartOperation(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                if (e is not OperationCanceledException)
+                {
+                    logger.LogError("Failed to handle runtime rude edit: {Exception}", e.ToString());
+                }
             }
         }
 
@@ -329,7 +386,7 @@ namespace Microsoft.DotNet.Watch
                 try
                 {
                     using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedCancellationToken, cancellationToken);
-                    await runningProject.Clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updates), isProcessSuspended: false, processCommunicationCancellationSource.Token);
+                    await runningProject.Clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updates), isProcessSuspended: false, isInitial: false, processCommunicationCancellationSource.Token);
                 }
                 catch (OperationCanceledException) when (runningProject.ProcessExitedCancellationToken.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
                 {
@@ -583,7 +640,7 @@ namespace Microsoft.DotNet.Watch
             // Do not terminate root process at this time - it would signal the cancellation token we are currently using.
             // The process will be restarted later on.
             // Wait for all processes to exit to release their resources, so we can rebuild.
-            await Task.WhenAll(projectsToRestart.Where(p => !p.Options.IsRootProject).Select(p => p.TerminateAsync(isRestarting: true))).WaitAsync(cancellationToken);
+            await Task.WhenAll(projectsToRestart.Where(p => !p.Options.IsRootProject).Select(p => p.TerminateForRestartAsync())).WaitAsync(cancellationToken);
 
             return projectsToRestart;
         }

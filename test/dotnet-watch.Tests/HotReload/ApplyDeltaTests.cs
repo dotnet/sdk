@@ -440,6 +440,64 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded);
         }
 
+        [Theory]
+        [CombinatorialData]
+        public async Task AutoRestartOnRuntimeRudeEdit(bool nonInteractive)
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+            // Changes the type of lambda without updating top-level code.
+            // The loop will end up calling the old version of the lambda resulting in runtime rude edit.
+
+            File.WriteAllText(programPath, """
+                using System;
+                using System.Threading;
+                
+                var d = C.F();
+
+                while (true)
+                {
+                    Thread.Sleep(250);
+                    d(1);
+                }
+
+                class C
+                {
+                    public static Action<int> F()
+                    {
+                        return a =>
+                        {
+                            Console.WriteLine(a.GetType());
+                        };
+                    }
+                }
+                """);
+
+            App.Start(testAsset, nonInteractive ? ["--non-interactive"] : []);
+
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+            await App.WaitUntilOutputContains("System.Int32");
+            App.Process.ClearOutput();
+
+            UpdateSourceFile(programPath, src => src.Replace("Action<int>", "Action<byte>"));
+
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+            await App.WaitUntilOutputContains("System.Byte");
+
+            App.AssertOutputContains($"dotnet watch 🕵️ [WatchHotReloadApp ({tfm})] HotReloadException handler installed.");
+            App.AssertOutputContains($"dotnet watch 🕵️ [WatchHotReloadApp ({tfm})] Runtime rude edit detected:");
+
+            App.AssertOutputContains($"dotnet watch ⚠ [WatchHotReloadApp ({tfm})] " +
+                "Attempted to invoke a deleted lambda or local function implementation. " +
+                "This can happen when lambda or local function is deleted while the application is running.");
+
+            App.AssertOutputContains(MessageDescriptor.RestartingApplication, $"WatchHotReloadApp ({tfm})");
+        }
+
         [Fact]
         public async Task AutoRestartOnRudeEditAfterRestartPrompt()
         {

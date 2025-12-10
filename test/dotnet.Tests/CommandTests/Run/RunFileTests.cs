@@ -1363,7 +1363,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Default projects include embedded resources by default.
+    /// File-based projects using the default SDK do not include embedded resources by default.
     /// </summary>
     [Fact]
     public void EmbeddedResource()
@@ -1371,6 +1371,21 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
+
+        // By default, with the default SDK, embedded resources are not included.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Resource not found
+                """);
+
+        // This behavior can be overridden to enable embedded resources.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:property EnableDefaultEmbeddedResourceItems=true
+            {s_programReadingEmbeddedResource}
+            """);
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -1380,9 +1395,23 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 [MyString, TestValue]
                 """);
 
-        // This behavior can be overridden.
+        // When using a non-default SDK, embedded resources are included by default.
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
-            #:property EnableDefaultEmbeddedResourceItems=false
+            #:sdk Microsoft.NET.Sdk.Web
+            {s_programReadingEmbeddedResource}
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                [MyString, TestValue]
+                """);
+
+        // When using the default SDK explicitly, embedded resources are not included.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:sdk Microsoft.NET.Sdk
             {s_programReadingEmbeddedResource}
             """);
 
@@ -1405,7 +1434,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         bool considered = ext is "sln" or "slnx" or "csproj";
 
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:property EnableDefaultEmbeddedResourceItems=true
+            {s_programReadingEmbeddedResource}
+            """);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
         File.WriteAllText(Path.Join(testInstance.Path, $"repo.{ext}"), "");
 
@@ -1611,6 +1643,230 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Changed");
+    }
+
+    [Fact]
+    public void Build_Library()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "lib.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Library
+            class C;
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Library"));
+    }
+
+    [Fact]
+    public void Build_Library_MultiTarget()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "lib.cs");
+        File.WriteAllText(programFile, $"""
+            #:property OutputType=Library
+            #:property PublishAot=false
+            #:property LangVersion=preview
+            #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
+            class C;
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <TargetFramework></TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+
+        new DotnetCommand(Log, "run", "lib.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Library"));
+    }
+
+    [Fact]
+    public void Build_Module()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "module.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Module
+            #:property ProduceReferenceAssembly=false
+            class C;
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "module.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "module.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Module"));
+    }
+
+    [Fact]
+    public void Build_WinExe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "winexe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=WinExe
+            Console.WriteLine("Hello WinExe");
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "winexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "winexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello WinExe");
+    }
+
+    [Fact]
+    public void Build_Exe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "exe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Exe
+            Console.WriteLine("Hello Exe");
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello Exe");
+    }
+
+    [Fact]
+    public void Build_Exe_MultiTarget()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "exe.cs");
+        File.WriteAllText(programFile, $"""
+            #:property OutputType=Exe
+            #:property PublishAot=false
+            #:property LangVersion=preview
+            #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
+            Console.WriteLine("Hello Exe");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <TargetFramework></TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+
+        new DotnetCommand(Log, "run", "exe.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello Exe");
+    }
+
+    [Fact]
+    public void Build_AppContainerExe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "appcontainerexe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=AppContainerExe
+            Console.WriteLine("Hello AppContainerExe");
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "appcontainerexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "appcontainerexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "AppContainerExe"));
     }
 
     [Fact]
@@ -2923,6 +3179,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var code = $"""
             {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            #:property EnableDefaultEmbeddedResourceItems=true
             {s_programReadingEmbeddedResource}
             """;
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
@@ -2944,42 +3201,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Combination of <see cref="UpToDate_DefaultItems"/> with <see cref="CscOnly"/> optimization.
-    /// </summary>
-    [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
-    public void UpToDate_DefaultItems_CscOnly(bool optOut)
-    {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
-        var code = $"""
-            {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
-            {s_programReadingEmbeddedResource}
-            """;
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
-        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
-
-        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, TestValue]" : "Resource not found");
-
-        // Update the RESX file.
-        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"));
-
-        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.None, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "Resource not found");
-
-        // Update the C# file.
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + code);
-
-        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "Resource not found");
-
-        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "[MyString, UpdatedValue]");
-
-        // Update the C# file.
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v3\n" + code);
-
-        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: "[MyString, UpdatedValue]");
-    }
-
-    /// <summary>
     /// Combination of <see cref="UpToDate_DefaultItems"/> with <see cref="CscOnly_AfterMSBuild"/> optimization.
     /// </summary>
+    /// <remarks>
+    /// Note: we cannot test <see cref="CscOnly"/> because that optimization doesn't support neither <c>#:property</c> nor <c>#:sdk</c> which we need to enable default items.
+    /// </remarks>
     [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
     public void UpToDate_DefaultItems_CscOnly_AfterMSBuild(bool optOut)
     {
@@ -2987,6 +3213,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var code = $"""
             #:property Configuration=Release
             {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            #:property EnableDefaultEmbeddedResourceItems=true
             {s_programReadingEmbeddedResource}
             """;
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
@@ -3637,6 +3864,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <FileBasedProgram>true</FileBasedProgram>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+                        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
                         <OutputType>Exe</OutputType>
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
@@ -3705,6 +3934,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <FileBasedProgram>true</FileBasedProgram>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+                        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
                         <OutputType>Exe</OutputType>
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>

@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
@@ -14,6 +15,9 @@ public class MSBuildForwardingApp : CommandBase
 
     private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
 
+    /// <summary>
+    /// Adds the CLI's telemetry logger to the MSBuild arguments if telemetry is enabled.
+    /// </summary>
     private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs)
     {
         if (Telemetry.Telemetry.CurrentSessionId != null)
@@ -45,8 +49,9 @@ public class MSBuildForwardingApp : CommandBase
 
     public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null, bool includeLogo = false)
     {
+        var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(ConcatTelemetryLogger(msBuildArgs));
         _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
-            ConcatTelemetryLogger(msBuildArgs),
+            modifiedMSBuildArgs,
             msbuildPath: msbuildPath,
             includeLogo: includeLogo);
 

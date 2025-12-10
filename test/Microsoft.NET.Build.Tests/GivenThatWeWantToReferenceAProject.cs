@@ -55,9 +55,9 @@ namespace Microsoft.NET.Build.Tests
         [InlineData($"{ToolsetInfo.CurrentTargetFramework};net45", true, "netstandard1.4", true, false, false)]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework};net46", true, "net45;netstandard1.6", true, true, true)]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework};net45", true, "net46;netstandard1.6", true, false, false)]
-        [InlineData("v4.5.2", false, "netstandard1.6", true, true, false)]
+        [InlineData("v4.6.2", false, "netstandard1.6", true, true, true)]
         [InlineData("v4.7.2", false, "netstandard1.6;net472", true, true, true)]
-        [InlineData("v4.5.2", false, "netstandard1.6;net472", true, true, false)]
+        [InlineData("v4.6.2", false, "netstandard1.6;net472", true, true, true)]
         public void It_checks_for_valid_references(string referencerTarget, bool referencerIsSdkProject,
             string dependencyTarget, bool dependencyIsSdkProject,
             bool restoreSucceeds, bool buildSucceeds)
