@@ -71,7 +71,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
                 }
 
                 TrackedTypeSymbols = builder.ToImmutableHashSet();
-                Debug.Assert(this.TrackedTypeSymbols.Any());
+                Debug.Assert(!this.TrackedTypeSymbols.IsEmpty);
 
                 if (this.DataFlowAnalysisContext.HazardousUsageEvaluators.TryGetInitializationHazardousUsageEvaluator(out _))
                 {
