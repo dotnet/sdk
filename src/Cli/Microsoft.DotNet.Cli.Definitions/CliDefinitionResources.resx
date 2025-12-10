@@ -979,4 +979,37 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="CmdTestOutputDescription" xml:space="preserve">
     <value>Verbosity of test output.</value>
   </data>
+  <data name="Option_AddSource" xml:space="preserve">
+    <value>Specifies a NuGet source to use.</value>
+  </data>
+  <data name="Option_AuthorFilter" xml:space="preserve">
+    <value>Filters the templates based on the template author.</value>
+  </data>
+  <data name="Option_BaselineFilter" xml:space="preserve">
+    <value>Filters the templates based on baseline defined in the template.</value>
+  </data>
+  <data name="Option_Columns" xml:space="preserve">
+    <value>Specifies the columns to display in the output. </value>
+  </data>
+  <data name="Option_ColumnsAll" xml:space="preserve">
+    <value>Displays all columns in the output.</value>
+  </data>
+  <data name="Option_Interactive" xml:space="preserve">
+    <value>Allows the command to stop and wait for user input or action (for example to complete authentication).</value>
+  </data>
+  <data name="Option_LanguageFilter" xml:space="preserve">
+    <value>Filters templates based on language.</value>
+  </data>
+  <data name="Option_PackageFilter" xml:space="preserve">
+    <value>Filters the templates based on NuGet package ID.</value>
+  </data>
+  <data name="Option_TagFilter" xml:space="preserve">
+    <value>Filters the templates based on the tag.</value>
+  </data>
+  <data name="Option_TypeFilter" xml:space="preserve">
+    <value>Filters templates based on available types. Predefined values are "project" and "item".</value>
+  </data>
+  <data name="TemplateCommand_Option_Force" xml:space="preserve">
+    <value>Forces content to be generated even if it would change existing files.</value>
+  </data>
 </root>

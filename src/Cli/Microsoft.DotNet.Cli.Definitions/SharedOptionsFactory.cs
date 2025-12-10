@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
@@ -38,7 +39,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new Option<bool>("--interactive")
             {
                 Arity = new ArgumentArity(0, 1),
-                Description = SymbolStrings.Option_Interactive
+                Description = CliDefinitionResources.Option_Interactive
             };
         }
 
@@ -47,7 +48,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new("--add-source", "--nuget-source")
             {
                 Arity = new ArgumentArity(1, 99),
-                Description = SymbolStrings.Option_AddSource,
+                Description = CliDefinitionResources.Option_AddSource,
                 AllowMultipleArgumentsPerToken = true,
                 HelpName = "nuget-source"
             };
@@ -58,7 +59,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new("--force")
             {
                 Arity = new ArgumentArity(0, 1),
-                Description = SymbolStrings.TemplateCommand_Option_Force,
+                Description = CliDefinitionResources.TemplateCommand_Option_Force,
             };
         }
 
@@ -67,7 +68,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new("--author")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_AuthorFilter
+                Description = CliDefinitionResources.Option_AuthorFilter
             };
         }
 
@@ -76,7 +77,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new("--baseline")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_BaselineFilter,
+                Description = CliDefinitionResources.Option_BaselineFilter,
                 Hidden = true
             };
         }
@@ -86,7 +87,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new("--language", "-lang")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_LanguageFilter
+                Description = CliDefinitionResources.Option_LanguageFilter
             };
         }
 
@@ -95,7 +96,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new("--type")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_TypeFilter
+                Description = CliDefinitionResources.Option_TypeFilter
             };
         }
 
@@ -104,7 +105,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new("--tag")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_TagFilter
+                Description = CliDefinitionResources.Option_TagFilter
             };
         }
 
@@ -113,7 +114,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new("--package")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_PackageFilter
+                Description = CliDefinitionResources.Option_PackageFilter
             };
         }
 
@@ -122,7 +123,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new("--columns-all")
             {
                 Arity = ArgumentArity.Zero,
-                Description = SymbolStrings.Option_ColumnsAll
+                Description = CliDefinitionResources.Option_ColumnsAll
             };
         }
 
@@ -131,7 +132,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Option<string[]> option = new("--columns")
             {
                 Arity = new ArgumentArity(1, 4),
-                Description = SymbolStrings.Option_Columns,
+                Description = CliDefinitionResources.Option_Columns,
                 AllowMultipleArgumentsPerToken = true,
                 CustomParser = ParseCommaSeparatedValues
             };
