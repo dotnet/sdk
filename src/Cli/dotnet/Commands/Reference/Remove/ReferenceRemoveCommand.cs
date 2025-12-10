@@ -5,8 +5,8 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;

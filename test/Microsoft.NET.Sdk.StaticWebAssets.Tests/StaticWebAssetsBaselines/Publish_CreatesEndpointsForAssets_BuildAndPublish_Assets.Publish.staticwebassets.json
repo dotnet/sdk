@@ -497,6 +497,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -552,6 +556,10 @@
         {
           "Name": "label",
           "Value": "ComponentApp.bundle.scp.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -689,6 +697,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -744,6 +756,10 @@
         {
           "Name": "label",
           "Value": "ComponentApp.styles.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -881,6 +897,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -936,6 +956,10 @@
         {
           "Name": "label",
           "Value": "_framework/blazor.server.js"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1073,6 +1097,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1128,6 +1156,10 @@
         {
           "Name": "label",
           "Value": "_framework/blazor.web.js"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1216,6 +1248,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1353,6 +1389,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1408,6 +1448,10 @@
         {
           "Name": "label",
           "Value": "ComponentApp.bundle.scp.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1545,6 +1589,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1600,6 +1648,10 @@
         {
           "Name": "label",
           "Value": "ComponentApp.styles.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1737,6 +1789,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1792,6 +1848,10 @@
         {
           "Name": "label",
           "Value": "_framework/blazor.server.js"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1929,6 +1989,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1984,6 +2048,10 @@
         {
           "Name": "label",
           "Value": "_framework/blazor.web.js"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -2072,6 +2140,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },

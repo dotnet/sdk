@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.ObjectModel;
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Versioning;
-using static Microsoft.DotNet.Cli.Commands.Run.CSharpDirective;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -18,47 +13,43 @@ internal static class PackCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-pack";
 
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.PackCmdOutputDirDescription,
         HelpName = CliCommandStrings.PackCmdOutputDir
     }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
 
-    public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
+    public static readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
         Description = CliCommandStrings.CmdNoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
-    public static readonly Option<bool> IncludeSymbolsOption = new ForwardedOption<bool>("--include-symbols")
+    public static readonly Option<bool> IncludeSymbolsOption = new Option<bool>("--include-symbols")
     {
         Description = CliCommandStrings.CmdIncludeSymbolsDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSymbols=true");
 
-    public static readonly Option<bool> IncludeSourceOption = new ForwardedOption<bool>("--include-source")
+    public static readonly Option<bool> IncludeSourceOption = new Option<bool>("--include-source")
     {
         Description = CliCommandStrings.CmdIncludeSourceDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSource=true");
 
-    public static readonly Option<bool> ServiceableOption = new ForwardedOption<bool>("--serviceable", "-s")
+    public static readonly Option<bool> ServiceableOption = new Option<bool>("--serviceable", "-s")
     {
         Description = CliCommandStrings.CmdServiceableDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:Serviceable=true");
 
-    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
-    {
-        Description = CliCommandStrings.PackCmdNoLogo,
-        Arity = ArgumentArity.Zero
-    }.ForwardAs("-nologo");
+    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
@@ -68,7 +59,7 @@ internal static class PackCommandParser
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandParser.VerbosityOption;
 
     public static Option<NuGetVersion> VersionOption =
-        new ForwardedOption<NuGetVersion>("--version")
+        new Option<NuGetVersion>("--version")
         {
             Description = CliCommandStrings.PackCmdVersionDescription,
             HelpName = CliCommandStrings.PackCmdVersion,
@@ -95,9 +86,12 @@ internal static class PackCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("pack", DocsLink, CliCommandStrings.PackAppFullName);
+        var command = new Command("pack", CliCommandStrings.PackAppFullName)
+        {
+            DocsLink = DocsLink
+        };
 
-        command.Arguments.Add(SlnOrProjectArgument);
+        command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(OutputOption);
         command.Options.Add(CommonOptions.ArtifactsPathOption);
         command.Options.Add(NoBuildOption);
@@ -113,6 +107,10 @@ internal static class PackCommandParser
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
+        command.Options.Add(CommonOptions.GetPropertyOption);
+        command.Options.Add(CommonOptions.GetItemOption);
+        command.Options.Add(CommonOptions.GetTargetResultOption);
+        command.Options.Add(CommonOptions.GetResultOutputFileOption);
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);

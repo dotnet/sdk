@@ -1161,13 +1161,14 @@ public static class Program
                     CopyDirectory(Path.Combine(TestContext.Current.ToolsetUnderTest.DotNetRoot, "shared", "Microsoft.NETCore.App"), Path.Combine(expectedRoot, "shared", "Microsoft.NETCore.App"));
                     break;
                 case "EnvironmentVariable":
-                    // Set DOTNET_ROOT environment variable to the expected .NET root
+                    // Set DOTNET_ROOT_<arch> environment variable to the expected .NET root
                     expectedRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
-                    runCommand = runCommand.WithEnvironmentVariable("DOTNET_ROOT", expectedRoot);
+                    runCommand = runCommand.WithEnvironmentVariable($"DOTNET_ROOT_{RuntimeInformation.OSArchitecture.ToString().ToUpperInvariant()}", expectedRoot);
                     break;
                 default:
-                    // Should fail - make sure DOTNET_ROOT is not set
-                    runCommand = runCommand.WithEnvironmentVariable("DOTNET_ROOT", string.Empty);
+                    // Should fail - make sure DOTNET_ROOT_<arch> and DOTNET_ROOT are not set
+                    runCommand = runCommand.WithEnvironmentVariable($"DOTNET_ROOT", string.Empty);
+                    runCommand = runCommand.WithEnvironmentVariable($"DOTNET_ROOT_{RuntimeInformation.OSArchitecture.ToString().ToUpperInvariant()}", string.Empty);
                     break;
             }
 

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Store;
@@ -15,7 +16,7 @@ internal static class StoreCommandParser
         Arity = ArgumentArity.ZeroOrMore,
     };
 
-    public static readonly Option<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest", "-m")
+    public static readonly Option<IEnumerable<string>> ManifestOption = new Option<IEnumerable<string>>("--manifest", "-m")
     {
         Description = CliCommandStrings.ProjectManifestDescription,
         HelpName = CliCommandStrings.ProjectManifest,
@@ -36,31 +37,31 @@ internal static class StoreCommandParser
         }
     }).AllowSingleArgPerToken();
 
-    public static readonly Option<string> FrameworkVersionOption = new ForwardedOption<string>("--framework-version")
+    public static readonly Option<string> FrameworkVersionOption = new Option<string>("--framework-version")
     {
         Description = CliCommandStrings.FrameworkVersionOptionDescription,
         HelpName = CliCommandStrings.FrameworkVersionOption
     }.ForwardAsSingle(o => $"-property:RuntimeFrameworkVersion={o}");
 
-    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.StoreOutputOptionDescription,
         HelpName = CliCommandStrings.StoreOutputOption
     }.ForwardAsOutputPath("ComposeDir");
 
-    public static readonly Option<string> WorkingDirOption = new ForwardedOption<string>("--working-dir", "-w")
+    public static readonly Option<string> WorkingDirOption = new Option<string>("--working-dir", "-w")
     {
         Description = CliCommandStrings.IntermediateWorkingDirOptionDescription,
         HelpName = CliCommandStrings.IntermediateWorkingDirOption
     }.ForwardAsSingle(o => $"-property:ComposeWorkingDir={CommandDirectoryContext.GetFullPath(o)}");
 
-    public static readonly Option<bool> SkipOptimizationOption = new ForwardedOption<bool>("--skip-optimization")
+    public static readonly Option<bool> SkipOptimizationOption = new Option<bool>("--skip-optimization")
     {
         Description = CliCommandStrings.SkipOptimizationOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:SkipOptimization=true");
 
-    public static readonly Option<bool> SkipSymbolsOption = new ForwardedOption<bool>("--skip-symbols")
+    public static readonly Option<bool> SkipSymbolsOption = new Option<bool>("--skip-symbols")
     {
         Description = CliCommandStrings.SkipSymbolsOptionDescription,
         Arity = ArgumentArity.Zero
@@ -75,7 +76,10 @@ internal static class StoreCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("store", DocsLink, CliCommandStrings.StoreAppDescription);
+        Command command = new("store", CliCommandStrings.StoreAppDescription)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Arguments.Add(Argument);
         command.Options.Add(ManifestOption);
@@ -89,6 +93,7 @@ internal static class StoreCommandParser
         command.Options.Add(CommonOptions.VerbosityOption());
         command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.NoLogoOption(true));
 
         command.SetAction(StoreCommand.Run);
 

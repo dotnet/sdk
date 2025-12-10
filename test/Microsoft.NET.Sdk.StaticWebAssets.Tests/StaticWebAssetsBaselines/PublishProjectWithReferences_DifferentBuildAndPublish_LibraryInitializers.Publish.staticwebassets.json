@@ -967,6 +967,10 @@
           "Value": "__integrity__"
         },
         {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        },
+        {
           "Name": "script-type",
           "Value": "module"
         }
@@ -1057,6 +1061,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1145,6 +1153,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1239,6 +1251,10 @@
           "Value": "__integrity__"
         },
         {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        },
+        {
           "Name": "script-type",
           "Value": "module"
         }
@@ -1329,6 +1345,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1417,6 +1437,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1677,6 +1701,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1736,6 +1764,10 @@
         {
           "Name": "label",
           "Value": "AppWithPackageAndP2PReference.styles.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1824,6 +1856,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -1912,6 +1948,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -2000,6 +2040,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -2088,6 +2132,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -2229,6 +2277,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -2288,6 +2340,10 @@
         {
           "Name": "label",
           "Value": "AppWithPackageAndP2PReference.styles.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -2376,6 +2432,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -2464,6 +2524,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -2552,6 +2616,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -2640,6 +2708,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -2728,6 +2800,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -2816,6 +2892,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -3080,6 +3160,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -3135,6 +3219,10 @@
         {
           "Name": "label",
           "Value": "_content/ClassLibrary/ClassLibrary.bundle.scp.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -3223,6 +3311,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -3311,6 +3403,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -3448,6 +3544,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -3503,6 +3603,10 @@
         {
           "Name": "label",
           "Value": "_content/ClassLibrary/ClassLibrary.bundle.scp.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -3591,6 +3695,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -3679,6 +3787,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },

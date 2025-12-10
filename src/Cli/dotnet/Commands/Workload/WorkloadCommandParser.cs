@@ -22,6 +22,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
 using Command = System.CommandLine.Command;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
@@ -142,7 +143,10 @@ internal static class WorkloadCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("workload", DocsLink, CliCommandStrings.WorkloadCommandDescription);
+        Command command = new("workload", CliCommandStrings.WorkloadCommandDescription)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Subcommands.Add(WorkloadInstallCommandParser.GetCommand());
         command.Subcommands.Add(WorkloadUpdateCommandParser.GetCommand());
@@ -174,10 +178,7 @@ internal static class WorkloadCommandParser
 
     private class ShowWorkloadsInfoAction : SynchronousCommandLineAction
     {
-        public ShowWorkloadsInfoAction()
-        {
-            Terminating = true;
-        }
+        public override bool Terminating => true;
 
         public override int Invoke(ParseResult parseResult)
         {
@@ -189,10 +190,7 @@ internal static class WorkloadCommandParser
 
     private class ShowWorkloadsVersionOption : SynchronousCommandLineAction
     {
-        public ShowWorkloadsVersionOption()
-        {
-            Terminating = true;
-        }
+        public override bool Terminating => true;
 
         public override int Invoke(ParseResult parseResult)
         {

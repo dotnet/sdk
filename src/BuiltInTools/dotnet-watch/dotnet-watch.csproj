@@ -1,9 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
-  <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
-  <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
-
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
@@ -33,45 +28,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Locator" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
     <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="All" />
-
-    <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)\src\Cli\dotnet\dotnet.csproj" />
-    <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" TargetPath="middleware\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" CopyToOutputDirectory="PreserveNewest" />
-    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" />
 
-    <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj">
+    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj">
       <PrivateAssets>all</PrivateAssets>
       <OutputItemType>Content</OutputItemType>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
-      <TargetPath>hotreload\net10.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
-    </ProjectReference>
-
-    <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj">
-      <PrivateAssets>all</PrivateAssets>
-      <OutputItemType>Content</OutputItemType>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SetTargetFramework>TargetFramework=net6.0</SetTargetFramework>
-      <TargetPath>hotreload\net6.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
+      <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </ProjectReference>
+
+    <ProjectReference Include="..\Watch\Microsoft.DotNet.HotReload.Watch.csproj" />
   </ItemGroup>
+
+  <Import Project="..\Watch\RuntimeDependencies.props" />
 
   <!-- Publish dotnet-watch files to the redist testhost folder so that in innerloop, redist doesn't need to be built again. -->
   <Target Name="PublishDotnetWatchToTestHost" BeforeTargets="AfterBuild">
@@ -95,9 +72,7 @@
                                         $([MSBuild]::ValueOrDefault('%(FullPath)', '').Contains('BuildHost'))" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(_DotnetWatchInputFile)"
-          DestinationFiles="@(_DotnetWatchInputFile->'$(TestHostDotNetRoot)sdk\$(Version)\DotnetTools\dotnet-watch\$(Version)\tools\$(SdkTargetFramework)\any\%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true">
+    <Copy SourceFiles="@(_DotnetWatchInputFile)" DestinationFiles="@(_DotnetWatchInputFile->'$(TestHostDotNetRoot)sdk\$(Version)\DotnetTools\dotnet-watch\$(Version)\tools\$(SdkTargetFramework)\any\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
   </Target>

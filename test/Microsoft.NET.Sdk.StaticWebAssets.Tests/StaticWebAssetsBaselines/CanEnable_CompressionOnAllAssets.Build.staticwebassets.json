@@ -352,6 +352,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -411,6 +415,10 @@
         {
           "Name": "label",
           "Value": "AppWithP2PReference.styles.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -638,6 +646,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -693,6 +705,10 @@
         {
           "Name": "label",
           "Value": "_content/ClassLibrary/ClassLibrary.bundle.scp.css"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -781,6 +797,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -869,6 +889,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },

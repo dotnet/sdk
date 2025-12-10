@@ -45,14 +45,17 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 return;
             }
-            new DotnetNewCommand(_log, "details", "Some package that does not exist")
+
+            var nonexistantPackageName = "Some-package-that-does-not-exist";
+
+            new DotnetNewCommand(_log, "details", nonexistantPackageName)
             .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
                 .Should()
                 .ExitWith(103)
                 .And.HaveStdErr()
-                .And.HaveStdOutMatching("No template packages found matching: Some package that does not exist.");
+                .And.HaveStdOutMatching($"No template packages found matching: {nonexistantPackageName}.");
         }
     }
 }

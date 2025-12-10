@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class EvaluationTests(ITestOutputHelper output)
     {
-        private readonly TestReporter _reporter = new(output);
+        private readonly TestLogger _logger = new(output);
         private readonly TestAssetsManager _testAssets = new(output);
 
         private static string MuxerPath
@@ -236,8 +236,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net462",
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Project1.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1);
@@ -271,8 +276,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net462",
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Project1.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1);
@@ -305,8 +315,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Project1.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1, identifier: specifyTargetFramework.ToString());
@@ -427,8 +442,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory, muxerPath: MuxerPath);
-            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
-            var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
+            var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
+            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
             var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, buildReporter);
 
@@ -455,17 +470,18 @@ namespace Microsoft.DotNet.Watch.UnitTests
             ], Inspect(testDirectory, result.Files));
 
             // ensure each project is only visited once for collecting watch items
+            var prefix = "[Debug]   Collecting watch items from ";
             AssertEx.SequenceEqual(
                 [
-                    "Collecting watch items from 'A'",
-                    "Collecting watch items from 'B'",
-                    "Collecting watch items from 'C'",
-                    "Collecting watch items from 'D'",
-                    "Collecting watch items from 'E'",
-                    "Collecting watch items from 'F'",
-                    "Collecting watch items from 'G'",
+                    "'A'",
+                    "'B'",
+                    "'C'",
+                    "'D'",
+                    "'E'",
+                    "'F'",
+                    "'G'",
                 ],
-                _reporter.Messages.Where(l => l.text.Contains("Collecting watch items from")).Select(l => l.text.Trim()).Order());
+                _logger.GetAndClearMessages().Where(m => m.Contains(prefix)).Select(m => m.Trim()[prefix.Length..]).Order());
         }
 
         [Fact]
@@ -478,25 +494,30 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = "net462",
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Program.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1);
             var project1Path = GetTestProjectPath(testAsset);
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
-            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
-            var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
+            var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
+            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
             var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], processRunner, buildReporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.Null(result);
 
             // note: msbuild prints errors to stdout, we match the pattern and report as error:
-            AssertEx.Equal(
-                (MessageSeverity.Error, $"{project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)"),
-                _reporter.Messages.Single(l => l.text.Contains("error NU1201")));
+            Assert.Contains(
+                $"[Error] {project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)",
+                _logger.GetAndClearMessages());
         }
 
         private readonly struct ExpectedFile(string path, string? staticAssetUrl = null, bool targetsOnly = false, bool graphOnly = false)
@@ -524,9 +545,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             async Task VerifyTargetsEvaluation()
             {
                 var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir, muxerPath: MuxerPath) with { TestOutput = testDir };
-                var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
+                var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
                 var buildArguments = targetFramework != null ? new[] { "/p:TargetFramework=" + targetFramework } : [];
-                var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
+                var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
                 var factory = new MSBuildFileSetFactory(rootProjectPath, buildArguments, processRunner, buildReporter);
                 var targetsResult = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
                 Assert.NotNull(targetsResult);
@@ -543,7 +564,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 using var watchableApp = new WatchableApp(new DebugTestOutputLogger(output));
                 var arguments = targetFramework != null ? new[] { "-f", targetFramework } : [];
                 watchableApp.Start(testAsset, arguments, relativeProjectDirectory: testAsset.TestProject!.Name);
-                await watchableApp.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting, failure: _ => false);
+                await watchableApp.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
                 var normalizedActual = ParseOutput(watchableApp.Process.Output).OrderBy(f => f.relativePath);
                 var normalizedExpected = expectedFiles.Where(f => !f.TargetsOnly).Select(f => (f.Path, f.StaticAssetUrl)).OrderBy(f => f.Path);

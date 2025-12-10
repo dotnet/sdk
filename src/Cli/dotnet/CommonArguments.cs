@@ -3,7 +3,9 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.CommandLine.StaticCompletions;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Versioning;
 
@@ -11,20 +13,23 @@ namespace Microsoft.DotNet.Cli
 {
     internal class CommonArguments
     {
-        public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument() =>
+
+        public static Argument<PackageIdentityWithRange?> OptionalPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
             new("packageId")
             {
-                Description = CliStrings.PackageIdentityArgumentDescription,
+                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
                 Arity = ArgumentArity.ZeroOrOne,
+                IsDynamic = true
             };
 
-        public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument() =>
+        public static Argument<PackageIdentityWithRange> RequiredPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
             new("packageId")
             {
-                Description = CliStrings.PackageIdentityArgumentDescription,
+                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
                 Arity = ArgumentArity.ExactlyOne,
+                IsDynamic = true
             };
 
         private static PackageIdentityWithRange? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')

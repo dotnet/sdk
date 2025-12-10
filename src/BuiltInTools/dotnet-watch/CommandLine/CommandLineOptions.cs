@@ -8,8 +8,10 @@ using System.Data;
 using System.Diagnostics;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -44,7 +46,7 @@ internal sealed class CommandLineOptions
     // this option is referenced from inner logic and so needs to be reference-able
     public static Option<bool> NonInteractiveOption = new Option<bool>("--non-interactive") { Description = Resources.Help_NonInteractive, Arity = ArgumentArity.Zero };
 
-    public static CommandLineOptions? Parse(IReadOnlyList<string> args, IReporter reporter, TextWriter output, out int errorCode)
+    public static CommandLineOptions? Parse(IReadOnlyList<string> args, ILogger logger, TextWriter output, out int errorCode)
     {
         // dotnet watch specific options:
         var quietOption = new Option<bool>("--quiet", "-q") { Description = Resources.Help_Quiet, Arity = ArgumentArity.Zero };
@@ -109,7 +111,7 @@ internal sealed class CommandLineOptions
 
         // parse without forwarded options first:
         var parseResult = rootCommand.Parse(args, parseConfig);
-        if (ReportErrors(parseResult, reporter))
+        if (ReportErrors(parseResult, logger))
         {
             errorCode = 1;
             return null;
@@ -118,7 +120,7 @@ internal sealed class CommandLineOptions
         // determine subcommand:
         var explicitCommand = TryGetSubcommand(parseResult);
         var command = explicitCommand ?? RunCommandParser.GetCommand();
-        var buildOptions = command.Options.Where(o => o is IForwardedOption);
+        var buildOptions = command.Options.Where(o => o.ForwardingFunction is not null);
 
         foreach (var buildOption in buildOptions)
         {
@@ -127,7 +129,7 @@ internal sealed class CommandLineOptions
 
         // reparse with forwarded options:
         parseResult = rootCommand.Parse(args, parseConfig);
-        if (ReportErrors(parseResult, reporter))
+        if (ReportErrors(parseResult, logger))
         {
             errorCode = 1;
             return null;
@@ -152,7 +154,7 @@ internal sealed class CommandLineOptions
             var projectShortValue = parseResult.GetValue(shortProjectOption);
             if (!string.IsNullOrEmpty(projectShortValue))
             {
-                reporter.Warn(Resources.Warning_ProjectAbbreviationDeprecated);
+                logger.LogWarning(Resources.Warning_ProjectAbbreviationDeprecated);
                 projectValue = projectShortValue;
             }
         }
@@ -160,7 +162,7 @@ internal sealed class CommandLineOptions
         var commandArguments = GetCommandArguments(parseResult, watchOptions, explicitCommand, out var binLogToken, out var binLogPath);
 
         // We assume that forwarded options, if any, are intended for dotnet build.
-        var buildArguments = buildOptions.Select(option => ((IForwardedOption)option).GetForwardingFunction()(parseResult)).SelectMany(args => args).ToList();
+        var buildArguments = buildOptions.Select(option => option.ForwardingFunction!(parseResult)).SelectMany(args => args).ToList();
 
         if (binLogToken != null)
         {
@@ -334,13 +336,13 @@ internal sealed class CommandLineOptions
         return null;
     }
 
-    private static bool ReportErrors(ParseResult parseResult, IReporter reporter)
+    private static bool ReportErrors(ParseResult parseResult, ILogger logger)
     {
         if (parseResult.Errors.Any())
         {
             foreach (var error in parseResult.Errors)
             {
-                reporter.Error(error.Message);
+                logger.LogError(error.Message);
             }
 
             return true;
@@ -376,22 +378,4 @@ internal sealed class CommandLineOptions
             BuildArguments = BuildArguments,
             TargetFramework = TargetFramework,
         };
-
-    // Parses name=value pairs passed to --property. Skips invalid input.
-    public static IEnumerable<(string key, string value)> ParseBuildProperties(IEnumerable<string> arguments)
-        => from argument in arguments
-           let colon = argument.IndexOf(':')
-           where colon >= 0 && argument[0..colon] is "--property" or "-property" or "/property" or "/p" or "-p" or "--p"
-           let eq = argument.IndexOf('=', colon)
-           where eq >= 0
-           let name = argument[(colon + 1)..eq].Trim()
-           let value = argument[(eq + 1)..]
-           where name is not []
-           select (name, value);
-
-    /// <summary>
-    /// Returns true if the command executes the code of the target project.
-    /// </summary>
-    public static bool IsCodeExecutionCommand(string commandName)
-        => commandName is "run" or "test";
 }

@@ -237,6 +237,26 @@
         <target state="translated">Dispose 메서드는 SuppressFinalize를 호출해야 합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsCodeFixTitle">
+        <source>Collapse into single Path.{0} operation</source>
+        <target state="new">Collapse into single Path.{0} operation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsDescription">
+        <source>When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</source>
+        <target state="new">When multiple Path.Combine or Path.Join operations are nested, they can be collapsed into a single operation for better performance and readability.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsMessage">
+        <source>Multiple consecutive Path.{0} operations can be collapsed into a single operation</source>
+        <target state="new">Multiple consecutive Path.{0} operations can be collapsed into a single operation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollapseMultiplePathOperationsTitle">
+        <source>Collapse consecutive Path.Combine or Path.Join operations</source>
+        <target state="new">Collapse consecutive Path.Combine or Path.Join operations</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommaSeparator">
         <source>, </source>
         <target state="translated">, </target>
@@ -627,10 +647,10 @@
 The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
 The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
 Widening and user defined conversions are not supported with generic types.</source>
-        <target state="new">Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
-The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
-The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
-Widening and user defined conversions are not supported with generic types.</target>
+        <target state="translated">Enumerable.Cast&lt;T&gt; 및 Enumerable.OfType&lt;T&gt;가 제대로 작동하려면 호환되는 형식이 필요합니다.  
+Enumerable.Cast&lt;T&gt;에서 반환된 시퀀스에서 사용하는 일반 캐스트(IL 'unbox.any')는 지정된 형식의 요소에서 런타임에 InvalidCastException을 발생시킵니다.  
+Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' 연산자/IL 'isinst')는 지정된 형식의 요소로 성공하지 못하여 결과적으로 빈 시퀀스가 됩니다.  
+확대 및 사용자 정의 변환은 일반 형식에서 지원되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageCast">
@@ -645,7 +665,7 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesTitle">
         <source>Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</source>
-        <target state="new">Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</target>
+        <target state="translated">호환되지 않는 형식으로 Enumerable.Cast&lt;T&gt; 또는 Enumerable.OfType&lt;T&gt;를 호출하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
@@ -1008,6 +1028,21 @@ Widening and user defined conversions are not supported with generic types.</tar
         <target state="translated">세분화된 액세스 제어와 컨테이너 수준 액세스 정책을 위해 계정 SAS가 아닌 서비스 SAS 사용</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopDescription">
+        <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</source>
+        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopMessage">
+        <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</source>
+        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopTitle">
+        <source>Do not use 'AsParallel' in 'foreach'</source>
+        <target state="new">Do not use 'AsParallel' in 'foreach'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseBrokenCryptographicAlgorithms">
         <source>Do Not Use Broken Cryptographic Algorithms</source>
         <target state="translated">손상된 암호화 알고리즘을 사용하지 마세요.</target>
@@ -1146,6 +1181,21 @@ Widening and user defined conversions are not supported with generic types.</tar
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
         <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
         <target state="translated">{0}은(는) 비보안 난수 생성기입니다. 보안을 위해 임의성이 필요한 경우 암호화된 보안 난수 생성기를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyDescription">
+        <source>When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</source>
+        <target state="new">When Task.Delay is used with Task.WhenAny to implement a timeout, the timer created by Task.Delay continues to run even after WhenAny completes, wasting resources. If your target framework supports Task.WaitAsync, use that instead as it has built-in timeout support without leaving timers running. Otherwise, pass a CancellationToken to Task.Delay that can be canceled when the operation completes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyMessage">
+        <source>Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</source>
+        <target state="new">Using Task.WhenAny with Task.Delay may result in a timer continuing to run after the operation completes, wasting resources</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseNonCancelableTaskDelayWithWhenAnyTitle">
+        <source>Cancel Task.Delay after Task.WhenAny completes</source>
+        <target state="new">Cancel Task.Delay after Task.WhenAny completes</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
@@ -1710,7 +1760,7 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="MarkISerializableTypesWithSerializableMessage">
         <source>Add [Serializable] to {0} as this type implements ISerializable</source>
-        <target state="new">Add [Serializable] to {0} as this type implements ISerializable</target>
+        <target state="translated">ISerializable을 구현하는 [Serializable]을 {0}에 추가합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkISerializableTypesWithSerializableTitle">
@@ -2238,6 +2288,26 @@ Widening and user defined conversions are not supported with generic types.</tar
         <target state="translated">Count 대신 IsEmpty 사용</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferJsonElementParseDescription">
+        <source>JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.</source>
+        <target state="new">JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJsonElementParseFix">
+        <source>Use 'JsonElement.Parse'</source>
+        <target state="new">Use 'JsonElement.Parse'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJsonElementParseMessage">
+        <source>Use 'JsonElement.Parse' instead of 'JsonDocument.Parse(...).RootElement' to avoid resource leaks</source>
+        <target state="new">Use 'JsonElement.Parse' instead of 'JsonDocument.Parse(...).RootElement' to avoid resource leaks</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJsonElementParseTitle">
+        <source>Prefer JsonElement.Parse over JsonDocument.Parse().RootElement</source>
+        <target state="new">Prefer JsonElement.Parse over JsonDocument.Parse().RootElement</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferLengthCountIsEmptyOverAnyDescription">
         <source>Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.</source>
         <target state="translated">'Enumerable.Any()'를 호출하는 것보다 사용 가능한 'IsEmpty', 'Count' 또는 'Length' 속성을 사용하는 것이 좋습니다. 의도가 더 명확하고 'Enumerable.Any()' 확장 방법을 사용하는 것보다 더 성능이 좋습니다.</target>
@@ -2256,6 +2326,26 @@ Widening and user defined conversions are not supported with generic types.</tar
       <trans-unit id="PreferLengthOverAnyMessage">
         <source>Prefer comparing 'Length' to 0 rather than using 'Any()', both for clarity and for performance</source>
         <target state="translated">명확성과 성능을 위해 'Any()'를 사용하는 것보다 'Length'를 0과 비교하는 것이 좋습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanCodeFixTitle">
+        <source>Change to '{0}'</source>
+        <target state="new">Change to '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanDescription">
+        <source>Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</source>
+        <target state="new">Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanMessage">
+        <source>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</source>
+        <target state="new">Parameter '{0}' can be declared as '{1}' instead of as '{2}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanOverSpanTitle">
+        <source>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</source>
+        <target state="new">Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2294,18 +2384,23 @@ Widening and user defined conversions are not supported with generic types.</tar
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
-        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
-        <target state="translated">StringBuilder.Append 및 StringBuilder.Insert는 System.String 외의 여러 형식에 대한 오버로드를 제공합니다. 가능한 경우 ToString() 및 문자열 기반 오버로드를 사용하는 대신 강력한 형식의 오버로드를 사용하세요.</target>
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</source>
+        <target state="needs-review-translation">StringBuilder.Append 및 StringBuilder.Insert는 System.String 외의 여러 형식에 대한 오버로드를 제공합니다. 가능한 경우 ToString() 및 문자열 기반 오버로드를 사용하는 대신 강력한 형식의 오버로드를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
-        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
-        <target state="translated">강력한 형식의 StringBuilder 오버로드를 사용하려면 ToString 호출을 제거하세요.</target>
+        <source>Prefer strongly-typed StringBuilder overload</source>
+        <target state="needs-review-translation">강력한 형식의 StringBuilder 오버로드를 사용하려면 ToString 호출을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
         <source>Remove the ToString call</source>
         <target state="translated">ToString 호출 제거</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsReplaceStringConstructor">
+        <source>Use StringBuilder.Append(char, int) overload</source>
+        <target state="new">Use StringBuilder.Append(char, int) overload</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
