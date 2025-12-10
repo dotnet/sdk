@@ -304,6 +304,10 @@ public class RunCommand
                 if (!string.IsNullOrEmpty(runtimeIdentifier))
                 {
                     properties["RuntimeIdentifier"] = runtimeIdentifier;
+
+                    // If the device added a RuntimeIdentifier, we need to re-restore with that RID
+                    // because the previous restore (if any) didn't include it
+                    _restoreDoneForDeviceSelection = false;
                 }
 
                 var additionalProperties = new ReadOnlyDictionary<string, string>(properties);
