@@ -12,6 +12,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.NET.HostModel.AppHost;
 using NuGet.Configuration;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -44,6 +45,7 @@ internal sealed partial class CSharpCompilerCommand
     private static string ClientDirectory => field ??= Path.Combine(SdkPath, "Roslyn", "bincore");
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
     internal static string RuntimeVersion => field ??= RuntimeInformation.FrameworkDescription.Split(' ').Last();
+    private static string DefaultRuntimeVersion => field ??= GetDefaultRuntimeVersion();
     private static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
 
     public required string EntryPointFileFullPath { get; init; }
@@ -110,9 +112,18 @@ internal sealed partial class CSharpCompilerCommand
         if (BuildResultFile != null &&
             CSharpCommandLineParser.Default.Parse(CscArguments, BaseDirectory, sdkDirectory: null) is { OutputFileName: { } outputFileName } parsedArgs)
         {
-            var objFile = parsedArgs.GetOutputFilePath(outputFileName);
-            Reporter.Verbose.WriteLine($"Copying '{objFile}' to '{BuildResultFile}'.");
-            File.Copy(objFile, BuildResultFile, overwrite: true);
+            var objFile = new FileInfo(parsedArgs.GetOutputFilePath(outputFileName));
+            var binFile = new FileInfo(BuildResultFile);
+
+            if (HaveMatchingSizeAndTimeStamp(objFile, binFile))
+            {
+                Reporter.Verbose.WriteLine($"Skipping copy of '{objFile}' to '{BuildResultFile}' because the files have matching size and timestamp.");
+            }
+            else
+            {
+                Reporter.Verbose.WriteLine($"Copying '{objFile}' to '{BuildResultFile}'.");
+                File.Copy(objFile.FullName, binFile.FullName, overwrite: true);
+            }
         }
 
         return exitCode;
@@ -152,6 +163,27 @@ internal sealed partial class CSharpCompilerCommand
                     fallbackToNormalBuild = true;
                     return 1;
             }
+        }
+
+        // Inspired by MSBuild: https://github.com/dotnet/msbuild/blob/a7a4d5af02be5aa6dc93a492d6d03056dc811388/src/Tasks/Copy.cs#L208
+        static bool HaveMatchingSizeAndTimeStamp(FileInfo sourceFile, FileInfo destinationFile)
+        {
+            if (!destinationFile.Exists)
+            {
+                return false;
+            }
+
+            if (sourceFile.LastWriteTimeUtc != destinationFile.LastWriteTimeUtc)
+            {
+                return false;
+            }
+
+            if (sourceFile.Length != destinationFile.Length)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 
@@ -285,7 +317,7 @@ internal sealed partial class CSharpCompilerCommand
                     "tfm": "net{{TargetFrameworkVersion}}",
                     "framework": {
                       "name": "Microsoft.NETCore.App",
-                      "version": {{JsonSerializer.Serialize(RuntimeVersion)}}
+                      "version": {{JsonSerializer.Serialize(DefaultRuntimeVersion)}}
                     },
                     "configProperties": {
                       "EntryPointFilePath": {{JsonSerializer.Serialize(EntryPointFileFullPath)}},
@@ -386,5 +418,20 @@ internal sealed partial class CSharpCompilerCommand
 
         colonIndex = -1;
         return false;
+    }
+
+    /// <summary>
+    /// See <c>GenerateDefaultRuntimeFrameworkVersion</c>.
+    /// </summary>
+    private static string GetDefaultRuntimeVersion()
+    {
+        if (NuGetVersion.TryParse(RuntimeVersion, out var version))
+        {
+            return version.IsPrerelease && version.Patch == 0 ?
+                RuntimeVersion :
+                new NuGetVersion(version.Major, version.Minor, 0).ToFullString();
+        }
+
+        return RuntimeVersion;
     }
 }

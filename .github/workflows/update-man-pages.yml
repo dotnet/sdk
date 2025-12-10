@@ -1,5 +1,6 @@
 name: Update man-pages workflow
 on:
+  workflow_dispatch:
   schedule:
     - cron: "42 3 1/15 * *"   # Trigger every 15 days at 03:42
     #- cron: "0,5,10,15,20,25,30,35,40,45,50,55 * * * *"  # For testing
@@ -16,6 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: release/10.0.1xx
+          persist-credentials: false
 
       - name: Update man-pages
         run: |

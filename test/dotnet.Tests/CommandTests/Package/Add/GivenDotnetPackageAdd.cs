@@ -290,16 +290,45 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
-        public void FileBasedApp()
+        private string[]? GetFileBasedAppArgs(bool legacyForm, bool? versionOption, bool fileOption, bool noRestore, string packageName = "Humanizer")
         {
+            if (!legacyForm && !fileOption)
+            {
+                Log.WriteLine("Skipping invalid combination of parameters");
+                return null;
+            }
+
+            (string, string) commandArgs = legacyForm
+                ? ("add", "package")
+                : ("package", "add");
+
+            return [
+                commandArgs.Item1,
+                .. (ReadOnlySpan<string>)(fileOption ? [] : ["Program.cs"]),
+                commandArgs.Item2,
+                .. (ReadOnlySpan<string>)(versionOption switch
+                {
+                    true => [packageName, "--version", "2.14.1"],
+                    false => [$"{packageName}@2.14.1"],
+                    null => [packageName],
+                }),
+                .. (ReadOnlySpan<string>)(fileOption ? ["--file", "Program.cs"] : []),
+                .. (ReadOnlySpan<string>)(noRestore ? ["--no-restore"] : []),
+            ];
+        }
+
+        [Theory, CombinatorialData]
+        public void FileBasedApp(bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
+        {
+            if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
+
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();
                 """);
 
-            new DotnetCommand(Log, "package", "add", "Humanizer@2.14.1", "--file", "Program.cs")
+            new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass();
@@ -311,12 +340,13 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """);
         }
 
-        [Theory]
-        [InlineData("Humanizer")]
-        [InlineData("humanizer")]
+        [Theory, CombinatorialData]
         public void FileBasedApp_ReplaceExisting(
-            string sourceFilePackageId)
+            [CombinatorialValues("Humanizer", "humanizer")] string sourceFilePackageId,
+            bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
+            if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
+
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, $"""
@@ -324,7 +354,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 Console.WriteLine();
                 """);
 
-            new DotnetCommand(Log, "package", "add", "Humanizer@2.14.1", "--file", "Program.cs")
+            new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass();
@@ -400,16 +430,18 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                     """);
         }
 
-        [Fact]
-        public void FileBasedApp_NoVersionAndNoRestore()
+        [Theory, CombinatorialData]
+        public void FileBasedApp_NoVersionAndNoRestore(bool legacyForm, bool fileOption)
         {
+            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: true) is not { } args) return;
+
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();
                 """);
 
-            new DotnetCommand(Log, "package", "add", "Humanizer", "--file", "Program.cs", "--no-restore")
+            new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass();
@@ -421,9 +453,11 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """);
         }
 
-        [Fact]
-        public void FileBasedApp_VersionAndPrerelease()
+        [Theory, CombinatorialData]
+        public void FileBasedApp_VersionAndPrerelease(bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
+            if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
+
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
@@ -431,7 +465,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """;
             File.WriteAllText(file, source);
 
-            new DotnetCommand(Log, "package", "add", "Humanizer@2.14.1", "--file", "Program.cs", "--prerelease")
+            new DotnetCommand(Log, [.. args, "--prerelease"])
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Fail()
@@ -440,9 +474,11 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             File.ReadAllText(file).Should().Be(source);
         }
 
-        [Fact]
-        public void FileBasedApp_InvalidPackage()
+        [Theory, CombinatorialData]
+        public void FileBasedApp_InvalidPackage(bool legacyForm, bool fileOption)
         {
+            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: false, packageName: "Microsoft.ThisPackageDoesNotExist") is not { } args) return;
+
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
@@ -450,7 +486,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """;
             File.WriteAllText(file, source);
 
-            new DotnetCommand(Log, "package", "add", "Microsoft.ThisPackageDoesNotExist", "--file", "Program.cs")
+            new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Fail();
@@ -458,16 +494,18 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             File.ReadAllText(file).Should().Be(source);
         }
 
-        [Fact]
-        public void FileBasedApp_InvalidPackage_NoRestore()
+        [Theory, CombinatorialData]
+        public void FileBasedApp_InvalidPackage_NoRestore(bool legacyForm, bool fileOption)
         {
+            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: true, packageName: "Microsoft.ThisPackageDoesNotExist") is not { } args) return;
+
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();
                 """);
 
-            new DotnetCommand(Log, "package", "add", "Microsoft.ThisPackageDoesNotExist", "--file", "Program.cs", "--no-restore")
+            new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass();
@@ -479,9 +517,11 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """);
         }
 
-        [Fact]
-        public void FileBasedApp_CentralPackageManagement()
+        [Theory, CombinatorialData]
+        public void FileBasedApp_CentralPackageManagement(bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
+            if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
+
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
@@ -498,7 +538,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 </Project>
                 """);
 
-            new DotnetCommand(Log, "package", "add", "Humanizer@2.14.1", "--file", "Program.cs")
+            new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass();
@@ -522,8 +562,10 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         }
 
         [Theory, CombinatorialData]
-        public void FileBasedApp_CentralPackageManagement_ReplaceExisting(bool wasInFile)
+        public void FileBasedApp_CentralPackageManagement_ReplaceExisting(bool wasInFile, bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
+            if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
+
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
@@ -553,7 +595,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 </Project>
                 """);
 
-            new DotnetCommand(Log, "package", "add", "Humanizer@2.14.1", "--file", "Program.cs")
+            new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass();
@@ -576,9 +618,11 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """);
         }
 
-        [Fact]
-        public void FileBasedApp_CentralPackageManagement_NoVersionSpecified()
+        [Theory, CombinatorialData]
+        public void FileBasedApp_CentralPackageManagement_NoVersionSpecified(bool legacyForm, bool fileOption)
         {
+            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore: false, packageName: "A") is not { } args) return;
+
             var testInstance = _testAssetsManager.CreateTestDirectory();
 
             string[] versions = ["0.0.5", "0.9.0", "1.0.0-preview.3"];
@@ -602,7 +646,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 </Project>
                 """);
 
-            new DotnetCommand(Log, "package", "add", "A", "--file", "Program.cs")
+            new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass();
@@ -624,9 +668,11 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """);
         }
 
-        [Fact]
-        public void FileBasedApp_CentralPackageManagement_NoVersionSpecified_KeepExisting()
+        [Theory, CombinatorialData]
+        public void FileBasedApp_CentralPackageManagement_NoVersionSpecified_KeepExisting(bool legacyForm, bool fileOption, bool noRestore)
         {
+            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore) is not { } args) return;
+
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = """
@@ -648,7 +694,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """;
             File.WriteAllText(directoryPackagesProps, directoryPackagesPropsSource);
 
-            new DotnetCommand(Log, "package", "add", "Humanizer", "--file", "Program.cs")
+            new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass();
