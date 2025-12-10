@@ -315,7 +315,7 @@ internal sealed class RunCommandSelector : IDisposable
         restoreWasPerformed = false;
 
         // Try to get available devices from the project
-        bool targetExists = TryComputeAvailableDevices(noRestore, out var devices, out bool restorePerformed);
+        bool targetExists = TryComputeAvailableDevices(noRestore, out var devices, out restoreWasPerformed);
         
         // If the target doesn't exist, continue without device selection
         if (!targetExists)
