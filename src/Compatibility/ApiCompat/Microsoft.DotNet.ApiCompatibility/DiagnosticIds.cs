@@ -29,5 +29,8 @@ namespace Microsoft.DotNet.ApiCompatibility
         public const string CannotReduceVisibility = "CP0019";
         public const string CannotExpandVisibility = "CP0020";
         public const string CannotChangeGenericConstraint = "CP0021";
+        public const string CannotAddStaticToMember = "CP0022";
+        public const string CannotRemoveStaticFromMember = "CP0023";
+        public const string CannotAddStaticToType = "CP0024";
     }
 }

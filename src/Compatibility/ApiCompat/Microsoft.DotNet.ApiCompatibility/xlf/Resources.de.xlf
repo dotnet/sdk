@@ -77,6 +77,16 @@
         <target state="translated">Das versiegelte Schlüsselwort kann dem Standardschnittstellenmember "{0}" nicht hinzugefügt werden.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotAddStaticToMember">
+        <source>Cannot add static keyword to member '{0}'.</source>
+        <target state="new">Cannot add static keyword to member '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotAddStaticToType">
+        <source>Cannot add static keyword to type '{0}'.</source>
+        <target state="new">Cannot add static keyword to type '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotAddVirtualToMember">
         <source>Cannot add virtual keyword to member '{0}'.</source>
         <target state="translated">Das virtuelle Schlüsselwort kann dem Member „{0}“ nicht hinzugefügt werden.</target>
@@ -120,6 +130,11 @@
       <trans-unit id="CannotRemoveGenericConstraint">
         <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
         <target state="translated">Die Einschränkung „{0}“ für den Typparameter „{1}“ von „{2}“ kann nicht entfernt werden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotRemoveStaticFromMember">
+        <source>Cannot remove static keyword from member '{0}'.</source>
+        <target state="new">Cannot remove static keyword from member '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
