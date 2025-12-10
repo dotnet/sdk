@@ -970,10 +970,6 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</value>
     <comment>{StrBegins="NETSDK1222: "}</comment>
   </data>
-  <data name="Net9NotCompatibleWithDev1711" xml:space="preserve">
-    <value>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</value>
-    <comment>{StrBegins="NETSDK1223: "}</comment>
-  </data>
   <data name="AspNetCorePackUnsupportedTargetFramework" xml:space="preserve">
     <value>NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</value>
     <comment>{StrBegins="NETSDK1224: "}</comment>
@@ -1010,5 +1006,13 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</value>
     <comment>{StrBegins="NETSDK1232: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</comment>
   </data>
-  <!-- The latest message added is UnableToFindMatchingRid. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="Net10NotCompatibleWithVS17" xml:space="preserve">
+    <value>NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</value>
+    <comment>{StrBegins="NETSDK1233: "}</comment>
+  </data>
+  <data name="RoslynCompilerTypeFrameworkIsDeprecated" xml:space="preserve">
+    <value>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</value>
+    <comment>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</comment>
+  </data>
+  <!-- The latest message added is RoslynCompilerTypeFrameworkIsDeprecated. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

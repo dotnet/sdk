@@ -54,8 +54,8 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <_ToolRidsAreOnlyShims Condition="'$(RuntimeIdentifiers)' == '' and $(PackAsToolShimRuntimeIdentifiers) != '' ">true</_ToolRidsAreOnlyShims>
     <_UserSpecifiedToolPackageRids Condition="'$(ToolPackageRuntimeIdentifiers)' != ''">$(ToolPackageRuntimeIdentifiers)</_UserSpecifiedToolPackageRids>
     <_UserSpecifiedToolPackageRids Condition="'$(_UserSpecifiedToolPackageRids)' == ''">$(RuntimeIdentifiers)</_UserSpecifiedToolPackageRids>
-    <_HasRIDSpecificTools Condition=" '$(_UserSpecifiedToolPackageRids)' != '' ">true</_HasRIDSpecificTools>
-    <_HasRIDSpecificTools Condition="'$(_HasRIDSpecificTools)' == ''">false</_HasRIDSpecificTools>
+    <CreateRidSpecificToolPackages Condition="'$(CreateRidSpecificToolPackages)' == '' And '$(_UserSpecifiedToolPackageRids)' != '' ">true</CreateRidSpecificToolPackages>
+    <CreateRidSpecificToolPackages Condition="'$(CreateRidSpecificToolPackages)' == ''">false</CreateRidSpecificToolPackages>
 
     <!-- NOTE: this line is load-bearing. This impacts Restore behaviors significantly, so we can't prevent the import of these targets _in general_. -->
     <RuntimeIdentifiers Condition="'$(PackAsToolShimRuntimeIdentifiers)' != ''">$(_UserSpecifiedToolPackageRids);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
@@ -65,7 +65,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <!-- We need to know if the inner builds are _intended_ to be AOT even if we then explicitly disable AOT for the outer builds.
       Knowing this lets us correctly decide to create the RID-specific inner tools or not when packaging the outer tool. -->
     <_InnerToolsPublishAot>false</_InnerToolsPublishAot>
-    <_InnerToolsPublishAot Condition="$(_HasRIDSpecificTools) and '$(PublishAot)' == 'true'">true</_InnerToolsPublishAot>
+    <_InnerToolsPublishAot Condition="$(CreateRidSpecificToolPackages) and '$(PublishAot)' == 'true'">true</_InnerToolsPublishAot>
 
     <!-- determining if it's safe to change publish-related properties for this evaluation. We can only override default publishing
          behavior if
@@ -164,7 +164,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     </PropertyGroup>
 
     <!-- inner-build tool packages get a RID suffix -->
-    <PropertyGroup Condition="'$(_HasRIDSpecificTools)' != '' And '$(RuntimeIdentifier)' != ''">
+    <PropertyGroup Condition="$(CreateRidSpecificToolPackages) And '$(RuntimeIdentifier)' != ''">
       <PackageId>$(PackageId).$(RuntimeIdentifier)</PackageId>
     </PropertyGroup>
   </Target>
@@ -390,7 +390,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
   <Target Name="SetDotnetToolPackageType" Returns="$(_ToolPackageType)">
 
     <PropertyGroup>
-      <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '$(_HasRIDSpecificTools)' != ''">DotnetToolRidPackage</_ToolPackageType>
+      <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And $(CreateRidSpecificToolPackages)">DotnetToolRidPackage</_ToolPackageType>
       <_ToolPackageType Condition="'$(_ToolPackageType)' == ''">DotnetTool</_ToolPackageType>
     </PropertyGroup>
 
@@ -427,7 +427,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
        We can't call this for AOT'd tools because we can't AOT cross-architecture and cross-platform in .NET today. -->
   <Target Name="_CreateRIDSpecificToolPackages"
     Condition="'$(RuntimeIdentifier)' == ''
-      and $(_HasRIDSpecificTools)
+      and $(CreateRidSpecificToolPackages)
       and !$(_InnerToolsPublishAot)">
     <PropertyGroup>
         <_PackageRids>$(ToolPackageRuntimeIdentifiers)</_PackageRids>

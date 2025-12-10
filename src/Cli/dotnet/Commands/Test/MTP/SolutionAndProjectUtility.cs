@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -115,31 +116,6 @@ internal static class SolutionAndProjectUtility
         return (true, string.Empty);
     }
 
-    public static (bool ProjectFileFound, string Message) TryGetProjectFilePath(string directory, out string projectFilePath)
-    {
-        projectFilePath = string.Empty;
-
-        if (!Directory.Exists(directory))
-        {
-            return (false, string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directory));
-        }
-
-        var actualProjectFiles = GetProjectFilePaths(directory);
-
-        if (actualProjectFiles.Length == 0)
-        {
-            return (false, string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, directory));
-        }
-
-        if (actualProjectFiles.Length == 1)
-        {
-            projectFilePath = actualProjectFiles[0];
-            return (true, string.Empty);
-        }
-
-        return (false, string.Format(CliStrings.MoreThanOneProjectInDirectory, directory));
-    }
-
     public static (bool SolutionFileFound, string Message) TryGetSolutionFilePath(string directory, out string solutionFilePath)
     {
         solutionFilePath = string.Empty;
@@ -177,17 +153,51 @@ internal static class SolutionAndProjectUtility
 
     private static string[] GetProjectFilePaths(string directory) => Directory.GetFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly);
 
-    private static ProjectInstance EvaluateProject(ProjectCollection collection, EvaluationContext evaluationContext, string projectFilePath, string? tfm)
+    private static ProjectInstance EvaluateProject(
+        ProjectCollection collection,
+        EvaluationContext evaluationContext,
+        string projectFilePath,
+        string? tfm,
+        string? configuration,
+        string? platform)
     {
         Debug.Assert(projectFilePath is not null);
 
         Dictionary<string, string>? globalProperties = null;
+        var capacity = 0;
+
         if (tfm is not null)
         {
-            globalProperties = new Dictionary<string, string>(capacity: 1)
+            capacity++;
+        }
+
+        if (configuration is not null)
+        {
+            capacity++;
+        }
+
+        if (platform is not null)
+        {
+            capacity++;
+        }
+
+        if (capacity > 0)
+        {
+            globalProperties = new Dictionary<string, string>(capacity);
+            if (tfm is not null)
             {
-                { ProjectProperties.TargetFramework, tfm }
-            };
+                globalProperties.Add(ProjectProperties.TargetFramework, tfm);
+            }
+
+            if (configuration is not null)
+            {
+                globalProperties.Add(ProjectProperties.Configuration, configuration);
+            }
+
+            if (platform is not null)
+            {
+                globalProperties.Add(ProjectProperties.Platform, platform);
+            }
         }
 
         // Merge the global properties from the project collection.
@@ -209,17 +219,16 @@ internal static class SolutionAndProjectUtility
         });
     }
 
-    public static string GetRootDirectory(string solutionOrProjectFilePath)
-    {
-        string? fileDirectory = Path.GetDirectoryName(solutionOrProjectFilePath);
-        Debug.Assert(fileDirectory is not null);
-        return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
-    }
-
-    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, EvaluationContext evaluationContext, BuildOptions buildOptions)
+    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(
+        string projectFilePath,
+        ProjectCollection projectCollection,
+        EvaluationContext evaluationContext,
+        BuildOptions buildOptions,
+        string? configuration,
+        string? platform)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, null);
+        ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm: null, configuration, platform);
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
@@ -253,7 +262,7 @@ internal static class SolutionAndProjectUtility
             {
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework);
+                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
@@ -267,7 +276,7 @@ internal static class SolutionAndProjectUtility
                 List<TestModule>? innerModules = null;
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework);
+                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
@@ -370,10 +379,10 @@ internal static class SolutionAndProjectUtility
             return null;
         }
 
-        var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
+        var launchSettingsPath = LaunchSettingsLocator.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
         bool hasLaunchSettings = File.Exists(launchSettingsPath);
 
-        var runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+        var runJsonPath = LaunchSettingsLocator.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
         bool hasRunJson = File.Exists(runJsonPath);
 
         if (hasLaunchSettings)

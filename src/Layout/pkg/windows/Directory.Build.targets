@@ -1,5 +1,5 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
+
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
@@ -44,6 +44,14 @@
            Text="Bundles must target x86. InstallerPlatform=$(InstallerPlatform)" />
   </Target>
 
+  <!-- This target can be used to set additional Wix options. -->
+  <Target Name="SetAdditionalWixOptions" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <!-- Use backwards compatible GUID generation. -->
+      <CompilerAdditionalOptions>$(CompilerAdditionalOptions) -bcgg</CompilerAdditionalOptions>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="GenerateWixpackPackage" AfterTargets="CoreCompile">
     <PropertyGroup>
       <WixpackWorkingDir>$(IntermediateOutputPath)wixpack</WixpackWorkingDir>
@@ -51,6 +59,7 @@
     </PropertyGroup>
 
     <CreateWixBuildWixpack
+      AdditionalOptions="$(CompilerAdditionalOptions) $(LinkerAdditionalOptions)"
       BindTrackingFile="$(IntermediateOutputPath)$(BindTrackingFilePrefix)%(CultureGroup.OutputSuffix)$(BindTrackingFileExtension)"
       Cultures="%(CultureGroup.Identity)"
       DefineConstants="$(DefineConstants);$(SolutionDefineConstants);$(ProjectDefineConstants);$(ProjectReferenceDefineConstants)"
@@ -67,4 +76,5 @@
       <Output TaskParameter="OutputFile" PropertyName="_WixBuildCommandPackageNameOutput" />
     </CreateWixBuildWixpack>
   </Target>
+
 </Project>

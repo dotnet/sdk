@@ -4,16 +4,9 @@
 using System.CommandLine;
 using Microsoft.TemplateEngine.Abstractions;
 
-namespace Microsoft.TemplateEngine.Cli.Commands
+namespace Microsoft.TemplateEngine.Cli.Commands;
+
+internal sealed class LegacyAliasAddCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
+    : BaseAliasAddCommand(hostBuilder, CommandDefinition.Alias.Add.LegacyCommand)
 {
-    internal class LegacyAliasAddCommand : BaseAliasAddCommand
-    {
-        internal LegacyAliasAddCommand(
-            Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, "--alias")
-        {
-            Aliases.Add("-a");
-            Hidden = true;
-        }
-    }
 }

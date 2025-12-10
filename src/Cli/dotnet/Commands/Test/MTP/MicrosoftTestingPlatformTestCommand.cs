@@ -4,22 +4,22 @@
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHelp, ICommandDocument
+internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHelp
 {
     private TerminalTestReporter? _output;
 
     public MicrosoftTestingPlatformTestCommand(string name, string? description = null) : base(name, description)
     {
         TreatUnmatchedTokensAsErrors = false;
+        this.DocsLink = "https://aka.ms/dotnet-test";
     }
-
-    public string DocsLink => "https://aka.ms/dotnet-test";
 
     public int Run(ParseResult parseResult, bool isHelp = false)
     {

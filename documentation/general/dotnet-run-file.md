@@ -56,6 +56,9 @@ Additionally, the implicit project file has the following customizations:
     in case there is a project or solution in the same directory as the file-based app.
     This ensures that items from nested projects and artifacts are not included by the app.
 
+  - `EnableDefaultEmbeddedResourceItems` and `EnableDefaultNoneItems` properties are set to `false` if the default SDK (`Microsoft.NET.Sdk`) is being used.
+    This avoids including files like `./**/*.resx` in simple file-based apps where users usually don't expect that.
+
 ## Grow up
 
 When file-based programs reach an inflection point where build customizations in a project file are needed,
@@ -244,6 +247,16 @@ The directives are processed as follows:
   If the path points to an existing directory, a project file is found inside that directory and its path is used instead
   (because `ProjectReference` items don't support directory paths).
   An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.
+
+Directive values support MSBuild variables (like `$(..)`) normally as they are translated literally and left to MSBuild engine to process.
+However, in `#:project` directives, variables might not be preserved during [grow up](#grow-up),
+because there is additional processing of those directives that makes it technically challenging to preserve variables in all cases
+(project directive values need to be resolved to be relative to the target directory
+and also to point to a project file rather than a directory).
+Note that it is not expected that variables inside the path change their meaning during the conversion,
+so for example `#:project ../$(LibName)` is translated to `<ProjectReference Include="../../$(LibName)/Lib.csproj" />` (i.e., the variable is preserved).
+However, variables at the start can change, so for example `#:project $(ProjectDir)../Lib` is translated to `<ProjectReference Include="../../Lib/Lib.csproj" />` (i.e., the variable is expanded).
+In other directives, all variables are preserved during conversion.
 
 Because these directives are limited by the C# language to only appear before the first "C# token" and any `#if`,
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols

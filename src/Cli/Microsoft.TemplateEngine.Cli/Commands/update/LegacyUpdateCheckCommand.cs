@@ -7,24 +7,12 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class LegacyUpdateCheckCommand : BaseUpdateCommand
+    internal sealed class LegacyUpdateCheckCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
+        : BaseUpdateCommand(hostBuilder, CommandDefinition.Update.LegacyCheckCommand)
     {
-        public LegacyUpdateCheckCommand(
-            NewCommand parentCommand,
-            Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(parentCommand, hostBuilder, "--update-check", SymbolStrings.Command_Update_Description)
-        {
-            Hidden = true;
-            parentCommand.AddNoLegacyUsageValidators(this, except: new Option[] { InteractiveOption, AddSourceOption });
-        }
-
-        internal override Option<bool> InteractiveOption => ParentCommand.InteractiveOption;
-
-        internal override Option<string[]> AddSourceOption => ParentCommand.AddSourceOption;
-
         protected override Task<NewCommandStatus> ExecuteAsync(UpdateCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken)
         {
-            PrintDeprecationMessage<LegacyUpdateCheckCommand, UpdateCommand>(args.ParseResult, additionalOption: UpdateCommand.CheckOnlyOption);
+            PrintDeprecationMessage<LegacyUpdateCheckCommand, UpdateCommand>(args.ParseResult, additionalOption: CommandDefinition.Update.CheckOnlyOption);
 
             return base.ExecuteAsync(args, environmentSettings, templatePackageManager, parseResult, cancellationToken);
         }

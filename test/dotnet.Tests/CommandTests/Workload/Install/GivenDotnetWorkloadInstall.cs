@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .HaveStdErrContaining(string.Format(CliCommandStrings.WorkloadNotRecognized, "fake"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/26624")]
+        [Fact]
         public void ItErrorUsingSkipManifestAndRollback()
         {
             var command = new DotnetCommand(Log);
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineSkipManifestAndRollback, "skip-manifest-update", "from-rollback-file"));
+                .HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineSkipManifestAndRollback, "--skip-manifest-update", "--from-rollback-file"));
         }
 
 

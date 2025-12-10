@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.VSTest;
 
@@ -20,9 +21,10 @@ internal static class VSTestCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("vstest", DocsLink)
+        Command command = new("vstest")
         {
-            TreatUnmatchedTokensAsErrors = false
+            TreatUnmatchedTokensAsErrors = false,
+            DocsLink = DocsLink
         };
 
         command.Options.Add(CommonOptions.TestPlatformOption);

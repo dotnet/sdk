@@ -8,44 +8,21 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class BaseSearchCommand : BaseCommand<SearchCommandArgs>, IFilterableCommand, ITabularOutputCommand
+    internal abstract class BaseSearchCommand : BaseCommand<SearchCommandArgs>, IFilterableCommand, ITabularOutputCommand
     {
-        internal static readonly IReadOnlyList<FilterOptionDefinition> SupportedFilters = new List<FilterOptionDefinition>()
-        {
-            FilterOptionDefinition.AuthorFilter,
-            FilterOptionDefinition.BaselineFilter,
-            FilterOptionDefinition.LanguageFilter,
-            FilterOptionDefinition.TypeFilter,
-            FilterOptionDefinition.TagFilter,
-            FilterOptionDefinition.PackageFilter
-        };
+        private readonly CommandDefinition.Search _definition;
 
-        internal BaseSearchCommand(
-            NewCommand parentCommand,
-            Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            string commandName)
-            : base(hostBuilder, commandName, SymbolStrings.Command_Search_Description)
+        internal BaseSearchCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, CommandDefinition.Search definition)
+            : base(hostBuilder, definition)
         {
-            ParentCommand = parentCommand;
-            Filters = SetupFilterOptions(SupportedFilters);
-
-            Arguments.Add(NameArgument);
-            SetupTabularOutputOptions(this);
+            _definition = definition;
         }
 
-        public virtual Option<bool> ColumnsAllOption { get; } = SharedOptionsFactory.CreateColumnsAllOption();
+        public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters => _definition.Filters;
 
-        public virtual Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption();
+        public Option<bool> ColumnsAllOption => _definition.ColumnsAllOption;
 
-        public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters { get; protected set; }
-
-        internal static Argument<string> NameArgument { get; } = new("template-name")
-        {
-            Description = SymbolStrings.Command_Search_Argument_Name,
-            Arity = new ArgumentArity(0, 1)
-        };
-
-        internal NewCommand ParentCommand { get; }
+        public Option<string[]> ColumnsOption => _definition.ColumnsOption;
 
         protected override Task<NewCommandStatus> ExecuteAsync(
             SearchCommandArgs args,
@@ -63,8 +40,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         }
 
         protected override SearchCommandArgs ParseContext(ParseResult parseResult)
-        {
-            return new SearchCommandArgs(this, parseResult);
-        }
+            => new(this, parseResult);
     }
 }

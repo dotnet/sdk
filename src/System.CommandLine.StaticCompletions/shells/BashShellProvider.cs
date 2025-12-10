@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace System.CommandLine.StaticCompletions.Shells;
-
 using System.CodeDom.Compiler;
-using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.StaticCompletions.Resources;
-using System.IO;
 
+namespace System.CommandLine.StaticCompletions.Shells;
 public class BashShellProvider : IShellProvider
 {
     public string ArgumentName => "bash";
@@ -133,7 +130,7 @@ public class BashShellProvider : IShellProvider
         var completions = new List<string>();
         foreach (var argument in arguments)
         {
-            if (argument.IsDynamic())
+            if (argument.IsDynamic)
             {
                 // if the argument is a not-static-friendly argument, we need to call into the app for completions
                 completions.Add($"$({GenerateDynamicCall()})");
@@ -193,7 +190,7 @@ public class BashShellProvider : IShellProvider
         // this ensures if the user manually enters an alias we can support that usage.
         var optionNames = string.Join('|', option.Names());
         string completionCommand;
-        if (option.IsDynamic())
+        if (option.IsDynamic)
         {
             // dynamic options require a call into the app for completions
             completionCommand = GenerateChoicesPrompt($"({GenerateDynamicCall()})");

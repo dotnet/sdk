@@ -116,6 +116,8 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
                 endpoint.AssetFile = asset.ResolvedAsset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
                 endpoint.Route = route;
 
+                EncodeLinkHeadersIfNeeded(endpoint);
+
                 Log.LogMessage(MessageImportance.Low, "Including endpoint '{0}' for asset '{1}' with final location '{2}'", endpoint.Route, endpoint.AssetFile, asset.TargetPath);
             }
 
@@ -135,6 +137,48 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         }
 
         return !Log.HasLoggedErrors;
+    }
+
+    private static void EncodeLinkHeadersIfNeeded(StaticWebAssetEndpoint endpoint)
+    {
+        for (var i = 0; i < endpoint.ResponseHeaders.Length; i++)
+        {
+            ref var header = ref endpoint.ResponseHeaders[i];
+            if (!string.Equals(header.Name, "Link", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+            var headerValues = header.Value.Split([','], StringSplitOptions.RemoveEmptyEntries);
+            for (var j = 0; j < headerValues.Length; j++)
+            {
+                ref var value = ref headerValues[j];
+                value = EncodeHeaderValue(value);
+            }
+            header.Value = string.Join(",", headerValues);
+        }
+    }
+
+    private static string EncodeHeaderValue(string header)
+    {
+        var index = header.IndexOf('<');
+        if (index == -1)
+        {
+            return header;
+        }
+        index++;
+        var endIndex = header.IndexOf('>', index);
+        if (endIndex == -1)
+        {
+            return header;
+        }
+        var link = header.AsSpan(index, endIndex - index).ToString();
+        var segments = link.Split('/');
+        for (var j = 0; j < segments.Length; j++)
+        {
+            segments[j] = System.Net.WebUtility.UrlEncode(segments[j]);
+        }
+        var encoded = string.Join("/", segments);
+        return $"{header.Substring(0, index)}{encoded}{header.Substring(endIndex)}";
     }
 
     private static (string, string[]) ParseAndSortPatterns(string patterns)

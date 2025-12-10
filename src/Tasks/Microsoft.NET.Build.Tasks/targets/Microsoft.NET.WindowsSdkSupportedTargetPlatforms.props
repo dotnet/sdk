@@ -24,10 +24,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'Windows'">
         <!-- Normalize the last part of TFM to .0 when ending with .1 as that indicates the use of the CsWinRT 3.0 verison. -->
-        <_NormalizedWindowsSdkSupportedTargetPlatformVersion Include="@(WindowsSdkSupportedTargetPlatformVersion)">
-            <NormalizedSupportedTargetPlatformVersion 
-                Condition="$([System.Version]::Parse('%(Identity)').Revision) == 1">$([System.Version]::Parse('%(Identity)').Major).$([System.Version]::Parse('%(Identity)').Minor).$([System.Version]::Parse('%(Identity)').Build).0</NormalizedSupportedTargetPlatformVersion>
-        </_NormalizedWindowsSdkSupportedTargetPlatformVersion>
-        <SdkSupportedTargetPlatformVersion Include="@(_NormalizedWindowsSdkSupportedTargetPlatformVersion)" />
+      <_NormalizedWindowsSdkSupportedTargetPlatformVersion Include="@(WindowsSdkSupportedTargetPlatformVersion)">
+        <NormalizedSupportedTargetPlatformVersion
+            Condition="$([System.Text.RegularExpressions.Regex]::IsMatch(%(Identity), '^((\d+\.){3})1$'))"
+              >$([System.Text.RegularExpressions.Regex]::Replace(%(Identity), '^((\d+\.){3})1$', '${1}0'))</NormalizedSupportedTargetPlatformVersion>
+      </_NormalizedWindowsSdkSupportedTargetPlatformVersion>
+      <SdkSupportedTargetPlatformVersion Include="@(_NormalizedWindowsSdkSupportedTargetPlatformVersion)" />
     </ItemGroup>
 </Project>

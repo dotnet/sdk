@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.Globalization;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Clean;
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
@@ -117,8 +118,8 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         (
             topLevelCommandName: ["run", "clean", "test"],
             optionsToLog: [ RunCommandParser.FrameworkOption, CleanCommandParser.FrameworkOption,
-                TestCommandParser.FrameworkOption, RunCommandParser.ConfigurationOption, CleanCommandParser.ConfigurationOption,
-                TestCommandParser.ConfigurationOption ]
+                TestCommandDefinition.FrameworkOption, RunCommandParser.ConfigurationOption, CleanCommandParser.ConfigurationOption,
+                TestCommandDefinition.ConfigurationOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
