@@ -100,7 +100,7 @@ internal class ToolPackageRestorer
                     package.PackageId,
                     package.Version.ToNormalizedString(),
                     string.Join(" ", package.CommandNames)),
-                    warning: warning);
+                warning: warning);
         }
         catch (ToolPackageException e)
         {

@@ -535,10 +535,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenNewerVersionIsAvailableItShowsWarning()
         {
+            // Use an explicit version to prevent test from breaking if _packageVersionA changes
+            var currentVersion = NuGetVersion.Parse("1.0.0");
             var newerPackageVersion = NuGetVersion.Parse("2.1.4");
             var manifestPackage = new ToolManifestPackage(
                 _packageIdA,
-                _packageVersionA,
+                currentVersion,
                 new[] { _toolCommandNameA },
                 new DirectoryPath(_temporaryDirectory),
                 rollForward: false);
@@ -554,7 +556,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         new MockFeedPackage
                         {
                             PackageId = _packageIdA.ToString(),
-                            Version = _packageVersionA.ToNormalizedString(),
+                            Version = currentVersion.ToNormalizedString(),
                             ToolCommandName = _toolCommandNameA.Value,
                         },
                         new MockFeedPackage
@@ -585,6 +587,119 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.Should().Contain(l =>
                 l.Contains(string.Format(CliCommandStrings.RestoreNewVersionAvailable, _packageIdA, newerPackageVersion.ToNormalizedString())));
+        }
+
+        [Fact]
+        public void WhenCurrentVersionIsPrereleaseAndNewerStableIsAvailableItShowsWarning()
+        {
+            var currentPrereleaseVersion = NuGetVersion.Parse("1.0.0-rc1");
+            var newerStableVersion = NuGetVersion.Parse("1.0.0");
+            var manifestPackage = new ToolManifestPackage(
+                _packageIdA,
+                currentPrereleaseVersion,
+                new[] { _toolCommandNameA },
+                new DirectoryPath(_temporaryDirectory),
+                rollForward: false);
+
+            // Create a mock feed with both the prerelease version and a newer stable version
+            var feeds = new List<MockFeed>
+            {
+                new MockFeed
+                {
+                    Type = MockFeedType.FeedFromGlobalNugetConfig,
+                    Packages = new List<MockFeedPackage>
+                    {
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageIdA.ToString(),
+                            Version = currentPrereleaseVersion.ToNormalizedString(),
+                            ToolCommandName = _toolCommandNameA.Value,
+                        },
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageIdA.ToString(),
+                            Version = newerStableVersion.ToNormalizedString(),
+                            ToolCommandName = _toolCommandNameA.Value,
+                        }
+                    }
+                }
+            };
+
+            var toolPackageDownloaderMockWithFeeds = new ToolPackageDownloaderMock(
+                _toolPackageStore, _fileSystem, feeds: feeds);
+
+            IToolManifestFinder fakeManifestFinder =
+                new MockManifestFinder(new[] { manifestPackage });
+
+            ToolRestoreCommand toolRestoreCommand = new(_parseResult,
+                toolPackageDownloaderMockWithFeeds,
+                fakeManifestFinder,
+                _localToolsResolverCache,
+                _fileSystem,
+                _reporter
+            );
+
+            toolRestoreCommand.Execute().Should().Be(0);
+
+            _reporter.Lines.Should().Contain(l =>
+                l.Contains(string.Format(CliCommandStrings.RestoreNewVersionAvailable, _packageIdA, newerStableVersion.ToNormalizedString())));
+        }
+
+        [Fact]
+        public void WhenCurrentVersionIsStableAndNewerPrereleaseIsAvailableItDoesNotShowWarning()
+        {
+            var currentStableVersion = NuGetVersion.Parse("1.0.0");
+            var newerPrereleaseVersion = NuGetVersion.Parse("1.1.0-rc1");
+            var manifestPackage = new ToolManifestPackage(
+                _packageIdA,
+                currentStableVersion,
+                new[] { _toolCommandNameA },
+                new DirectoryPath(_temporaryDirectory),
+                rollForward: false);
+
+            // Create a mock feed with both the stable version and a newer prerelease version
+            var feeds = new List<MockFeed>
+            {
+                new MockFeed
+                {
+                    Type = MockFeedType.FeedFromGlobalNugetConfig,
+                    Packages = new List<MockFeedPackage>
+                    {
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageIdA.ToString(),
+                            Version = currentStableVersion.ToNormalizedString(),
+                            ToolCommandName = _toolCommandNameA.Value,
+                        },
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageIdA.ToString(),
+                            Version = newerPrereleaseVersion.ToNormalizedString(),
+                            ToolCommandName = _toolCommandNameA.Value,
+                        }
+                    }
+                }
+            };
+
+            var toolPackageDownloaderMockWithFeeds = new ToolPackageDownloaderMock(
+                _toolPackageStore, _fileSystem, feeds: feeds);
+
+            IToolManifestFinder fakeManifestFinder =
+                new MockManifestFinder(new[] { manifestPackage });
+
+            ToolRestoreCommand toolRestoreCommand = new(_parseResult,
+                toolPackageDownloaderMockWithFeeds,
+                fakeManifestFinder,
+                _localToolsResolverCache,
+                _fileSystem,
+                _reporter
+            );
+
+            toolRestoreCommand.Execute().Should().Be(0);
+
+            // Should NOT contain warning about the prerelease version
+            _reporter.Lines.Should().NotContain(l =>
+                l.Contains(string.Format(CliCommandStrings.RestoreNewVersionAvailable, _packageIdA, newerPrereleaseVersion.ToNormalizedString())));
         }
 
         private class MockManifestFinder : IToolManifestFinder
