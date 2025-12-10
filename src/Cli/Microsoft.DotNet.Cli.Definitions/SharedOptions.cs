@@ -9,14 +9,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         public static Option<FileInfo> OutputOption { get; } = new("--output", "-o")
         {
-            Description = SymbolStrings.Option_Output,
+            Description = CliDefinitionResources.Option_Output,
             Required = false,
             Arity = new ArgumentArity(1, 1)
         };
 
         public static Option<FileInfo> ProjectPathOption { get; } = new Option<FileInfo>("--project")
         {
-            Description = SymbolStrings.Option_ProjectPath
+            Description = CliDefinitionResources.Option_ProjectPath
         }.AcceptExistingOnly();
 
         public static Option<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption();
@@ -31,19 +31,19 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal static Option<string> NameOption { get; } = new("--name", "-n")
         {
-            Description = SymbolStrings.TemplateCommand_Option_Name,
+            Description = CliDefinitionResources.TemplateCommand_Option_Name,
             Arity = new ArgumentArity(1, 1)
         };
 
         internal static Option<bool> DryRunOption { get; } = new("--dry-run")
         {
-            Description = SymbolStrings.TemplateCommand_Option_DryRun,
+            Description = CliDefinitionResources.TemplateCommand_Option_DryRun,
             Arity = new ArgumentArity(0, 1)
         };
 
         internal static Option<bool> NoUpdateCheckOption { get; } = new("--no-update-check")
         {
-            Description = SymbolStrings.TemplateCommand_Option_NoUpdateCheck,
+            Description = CliDefinitionResources.TemplateCommand_Option_NoUpdateCheck,
             Arity = new ArgumentArity(0, 1)
         };
     }

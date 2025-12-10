@@ -105,6 +105,21 @@
       </xsd:complexType>
     </xsd:element>
   </xsd:schema>
+  <data name="Option_Output" xml:space="preserve">
+    <value>Location to place the generated output.</value>
+  </data>
+  <data name="Option_ProjectPath" xml:space="preserve">
+    <value>The project that should be used for context evaluation.</value>
+  </data>
+  <data name="TemplateCommand_Option_DryRun" xml:space="preserve">
+    <value>Displays a summary of what would happen if the given command line were run if it would result in a template creation.</value>
+  </data>
+  <data name="TemplateCommand_Option_Name" xml:space="preserve">
+    <value>The name for the output being created. If no name is specified, the name of the output directory is used.</value>
+  </data>
+  <data name="TemplateCommand_Option_NoUpdateCheck" xml:space="preserve">
+    <value>Disables checking for the template package updates when instantiating a template.</value>
+  </data>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
   </resheader>
