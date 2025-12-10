@@ -11,33 +11,33 @@ internal static class VSTestOptions
 {
     public static readonly Option<string> SettingsOption = new Option<string>("--settings", "-s")
     {
-        Description = CliCommandStrings.CmdSettingsDescription,
-        HelpName = CliCommandStrings.CmdSettingsFile
+        Description = CliDefinitionResources.CmdSettingsDescription,
+        HelpName = CliDefinitionResources.CmdSettingsFile
     }.ForwardAsSingle(o => $"-property:VSTestSetting={SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
     public static readonly Option<bool> ListTestsOption = new Option<bool>("--list-tests", "-t")
     {
-        Description = CliCommandStrings.CmdListTestsDescription,
+        Description = CliDefinitionResources.CmdListTestsDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:VSTestListTests=true");
 
     public static readonly Option<string> FilterOption = new Option<string>("--filter")
     {
-        Description = CliCommandStrings.CmdTestCaseFilterDescription,
-        HelpName = CliCommandStrings.CmdTestCaseFilterExpression
+        Description = CliDefinitionResources.CmdTestCaseFilterDescription,
+        HelpName = CliDefinitionResources.CmdTestCaseFilterExpression
     }.ForwardAsSingle(o => $"-property:VSTestTestCaseFilter={SurroundWithDoubleQuotes(o!)}");
 
     public static readonly Option<IEnumerable<string>> AdapterOption = new Option<IEnumerable<string>>("--test-adapter-path")
     {
-        Description = CliCommandStrings.CmdTestAdapterPathDescription,
-        HelpName = CliCommandStrings.CmdTestAdapterPath
+        Description = CliDefinitionResources.CmdTestAdapterPathDescription,
+        HelpName = CliDefinitionResources.CmdTestAdapterPath
     }.ForwardAsSingle(o => $"-property:VSTestTestAdapterPath={SurroundWithDoubleQuotes(string.Join(";", o!.Select(CommandDirectoryContext.GetFullPath)))}")
     .AllowSingleArgPerToken();
 
     public static readonly Option<IEnumerable<string>> LoggerOption = new Option<IEnumerable<string>>("--logger", "-l")
     {
-        Description = CliCommandStrings.CmdLoggerDescription,
-        HelpName = CliCommandStrings.CmdLoggerOption
+        Description = CliDefinitionResources.CmdLoggerDescription,
+        HelpName = CliDefinitionResources.CmdLoggerOption
     }.ForwardAsSingle(o =>
     {
         var loggersString = string.Join(";", GetSemiColonEscapedArgs(o!));
@@ -48,46 +48,46 @@ internal static class VSTestOptions
 
     public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
-        Description = CliCommandStrings.CmdOutputDescription,
-        HelpName = CliCommandStrings.TestCmdOutputDir
+        Description = CliDefinitionResources.CmdOutputDescription,
+        HelpName = CliDefinitionResources.TestCmdOutputDir
     }
     .ForwardAsOutputPath("OutputPath", true);
 
     public static readonly Option<string> DiagOption = new Option<string>("--diag", "-d")
     {
-        Description = CliCommandStrings.CmdPathTologFileDescription,
-        HelpName = CliCommandStrings.CmdPathToLogFile
+        Description = CliDefinitionResources.CmdPathTologFileDescription,
+        HelpName = CliDefinitionResources.CmdPathToLogFile
     }
     .ForwardAsSingle(o => $"-property:VSTestDiag={SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
     public static readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
-        Description = CliCommandStrings.CmdNoBuildDescription,
+        Description = CliDefinitionResources.CmdNoBuildDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:VSTestNoBuild=true");
 
     public static readonly Option<string> ResultsOption = new Option<string>("--results-directory")
     {
-        Description = CliCommandStrings.CmdResultsDirectoryDescription,
-        HelpName = CliCommandStrings.CmdPathToResultsDirectory
+        Description = CliDefinitionResources.CmdResultsDirectoryDescription,
+        HelpName = CliDefinitionResources.CmdPathToResultsDirectory
     }.ForwardAsSingle(o => $"-property:VSTestResultsDirectory={SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
     public static readonly Option<IEnumerable<string>> CollectOption = new Option<IEnumerable<string>>("--collect")
     {
-        Description = CliCommandStrings.cmdCollectDescription,
-        HelpName = CliCommandStrings.cmdCollectFriendlyName
+        Description = CliDefinitionResources.cmdCollectDescription,
+        HelpName = CliDefinitionResources.cmdCollectFriendlyName
     }.ForwardAsSingle(o => $"-property:VSTestCollect=\"{string.Join(";", GetSemiColonEscapedArgs(o!))}\"")
     .AllowSingleArgPerToken();
 
     public static readonly Option<bool> BlameOption = new Option<bool>("--blame")
     {
-        Description = CliCommandStrings.CmdBlameDescription,
+        Description = CliDefinitionResources.CmdBlameDescription,
         Arity = ArgumentArity.Zero
     }.ForwardIfEnabled("-property:VSTestBlame=true");
 
     public static readonly Option<bool> BlameCrashOption = new Option<bool>("--blame-crash")
     {
-        Description = CliCommandStrings.CmdBlameCrashDescription,
+        Description = CliDefinitionResources.CmdBlameCrashDescription,
         Arity = ArgumentArity.Zero
     }.ForwardIfEnabled("-property:VSTestBlameCrash=true");
 
@@ -97,8 +97,8 @@ internal static class VSTestOptions
     {
         Option<string> result = new Option<string>("--blame-crash-dump-type")
         {
-            Description = CliCommandStrings.CmdBlameCrashDumpTypeDescription,
-            HelpName = CliCommandStrings.CrashDumpTypeArgumentName,
+            Description = CliDefinitionResources.CmdBlameCrashDumpTypeDescription,
+            HelpName = CliDefinitionResources.CrashDumpTypeArgumentName,
         }
         .ForwardAsMany(o => ["-property:VSTestBlameCrash=true", $"-property:VSTestBlameCrashDumpType={o}"]);
         result.AcceptOnlyFromAmong(["full", "mini"]);
@@ -107,13 +107,13 @@ internal static class VSTestOptions
 
     public static readonly Option<bool> BlameCrashAlwaysOption = new Option<bool>("--blame-crash-collect-always")
     {
-        Description = CliCommandStrings.CmdBlameCrashCollectAlwaysDescription,
+        Description = CliDefinitionResources.CmdBlameCrashCollectAlwaysDescription,
         Arity = ArgumentArity.Zero
     }.ForwardIfEnabled(["-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true"]);
 
     public static readonly Option<bool> BlameHangOption = new Option<bool>("--blame-hang")
     {
-        Description = CliCommandStrings.CmdBlameHangDescription,
+        Description = CliDefinitionResources.CmdBlameHangDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:VSTestBlameHang=true");
 
@@ -123,8 +123,8 @@ internal static class VSTestOptions
     {
         Option<string> result = new Option<string>("--blame-hang-dump-type")
         {
-            Description = CliCommandStrings.CmdBlameHangDumpTypeDescription,
-            HelpName = CliCommandStrings.HangDumpTypeArgumentName
+            Description = CliDefinitionResources.CmdBlameHangDumpTypeDescription,
+            HelpName = CliDefinitionResources.HangDumpTypeArgumentName
         }
         .ForwardAsMany(o => ["-property:VSTestBlameHang=true", $"-property:VSTestBlameHangDumpType={o}"]);
         result.AcceptOnlyFromAmong(["full", "mini", "none"]);
@@ -133,11 +133,11 @@ internal static class VSTestOptions
 
     public static readonly Option<string> BlameHangTimeoutOption = new Option<string>("--blame-hang-timeout")
     {
-        Description = CliCommandStrings.CmdBlameHangTimeoutDescription,
-        HelpName = CliCommandStrings.HangTimeoutArgumentName
+        Description = CliDefinitionResources.CmdBlameHangTimeoutDescription,
+        HelpName = CliDefinitionResources.HangTimeoutArgumentName
     }.ForwardAsMany(o => ["-property:VSTestBlameHang=true", $"-property:VSTestBlameHangTimeout={o}"]);
 
-    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption(forwardAs: "--property:VSTestNoLogo=true", description: CliCommandStrings.TestCmdNoLogo);
+    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption(forwardAs: "--property:VSTestNoLogo=true", description: CliDefinitionResources.TestCmdNoLogo);
 
     public static readonly Option<string[]> VsTestTargetOption = CommonOptions.RequiredMSBuildTargetOption("VSTest");
 
