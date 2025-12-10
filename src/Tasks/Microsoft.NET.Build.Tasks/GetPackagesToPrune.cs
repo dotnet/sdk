@@ -15,7 +15,7 @@ namespace Microsoft.NET.Build.Tasks
     public class GetPackagesToPrune : TaskBase
     {
         // Minimum .NET Core version that supports package pruning
-        private const int MinSupportedFrameworkMajorVersion = 3;
+        private const int FrameworkReferenceMinVersion = 3;
         
         // Minimum .NET Core version that uses prune package data instead of framework package data
         private const int PrunePackageDataMinMajorVersion = 10;
@@ -137,7 +137,7 @@ namespace Microsoft.NET.Build.Tasks
 
             var targetFrameworkVersion = Version.Parse(key.TargetFrameworkVersion);
 
-            if (key.FrameworkReferences.Count == 0 && key.TargetFrameworkIdentifier.Equals(".NETCoreApp") && targetFrameworkVersion.Major >= MinSupportedFrameworkMajorVersion)
+            if (key.FrameworkReferences.Count == 0 && key.TargetFrameworkIdentifier.Equals(".NETCoreApp") && targetFrameworkVersion.Major >= FrameworkReferenceMinVersion)
             {
                 //  For .NET Core projects (3.0 and higher), don't prune any packages if there are no framework references
                 return Array.Empty<TaskItem>();
@@ -315,7 +315,7 @@ namespace Microsoft.NET.Build.Tasks
                     log.LogMessage($"LoadPrunePackageDataFromNearestFramework is enabled, trying to load from framework version {currentVersion.Major}.{currentVersion.Minor}");
                 }
                 // Otherwise, decrement major version and reset minor to 0
-                else if (currentVersion.Major > MinSupportedFrameworkMajorVersion)
+                else if (currentVersion.Major > 2)
                 {
                     currentVersion = new Version(currentVersion.Major - 1, 0);
                     log.LogMessage($"LoadPrunePackageDataFromNearestFramework is enabled, trying to load from framework version {currentVersion.Major}.{currentVersion.Minor}");
