@@ -414,7 +414,7 @@ internal static class CommonOptions
     {
         return new Option<bool>("--no-logo", "--nologo", "-nologo", "/nologo")
         {
-            Description = description ?? Commands.CliDefinitionResources.NoLogoOptionDescription,
+            Description = description ?? CliDefinitionResources.NoLogoOptionDescription,
             DefaultValueFactory = (ar) => Env.TryGetEnvironmentVariableAsBool("DOTNET_NOLOGO", out bool value) ? value : defaultValue,
             CustomParser = (ar) => true,
             Arity = ArgumentArity.Zero
