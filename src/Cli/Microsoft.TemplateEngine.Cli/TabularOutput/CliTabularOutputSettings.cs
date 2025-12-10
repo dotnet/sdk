@@ -6,7 +6,7 @@ using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.TemplateEngine.Cli.TabularOutput
 {
-    internal class TabularOutputSettings
+    internal partial class TabularOutputSettings
     {
         internal TabularOutputSettings(
             IEnvironment environment,
@@ -49,13 +49,5 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
         public string NewLine { get; }
 
         public string ShrinkReplacement => "...";
-
-        internal static class ColumnNames
-        {
-            internal const string Author = "author";
-            internal const string Language = "language";
-            internal const string Tags = "tags";
-            internal const string Type = "type";
-        }
     }
 }

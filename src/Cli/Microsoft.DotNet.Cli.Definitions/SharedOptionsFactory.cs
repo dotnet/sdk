@@ -136,10 +136,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 CustomParser = ParseCommaSeparatedValues
             };
             option.AcceptOnlyFromAmong(
-                TabularOutputSettings.ColumnNames.Author,
-                TabularOutputSettings.ColumnNames.Language,
-                TabularOutputSettings.ColumnNames.Type,
-                TabularOutputSettings.ColumnNames.Tags);
+                TabularOutputColumnNames.Author,
+                TabularOutputColumnNames.Language,
+                TabularOutputColumnNames.Type,
+                TabularOutputColumnNames.Tags);
             return option;
         }
 

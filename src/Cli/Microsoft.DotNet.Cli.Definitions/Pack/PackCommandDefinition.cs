@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 

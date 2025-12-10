@@ -6,6 +6,7 @@ using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 

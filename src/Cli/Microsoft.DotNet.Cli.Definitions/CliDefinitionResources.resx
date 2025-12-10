@@ -689,6 +689,9 @@ The default is to publish a framework-dependent application.</value>
   <data name="SolutionOrProjectOrFileArgumentDescription" xml:space="preserve">
     <value>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</value>
   </data>
+  <data name="SolutionOrProjectArgumentName" xml:space="preserve">
+    <value>PROJECT | SOLUTION</value>
+  </data>
   <data name="SolutionOrProjectOrFileArgumentName" xml:space="preserve">
     <value>PROJECT | SOLUTION | FILE</value>
   </data>
@@ -700,5 +703,11 @@ The default is to publish a framework-dependent application.</value>
   </data>
   <data name="YesOptionDescription" xml:space="preserve">
     <value>Accept all confirmation prompts using "yes."</value>
+  </data>
+  <data name="PackageIdentityArgumentDescription" xml:space="preserve">
+    <value>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</value>
+  </data>
+  <data name="PackageIdentityArgumentIdOrVersionIsNull" xml:space="preserve">
+    <value>Package reference id and version must not be null.</value>
   </data>
 </root>

@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
-using NuGetWhyCommand = NuGet.CommandLine.XPlat.Commands.Why.WhyCommand;
 
 namespace Microsoft.DotNet.Cli.Commands.NuGet;
 
@@ -34,7 +33,6 @@ internal static class NuGetCommandDefinition
         command.Subcommands.Add(CreateVerifyCommand());
         command.Subcommands.Add(CreateTrustCommand());
         command.Subcommands.Add(CreateSignCommand());
-        NuGetWhyCommand.GetWhyCommand(command);
 
         return command;
     }

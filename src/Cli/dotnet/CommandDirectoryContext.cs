@@ -5,6 +5,9 @@
 
 namespace Microsoft.DotNet.Cli;
 
+/// <summary>
+/// Test hook. Allows unit tests to override the base path used when expanding relative paths.
+/// </summary>
 internal static class CommandDirectoryContext
 {
     [ThreadStatic]
@@ -35,7 +38,9 @@ internal static class CommandDirectoryContext
                 $"Calls to {nameof(CommandDirectoryContext)}.{nameof(PerformActionWithBasePath)} cannot be nested.");
         }
         _basePath = basePath;
-        Telemetry.Telemetry.CurrentSessionId = null;
+
+        // TODO: why is this here?
+        // Telemetry.Telemetry.CurrentSessionId = null;
         try
         {
             action();

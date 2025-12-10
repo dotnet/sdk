@@ -5,19 +5,17 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Commands;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli
 {
     internal class CommonArguments
     {
-
         public static Argument<PackageIdentityWithRange?> OptionalPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
             new("packageId")
             {
-                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
+                Description = string.Format(CliDefinitionResources.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
                 Arity = ArgumentArity.ZeroOrOne,
                 IsDynamic = true
@@ -26,7 +24,7 @@ namespace Microsoft.DotNet.Cli
         public static Argument<PackageIdentityWithRange> RequiredPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
             new("packageId")
             {
-                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
+                Description = string.Format(CliDefinitionResources.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
                 Arity = ArgumentArity.ExactlyOne,
                 IsDynamic = true
@@ -44,7 +42,7 @@ namespace Microsoft.DotNet.Cli
 
             if (string.IsNullOrEmpty(packageId))
             {
-                throw new GracefulException(CliStrings.PackageIdentityArgumentIdOrVersionIsNull);
+                throw new GracefulException(CliDefinitionResources.PackageIdentityArgumentIdOrVersionIsNull);
             }
 
             if (string.IsNullOrEmpty(versionString))
@@ -54,7 +52,7 @@ namespace Microsoft.DotNet.Cli
 
             if (!VersionRange.TryParse(versionString, out var versionRange))
             {
-                throw new GracefulException(string.Format(CliStrings.InvalidVersion, versionString));
+                throw new GracefulException(string.Format(CliDefinitionResources.InvalidVersion, versionString));
             }
 
             return new PackageIdentityWithRange(packageId, versionRange);

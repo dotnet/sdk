@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NuGet.Versioning" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\System.CommandLine.StaticCompletions\System.CommandLine.StaticCompletions.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Cli.CommandLine\Microsoft.DotNet.Cli.CommandLine.csproj" />
   </ItemGroup>
