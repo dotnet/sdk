@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 
 using Microsoft.DotNet.Cli.Utils;
@@ -15,10 +17,15 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        //  Disabled on full Framework MSBuild due to https://github.com/dotnet/sdk/issues/1293
         [CoreMSBuildOnlyFact]
         public void It_creates_a_deps_file_for_the_tool_and_the_tool_runs()
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             TestProject toolProject = new()
             {
                 Name = "TestTool",
@@ -35,10 +42,15 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("Hello World!");
         }
 
-        //  Disabled on full Framework MSBuild due to https://github.com/dotnet/sdk/issues/1293
         [CoreMSBuildOnlyFact]
         public void It_handles_conflicts_when_creating_a_tool_deps_file()
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             TestProject toolProject = new()
             {
                 Name = "DependencyContextTool",
@@ -86,7 +98,7 @@ class Program
 
             var toolProjectInstance = _testAssetsManager.CreateTestProject(toolProject, callingMethod, identifier: toolProject.Name);
 
-            NuGetConfigWriter.Write(toolProjectInstance.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed);
+            NuGetConfigWriter.Write(toolProjectInstance.TestRoot);
 
             // Workaround https://github.com/dotnet/cli/issues/9701
             var useBundledNETCoreAppPackage = "/p:UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion=true";
@@ -116,7 +128,7 @@ class Program
                         new XAttribute("Version", "1.0.0")));
                 });
 
-            List<string> sources = new() { NuGetConfigWriter.DotnetCoreBlobFeed };
+            List<string> sources = new();
             sources.Add(nupkgPath);
 
             NuGetConfigWriter.Write(toolReferencerInstance.TestRoot, sources);

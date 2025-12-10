@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -31,14 +33,13 @@ namespace Microsoft.NET.Build.Tasks
 
             // Find any RuntimeFrameworks that matches with FrameworkReferences, so that we can apply that RuntimeFrameworks profile to the corresponding RuntimePack.
             // This is done in 2 parts, First part (see comments for 2nd part further below), we match the RuntimeFramework with the FrameworkReference by using the following metadata.
-            // RuntimeFrameworks.GetMetadata("FrameworkName")==FrameworkReferences.ItemSpec AND RuntimeFrameworks.GetMetadata("Profile") is not empty
+            // RuntimeFrameworks.GetMetadata("FrameworkName")==FrameworkReferences.ItemSpec
             // For example, A WinForms app that uses useWindowsForms (and useWPF will be set to false) has the following values that will result in a match of the below RuntimeFramework.
             // FrameworkReferences with an ItemSpec "Microsoft.WindowsDesktop.App.WindowsForms" will match with 
             // RuntimeFramework with an ItemSpec => "Microsoft.WindowsDesktop.App", GetMetadata("FrameworkName") => "Microsoft.WindowsDesktop.App.WindowsForms", GetMetadata("Profile") => "WindowsForms"
             List<ITaskItem> matchingRuntimeFrameworks = RuntimeFrameworks != null ? FrameworkReferences
                     .SelectMany(fxReference => RuntimeFrameworks.Where(rtFx =>
-                        fxReference.ItemSpec.Equals(rtFx.GetMetadata(MetadataKeys.FrameworkName), StringComparison.OrdinalIgnoreCase) &&
-                        !string.IsNullOrEmpty(rtFx.GetMetadata("Profile"))))
+                        fxReference.ItemSpec.Equals(rtFx.GetMetadata(MetadataKeys.FrameworkName), StringComparison.OrdinalIgnoreCase)))
                         .ToList() : null;
 
             HashSet<string> frameworkReferenceNames = new(FrameworkReferences.Select(item => item.ItemSpec), StringComparer.OrdinalIgnoreCase);
@@ -91,6 +92,23 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         profiles.Add("Xaml");
                     }
+
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.CsWinRT3.Windows") == true)
+                    {
+                        profiles.Add("CsWinRT3.Windows");
+                    }
+                    
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.CsWinRT3.Xaml") == true)
+                    {
+                        profiles.Add("CsWinRT3.Xaml");
+                    }
+                }
+
+                //  If we have a runtime framework with an empty profile, it means that we should use all of the contents of the runtime pack,
+                //  so we can clear the profile list
+                if (profiles.Contains(string.Empty))
+                {
+                    profiles.Clear();
                 }
 
                 string runtimePackRoot = runtimePack.GetMetadata(MetadataKeys.PackageDirectory);

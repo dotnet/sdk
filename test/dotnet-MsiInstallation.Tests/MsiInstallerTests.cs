@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.MsiInstallerTests.Framework;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -39,8 +41,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                   "microsoft.net.workload.emscripten.net6": "8.0.1/8.0.100",
                   "microsoft.net.workload.emscripten.net7": "8.0.1/8.0.100",
                   "microsoft.net.workload.mono.toolchain.net6": "8.0.1/8.0.100",
-                  "microsoft.net.workload.mono.toolchain.net7": "8.0.1/8.0.100",
-                  "microsoft.net.sdk.aspire": "8.0.0-preview.2.23619.3/8.0.100"
+                  "microsoft.net.workload.mono.toolchain.net7": "8.0.1/8.0.100"
                 }
                 """;
 
@@ -54,7 +55,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     VM.WriteFile($@"c:\SdkTesting\rollback-{rollbackID}.json", manifestContents),
                     VM.CreateRunCommand("dotnet", "workload", "update", "--from-rollback-file", $@"c:\SdkTesting\rollback-{rollbackID}.json", "--skip-sign-check"))
                 .Execute();
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
             return result;
         }
 
@@ -213,10 +214,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
             InstallSdk();
 
             VM.WriteFile($@"c:\SdkTesting\rollback-rc1.json", RollbackRC1)
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             VM.CreateRunCommand("dotnet", "workload", "install", "wasm-tools", "--from-rollback-file", $@"c:\SdkTesting\rollback-rc1.json")
-                .Execute().Should().Pass();
+                .Execute().Should().PassWithoutWarning();
 
             TestWasmWorkload();
         }
@@ -228,7 +229,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             ApplyRC1Manifests();
             var workloadVersion = GetWorkloadVersion();
             
-            InstallWorkload("aspire", skipManifestUpdate: false);
+            InstallWorkload("wasm-tools", skipManifestUpdate: false);
 
             GetWorkloadVersion().Should().Be(workloadVersion);
         }
@@ -242,7 +243,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             VM.CreateRunCommand("dotnet", "workload", "update")
                 .Execute()
-                .Should().Pass();
+                .Should().PassWithoutWarning();
 
             GetWorkloadVersion().Should().NotBe(workloadVersion);
 
@@ -269,15 +270,15 @@ namespace Microsoft.DotNet.MsiInstallerTests
             //AddNuGetSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-aspire-d215c528/nuget/v3/index.json");
 
             //VM.CreateRunCommand("powershell", "-Command", "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) }")
-            //    .Execute().Should().Pass();
+            //    .Execute().Should().PassWithoutWarning();
 
-            InstallWorkload("aspire", skipManifestUpdate: true);
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
 
             VM.CreateRunCommand("dotnet", "new", "aspire-starter", "-o", "Aspire-StarterApp01")
                 .WithWorkingDirectory(@"c:\SdkTesting")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
         }
 
 
@@ -289,13 +290,13 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithWorkingDirectory(@"c:\SdkTesting")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             var result = VM.CreateRunCommand("dotnet", "publish", "/p:RunAotCompilation=true")
                 .WithWorkingDirectory(@"c:\SdkTesting\BlazorWasm")
                 .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             //  When publishing a blazorwasm project without the wasm-tools workload installed, the following message is displayed:
             //  Publishing without optimizations. Although it's optional for Blazor, we strongly recommend using `wasm-tools` workload! You can install it by running `dotnet workload install wasm-tools` from the command line.
@@ -364,7 +365,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             return result.StdOut;            
         }

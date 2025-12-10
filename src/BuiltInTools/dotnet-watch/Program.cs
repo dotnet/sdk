@@ -1,21 +1,26 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.Loader;
-using Microsoft.Build.Graph;
 using Microsoft.Build.Locator;
-using Microsoft.CodeAnalysis.ChangeSignature;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
-using IConsole = Microsoft.Extensions.Tools.Internal.IConsole;
+using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watcher
+namespace Microsoft.DotNet.Watch
 {
-    internal sealed class Program(IConsole console, IReporter reporter, ProjectOptions rootProjectOptions, CommandLineOptions options, EnvironmentOptions environmentOptions)
+    internal sealed class Program(
+        IConsole console,
+        ILoggerFactory loggerFactory,
+        ILogger logger,
+        IProcessOutputReporter processOutputReporter,
+        ProjectOptions rootProjectOptions,
+        CommandLineOptions options,
+        EnvironmentOptions environmentOptions)
     {
+        public const string LogComponentName = nameof(Program);
+
         public static async Task<int> Main(string[] args)
         {
             try
@@ -36,10 +41,15 @@ namespace Microsoft.DotNet.Watcher
                 // Register listeners that load Roslyn-related assemblies from the `Roslyn/bincore` directory.
                 RegisterAssemblyResolutionEvents(sdkRootDirectory);
 
+                var processPath = Environment.ProcessPath;
+                Debug.Assert(processPath != null);
+
+                var environmentOptions = EnvironmentOptions.FromEnvironment(processPath);
+
                 var program = TryCreate(
                     args,
-                    PhysicalConsole.Singleton,
-                    EnvironmentOptions.FromEnvironment(),
+                    new PhysicalConsole(environmentOptions.TestFlags),
+                    environmentOptions,
                     EnvironmentVariables.VerboseCliOutput,
                     out var exitCode);
 
@@ -60,7 +70,8 @@ namespace Microsoft.DotNet.Watcher
 
         private static Program? TryCreate(IReadOnlyList<string> args, IConsole console, EnvironmentOptions environmentOptions, bool verbose, out int errorCode)
         {
-            var options = CommandLineOptions.Parse(args, new ConsoleReporter(console, verbose, quiet: false, environmentOptions.SuppressEmojis), console.Out, out errorCode);
+            var parsingLoggerFactory = new LoggerFactory(new ConsoleReporter(console, verbose, quiet: false, environmentOptions.SuppressEmojis));
+            var options = CommandLineOptions.Parse(args, parsingLoggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName), console.Out, out errorCode);
             if (options == null)
             {
                 // an error reported or help printed:
@@ -68,180 +79,179 @@ namespace Microsoft.DotNet.Watcher
             }
 
             var reporter = new ConsoleReporter(console, verbose || options.GlobalOptions.Verbose, options.GlobalOptions.Quiet, environmentOptions.SuppressEmojis);
-            return TryCreate(options, console, environmentOptions, reporter, out errorCode);
+            var loggerFactory = new LoggerFactory(reporter);
+            return TryCreate(options, console, environmentOptions, loggerFactory, reporter, out errorCode);
         }
 
         // internal for testing
-        internal static Program? TryCreate(CommandLineOptions options, IConsole console, EnvironmentOptions environmentOptions, IReporter reporter, out int errorCode)
+        internal static Program? TryCreate(CommandLineOptions options, IConsole console, EnvironmentOptions environmentOptions, LoggerFactory loggerFactory, IProcessOutputReporter processOutputReporter, out int errorCode)
         {
-            var workingDirectory = environmentOptions.WorkingDirectory;
-            reporter.Verbose($"Working directory: '{workingDirectory}'");
+            var logger = loggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName);
 
-            string projectPath;
-            try
+            var workingDirectory = environmentOptions.WorkingDirectory;
+            logger.LogDebug("Working directory: '{Directory}'", workingDirectory);
+
+            if (environmentOptions.TestFlags != TestFlags.None)
             {
-                projectPath = MsBuildProjectFinder.FindMsBuildProject(workingDirectory, options.ProjectPath);
+                logger.LogDebug("Test flags: {Flags}", environmentOptions.TestFlags);
             }
-            catch (FileNotFoundException ex)
+
+            if (!TryFindProject(workingDirectory, options, logger, out var projectPath))
             {
-                reporter.Error(ex.Message);
                 errorCode = 1;
                 return null;
             }
 
             var rootProjectOptions = options.GetProjectOptions(projectPath, workingDirectory);
             errorCode = 0;
-            return new Program(console, reporter, rootProjectOptions, options, environmentOptions);
+            return new Program(console, loggerFactory, logger, processOutputReporter, rootProjectOptions, options, environmentOptions);
+        }
+
+        /// <summary>
+        /// Finds a compatible MSBuild project.
+        /// <param name="searchBase">The base directory to search</param>
+        /// <param name="project">The filename of the project. Can be null.</param>
+        /// </summary>
+        private static bool TryFindProject(string searchBase, CommandLineOptions options, ILogger logger, [NotNullWhen(true)] out string? projectPath)
+        {
+            projectPath = options.ProjectPath ?? searchBase;
+
+            if (!Path.IsPathRooted(projectPath))
+            {
+                projectPath = Path.Combine(searchBase, projectPath);
+            }
+
+            if (Directory.Exists(projectPath))
+            {
+                var projects = Directory.EnumerateFileSystemEntries(projectPath, "*.*proj", SearchOption.TopDirectoryOnly)
+                    .Where(f => !".xproj".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (projects.Count > 1)
+                {
+                    logger.LogError(Resources.Error_MultipleProjectsFound, projectPath);
+                    return false;
+                }
+
+                if (projects.Count == 0)
+                {
+                    logger.LogError(Resources.Error_NoProjectsFound, projectPath);
+                    return false;
+                }
+
+                projectPath = projects[0];
+                return true;
+            }
+
+            if (!File.Exists(projectPath))
+            {
+                logger.LogError(Resources.Error_ProjectPath_NotFound, projectPath);
+                return false;
+            }
+
+            return true;
         }
 
         // internal for testing
         internal async Task<int> RunAsync()
         {
-            var cancellationSource = new CancellationTokenSource();
-            var cancellationToken = cancellationSource.Token;
-            console.CancelKeyPress += OnCancelKeyPress;
+            var isHotReloadEnabled = IsHotReloadEnabled();
+            var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled));
+
+            using var shutdownHandler = new ShutdownHandler(console, logger);
 
             try
             {
-                if (cancellationToken.IsCancellationRequested)
+                if (shutdownHandler.CancellationToken.IsCancellationRequested)
                 {
                     return 1;
                 }
 
                 if (options.List)
                 {
-                    return await ListFilesAsync(cancellationToken);
+                    return await ListFilesAsync(processRunner, shutdownHandler.CancellationToken);
                 }
 
-                var watcher = CreateWatcher(runtimeProcessLauncherFactory: null);
-                await watcher.WatchAsync(cancellationToken);
+                if (environmentOptions.IsPollingEnabled)
+                {
+                    logger.LogInformation("Polling file watcher is enabled");
+                }
+
+                using var context = CreateContext(processRunner);
+
+                if (isHotReloadEnabled)
+                {
+                    var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
+                    await watcher.WatchAsync(shutdownHandler.CancellationToken);
+                }
+                else
+                {
+                    await DotNetWatcher.WatchAsync(context, shutdownHandler.CancellationToken);
+                }
+
                 return 0;
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException) when (shutdownHandler.CancellationToken.IsCancellationRequested)
             {
                 // Ctrl+C forced an exit
                 return 0;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                reporter.Error(ex.ToString());
-                reporter.Error("An unexpected error occurred");
+                logger.LogError("An unexpected error occurred: {Exception}", e.ToString());
                 return 1;
-            }
-            finally
-            {
-                console.CancelKeyPress -= OnCancelKeyPress;
-                cancellationSource.Dispose();
-            }
-
-            void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs args)
-            {
-                // suppress CTRL+C on the first press
-                args.Cancel = !cancellationSource.IsCancellationRequested;
-
-                if (args.Cancel)
-                {
-                    reporter.Report(MessageDescriptor.ShutdownRequested);
-                }
-
-                cancellationSource.Cancel();
             }
         }
 
         // internal for testing
-        internal Watcher CreateWatcher(IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory)
+        internal DotNetWatchContext CreateContext(ProcessRunner processRunner)
         {
-            if (environmentOptions.IsPollingEnabled)
-            {
-                reporter.Output("Polling file watcher is enabled");
-            }
+            var logger = loggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName);
 
-            var projectGraph = TryReadProject(rootProjectOptions, reporter);
-            if (projectGraph != null)
+            return new()
             {
-                // use normalized MSBuild path so that we can index into the ProjectGraph
-                rootProjectOptions = rootProjectOptions with { ProjectPath = projectGraph.GraphRoots.Single().ProjectInstance.FullPath };
-            }
-
-            var fileSetFactory = new MSBuildFileSetFactory(
-                rootProjectOptions.ProjectPath,
-                rootProjectOptions.TargetFramework,
-                rootProjectOptions.BuildProperties,
-                environmentOptions,
-                reporter,
-                outputSink: null,
-                trace: true);
-
-            bool enableHotReload;
-            if (rootProjectOptions.Command != "run")
-            {
-                reporter.Verbose($"Command '{rootProjectOptions.Command}' does not support Hot Reload.");
-                enableHotReload = false;
-            }
-            else if (options.GlobalOptions.NoHotReload)
-            {
-                reporter.Verbose("Hot Reload disabled by command line switch.");
-                enableHotReload = false;
-            }
-            else
-            {
-                reporter.Report(MessageDescriptor.WatchingWithHotReload);
-                enableHotReload = true;
-            }
-
-            var context = new DotNetWatchContext
-            {
-                ProjectGraph = projectGraph,
-                Reporter = reporter,
+                ProcessOutputReporter = processOutputReporter,
+                LoggerFactory = loggerFactory,
+                Logger = logger,
+                BuildLogger = loggerFactory.CreateLogger(DotNetWatchContext.BuildLogComponentName),
+                ProcessRunner = processRunner,
                 Options = options.GlobalOptions,
                 EnvironmentOptions = environmentOptions,
                 RootProjectOptions = rootProjectOptions,
+                BrowserRefreshServerFactory = new BrowserRefreshServerFactory(),
+                BrowserLauncher = new BrowserLauncher(logger, processOutputReporter, environmentOptions),
             };
-
-            return enableHotReload
-                ? new HotReloadDotNetWatcher(context, console, fileSetFactory, runtimeProcessLauncherFactory)
-                : new DotNetWatcher(context, fileSetFactory);
         }
 
-        // internal for testing
-        internal static ProjectGraph? TryReadProject(ProjectOptions options, IReporter reporter)
+        private bool IsHotReloadEnabled()
         {
-            var globalOptions = new Dictionary<string, string>();
-            if (options.TargetFramework != null)
+            if (rootProjectOptions.Command != "run")
             {
-                globalOptions.Add("TargetFramework", options.TargetFramework);
+                logger.LogDebug("Command '{Command}' does not support Hot Reload.", rootProjectOptions.Command);
+                return false;
             }
 
-            foreach (var (name, value) in options.BuildProperties)
+            if (options.GlobalOptions.NoHotReload)
             {
-                globalOptions[name] = value;
+                logger.LogDebug("Hot Reload disabled by command line switch.");
+                return false;
             }
 
-            try
-            {
-                return new ProjectGraph(options.ProjectPath, globalOptions);
-            }
-            catch (Exception ex)
-            {
-                reporter.Verbose("Reading the project instance failed.");
-                reporter.Verbose(ex.ToString());
-            }
-
-            return null;
+            logger.Log(MessageDescriptor.WatchingWithHotReload);
+            return true;
         }
 
-        private async Task<int> ListFilesAsync(CancellationToken cancellationToken)
+        private async Task<int> ListFilesAsync(ProcessRunner processRunner, CancellationToken cancellationToken)
         {
+            var buildLogger = loggerFactory.CreateLogger(DotNetWatchContext.BuildLogComponentName);
+
             var fileSetFactory = new MSBuildFileSetFactory(
                 rootProjectOptions.ProjectPath,
-                rootProjectOptions.TargetFramework,
-                rootProjectOptions.BuildProperties,
-                environmentOptions,
-                reporter,
-                outputSink: null,
-                trace: false);
+                rootProjectOptions.BuildArguments,
+                processRunner,
+                new BuildReporter(buildLogger, options.GlobalOptions, environmentOptions));
 
-            if (await fileSetFactory.TryCreateAsync(cancellationToken) is not { } evaluationResult)
+            if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {
                 return 1;
             }

@@ -1,0 +1,8 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Disable CPM for the tests as otherwise it'll get enabled when the root directory.packages.props is found -->
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+</Project>

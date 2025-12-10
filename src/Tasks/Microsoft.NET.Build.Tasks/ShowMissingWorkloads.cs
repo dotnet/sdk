@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -19,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks
             { "android", "android-aot", "ios", "maccatalyst", "macos", "maui", "maui-android",
             "maui-desktop", "maui-ios", "maui-maccatalyst", "maui-mobile", "maui-windows", "tvos" };
         private static readonly HashSet<string> WasmWorkloadIds = new(StringComparer.OrdinalIgnoreCase)
-            { "wasm-tools", "wasm-tools-net6", "wasm-tools-net7" };
+            { "wasm-tools", "wasm-tools-net6", "wasm-tools-net7", "wasm-tools-net8", "wasm-tools-net9" };
 
         public ITaskItem[] MissingWorkloadPacks { get; set; }
 
@@ -36,7 +38,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             if (MissingWorkloadPacks.Any())
             {
-                string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
+                string userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
 
                 //  When running MSBuild tasks, the current directory is always the project directory, so we can use that as the
                 //  starting point to search for global.json

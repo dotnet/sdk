@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using NuGet.Packaging.Core;
 
@@ -67,6 +69,11 @@ namespace Microsoft.NET.Build.Tasks
                 Asset = AssetType.Native;
             }
             else if (assetType.Equals("resources", StringComparison.OrdinalIgnoreCase))
+            {
+                Asset = AssetType.Resources;
+            }
+            // Workaround for issue 40015: nuget restore uses 'resource' instead of 'resources'
+            else if (assetType.Equals("resource", StringComparison.OrdinalIgnoreCase))
             {
                 Asset = AssetType.Resources;
             }

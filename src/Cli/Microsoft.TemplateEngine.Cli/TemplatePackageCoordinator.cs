@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Installer;
@@ -144,7 +145,7 @@ namespace Microsoft.TemplateEngine.Cli
             {
                 if (!versionCheckResult.IsLatestVersion)
                 {
-                    string displayString = $"{versionCheckResult.TemplatePackage?.Identifier}::{versionCheckResult.TemplatePackage?.Version}";         // the package::version currently installed
+                    string displayString = $"{versionCheckResult.TemplatePackage?.Identifier}@{versionCheckResult.TemplatePackage?.Version}";         // the package@version currently installed
                     Reporter.Output.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Update_Info_UpdateAvailable, displayString);
 
                     Reporter.Output.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Update_Info_UpdateSingleCommandHeader);
@@ -152,7 +153,7 @@ namespace Microsoft.TemplateEngine.Cli
                         Example
                             .For<NewCommand>(args.ParseResult)
                             .WithSubcommand<InstallCommand>()
-                            .WithArgument(BaseInstallCommand.NameArgument, $"{versionCheckResult.TemplatePackage?.Identifier}::{versionCheckResult.LatestVersion}"));
+                            .WithArgument(CommandDefinition.Install.NameArgument, $"{versionCheckResult.TemplatePackage?.Identifier}@{versionCheckResult.LatestVersion}"));
                     Reporter.Output.WriteLine();
                 }
             }
@@ -165,13 +166,13 @@ namespace Microsoft.TemplateEngine.Cli
 
         internal void DisplayBuiltInPackagesCheckResult(string packageId, string version, string provider, ICommandArgs args)
         {
-            Reporter.Output.WriteLine(LocalizableStrings.TemplatePackageCoordinator_BuiltInCheck_Info_BuiltInPackageAvailable, $"{packageId}::{version}", provider);
+            Reporter.Output.WriteLine(LocalizableStrings.TemplatePackageCoordinator_BuiltInCheck_Info_BuiltInPackageAvailable, $"{packageId}@{version}", provider);
             Reporter.Output.WriteLine(LocalizableStrings.TemplatePackageCoordinator_BuiltInCheck_Info_UninstallPackage);
             Reporter.Output.WriteCommand(
                 Example
                  .For<NewCommand>(args.ParseResult)
                  .WithSubcommand<UninstallCommand>()
-                 .WithArgument(BaseUninstallCommand.NameArgument, packageId));
+                 .WithArgument(CommandDefinition.Uninstall.NameArgument, packageId));
         }
 
         /// <summary>
@@ -207,9 +208,16 @@ namespace Microsoft.TemplateEngine.Cli
 
             foreach (string installArg in args.TemplatePackages)
             {
-                string[] splitByColons = installArg.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
-                string identifier = splitByColons[0];
-                string? version = splitByColons.Length > 1 ? splitByColons[1] : null;
+                bool isPath = File.Exists(installArg) || Directory.Exists(installArg);
+                string[] split = isPath ? new[] { installArg } : installArg.Split(["::"], StringSplitOptions.RemoveEmptyEntries).SelectMany(arg => arg.Split('@', StringSplitOptions.RemoveEmptyEntries)).ToArray();
+                string identifier = split[0];
+                string? version = split.Length > 1 ? split[1] : null;
+
+                if (installArg.Contains("::"))
+                {
+                    Reporter.Output.WriteLine(string.Format(LocalizableStrings.Colon_Separator_Deprecated, split[0], split.Length > 1 ? split[1] : string.Empty).Yellow());
+                }
+
                 foreach (string expandedIdentifier in InstallRequestPathResolution.ExpandMaskedPath(identifier, _engineEnvironmentSettings))
                 {
                     installRequests.Add(new InstallRequest(expandedIdentifier, version, details: details, force: args.Force));
@@ -307,7 +315,7 @@ namespace Microsoft.TemplateEngine.Cli
                     Reporter.Output.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Update_Info_PackagesToBeUpdated);
                     foreach (CheckUpdateResult update in updatesToApply)
                     {
-                        Reporter.Output.WriteLine($"{update.TemplatePackage!.Identifier}::{update.LatestVersion}".Indent());
+                        Reporter.Output.WriteLine($"{update.TemplatePackage!.Identifier}@{update.LatestVersion}".Indent());
                     }
                     Reporter.Output.WriteLine();
 
@@ -436,7 +444,7 @@ namespace Microsoft.TemplateEngine.Cli
             }
             else
             {
-                IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources, true);
+                IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources, includeNuGetFeed: PathUtility.CheckForNuGetInNuGetConfig());
 
                 nuGetPackageMetadata = await GetPackageMetadataFromMultipleFeedsAsync(packageSources, nugetApiManager, packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
                 if (nuGetPackageMetadata != null && nuGetPackageMetadata.Source.Source.Equals(NugetOrgFeed))
@@ -463,7 +471,7 @@ namespace Microsoft.TemplateEngine.Cli
 
             Reporter.Output.WriteLine(
                 LocalizableStrings.Generic_Info_NoMatchingTemplatePackage.Bold().Red(),
-                $"{packageIdentity}{(string.IsNullOrWhiteSpace(packageVersion) ? string.Empty : $"::{packageVersion}")}");
+                $"{packageIdentity}{(string.IsNullOrWhiteSpace(packageVersion) ? string.Empty : $"@{packageVersion}")}");
 
             return NewCommandStatus.NotFound;
         }
@@ -625,7 +633,7 @@ namespace Microsoft.TemplateEngine.Cli
                 reporter.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Install_Info_PackageIsAvailable);
                 foreach (var request in invalidTemplatePackages)
                 {
-                    reporter.WriteLine($"{request.PackageInfo.Id}::{request.PackageInfo.Version}".Indent());
+                    reporter.WriteLine($"{request.PackageInfo.Id}@{request.PackageInfo.Version}".Indent());
                 }
                 reporter.WriteLine();
 
@@ -635,7 +643,7 @@ namespace Microsoft.TemplateEngine.Cli
                     reporter.WriteCommand(
                         Example
                             .For<InstallCommand>(args.ParseResult)
-                            .WithArgument(BaseInstallCommand.NameArgument, installRequests.Select(ir => ir.DisplayName).ToArray())
+                            .WithArgument(CommandDefinition.Install.NameArgument, installRequests.Select(ir => ir.DisplayName).ToArray())
                             .WithOption(SharedOptions.ForceOption));
                     return false;
                 }
@@ -736,7 +744,7 @@ namespace Microsoft.TemplateEngine.Cli
                                  Example
                                     .For<NewCommand>(commandArgs.ParseResult)
                                     .WithSubcommand<UninstallCommand>()
-                                    .WithArgument(BaseUninstallCommand.NameArgument));
+                                    .WithArgument(CommandDefinition.Uninstall.NameArgument));
                         }
                         else
                         {
@@ -744,11 +752,8 @@ namespace Microsoft.TemplateEngine.Cli
                                  Example
                                     .For<NewCommand>(commandArgs.ParseResult)
                                     .WithSubcommand<UninstallCommand>()
-                                    .WithArgument(BaseUninstallCommand.NameArgument, managedPackages.First().Identifier));
+                                    .WithArgument(CommandDefinition.Uninstall.NameArgument, managedPackages.First().Identifier));
                         }
-
-                        //TODO:
-                        //Reporter.Error.WriteLine($"To list the templates installed in a package, use dotnet new3 <new option> <package name>.");
                     }
                     else
                     {
@@ -839,12 +844,12 @@ namespace Microsoft.TemplateEngine.Cli
                     Example
                         .For<NewCommand>(args.ParseResult)
                         .WithSubcommand<InstallCommand>()
-                        .WithArgument(BaseInstallCommand.NameArgument, $"<package>::<version>"));
+                        .WithArgument(CommandDefinition.Install.NameArgument, $"<package>@<version>"));
                 Reporter.Output.WriteCommand(
                       Example
                           .For<NewCommand>(args.ParseResult)
                           .WithSubcommand<InstallCommand>()
-                          .WithArgument(BaseInstallCommand.NameArgument, $"{displayableResults.First().Identifier}::{displayableResults.First().LatestVersion}"));
+                          .WithArgument(CommandDefinition.Install.NameArgument, $"{displayableResults.First().Identifier}@{displayableResults.First().LatestVersion}"));
                 Reporter.Output.WriteLine();
                 Reporter.Output.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Update_Info_UpdateAllCommandHeader);
                 Reporter.Output.WriteCommand(
@@ -916,7 +921,7 @@ namespace Microsoft.TemplateEngine.Cli
                     Example
                         .For<NewCommand>(args.ParseResult)
                         .WithSubcommand<UninstallCommand>()
-                        .WithArgument(BaseUninstallCommand.NameArgument, managedSource.Identifier),
+                        .WithArgument(CommandDefinition.Uninstall.NameArgument, managedSource.Identifier),
                     indentLevel: 2);
 
                 Reporter.Output.WriteLine();
@@ -998,8 +1003,8 @@ namespace Microsoft.TemplateEngine.Cli
                               string.Format(
                                   LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled,
                                   packageToInstall).Bold().Red());
-                        Reporter.Error.WriteLine(LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled_Hint, BaseInstallCommand.ForceOption.Aliases.First());
-                        Reporter.Error.WriteCommand(Example.For<InstallCommand>(parseResult).WithArgument(BaseInstallCommand.NameArgument, packageToInstall).WithOption(BaseInstallCommand.ForceOption));
+                        Reporter.Error.WriteLine(LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled_Hint, CommandDefinition.Install.ForceOption.Aliases.First());
+                        Reporter.Error.WriteCommand(Example.For<InstallCommand>(parseResult).WithArgument(CommandDefinition.Install.NameArgument, packageToInstall).WithOption(CommandDefinition.Install.ForceOption));
 
                         break;
                     case InstallerErrorCode.UpdateUninstallFailed:

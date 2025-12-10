@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-install" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-new-install" "1" "2025-10-30" "" ".NET Documentation"
 .hy
 .SH dotnet new install
 .PP
@@ -26,7 +26,7 @@ dotnet-new-install - installs a template package.
 .IP
 .nf
 \f[C]
-dotnet new install <PATH|NUGET_ID>  [--interactive] [--add-source|--nuget-source <SOURCE>] [--force] 
+dotnet new install <PATH|NUGET_ID>  [--interactive] [--add-source|--nuget-source <SOURCE>] [--force]
     [-d|--diagnostics] [--verbosity <LEVEL>] [-h|--help]
 \f[R]
 .fi
@@ -69,6 +69,10 @@ Additionally, tab completion is now available for \f[V]dotnet new\f[R].
 It supports completion for installed template names and for the options a selected template provides.
 To activate tab completion for the .NET SDK, see Enable tab completion.
 > > Examples of old syntax: > > - Install the latest version of Azure web jobs project template package: > > \f[V]dotnetcli >   dotnet new --install Microsoft.Azure.WebJobs.ProjectTemplates >\f[R]
+.RS
+.PP
+[!WARNING] Templates can run MSBuild code when triggered, don\[cq]t install or run untrusted .NET templates.
+.RE
 .SH ARGUMENTS
 .IP \[bu] 2
 \f[B]\f[VB]<PATH|NUGET_ID>\f[B]\f[R]
@@ -85,11 +89,8 @@ If you want to install a specific version or prerelease version of a template pa
 .PP
 By default, \f[V]dotnet new install\f[R] uses the hierarchy of NuGet configuration files from the current directory to determine the NuGet source the package can be installed from.
 If \f[V]--nuget-source\f[R] is specified, the source will be added to the list of sources to be checked.
-.PD 0
-.P
-.PD
 To check the configured sources for the current directory use \f[V]dotnet nuget list source\f[R].
-For more information, see Common NuGet Configurations
+For more information, see Common NuGet Configurations.
 .RS
 .PP
 Following NuGet\[cq]s Https Everywhere (https://devblogs.microsoft.com/nuget/https-everywhere/) initiative, \f[V]dotnet new\f[R] is phasing out \f[V]http\f[R] feeds.
@@ -161,7 +162,7 @@ Install version 2.0 of the SPA templates for ASP.NET Core from a custom NuGet so
 .IP
 .nf
 \f[C]
-dotnet new --install Microsoft.DotNet.Web.Spa.ProjectTemplates::2.0.0 --add-source \[dq]https://api.my-custom-nuget.com/v3/index.json\[dq] --interactive
+dotnet new install Microsoft.DotNet.Web.Spa.ProjectTemplates::2.0.0 --add-source \[dq]https://api.my-custom-nuget.com/v3/index.json\[dq] --interactive
 \f[R]
 .fi
 .RE

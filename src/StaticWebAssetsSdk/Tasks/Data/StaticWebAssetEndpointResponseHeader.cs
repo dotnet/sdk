@@ -1,34 +1,38 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
 
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class StaticWebAssetEndpointResponseHeader : IEquatable<StaticWebAssetEndpointResponseHeader>, IComparable<StaticWebAssetEndpointResponseHeader>
+public struct StaticWebAssetEndpointResponseHeader : IEquatable<StaticWebAssetEndpointResponseHeader>, IComparable<StaticWebAssetEndpointResponseHeader>
 {
+    private static readonly JsonTypeInfo<StaticWebAssetEndpointResponseHeader[]> _jsonTypeInfo =
+        StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointResponseHeaderArray;
+
     public string Name { get; set; }
 
     public string Value { get; set; }
 
-    internal static StaticWebAssetEndpointResponseHeader[] FromMetadataValue(string value)
-    {
-        return string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize<StaticWebAssetEndpointResponseHeader[]>(value);
-    }
+    internal static StaticWebAssetEndpointResponseHeader[] FromMetadataValue(string value) => string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
 
-    internal static string ToMetadataValue(StaticWebAssetEndpointResponseHeader[] responseHeaders)
-    {
-        return JsonSerializer.Serialize(responseHeaders ?? []);
-    }
+    internal static string ToMetadataValue(StaticWebAssetEndpointResponseHeader[] responseHeaders) =>
+        JsonSerializer.Serialize(
+            responseHeaders ?? [],
+            _jsonTypeInfo);
 
     private string GetDebuggerDisplay() => $"{Name}: {Value}";
 
-    public override bool Equals(object obj) => Equals(obj as StaticWebAssetEndpointResponseHeader);
+    public override bool Equals(object obj) => obj is StaticWebAssetEndpointResponseHeader responseHeader &&
+        Equals(responseHeader);
 
-    public bool Equals(StaticWebAssetEndpointResponseHeader other) => string.Equals(Name, other?.Name, StringComparison.Ordinal) && string.Equals(Value, other?.Value, StringComparison.Ordinal);
+    public bool Equals(StaticWebAssetEndpointResponseHeader other) => string.Equals(Name, other.Name, StringComparison.Ordinal) &&
+        string.Equals(Value, other.Value, StringComparison.Ordinal);
 
     public override int GetHashCode()
     {
@@ -42,9 +46,9 @@ public class StaticWebAssetEndpointResponseHeader : IEquatable<StaticWebAssetEnd
 #endif
     }
 
-    public int CompareTo(StaticWebAssetEndpointResponseHeader other) => string.Compare(Name, other?.Name, StringComparison.Ordinal) switch
+    public int CompareTo(StaticWebAssetEndpointResponseHeader other) => string.CompareOrdinal(Name, other.Name) switch
     {
-        0 => string.Compare(Value, other?.Value, StringComparison.Ordinal),
+        0 => string.CompareOrdinal(Value, other.Value),
         int result => result
     };
 }

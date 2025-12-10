@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LinkAlternativeRepresentationsToOriginalResource>ResponseHeader</LinkAlternativeRepresentationsToOriginalResource>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\RazorClassLibrary\RazorClassLibrary.csproj" />
+    </ItemGroup>
+</Project>

@@ -22,17 +22,37 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
     {
         get
         {
+            // DOTNET_HOST_PATH, if set, is the full path to the dotnet host executable.
+            // However, not all environments/scenarios set it correctly - some set it to just the directory.
+
+            // this is the expected correct case - DOTNET_HOST_PATH is set to the full path of the dotnet host executable
             string path = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "";
+            if (Path.IsPathRooted(path) && File.Exists(path))
+            {
+                return path;
+            }
+            // some environments set it to just the directory, so we need to check that too
+            if (Path.IsPathRooted(path) && Directory.Exists(path))
+            {
+                path = Path.Combine(path, ToolExe);
+                if (File.Exists(path))
+                {
+                    return path;
+                }
+            }
+            // last-chance fallback - use the ToolPath and ToolExe properties to try to synthesize the path
             if (string.IsNullOrEmpty(path))
             {
+                // no
                 path = string.IsNullOrEmpty(ToolPath) ? "" : ToolPath;
+                path = Path.Combine(path, ToolExe);
             }
 
             return path;
         }
     }
 
-    protected override string GenerateFullPathToTool() => Path.Combine(DotNetPath, ToolExe);
+    protected override string GenerateFullPathToTool() => DotNetPath;
 
     /// <summary>
     /// Workaround to avoid storing user/pass into the EnvironmentVariables property, which gets logged by the task.
@@ -107,6 +127,10 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitchIfNotNull("--baseimagetag ", BaseImageTag);
         }
+        if (!string.IsNullOrWhiteSpace(BaseImageDigest))
+        {
+            builder.AppendSwitchIfNotNull("--baseimagedigest ", BaseImageDigest);
+        }
         if (!string.IsNullOrWhiteSpace(OutputRegistry))
         {
             builder.AppendSwitchIfNotNull("--outputregistry ", OutputRegistry);
@@ -118,6 +142,10 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         if (!string.IsNullOrWhiteSpace(AppCommandInstruction))
         {
             builder.AppendSwitchIfNotNull("--appcommandinstruction ", AppCommandInstruction);
+        }
+        if (!string.IsNullOrWhiteSpace(ImageFormat))
+        {
+            builder.AppendSwitchIfNotNull("--image-format ", ImageFormat);
         }
 
         AppendSwitchIfNotNullSanitized(builder, "--entrypoint ", nameof(Entrypoint), Entrypoint);

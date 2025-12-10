@@ -15,11 +15,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet" "1" "2025-10-30" "" ".NET Documentation"
 .hy
 .SH dotnet command
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 \f[V]dotnet\f[R] - The generic driver for the .NET CLI.
@@ -52,7 +52,7 @@ dotnet [--additionalprobingpath <PATH>] [--additional-deps <PATH>]
     [--fx-version <VERSION>]  [--roll-forward <SETTING>]
     <PATH_TO_APPLICATION> [arguments]
 
-dotnet exec [--additionalprobingpath] [--additional-deps <PATH>]
+dotnet exec [--additionalprobingpath <PATH>] [--additional-deps <PATH>]
     [--depsfile <PATH>]
     [--fx-version <VERSION>]  [--roll-forward <SETTING>]
     [--runtimeconfig <PATH>]
@@ -105,17 +105,28 @@ Prints out detailed information about a .NET installation and the machine enviro
 Prints out the version of the .NET SDK used by \f[V]dotnet\f[R] commands, which may be affected by a \f[I]global.json\f[R] file.
 Available only when the SDK is installed.
 .IP \[bu] 2
-\f[B]\f[VB]--list-runtimes\f[B]\f[R]
+\f[B]\f[VB]--list-runtimes [--arch <ARCH>]\f[B]\f[R]
 .RS 2
 .PP
-Prints out a list of the installed .NET runtimes.
-An x86 version of the SDK lists only x86 runtimes, and an x64 version of the SDK lists only x64 runtimes.
+Prints out a list of the installed .NET runtimes for the architecture of the invoked \f[V]dotnet\f[R].
+An x86 version of \f[V]dotnet\f[R] lists only x86 runtimes, and an x64 version of \f[V]dotnet\f[R] lists only x64 runtimes.
+.PP
+\&.NET 10 and later versions support the \f[V]--arch\f[R] argument.
+If specified and not the same as the \f[V]dotnet\f[R] architecture, searches for a .NET installation of the specified architecture and prints out any runtimes installed there.
+Allowed values include arm64, x64, and x86.
+The dotnet/runtime repo has the full list of valid architecture values (https://github.com/dotnet/runtime/blob/1713d65316467e3eaf23514b6642eba5869f1b70/src/native/corehost/hostmisc/utils.cpp#L194-L205).
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--list-sdks\f[B]\f[R]
+\f[B]\f[VB]--list-sdks [--arch <ARCH>]\f[B]\f[R]
 .RS 2
 .PP
-Prints out a list of the installed .NET SDKs.
+Prints out a list of the installed .NET SDKs for the architecture of the invoked \f[V]dotnet\f[R].
+An x86 version of \f[V]dotnet\f[R] lists only x86 SDKs, and an x64 version of \f[V]dotnet\f[R] lists only x64 SDKs.
+.PP
+\&.NET 10 and later versions support the \f[V]--arch\f[R] argument.
+If specified and not the same as the \f[V]dotnet\f[R] architecture, searches for a .NET installation of the specified architecture and prints out any SDKs installed there.
+Allowed values include arm64, x64, and x86.
+The dotnet/runtime repo has the full list of valid architecture values (https://github.com/dotnet/runtime/blob/1713d65316467e3eaf23514b6642eba5869f1b70/src/native/corehost/hostmisc/utils.cpp#L194-L205).
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
@@ -278,11 +289,6 @@ T}@T{
 Shows more detailed documentation online for the command.
 T}
 T{
-dotnet migrate
-T}@T{
-Migrates a valid Preview 2 project to a .NET Core SDK 1.0 project.
-T}
-T{
 dotnet msbuild
 T}@T{
 Provides access to the MSBuild command line.
@@ -345,17 +351,17 @@ Function
 T}
 _
 T{
-dotnet add reference
+dotnet reference add
 T}@T{
 Adds a project reference.
 T}
 T{
-dotnet list reference
+dotnet reference list
 T}@T{
 Lists project references.
 T}
 T{
-dotnet remove reference
+dotnet reference remove
 T}@T{
 Removes a project reference.
 T}
@@ -372,14 +378,24 @@ Function
 T}
 _
 T{
-dotnet add package
+dotnet package add
 T}@T{
 Adds a NuGet package.
 T}
 T{
-dotnet remove package
+dotnet package list
+T}@T{
+Lists NuGet packages.
+T}
+T{
+dotnet package remove
 T}@T{
 Removes a NuGet package.
+T}
+T{
+dotnet package search
+T}@T{
+Searches for a NuGet package.
 T}
 .TE
 .SS NuGet commands
@@ -451,6 +467,21 @@ Function
 T}
 _
 T{
+dotnet workload clean
+T}@T{
+Removes workload components.
+T}
+T{
+dotnet workload config
+T}@T{
+Enables or disables workload-set update mode.
+T}
+T{
+dotnet workload history
+T}@T{
+Shows all workload installation actions.
+T}
+T{
 dotnet workload install
 T}@T{
 Installs an optional workload.
@@ -464,6 +495,11 @@ T{
 dotnet workload repair
 T}@T{
 Repairs all installed workloads.
+T}
+T{
+dotnet workload restore
+T}@T{
+Restore workloads required for a project.
 T}
 T{
 dotnet workload search

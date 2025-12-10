@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
-        <target state="needs-review-translation">Plusieurs fichiers projet MSBuild trouvés dans '{0}'. Spécifiez celui qui doit être utilisé avec l'option --project.</target>
+        <target state="translated">Plusieurs fichiers projet MSBuild trouvés dans '{0}'. Spécifiez celui qui doit être utilisé avec l'option --project.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_NoProjectsFound">
         <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
-        <target state="needs-review-translation">Fichier projet MSBuild introuvable dans '{0}'. Spécifiez le projet à utiliser avec l'option --project.</target>
+        <target state="translated">Fichier projet MSBuild introuvable dans '{0}'. Spécifiez le projet à utiliser avec l'option --project.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="Error_QuietAndVerboseSpecified">
         <source>Cannot specify both '--quiet' and '--verbose' options.</source>
-        <target state="needs-review-translation">Impossible de spécifier les options '--quiet' et '--verbose'.</target>
+        <target state="translated">Impossible de spécifier les options '--quiet' et '--verbose'.</target>
         <note>{Locked="--quiet"}{Locked="--verbose"}</note>
       </trans-unit>
       <trans-unit id="Help">
@@ -58,37 +58,37 @@ Examples:
   dotnet watch test
 
     </source>
-        <target state="new">
+        <target state="translated">
 
-Environment variables:
+Variables d’environnement :
 
   DOTNET_USE_POLLING_FILE_WATCHER
-  When set to '1' or 'true', dotnet-watch will poll the file system for
-  changes. This is required for some file systems, such as network shares,
-  Docker mounted volumes, and other virtual file systems.
+  Lorsqu’il est défini sur « 1 » ou « true », dotnet-watch interroge le système de fichiers à la recherche des
+  modifications. Cela est nécessaire pour certains systèmes de fichiers, tels que les partages réseau,
+  les volumes montés par Docker et d’autres systèmes de fichiers virtuels.
 
   DOTNET_WATCH
-  dotnet-watch sets this variable to '1' on all child processes launched.
+  dotnet-watch définit cette variable sur « 1 » sur tous les processus enfants lancés.
 
   DOTNET_WATCH_ITERATION
-  dotnet-watch sets this variable to '1' and increments by one each time
-  a file is changed and the command is restarted.
+  dotnet-watch définit cette variable sur « 1 » et incrémente chaque fois
+  qu’un fichier est modifié et que la commande est redémarrée.
 
   DOTNET_WATCH_SUPPRESS_EMOJIS
-  When set to '1' or 'true', dotnet-watch will not show emojis in the 
-  console output.
+  Lorsque la valeur est « 1 » ou « true », dotnet-watch n’affiche pas d’emojis dans la 
+  sortie de la console.
 
-Remarks:
-  The special option '--' is used to delimit the end of the options and
-  the beginning of arguments that will be passed to the child dotnet process.
+Remarques :
+  L’option spéciale « -- » est utilisée pour délimiter la fin des options et
+  le début des arguments qui seront transmis au processus dotnet enfant.
 
-  For example: dotnet watch -- --verbose run
+  Par exemple : dotnet watch -- --verbose run
 
-  Even though '--verbose' is an option dotnet-watch supports, the use of '--'
-  indicates that '--verbose' should be treated instead as an argument for
+  Même si « --verbose » est une option prise en charge par dotnet-watch, l’utilisation de « -- »
+  indique que « --verbose » doit être traité à la place comme un argument pour
   dotnet-run.
 
-Examples:
+Exemples :
   dotnet watch run
   dotnet watch test
 
@@ -99,8 +99,8 @@ Examples:
         <source>
       Lists all discovered files without starting the watcher.
     </source>
-        <target state="new">
-      Lists all discovered files without starting the watcher.
+        <target state="translated">
+      Répertorie tous les fichiers découverts sans démarrer le Watcher.
     </target>
         <note />
       </trans-unit>
@@ -108,8 +108,8 @@ Examples:
         <source>
       Suppress hot reload for supported apps.
     </source>
-        <target state="new">
-      Suppress hot reload for supported apps.
+        <target state="translated">
+      Supprime le rechargement à chaud pour les applications prises en charge.
     </target>
         <note />
       </trans-unit>
@@ -118,9 +118,9 @@ Examples:
       Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled.
       Use this option to prevent console input from being captured.
     </source>
-        <target state="new">
-      Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled.
-      Use this option to prevent console input from being captured.
+        <target state="translated">
+      Exécute dotnet-watch en mode non interactif. Cette option est prise en charge uniquement lors de l’exécution avec Rechargement à chaud activé.
+      Utilisez cette option pour empêcher la capture de l’entrée de console.
     </target>
         <note />
       </trans-unit>
@@ -128,8 +128,8 @@ Examples:
         <source>
       Suppresses all output except warnings and errors
     </source>
-        <target state="new">
-      Suppresses all output except warnings and errors
+        <target state="translated">
+      Supprime toutes les sorties à l’exception des avertissements et des erreurs
     </target>
         <note />
       </trans-unit>
@@ -137,14 +137,14 @@ Examples:
         <source>
       Show verbose output
     </source>
-        <target state="new">
-      Show verbose output
+        <target state="translated">
+      Afficher la sortie détaillée
     </target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="needs-review-translation">AVERTISSEMENT NETSDK1174 : l’abréviation de-p pour--Project est déconseillée. Veuillez utiliser--Project.</target>
+        <target state="translated">AVERTISSEMENT NETSDK1174 : l’abréviation de-p pour--project est déconseillée. Veuillez utiliser--project.</target>
         <note>{Locked="-p"}{Locked="--project"}</note>
       </trans-unit>
     </body>

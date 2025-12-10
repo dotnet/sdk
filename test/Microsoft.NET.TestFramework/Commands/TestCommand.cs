@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -14,15 +14,19 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public ITestOutputHelper Log { get; }
 
-        public string WorkingDirectory { get; set; }
+        public string? WorkingDirectory { get; set; }
 
         public List<string> Arguments { get; set; } = new List<string>();
 
         public List<string> EnvironmentToRemove { get; } = new List<string>();
 
+        public bool RedirectStandardInput { get; set; }
+
         //  These only work via Execute(), not when using GetProcessStartInfo()
-        public Action<string> CommandOutputHandler { get; set; }
-        public Action<Process> ProcessStartedHandler { get; set; }
+        public Action<string>? CommandOutputHandler { get; set; }
+        public Action<Process>? ProcessStartedHandler { get; set; }
+
+        public Encoding? StandardOutputEncoding { get; set; }
 
         protected TestCommand(ITestOutputHelper log)
         {
@@ -40,6 +44,24 @@ namespace Microsoft.NET.TestFramework.Commands
         public TestCommand WithWorkingDirectory(string workingDirectory)
         {
             WorkingDirectory = workingDirectory;
+            return this;
+        }
+
+        public TestCommand WithStandardInput(string stdin)
+        {
+            Debug.Assert(ProcessStartedHandler == null);
+            RedirectStandardInput = true;
+            ProcessStartedHandler = (process) =>
+            {
+                process.StandardInput.Write(stdin);
+                process.StandardInput.Close();
+            };
+            return this;
+        }
+
+        public TestCommand WithStandardOutputEncoding(Encoding encoding)
+        {
+            StandardOutputEncoding = encoding;
             return this;
         }
 
@@ -84,6 +106,8 @@ namespace Microsoft.NET.TestFramework.Commands
                 commandSpec.Arguments = Arguments.Concat(commandSpec.Arguments).ToList();
             }
 
+            commandSpec.RedirectStandardInput = RedirectStandardInput;
+
             return commandSpec;
         }
 
@@ -120,19 +144,46 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public virtual CommandResult Execute(IEnumerable<string> args)
         {
-            var command = CreateCommandSpec(args)
+            var spec = CreateCommandSpec(args);
+
+            var command = spec
                 .ToCommand(_doNotEscapeArguments)
                 .CaptureStdOut()
                 .CaptureStdErr();
 
-            if (CommandOutputHandler != null)
+            command.OnOutputLine(line =>
             {
-                command.OnOutputLine(CommandOutputHandler);
+                Log.WriteLine($"》{line}");
+                CommandOutputHandler?.Invoke(line);
+            });
+
+            command.OnErrorLine(line =>
+            {
+                Log.WriteLine($"❌{line}");
+            });
+
+            if (StandardOutputEncoding is not null)
+            {
+                command.StandardOutputEncoding(StandardOutputEncoding);
             }
 
-            var result = ((Command)command).Execute(ProcessStartedHandler);
+            string fileToShow = Path.GetFileNameWithoutExtension(spec.FileName!).Equals("dotnet", StringComparison.OrdinalIgnoreCase) ?
+                "dotnet" :
+                spec.FileName!;
+            var display = $"{fileToShow} {string.Join(" ", spec.Arguments)}";
 
-            LogCommandResult(Log, result);
+            Log.WriteLine($"Executing '{display}':");
+            var result = ((Command)command).Execute(ProcessStartedHandler);
+            Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
+
+            if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
+            {
+                var binlogFiles = Directory.GetFiles(spec.WorkingDirectory ?? Environment.CurrentDirectory, "*.binlog");
+                foreach (string binlogFile in binlogFiles)
+                {
+                    File.Copy(binlogFile, Path.Combine(uploadRoot, Path.GetFileName(binlogFile)), true);
+                }
+            }
 
             return result;
         }

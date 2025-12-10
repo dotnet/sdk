@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
 
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -470,7 +471,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory("netstandard1.5");
+            var outputDirectory = buildCommand.GetOutputDirectory("netstandard2.0");
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
                 "TestLibrary.dll",
@@ -736,7 +737,7 @@ public class Class1
 
             var newtonsoftReferences = packageReferences.Where(pr => pr.value == "Newtonsoft.Json");
 
-            newtonsoftReferences.Count().Should().BeGreaterOrEqualTo(1);
+            newtonsoftReferences.Count().Should().BeGreaterThanOrEqualTo(1);
 
             foreach (var r in newtonsoftReferences)
             {
@@ -851,6 +852,35 @@ public class Class1
             getContentItemsCommand.GetValues()
                 .Should()
                 .BeEmpty();
+        }
+
+        [Fact]
+        public void It_excludes_items_in_publish_directory()
+        {
+            Action<GetValuesCommand> setup = getValuesCommand =>
+            {
+                // Create a PublishDir with a JSON file (simulating a previous publish)
+                string publishDir = Path.Combine(getValuesCommand.ProjectRootPath, "artifacts", "TestLibrary");
+                WriteFile(Path.Combine(publishDir, "appsettings.json"),
+                    "{ \"Setting\": \"Value\" }");
+
+                WriteFile(Path.Combine(getValuesCommand.ProjectRootPath, "Code", "Class1.cs"),
+                    "public class Class1 {}");
+            };
+
+            Action<XDocument> projectChanges = project =>
+            {
+                var ns = project.Root.Name.Namespace;
+
+                var propertyGroup = new XElement(ns + "PropertyGroup");
+                project.Root.Add(propertyGroup);
+                propertyGroup.Add(new XElement(ns + "PublishDir", "artifacts\\TestLibrary\\"));
+            };
+
+            var noneItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "None", setup, projectChanges: projectChanges);
+
+            // The appsettings.json file in the PublishDir should not be included in None items
+            noneItems.Should().NotContain(item => item.Contains("appsettings.json"));
         }
 
         void RemoveGeneratedCompileItems(List<string> compileItems)

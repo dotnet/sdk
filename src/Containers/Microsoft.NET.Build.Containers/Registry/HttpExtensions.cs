@@ -1,21 +1,27 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
+using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
+using NuGet.Packaging;
 
 namespace Microsoft.NET.Build.Containers;
 
 internal static class HttpExtensions
 {
+    private static readonly MediaTypeWithQualityHeaderValue[] _knownManifestFormats = [
+        new("application/json"),
+        new(SchemaTypes.DockerManifestListV2),
+        new(SchemaTypes.OciImageIndexV1),
+        new(SchemaTypes.DockerManifestV2),
+        new(SchemaTypes.OciManifestV1),
+        new(SchemaTypes.DockerContainerV1),
+    ];
+
     internal static HttpRequestMessage AcceptManifestFormats(this HttpRequestMessage request)
     {
         request.Headers.Accept.Clear();
-        request.Headers.Accept.Add(new("application/json"));
-        request.Headers.Accept.Add(new(SchemaTypes.DockerManifestListV2));
-        request.Headers.Accept.Add(new(SchemaTypes.DockerManifestV2));
-        request.Headers.Accept.Add(new(SchemaTypes.OciManifestV1));
-        request.Headers.Accept.Add(new(SchemaTypes.DockerContainerV1));
+        request.Headers.Accept.AddRange(_knownManifestFormats);
         return request;
     }
 

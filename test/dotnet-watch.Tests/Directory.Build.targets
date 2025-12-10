@@ -1,0 +1,8 @@
+<Project>
+
+  <Import Project="..\Directory.Build.targets" />
+
+  <!-- Workaround for https://github.com/dotnet/msbuild/issues/9709 -->
+  <Target Name="IncrementalClean" />
+
+</Project>

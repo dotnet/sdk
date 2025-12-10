@@ -30,7 +30,7 @@ namespace Microsoft.NET.Build.Tests
         [Theory]
         [InlineData("net7.0")]
         [InlineData("net6.0")]
-        public void SupportRespectAlreadyAssignedItemCulture_IsNotSupported_BuildShouldFail(string targetFramework)
+        public void SupportRespectAlreadyAssignedItemCulture_IsNotSupported_BuildShouldWarn(string targetFramework)
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("MSBuildCultureResourceGeneration", identifier: targetFramework)
@@ -38,7 +38,11 @@ namespace Microsoft.NET.Build.Tests
                 .WithTargetFramework(targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute().Should().Fail();
+            // Custom culture is allowed, but if set explicitly and overwritten - a warning is issued.
+            // However the warning is explicit opt-in.
+            buildCommand.Execute("/p:WarnOnCultureOverwritten=true").Should().Pass().And
+                // warning MSB3002: Explicitly set culture "test-1" for item "Resources.test-1.resx" was overwritten with inferred culture "", because 'RespectAlreadyAssignedItemCulture' property was not set.
+                .HaveStdOutContaining("warning MSB3002:");
         }
     }
 }
