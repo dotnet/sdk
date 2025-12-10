@@ -77,7 +77,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
         string muxerName = DotnetupUtilities.GetDotnetExeName();
         string muxerTargetPath = Path.Combine(targetDir, muxerName);
-        string muxerTempPath = muxerTargetPath + ".tmp";
+        string muxerTempPath = $"{muxerTargetPath}.{Guid.NewGuid().ToString()}.tmp";
 
         // Step 1: Read the version of the existing muxer (if any) by looking at the latest runtime
         Version? existingMuxerVersion = null;
@@ -90,30 +90,7 @@ internal class DotnetArchiveExtractor : IDisposable
         // Step 2: If there is an existing muxer, rename it to .tmp
         if (hadExistingMuxer)
         {
-            if (File.Exists(muxerTempPath))
-            {
-                try
-                {
-                    File.Delete(muxerTempPath);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    // If we can't delete the existing temp file, we can't proceed with muxer version handling
-                    // Just extract without version comparison
-                    hadExistingMuxer = false;
-                }
-                catch (IOException)
-                {
-                    // If we can't delete the existing temp file, we can't proceed with muxer version handling
-                    // Just extract without version comparison
-                    hadExistingMuxer = false;
-                }
-            }
-
-            if (hadExistingMuxer)
-            {
-                File.Move(muxerTargetPath, muxerTempPath);
-            }
+            File.Move(muxerTargetPath, muxerTempPath);
         }
 
         try
