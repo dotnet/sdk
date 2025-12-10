@@ -1005,6 +1005,51 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
+    public void ForceOption_Off()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var filePath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(filePath, """
+            #:property Prop1=1
+            #define X
+            #:property Prop2=2
+            Console.WriteLine();
+            #:property Prop1=3
+            """);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(FileBasedProgramsResources.CannotConvertDirective);
+
+        new DirectoryInfo(Path.Join(testInstance.Path))
+            .EnumerateDirectories().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ForceOption_On()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var filePath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(filePath, """
+            #:property Prop1=1
+            #define X
+            #:property Prop2=2
+            Console.WriteLine();
+            #:property Prop1=3
+            """);
+
+        new DotnetCommand(Log, "project", "convert", "--force", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(Path.Join(testInstance.Path))
+            .EnumerateDirectories().Should().NotBeEmpty();
+    }
+
+    [Fact]
     public void Directives()
     {
         VerifyConversion(
