@@ -29,25 +29,58 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             if (root.FindNode(context.Span) is SyntaxNode expression)
             {
-                string title = MicrosoftNetCoreAnalyzersResources.PreferTypedStringBuilderAppendOverloadsRemoveToString;
-                context.RegisterCodeFix(
-                    CodeAction.Create(title,
-                        async ct =>
-                        {
-                            SemanticModel model = await doc.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-                            if (model.GetOperationWalkingUpParentChain(expression, cancellationToken) is IArgumentOperation arg &&
-                                arg.Value is IInvocationOperation invoke &&
-                                invoke.Instance?.Syntax is SyntaxNode replacement)
+                SemanticModel model = await doc.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+                var operation = model.GetOperationWalkingUpParentChain(expression, cancellationToken);
+
+                // Handle ToString() case
+                if (operation is IArgumentOperation arg &&
+                    arg.Value is IInvocationOperation invoke &&
+                    invoke.Instance?.Syntax is SyntaxNode replacement)
+                {
+                    string title = MicrosoftNetCoreAnalyzersResources.PreferTypedStringBuilderAppendOverloadsRemoveToString;
+                    context.RegisterCodeFix(
+                        CodeAction.Create(title,
+                            async ct =>
                             {
                                 DocumentEditor editor = await DocumentEditor.CreateAsync(doc, ct).ConfigureAwait(false);
                                 editor.ReplaceNode(expression, editor.Generator.Argument(replacement));
                                 return editor.GetChangedDocument();
-                            }
+                            },
+                            equivalenceKey: title),
+                        context.Diagnostics);
+                }
+                // Handle new string(char, int) case (only for Append, not Insert)
+                else if (operation is IArgumentOperation argOp &&
+                    argOp.Value is IObjectCreationOperation objectCreation &&
+                    objectCreation.Arguments.Length == 2 &&
+                    argOp.Parent is IInvocationOperation invocationOp &&
+                    invocationOp.TargetMethod.Name == "Append")
+                {
+                    string title = MicrosoftNetCoreAnalyzersResources.PreferTypedStringBuilderAppendOverloadsReplaceStringConstructor;
+                    context.RegisterCodeFix(
+                        CodeAction.Create(title,
+                            async ct =>
+                            {
+                                DocumentEditor editor = await DocumentEditor.CreateAsync(doc, ct).ConfigureAwait(false);
 
-                            return doc;
-                        },
-                        equivalenceKey: title),
-                    context.Diagnostics);
+                                // Get the char and int arguments from the string constructor
+                                var charArgSyntax = objectCreation.Arguments[0].Value.Syntax;
+                                var intArgSyntax = objectCreation.Arguments[1].Value.Syntax;
+
+                                // Append(new string(c, count)) -> Append(c, count)
+                                SyntaxNode newInvocation = editor.Generator.InvocationExpression(
+                                    editor.Generator.MemberAccessExpression(
+                                        invocationOp.Instance!.Syntax,
+                                        "Append"),
+                                    editor.Generator.Argument(charArgSyntax),
+                                    editor.Generator.Argument(intArgSyntax));
+
+                                editor.ReplaceNode(invocationOp.Syntax, newInvocation);
+                                return editor.GetChangedDocument();
+                            },
+                            equivalenceKey: title),
+                        context.Diagnostics);
+                }
             }
         }
     }

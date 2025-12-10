@@ -4,15 +4,19 @@
 #nullable disable
 
 using System.CommandLine;
+using System.CommandLine.StaticCompletions;
+
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
 internal static class ReferenceRemoveCommandParser
 {
-    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new DynamicArgument<IEnumerable<string>>(CliCommandStrings.ReferenceRemoveProjectPathArgumentName)
+    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new Argument<IEnumerable<string>>(CliCommandStrings.ReferenceRemoveProjectPathArgumentName)
     {
         Description = CliCommandStrings.ReferenceRemoveProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
+        IsDynamic = true,
     }.AddCompletions(CliCompletion.ProjectReferencesFromProjectFile);
 
     public static readonly Option<string> FrameworkOption = new("--framework", "-f")

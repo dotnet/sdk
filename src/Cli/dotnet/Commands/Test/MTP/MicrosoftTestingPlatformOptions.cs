@@ -7,10 +7,10 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class MicrosoftTestingPlatformOptions
 {
-    public static readonly Option<string> ProjectOption = new("--project")
+    public static readonly Option<string> ProjectOrSolutionOption = new("--project")
     {
-        Description = CliCommandStrings.CmdProjectDescription,
-        HelpName = CliCommandStrings.CmdProjectPathName,
+        Description = CliCommandStrings.CmdProjectOrSolutionDescriptionFormat,
+        HelpName = CliCommandStrings.CmdProjectOrSolutionPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 
@@ -66,10 +66,6 @@ internal static class MicrosoftTestingPlatformOptions
         HelpName = CliCommandStrings.CmdNumberName
     };
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
-
-    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
-
     public static readonly Option<bool> NoBuildOption = new("--no-build")
     {
         Description = CliCommandStrings.CmdNoBuildDescription
@@ -109,6 +105,8 @@ internal static class MicrosoftTestingPlatformOptions
         Description = CliCommandStrings.CmdListTestsDescription,
         Arity = ArgumentArity.Zero
     };
+
+    public static readonly Option<string[]> MTPTargetOption = CommonOptions.RequiredMSBuildTargetOption(CliConstants.MTPTarget);
 }
 
 internal enum OutputOptions

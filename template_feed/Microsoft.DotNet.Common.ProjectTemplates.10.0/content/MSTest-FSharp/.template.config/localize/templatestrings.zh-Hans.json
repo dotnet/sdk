@@ -52,7 +52,7 @@
   "symbols/Fixture/choices/TestCleanup/description": "TestCleanup 固定例程方法",
   "postActions/restoreNugetPackages/description": "还原此项目所需的 NuGet 包。",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "运行 \"dotnet restore\"",
-  "postActions/addJsonProperty/description": "Create or update 'global.json' file required by Microsoft.Testing.Platform.",
-  "postActions/addJsonProperty/manualInstructions/default/text": "Manually update or create 'global.json' file setting the test runner to Microsoft.Testing.Platform",
+  "postActions/addJsonProperty/description": "创建或更新 Microsoft.Testing.Platform 所需的 \"global.json\" 文件。",
+  "postActions/addJsonProperty/manualInstructions/default/text": "手动更新或创建 \"global.json\" 文件，将测试运行程序设置为 Microsoft.Testing.Platform",
   "postActions/openInEditor/description": "在编辑器中打开 Test1.fs"
 }

@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Commands.New.PostActions;
 using Microsoft.DotNet.Cli.Commands.Workload;
@@ -64,7 +65,7 @@ internal static class NewCommandParser
 
     public static Command GetCommand()
     {
-        Command command = NewCommandFactory.Create(CommandName, (Func<ParseResult, CliTemplateEngineHost>)GetEngineHost);
+        Command command = NewCommandFactory.Create((Func<ParseResult, CliTemplateEngineHost>)GetEngineHost);
         command.Options.Add(s_disableSdkTemplatesOption);
         command.Options.Add(s_disableProjectContextEvaluationOption);
         command.Options.Add(s_verbosityOption);

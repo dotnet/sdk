@@ -1,10 +1,9 @@
-<Project Sdk="MSTest.Sdk/3.9.3">
+<Project Sdk="MSTest.Sdk/4.0.0-preview.25506.5">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
 
 	<PropertyGroup>
 		<TargetFramework>$(CurrentTargetFramework)</TargetFramework>
 		<GenerateTestingPlatformEntryPoint>False</GenerateTestingPlatformEntryPoint>
-		<MicrosoftTestingExtensionsCodeCoverageVersion>17.12.6</MicrosoftTestingExtensionsCodeCoverageVersion>
 		
 	</PropertyGroup>
 

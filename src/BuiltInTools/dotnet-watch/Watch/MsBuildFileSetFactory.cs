@@ -30,6 +30,9 @@ namespace Microsoft.DotNet.Watch
         private EnvironmentOptions EnvironmentOptions => buildReporter.EnvironmentOptions;
         private ILogger Logger => buildReporter.Logger;
 
+        private readonly ProjectGraphFactory _buildGraphFactory = new(
+            globalOptions: BuildUtilities.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value));
+
         internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph? projectGraph)
         {
             public readonly IReadOnlyDictionary<string, FileItem> Files = files;
@@ -73,7 +76,7 @@ namespace Microsoft.DotNet.Watch
                     Logger.LogInformation("MSBuild output from target '{TargetName}':", TargetName);
                 }
 
-                BuildOutput.ReportBuildOutput(Logger, capturedOutput, success, projectDisplay: null);
+                BuildOutput.ReportBuildOutput(Logger, capturedOutput, success);
                 if (!success)
                 {
                     return null;
@@ -124,10 +127,7 @@ namespace Microsoft.DotNet.Watch
                 ProjectGraph? projectGraph = null;
                 if (requireProjectGraph != null)
                 {
-                    var globalOptions = CommandLineOptions.ParseBuildProperties(buildArguments)
-                        .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value);
-
-                    projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(rootProjectFile, globalOptions, Logger, requireProjectGraph.Value, cancellationToken);
+                    projectGraph = _buildGraphFactory.TryLoadProjectGraph(rootProjectFile, Logger, requireProjectGraph.Value, cancellationToken);
                     if (projectGraph == null && requireProjectGraph == true)
                     {
                         return null;

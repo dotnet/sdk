@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Cli
                        Example
                            .For<NewCommand>(args.ParseResult)
                            .WithSubcommand<SearchCommand>()
-                           .WithArgument(BaseSearchCommand.NameArgument));
+                           .WithArgument(CommandDefinition.Search.NameArgument));
                     Reporter.Output.WriteLine();
                     return NewCommandStatus.Success;
                 }
@@ -109,7 +109,7 @@ namespace Microsoft.TemplateEngine.Cli
                         string.Format(
                             LocalizableStrings.TemplateListCoordinator_Error_FailedConstraints,
                             resolutionResult.ContraintsMismatchGroupCount,
-                            BaseListCommand.IgnoreConstraintsOption.Name)
+                            CommandDefinition.List.IgnoreConstraintsOption.Name)
                         .Bold().Red());
                 }
 
@@ -122,7 +122,7 @@ namespace Microsoft.TemplateEngine.Cli
                              Example
                                  .For<NewCommand>(args.ParseResult)
                                  .WithSubcommand<SearchCommand>()
-                                 .WithArgument(BaseSearchCommand.NameArgument));
+                                 .WithArgument(CommandDefinition.Search.NameArgument));
                 }
                 else
                 {
@@ -130,7 +130,7 @@ namespace Microsoft.TemplateEngine.Cli
                              Example
                                  .For<NewCommand>(args.ParseResult)
                                  .WithSubcommand<SearchCommand>()
-                                 .WithArgument(BaseSearchCommand.NameArgument, args.ListNameCriteria));
+                                 .WithArgument(CommandDefinition.Search.NameArgument, args.ListNameCriteria));
                 }
                 Reporter.Error.WriteLine();
                 return NewCommandStatus.NotFound;
@@ -164,7 +164,7 @@ namespace Microsoft.TemplateEngine.Cli
             Reporter.Output.WriteCommand(
                Example
                    .For<NewCommand>(args.ParseResult)
-                   .WithArgument(NewCommand.ShortNameArgument, "console"));
+                   .WithArgument(CommandDefinition.New.ShortNameArgument, "console"));
 
             Reporter.Output.WriteLine();
 
@@ -172,7 +172,7 @@ namespace Microsoft.TemplateEngine.Cli
             Reporter.Output.WriteCommand(
               Example
                   .For<NewCommand>(args.ParseResult)
-                  .WithArgument(NewCommand.ShortNameArgument, "console")
+                  .WithArgument(CommandDefinition.New.ShortNameArgument, "console")
                   .WithHelpOption());
 
             Reporter.Output.WriteLine(LocalizableStrings.TemplateInformationCoordinator_DotnetNew_ListTemplatesHint);
@@ -187,7 +187,7 @@ namespace Microsoft.TemplateEngine.Cli
                      Example
                          .For<NewCommand>(args.ParseResult)
                          .WithSubcommand<SearchCommand>()
-                         .WithArgument(BaseSearchCommand.NameArgument, "web"));
+                         .WithArgument(CommandDefinition.Search.NameArgument, "web"));
 
             Reporter.Output.WriteLine();
 

@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Extensions;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
@@ -19,41 +19,37 @@ internal static class PackCommandParser
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.PackCmdOutputDirDescription,
         HelpName = CliCommandStrings.PackCmdOutputDir
     }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
 
-    public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
+    public static readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
         Description = CliCommandStrings.CmdNoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
-    public static readonly Option<bool> IncludeSymbolsOption = new ForwardedOption<bool>("--include-symbols")
+    public static readonly Option<bool> IncludeSymbolsOption = new Option<bool>("--include-symbols")
     {
         Description = CliCommandStrings.CmdIncludeSymbolsDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSymbols=true");
 
-    public static readonly Option<bool> IncludeSourceOption = new ForwardedOption<bool>("--include-source")
+    public static readonly Option<bool> IncludeSourceOption = new Option<bool>("--include-source")
     {
         Description = CliCommandStrings.CmdIncludeSourceDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSource=true");
 
-    public static readonly Option<bool> ServiceableOption = new ForwardedOption<bool>("--serviceable", "-s")
+    public static readonly Option<bool> ServiceableOption = new Option<bool>("--serviceable", "-s")
     {
         Description = CliCommandStrings.CmdServiceableDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:Serviceable=true");
 
-    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
-    {
-        Description = CliCommandStrings.PackCmdNoLogo,
-        Arity = ArgumentArity.Zero
-    }.ForwardAs("-nologo");
+    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
@@ -63,7 +59,7 @@ internal static class PackCommandParser
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandParser.VerbosityOption;
 
     public static Option<NuGetVersion> VersionOption =
-        new ForwardedOption<NuGetVersion>("--version")
+        new Option<NuGetVersion>("--version")
         {
             Description = CliCommandStrings.PackCmdVersionDescription,
             HelpName = CliCommandStrings.PackCmdVersion,
@@ -90,7 +86,10 @@ internal static class PackCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("pack", DocsLink, CliCommandStrings.PackAppFullName);
+        var command = new Command("pack", CliCommandStrings.PackAppFullName)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(OutputOption);

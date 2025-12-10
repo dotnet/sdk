@@ -31,10 +31,12 @@
     </ItemGroup>
 
     <!-- Copy artifacts to the testhost folder. -->
+    <!-- Using hard linking below will cause the SDK testing overlay to create changes in the installer layout.
+         Needs review and fix. https://github.com/dotnet/sdk/issues/51112 -->
     <Copy DestinationFiles="@(InstallerOutputFile)"
           SourceFiles="@(InstallerOutputFile->Metadata('Source'))"
           SkipUnchangedFiles="true"
-          UseHardLinksIfPossible="true" />
+          UseHardLinksIfPossible="false" />
 
     <OverrideAndCreateBundledNETCoreAppPackageVersion
       Stage0BundledVersionsPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"

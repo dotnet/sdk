@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.HotReload
                 var anyFailure = false;
 
                 await browserRefreshServer.SendAndReceiveAsync(
-                    request: sharedSecret => new JsonApplyHotReloadDeltasRequest
+                    request: sharedSecret => new JsonApplyManagedCodeUpdatesRequest
                     {
                         SharedSecret = sharedSecret,
                         UpdateId = batchId,
@@ -178,9 +178,9 @@ namespace Microsoft.DotNet.HotReload
         public override Task InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
             => Task.CompletedTask;
 
-        private readonly struct JsonApplyHotReloadDeltasRequest
+        private readonly struct JsonApplyManagedCodeUpdatesRequest
         {
-            public string Type => "BlazorHotReloadDeltav3";
+            public string Type => "ApplyManagedCodeUpdates";
             public string? SharedSecret { get; init; }
 
             public int UpdateId { get; init; }
@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.HotReload
 
         private readonly struct JsonGetApplyUpdateCapabilitiesRequest
         {
-            public string Type => "BlazorRequestApplyUpdateCapabilities2";
+            public string Type => "GetApplyUpdateCapabilities";
         }
     }
 }

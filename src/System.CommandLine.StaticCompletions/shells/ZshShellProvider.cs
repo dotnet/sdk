@@ -91,7 +91,7 @@ fi
             }
             else
             {
-                if (option is IDynamicOption)
+                if (option.IsDynamic)
                 {
                     shouldWriteDynamicCompleter = true;
                 }
@@ -125,7 +125,7 @@ fi
                 cardinality = ":";
             }
 
-            if (arg is IDynamicArgument)
+            if (arg.IsDynamic)
             {
                 shouldWriteDynamicCompleter = true;
             }
@@ -306,7 +306,7 @@ fi
 
     private static string[]? ZshValueExpression(Option option)
     {
-        if (option is IDynamicOption)
+        if (option.IsDynamic)
         {
             return ["->dotnet_dynamic_complete"];
         }
@@ -318,7 +318,7 @@ fi
 
     private static string[]? ZshValueExpression(Argument arg)
     {
-        if (arg is IDynamicArgument)
+        if (arg.IsDynamic)
         {
             return ["->dotnet_dynamic_complete"];
         }

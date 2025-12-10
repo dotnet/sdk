@@ -16,88 +16,24 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions)
 
     public bool RunMSBuild()
     {
-        if (!ValidationUtility.ValidateBuildPathOptions(_buildOptions))
-        {
-            return false;
-        }
-
-        int msBuildExitCode;
-        string path;
         PathOptions pathOptions = _buildOptions.PathOptions;
 
-        if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
+        if (!ValidationUtility.ValidateBuildPathOptions(pathOptions, out string? projectOrSolutionFilePath, out bool isSolution))
         {
-            path = PathUtility.GetFullPath(pathOptions.ProjectPath);
-
-            msBuildExitCode = Directory.Exists(path)
-                ? RunBuild(path, expectProject: true)
-                : RunBuild(path, isSolution: false);
-        }
-        else if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
-        {
-            path = PathUtility.GetFullPath(pathOptions.SolutionPath);
-
-            msBuildExitCode = Directory.Exists(path)
-                ? RunBuild(path, expectSolution: true)
-                : RunBuild(path, isSolution: true);
-        }
-        else
-        {
-            path = PathUtility.GetFullPath(Directory.GetCurrentDirectory());
-            msBuildExitCode = RunBuild(path);
-        }
-
-        if (msBuildExitCode != ExitCode.Success)
-        {
-            Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
             return false;
-        }
-
-        return true;
-    }
-
-    private int RunBuild(string directoryPath, bool expectProject = false, bool expectSolution = false)
-    {
-        bool solutionOrProjectFileFound;
-        string message;
-        string projectOrSolutionFilePath;
-        bool isSolution;
-
-        if (expectProject)
-        {
-            (solutionOrProjectFileFound, message) = SolutionAndProjectUtility.TryGetProjectFilePath(directoryPath, out projectOrSolutionFilePath);
-            isSolution = false;
-        }
-        else if (expectSolution)
-        {
-            (solutionOrProjectFileFound, message) = SolutionAndProjectUtility.TryGetSolutionFilePath(directoryPath, out projectOrSolutionFilePath);
-            isSolution = true;
-        }
-        else
-        {
-            (solutionOrProjectFileFound, message) = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directoryPath, out projectOrSolutionFilePath, out isSolution);
-        }
-
-        if (!solutionOrProjectFileFound)
-        {
-            Reporter.Error.WriteLine(message);
-            return ExitCode.GenericFailure;
         }
 
         (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution);
 
         InitializeTestApplications(projects);
 
-        return restored && !_testApplications.IsEmpty ? ExitCode.Success : ExitCode.GenericFailure;
-    }
+        if (!restored || _testApplications.IsEmpty)
+        {
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, ExitCode.GenericFailure));
+            return false;
+        }
 
-    private int RunBuild(string filePath, bool isSolution)
-    {
-        (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, bool restored) = GetProjectsProperties(filePath, isSolution);
-
-        InitializeTestApplications(projects);
-
-        return restored && !_testApplications.IsEmpty ? ExitCode.Success : ExitCode.GenericFailure;
+        return true;
     }
 
     private void InitializeTestApplications(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)

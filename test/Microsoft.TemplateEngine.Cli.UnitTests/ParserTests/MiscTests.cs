@@ -75,7 +75,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             ParseResult parseResult = ParserFactory.CreateParser(myCommand).Parse(command);
             NewCommandArgs args = new(myCommand, parseResult);
 
@@ -105,7 +105,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             ParseResult parseResult = ParserFactory.CreateParser(myCommand).Parse(command);
             InstallCommandArgs args = new((InstallCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -135,7 +135,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             ParseResult parseResult = myCommand.Parse(command);
             InstantiateCommandArgs args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
 
@@ -148,7 +148,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void ManuallyAddedOptionIsPreservedOnTemplateSubcommandLevel()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             var customOption = new Option<string>("--newOption")
             {
@@ -178,7 +178,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             RootCommand rootCommand = new();
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             rootCommand.Add(myCommand);
 
             ParseResult parseResult = rootCommand.Parse(command);
@@ -196,7 +196,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             RootCommand rootCommand = new();
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             rootCommand.Add(myCommand);
 
             // ProjectPathOption uses AcceptExistingOnly validator, so the provided file has to exist!

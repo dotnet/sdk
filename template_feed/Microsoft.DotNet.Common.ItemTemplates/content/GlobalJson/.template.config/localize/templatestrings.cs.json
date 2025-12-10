@@ -25,11 +25,11 @@
   "symbols/RollForward/choices/latestMajor/displayName": "Nejnovější hlavní verze",
   "symbols/RollForward/choices/disable/description": "Nedá se posunout vpřed. Vyžaduje se přesná shoda.",
   "symbols/RollForward/choices/disable/displayName": "Zakázat posunutí vpřed",
-  "symbols/TestRunner/description": "The test runner to use.",
-  "symbols/TestRunner/displayName": "Test runner",
-  "symbols/TestRunner/choices/VSTest/description": "Use VSTest as test runner",
+  "symbols/TestRunner/description": "Spouštěč testů, který se má použít.",
+  "symbols/TestRunner/displayName": "Test Runner",
+  "symbols/TestRunner/choices/VSTest/description": "Použít VSTest jako spouštěč testů",
   "symbols/TestRunner/choices/VSTest/displayName": "VSTest",
-  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use Microsoft.Testing.Platform as test runner",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Použít Microsoft.Testing.Platform jako spouštěč testů",
   "symbols/TestRunner/choices/Microsoft.Testing.Platform/displayName": "Microsoft.Testing.Platform",
   "postActions/open-file/description": "Otevře global.json v editoru."
 }

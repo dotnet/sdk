@@ -35,6 +35,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultItemExcludes>$(DefaultItemExcludes);$(BaseOutputPath)/**</DefaultItemExcludes>
     <!-- obj folder, by default -->
     <DefaultItemExcludes>$(DefaultItemExcludes);$(BaseIntermediateOutputPath)/**</DefaultItemExcludes>
+    <!-- Exclude PublishDir to prevent published artifacts from being included in subsequent builds/publishes. 
+         While in most cases PublishDir is contained within BaseOutputPath or BaseIntermediateOutputPath,
+         this is by no means required, so we should protect against this happening here. -->
+    <DefaultItemExcludes Condition="'$(PublishDir)' != ''">$(DefaultItemExcludes);$(PublishDir)/**</DefaultItemExcludes>
 
     <!-- Various files that should generally always be ignored -->
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.user</DefaultItemExcludes>
@@ -138,10 +142,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                  FormatArguments="$(SdkResolverGlobalJsonPath)" />
   </Target>
 
-  <Target Name="_WarnWhenUsingNET9AndVSPriorTo1712"
+  <!-- MSBuild was 17.15 during previews for dev18 so require that or higher -->
+  <Target Name="_WarnWhenUsingNET10AndVSPriorTo18"
         BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
-        Condition="$([MSBuild]::VersionLessThan($(MSBuildVersion), '17.12.0')) and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '9.0'))">
-    <NetSdkWarning ResourceName="Net9NotCompatibleWithDev1711"/>
+        Condition="$([MSBuild]::VersionLessThan($(MSBuildVersion), '17.15.0')) and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '10.0'))">
+    <NetSdkWarning ResourceName="Net10NotCompatibleWithVS17"/>
   </Target>
 
   <Target Name="_CheckForInvalidWindowsDesktopTargetingConfiguration"

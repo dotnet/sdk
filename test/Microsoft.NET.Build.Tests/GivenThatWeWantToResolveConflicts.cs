@@ -329,8 +329,8 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netstandard1.1", false)]
         [InlineData("netstandard1.0", false)]
         [InlineData("net451", false)]
-        [InlineData("net462")]
-        [InlineData("net481")]
+        [InlineData("net462", false)]
+        [InlineData("net481", false)]
         //  These target frameworks shouldn't prune packages unless explicitly enabled
         [InlineData("net9.0", false, "")]
         [InlineData("netstandard2.1", false, "")]
@@ -488,6 +488,45 @@ namespace Microsoft.NET.Build.Tests
                 else
                 {
                     lockFileTarget.Libraries.Should().Contain(library => library.Name.Equals("System.Text.Json", StringComparison.OrdinalIgnoreCase));
+                }
+            }
+        }
+
+        [Fact]
+        public void WithMultitargetedProject_NETFrameworkIsNotPruned()
+        {
+            var project = new TestProject("MultitargetedPruning")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework + ";net462",
+            };
+            project.PackageReferences.Add(new TestPackageReference("System.ValueTuple", "4.6.1"));
+            project.SourceFiles.Add("Test.cs", @"
+public class Class1
+{
+    public (int, int) GetTuple() => (1, 2);
+}
+");
+            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: "NETFrameworkIsNotPruned");
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+            var assetsFilePath = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "project.assets.json");
+            var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, new NullLogger());
+
+            foreach (var lockFileTarget in lockFile.Targets)
+            {
+                var valueTupleLibrary = lockFileTarget.Libraries.Where(library => library.Name.Equals("System.ValueTuple", StringComparison.OrdinalIgnoreCase)).Single();
+                var runtimeAssemblies = valueTupleLibrary.RuntimeAssemblies.Where(a => !Path.GetFileName(a.Path).Equals("_._"));
+                var compileTimeAssemblies = valueTupleLibrary.CompileTimeAssemblies.Where(a => !Path.GetFileName(a.Path).Equals("_._"));
+
+                if (lockFileTarget.TargetFramework.Framework.Equals(".NETFramework", StringComparison.OrdinalIgnoreCase))
+                {
+                    runtimeAssemblies.Should().NotBeEmpty();
+                    compileTimeAssemblies.Should().NotBeEmpty();
+                }
+                else
+                {
+                    runtimeAssemblies.Should().BeEmpty();
+                    compileTimeAssemblies.Should().BeEmpty();
                 }
             }
         }

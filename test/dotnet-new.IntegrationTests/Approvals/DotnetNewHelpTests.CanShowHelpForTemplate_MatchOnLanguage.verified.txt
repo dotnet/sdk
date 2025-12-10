@@ -1,6 +1,6 @@
 ﻿Console App (F#)
 Author: Microsoft
-Description: A project for creating a command-line application that can run on .NET on Windows, Linux and macOS
+Description: A project for creating an empty command-line application that can run on .NET on Windows, Linux and macOS
 
 Usage:
   dotnet new console [options] [template options]

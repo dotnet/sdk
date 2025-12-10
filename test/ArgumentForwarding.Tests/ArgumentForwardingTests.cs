@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Tests.ArgumentForwarding
 {

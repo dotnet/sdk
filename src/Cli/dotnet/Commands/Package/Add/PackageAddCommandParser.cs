@@ -4,7 +4,8 @@
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
-using Microsoft.DotNet.Cli.Extensions;
+using System.CommandLine.StaticCompletions;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
@@ -12,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 public static class PackageAddCommandParser
 {
-    public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
+    public static readonly Option<bool> PrereleaseOption = new Option<bool>("--prerelease")
     {
         Description = CliStrings.CommandPrereleaseOptionDescription,
         Arity = ArgumentArity.Zero
@@ -26,10 +27,11 @@ public static class PackageAddCommandParser
         return QueryNuGet(context.WordToComplete, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
     });
 
-    public static readonly Option<string> VersionOption = new DynamicForwardedOption<string>("--version", "-v")
+    public static readonly Option<string> VersionOption = new Option<string>("--version", "-v")
     {
         Description = CliCommandStrings.CmdVersionDescription,
-        HelpName = CliCommandStrings.CmdVersion
+        HelpName = CliCommandStrings.CmdVersion,
+        IsDynamic = true
     }.ForwardAsSingle(o => $"--version {o}")
         .AddCompletions((context) =>
         {
@@ -48,7 +50,7 @@ public static class PackageAddCommandParser
             }
         });
 
-    public static readonly Option<string> FrameworkOption = new ForwardedOption<string>("--framework", "-f")
+    public static readonly Option<string> FrameworkOption = new Option<string>("--framework", "-f")
     {
         Description = CliCommandStrings.PackageAddCmdFrameworkDescription,
         HelpName = CliCommandStrings.PackageAddCmdFramework
@@ -60,13 +62,13 @@ public static class PackageAddCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<string> SourceOption = new ForwardedOption<string>("--source", "-s")
+    public static readonly Option<string> SourceOption = new Option<string>("--source", "-s")
     {
         Description = CliCommandStrings.PackageAddCmdSourceDescription,
         HelpName = CliCommandStrings.PackageAddCmdSource
     }.ForwardAsSingle(o => $"--source {o}");
 
-    public static readonly Option<string> PackageDirOption = new ForwardedOption<string>("--package-directory")
+    public static readonly Option<string> PackageDirOption = new Option<string>("--package-directory")
     {
         Description = CliCommandStrings.CmdPackageDirectoryDescription,
         HelpName = CliCommandStrings.CmdPackageDirectory
