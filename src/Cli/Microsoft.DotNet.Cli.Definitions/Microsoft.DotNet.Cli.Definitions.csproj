@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="CliDefinitionResources.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="dotnet" />
+    <InternalsVisibleTo Include="dotnet-watch" />
+    <InternalsVisibleTo Include="dotnet.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\System.CommandLine.StaticCompletions\System.CommandLine.StaticCompletions.csproj" />
+  </ItemGroup>
+</Project>
