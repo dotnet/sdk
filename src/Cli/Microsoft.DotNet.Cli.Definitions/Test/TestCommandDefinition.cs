@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -32,9 +32,9 @@ internal static class TestCommandDefinition
     public const string Name = "test";
     public static readonly string DocsLink = "https://aka.ms/dotnet-test";
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
+    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliDefinitionResources.TestFrameworkOptionDescription);
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliDefinitionResources.TestConfigurationOptionDescription);
 
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
 
@@ -69,7 +69,7 @@ internal static class TestCommandDefinition
             return TestRunner.MicrosoftTestingPlatform;
         }
 
-        throw new InvalidOperationException(string.Format(CliCommandStrings.CmdUnsupportedTestRunnerDescription, name));
+        throw new InvalidOperationException(string.Format(CliDefinitionResources.CmdUnsupportedTestRunnerDescription, name));
     }
 
     private static string? GetGlobalJsonPath(string? startDir)
@@ -90,7 +90,7 @@ internal static class TestCommandDefinition
 
     public static void ConfigureMicrosoftTestingPlatformCommand(Command command)
     {
-        command.Description = CliCommandStrings.DotnetTestCommandMTPDescription;
+        command.Description = CliDefinitionResources.DotnetTestCommandMTPDescription;
         command.Options.Add(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.SolutionOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
@@ -106,7 +106,7 @@ internal static class TestCommandDefinition
         command.Options.Add(ConfigurationOption);
         command.Options.Add(FrameworkOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliDefinitionResources.TestRuntimeOptionDescription));
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.NoRestoreOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoBuildOption);
@@ -121,7 +121,7 @@ internal static class TestCommandDefinition
 
     public static void ConfigureVSTestCommand(Command command)
     {
-        command.Description = CliCommandStrings.DotnetTestCommandVSTestDescription;
+        command.Description = CliDefinitionResources.DotnetTestCommandVSTestDescription;
         command.TreatUnmatchedTokensAsErrors = false;
         command.DocsLink = DocsLink;
 
@@ -150,7 +150,7 @@ internal static class TestCommandDefinition
         command.Options.Add(VSTestOptions.NoLogoOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliDefinitionResources.TestRuntimeOptionDescription));
         command.Options.Add(CommonOptions.NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(VerbosityOption);

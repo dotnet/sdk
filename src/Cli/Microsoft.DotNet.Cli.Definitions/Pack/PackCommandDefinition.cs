@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -21,31 +21,31 @@ internal static class PackCommandDefinition
 
     public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
-        Description = CliCommandStrings.PackCmdOutputDirDescription,
-        HelpName = CliCommandStrings.PackCmdOutputDir
+        Description = CliDefinitionResources.PackCmdOutputDirDescription,
+        HelpName = CliDefinitionResources.PackCmdOutputDir
     }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
 
     public static readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
-        Description = CliCommandStrings.CmdNoBuildOptionDescription,
+        Description = CliDefinitionResources.CmdNoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
     public static readonly Option<bool> IncludeSymbolsOption = new Option<bool>("--include-symbols")
     {
-        Description = CliCommandStrings.CmdIncludeSymbolsDescription,
+        Description = CliDefinitionResources.CmdIncludeSymbolsDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSymbols=true");
 
     public static readonly Option<bool> IncludeSourceOption = new Option<bool>("--include-source")
     {
-        Description = CliCommandStrings.CmdIncludeSourceDescription,
+        Description = CliDefinitionResources.CmdIncludeSourceDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSource=true");
 
     public static readonly Option<bool> ServiceableOption = new Option<bool>("--serviceable", "-s")
     {
-        Description = CliCommandStrings.CmdServiceableDescription,
+        Description = CliDefinitionResources.CmdServiceableDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:Serviceable=true");
 
@@ -53,7 +53,7 @@ internal static class PackCommandDefinition
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliDefinitionResources.PackConfigurationOptionDescription);
 
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandDefinition.VerbosityOption;
@@ -61,8 +61,8 @@ internal static class PackCommandDefinition
     public static Option<NuGetVersion> VersionOption =
         new Option<NuGetVersion>("--version")
         {
-            Description = CliCommandStrings.PackCmdVersionDescription,
-            HelpName = CliCommandStrings.PackCmdVersion,
+            Description = CliDefinitionResources.PackCmdVersionDescription,
+            HelpName = CliDefinitionResources.PackCmdVersion,
             Arity = ArgumentArity.ExactlyOne,
             CustomParser = r =>
             {
@@ -79,7 +79,7 @@ internal static class PackCommandDefinition
 
     public static Command Create()
     {
-        var command = new Command("pack", CliCommandStrings.PackAppFullName)
+        var command = new Command("pack", CliDefinitionResources.PackAppFullName)
         {
             DocsLink = DocsLink
         };
@@ -107,7 +107,7 @@ internal static class PackCommandDefinition
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
         RestoreCommandDefinition.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
-        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliDefinitionResources.BuildRuntimeOptionDescription));
 
         return command;
     }

@@ -11,13 +11,13 @@ internal sealed class CleanFileBasedAppArtifactsCommandDefinition
 
     public static readonly Option<bool> DryRunOption = new("--dry-run")
     {
-        Description = CliCommandStrings.CleanFileBasedAppArtifactsDryRun,
+        Description = CliDefinitionResources.CleanFileBasedAppArtifactsDryRun,
         Arity = ArgumentArity.Zero,
     };
 
     public static readonly Option<int> DaysOption = new("--days")
     {
-        Description = CliCommandStrings.CleanFileBasedAppArtifactsDays,
+        Description = CliDefinitionResources.CleanFileBasedAppArtifactsDays,
         DefaultValueFactory = _ => 30,
     };
 
@@ -31,7 +31,7 @@ internal sealed class CleanFileBasedAppArtifactsCommandDefinition
     };
 
     public static Command Create()
-        => new(Name, CliCommandStrings.CleanFileBasedAppArtifactsCommandDescription)
+        => new(Name, CliDefinitionResources.CleanFileBasedAppArtifactsCommandDescription)
         {
             Hidden = true,
             Options =

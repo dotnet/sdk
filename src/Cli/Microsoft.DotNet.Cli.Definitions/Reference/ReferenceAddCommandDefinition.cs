@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -13,9 +13,9 @@ internal static class ReferenceAddCommandDefinition
 {
     public const string Name = "add";
 
-    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.ReferenceAddProjectPathArgumentName)
+    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliDefinitionResources.ReferenceAddProjectPathArgumentName)
     {
-        Description = CliCommandStrings.ReferenceAddProjectPathArgumentDescription,
+        Description = CliDefinitionResources.ReferenceAddProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
         CustomParser = arguments =>
         {
@@ -27,7 +27,7 @@ internal static class ReferenceAddCommandDefinition
 
     public static readonly Option<string> FrameworkOption = new Option<string>("--framework", "-f")
     {
-        Description = CliCommandStrings.ReferenceAddCmdFrameworkDescription,
+        Description = CliDefinitionResources.ReferenceAddCmdFrameworkDescription,
         HelpName = CliStrings.CommonCmdFramework,
         IsDynamic = true,
     }
@@ -37,7 +37,7 @@ internal static class ReferenceAddCommandDefinition
 
     public static Command Create()
     {
-        Command command = new(Name, CliCommandStrings.ReferenceAddAppFullName);
+        Command command = new(Name, CliDefinitionResources.ReferenceAddAppFullName);
 
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(FrameworkOption);

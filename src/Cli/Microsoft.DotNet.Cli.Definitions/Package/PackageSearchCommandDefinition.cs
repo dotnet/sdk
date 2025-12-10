@@ -13,33 +13,33 @@ internal static class PackageSearchCommandDefinition
 
     public static readonly Argument<string> SearchTermArgument = new Argument<string>("SearchTerm")
     {
-        HelpName = CliCommandStrings.PackageSearchSearchTermArgumentName,
-        Description = CliCommandStrings.PackageSearchSearchTermDescription,
+        HelpName = CliDefinitionResources.PackageSearchSearchTermArgumentName,
+        Description = CliDefinitionResources.PackageSearchSearchTermDescription,
         Arity = ArgumentArity.ZeroOrOne
     };
 
     public static readonly Option Sources = new Option<IEnumerable<string>>("--source")
     {
-        Description = CliCommandStrings.SourceDescription,
-        HelpName = CliCommandStrings.SourceArgumentName
+        Description = CliDefinitionResources.SourceDescription,
+        HelpName = CliDefinitionResources.SourceArgumentName
     }.ForwardAsManyArgumentsEachPrefixedByOption("--source")
     .AllowSingleArgPerToken();
 
     public static readonly Option<string> Take = new Option<string>("--take")
     {
-        Description = CliCommandStrings.PackageSearchTakeDescription,
-        HelpName = CliCommandStrings.PackageSearchTakeArgumentName
+        Description = CliDefinitionResources.PackageSearchTakeDescription,
+        HelpName = CliDefinitionResources.PackageSearchTakeArgumentName
     }.ForwardAsSingle(o => $"--take:{o}");
 
     public static readonly Option<string> Skip = new Option<string>("--skip")
     {
-        Description = CliCommandStrings.PackageSearchSkipDescription,
-        HelpName = CliCommandStrings.PackageSearchSkipArgumentName
+        Description = CliDefinitionResources.PackageSearchSkipDescription,
+        HelpName = CliDefinitionResources.PackageSearchSkipArgumentName
     }.ForwardAsSingle(o => $"--skip:{o}");
 
     public static readonly Option<bool> ExactMatch = new Option<bool>("--exact-match")
     {
-        Description = CliCommandStrings.ExactMatchDescription,
+        Description = CliDefinitionResources.ExactMatchDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--exact-match");
 
@@ -47,26 +47,26 @@ internal static class PackageSearchCommandDefinition
 
     public static readonly Option<bool> Prerelease = new Option<bool>("--prerelease")
     {
-        Description = CliCommandStrings.PackageSearchPrereleaseDescription,
+        Description = CliDefinitionResources.PackageSearchPrereleaseDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--prerelease");
 
     public static readonly Option<string> ConfigFile = new Option<string>("--configfile")
     {
-        Description = CliCommandStrings.ConfigFileDescription,
-        HelpName = CliCommandStrings.ConfigFileArgumentName
+        Description = CliDefinitionResources.ConfigFileDescription,
+        HelpName = CliDefinitionResources.ConfigFileArgumentName
     }.ForwardAsSingle(o => $"--configfile:{o}");
 
     public static readonly Option<string> Format = new Option<string>("--format")
     {
-        Description = CliCommandStrings.FormatDescription,
-        HelpName = CliCommandStrings.FormatArgumentName
+        Description = CliDefinitionResources.FormatDescription,
+        HelpName = CliDefinitionResources.FormatArgumentName
     }.ForwardAsSingle(o => $"--format:{o}");
 
     public static readonly Option<string> Verbosity = new Option<string>("--verbosity")
     {
-        Description = CliCommandStrings.VerbosityDescription,
-        HelpName = CliCommandStrings.VerbosityArgumentName
+        Description = CliDefinitionResources.VerbosityDescription,
+        HelpName = CliDefinitionResources.VerbosityArgumentName
     }.ForwardAsSingle(o => $"--verbosity:{o}");
 
     public static readonly IEnumerable<Option> Options =
@@ -84,7 +84,7 @@ internal static class PackageSearchCommandDefinition
 
     public static Command Create()
     {
-        Command searchCommand = new(Name, CliCommandStrings.PackageSearchCommandDescription);
+        Command searchCommand = new(Name, CliDefinitionResources.PackageSearchCommandDescription);
 
         searchCommand.Arguments.Add(SearchTermArgument);
         searchCommand.Options.AddRange(Options);

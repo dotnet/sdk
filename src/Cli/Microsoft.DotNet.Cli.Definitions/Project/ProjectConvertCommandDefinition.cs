@@ -12,24 +12,24 @@ internal sealed class ProjectConvertCommandDefinition
 
     public static readonly Argument<string> FileArgument = new("file")
     {
-        Description = CliCommandStrings.CmdFileDescription,
+        Description = CliDefinitionResources.CmdFileDescription,
         Arity = ArgumentArity.ExactlyOne,
     };
 
     public static readonly Option<bool> ForceOption = new("--force")
     {
-        Description = CliCommandStrings.CmdOptionForceDescription,
+        Description = CliDefinitionResources.CmdOptionForceDescription,
         Arity = ArgumentArity.Zero,
     };
 
     public static readonly Option<bool> DryRunOption = new("--dry-run")
     {
-        Description = CliCommandStrings.ProjectConvertDryRun,
+        Description = CliDefinitionResources.ProjectConvertDryRun,
         Arity = ArgumentArity.Zero,
     };
 
     public static Command Create()
-        => new(Name, CliCommandStrings.ProjectConvertAppFullName)
+        => new(Name, CliDefinitionResources.ProjectConvertAppFullName)
         {
             FileArgument,
             SharedOptions.OutputOption,

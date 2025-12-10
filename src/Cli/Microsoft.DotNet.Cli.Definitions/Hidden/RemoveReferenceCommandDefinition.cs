@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -12,7 +12,7 @@ internal static class RemoveReferenceCommandDefinition
 
     public static Command Create()
     {
-        var command = new Command(Name, CliCommandStrings.ReferenceRemoveAppFullName);
+        var command = new Command(Name, CliDefinitionResources.ReferenceRemoveAppFullName);
 
         command.Arguments.Add(ReferenceRemoveCommandDefinition.ProjectPathArgument);
         command.Options.Add(ReferenceRemoveCommandDefinition.FrameworkOption);

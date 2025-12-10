@@ -10,15 +10,15 @@ internal static class HelpCommandDefinition
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-help";
 
-    public static readonly Argument<string[]> Argument = new(CliCommandStrings.CommandArgumentName)
+    public static readonly Argument<string[]> Argument = new(CliDefinitionResources.CommandArgumentName)
     {
-        Description = CliCommandStrings.CommandArgumentDescription,
+        Description = CliDefinitionResources.CommandArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
     public static Command Create()
     {
-        Command command = new("help", CliCommandStrings.HelpAppFullName)
+        Command command = new("help", CliDefinitionResources.HelpAppFullName)
         {
             DocsLink = DocsLink
         };

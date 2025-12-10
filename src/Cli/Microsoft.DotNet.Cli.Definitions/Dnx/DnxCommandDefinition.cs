@@ -10,7 +10,7 @@ internal static class DnxCommandDefinition
 {
     public static Command Create()
     {
-        Command command = new("dnx", CliCommandStrings.ToolExecuteCommandDescription);
+        Command command = new("dnx", CliDefinitionResources.ToolExecuteCommandDescription);
         command.Hidden = true;
 
         foreach (var argument in ToolExecuteCommandParser.Command.Arguments)

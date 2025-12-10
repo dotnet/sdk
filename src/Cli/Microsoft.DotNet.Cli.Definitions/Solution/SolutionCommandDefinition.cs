@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -16,16 +16,16 @@ internal static class SolutionCommandDefinition
 
     public static readonly string CommandName = "solution";
     public static readonly string CommandAlias = "sln";
-    public static readonly Argument<string> SlnArgument = new Argument<string>(CliCommandStrings.SolutionArgumentName)
+    public static readonly Argument<string> SlnArgument = new Argument<string>(CliDefinitionResources.SolutionArgumentName)
     {
-        HelpName = CliCommandStrings.SolutionArgumentName,
-        Description = CliCommandStrings.SolutionArgumentDescription,
+        HelpName = CliDefinitionResources.SolutionArgumentName,
+        Description = CliDefinitionResources.SolutionArgumentDescription,
         Arity = ArgumentArity.ZeroOrOne
     }.DefaultToCurrentDirectory();
 
     public static Command Create()
     {
-        Command command = new(CommandName, CliCommandStrings.SolutionAppFullName)
+        Command command = new(CommandName, CliDefinitionResources.SolutionAppFullName)
         {
             DocsLink = DocsLink
         };

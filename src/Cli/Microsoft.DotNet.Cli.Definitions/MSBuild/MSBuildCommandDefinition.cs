@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -15,7 +15,7 @@ internal static class MSBuildCommandDefinition
 
     public static Command Create()
     {
-        var command = new Command("msbuild", CliCommandStrings.BuildAppFullName)
+        var command = new Command("msbuild", CliDefinitionResources.BuildAppFullName)
         {
             Arguments = { Arguments },
             DocsLink = DocsLink,

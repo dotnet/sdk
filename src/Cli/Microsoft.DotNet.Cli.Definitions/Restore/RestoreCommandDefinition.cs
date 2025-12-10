@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -20,8 +20,8 @@ internal static class RestoreCommandDefinition
 
     public static readonly Option<IEnumerable<string>> SourceOption = new Option<IEnumerable<string>>("--source", "-s")
     {
-        Description = CliCommandStrings.CmdSourceOptionDescription,
-        HelpName = CliCommandStrings.CmdSourceOption
+        Description = CliDefinitionResources.CmdSourceOptionDescription,
+        HelpName = CliDefinitionResources.CmdSourceOption
     }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
     .AllowSingleArgPerToken();
 
@@ -36,22 +36,22 @@ internal static class RestoreCommandDefinition
         CommonOptions.ArtifactsPathOption,
         new Option<bool>("--use-lock-file")
         {
-            Description = CliCommandStrings.CmdUseLockFileOptionDescription,
+            Description = CliDefinitionResources.CmdUseLockFileOptionDescription,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestorePackagesWithLockFile=true"),
         new Option<bool>("--locked-mode")
         {
-            Description = CliCommandStrings.CmdLockedModeOptionDescription,
+            Description = CliDefinitionResources.CmdLockedModeOptionDescription,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreLockedMode=true"),
         new Option<string>("--lock-file-path")
         {
-            Description = CliCommandStrings.CmdLockFilePathOptionDescription,
-            HelpName = CliCommandStrings.CmdLockFilePathOption
+            Description = CliDefinitionResources.CmdLockFilePathOptionDescription,
+            HelpName = CliDefinitionResources.CmdLockFilePathOption
         }.ForwardAsSingle(o => $"-property:NuGetLockFilePath={o}"),
         new Option<bool>("--force-evaluate")
         {
-            Description = CliCommandStrings.CmdReevaluateOptionDescription,
+            Description = CliDefinitionResources.CmdReevaluateOptionDescription,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreForceEvaluate=true"),
         TargetOption,
@@ -60,7 +60,7 @@ internal static class RestoreCommandDefinition
 
     public static Command Create()
     {
-        var command = new Command("restore", CliCommandStrings.RestoreAppFullName)
+        var command = new Command("restore", CliDefinitionResources.RestoreAppFullName)
         {
             DocsLink = DocsLink
         };
@@ -116,8 +116,8 @@ internal static class RestoreCommandDefinition
         {
             Option<IEnumerable<string>> sourceOption = new Option<IEnumerable<string>>("--source")
             {
-                Description = showHelp ? CliCommandStrings.CmdSourceOptionDescription : string.Empty,
-                HelpName = CliCommandStrings.CmdSourceOption,
+                Description = showHelp ? CliDefinitionResources.CmdSourceOptionDescription : string.Empty,
+                HelpName = CliDefinitionResources.CmdSourceOption,
                 Hidden = !showHelp
             }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}") // '%3B' corresponds to ';'
             .AllowSingleArgPerToken();
@@ -132,24 +132,24 @@ internal static class RestoreCommandDefinition
 
         yield return new Option<string>("--packages")
         {
-            Description = showHelp ? CliCommandStrings.CmdPackagesOptionDescription : string.Empty,
-            HelpName = CliCommandStrings.CmdPackagesOption,
+            Description = showHelp ? CliDefinitionResources.CmdPackagesOptionDescription : string.Empty,
+            HelpName = CliDefinitionResources.CmdPackagesOption,
             Hidden = !showHelp
         }.ForwardAsSingle(o => $"-property:RestorePackagesPath={CommandDirectoryContext.GetFullPath(o)}");
 
-        yield return CommonOptions.CurrentRuntimeOption(CliCommandStrings.CmdCurrentRuntimeOptionDescription);
+        yield return CommonOptions.CurrentRuntimeOption(CliDefinitionResources.CmdCurrentRuntimeOptionDescription);
 
         yield return new Option<bool>("--disable-parallel")
         {
-            Description = showHelp ? CliCommandStrings.CmdDisableParallelOptionDescription : string.Empty,
+            Description = showHelp ? CliDefinitionResources.CmdDisableParallelOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreDisableParallel=true");
 
         yield return new Option<string>("--configfile")
         {
-            Description = showHelp ? CliCommandStrings.CmdConfigFileOptionDescription : string.Empty,
-            HelpName = CliCommandStrings.CmdConfigFileOption,
+            Description = showHelp ? CliDefinitionResources.CmdConfigFileOptionDescription : string.Empty,
+            HelpName = CliDefinitionResources.CmdConfigFileOption,
             Hidden = !showHelp
         }.ForwardAsSingle(o => $"-property:RestoreConfigFile={CommandDirectoryContext.GetFullPath(o)}");
 
@@ -162,21 +162,21 @@ internal static class RestoreCommandDefinition
 
         yield return new Option<bool>("--no-http-cache")
         {
-            Description = showHelp ? CliCommandStrings.CmdNoHttpCacheOptionDescription : string.Empty,
+            Description = showHelp ? CliDefinitionResources.CmdNoHttpCacheOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreNoHttpCache=true");
 
         yield return new Option<bool>("--ignore-failed-sources")
         {
-            Description = showHelp ? CliCommandStrings.CmdIgnoreFailedSourcesOptionDescription : string.Empty,
+            Description = showHelp ? CliDefinitionResources.CmdIgnoreFailedSourcesOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreIgnoreFailedSources=true");
 
         Option<bool> forceOption = new Option<bool>("--force")
         {
-            Description = CliCommandStrings.CmdForceRestoreOptionDescription,
+            Description = CliDefinitionResources.CmdForceRestoreOptionDescription,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreForce=true");
@@ -193,8 +193,8 @@ internal static class RestoreCommandDefinition
         {
             Option<IEnumerable<string>> runtimeOption = new Option<IEnumerable<string>>("--runtime")
             {
-                Description = CliCommandStrings.CmdRuntimeOptionDescription,
-                HelpName = CliCommandStrings.CmdRuntimeOption,
+                Description = CliDefinitionResources.CmdRuntimeOptionDescription,
+                HelpName = CliDefinitionResources.CmdRuntimeOption,
                 Hidden = !showHelp,
                 IsDynamic = true
             }.ForwardAsSingle(RestoreRuntimeArgFunc)
@@ -213,7 +213,7 @@ internal static class RestoreCommandDefinition
         {
             yield return new Option<bool>("--no-dependencies")
             {
-                Description = CliCommandStrings.CmdNoDependenciesOptionDescription,
+                Description = CliDefinitionResources.CmdNoDependenciesOptionDescription,
                 Arity = ArgumentArity.Zero,
                 Hidden = !showHelp
             }.ForwardAs("-property:RestoreRecursive=false");

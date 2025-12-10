@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -18,8 +18,8 @@ internal static class StoreCommandDefinition
 
     public static readonly Option<IEnumerable<string>> ManifestOption = new Option<IEnumerable<string>>("--manifest", "-m")
     {
-        Description = CliCommandStrings.ProjectManifestDescription,
-        HelpName = CliCommandStrings.ProjectManifest,
+        Description = CliDefinitionResources.ProjectManifestDescription,
+        HelpName = CliDefinitionResources.ProjectManifest,
         Arity = ArgumentArity.OneOrMore
     }.ForwardAsMany(o =>
     {
@@ -39,37 +39,37 @@ internal static class StoreCommandDefinition
 
     public static readonly Option<string> FrameworkVersionOption = new Option<string>("--framework-version")
     {
-        Description = CliCommandStrings.FrameworkVersionOptionDescription,
-        HelpName = CliCommandStrings.FrameworkVersionOption
+        Description = CliDefinitionResources.FrameworkVersionOptionDescription,
+        HelpName = CliDefinitionResources.FrameworkVersionOption
     }.ForwardAsSingle(o => $"-property:RuntimeFrameworkVersion={o}");
 
     public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
-        Description = CliCommandStrings.StoreOutputOptionDescription,
-        HelpName = CliCommandStrings.StoreOutputOption
+        Description = CliDefinitionResources.StoreOutputOptionDescription,
+        HelpName = CliDefinitionResources.StoreOutputOption
     }.ForwardAsOutputPath("ComposeDir");
 
     public static readonly Option<string> WorkingDirOption = new Option<string>("--working-dir", "-w")
     {
-        Description = CliCommandStrings.IntermediateWorkingDirOptionDescription,
-        HelpName = CliCommandStrings.IntermediateWorkingDirOption
+        Description = CliDefinitionResources.IntermediateWorkingDirOptionDescription,
+        HelpName = CliDefinitionResources.IntermediateWorkingDirOption
     }.ForwardAsSingle(o => $"-property:ComposeWorkingDir={CommandDirectoryContext.GetFullPath(o)}");
 
     public static readonly Option<bool> SkipOptimizationOption = new Option<bool>("--skip-optimization")
     {
-        Description = CliCommandStrings.SkipOptimizationOptionDescription,
+        Description = CliDefinitionResources.SkipOptimizationOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:SkipOptimization=true");
 
     public static readonly Option<bool> SkipSymbolsOption = new Option<bool>("--skip-symbols")
     {
-        Description = CliCommandStrings.SkipSymbolsOptionDescription,
+        Description = CliDefinitionResources.SkipSymbolsOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:CreateProfilingSymbols=false");
 
     public static Command Create()
     {
-        Command command = new("store", CliCommandStrings.StoreAppDescription)
+        Command command = new("store", CliDefinitionResources.StoreAppDescription)
         {
             DocsLink = DocsLink
         };
@@ -81,10 +81,10 @@ internal static class StoreCommandDefinition
         command.Options.Add(WorkingDirOption);
         command.Options.Add(SkipOptimizationOption);
         command.Options.Add(SkipSymbolsOption);
-        command.Options.Add(CommonOptions.FrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription));
-        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.FrameworkOption(CliDefinitionResources.StoreFrameworkOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliDefinitionResources.StoreRuntimeOptionDescription));
         command.Options.Add(CommonOptions.VerbosityOption());
-        command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.CurrentRuntimeOption(CliDefinitionResources.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(CommonOptions.NoLogoOption(true));
 

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -14,63 +14,63 @@ internal static class PackageListCommandDefinition
 
     public static readonly Option OutdatedOption = new Option<bool>("--outdated")
     {
-        Description = CliCommandStrings.CmdOutdatedDescription,
+        Description = CliDefinitionResources.CmdOutdatedDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--outdated");
 
     public static readonly Option DeprecatedOption = new Option<bool>("--deprecated")
     {
-        Description = CliCommandStrings.CmdDeprecatedDescription,
+        Description = CliDefinitionResources.CmdDeprecatedDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--deprecated");
 
     public static readonly Option VulnerableOption = new Option<bool>("--vulnerable")
     {
-        Description = CliCommandStrings.CmdVulnerableDescription,
+        Description = CliDefinitionResources.CmdVulnerableDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--vulnerable");
 
     public static readonly Option FrameworkOption = new Option<IEnumerable<string>>("--framework", "-f")
     {
-        Description = CliCommandStrings.PackageListCmdFrameworkDescription,
-        HelpName = CliCommandStrings.PackageListCmdFramework
+        Description = CliDefinitionResources.PackageListCmdFrameworkDescription,
+        HelpName = CliDefinitionResources.PackageListCmdFramework
     }.ForwardAsManyArgumentsEachPrefixedByOption("--framework")
     .AllowSingleArgPerToken();
 
     public static readonly Option TransitiveOption = new Option<bool>("--include-transitive")
     {
-        Description = CliCommandStrings.CmdTransitiveDescription,
+        Description = CliDefinitionResources.CmdTransitiveDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--include-transitive");
 
     public static readonly Option PrereleaseOption = new Option<bool>("--include-prerelease")
     {
-        Description = CliCommandStrings.CmdPrereleaseDescription,
+        Description = CliDefinitionResources.CmdPrereleaseDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--include-prerelease");
 
     public static readonly Option HighestPatchOption = new Option<bool>("--highest-patch")
     {
-        Description = CliCommandStrings.CmdHighestPatchDescription,
+        Description = CliDefinitionResources.CmdHighestPatchDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--highest-patch");
 
     public static readonly Option HighestMinorOption = new Option<bool>("--highest-minor")
     {
-        Description = CliCommandStrings.CmdHighestMinorDescription,
+        Description = CliDefinitionResources.CmdHighestMinorDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--highest-minor");
 
     public static readonly Option ConfigOption = new Option<string>("--config", "--configfile")
     {
-        Description = CliCommandStrings.CmdConfigDescription,
-        HelpName = CliCommandStrings.CmdConfig
+        Description = CliDefinitionResources.CmdConfigDescription,
+        HelpName = CliDefinitionResources.CmdConfig
     }.ForwardAsMany(o => ["--config", o]);
 
     public static readonly Option SourceOption = new Option<IEnumerable<string>>("--source", "-s")
     {
-        Description = CliCommandStrings.PackageListCmdSourceDescription,
-        HelpName = CliCommandStrings.PackageListCmdSource
+        Description = CliDefinitionResources.PackageListCmdSourceDescription,
+        HelpName = CliDefinitionResources.PackageListCmdSource
     }.ForwardAsManyArgumentsEachPrefixedByOption("--source")
     .AllowSingleArgPerToken();
 
@@ -78,7 +78,7 @@ internal static class PackageListCommandDefinition
 
     public static readonly Option NoRestore = new Option<bool>("--no-restore")
     {
-        Description = CliCommandStrings.CmdNoRestoreDescription,
+        Description = CliDefinitionResources.CmdNoRestoreDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -90,17 +90,17 @@ internal static class PackageListCommandDefinition
 
     public static readonly Option FormatOption = new Option<ReportOutputFormat>("--format")
     {
-        Description = CliCommandStrings.CmdFormatDescription
+        Description = CliDefinitionResources.CmdFormatDescription
     }.ForwardAsSingle(o => $"--format:{o}");
 
     public static readonly Option OutputVersionOption = new Option<int>("--output-version")
     {
-        Description = CliCommandStrings.CmdOutputVersionDescription
+        Description = CliDefinitionResources.CmdOutputVersionDescription
     }.ForwardAsSingle(o => $"--output-version:{o}");
 
     public static Command Create()
     {
-        Command command = new(Name, CliCommandStrings.PackageListAppFullName);
+        Command command = new(Name, CliDefinitionResources.PackageListAppFullName);
 
         command.Options.Add(VerbosityOption);
         command.Options.Add(OutdatedOption);

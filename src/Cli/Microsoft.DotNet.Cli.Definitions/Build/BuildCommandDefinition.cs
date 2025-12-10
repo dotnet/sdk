@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -20,19 +20,19 @@ internal static class BuildCommandDefinition
 
     public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
-        Description = CliCommandStrings.BuildOutputOptionDescription,
-        HelpName = CliCommandStrings.OutputOptionName
+        Description = CliDefinitionResources.BuildOutputOptionDescription,
+        HelpName = CliDefinitionResources.OutputOptionName
     }.ForwardAsOutputPath("OutputPath");
 
     public static readonly Option<bool> NoIncrementalOption = new Option<bool>("--no-incremental")
     {
-        Description = CliCommandStrings.NoIncrementalOptionDescription,
+        Description = CliDefinitionResources.NoIncrementalOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--target:Rebuild");
 
     public static readonly Option<bool> NoDependenciesOption = new Option<bool>("--no-dependencies")
     {
-        Description = CliCommandStrings.NoDependenciesOptionDescription,
+        Description = CliDefinitionResources.NoDependenciesOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--property:BuildProjectReferences=false");
 
@@ -44,11 +44,11 @@ internal static class BuildCommandDefinition
 
     public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription);
+    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliDefinitionResources.BuildRuntimeOptionDescription);
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.BuildFrameworkOptionDescription);
+    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliDefinitionResources.BuildFrameworkOptionDescription);
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.BuildConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliDefinitionResources.BuildConfigurationOptionDescription);
 
     /// <summary>
     /// Build actually means 'run the default Target' generally in MSBuild
@@ -59,7 +59,7 @@ internal static class BuildCommandDefinition
 
     public static Command Create()
     {
-        Command command = new("build", CliCommandStrings.BuildAppFullName)
+        Command command = new("build", CliDefinitionResources.BuildAppFullName)
         {
             DocsLink = DocsLink
         };

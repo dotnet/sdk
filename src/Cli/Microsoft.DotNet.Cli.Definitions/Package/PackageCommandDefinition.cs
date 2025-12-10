@@ -64,7 +64,7 @@ internal class PackageCommandDefinition
                 : (Environment.CurrentDirectory, AppKinds.ProjectBased),
             (true, false) => (parseResult.GetValue(FileOption)!, AppKinds.FileBased),
             (false, true) => (parseResult.GetValue(ProjectOption)!, AppKinds.ProjectBased),
-            (true, true) => throw new GracefulException(CliCommandStrings.CannotCombineOptions, FileOption.Name, ProjectOption.Name),
+            (true, true) => throw new GracefulException(CliDefinitionResources.CannotCombineOptions, FileOption.Name, ProjectOption.Name),
         };
     }
 }

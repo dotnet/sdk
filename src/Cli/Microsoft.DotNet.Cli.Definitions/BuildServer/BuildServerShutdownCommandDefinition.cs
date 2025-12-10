@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -13,25 +13,25 @@ internal static class BuildServerShutdownCommandDefinition
 
     public static readonly Option<bool> MSBuildOption = new("--msbuild")
     {
-        Description = CliCommandStrings.MSBuildOptionDescription,
+        Description = CliDefinitionResources.MSBuildOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly Option<bool> VbcsOption = new("--vbcscompiler")
     {
-        Description = CliCommandStrings.VBCSCompilerOptionDescription,
+        Description = CliDefinitionResources.VBCSCompilerOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly Option<bool> RazorOption = new("--razor")
     {
-        Description = CliCommandStrings.RazorOptionDescription,
+        Description = CliDefinitionResources.RazorOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static Command Create()
     {
-        Command command = new(Name, CliCommandStrings.BuildServerShutdownCommandDescription);
+        Command command = new(Name, CliDefinitionResources.BuildServerShutdownCommandDescription);
 
         command.Options.Add(MSBuildOption);
         command.Options.Add(VbcsOption);

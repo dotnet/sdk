@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -9,32 +9,32 @@ public static class SolutionAddCommandDefinition
 {
     public const string Name = "add";
 
-    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.AddProjectPathArgumentName)
+    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliDefinitionResources.AddProjectPathArgumentName)
     {
-        HelpName = CliCommandStrings.AddProjectPathArgumentName,
-        Description = CliCommandStrings.AddProjectPathArgumentDescription,
+        HelpName = CliDefinitionResources.AddProjectPathArgumentName,
+        Description = CliDefinitionResources.AddProjectPathArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore,
     };
 
     public static readonly Option<bool> InRootOption = new("--in-root")
     {
-        Description = CliCommandStrings.InRoot
+        Description = CliDefinitionResources.InRoot
     };
 
     public static readonly Option<string> SolutionFolderOption = new("--solution-folder", "-s")
     {
-        Description = CliCommandStrings.AddProjectSolutionFolderArgumentDescription
+        Description = CliDefinitionResources.AddProjectSolutionFolderArgumentDescription
     };
 
     public static readonly Option<bool> IncludeReferencesOption = new("--include-references")
     {
-        Description = CliCommandStrings.SolutionAddReferencedProjectsOptionDescription,
+        Description = CliDefinitionResources.SolutionAddReferencedProjectsOptionDescription,
         DefaultValueFactory = (_) => true,
     };
 
     public static Command Create()
     {
-        Command command = new(Name, CliCommandStrings.AddAppFullName);
+        Command command = new(Name, CliDefinitionResources.AddAppFullName);
 
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(InRootOption);

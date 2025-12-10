@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -13,7 +13,7 @@ internal static class AddReferenceCommandDefinition
 
     public static Command Create()
     {
-        Command command = new(Name, CliCommandStrings.ReferenceAddAppFullName);
+        Command command = new(Name, CliDefinitionResources.ReferenceAddAppFullName);
 
         command.Arguments.Add(ReferenceAddCommandDefinition.ProjectPathArgument);
         command.Options.Add(ReferenceAddCommandDefinition.FrameworkOption);

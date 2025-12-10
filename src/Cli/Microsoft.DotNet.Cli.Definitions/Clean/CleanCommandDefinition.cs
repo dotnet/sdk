@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -20,15 +20,15 @@ internal static class CleanCommandDefinition
 
     public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
-        Description = CliCommandStrings.CleanCmdOutputDirDescription,
-        HelpName = CliCommandStrings.CleanCmdOutputDir
+        Description = CliDefinitionResources.CleanCmdOutputDirDescription,
+        HelpName = CliDefinitionResources.CleanCmdOutputDir
     }.ForwardAsOutputPath("OutputPath");
 
     public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.CleanFrameworkOptionDescription);
+    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliDefinitionResources.CleanFrameworkOptionDescription);
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.CleanConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliDefinitionResources.CleanConfigurationOptionDescription);
 
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Clean");
 
@@ -36,14 +36,14 @@ internal static class CleanCommandDefinition
 
     public static Command Create()
     {
-        Command command = new("clean", CliCommandStrings.CleanAppFullName)
+        Command command = new("clean", CliDefinitionResources.CleanAppFullName)
         {
             DocsLink = DocsLink
         };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.CleanRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliDefinitionResources.CleanRuntimeOptionDescription));
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(VerbosityOption);

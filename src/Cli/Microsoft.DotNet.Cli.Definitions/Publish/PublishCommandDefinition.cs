@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -21,20 +21,20 @@ internal static class PublishCommandDefinition
 
     public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
-        Description = CliCommandStrings.PublishOutputOptionDescription,
-        HelpName = CliCommandStrings.PublishOutputOption
+        Description = CliDefinitionResources.PublishOutputOptionDescription,
+        HelpName = CliDefinitionResources.PublishOutputOption
     }.ForwardAsOutputPath("PublishDir");
 
     public static readonly Option<IEnumerable<string>> ManifestOption = new Option<IEnumerable<string>>("--manifest")
     {
-        Description = CliCommandStrings.ManifestOptionDescription,
-        HelpName = CliCommandStrings.ManifestOption
+        Description = CliDefinitionResources.ManifestOptionDescription,
+        HelpName = CliDefinitionResources.ManifestOption
     }.ForwardAsSingle(o => $"-property:TargetManifestFiles={string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))}")
     .AllowSingleArgPerToken();
 
     public static readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
-        Description = CliCommandStrings.NoBuildOptionDescription,
+        Description = CliDefinitionResources.NoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
@@ -46,18 +46,18 @@ internal static class PublishCommandDefinition
 
     public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.PublishRuntimeOptionDescription);
+    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliDefinitionResources.PublishRuntimeOptionDescription);
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.PublishFrameworkOptionDescription);
+    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliDefinitionResources.PublishFrameworkOptionDescription);
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PublishConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliDefinitionResources.PublishConfigurationOptionDescription);
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Publish", [("_IsPublishing", "true")]);
 
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandDefinition.VerbosityOption;
 
     public static Command Create()
     {
-        var command = new Command("publish", CliCommandStrings.PublishAppDescription)
+        var command = new Command("publish", CliDefinitionResources.PublishAppDescription)
         {
             DocsLink = DocsLink
         };

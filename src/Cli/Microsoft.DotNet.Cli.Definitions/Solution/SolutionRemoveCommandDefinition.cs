@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -9,16 +9,16 @@ public static class SolutionRemoveCommandDefinition
 {
     public const string Name = "remove";
 
-    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.RemoveProjectPathArgumentName)
+    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliDefinitionResources.RemoveProjectPathArgumentName)
     {
-        HelpName = CliCommandStrings.RemoveProjectPathArgumentName,
-        Description = CliCommandStrings.RemoveProjectPathArgumentDescription,
+        HelpName = CliDefinitionResources.RemoveProjectPathArgumentName,
+        Description = CliDefinitionResources.RemoveProjectPathArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
     public static Command Create()
     {
-        Command command = new(Name, CliCommandStrings.RemoveAppFullName);
+        Command command = new(Name, CliDefinitionResources.RemoveAppFullName);
         command.Arguments.Add(ProjectPathArgument);
         return command;
     }

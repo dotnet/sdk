@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -11,13 +11,13 @@ public static class SolutionListCommandDefinition
 
     public static readonly Option<bool> SolutionFolderOption = new("--solution-folders")
     {
-        Description = CliCommandStrings.ListSolutionFoldersArgumentDescription,
+        Description = CliDefinitionResources.ListSolutionFoldersArgumentDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static Command Create()
     {
-        Command command = new(Name, CliCommandStrings.ListAppFullName);
+        Command command = new(Name, CliDefinitionResources.ListAppFullName);
         command.Options.Add(SolutionFolderOption);
         return command;
     }

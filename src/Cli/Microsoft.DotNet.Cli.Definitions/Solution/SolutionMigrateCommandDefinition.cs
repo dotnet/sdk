@@ -11,7 +11,7 @@ public static class SolutionMigrateCommandDefinition
 
     public static Command Create()
     {
-        Command command = new(Name, CliCommandStrings.MigrateAppFullName);
+        Command command = new(Name, CliDefinitionResources.MigrateAppFullName);
         command.Arguments.Add(SolutionCommandDefinition.SlnArgument);
         return command;
     }

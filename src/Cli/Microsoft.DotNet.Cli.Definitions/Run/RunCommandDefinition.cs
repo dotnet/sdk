@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
@@ -11,46 +11,46 @@ internal static class RunCommandDefinition
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-run";
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.RunConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliDefinitionResources.RunConfigurationOptionDescription);
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.RunFrameworkOptionDescription);
+    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliDefinitionResources.RunFrameworkOptionDescription);
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.RunRuntimeOptionDescription);
+    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliDefinitionResources.RunRuntimeOptionDescription);
 
     public static readonly Option<string> ProjectOption = new("--project")
     {
-        Description = CliCommandStrings.CmdProjectDescriptionFormat,
-        HelpName = CliCommandStrings.CommandOptionProjectHelpName
+        Description = CliDefinitionResources.CmdProjectDescriptionFormat,
+        HelpName = CliDefinitionResources.CommandOptionProjectHelpName
     };
 
     public static readonly Option<string> FileOption = new("--file")
     {
-        Description = CliCommandStrings.CommandOptionFileDescription,
-        HelpName = CliCommandStrings.CommandOptionFileHelpName,
+        Description = CliDefinitionResources.CommandOptionFileDescription,
+        HelpName = CliDefinitionResources.CommandOptionFileHelpName,
     };
 
     public static readonly Option<ReadOnlyDictionary<string, string>?> PropertyOption = CommonOptions.PropertiesOption;
 
     public static readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
     {
-        Description = CliCommandStrings.CommandOptionLaunchProfileDescription,
-        HelpName = CliCommandStrings.CommandOptionLaunchProfileHelpName
+        Description = CliDefinitionResources.CommandOptionLaunchProfileDescription,
+        HelpName = CliDefinitionResources.CommandOptionLaunchProfileHelpName
     };
 
     public static readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile")
     {
-        Description = CliCommandStrings.CommandOptionNoLaunchProfileDescription,
+        Description = CliDefinitionResources.CommandOptionNoLaunchProfileDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly Option<bool> NoLaunchProfileArgumentsOption = new("--no-launch-profile-arguments")
     {
-        Description = CliCommandStrings.CommandOptionNoLaunchProfileArgumentsDescription
+        Description = CliDefinitionResources.CommandOptionNoLaunchProfileArgumentsDescription
     };
 
     public static readonly Option<bool> NoBuildOption = new("--no-build")
     {
-        Description = CliCommandStrings.CommandOptionNoBuildDescription,
+        Description = CliDefinitionResources.CommandOptionNoBuildDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -60,7 +60,7 @@ internal static class RunCommandDefinition
 
     public static readonly Option<bool> NoCacheOption = new("--no-cache")
     {
-        Description = CliCommandStrings.CommandOptionNoCacheDescription,
+        Description = CliDefinitionResources.CommandOptionNoCacheDescription,
         Arity = ArgumentArity.Zero,
     };
 
@@ -78,7 +78,7 @@ internal static class RunCommandDefinition
 
     public static Command Create()
     {
-        Command command = new("run", CliCommandStrings.RunAppFullName)
+        Command command = new("run", CliDefinitionResources.RunAppFullName)
         {
             DocsLink = DocsLink
         };

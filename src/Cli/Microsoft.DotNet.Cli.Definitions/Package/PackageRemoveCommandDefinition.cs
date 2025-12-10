@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -10,9 +10,9 @@ internal static class PackageRemoveCommandDefinition
 {
     public const string Name = "remove";
 
-    public static readonly Argument<string[]> CmdPackageArgument = new(CliCommandStrings.CmdPackage)
+    public static readonly Argument<string[]> CmdPackageArgument = new(CliDefinitionResources.CmdPackage)
     {
-        Description = CliCommandStrings.PackageRemoveAppHelpText,
+        Description = CliDefinitionResources.PackageRemoveAppHelpText,
         Arity = ArgumentArity.OneOrMore,
     };
 
@@ -27,7 +27,7 @@ internal static class PackageRemoveCommandDefinition
 
     public static Command Create()
     {
-        var command = new Command(Name, CliCommandStrings.PackageRemoveAppFullName);
+        var command = new Command(Name, CliDefinitionResources.PackageRemoveAppFullName);
 
         command.Arguments.Add(CmdPackageArgument);
         command.Options.AddRange(Options);

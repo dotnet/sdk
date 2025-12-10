@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -23,7 +23,7 @@ internal static class ListCommandDefinition
 
     public static Command Create()
     {
-        var command = new Command("list", CliCommandStrings.NetListCommand)
+        var command = new Command("list", CliDefinitionResources.NetListCommand)
         {
             Hidden = true,
             DocsLink = DocsLink
