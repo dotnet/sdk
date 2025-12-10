@@ -42,7 +42,7 @@ namespace CompatTests {{
                 CreateType(" class", " public void F() {}"),
                 CreateDifferences((DifferenceType.Removed, DiagnosticIds.CannotRemoveStaticFromMember, "M:CompatTests.First.F")),
             };
-            
+
             // Remove static from property
             yield return new object[] {
                 CreateType(" class", " public static int F { get; }"),
@@ -50,14 +50,14 @@ namespace CompatTests {{
                 CreateDifferences((DifferenceType.Removed, DiagnosticIds.CannotRemoveStaticFromMember, "P:CompatTests.First.F"),
                                     (DifferenceType.Removed, DiagnosticIds.CannotRemoveStaticFromMember, "M:CompatTests.First.get_F")),
             };
-            
+
             // Remove static from field
             yield return new object[] {
                 CreateType(" class", " public static int F;"),
                 CreateType(" class", " public int F;"),
                 CreateDifferences((DifferenceType.Removed, DiagnosticIds.CannotRemoveStaticFromMember, "F:CompatTests.First.F")),
             };
-            
+
             // Remove static from event
             yield return new object[] {
                 CreateType(" class", " public delegate void EventHandler(object sender, object e);", " public static event EventHandler F;"),
@@ -76,7 +76,7 @@ namespace CompatTests {{
                 CreateType(" class", " public static void F() {}"),
                 CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "M:CompatTests.First.F")),
             };
-            
+
             // Add static to property
             yield return new object[] {
                 CreateType(" class", " public int F { get; }"),
@@ -84,14 +84,14 @@ namespace CompatTests {{
                 CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "P:CompatTests.First.F"),
                                     (DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "M:CompatTests.First.get_F")),
             };
-            
+
             // Add static to field
             yield return new object[] {
                 CreateType(" class", " public int F;"),
                 CreateType(" class", " public static int F;"),
                 CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "F:CompatTests.First.F")),
             };
-            
+
             // Add static to event
             yield return new object[] {
                 CreateType(" class", " public delegate void EventHandler(object sender, object e);", " public event EventHandler F;"),
