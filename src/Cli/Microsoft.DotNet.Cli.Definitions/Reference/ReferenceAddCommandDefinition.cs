@@ -28,7 +28,7 @@ internal static class ReferenceAddCommandDefinition
     public static readonly Option<string> FrameworkOption = new Option<string>("--framework", "-f")
     {
         Description = CliDefinitionResources.ReferenceAddCmdFrameworkDescription,
-        HelpName = CliStrings.CommonCmdFramework,
+        HelpName = CliDefinitionResources.CommonCmdFramework,
         IsDynamic = true,
     }
     .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);

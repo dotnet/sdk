@@ -15,7 +15,7 @@ internal static class CommonOptions
     public static Option<bool> YesOption =
         new Option<bool>("--yes", "-y")
         {
-            Description = CliStrings.YesOptionDescription,
+            Description = CliDefinitionResources.YesOptionDescription,
             Arity = ArgumentArity.Zero,
             IsDynamic = true
         };
@@ -141,8 +141,8 @@ internal static class CommonOptions
     public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
         new Option<VerbosityOptions>("--verbosity", "-v")
         {
-            Description = CliStrings.VerbosityOptionDescription,
-            HelpName = CliStrings.LevelArgumentName,
+            Description = CliDefinitionResources.VerbosityOptionDescription,
+            HelpName = CliDefinitionResources.LevelArgumentName,
             DefaultValueFactory = _ => defaultVerbosity
         }
         .ForwardAsSingle(o => $"--verbosity:{o}")
@@ -151,8 +151,8 @@ internal static class CommonOptions
     public static Option<VerbosityOptions?> VerbosityOption() =>
         new Option<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
-            Description = CliStrings.VerbosityOptionDescription,
-            HelpName = CliStrings.LevelArgumentName
+            Description = CliDefinitionResources.VerbosityOptionDescription,
+            HelpName = CliDefinitionResources.LevelArgumentName
         }
         .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
@@ -160,8 +160,8 @@ internal static class CommonOptions
     public static Option<VerbosityOptions> HiddenVerbosityOption =
         new Option<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
-            Description = CliStrings.VerbosityOptionDescription,
-            HelpName = CliStrings.LevelArgumentName,
+            Description = CliDefinitionResources.VerbosityOptionDescription,
+            HelpName = CliDefinitionResources.LevelArgumentName,
             Hidden = true
         }
         .ForwardAsSingle(o => $"--verbosity:{o}")
@@ -171,7 +171,7 @@ internal static class CommonOptions
         new Option<string>("--framework", "-f")
         {
             Description = description,
-            HelpName = CliStrings.FrameworkArgumentName,
+            HelpName = CliDefinitionResources.FrameworkArgumentName,
             IsDynamic = true
         }
         .ForwardAsSingle(o => $"--property:TargetFramework={o}")
@@ -182,11 +182,11 @@ internal static class CommonOptions
             //  --artifacts-path is pretty verbose, should we use --artifacts instead (or possibly support both)?
             "--artifacts-path")
         {
-            Description = CliStrings.ArtifactsPathOptionDescription,
-            HelpName = CliStrings.ArtifactsPathArgumentName
+            Description = CliDefinitionResources.ArtifactsPathOptionDescription,
+            HelpName = CliDefinitionResources.ArtifactsPathArgumentName
         }.ForwardAsSingle(o => $"--property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
 
-    private static readonly string RuntimeArgName = CliStrings.RuntimeIdentifierArgumentName;
+    private static readonly string RuntimeArgName = CliDefinitionResources.RuntimeIdentifierArgumentName;
     public static IEnumerable<string> RuntimeArgFunc(string rid)
     {
         if (GetArchFromRid(rid) == "amd64")
@@ -226,7 +226,7 @@ internal static class CommonOptions
         new Option<string?>("--configuration", "-c")
         {
             Description = description,
-            HelpName = CliStrings.ConfigurationArgumentName,
+            HelpName = CliDefinitionResources.ConfigurationArgumentName,
             IsDynamic = true
         }.ForwardAsSingle(o => $"--property:Configuration={o}")
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
@@ -234,8 +234,8 @@ internal static class CommonOptions
     public static Option<string> VersionSuffixOption =
         new Option<string>("--version-suffix")
         {
-            Description = CliStrings.CmdVersionSuffixDescription,
-            HelpName = CliStrings.VersionSuffixArgumentName
+            Description = CliDefinitionResources.CmdVersionSuffixDescription,
+            HelpName = CliDefinitionResources.VersionSuffixArgumentName
         }.ForwardAsSingle(o => $"--property:VersionSuffix={o}");
 
     public static Lazy<string> NormalizedCurrentDirectory = new(() => PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
@@ -250,7 +250,7 @@ internal static class CommonOptions
 
     public static Option<bool> NoRestoreOption = new Option<bool>("--no-restore")
     {
-        Description = CliStrings.NoRestoreDescription,
+        Description = CliDefinitionResources.NoRestoreDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-restore:false");
 
@@ -279,7 +279,7 @@ internal static class CommonOptions
     public static Option<bool> InteractiveOption(bool acceptArgument = false) =>
         new(InteractiveOptionName)
         {
-            Description = CliStrings.CommandInteractiveOptionDescription,
+            Description = CliDefinitionResources.CommandInteractiveOptionDescription,
             Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
             // this default is called when no tokens/options are passed on the CLI args
             DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
@@ -290,7 +290,7 @@ internal static class CommonOptions
     public static Option<bool> DisableBuildServersOption =
         new Option<bool>("--disable-build-servers")
         {
-            Description = CliStrings.DisableBuildServersOptionDescription,
+            Description = CliDefinitionResources.DisableBuildServersOptionDescription,
             Arity = ArgumentArity.Zero
         }
         .ForwardIfEnabled(["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
@@ -298,15 +298,15 @@ internal static class CommonOptions
     public static Option<string> ArchitectureOption =
         new Option<string>("--arch", "-a")
         {
-            Description = CliStrings.ArchitectureOptionDescription,
-            HelpName = CliStrings.ArchArgumentName
+            Description = CliDefinitionResources.ArchitectureOptionDescription,
+            HelpName = CliDefinitionResources.ArchArgumentName
         }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
     public static Option<string> LongFormArchitectureOption =
         new Option<string>("--arch")
         {
-            Description = CliStrings.ArchitectureOptionDescription,
-            HelpName = CliStrings.ArchArgumentName
+            Description = CliDefinitionResources.ArchitectureOptionDescription,
+            HelpName = CliDefinitionResources.ArchArgumentName
         }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
     internal static string? ArchOptionValue(ParseResult parseResult) =>
@@ -317,8 +317,8 @@ internal static class CommonOptions
     public static Option<string> OperatingSystemOption =
         new Option<string>("--os")
         {
-            Description = CliStrings.OperatingSystemOptionDescription,
-            HelpName = CliStrings.OSArgumentName
+            Description = CliDefinitionResources.OperatingSystemOptionDescription,
+            HelpName = CliDefinitionResources.OSArgumentName
         }.SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
 
     public static Option<bool> DebugOption = new("--debug")
@@ -329,14 +329,14 @@ internal static class CommonOptions
     public static Option<bool> SelfContainedOption =
         new Option<bool>("--self-contained", "--sc")
         {
-            Description = CliStrings.SelfContainedOptionDescription
+            Description = CliDefinitionResources.SelfContainedOptionDescription
         }
         .ForwardIfEnabled([$"--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true"]);
 
     public static Option<bool> NoSelfContainedOption =
         new Option<bool>("--no-self-contained")
         {
-            Description = CliStrings.FrameworkDependentOptionDescription,
+            Description = CliDefinitionResources.FrameworkDependentOptionDescription,
             Arity = ArgumentArity.Zero
         }
         .ForwardIfEnabled([$"--property:SelfContained=false", "--property:_CommandLineDefinedSelfContained=true"]);
@@ -344,15 +344,15 @@ internal static class CommonOptions
     public static Option<IReadOnlyDictionary<string, string>> CreateEnvOption(string description) => new("--environment", "-e")
     {
         Description = description,
-        HelpName = CliStrings.CmdEnvironmentVariableExpression,
+        HelpName = CliDefinitionResources.CmdEnvironmentVariableExpression,
         CustomParser = ParseEnvironmentVariables,
         // Can't allow multiple arguments because the separator needs to be parsed as part of the environment variable value.
         AllowMultipleArgumentsPerToken = false
     };
 
-    public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CreateEnvOption(CliStrings.CmdEnvironmentVariableDescription);
+    public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CreateEnvOption(CliDefinitionResources.CmdEnvironmentVariableDescription);
     
-    public static readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CreateEnvOption(CliStrings.CmdTestEnvironmentVariableDescription);
+    public static readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CreateEnvOption(CliDefinitionResources.CmdTestEnvironmentVariableDescription);
 
     private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
     {
@@ -384,7 +384,7 @@ internal static class CommonOptions
         if (invalid != null)
         {
             argumentResult.AddError(string.Format(
-                CliStrings.IncorrectlyFormattedEnvironmentVariables,
+                CliDefinitionResources.IncorrectlyFormattedEnvironmentVariables,
                 string.Join(", ", invalid.Select(x => $"'{x.Value}'"))));
         }
 
@@ -423,7 +423,7 @@ internal static class CommonOptions
     {
         if (hasSelfContainedOption && hasNoSelfContainedOption)
         {
-            throw new GracefulException(CliStrings.SelfContainAndNoSelfContainedConflict);
+            throw new GracefulException(CliDefinitionResources.SelfContainAndNoSelfContainedConflict);
         }
     }
 
@@ -431,7 +431,7 @@ internal static class CommonOptions
     {
         if (parseResult.GetResult(RuntimeOptionName) is not null)
         {
-            throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndArchOptions);
+            throw new GracefulException(CliDefinitionResources.CannotSpecifyBothRuntimeAndArchOptions);
         }
 
         if (parseResult.BothArchAndOsOptionsSpecified())
@@ -447,7 +447,7 @@ internal static class CommonOptions
     {
         if (parseResult.GetResult(RuntimeOptionName) is not null)
         {
-            throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndOsOptions);
+            throw new GracefulException(CliDefinitionResources.CannotSpecifyBothRuntimeAndOsOptions);
         }
 
         var arch = parseResult.BothArchAndOsOptionsSpecified() ? ArchOptionValue(parseResult) : null;
@@ -483,7 +483,7 @@ internal static class CommonOptions
         string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ? [.. File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l))] : [];
         if (currentRuntimeIdentifiers == null || !currentRuntimeIdentifiers.Any() || !currentRuntimeIdentifiers[0].Contains("-"))
         {
-            throw new GracefulException(CliStrings.CannotResolveRuntimeIdentifier);
+            throw new GracefulException(CliDefinitionResources.CannotResolveRuntimeIdentifier);
         }
         return currentRuntimeIdentifiers[0]; // First rid is the most specific (ex win-x64)
     }

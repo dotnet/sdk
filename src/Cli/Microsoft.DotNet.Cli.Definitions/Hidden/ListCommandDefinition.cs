@@ -12,7 +12,7 @@ internal static class ListCommandDefinition
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-list";
 
-    public static readonly Argument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CliStrings.SolutionOrProjectArgumentName, CliStrings.SolutionOrProjectArgumentDescription);
+    public static readonly Argument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CliDefinitionResources.SolutionOrProjectArgumentName, CliDefinitionResources.SolutionOrProjectArgumentDescription);
 
     internal static Argument<string> CreateSlnOrProjectArgument(string name, string description)
         => new Argument<string>(name)

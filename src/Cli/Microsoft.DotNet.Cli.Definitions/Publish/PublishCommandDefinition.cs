@@ -12,9 +12,9 @@ internal static class PublishCommandDefinition
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-publish";
 
-    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliDefinitionResources.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
+        Description = CliDefinitionResources.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 

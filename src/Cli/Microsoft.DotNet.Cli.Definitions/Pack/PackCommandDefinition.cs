@@ -12,9 +12,9 @@ internal static class PackCommandDefinition
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-pack";
 
-    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliDefinitionResources.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
+        Description = CliDefinitionResources.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
@@ -70,7 +70,7 @@ internal static class PackCommandDefinition
                 var value = r.Tokens[0].Value;
                 if (NuGetVersion.TryParse(value, out var version))
                     return version;
-                r.AddError(string.Format(CliStrings.InvalidVersion, value));
+                r.AddError(string.Format(CliDefinitionResources.InvalidVersion, value));
                 return null;
 
             }

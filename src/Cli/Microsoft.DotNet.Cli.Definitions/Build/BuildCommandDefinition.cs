@@ -11,9 +11,9 @@ internal static class BuildCommandDefinition
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-build";
 
-    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliDefinitionResources.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
+        Description = CliDefinitionResources.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 

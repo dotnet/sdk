@@ -15,7 +15,7 @@ public static class PackageAddCommandDefinition
 
     public static readonly Option<bool> PrereleaseOption = new Option<bool>("--prerelease")
     {
-        Description = CliStrings.CommandPrereleaseOptionDescription,
+        Description = CliDefinitionResources.CommandPrereleaseOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--prerelease");
 

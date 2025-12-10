@@ -22,7 +22,7 @@ internal static class ReferenceRemoveCommandDefinition
     public static readonly Option<string> FrameworkOption = new("--framework", "-f")
     {
         Description = CliDefinitionResources.ReferenceRemoveCmdFrameworkDescription,
-        HelpName = CliStrings.CommonCmdFramework
+        HelpName = CliDefinitionResources.CommonCmdFramework
     };
 
     public static Command Create()

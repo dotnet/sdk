@@ -19,19 +19,19 @@ internal class PackageCommandDefinition
     public static readonly Option<string?> ProjectOption = new("--project")
     {
         Recursive = true,
-        Description = CliStrings.ProjectArgumentDescription
+        Description = CliDefinitionResources.ProjectArgumentDescription
     };
 
     public static readonly Option<string?> FileOption = new("--file")
     {
         Recursive = true,
-        Description = CliStrings.FileArgumentDescription
+        Description = CliDefinitionResources.FileArgumentDescription
     };
 
     // Used by the legacy 'add/remove package' commands.
-    public static readonly Argument<string> ProjectOrFileArgument = new Argument<string>(CliStrings.ProjectOrFileArgumentName)
+    public static readonly Argument<string> ProjectOrFileArgument = new Argument<string>(CliDefinitionResources.ProjectOrFileArgumentName)
     {
-        Description = CliStrings.ProjectOrFileArgumentDescription
+        Description = CliDefinitionResources.ProjectOrFileArgumentDescription
     }.DefaultToCurrentDirectory();
 
     public static Command Create()

@@ -15,7 +15,7 @@ internal static class ReferenceCommandDefinition
 
     public static readonly Option<string> ProjectOption = new Option<string>("--project")
     {
-        Description = CliStrings.ProjectArgumentDescription,
+        Description = CliDefinitionResources.ProjectArgumentDescription,
         Recursive = true
     };
 
