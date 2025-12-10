@@ -106,7 +106,7 @@ internal static class MicrosoftTestingPlatformOptions
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<string[]> MTPTargetOption = CommonOptions.RequiredMSBuildTargetOption(CliConstants.MTPTarget);
+    public static readonly Option<string[]> MTPTargetOption = CommonOptions.RequiredMSBuildTargetOption("_MTPBuild");
 }
 
 internal enum OutputOptions
