@@ -23,7 +23,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
 
     public override int Execute()
     {
-        var (fileOrDirectory, allowedAppKinds) = PackageCommandDefinition.ProcessPathOptions(_parseResult);
+        var (fileOrDirectory, allowedAppKinds) = ProcessPathOptions(_parseResult);
 
         if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuildingCommand.IsValidEntryPointPath(fileOrDirectory))
         {
@@ -69,6 +69,22 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         DisposeTemporaryFile(tempDgFilePath);
 
         return result;
+    }
+
+    public static (string Path, AppKinds AllowedAppKinds) ProcessPathOptions(ParseResult parseResult)
+    {
+        bool hasFileOption = parseResult.HasOption(PackageCommandDefinition.FileOption);
+        bool hasProjectOption = parseResult.HasOption(PackageCommandDefinition.ProjectOption);
+
+        return (hasFileOption, hasProjectOption) switch
+        {
+            (false, false) => parseResult.GetValue(PackageCommandDefinition.ProjectOrFileArgument) is { } projectOrFile
+                ? (projectOrFile, AppKinds.Any)
+                : (Environment.CurrentDirectory, AppKinds.ProjectBased),
+            (true, false) => (parseResult.GetValue(PackageCommandDefinition.FileOption)!, AppKinds.FileBased),
+            (false, true) => (parseResult.GetValue(PackageCommandDefinition.ProjectOption)!, AppKinds.ProjectBased),
+            (true, true) => throw new GracefulException(CliCommandStrings.CannotCombineOptions, PackageCommandDefinition.FileOption.Name, PackageCommandDefinition.ProjectOption.Name),
+        };
     }
 
     private static void GetProjectDependencyGraph(string projectFilePath, string dgFilePath)

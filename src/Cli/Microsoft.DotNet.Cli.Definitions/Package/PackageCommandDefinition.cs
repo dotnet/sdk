@@ -48,20 +48,4 @@ internal class PackageCommandDefinition
 
         return command;
     }
-
-    public static (string Path, AppKinds AllowedAppKinds) ProcessPathOptions(ParseResult parseResult)
-    {
-        bool hasFileOption = parseResult.HasOption(FileOption);
-        bool hasProjectOption = parseResult.HasOption(ProjectOption);
-
-        return (hasFileOption, hasProjectOption) switch
-        {
-            (false, false) => parseResult.GetValue(ProjectOrFileArgument) is { } projectOrFile
-                ? (projectOrFile, AppKinds.Any)
-                : (Environment.CurrentDirectory, AppKinds.ProjectBased),
-            (true, false) => (parseResult.GetValue(FileOption)!, AppKinds.FileBased),
-            (false, true) => (parseResult.GetValue(ProjectOption)!, AppKinds.ProjectBased),
-            (true, true) => throw new GracefulException(CliDefinitionResources.CannotCombineOptions, FileOption.Name, ProjectOption.Name),
-        };
-    }
 }
