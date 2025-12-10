@@ -4,7 +4,6 @@
 using System.CommandLine;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
-using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.Commands.Restore;
 

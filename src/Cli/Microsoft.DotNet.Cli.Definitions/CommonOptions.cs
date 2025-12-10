@@ -3,11 +3,9 @@
 
 using System.Collections.ObjectModel;
 using System.CommandLine;
-using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli;

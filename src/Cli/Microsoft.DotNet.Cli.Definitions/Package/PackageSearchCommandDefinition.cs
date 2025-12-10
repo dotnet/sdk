@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Search;
 
