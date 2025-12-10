@@ -1022,6 +1022,53 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// Implicit build files are taken from the folder of the symbolic link itself, not its target.
+    /// This is equivalent to the behavior of symlinked project files.
+    /// See <see href="https://github.com/dotnet/sdk/pull/52064#issuecomment-3628958688"/>.
+    /// </summary>
+    [Fact]
+    public void DirectoryBuildProps_SymbolicLink()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var dir1 = Path.Join(testInstance.Path, "dir1");
+        Directory.CreateDirectory(dir1);
+
+        var originalPath = Path.Join(dir1, "original.cs");
+        File.WriteAllText(originalPath, s_program);
+
+        File.WriteAllText(Path.Join(dir1, "Directory.Build.props"), """
+            <Project>
+                <PropertyGroup>
+                    <AssemblyName>OriginalAssemblyName</AssemblyName>
+                </PropertyGroup>
+            </Project>
+            """);
+
+        var dir2 = Path.Join(testInstance.Path, "dir2");
+        Directory.CreateDirectory(dir2);
+
+        var programFileName = "linked.cs";
+        var programPath = Path.Join(dir2, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
+
+        File.WriteAllText(Path.Join(dir2, "Directory.Build.props"), """
+            <Project>
+                <PropertyGroup>
+                    <AssemblyName>LinkedAssemblyName</AssemblyName>
+                </PropertyGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", programFileName)
+            .WithWorkingDirectory(dir2)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from LinkedAssemblyName");
+    }
+
+    /// <summary>
     /// Overriding default (implicit) properties of file-based apps via implicit build files.
     /// </summary>
     [Fact]
@@ -3424,6 +3471,46 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programPath = Path.Join(testInstance.Path, programFileName);
 
         File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "v1", programFileName: programFileName);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// Similar to <see cref="UpToDate_SymbolicLink"/> but with a chain of symlinks.
+    /// </summary>
+    [Fact]
+    public void UpToDate_SymbolicLink2()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var originalPath = Path.Join(testInstance.Path, "original.cs");
+        var code = """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("v1");
+            """;
+        var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        var intermediateFileName = "linked1";
+        var intermediatePath = Path.Join(testInstance.Path, intermediateFileName);
+
+        File.CreateSymbolicLink(path: intermediatePath, pathToTarget: originalPath);
+
+        var programFileName = "linked2";
+        var programPath = Path.Join(testInstance.Path, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: intermediatePath);
 
         // Remove artifacts from possible previous runs of this test.
         var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
