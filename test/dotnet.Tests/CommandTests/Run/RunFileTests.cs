@@ -1066,6 +1066,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Hello from LinkedAssemblyName");
+
+        // Removing the Directory.Build.props should be detected by up-to-date check.
+        File.Delete(Path.Join(dir2, "Directory.Build.props"));
+
+        new DotnetCommand(Log, "run", programFileName)
+            .WithWorkingDirectory(dir2)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from linked");
     }
 
     /// <summary>
