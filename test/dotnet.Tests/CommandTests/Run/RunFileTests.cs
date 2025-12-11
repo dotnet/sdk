@@ -4142,6 +4142,57 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// Interaction of optimization <see cref="CscOnly_AfterMSBuild"/> and <c>Directory.Build.props</c> file.
+    /// </summary>
+    [Theory, CombinatorialData]
+    public void CscOnly_AfterMSBuild_DirectoryBuildProps(bool touch1, bool touch2)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var propsPath = Path.Join(testInstance.Path, "Directory.Build.props");
+        var propsContent = """
+            <Project>
+                <PropertyGroup>
+                    <AssemblyName>CustomAssemblyName</AssemblyName>
+                </PropertyGroup>
+            </Project>
+            """;
+        File.WriteAllText(propsPath, propsContent);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        var programVersion = 0;
+        void WriteProgramContent()
+        {
+            programVersion++;
+
+            // #: directive ensures we get CscOnly_AfterMSBuild optimization instead of CscOnly.
+            File.WriteAllText(programPath, $"""
+                #:property Configuration=Debug
+                Console.WriteLine("v{programVersion} " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
+                """);
+        }
+        WriteProgramContent();
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: $"v{programVersion} CustomAssemblyName");
+
+        File.Delete(propsPath);
+
+        if (touch1) WriteProgramContent();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: $"v{programVersion} Program");
+
+        File.WriteAllText(propsPath, propsContent);
+
+        if (touch2) WriteProgramContent();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: $"v{programVersion} CustomAssemblyName");
+    }
+
+    /// <summary>
     /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// This optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
     /// </summary>

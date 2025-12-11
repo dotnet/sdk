@@ -852,15 +852,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return true;
         }
 
-        // Check that the source file is not modified.
-        var targetFile = ResolveLinkTargetOrSelf(entryPointFile);
-        if (targetFile.LastWriteTimeUtc > buildTimeUtc)
-        {
-            cache.CanUseCscViaPreviousArguments = true;
-            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
-            return true;
-        }
-
         // Check that implicit build files are not modified.
         foreach (var implicitBuildFilePath in previousCacheEntry.ImplicitBuildFiles)
         {
@@ -880,6 +871,16 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Reporter.Verbose.WriteLine("Building because new implicit build file is present: " + implicitBuildFilePath);
                 return true;
             }
+        }
+
+        // Check that the source file is not modified.
+        // NOTE: This should be the last check (otherwise setting cache.CanUseCscViaPreviousArguments would be incorrect).
+        var targetFile = ResolveLinkTargetOrSelf(entryPointFile);
+        if (targetFile.LastWriteTimeUtc > buildTimeUtc)
+        {
+            cache.CanUseCscViaPreviousArguments = true;
+            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
+            return true;
         }
 
         return false;
