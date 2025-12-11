@@ -3494,7 +3494,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
@@ -3589,7 +3589,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var programFileName = "App/Program.cs";
@@ -3936,7 +3936,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v1", programFileName: programFileName);
@@ -4131,7 +4131,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
