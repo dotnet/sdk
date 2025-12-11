@@ -540,7 +540,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
 
         // Verify no BOM was added
         var bytes = File.ReadAllBytes(tempFile);
-        Assert.False(bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF,
+        Assert.True(bytes is not [0xEF, 0xBB, 0xBF, ..],
             "File should not have UTF-8 BOM");
 
         // Verify shebang is still first
@@ -570,7 +570,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
 
         // Verify BOM is still present
         var bytes = File.ReadAllBytes(tempFile);
-        Assert.True(bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF,
+        Assert.True(bytes is [0xEF, 0xBB, 0xBF, ..],
             "File should have UTF-8 BOM");
     }
 
@@ -596,7 +596,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
 
         // Verify UTF-16 BOM is still present (0xFF 0xFE for UTF-16 LE)
         var bytes = File.ReadAllBytes(tempFile);
-        Assert.True(bytes.Length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE,
+        Assert.True(bytes is [0xFF, 0xFE, ..],
             "File should have UTF-16 LE BOM");
 
         // Verify content is still readable as UTF-16
