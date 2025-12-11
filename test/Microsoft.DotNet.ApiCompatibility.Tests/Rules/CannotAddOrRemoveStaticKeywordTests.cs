@@ -40,31 +40,31 @@ namespace CompatTests {{
             yield return new object[] {
                 CreateType(" class", " public static void F() {}"),
                 CreateType(" class", " public void F() {}"),
-                CreateDifferences((DifferenceType.Removed, DiagnosticIds.CannotRemoveStaticFromMember, "M:CompatTests.First.F")),
+                CreateDifferences((DifferenceType.Removed, DiagnosticIds.CannotChangeStatic, "M:CompatTests.First.F")),
             };
 
             // Remove static from property
             yield return new object[] {
                 CreateType(" class", " public static int F { get; }"),
                 CreateType(" class", " public int F { get; }"),
-                CreateDifferences((DifferenceType.Removed, DiagnosticIds.CannotRemoveStaticFromMember, "P:CompatTests.First.F"),
-                                    (DifferenceType.Removed, DiagnosticIds.CannotRemoveStaticFromMember, "M:CompatTests.First.get_F")),
+                CreateDifferences((DifferenceType.Removed, DiagnosticIds.CannotChangeStatic, "P:CompatTests.First.F"),
+                                    (DifferenceType.Removed, DiagnosticIds.CannotChangeStatic, "M:CompatTests.First.get_F")),
             };
 
             // Remove static from field
             yield return new object[] {
                 CreateType(" class", " public static int F;"),
                 CreateType(" class", " public int F;"),
-                CreateDifferences((DifferenceType.Removed, DiagnosticIds.CannotRemoveStaticFromMember, "F:CompatTests.First.F")),
+                CreateDifferences((DifferenceType.Removed, DiagnosticIds.CannotChangeStatic, "F:CompatTests.First.F")),
             };
 
             // Remove static from event
             yield return new object[] {
                 CreateType(" class", " public delegate void EventHandler(object sender, object e);", " public static event EventHandler F;"),
                 CreateType(" class", " public delegate void EventHandler(object sender, object e);", " public event EventHandler F;"),
-                CreateDifferences((DifferenceType.Removed, DiagnosticIds.CannotRemoveStaticFromMember, "M:CompatTests.First.add_F(CompatTests.First.EventHandler)"),
-                                    (DifferenceType.Removed, DiagnosticIds.CannotRemoveStaticFromMember, "M:CompatTests.First.remove_F(CompatTests.First.EventHandler)"),
-                                    (DifferenceType.Removed, DiagnosticIds.CannotRemoveStaticFromMember, "E:CompatTests.First.F")),
+                CreateDifferences((DifferenceType.Removed, DiagnosticIds.CannotChangeStatic, "M:CompatTests.First.add_F(CompatTests.First.EventHandler)"),
+                                    (DifferenceType.Removed, DiagnosticIds.CannotChangeStatic, "M:CompatTests.First.remove_F(CompatTests.First.EventHandler)"),
+                                    (DifferenceType.Removed, DiagnosticIds.CannotChangeStatic, "E:CompatTests.First.F")),
             };
         }
 
@@ -74,31 +74,31 @@ namespace CompatTests {{
             yield return new object[] {
                 CreateType(" class", " public void F() {}"),
                 CreateType(" class", " public static void F() {}"),
-                CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "M:CompatTests.First.F")),
+                CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotChangeStatic, "M:CompatTests.First.F")),
             };
 
             // Add static to property
             yield return new object[] {
                 CreateType(" class", " public int F { get; }"),
                 CreateType(" class", " public static int F { get; }"),
-                CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "P:CompatTests.First.F"),
-                                    (DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "M:CompatTests.First.get_F")),
+                CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotChangeStatic, "P:CompatTests.First.F"),
+                                    (DifferenceType.Added, DiagnosticIds.CannotChangeStatic, "M:CompatTests.First.get_F")),
             };
 
             // Add static to field
             yield return new object[] {
                 CreateType(" class", " public int F;"),
                 CreateType(" class", " public static int F;"),
-                CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "F:CompatTests.First.F")),
+                CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotChangeStatic, "F:CompatTests.First.F")),
             };
 
             // Add static to event
             yield return new object[] {
                 CreateType(" class", " public delegate void EventHandler(object sender, object e);", " public event EventHandler F;"),
                 CreateType(" class", " public delegate void EventHandler(object sender, object e);", " public static event EventHandler F;"),
-                CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "M:CompatTests.First.add_F(CompatTests.First.EventHandler)"),
-                                    (DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "M:CompatTests.First.remove_F(CompatTests.First.EventHandler)"),
-                                    (DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "E:CompatTests.First.F")),
+                CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotChangeStatic, "M:CompatTests.First.add_F(CompatTests.First.EventHandler)"),
+                                    (DifferenceType.Added, DiagnosticIds.CannotChangeStatic, "M:CompatTests.First.remove_F(CompatTests.First.EventHandler)"),
+                                    (DifferenceType.Added, DiagnosticIds.CannotChangeStatic, "E:CompatTests.First.F")),
             };
         }
 
@@ -110,8 +110,8 @@ namespace CompatTests {{
                 CreateType(" static class", " public static void F() {}"),
                 // We expect one difference for the type becoming static and one for the method
                 // becoming static (since static class requires static members)
-                CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotAddStaticToType, "T:CompatTests.First"),
-                                  (DifferenceType.Added, DiagnosticIds.CannotAddStaticToMember, "M:CompatTests.First.F")),
+                CreateDifferences((DifferenceType.Added, DiagnosticIds.CannotChangeStatic, "T:CompatTests.First"),
+                                  (DifferenceType.Added, DiagnosticIds.CannotChangeStatic, "M:CompatTests.First.F")),
             };
         }
 
@@ -174,49 +174,10 @@ namespace CompatTests
             Assert.Equal(expected, differences);
         }
 
-        [Fact]
-        public static void ReproductionCaseFromIssue()
-        {
-            // This is the reproduction case from the issue
-            string leftSyntax = @"
-namespace CompatTests
-{
-    public class Class1
-    {
-        public static string Foo => ""net8.0"";
-        public string Bar => ""net8.0"";
-    }
-}
-";
-            string rightSyntax = @"
-namespace CompatTests
-{
-    public class Class1
-    {
-        public string Foo => ""net10.0"";
-        public static string Bar => ""net10.0"";
-    }
-}
-";
-            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
-            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new(s_ruleFactory);
-
-            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
-
-            // We expect 4 differences: 2 for Foo (property + getter), 2 for Bar (property + getter)
-            CompatDifference[] expected = new[]
-            {
-                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveStaticFromMember, string.Empty, DifferenceType.Removed, "P:CompatTests.Class1.Foo"),
-                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveStaticFromMember, string.Empty, DifferenceType.Removed, "M:CompatTests.Class1.get_Foo"),
-                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddStaticToMember, string.Empty, DifferenceType.Added, "P:CompatTests.Class1.Bar"),
-                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddStaticToMember, string.Empty, DifferenceType.Added, "M:CompatTests.Class1.get_Bar"),
-            };
-            Assert.Equal(expected, differences);
-        }
-
-        [Fact]
-        public static void RemoveStaticFromTypeInStrictModeReported()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public static void RemoveStaticFromTypeInStrictMode(bool strictMode)
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -238,45 +199,22 @@ namespace CompatTests
 ";
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: true));
+            ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: strictMode));
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            CompatDifference[] expected = new[]
+            if (strictMode)
             {
-                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveStaticFromType, string.Empty, DifferenceType.Removed, "T:CompatTests.First"),
-            };
-            Assert.Equal(expected, differences);
-        }
-
-        [Fact]
-        public static void RemoveStaticFromTypeNotReportedInNonStrictMode()
-        {
-            string leftSyntax = @"
-namespace CompatTests
-{
-    public static class First
-    {
-        public static void F() {}
-    }
-}
-";
-            string rightSyntax = @"
-namespace CompatTests
-{
-    public class First
-    {
-        public static void F() {}
-    }
-}
-";
-            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
-            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: false));
-
-            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
-
-            Assert.Empty(differences);
+                CompatDifference[] expected = new[]
+                {
+                    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeStatic, string.Empty, DifferenceType.Removed, "T:CompatTests.First"),
+                };
+                Assert.Equal(expected, differences);
+            }
+            else
+            {
+                Assert.Empty(differences);
+            }
         }
     }
 }

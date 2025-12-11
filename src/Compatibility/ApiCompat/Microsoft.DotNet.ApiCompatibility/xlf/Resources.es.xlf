@@ -77,16 +77,6 @@
         <target state="translated">No se puede agregar la palabra clave "sealed" al miembro de interfaz predeterminado '{0}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotAddStaticToMember">
-        <source>Cannot add static keyword to member '{0}'.</source>
-        <target state="new">Cannot add static keyword to member '{0}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CannotAddStaticToType">
-        <source>Cannot add static keyword to type '{0}'.</source>
-        <target state="new">Cannot add static keyword to type '{0}'.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CannotAddVirtualToMember">
         <source>Cannot add virtual keyword to member '{0}'.</source>
         <target state="translated">No se puede agregar la palabra clave virtual al miembro "{0}".</target>
@@ -100,6 +90,11 @@
       <trans-unit id="CannotChangeParameterName">
         <source>Parameter name on member '{0}' changed from '{1}' to '{2}'.</source>
         <target state="translated">El nombre de parámetro del miembro '{0}' cambió de '{1}' a '{2}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotChangeStatic">
+        <source>Cannot {0} static keyword {1} '{2}'.</source>
+        <target state="new">Cannot {0} static keyword {1} '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotExpandVisibility">
@@ -130,16 +125,6 @@
       <trans-unit id="CannotRemoveGenericConstraint">
         <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
         <target state="translated">No se pueden quitar la restricción '{0}' en el parámetro de tipo '{1}' de '{2}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CannotRemoveStaticFromMember">
-        <source>Cannot remove static keyword from member '{0}'.</source>
-        <target state="new">Cannot remove static keyword from member '{0}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CannotRemoveStaticFromType">
-        <source>Cannot remove static keyword from type '{0}'.</source>
-        <target state="new">Cannot remove static keyword from type '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">

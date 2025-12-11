@@ -35,19 +35,19 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 differences.Add(new CompatDifference(
                     leftMetadata,
                     rightMetadata,
-                    DiagnosticIds.CannotRemoveStaticFromMember,
-                    string.Format(Resources.CannotRemoveStaticFromMember, right),
+                    DiagnosticIds.CannotChangeStatic,
+                    string.Format(Resources.CannotChangeStatic, "remove", "from", right),
                     DifferenceType.Removed,
                     right));
             }
             else if (!left.IsStatic && right.IsStatic)
             {
-                // Adding static is always breaking (binary breaking)
+                // Adding static is always breaking (both binary and source breaking)
                 differences.Add(new CompatDifference(
                     leftMetadata,
                     rightMetadata,
-                    DiagnosticIds.CannotAddStaticToMember,
-                    string.Format(Resources.CannotAddStaticToMember, right),
+                    DiagnosticIds.CannotChangeStatic,
+                    string.Format(Resources.CannotChangeStatic, "add", "to", right),
                     DifferenceType.Added,
                     right));
             }
@@ -64,26 +64,26 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             // Check if static modifier was added to the type
             // Adding static to a type is breaking since static types cannot be used as 
             // return types, generic parameters, or arguments
+            // This is true even if the type itself was never constructable, 
+            // nor exposed instance members.
             if (!left.IsStatic && right.IsStatic)
             {
                 differences.Add(new CompatDifference(
                     leftMetadata,
                     rightMetadata,
-                    DiagnosticIds.CannotAddStaticToType,
-                    string.Format(Resources.CannotAddStaticToType, right),
+                    DiagnosticIds.CannotChangeStatic,
+                    string.Format(Resources.CannotChangeStatic, "add", "to", right),
                     DifferenceType.Added,
                     right));
             }
             // In strict mode, report when static is removed from a type
-            // Removing static from a type is compatible (members will be checked separately)
-            // but developers may want to be aware of this change
             else if (_settings.StrictMode && left.IsStatic && !right.IsStatic)
             {
                 differences.Add(new CompatDifference(
                     leftMetadata,
                     rightMetadata,
-                    DiagnosticIds.CannotRemoveStaticFromType,
-                    string.Format(Resources.CannotRemoveStaticFromType, right),
+                    DiagnosticIds.CannotChangeStatic,
+                    string.Format(Resources.CannotChangeStatic, "remove", "from", right),
                     DifferenceType.Removed,
                     right));
             }
