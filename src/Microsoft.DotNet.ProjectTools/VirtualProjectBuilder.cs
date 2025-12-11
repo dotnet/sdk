@@ -86,6 +86,11 @@ internal sealed class VirtualProjectBuilder
             ? Path.GetTempPath()
             : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
+        if (string.IsNullOrEmpty(directory))
+        {
+            throw new InvalidOperationException(FileBasedProgramsResources.EmptyTempPath);
+        }
+
         return Path.Join(directory, "dotnet", "runfile");
     }
 
