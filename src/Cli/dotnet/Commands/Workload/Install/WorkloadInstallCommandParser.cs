@@ -7,32 +7,15 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 internal static class WorkloadInstallCommandParser
 {
-    public static readonly Argument<IEnumerable<string>> WorkloadIdArgument = new("workloadId")
-    {
-        HelpName = CliCommandStrings.WorkloadIdArgumentName,
-        Arity = ArgumentArity.OneOrMore,
-        Description = CliCommandStrings.WorkloadIdArgumentDescription
-    };
+    public static readonly Argument<IEnumerable<string>> WorkloadIdArgument = WorkloadInstallCommandDefinition.WorkloadIdArgument;
 
-    public static readonly Option<bool> SkipSignCheckOption = new("--skip-sign-check")
-    {
-        Description = CliCommandStrings.SkipSignCheckOptionDescription,
-        Hidden = true,
-        Arity = ArgumentArity.Zero
-    };
+    public static readonly Option<bool> SkipSignCheckOption = WorkloadInstallCommandDefinition.SkipSignCheckOption;
 
-    public static readonly Option<bool> SkipManifestUpdateOption = new("--skip-manifest-update")
-    {
-        Description = CliCommandStrings.SkipManifestUpdateOptionDescription,
-        Arity = ArgumentArity.Zero
-    };
+    public static readonly Option<bool> SkipManifestUpdateOption = WorkloadInstallCommandDefinition.SkipManifestUpdateOption;
 
-    public static readonly Option<string> TempDirOption = new("--temp-dir")
-    {
-        Description = CliCommandStrings.TempDirOptionDescription
-    };
+    public static readonly Option<string> TempDirOption = WorkloadInstallCommandDefinition.TempDirOption;
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = WorkloadInstallCommandDefinition.VerbosityOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -43,10 +26,7 @@ internal static class WorkloadInstallCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("install", CliCommandStrings.WorkloadInstallCommandDescription);
-
-        command.Arguments.Add(WorkloadIdArgument);
-        AddWorkloadInstallCommandOptions(command);
+        Command command = WorkloadInstallCommandDefinition.Create();
 
         command.SetAction((parseResult) => new WorkloadInstallCommand(parseResult).Execute());
 
@@ -55,13 +35,7 @@ internal static class WorkloadInstallCommandParser
 
     internal static void AddWorkloadInstallCommandOptions(Command command)
     {
-        InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
-
-        command.Options.Add(SkipManifestUpdateOption);
-        command.Options.Add(TempDirOption);
-        command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-        command.Options.Add(VerbosityOption);
-        command.Options.Add(SkipSignCheckOption);
-        command.Options.Add(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
+        WorkloadInstallCommandDefinition.AddWorkloadInstallCommandOptions(command);
     }
 }
+

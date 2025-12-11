@@ -9,21 +9,13 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
 internal static class WorkloadSearchVersionsCommandParser
 {
-    public static readonly Argument<IEnumerable<string>> WorkloadVersionArgument =
-        new(CliCommandStrings.WorkloadVersionArgument)
-        {
-            Arity = ArgumentArity.ZeroOrMore,
-            Description = CliCommandStrings.WorkloadVersionArgumentDescription
-        };
+    public static readonly Argument<IEnumerable<string>> WorkloadVersionArgument = WorkloadSearchVersionsCommandDefinition.WorkloadVersionArgument;
 
-    public static readonly Option<int> TakeOption = new("--take") { DefaultValueFactory = (_) => 5 };
+    public static readonly Option<int> TakeOption = WorkloadSearchVersionsCommandDefinition.TakeOption;
 
-    public static readonly Option<string> FormatOption = new("--format")
-    {
-        Description = CliCommandStrings.FormatOptionDescription
-    };
+    public static readonly Option<string> FormatOption = WorkloadSearchVersionsCommandDefinition.FormatOption;
 
-    public static readonly Option<bool> IncludePreviewsOption = new("--include-previews");
+    public static readonly Option<bool> IncludePreviewsOption = WorkloadSearchVersionsCommandDefinition.IncludePreviewsOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -34,36 +26,7 @@ internal static class WorkloadSearchVersionsCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new Command("version", CliCommandStrings.PrintSetVersionsDescription);
-        command.Arguments.Add(WorkloadVersionArgument);
-        command.Options.Add(FormatOption);
-        command.Options.Add(TakeOption);
-        command.Options.Add(IncludePreviewsOption);
-
-        TakeOption.Validators.Add(optionResult =>
-        {
-            if (optionResult.GetValueOrDefault<int>() <= 0)
-            {
-                throw new ArgumentException("The --take option must be positive.");
-            }
-        });
-
-        command.Validators.Add(result =>
-        {
-            if (result.GetValue(WorkloadSearchCommandParser.WorkloadIdStubArgument) != null)
-            {
-                result.AddError(string.Format(CliCommandStrings.CannotCombineSearchStringAndVersion, WorkloadSearchCommandParser.WorkloadIdStubArgument.Name, command.Name));
-            }
-        });
-
-        command.Validators.Add(result =>
-        {
-            var versionArgument = result.GetValue(WorkloadVersionArgument);
-            if (versionArgument is not null && !versionArgument.All(v => v.Contains('@')) && !WorkloadSetVersion.IsWorkloadSetPackageVersion(versionArgument.SingleOrDefault(defaultValue: string.Empty)))
-            {
-                result.AddError(string.Format(CliStrings.UnrecognizedCommandOrArgument, string.Join(' ', versionArgument)));
-            }
-        });
+        var command = WorkloadSearchVersionsCommandDefinition.Create();
 
         command.SetAction(parseResult => new WorkloadSearchVersionsCommand(parseResult).Execute());
 
