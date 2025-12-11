@@ -804,6 +804,60 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
+
+        [Theory]
+        [InlineData("-p:ABC=C:\\my.dll")]
+        [InlineData("/p:ABC=C:\\my.dll")]
+        [InlineData("-property:ABC=C:\\my.dll")]
+        public void PropertiesEndingWithDotDllShouldNotFail(string property)
+        {
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
+
+            // Call test
+            // The test will complain about --property:VsTestUseMSBuildOutput=false but
+            // it is the .dll parameter that is causing this. It forces the command to offload work
+            // to vstest.console.exe directly, because it thinks there is some test .dll that we should run
+            // directly, rather than a project file.
+            // Vstest.console.exe will then complain just about the first unknown parameter.
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
+                                        .WithWorkingDirectory(testProjectDirectory)
+                                        .Execute(ConsoleLoggerOutputNormal.Concat([property]));
+
+            // Verify
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Total tests: 2");
+                result.StdOut.Should().Contain("Passed: 1");
+                result.StdOut.Should().Contain("Failed: 1");
+                result.StdOut.Should().Contain("Passed VSTestPassTest");
+                result.StdOut.Should().Contain("Failed VSTestFailTest");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
+
+        [Fact]
+        public void DistributedLoggerEndingWithDotDllShouldBePassedToMSBuild()
+        {
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
+                                        .WithWorkingDirectory(testProjectDirectory)
+                                        .Execute(ConsoleLoggerOutputNormal.Concat(["-dl:my.dll"]));
+
+            if (!TestContext.IsLocalized())
+            {
+                // This ensures that this was passed to MSBuild and not vstest.console.
+                result.StdOut.Should().Contain("error MSB1021: Cannot create an instance of the logger my.dll.");
+            }
+            else
+            {
+                result.StdOut.Should().Contain("MSB1021");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
+
         private string CopyAndRestoreVSTestDotNetCoreTestApp(object[] parameters, [CallerMemberName] string callingMethod = "")
         {
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests

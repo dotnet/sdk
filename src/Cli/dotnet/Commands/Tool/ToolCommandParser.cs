@@ -12,6 +12,7 @@ using Microsoft.DotNet.Cli.Commands.Tool.Run;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 using Microsoft.DotNet.Cli.Commands.Tool.Update;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool;
@@ -29,7 +30,10 @@ internal static class ToolCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("tool", DocsLink, CliCommandStrings.ToolCommandDescription);
+        Command command = new("tool", CliCommandStrings.ToolCommandDescription)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Subcommands.Add(ToolInstallCommandParser.GetCommand());
         command.Subcommands.Add(ToolUninstallCommandParser.GetCommand());

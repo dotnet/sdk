@@ -9,6 +9,14 @@ pr:
     - release/*
     - internal/release/*
   paths:
+    include:
+    - eng
+    - build
+    - src
+    - test
+    - '*.yml'
+    - '*.props'
+    - '*.targets'
     exclude:
     - documentation/*
     - README.md
@@ -42,7 +50,7 @@ stages:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
-      helixTargetQueue: windows.amd64.vs2022.pre.open
+      helixTargetQueue: windows.amd64.vs2026.pre.scout.open
 
   ############### LINUX ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml

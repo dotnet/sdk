@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="CantSpecifyBothProperties">
         <source>NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</source>
-        <target state="new">NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</target>
+        <target state="translated">NETSDK1230: 不能同时指定 {0} 和 {1} 属性。移除其中一个。</target>
         <note>{StrBegins="NETSDK1230: "}</note>
       </trans-unit>
       <trans-unit id="ChoosingAssemblyVersion_Info">
@@ -661,10 +661,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1225: 直接调用发布目标时不支持本机编译。尝试运行 dotnet publish。</target>
         <note>{StrBegins="NETSDK1225: "}</note>
       </trans-unit>
-      <trans-unit id="Net9NotCompatibleWithDev1711">
-        <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
-        <target state="translated">NETSDK1223: 不支持在 Visual Studio 2022 17.11 中以 .NET 9.0 或更高版本为目标。</target>
-        <note>{StrBegins="NETSDK1223: "}</note>
+      <trans-unit id="Net10NotCompatibleWithVS17">
+        <source>NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</source>
+        <target state="translated">NETSDK1233: 不支持在 Visual Studio 2022 17.14 中以 .NET 10.0 或更高版本为目标。</target>
+        <note>{StrBegins="NETSDK1233: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -861,9 +861,14 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1103: RollForward 设置仅在 .NET Core 3.0 或更高版本上受支持。</target>
         <note>{StrBegins="NETSDK1103: "}</note>
       </trans-unit>
+      <trans-unit id="RoslynCompilerTypeFrameworkIsDeprecated">
+        <source>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</source>
+        <target state="new">NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</target>
+        <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
         <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
-        <target state="new">NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</target>
+        <target state="translated">NETSDK1231: 文件 "{0}" 不存在。请确保运行时图形路径存在。</target>
         <note>{StrBegins="NETSDK1231: "}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
@@ -914,7 +919,7 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="SolutionProjectConfigurationsConflict">
         <source>NETSDK1197: Multiple solution project(s) contain conflicting '{0}' values; ensure the values match. Consider using a Directory.build.props file to set the property for all projects. Conflicting projects:
 {1}</source>
-        <target state="needs-review-translation">NETSDK1197: 多个解决方案项目包含存在冲突的“{0}”值；请确保值能够匹配。请考虑使用 Directory.build.props 文件设置所有项目的属性。存在冲突的项目:
+        <target state="translated">NETSDK1197: 多个解决方案项目包含存在冲突的“{0}”值；请确保值能够匹配。请考虑使用 Directory.build.props 文件设置所有项目的属性。存在冲突的项目:
 {1}</target>
         <note>{StrBegins="NETSDK1197: "}</note>
       </trans-unit>
@@ -965,7 +970,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UnableToFindMatchingRid">
         <source>NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</source>
-        <target state="new">NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</target>
+        <target state="translated">NETSDK1232: 无法在图 "{2}" 的 [{1}] 中找到与 "{0}" 匹配的 RID。</target>
         <note>{StrBegins="NETSDK1232: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
       </trans-unit>
       <trans-unit id="UnableToFindResolvedPath">
@@ -1060,7 +1065,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UsingPreviewCsWinRT3_0Feature">
         <source>NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</source>
-        <target state="new">NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</target>
+        <target state="translated">NETSDK1229: 将修订号为 "1" 的 Windows SDK 版本作为目标时，将引用 CsWinRT 3.0，它目前为预览版。当前项目面向 Windows SDK 版本 "{0}"。如果这不是预期内的，请将修订号更改为 "0" 以改用 CsWinRT 2.x。</target>
         <note>{StrBegins="NETSDK1229: "}</note>
       </trans-unit>
       <trans-unit id="UsingPreviewSdk">

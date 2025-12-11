@@ -71,7 +71,8 @@ internal static partial class WebAssemblyHotReload
         {
             s_initialized = true;
 
-            var agent = new HotReloadAgent(assemblyResolvingHandler: null);
+            // TODO: Implement hotReloadExceptionCreateHandler: https://github.com/dotnet/sdk/issues/51056
+            var agent = new HotReloadAgent(assemblyResolvingHandler: null, hotReloadExceptionCreateHandler: null);
 
             var existingAgent = Interlocked.CompareExchange(ref s_hotReloadAgent, agent, null);
             if (existingAgent != null)
