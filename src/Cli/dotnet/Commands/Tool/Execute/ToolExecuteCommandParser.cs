@@ -7,27 +7,23 @@ using Microsoft.DotNet.Cli.Commands.Tool.Install;
 namespace Microsoft.DotNet.Cli.Commands.Tool.Execute;
 
 internal static class ToolExecuteCommandParser
-
 {
-    public static readonly Argument<PackageIdentityWithRange> PackageIdentityArgument = ToolInstallCommandParser.PackageIdentityArgument;
+    public static readonly Argument<PackageIdentityWithRange> PackageIdentityArgument = ToolExecuteCommandDefinition.PackageIdentityArgument;
 
-    public static readonly Argument<IEnumerable<string>> CommandArgument = new("commandArguments")
-    {
-        Description = CliCommandStrings.ToolRunArgumentsDescription
-    };
+    public static readonly Argument<IEnumerable<string>> CommandArgument = ToolExecuteCommandDefinition.CommandArgument;
 
-    public static readonly Option<string> VersionOption = ToolInstallCommandParser.VersionOption;
-    public static readonly Option<bool> RollForwardOption = ToolInstallCommandParser.RollForwardOption;
-    public static readonly Option<bool> PrereleaseOption = ToolInstallCommandParser.PrereleaseOption;
-    public static readonly Option<string> ConfigOption = ToolInstallCommandParser.ConfigOption;
-    public static readonly Option<string[]> SourceOption = ToolInstallCommandParser.SourceOption;
-    public static readonly Option<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
-    public static readonly Option<bool> YesOption = CommonOptions.YesOption;
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
-
+    public static readonly Option<string> VersionOption = ToolExecuteCommandDefinition.VersionOption;
+    public static readonly Option<bool> RollForwardOption = ToolExecuteCommandDefinition.RollForwardOption;
+    public static readonly Option<bool> PrereleaseOption = ToolExecuteCommandDefinition.PrereleaseOption;
+    public static readonly Option<string> ConfigOption = ToolExecuteCommandDefinition.ConfigOption;
+    public static readonly Option<string[]> SourceOption = ToolExecuteCommandDefinition.SourceOption;
+    public static readonly Option<string[]> AddSourceOption = ToolExecuteCommandDefinition.AddSourceOption;
+    public static readonly Option<bool> InteractiveOption = ToolExecuteCommandDefinition.InteractiveOption;
+    public static readonly Option<bool> YesOption = ToolExecuteCommandDefinition.YesOption;
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = ToolExecuteCommandDefinition.VerbosityOption;
 
     public static readonly Command Command = ConstructCommand();
+
     public static Command GetCommand()
     {
         return Command;
@@ -35,26 +31,7 @@ internal static class ToolExecuteCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("execute", CliCommandStrings.ToolExecuteCommandDescription);
-
-        command.Aliases.Add("exec");
-
-        command.Arguments.Add(PackageIdentityArgument);
-        command.Arguments.Add(CommandArgument);
-
-        command.Options.Add(VersionOption);
-        command.Options.Add(YesOption);
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(RollForwardOption);
-        command.Options.Add(PrereleaseOption);
-        command.Options.Add(ConfigOption);
-        command.Options.Add(SourceOption);
-        command.Options.Add(AddSourceOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.NoHttpCacheOption);
-        command.Options.Add(VerbosityOption);
+        Command command = ToolExecuteCommandDefinition.Create();
 
         command.SetAction((parseResult) => new ToolExecuteCommand(parseResult).Execute());
 

@@ -11,14 +11,10 @@ internal static class WorkloadConfigCommandParser
 {
     //  dotnet workload config --update-mode workload-set
 
-    public static readonly string UpdateMode_WorkloadSet = "workload-set";
-    public static readonly string UpdateMode_Manifests = "manifests";
+    public static readonly string UpdateMode_WorkloadSet = WorkloadConfigCommandDefinition.UpdateMode_WorkloadSet;
+    public static readonly string UpdateMode_Manifests = WorkloadConfigCommandDefinition.UpdateMode_Manifests;
 
-    public static readonly Option<string> UpdateMode = new("--update-mode")
-    {
-        Description = CliCommandStrings.UpdateModeDescription,
-        Arity = ArgumentArity.ZeroOrOne
-    };
+    public static readonly Option<string> UpdateMode = WorkloadConfigCommandDefinition.UpdateMode;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -29,10 +25,7 @@ internal static class WorkloadConfigCommandParser
 
     private static Command ConstructCommand()
     {
-        UpdateMode.AcceptOnlyFromAmong(UpdateMode_WorkloadSet, UpdateMode_Manifests);
-
-        Command command = new("config", CliCommandStrings.WorkloadConfigCommandDescription);
-        command.Options.Add(UpdateMode);
+        Command command = WorkloadConfigCommandDefinition.Create();
 
         command.SetAction(parseResult =>
         {

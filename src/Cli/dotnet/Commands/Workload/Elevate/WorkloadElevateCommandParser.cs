@@ -18,10 +18,7 @@ internal static class WorkloadElevateCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("elevate", CliCommandStrings.WorkloadElevateCommandDescription)
-        {
-            Hidden = true
-        };
+        Command command = WorkloadElevateCommandDefinition.Create();
 
         command.SetAction((parseResult) => new WorkloadElevateCommand(parseResult).Execute());
 
