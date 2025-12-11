@@ -939,11 +939,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 Reporter.Verbose.WriteLine("No CSC arguments from previous run.");
             }
-            else if (cache.PreviousEntry?.Run == null)
+            else if (cache.PreviousEntry.Run == null)
             {
                 Reporter.Verbose.WriteLine("We have CSC arguments but not run properties. That's unexpected.");
             }
-            else if (cache.PreviousEntry?.BuildResultFile == null)
+            else if (cache.PreviousEntry.BuildResultFile == null)
             {
                 Reporter.Verbose.WriteLine("We have CSC arguments but not build result file. That's unexpected.");
             }
