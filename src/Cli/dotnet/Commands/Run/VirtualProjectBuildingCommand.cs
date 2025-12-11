@@ -756,6 +756,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         cache = ComputeCacheEntry();
 
+        if (Directives.Any(static d => d is CSharpDirective.Project))
+        {
+            Reporter.Verbose.WriteLine("Building because there are project directives.");
+            return true;
+        }
+
         // Check cache files.
 
         string artifactsDirectory = ArtifactsPath;
