@@ -9,11 +9,11 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 internal static class ToolUpdateCommandParser
 {
-    public static readonly Argument<PackageIdentityWithRange?> PackageIdentityArgument = CommonArguments.OptionalPackageIdentityArgument("dotnetsay", "2.1.7");
+    public static readonly Argument<PackageIdentityWithRange?> PackageIdentityArgument = ToolUpdateCommandDefinition.PackageIdentityArgument;
 
-    public static readonly Option<bool> UpdateAllOption = ToolAppliedOption.UpdateAllOption;
+    public static readonly Option<bool> UpdateAllOption = ToolUpdateCommandDefinition.UpdateAllOption;
 
-    public static readonly Option<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
+    public static readonly Option<bool> AllowPackageDowngradeOption = ToolUpdateCommandDefinition.AllowPackageDowngradeOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -24,13 +24,7 @@ internal static class ToolUpdateCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("update", CliCommandStrings.ToolUpdateCommandDescription);
-
-        command.Arguments.Add(PackageIdentityArgument);
-
-        ToolInstallCommandParser.AddCommandOptions(command);
-        command.Options.Add(AllowPackageDowngradeOption);
-        command.Options.Add(UpdateAllOption);
+        Command command = ToolUpdateCommandDefinition.Create();
 
         command.SetAction((parseResult) => new ToolUpdateCommand(parseResult).Execute());
 

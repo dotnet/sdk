@@ -9,14 +9,9 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
 internal static class WorkloadSearchCommandParser
 {
-    public static readonly Argument<string> WorkloadIdStubArgument =
-        new(CliCommandStrings.WorkloadIdStubArgumentName)
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = CliCommandStrings.WorkloadIdStubArgumentDescription
-        };
+    public static readonly Argument<string> WorkloadIdStubArgument = WorkloadSearchCommandDefinition.WorkloadIdStubArgument;
 
-    public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+    public static readonly Option<string> VersionOption = WorkloadSearchCommandDefinition.VersionOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -27,11 +22,7 @@ internal static class WorkloadSearchCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new Command("search", CliCommandStrings.WorkloadSearchCommandDescription);
-        command.Subcommands.Add(WorkloadSearchVersionsCommandParser.GetCommand());
-        command.Arguments.Add(WorkloadIdStubArgument);
-        command.Options.Add(CommonOptions.HiddenVerbosityOption);
-        command.Options.Add(VersionOption);
+        var command = WorkloadSearchCommandDefinition.Create();
 
         command.SetAction((parseResult) => new WorkloadSearchCommand(parseResult).Execute());
 

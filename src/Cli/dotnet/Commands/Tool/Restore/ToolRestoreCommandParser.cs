@@ -12,13 +12,13 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Restore;
 
 internal static class ToolRestoreCommandParser
 {
-    public static readonly Option<string> ConfigOption = ToolInstallCommandParser.ConfigOption;
+    public static readonly Option<string> ConfigOption = ToolRestoreCommandDefinition.ConfigOption;
 
-    public static readonly Option<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
+    public static readonly Option<string[]> AddSourceOption = ToolRestoreCommandDefinition.AddSourceOption;
 
-    public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption(CliCommandStrings.ToolRestoreManifestPathOptionDescription);
+    public static readonly Option<string> ToolManifestOption = ToolRestoreCommandDefinition.ToolManifestOption;
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = ToolRestoreCommandDefinition.VerbosityOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -29,17 +29,7 @@ internal static class ToolRestoreCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("restore", CliCommandStrings.ToolRestoreCommandDescription);
-
-        command.Options.Add(ConfigOption);
-        command.Options.Add(AddSourceOption);
-        command.Options.Add(ToolManifestOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.NoHttpCacheOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
-        command.Options.Add(VerbosityOption);
+        Command command = ToolRestoreCommandDefinition.Create();
 
         command.SetAction((parseResult) => new ToolRestoreCommand(parseResult).Execute());
 
