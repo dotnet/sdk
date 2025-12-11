@@ -127,7 +127,7 @@ public class RunCommand
     {
         if (NoBuild && NoCache)
         {
-            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
+            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandDefinition.NoCacheOption.Name, RunCommandDefinition.NoBuildOption.Name);
         }
 
         // Pre-run evaluation: Handle target framework selection for multi-targeted projects
