@@ -250,15 +250,12 @@ namespace Microsoft.NET.Build.Tasks
 
         static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromPrunePackageData(string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string prunePackageDataRoot)
         {
-            if (frameworkReference.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase))
+            string packageOverridesPath = Path.Combine(prunePackageDataRoot, targetFrameworkVersion, frameworkReference, "PackageOverrides.txt");
+            if (File.Exists(packageOverridesPath))
             {
-                string packageOverridesPath = Path.Combine(prunePackageDataRoot, targetFrameworkVersion, frameworkReference, "PackageOverrides.txt");
-                if (File.Exists(packageOverridesPath))
-                {
-                    var packageOverrideLines = File.ReadAllLines(packageOverridesPath);
-                    var overrides = PackageOverride.CreateOverriddenPackages(packageOverrideLines);
-                    return overrides.ToDictionary(o => o.id, o => o.version);
-                }
+                var packageOverrideLines = File.ReadAllLines(packageOverridesPath);
+                var overrides = PackageOverride.CreateOverriddenPackages(packageOverrideLines);
+                return overrides.ToDictionary(o => o.id, o => o.version);
             }
 
             return null;
