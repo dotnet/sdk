@@ -2,56 +2,29 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Completions;
-using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 public static class PackageAddCommandDefinition
 {
     public const string Name = "add";
+    public const string VersionOptionName = "--version";
+
+    public static Option<string> CreateVersionOption() => new Option<string>(VersionOptionName, "-v")
+    {
+        Description = CliCommandStrings.CmdVersionDescription,
+        HelpName = CliCommandStrings.CmdVersion,
+        IsDynamic = true
+    }.ForwardAsSingle(o => $"--version {o}");
 
     public static readonly Option<bool> PrereleaseOption = new Option<bool>("--prerelease")
     {
         Description = CliStrings.CommandPrereleaseOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--prerelease");
-
-    public static readonly Argument<PackageIdentityWithRange> CmdPackageArgument = CommonArguments.RequiredPackageIdentityArgument()
-    .AddCompletions((context) =>
-    {
-        // we should take --prerelease flags into account for version completion
-        var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
-        return QueryNuGet(context.WordToComplete, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
-    });
-
-    public static readonly Option<string> VersionOption = new Option<string>("--version", "-v")
-    {
-        Description = CliCommandStrings.CmdVersionDescription,
-        HelpName = CliCommandStrings.CmdVersion,
-        IsDynamic = true
-    }.ForwardAsSingle(o => $"--version {o}")
-        .AddCompletions((context) =>
-        {
-            // we can only do version completion if we have a package id
-            if (context.ParseResult.GetValue(CmdPackageArgument) is { HasVersion: false } packageId)
-            {
-                // we should take --prerelease flags into account for version completion
-                var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
-                return QueryVersionsForPackage(packageId.Id, context.WordToComplete, allowPrerelease, CancellationToken.None)
-                    .Result
-                    .Select(version => new CompletionItem(version.ToNormalizedString()));
-            }
-            else
-            {
-                return [];
-            }
-        });
-
+        
     public static readonly Option<string> FrameworkOption = new Option<string>("--framework", "-f")
     {
         Description = CliCommandStrings.PackageAddCmdFrameworkDescription,
@@ -81,10 +54,26 @@ public static class PackageAddCommandDefinition
     public static Command Create()
     {
         Command command = new(Name, CliCommandStrings.PackageAddAppFullName);
+        AddOptionsAndArguments(command);
+        return command;
+    }
 
-        VersionOption.Validators.Add(DisallowVersionIfPackageIdentityHasVersionValidator);
-        command.Arguments.Add(CmdPackageArgument);
-        command.Options.Add(VersionOption);
+    public static void AddOptionsAndArguments(Command command)
+    {
+        var versionOption = CreateVersionOption();
+        var packageIdArgument = CommonArguments.CreateRequiredPackageIdentityArgument();
+
+        versionOption.Validators.Add(result =>
+        {
+            if (result.Parent?.GetValue(packageIdArgument).HasVersion == true)
+            {
+                result.AddError(CliCommandStrings.ValidationFailedDuplicateVersion);
+            }
+        });
+
+        command.Arguments.Add(packageIdArgument);
+
+        command.Options.Add(versionOption);
         command.Options.Add(FrameworkOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(SourceOption);
@@ -93,43 +82,5 @@ public static class PackageAddCommandDefinition
         command.Options.Add(PrereleaseOption);
         command.Options.Add(PackageCommandDefinition.ProjectOption);
         command.Options.Add(PackageCommandDefinition.FileOption);
-
-        return command;
-    }
-
-    private static void DisallowVersionIfPackageIdentityHasVersionValidator(OptionResult result)
-    {
-        if (result.Parent?.GetValue(CmdPackageArgument).HasVersion == true)
-        {
-            result.AddError(CliCommandStrings.ValidationFailedDuplicateVersion);
-        }
-    }
-
-    public static async Task<IEnumerable<string>> QueryNuGet(string packageStem, bool allowPrerelease, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(packageInstallDir: new DirectoryPath());
-            var versions = await downloader.GetPackageIdsAsync(packageStem, allowPrerelease, cancellationToken: cancellationToken);
-            return versions;
-        }
-        catch (Exception)
-        {
-            return [];
-        }
-    }
-
-    internal static async Task<IEnumerable<NuGetVersion>> QueryVersionsForPackage(string packageId, string versionFragment, bool allowPrerelease, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(packageInstallDir: new DirectoryPath());
-            var versions = await downloader.GetPackageVersionsAsync(new(packageId), versionFragment, allowPrerelease, cancellationToken: cancellationToken);
-            return versions;
-        }
-        catch (Exception)
-        {
-            return [];
-        }
     }
 }

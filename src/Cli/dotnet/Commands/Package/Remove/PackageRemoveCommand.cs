@@ -23,7 +23,7 @@ internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parse
             throw new GracefulException(CliCommandStrings.PackageRemoveSpecifyExactlyOnePackageReference);
         }
 
-        var (fileOrDirectory, allowedAppKinds) = PackageCommandDefinition.ProcessPathOptions(_parseResult);
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_parseResult);
 
         if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
         {

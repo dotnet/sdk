@@ -17,13 +17,13 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
-internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseResult)
+internal sealed class PackageAddCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly PackageIdentityWithRange _packageId = parseResult.GetValue(PackageAddCommandDefinition.CmdPackageArgument)!;
+    private readonly PackageIdentityWithRange _packageId = parseResult.GetValue<PackageIdentityWithRange>(CommonArguments.PackageIdArgumentName);
 
     public override int Execute()
     {
-        var (fileOrDirectory, allowedAppKinds) = PackageCommandDefinition.ProcessPathOptions(_parseResult);
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_parseResult);
 
         if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
         {
@@ -167,7 +167,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
 
         string? specifiedVersion = _packageId.HasVersion
             ? _packageId.VersionRange?.OriginalString ?? string.Empty
-            : _parseResult.GetValue(PackageAddCommandDefinition.VersionOption);
+            : _parseResult.GetValue<string>(PackageAddCommandDefinition.VersionOptionName);
         bool prerelease = _parseResult.GetValue(PackageAddCommandDefinition.PrereleaseOption);
 
         if (specifiedVersion != null && prerelease)
