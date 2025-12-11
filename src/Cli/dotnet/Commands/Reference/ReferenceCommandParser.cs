@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
 using Microsoft.DotNet.Cli.Commands.Reference.List;
 using Microsoft.DotNet.Cli.Commands.Reference.Remove;
@@ -24,7 +25,14 @@ internal static class ReferenceCommandParser
 
         command.Subcommands.Single(c => c.Name == ReferenceAddCommandDefinition.Name).SetAction((parseResult) => new ReferenceAddCommand(parseResult).Execute());
         command.Subcommands.Single(c => c.Name == ReferenceListCommandDefinition.Name).SetAction((parseResult) => new ReferenceListCommand(parseResult).Execute());
-        command.Subcommands.Single(c => c.Name == ReferenceRemoveCommandDefinition.Name).SetAction((parseResult) => new ReferenceRemoveCommand(parseResult).Execute());
+
+        var removeCommand = command.Subcommands.Single(c => c.Name == ReferenceRemoveCommandDefinition.Name);
+        var projectPathArgument = removeCommand.Arguments.Single(arg => arg.Name == ReferenceRemoveCommandDefinition.ProjectPathArgument);
+
+        projectPathArgument.CompletionSources.Add(CliCompletion.ProjectReferencesFromProjectFile);
+        projectPathArgument.IsDynamic = true;
+
+        removeCommand.SetAction((parseResult) => new ReferenceRemoveCommand(parseResult).Execute());
 
         return command;
     }
