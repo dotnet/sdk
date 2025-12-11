@@ -538,9 +538,8 @@
 
     <RemoveDir Directories="$(OutputPath)/15.0" />
   </Target>
-
-  <!-- Anything that goes into the sdk/$(Version) directory. -->
-  <Target Name="GenerateSdkLayout"
+  <!-- Core layout generation - ‌anything·‌that·‌goes·‌into·‌the·‌sdk/$(Version)·‌directory. -->
+  <Target Name="GenerateSdkLayoutCore"
           DependsOnTargets="PublishRuntimeIdentifierGraphFiles;
                             GenerateSdkRuntimeIdentifierChain;
                             PublishVersionFile;
@@ -564,7 +563,17 @@
                             DeleteSymbolsFromPublishDir;
                             RetargetTools;
                             RemoveResourcesFromDotnetDeps;
-                            ChmodPublishDir"
+                            ChmodPublishDir" />
+
+  <!-- Deduplicate files after all layout work is complete -->
+  <Target Name="DeduplicateLayoutFiles"
+          DependsOnTargets="GenerateSdkLayoutCore">
+    <DeduplicateFilesWithHardLinks LayoutDirectory="$(OutputPath)" />
+  </Target>
+
+  <!-- Generates the complete SDK layout - everything in sdk/$(Version) -->
+  <Target Name="GenerateSdkLayout"
+          DependsOnTargets="DeduplicateLayoutFiles"
           AfterTargets="AfterBuild" />
 
 </Project>
