@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     DiagnosticIds.CannotChangeStatic,
-                    string.Format(Resources.CannotChangeStatic, "remove", "from", right),
+                    string.Format(Resources.CannotRemoveStatic, right),
                     DifferenceType.Removed,
                     right));
             }
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     DiagnosticIds.CannotChangeStatic,
-                    string.Format(Resources.CannotChangeStatic, "add", "to", right),
+                    string.Format(Resources.CannotAddStatic, right),
                     DifferenceType.Added,
                     right));
             }
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     DiagnosticIds.CannotChangeStatic,
-                    string.Format(Resources.CannotChangeStatic, "add", "to", right),
+                    string.Format(Resources.CannotAddStatic, right),
                     DifferenceType.Added,
                     right));
             }
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     DiagnosticIds.CannotChangeStatic,
-                    string.Format(Resources.CannotChangeStatic, "remove", "from", right),
+                    string.Format(Resources.CannotRemoveStatic, right),
                     DifferenceType.Removed,
                     right));
             }
