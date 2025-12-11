@@ -6,7 +6,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     {
         public enum RuleKind
         {
-            // These names match the underlying IL names for the cross-platform API that will be used in the fixer.
+            // These names match the underlying IL names or method names for the cross-platform API that will be used in the fixer.
 
             op_Addition,
             op_BitwiseAnd,
@@ -20,6 +20,35 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             op_Subtraction,
             op_UnaryNegation,
             op_UnsignedRightShift,
+
+            // Named methods (not operators)
+            Abs,
+            AddSaturate,
+            AndNot,              // For ARM BitwiseClear - direct parameter mapping
+            AndNot_Swapped,      // For x86/x64 AndNot - needs parameter swap
+            Ceiling,
+            ConditionalSelect,
+            ConvertToInt32,
+            Equals,
+            Floor,
+            FusedMultiplyAdd,
+            GetElement,
+            GreaterThan,
+            GreaterThanOrEqual,
+            LessThan,
+            LessThanOrEqual,
+            Max,
+            MaxNative,           // For x86/x64 Max - different NaN/negative zero handling
+            Min,
+            MinNative,           // For x86/x64 Min - different NaN/negative zero handling
+            Negate,
+            Round,
+            Sqrt,
+            Truncate,
+            WithElement,
+            Load,
+            Store,
+            Shuffle,
 
             Count,
         }
