@@ -386,8 +386,8 @@ public sealed class MSBuildArgs
     internal string[]? GetResolvedTargets()
         => this switch
         {
-            { RequestedTargets: null or [] } => GetTargetResult,
-            { GetTargetResult: null or [] } => RequestedTargets,
+            { RequestedTargets: null or { Length: 0 } } => GetTargetResult,
+            { GetTargetResult: null or { Length: 0 } } => RequestedTargets,
             _ => [.. RequestedTargets.Union(GetTargetResult, StringComparer.OrdinalIgnoreCase)]
         };
 }
