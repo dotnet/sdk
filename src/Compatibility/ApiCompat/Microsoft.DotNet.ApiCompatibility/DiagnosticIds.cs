@@ -32,5 +32,6 @@ namespace Microsoft.DotNet.ApiCompatibility
         public const string CannotAddStaticToMember = "CP0022";
         public const string CannotRemoveStaticFromMember = "CP0023";
         public const string CannotAddStaticToType = "CP0024";
+        public const string CannotRemoveStaticFromType = "CP0025";
     }
 }

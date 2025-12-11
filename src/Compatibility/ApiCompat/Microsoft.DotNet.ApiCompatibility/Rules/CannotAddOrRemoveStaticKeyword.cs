@@ -64,7 +64,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             // Check if static modifier was added to the type
             // Adding static to a type is breaking since static types cannot be used as 
             // return types, generic parameters, or arguments
-            // Removing static from a type is compatible (members will be checked separately)
             if (!left.IsStatic && right.IsStatic)
             {
                 differences.Add(new CompatDifference(
@@ -73,6 +72,19 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     DiagnosticIds.CannotAddStaticToType,
                     string.Format(Resources.CannotAddStaticToType, right),
                     DifferenceType.Added,
+                    right));
+            }
+            // In strict mode, report when static is removed from a type
+            // Removing static from a type is compatible (members will be checked separately)
+            // but developers may want to be aware of this change
+            else if (_settings.StrictMode && left.IsStatic && !right.IsStatic)
+            {
+                differences.Add(new CompatDifference(
+                    leftMetadata,
+                    rightMetadata,
+                    DiagnosticIds.CannotRemoveStaticFromType,
+                    string.Format(Resources.CannotRemoveStaticFromType, right),
+                    DifferenceType.Removed,
                     right));
             }
         }

@@ -214,5 +214,69 @@ namespace CompatTests
             };
             Assert.Equal(expected, differences);
         }
+
+        [Fact]
+        public static void RemoveStaticFromTypeInStrictModeReported()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+    public static class First
+    {
+        public static void F() {}
+    }
+}
+";
+            string rightSyntax = @"
+namespace CompatTests
+{
+    public class First
+    {
+        public static void F() {}
+    }
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: true));
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+
+            CompatDifference[] expected = new[]
+            {
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveStaticFromType, string.Empty, DifferenceType.Removed, "T:CompatTests.First"),
+            };
+            Assert.Equal(expected, differences);
+        }
+
+        [Fact]
+        public static void RemoveStaticFromTypeNotReportedInNonStrictMode()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+    public static class First
+    {
+        public static void F() {}
+    }
+}
+";
+            string rightSyntax = @"
+namespace CompatTests
+{
+    public class First
+    {
+        public static void F() {}
+    }
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: false));
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+
+            Assert.Empty(differences);
+        }
     }
 }

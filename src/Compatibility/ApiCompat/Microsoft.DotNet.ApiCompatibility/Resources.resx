@@ -234,4 +234,7 @@
   <data name="CannotAddStaticToType" xml:space="preserve">
     <value>Cannot add static keyword to type '{0}'.</value>
   </data>
+  <data name="CannotRemoveStaticFromType" xml:space="preserve">
+    <value>Cannot remove static keyword from type '{0}'.</value>
+  </data>
 </root>

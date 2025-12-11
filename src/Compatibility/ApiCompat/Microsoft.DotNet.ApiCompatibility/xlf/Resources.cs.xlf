@@ -137,6 +137,11 @@
         <target state="new">Cannot remove static keyword from member '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotRemoveStaticFromType">
+        <source>Cannot remove static keyword from type '{0}'.</source>
+        <target state="new">Cannot remove static keyword from type '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
         <source>Cannot remove '{0}' keyword from member '{1}'.</source>
         <target state="translated">Nejde odebrat klíčové slovo {0} z člena {1}.</target>

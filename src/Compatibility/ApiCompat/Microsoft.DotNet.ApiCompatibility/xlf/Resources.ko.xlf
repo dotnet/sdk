@@ -137,6 +137,11 @@
         <target state="new">Cannot remove static keyword from member '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotRemoveStaticFromType">
+        <source>Cannot remove static keyword from type '{0}'.</source>
+        <target state="new">Cannot remove static keyword from type '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
         <source>Cannot remove '{0}' keyword from member '{1}'.</source>
         <target state="translated">구성원 '{0}'에서 키워드 '{1}'을(를) 제거할 수 없습니다.</target>
