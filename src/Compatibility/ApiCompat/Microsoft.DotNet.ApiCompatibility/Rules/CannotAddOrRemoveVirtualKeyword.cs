@@ -69,7 +69,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 }
             }
             // If the left member is not virtual, ensure that we're in strict mode.
-            // Adding virtual to a member is only flagged in strict mode as it's not always a breaking change.
+            // Adding virtual to a member is only flagged in strict mode as it's not a binary breaking change,
+            // though it may break source compatibility in some scenarios (e.g., when overriding methods with covariant return types).
             else if (_settings.StrictMode)
             {
                 // If the right member is virtual, emit a diagnostic
