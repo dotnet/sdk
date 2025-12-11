@@ -21,11 +21,6 @@ Make the profile names distinct.</source>
 Make the profile names distinct.</target>
         <note />
       </trans-unit>
-      <trans-unit id="LaunchProfile0IsMissingProperty1">
-        <source>Launch profile '{0}' is missing property '{1}'</source>
-        <target state="new">Launch profile '{0}' is missing property '{1}'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="LaunchProfileDoesNotExist">
         <source>A launch profile with the name '{0}' doesn't exist.</source>
         <target state="new">A launch profile with the name '{0}' doesn't exist.</target>

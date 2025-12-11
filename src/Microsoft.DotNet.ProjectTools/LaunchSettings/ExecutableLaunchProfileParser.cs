@@ -3,33 +3,11 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.DotNet.ProjectTools;
 
 internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
 {
-    private sealed class Json
-    {
-        [JsonPropertyName("commandName")]
-        public string? CommandName { get; set; }
-
-        [JsonPropertyName("executablePath")]
-        public string? ExecutablePath { get; set; }
-
-        [JsonPropertyName("commandLineArgs")]
-        public string? CommandLineArgs { get; set; }
-
-        [JsonPropertyName("workingDirectory")]
-        public string? WorkingDirectory { get; set; }
-
-        [JsonPropertyName("dotnetRunMessages")]
-        public bool DotNetRunMessages { get; set; }
-
-        [JsonPropertyName("environmentVariables")]
-        public Dictionary<string, string>? EnvironmentVariables { get; set; }
-    }
-
     public const string CommandName = "Executable";
 
     public static readonly ExecutableLaunchProfileParser Instance = new();
@@ -40,19 +18,10 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
 
     public override LaunchProfileParseResult ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
     {
-        var profile = JsonSerializer.Deserialize<Json>(json);
+        var profile = JsonSerializer.Deserialize<ExecutableLaunchProfile>(json);
         if (profile == null)
         {
             return LaunchProfileParseResult.Failure(Resources.LaunchProfileIsNotAJsonObject);
-        }
-
-        if (profile.ExecutablePath == null)
-        {
-            return LaunchProfileParseResult.Failure(
-                string.Format(
-                    Resources.LaunchProfile0IsMissingProperty1,
-                    LaunchProfileParser.GetLaunchProfileDisplayName(launchProfileName),
-                    ExecutableLaunchProfile.ExecutablePathPropertyName));
         }
 
         if (!TryParseWorkingDirectory(launchSettingsPath, profile.WorkingDirectory, out var workingDirectory, out var error))

@@ -29,14 +29,11 @@ public class LaunchSettingsParserTests
     {
         var parser = ExecutableLaunchProfileParser.Instance;
 
-        var result = parser.ParseProfile("path", "Execute", """
+        Assert.Throws<JsonException>(() => parser.ParseProfile("path", "Execute", """
             {
                 "commandName": "Executable"
             }
-            """);
-
-        Assert.False(result.Successful);
-        Assert.Equal(string.Format(Resources.LaunchProfile0IsMissingProperty1, "Execute", "executablePath"), result.FailureReason);
+            """));
     }
 
     [Theory]

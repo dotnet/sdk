@@ -131,9 +131,6 @@
   <data name="LaunchProfilesCollectionIsNotAJsonObject" xml:space="preserve">
     <value>The 'profiles' property of the launch settings document is not a JSON object.</value>
   </data>
-  <data name="LaunchProfile0IsMissingProperty1" xml:space="preserve">
-    <value>Launch profile '{0}' is missing property '{1}'</value>
-  </data>
   <data name="DuplicateCaseInsensitiveLaunchProfileNames" xml:space="preserve">
     <value>There are several launch profiles with case-sensitive names, which isn't permitted:
 {0}

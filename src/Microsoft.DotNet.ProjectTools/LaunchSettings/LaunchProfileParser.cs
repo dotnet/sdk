@@ -15,11 +15,11 @@ internal abstract class LaunchProfileParser
     public static string GetLaunchProfileDisplayName(string? launchProfile)
         => string.IsNullOrEmpty(launchProfile) ? Resources.DefaultLaunchProfileDisplayName : launchProfile;
 
-    protected static ImmutableDictionary<string, string> ParseEnvironmentVariables(Dictionary<string, string>? values)
+    protected static ImmutableDictionary<string, string> ParseEnvironmentVariables(ImmutableDictionary<string, string> values)
     {
-        if (values is null or { Count: 0 })
+        if (values.Count == 0)
         {
-            return [];
+            return values;
         }
 
         var builder = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
