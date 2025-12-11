@@ -384,9 +384,10 @@ public sealed class MSBuildArgs
     }
 
     internal string[]? GetResolvedTargets()
-        => RequestedTargets is null or { Length: 0 }
-        ? GetTargetResult
-        : GetTargetResult is null or { Length: 0 }
-        ? RequestedTargets
-        : [.. RequestedTargets.Union(GetTargetResult, StringComparer.OrdinalIgnoreCase)];
+        => this switch
+        {
+            { RequestedTargets: null or [] } => GetTargetResult,
+            { GetTargetResult: null or [] } => RequestedTargets,
+            _ => [.. RequestedTargets.Union(GetTargetResult, StringComparer.OrdinalIgnoreCase)]
+        };
 }
