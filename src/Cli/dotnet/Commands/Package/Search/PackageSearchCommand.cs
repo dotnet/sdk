@@ -3,9 +3,9 @@
 
 #nullable disable
 
-using Microsoft.DotNet.Cli.Commands.NuGet;
-using Microsoft.DotNet.Cli.CommandLine;
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.NuGet;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Search;
 

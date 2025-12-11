@@ -180,7 +180,7 @@ internal class ToolPackageInstance : IToolPackage
                 // Load available frameworks from the package to provide better error messages
                 var installPath = new VersionFolderPathResolver(packageDirectory.Value).GetInstallPath(library.Name, library.Version);
                 var toolsPackagePath = Path.Combine(installPath, "tools");
-                
+
                 if (fileSystem.Directory.Exists(toolsPackagePath))
                 {
                     var availableFrameworks = fileSystem.Directory.EnumerateDirectories(toolsPackagePath)

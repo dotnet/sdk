@@ -4,11 +4,11 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Solution.Add;
 using Microsoft.DotNet.Cli.Commands.Solution.List;
 using Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 using Microsoft.DotNet.Cli.Commands.Solution.Remove;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution;

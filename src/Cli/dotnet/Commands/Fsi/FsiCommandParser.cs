@@ -23,7 +23,8 @@ internal static class FsiCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("fsi") {
+        Command command = new("fsi")
+        {
             Arguments = { Arguments },
             DocsLink = DocsLink,
         };

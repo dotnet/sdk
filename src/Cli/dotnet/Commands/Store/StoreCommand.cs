@@ -4,8 +4,8 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -20,7 +20,7 @@ public class StoreCommand : MSBuildForwardingApp
 
     public static StoreCommand FromArgs(string[] args, string msbuildPath = null)
     {
-        var result = Parser.Parse(["dotnet", "store", ..args]);
+        var result = Parser.Parse(["dotnet", "store", .. args]);
         return FromParseResult(result, msbuildPath);
     }
 

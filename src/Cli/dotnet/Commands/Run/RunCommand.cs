@@ -151,7 +151,7 @@ public class RunCommand
 
         // Create a single logger for all MSBuild operations (device selection + build/run)
         // File-based runs (.cs files) don't support device selection and should use the existing logger behavior
-        FacadeLogger? logger = ProjectFileFullPath is not null 
+        FacadeLogger? logger = ProjectFileFullPath is not null
             ? LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run")
             : null;
         try
@@ -241,7 +241,7 @@ public class RunCommand
         Debug.Assert(ProjectFileFullPath is not null);
 
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
-        
+
         // If user specified --device on command line, add it to global properties and MSBuildArgs
         if (!string.IsNullOrWhiteSpace(Device))
         {
@@ -255,7 +255,7 @@ public class RunCommand
         // we can skip both framework selection and device selection entirely
         bool hasFramework = globalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework);
         bool hasDevice = globalProperties.TryGetValue("Device", out var preSpecifiedDevice) && !string.IsNullOrWhiteSpace(preSpecifiedDevice);
-        
+
         if (!ListDevices && hasFramework && hasDevice)
         {
             // Both framework and device are pre-specified, no need to create selector or logger
@@ -264,7 +264,7 @@ public class RunCommand
 
         // Create a single selector for both framework and device selection
         using var selector = new RunCommandSelector(ProjectFileFullPath, globalProperties, Interactive, MSBuildArgs, logger);
-        
+
         // Step 1: Select target framework if needed
         if (!selector.TrySelectTargetFramework(out string? selectedFramework))
         {
@@ -274,7 +274,7 @@ public class RunCommand
         if (selectedFramework is not null)
         {
             ApplySelectedFramework(selectedFramework);
-            
+
             // Re-evaluate project with the selected framework so device selection sees the right devices
             var properties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
             selector.InvalidateGlobalProperties(properties);
@@ -331,7 +331,7 @@ public class RunCommand
         Debug.Assert(EntryPointFileFullPath is not null);
 
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
-        
+
         // If a framework is already specified via --framework, no need to check
         if (globalProperties.TryGetValue("TargetFramework", out var existingFramework) && !string.IsNullOrWhiteSpace(existingFramework))
         {
@@ -363,10 +363,10 @@ public class RunCommand
     {
         var sourceFile = SourceFile.Load(sourceFilePath);
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
-        
+
         var targetFrameworksDirective = directives.OfType<CSharpDirective.Property>()
             .FirstOrDefault(p => string.Equals(p.Name, "TargetFrameworks", StringComparison.OrdinalIgnoreCase));
-        
+
         if (targetFrameworksDirective is null)
         {
             return null;

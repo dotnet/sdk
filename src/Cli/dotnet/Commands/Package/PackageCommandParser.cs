@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package.Add;
 using Microsoft.DotNet.Cli.Commands.Package.List;
 using Microsoft.DotNet.Cli.Commands.Package.Remove;
 using Microsoft.DotNet.Cli.Commands.Package.Search;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Command = System.CommandLine.Command;
