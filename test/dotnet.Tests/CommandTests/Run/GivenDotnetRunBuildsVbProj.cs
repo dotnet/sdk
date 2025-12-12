@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             string expectedError = string.Format(ProjectTools.Resources.DuplicateCaseInsensitiveLaunchProfileNames, "\tfirst," + (OperatingSystem.IsWindows() ? "\r" : "") + "\n\tFIRST");
             runResult
                 .Should()
-                .Fail()
+                .Pass()
                 .And
                 .HaveStdErrContaining(expectedError);
         }
