@@ -96,6 +96,12 @@ public class RunCommand
     /// </summary>
     public bool ListDevices { get; }
 
+    /// <summary>
+    /// Tracks whether restore was performed during device selection phase.
+    /// If true, we should skip restore in the build phase to avoid redundant work.
+    /// </summary>
+    private bool _restoreDoneForDeviceSelection;
+
     /// <param name="applicationArgs">unparsed/arbitrary CLI tokens to be passed to the running application</param>
     public RunCommand(
         bool noBuild,
@@ -257,7 +263,7 @@ public class RunCommand
         }
 
         // Create a single selector for both framework and device selection
-        using var selector = new RunCommandSelector(ProjectFileFullPath, globalProperties, Interactive, logger);
+        using var selector = new RunCommandSelector(ProjectFileFullPath, globalProperties, Interactive, MSBuildArgs, logger);
         
         // Step 1: Select target framework if needed
         if (!selector.TrySelectTargetFramework(out string? selectedFramework))
@@ -284,8 +290,10 @@ public class RunCommand
         // Step 3: Select device if needed
         if (selector.TrySelectDevice(
             ListDevices,
+            NoRestore,
             out string? selectedDevice,
-            out string? runtimeIdentifier))
+            out string? runtimeIdentifier,
+            out _restoreDoneForDeviceSelection))
         {
             // If a device was selected (either by user or by prompt), apply it to MSBuildArgs
             if (selectedDevice is not null)
@@ -296,6 +304,10 @@ public class RunCommand
                 if (!string.IsNullOrEmpty(runtimeIdentifier))
                 {
                     properties["RuntimeIdentifier"] = runtimeIdentifier;
+
+                    // If the device added a RuntimeIdentifier, we need to re-restore with that RID
+                    // because the previous restore (if any) didn't include it
+                    _restoreDoneForDeviceSelection = false;
                 }
 
                 var additionalProperties = new ReadOnlyDictionary<string, string>(properties);
@@ -474,7 +486,7 @@ public class RunCommand
             virtualCommand = null;
             buildResult = new RestoringCommand(
                 MSBuildArgs.CloneWithExplicitArgs([ProjectFileFullPath, .. MSBuildArgs.OtherMSBuildArgs]),
-                NoRestore,
+                NoRestore || _restoreDoneForDeviceSelection,
                 advertiseWorkloadUpdates: false
             ).Execute();
         }
