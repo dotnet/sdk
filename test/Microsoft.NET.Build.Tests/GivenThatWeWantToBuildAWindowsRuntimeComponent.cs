@@ -89,7 +89,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/52032")]
+        [WindowsOnlyFact]
         public void ManagedWinRTComponentCanBeReferenced()
         {
             var managedWinRTComponent = new TestProject()
