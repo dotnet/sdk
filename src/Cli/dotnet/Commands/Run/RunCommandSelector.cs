@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Utils;
 using Spectre.Console;
 
@@ -26,6 +27,7 @@ internal sealed class RunCommandSelector : IDisposable
     private readonly Dictionary<string, string> _globalProperties;
     private readonly FacadeLogger? _binaryLogger;
     private readonly bool _isInteractive;
+    private readonly MSBuildArgs _msbuildArgs;
     
     private ProjectCollection? _collection;
     private Microsoft.Build.Evaluation.Project? _project;
@@ -39,11 +41,13 @@ internal sealed class RunCommandSelector : IDisposable
         string projectFilePath,
         Dictionary<string, string> globalProperties,
         bool isInteractive,
+        MSBuildArgs msbuildArgs,
         FacadeLogger? binaryLogger = null)
     {
         _projectFilePath = projectFilePath;
         _globalProperties = globalProperties;
         _isInteractive = isInteractive;
+        _msbuildArgs = msbuildArgs;
         _binaryLogger = binaryLogger;
     }
 
@@ -119,7 +123,7 @@ internal sealed class RunCommandSelector : IDisposable
         {
             _collection = new ProjectCollection(
                 globalProperties: _globalProperties,
-                loggers: null,
+                loggers: GetLoggers(),
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
             _project = _collection.LoadProject(_projectFilePath);
             _projectInstance = _project.CreateProjectInstance();
@@ -216,11 +220,14 @@ internal sealed class RunCommandSelector : IDisposable
     /// <summary>
     /// Computes available devices by calling the ComputeAvailableDevices MSBuild target if it exists.
     /// </summary>
+    /// <param name="noRestore">Whether restore should be skipped before computing devices</param>
     /// <param name="devices">List of available devices if the target exists, null otherwise</param>
+    /// <param name="restoreWasPerformed">True if restore was performed, false otherwise</param>
     /// <returns>True if the target was found and executed, false otherwise</returns>
-    public bool TryComputeAvailableDevices(out List<DeviceItem>? devices)
+    public bool TryComputeAvailableDevices(bool noRestore, out List<DeviceItem>? devices, out bool restoreWasPerformed)
     {
         devices = null;
+        restoreWasPerformed = false;
 
         if (!OpenProjectIfNeeded(out var projectInstance))
         {
@@ -234,10 +241,27 @@ internal sealed class RunCommandSelector : IDisposable
             return false;
         }
 
+        // If restore is allowed, run restore first so device computation sees the restored assets
+        if (!noRestore)
+        {
+            // Run the Restore target
+            var restoreResult = projectInstance.Build(
+                targets: ["Restore"],
+                loggers: GetLoggers(),
+                remoteLoggers: null,
+                out _);
+            if (!restoreResult)
+            {
+                return false;
+            }
+
+            restoreWasPerformed = true;
+        }
+
         // Build the target
         var buildResult = projectInstance.Build(
             targets: [Constants.ComputeAvailableDevices],
-            loggers: _binaryLogger is null ? null : [_binaryLogger],
+            loggers: GetLoggers(),
             remoteLoggers: null,
             out var targetOutputs);
 
@@ -274,19 +298,24 @@ internal sealed class RunCommandSelector : IDisposable
     /// or shows an error (non-interactive mode).
     /// </summary>
     /// <param name="listDevices">Whether to list devices and exit</param>
+    /// <param name="noRestore">Whether restore should be skipped</param>
     /// <param name="selectedDevice">The selected device, or null if not needed</param>
     /// <param name="runtimeIdentifier">The RuntimeIdentifier for the selected device, or null if not provided</param>
+    /// <param name="restoreWasPerformed">True if restore was performed, false otherwise</param>
     /// <returns>True if we should continue, false if we should exit</returns>
     public bool TrySelectDevice(
         bool listDevices,
+        bool noRestore,
         out string? selectedDevice,
-        out string? runtimeIdentifier)
+        out string? runtimeIdentifier,
+        out bool restoreWasPerformed)
     {
         selectedDevice = null;
         runtimeIdentifier = null;
+        restoreWasPerformed = false;
 
         // Try to get available devices from the project
-        bool targetExists = TryComputeAvailableDevices(out var devices);
+        bool targetExists = TryComputeAvailableDevices(noRestore, out var devices, out restoreWasPerformed);
         
         // If the target doesn't exist, continue without device selection
         if (!targetExists)
@@ -355,8 +384,6 @@ internal sealed class RunCommandSelector : IDisposable
             runtimeIdentifier = devices[0].RuntimeIdentifier;
             return true;
         }
-
-
 
         if (_isInteractive)
         {
@@ -432,5 +459,16 @@ internal sealed class RunCommandSelector : IDisposable
             // If Spectre.Console fails (e.g., terminal doesn't support it), return null
             return null;
         }
+    }
+
+    /// <summary>
+    /// Gets the list of loggers to use for MSBuild operations.
+    /// Creates a fresh console logger each time to avoid disposal issues when calling Build() multiple times.
+    /// </summary>
+    private IEnumerable<ILogger> GetLoggers()
+    {
+        if (_binaryLogger is not null)
+            yield return _binaryLogger;
+        yield return CommonRunHelpers.GetConsoleLogger(_msbuildArgs);
     }
 }
