@@ -1051,11 +1051,6 @@ Pour découvrir plus d’informations, consultez https://aka.ms/dotnet-test/mtp.
         <target state="translated">Date</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(Par défaut)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">Désinstallation du manifeste de charge de travail {0} version {1}...</target>
@@ -1085,11 +1080,6 @@ Pour découvrir plus d’informations, consultez https://aka.ms/dotnet-test/mtp.
         <source>Description</source>
         <target state="translated">Description</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">Une erreur est survenue pendant la lecture de « {0} » : {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1191,15 +1181,6 @@ Pour découvrir plus d’informations, consultez https://aka.ms/dotnet-test/mtp.
         <source>Downloads</source>
         <target state="translated">Téléchargements</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">Il existe plusieurs profils de lancement avec des noms sensibles à la casse, ce qui n'est pas autorisé :
-{0}
-Faites en sorte que les noms de profil soient distincts.</target>
-        <note />
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1590,26 +1571,6 @@ Faites en sorte que les noms de profil soient distincts.</target>
         <source>Latest Version</source>
         <target state="translated">Dernière version</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">Un profil de lancement avec le nom '{0}' n'existe pas.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">Le type de profil de lancement '{0}' n'est pas pris en charge.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">Un profil avec le nom spécifié n'est pas un objet JSON valide.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">La propriété 'profiles' du document de paramètres de lancement n'est pas un objet JSON.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -3650,11 +3611,6 @@ et les ID de package correspondants aux outils installés, utilisez la commande
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
         <target state="translated">Le mode d’installation de la charge de travail a été mis à jour pour utiliser {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Impossible de localiser un profil de lancement utilisable.</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">

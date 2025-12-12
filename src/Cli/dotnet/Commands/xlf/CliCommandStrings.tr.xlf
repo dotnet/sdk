@@ -1051,11 +1051,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <target state="translated">Tarih</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(Varsayılan)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">İş yükü bildirimi {0} sürümü {1} yükleniyor...</target>
@@ -1085,11 +1080,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <source>Description</source>
         <target state="translated">Açıklama</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">‘{0}’ okunurken bir hata oluştu: {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1191,15 +1181,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <source>Downloads</source>
         <target state="translated">İndirmeler</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">Adı büyük/küçük harfe duyarlı olan birkaç başlatma profili var ama bu duruma izin verilmiyor:
-{0}
-Lütfen profil adlarını değiştirin.</target>
-        <note />
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1590,26 +1571,6 @@ Lütfen profil adlarını değiştirin.</target>
         <source>Latest Version</source>
         <target state="translated">En Son Sürüm</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">'{0}' adlı bir başlatma profili yok.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">'{0}' başlatma profili türü desteklenmiyor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">Belirtilen adla bir profil, geçerli bir JSON nesnesi değil.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">Başlatma ayarları belgesinin 'profiles' özelliği bir JSON nesnesi değil.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -3650,11 +3611,6 @@ karşılık gelen paket kimliklerini bulmak için
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
         <target state="translated">İş yükü yükleme modu {0} kullanacak şekilde başarıyla güncelleştirildi.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Kullanılabilir bir başlatma profili bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">
