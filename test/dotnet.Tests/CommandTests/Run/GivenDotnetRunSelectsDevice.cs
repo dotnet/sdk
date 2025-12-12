@@ -334,7 +334,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     }
 
     [Fact]
-    public void ItDoesNotCallDeployToDeviceTargetWhenNoDeviceIsSpecified()
+    public void ItCallsDeployToDeviceTargetWhenDeviceIsAutoSelected()
     {
         var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
