@@ -11,41 +11,42 @@ using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Package;
 
-internal sealed class PackageCommandDefinition
+internal sealed class PackageCommandDefinition : Command
 {
-    public const string Name = "package";
-    private const string DocsLink = "https://aka.ms/dotnet-package";
+    public new const string Name = "package";
+    private const string Link = "https://aka.ms/dotnet-package";
 
-    public static readonly Option<string?> ProjectOption = new("--project")
+    public static Option<string?> CreateProjectOption() => new("--project")
     {
         Recursive = true,
         Description = CliStrings.ProjectArgumentDescription
     };
 
-    public static readonly Option<string?> FileOption = new("--file")
+    public static Option<string?> CreateFileOption() => new("--file")
     {
         Recursive = true,
         Description = CliStrings.FileArgumentDescription
     };
 
     // Used by the legacy 'add/remove package' commands.
-    public static readonly Argument<string> ProjectOrFileArgument = new Argument<string>(CliStrings.ProjectOrFileArgumentName)
+    public static Argument<string> CreateProjectOrFileArgument() => new Argument<string>(CliStrings.ProjectOrFileArgumentName)
     {
         Description = CliStrings.ProjectOrFileArgumentDescription
     }.DefaultToCurrentDirectory();
 
-    public static Command Create()
+    public readonly PackageSearchCommandDefinition SearchCommand = new();
+    public readonly PackageAddCommandDefinition AddCommand = new();
+    public readonly PackageListCommandDefinition ListCommand = new();
+    public readonly PackageRemoveCommandDefinition RemoveCommand = new();
+
+    public PackageCommandDefinition()
+        : base(Name)
     {
-        Command command = new Command("package")
-        {
-            DocsLink = DocsLink
-        };
+        this.DocsLink = Link;
 
-        command.Subcommands.Add(PackageSearchCommandDefinition.Create());
-        command.Subcommands.Add(PackageAddCommandDefinition.Create());
-        command.Subcommands.Add(PackageListCommandDefinition.Create());
-        command.Subcommands.Add(PackageRemoveCommandDefinition.Create());
-
-        return command;
+        Subcommands.Add(SearchCommand);
+        Subcommands.Add(AddCommand);
+        Subcommands.Add(ListCommand);
+        Subcommands.Add(RemoveCommand);
     }
 }

@@ -348,7 +348,7 @@ class Program
         public void ItEnforcesOptionRules(bool throws, params string[] options)
         {
             var parseResult = Parser.Parse(["dotnet", "list", "package", ..options]);
-            Action checkRules = () => Microsoft.DotNet.Cli.Commands.Package.List.PackageListCommand.EnforceOptionRules(parseResult);
+            Action checkRules = () => new Microsoft.DotNet.Cli.Commands.Package.List.PackageListCommandDefinition().EnforceOptionRules(parseResult);
 
             if (throws)
             {

@@ -12,28 +12,27 @@ namespace Microsoft.DotNet.Cli.Commands.Reference;
 
 internal static class ReferenceCommandParser
 {
-    private static readonly Command Command = ConfigureCommand(ReferenceCommandDefinition.Create());
+    private static readonly Command Command = SetActionsAndCompletion(new ReferenceCommandDefinition());
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command ConfigureCommand(Command command)
+    private static Command SetActionsAndCompletion(ReferenceCommandDefinition def)
     {
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
+        def.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-        command.Subcommands.Single(c => c.Name == ReferenceAddCommandDefinition.Name).SetAction((parseResult) => new ReferenceAddCommand(parseResult).Execute());
-        command.Subcommands.Single(c => c.Name == ReferenceListCommandDefinition.Name).SetAction((parseResult) => new ReferenceListCommand(parseResult).Execute());
+        def.AddCommand.SetAction(parseResult => new ReferenceAddCommand(parseResult).Execute());
+        def.ListCommand.SetAction(parseResult => new ReferenceListCommand(parseResult).Execute());
 
-        var removeCommand = command.Subcommands.Single(c => c.Name == ReferenceRemoveCommandDefinition.Name);
-        var projectPathArgument = removeCommand.Arguments.Single(arg => arg.Name == ReferenceRemoveCommandDefinition.ProjectPathArgument);
+        var projectPathArgument = def.RemoveCommand.ProjectPathArgument;
 
         projectPathArgument.CompletionSources.Add(CliCompletion.ProjectReferencesFromProjectFile);
         projectPathArgument.IsDynamic = true;
 
-        removeCommand.SetAction((parseResult) => new ReferenceRemoveCommand(parseResult).Execute());
+        def.RemoveCommand.SetAction(parseResult => new ReferenceRemoveCommand(parseResult).Execute());
 
-        return command;
+        return def;
     }
 }

@@ -5,30 +5,39 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
-internal static class ReferenceRemoveCommandDefinition
+internal sealed class ReferenceRemoveCommandDefinition() : ReferenceRemoveCommandDefinitionBase(Name)
 {
-    public const string Name = "remove";
-    public static readonly string ProjectPathArgument = CliCommandStrings.ReferenceRemoveProjectPathArgumentName;
+    public new const string Name = "remove";
 
-    public static Argument<IEnumerable<string>> CreateProjectPathArgument() => new(ProjectPathArgument)
+    public ReferenceCommandDefinition Parent => (ReferenceCommandDefinition)Parents.Single();
+
+    public override string? GetFileOrDirectory(ParseResult parseResult)
+        => parseResult.GetValue(Parent.ProjectOption);
+}
+
+internal abstract class ReferenceRemoveCommandDefinitionBase : Command
+{
+    public static Argument<IEnumerable<string>> CreateProjectPathArgument() => new(CliCommandStrings.ReferenceRemoveProjectPathArgumentName)
     {
         Description = CliCommandStrings.ReferenceRemoveProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
     };
 
-    public static readonly Option<string> FrameworkOption = new("--framework", "-f")
+    public static Option<string> CreateFrameworkOption() => new("--framework", "-f")
     {
         Description = CliCommandStrings.ReferenceRemoveCmdFrameworkDescription,
         HelpName = CliStrings.CommonCmdFramework
     };
 
-    public static Command Create()
+    public readonly Argument<IEnumerable<string>> ProjectPathArgument = CreateProjectPathArgument();
+    public readonly Option<string> FrameworkOption = CreateFrameworkOption();
+
+    public ReferenceRemoveCommandDefinitionBase(string name)
+        : base(name, CliCommandStrings.ReferenceRemoveAppFullName)
     {
-        var command = new Command(Name, CliCommandStrings.ReferenceRemoveAppFullName);
-
-        command.Arguments.Add(CreateProjectPathArgument());
-        command.Options.Add(FrameworkOption);
-
-        return command;
+        Arguments.Add(ProjectPathArgument);
+        Options.Add(FrameworkOption);
     }
+
+    public abstract string? GetFileOrDirectory(ParseResult parseResult);
 }
