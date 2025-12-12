@@ -69,7 +69,6 @@
     <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
     <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
@@ -105,6 +104,4 @@
     </PropertyGroup>
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DestinationPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
   </Target>
-
-  <Import Project="..\Microsoft.DotNet.FileBasedPrograms\Microsoft.DotNet.FileBasedPrograms.projitems" Label="Shared" />
 </Project>
