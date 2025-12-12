@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class CommandLineOptionsTests
@@ -164,7 +166,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["-watchArg", "--verbose", "run", "-runArg"]);
 
-            Assert.True(options.GlobalOptions.Verbose);
+            Assert.Equal(LogLevel.Debug, options.GlobalOptions.LogLevel);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["-watchArg", "-runArg"], options.CommandArguments);
         }
@@ -184,7 +186,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["-watchArg", "--", "--verbose", "run", "-runArg"]);
 
-            Assert.False(options.GlobalOptions.Verbose);
+            Assert.Equal(LogLevel.Information, options.GlobalOptions.LogLevel);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["-watchArg", "--", "--verbose", "run", "-runArg",], options.CommandArguments);
         }
@@ -194,7 +196,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--", "run"]);
 
-            Assert.False(options.GlobalOptions.Verbose);
+            Assert.Equal(LogLevel.Information, options.GlobalOptions.LogLevel);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["--", "run"], options.CommandArguments);
         }
@@ -334,9 +336,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             args = position switch
             {
-                ArgPosition.Before => args.Prepend("run").ToArray(),
-                ArgPosition.Both => args.Concat(new[] { "run" }).Concat(args).ToArray(),
-                ArgPosition.After => args.Append("run").ToArray(),
+                ArgPosition.Before => ["run", .. args],
+                ArgPosition.Both => [.. args, "run", .. args],
+                ArgPosition.After => [.. args, "run"],
                 _ => args,
             };
 
@@ -344,8 +346,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.True(arg switch
             {
-                "--verbose" => options.GlobalOptions.Verbose,
-                "--quiet" => options.GlobalOptions.Quiet,
+                "--verbose" => options.GlobalOptions.LogLevel == LogLevel.Debug,
+                "--quiet" => options.GlobalOptions.LogLevel == LogLevel.Warning,
                 "--list" => options.List,
                 "--no-hot-reload" => options.GlobalOptions.NoHotReload,
                 "--non-interactive" => options.GlobalOptions.NonInteractive,
