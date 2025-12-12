@@ -77,6 +77,11 @@
         <target state="translated">'{0}' varsayılan arabirim üyesine korumalı anahtar sözcük eklenemiyor.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotAddStatic">
+        <source>Cannot add static keyword to '{0}'.</source>
+        <target state="new">Cannot add static keyword to '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotAddVirtualToMember">
         <source>Cannot add virtual keyword to member '{0}'.</source>
         <target state="translated">Sanal anahtar sözcük, '{0}' üyesine eklenemiyor.</target>
@@ -120,6 +125,11 @@
       <trans-unit id="CannotRemoveGenericConstraint">
         <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
         <target state="translated">'{1}'/'{2}' tür parametresindeki '{0}' kısıtlaması kaldırılamıyor.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotRemoveStatic">
+        <source>Cannot remove static keyword from '{0}'.</source>
+        <target state="new">Cannot remove static keyword from '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
