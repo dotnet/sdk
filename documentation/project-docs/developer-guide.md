@@ -180,7 +180,7 @@ taskkill /F /IM msbuild.exe /T
 
 The SDK repository includes GitHub Actions workflows that automate common maintenance tasks directly from pull requests.
 
-### `/updatexlf` - Update Translation Files
+### `/xlf or /updatexlf` - Update Translation Files
 
 When you modify `.resx` resource files, the corresponding `.xlf` translation files need to be updated. Instead of manually running the build locally, comment `/updatexlf` on the PR and the GitHub Action will:
 
@@ -192,7 +192,7 @@ This is useful when you've changed localized strings and the CI build is failing
 
 See also: [Localization documentation](Localization.md)
 
-### `/fixcompletions` - Update CLI Completion Snapshots
+### `/completions or /fixcompletions` - Update CLI Completion Snapshots
 
 The CLI includes snapshot-based tests for shell completions (bash, zsh, pwsh, etc.). When you add or modify CLI commands, these snapshots need to be updated. Comment `/fixcompletions` on the PR and the GitHub Action will:
 
@@ -204,6 +204,13 @@ The CLI includes snapshot-based tests for shell completions (bash, zsh, pwsh, et
 This is useful when you've added new commands or options and the completion snapshot tests are failing.
 
 See also: [Snapshot-based testing documentation](snapshot-based-testing.md)
+
+
+### `/backport to {branch}`
+
+The SDK team manages many branches.
+You may use /backport to {branch_name} to mimic the process of cherry-picking a PR onto another branch.
+
 
 ## Adding a Command
 
