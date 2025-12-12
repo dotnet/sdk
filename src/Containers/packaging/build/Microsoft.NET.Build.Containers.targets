@@ -287,7 +287,8 @@
                     RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
                     SkipPublishing="$(_SkipContainerPublishing)"
                     GenerateLabels="$(ContainerGenerateLabels)"
-                    GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
+                    GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"
+                    AdditionalLayers="@(ContainerAdditionalLayer)">
 
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
