@@ -756,6 +756,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         cache = ComputeCacheEntry();
 
+        if (Directives.Any(static d => d is CSharpDirective.Project))
+        {
+            Reporter.Verbose.WriteLine("Building because there are project directives.");
+            return true;
+        }
+
         // Check cache files.
 
         string artifactsDirectory = ArtifactsPath;
@@ -847,17 +853,18 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         // Check that the source file is not modified.
-        if (entryPointFile.LastWriteTimeUtc > buildTimeUtc)
+        var targetFile = ResolveLinkTargetOrSelf(entryPointFile);
+        if (targetFile.LastWriteTimeUtc > buildTimeUtc)
         {
             cache.CanUseCscViaPreviousArguments = true;
-            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + entryPointFile.FullName);
+            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
             return true;
         }
 
         // Check that implicit build files are not modified.
         foreach (var implicitBuildFilePath in previousCacheEntry.ImplicitBuildFiles)
         {
-            var implicitBuildFileInfo = new FileInfo(implicitBuildFilePath);
+            var implicitBuildFileInfo = ResolveLinkTargetOrSelf(new FileInfo(implicitBuildFilePath));
             if (!implicitBuildFileInfo.Exists || implicitBuildFileInfo.LastWriteTimeUtc > buildTimeUtc)
             {
                 Reporter.Verbose.WriteLine("Building because implicit build file is missing or modified: " + implicitBuildFileInfo.FullName);
@@ -876,6 +883,16 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         return false;
+
+        static FileSystemInfo ResolveLinkTargetOrSelf(FileSystemInfo fileSystemInfo)
+        {
+            if (!fileSystemInfo.Exists)
+            {
+                return fileSystemInfo;
+            }
+
+            return fileSystemInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileSystemInfo;
+        }
     }
 
     private static RunFileBuildCacheEntry? DeserializeCacheEntry(string path)
