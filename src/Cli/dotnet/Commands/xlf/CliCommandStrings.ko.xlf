@@ -1051,11 +1051,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">날짜</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(기본값)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">워크로드 매니페스트 {0} 버전 {1} 제거 중...</target>
@@ -1085,11 +1080,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Description</source>
         <target state="translated">설명</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">'{0}'을 읽는 동안 오류가 발생했습니다. {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1191,15 +1181,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Downloads</source>
         <target state="translated">다운로드</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">대/소문자를 구분하는 이름을 가진 여러 시작 프로필이 있으며 이는 허용되지 않습니다.
-{0}
-고유한 프로필 이름을 사용하세요.</target>
-        <note />
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1590,26 +1571,6 @@ Make the profile names distinct.</source>
         <source>Latest Version</source>
         <target state="translated">최신 버전</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">이름이 '{0}'인 시작 프로필이 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">시작 프로필 형식 '{0}'은(는) 지원되지 않습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">지정된 이름의 프로필은 유효한 JSON 개체가 아닙니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">시작 설정 문서의 '프로필' 속성이 JSON 개체가 아닙니다.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -3650,11 +3611,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
         <target state="translated">{0}을(를) 사용하도록 워크로드 설치 모드를 업데이트했습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">사용할 수 있는 시작 프로필을 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">
