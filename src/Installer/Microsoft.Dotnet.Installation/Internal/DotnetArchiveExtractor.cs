@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -57,67 +55,131 @@ internal class DotnetArchiveExtractor : IDisposable
     }
     public void Commit()
     {
-        Commit(GetExistingSdkVersions(_request.InstallRoot));
-    }
-
-    public void Commit(IEnumerable<ReleaseVersion> existingSdkVersions)
-    {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
-
 
         using (var progressReporter = _progressTarget.CreateProgressReporter())
         {
             var installTask = progressReporter.AddTask($"Installing .NET SDK {_resolvedVersion}", maxValue: 100);
 
             // Extract archive directly to target directory with special handling for muxer
-            ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, existingSdkVersions, installTask);
+            ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
             installTask.Value = installTask.MaxValue;
         }
     }
 
-    /**
-     * Extracts the archive directly to the target directory with special handling for muxer.
-     * Combines extraction and installation into a single operation.
-     */
-    private string? ExtractArchiveDirectlyToTarget(string archivePath, string targetDir, IEnumerable<ReleaseVersion> existingSdkVersions, IProgressTask? installTask)
+    /// <summary>
+    /// Extracts the archive directly to the target directory with special handling for muxer.
+    /// Combines extraction and installation into a single operation.
+    /// </summary>
+    private void ExtractArchiveDirectlyToTarget(string archivePath, string targetDir, IProgressTask? installTask)
     {
         Directory.CreateDirectory(targetDir);
 
-        var muxerConfig = ConfigureMuxerHandling(existingSdkVersions);
-
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            return ExtractTarArchive(archivePath, targetDir, muxerConfig, installTask);
-        }
-        else
-        {
-            return ExtractZipArchive(archivePath, targetDir, muxerConfig, installTask);
-        }
-    }
-
-    /**
-     * Configure muxer handling by determining if it needs to be updated.
-     */
-    private MuxerHandlingConfig ConfigureMuxerHandling(IEnumerable<ReleaseVersion> existingSdkVersions)
-    {
-        // TODO: This is very wrong - its comparing a runtime version and sdk version, plus it needs to respect the muxer version
-        ReleaseVersion? existingMuxerVersion = existingSdkVersions.Any() ? existingSdkVersions.Max() : (ReleaseVersion?)null;
-        ReleaseVersion newRuntimeVersion = _resolvedVersion;
-        bool shouldUpdateMuxer = existingMuxerVersion is null || newRuntimeVersion.CompareTo(existingMuxerVersion) > 0;
-
         string muxerName = DotnetupUtilities.GetDotnetExeName();
-        string muxerTargetPath = Path.Combine(_request.InstallRoot.Path!, muxerName);
+        string muxerTargetPath = Path.Combine(targetDir, muxerName);
+        string muxerTempPath = $"{muxerTargetPath}.{Guid.NewGuid().ToString()}.tmp";
 
-        return new MuxerHandlingConfig(
-            muxerName,
-            muxerTargetPath,
-            shouldUpdateMuxer);
+        // Step 1: Read the version of the existing muxer (if any) by looking at the latest runtime
+        Version? existingMuxerVersion = null;
+        bool hadExistingMuxer = File.Exists(muxerTargetPath);
+        if (hadExistingMuxer)
+        {
+            existingMuxerVersion = GetLatestRuntimeVersionFromInstallRoot(targetDir);
+        }
+
+        // Step 2: If there is an existing muxer, rename it to .tmp
+        if (hadExistingMuxer)
+        {
+            File.Move(muxerTargetPath, muxerTempPath);
+        }
+
+        try
+        {
+            // Step 3: Extract the archive (all files directly since muxer has been renamed)
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                ExtractTarArchive(archivePath, targetDir, installTask);
+            }
+            else
+            {
+                ExtractZipArchive(archivePath, targetDir, installTask);
+            }
+
+            // Step 4: If there was a previous muxer, compare versions and restore if needed
+            if (hadExistingMuxer && File.Exists(muxerTempPath))
+            {
+                Version? newMuxerVersion = GetLatestRuntimeVersionFromInstallRoot(targetDir);
+
+                // If the latest runtime version after extraction is the same as before,
+                // then a newer runtime was NOT installed, so the new muxer is actually older.
+                // In that case, restore the old muxer.
+                if (newMuxerVersion != null && existingMuxerVersion != null && newMuxerVersion == existingMuxerVersion)
+                {
+                    if (File.Exists(muxerTargetPath))
+                    {
+                        File.Delete(muxerTargetPath);
+                    }
+                    File.Move(muxerTempPath, muxerTargetPath);
+                }
+                else
+                {
+                    // Latest runtime version increased (or we couldn't determine versions) - keep new muxer
+                    if (File.Exists(muxerTempPath))
+                    {
+                        File.Delete(muxerTempPath);
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // If an exception occurs during extraction or version comparison, restore the original muxer if it exists
+            if (hadExistingMuxer && File.Exists(muxerTempPath) && !File.Exists(muxerTargetPath))
+            {
+                try
+                {
+                    File.Move(muxerTempPath, muxerTargetPath);
+                }
+                catch
+                {
+                    // Ignore errors during cleanup - the original exception is more important
+                }
+            }
+            throw;
+        }
     }
 
-    /**
-     * Extracts a tar or tar.gz archive to the target directory.
-     */
-    private string? ExtractTarArchive(string archivePath, string targetDir, MuxerHandlingConfig muxerConfig, IProgressTask? installTask)
+    /// <summary>
+    /// Gets the latest runtime version from the install root by checking the shared/Microsoft.NETCore.App directory.
+    /// </summary>
+    private static Version? GetLatestRuntimeVersionFromInstallRoot(string installRoot)
+    {
+        var runtimePath = Path.Combine(installRoot, "shared", "Microsoft.NETCore.App");
+        if (!Directory.Exists(runtimePath))
+        {
+            return null;
+        }
+
+        Version? highestVersion = null;
+        foreach (var dir in Directory.GetDirectories(runtimePath))
+        {
+            var versionString = Path.GetFileName(dir);
+            if (Version.TryParse(versionString, out Version? version))
+            {
+                if (highestVersion == null || version > highestVersion)
+                {
+                    highestVersion = version;
+                }
+            }
+        }
+
+        return highestVersion;
+    }
+
+    /// <summary>
+    /// Extracts a tar or tar.gz archive to the target directory.
+    /// </summary>
+    private void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask)
     {
         string decompressedPath = DecompressTarGzIfNeeded(archivePath, out bool needsDecompression);
 
@@ -133,9 +195,7 @@ internal class DotnetArchiveExtractor : IDisposable
             }
 
             // Extract files directly to target
-            ExtractTarContents(decompressedPath, targetDir, muxerConfig, installTask);
-
-            return null;
+            ExtractTarContents(decompressedPath, targetDir, installTask);
         }
         finally
         {
@@ -147,9 +207,9 @@ internal class DotnetArchiveExtractor : IDisposable
         }
     }
 
-    /**
-     * Decompresses a .tar.gz file if needed, returning the path to the tar file.
-     */
+    /// <summary>
+    /// Decompresses a .tar.gz file if needed, returning the path to the tar file.
+    /// </summary>
     private string DecompressTarGzIfNeeded(string archivePath, out bool needsDecompression)
     {
         needsDecompression = archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
@@ -168,9 +228,9 @@ internal class DotnetArchiveExtractor : IDisposable
         return decompressedPath;
     }
 
-    /**
-     * Counts the number of entries in a tar file for progress reporting.
-     */
+    /// <summary>
+    /// Counts the number of entries in a tar file for progress reporting.
+    /// </summary>
     private long CountTarEntries(string tarPath)
     {
         long totalFiles = 0;
@@ -183,10 +243,10 @@ internal class DotnetArchiveExtractor : IDisposable
         return totalFiles;
     }
 
-    /**
-     * Extracts the contents of a tar file to the target directory.
-     */
-    private void ExtractTarContents(string tarPath, string targetDir, MuxerHandlingConfig muxerConfig, IProgressTask? installTask)
+    /// <summary>
+    /// Extracts the contents of a tar file to the target directory.
+    /// </summary>
+    private void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask)
     {
         using var tarStream = File.OpenRead(tarPath);
         var tarReader = new TarReader(tarStream);
@@ -196,7 +256,7 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             if (entry.EntryType == TarEntryType.RegularFile)
             {
-                ExtractTarFileEntry(entry, targetDir, muxerConfig, installTask);
+                ExtractTarFileEntry(entry, targetDir, installTask);
             }
             else if (entry.EntryType == TarEntryType.Directory)
             {
@@ -213,88 +273,50 @@ internal class DotnetArchiveExtractor : IDisposable
         }
     }
 
-    /**
-     * Extracts a single file entry from a tar archive.
-     */
-    private void ExtractTarFileEntry(TarEntry entry, string targetDir, MuxerHandlingConfig muxerConfig, IProgressTask? installTask)
+    /// <summary>
+    /// Extracts a single file entry from a tar archive.
+    /// </summary>
+    private void ExtractTarFileEntry(TarEntry entry, string targetDir, IProgressTask? installTask)
     {
-        var fileName = Path.GetFileName(entry.Name);
         var destPath = Path.Combine(targetDir, entry.Name);
-
-        if (string.Equals(fileName, muxerConfig.MuxerName, StringComparison.OrdinalIgnoreCase))
-        {
-            if (muxerConfig.ShouldUpdateMuxer)
-            {
-                HandleMuxerUpdateFromTar(entry, muxerConfig.MuxerTargetPath);
-            }
-        }
-        else
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-            using var outStream = File.Create(destPath);
-            entry.DataStream?.CopyTo(outStream);
-        }
-
+        Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+        using var outStream = File.Create(destPath);
+        entry.DataStream?.CopyTo(outStream);
         installTask?.Value += 1;
     }
 
-    /**
-     * Handles updating the muxer from a tar entry, using a temporary file to avoid locking issues.
-     */
-    private void HandleMuxerUpdateFromTar(TarEntry entry, string muxerTargetPath)
-    {
-        // Create a temporary file for the muxer first to avoid locking issues
-        var tempMuxerPath = Path.Combine(Directory.CreateTempSubdirectory().FullName, entry.Name);
-        using (var outStream = File.Create(tempMuxerPath))
-        {
-            entry.DataStream?.CopyTo(outStream);
-        }
-
-        try
-        {
-            // Replace the muxer using the utility that handles locking
-            DotnetupUtilities.ForceReplaceFile(tempMuxerPath, muxerTargetPath);
-        }
-        finally
-        {
-            if (File.Exists(tempMuxerPath))
-            {
-                File.Delete(tempMuxerPath);
-            }
-        }
-    }
-
-    /**
-     * Extracts a zip archive to the target directory.
-     */
-    private string? ExtractZipArchive(string archivePath, string targetDir, MuxerHandlingConfig muxerConfig, IProgressTask? installTask)
+    /// <summary>
+    /// Extracts a zip archive to the target directory.
+    /// </summary>
+    private void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask)
     {
         long totalFiles = CountZipEntries(archivePath);
 
-        installTask?.MaxValue = totalFiles > 0 ? totalFiles : 1;
+        if (installTask is not null)
+        {
+            installTask.MaxValue = totalFiles > 0 ? totalFiles : 1;
+        }
 
         using var zip = ZipFile.OpenRead(archivePath);
         foreach (var entry in zip.Entries)
         {
-            ExtractZipEntry(entry, targetDir, muxerConfig, installTask);
+            ExtractZipEntry(entry, targetDir, installTask);
         }
-
-        return null;
     }
 
-    /**
-     * Counts the number of entries in a zip file for progress reporting.
-     */
+    /// <summary>
+    /// Counts the number of entries in a zip file for progress reporting.
+    /// </summary>
     private long CountZipEntries(string zipPath)
     {
         using var zip = ZipFile.OpenRead(zipPath);
         return zip.Entries.Count;
     }
 
-    /**
-     * Extracts a single entry from a zip archive.
-     */
-    private void ExtractZipEntry(ZipArchiveEntry entry, string targetDir, MuxerHandlingConfig muxerConfig, IProgressTask? installTask)
+    /// <summary>
+    /// Extracts a single entry from a zip archive.
+    /// </summary>
+    private void ExtractZipEntry(ZipArchiveEntry entry, string targetDir, IProgressTask? installTask)
     {
         var fileName = Path.GetFileName(entry.FullName);
         var destPath = Path.Combine(targetDir, entry.FullName);
@@ -307,60 +329,9 @@ internal class DotnetArchiveExtractor : IDisposable
             return;
         }
 
-        // Special handling for dotnet executable (muxer)
-        if (string.Equals(fileName, muxerConfig.MuxerName, StringComparison.OrdinalIgnoreCase))
-        {
-            if (muxerConfig.ShouldUpdateMuxer)
-            {
-                HandleMuxerUpdateFromZip(entry, muxerConfig.MuxerTargetPath);
-            }
-        }
-        else
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-            entry.ExtractToFile(destPath, overwrite: true);
-        }
-
+        Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+        entry.ExtractToFile(destPath, overwrite: true);
         installTask?.Value += 1;
-    }
-
-    /**
-     * Handles updating the muxer from a zip entry, using a temporary file to avoid locking issues.
-     */
-    private void HandleMuxerUpdateFromZip(ZipArchiveEntry entry, string muxerTargetPath)
-    {
-        var tempMuxerPath = Path.Combine(Directory.CreateTempSubdirectory().FullName, entry.Name);
-        entry.ExtractToFile(tempMuxerPath, overwrite: true);
-
-        try
-        {
-            // Replace the muxer using the utility that handles locking
-            DotnetupUtilities.ForceReplaceFile(tempMuxerPath, muxerTargetPath);
-        }
-        finally
-        {
-            if (File.Exists(tempMuxerPath))
-            {
-                File.Delete(tempMuxerPath);
-            }
-        }
-    }
-
-    /**
-     * Configuration class for muxer handling.
-     */
-    private readonly struct MuxerHandlingConfig
-    {
-        public string MuxerName { get; }
-        public string MuxerTargetPath { get; }
-        public bool ShouldUpdateMuxer { get; }
-
-        public MuxerHandlingConfig(string muxerName, string muxerTargetPath, bool shouldUpdateMuxer)
-        {
-            MuxerName = muxerName;
-            MuxerTargetPath = muxerTargetPath;
-            ShouldUpdateMuxer = shouldUpdateMuxer;
-        }
     }
 
     public void Dispose()
@@ -376,11 +347,5 @@ internal class DotnetArchiveExtractor : IDisposable
         catch
         {
         }
-    }
-
-    private static IEnumerable<ReleaseVersion> GetExistingSdkVersions(DotnetInstallRoot installRoot)
-    {
-        var environmentInfo = HostFxrWrapper.getInfo(installRoot.Path!);
-        return environmentInfo.SdkInfo.Select(sdk => sdk.Version);
     }
 }
