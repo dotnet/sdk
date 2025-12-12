@@ -362,7 +362,7 @@ public class RunCommand
     private static string[]? GetTargetFrameworksFromSourceFile(string sourceFilePath)
     {
         var sourceFile = SourceFile.Load(sourceFilePath);
-        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
+        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
         
         var targetFrameworksDirective = directives.OfType<CSharpDirective.Property>()
             .FirstOrDefault(p => string.Equals(p.Name, "TargetFrameworks", StringComparison.OrdinalIgnoreCase));
