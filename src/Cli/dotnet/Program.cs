@@ -18,6 +18,8 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
@@ -307,7 +309,7 @@ public class Program
             // If we didn't match any built-in commands, and a C# file path is the first argument,
             // parse as `dotnet run --file file.cs ..rest_of_args` instead.
             if (parseResult.GetResult(Parser.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
-                && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
+                && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
             {
                 List<string> otherTokens = new(parseResult.Tokens.Count - 1);
                 foreach (var token in parseResult.Tokens)

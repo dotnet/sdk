@@ -30,15 +30,14 @@ public static class BuildCommand
         return CommandFactory.CreateVirtualOrPhysicalCommand(
             BuildCommandParser.GetCommand(),
             BuildCommandDefinition.SlnOrProjectOrFileArgument,
-            (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
+            configureVirtualCommand: (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
-                msbuildArgs: msbuildArgs
-            )
+                msbuildArgs: msbuildArgs)
             {
                 NoRestore = noRestore,
                 NoCache = true,
             },
-            (msbuildArgs, msbuildPath) => new RestoringCommand(
+            createPhysicalCommand: (msbuildArgs, msbuildPath) => new RestoringCommand(
                 msbuildArgs: msbuildArgs.CloneWithAdditionalArgs("-consoleloggerparameters:Summary"),
                 noRestore: noRestore,
                 msbuildPath: msbuildPath
