@@ -116,7 +116,7 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>d65136bfc1cc606d916ceaa102a4c1925e2b5d59</Sha>
     </Dependency>
-        <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.HotReload" Version="5.3.0-1.25609.108">
+    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.HotReload" Version="5.3.0-1.25609.108">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>d65136bfc1cc606d916ceaa102a4c1925e2b5d59</Sha>
     </Dependency>
@@ -495,10 +495,6 @@
       <Sha>d65136bfc1cc606d916ceaa102a4c1925e2b5d59</Sha>
     </Dependency>
     <Dependency Name="System.Windows.Extensions" Version="11.0.0-alpha.1.25609.108">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>d65136bfc1cc606d916ceaa102a4c1925e2b5d59</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.HotReload" Version="5.3.0-1.25609.108">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>d65136bfc1cc606d916ceaa102a4c1925e2b5d59</Sha>
     </Dependency>
