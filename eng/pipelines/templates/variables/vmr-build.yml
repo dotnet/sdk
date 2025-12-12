@@ -19,7 +19,7 @@ variables:
 - name: centOSStreamContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 - name: fedoraContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-43
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-43-amd64
 - name: ubuntuContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04
 - name: ubuntuArmContainer
