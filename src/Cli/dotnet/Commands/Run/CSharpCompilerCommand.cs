@@ -108,8 +108,9 @@ internal sealed partial class CSharpCompilerCommand
         // Process the response.
         var exitCode = ProcessBuildResponse(responseTask.Result, out fallbackToNormalBuild);
 
-        // Copy from obj to bin.
-        if (BuildResultFile != null &&
+        // Copy from obj to bin only if the build succeeded.
+        if (exitCode == 0 &&
+            BuildResultFile != null &&
             CSharpCommandLineParser.Default.Parse(CscArguments, BaseDirectory, sdkDirectory: null) is { OutputFileName: { } outputFileName } parsedArgs)
         {
             var objFile = new FileInfo(parsedArgs.GetOutputFilePath(outputFileName));
