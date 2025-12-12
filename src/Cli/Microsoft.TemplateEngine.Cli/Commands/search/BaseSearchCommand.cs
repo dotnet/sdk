@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             _definition = definition;
         }
 
-        public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters => _definition.Filters;
+        public IEnumerable<Option> FilterOptions => _definition.FilterOptions;
 
         public Option<bool> ColumnsAllOption => _definition.ColumnsAllOption;
 
