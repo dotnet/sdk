@@ -55,7 +55,8 @@ function CreateBuildEnvScript {
   scriptContents="
 #!/usr/bin/env bash
 export DOTNET_MULTILEVEL_LOOKUP=0
-
+export DOTNET_CLI_USE_MSBUILD_SERVER=1
+export MSBUILDUSESERVER=1
 export DOTNET_ROOT=$DOTNET_INSTALL_DIR
 export DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$DOTNET_INSTALL_DIR
 

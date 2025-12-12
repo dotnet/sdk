@@ -106,6 +106,7 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+          DOTNET_CLI_USE_MSBUILD_SERVER: 1
 
     - ${{ else }}:
       - script: |
@@ -130,6 +131,7 @@ jobs:
         displayName: 🟣 Build
         env:
           BuildConfig: $(buildConfiguration)
+          DOTNET_CLI_USE_MSBUILD_SERVER: 1
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
 
     ############### TESTING ###############

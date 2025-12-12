@@ -1,14 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class EvaluationTests(ITestOutputHelper output)
     {
-        private readonly TestLogger _logger = new(output);
-        private readonly TestAssetsManager _testAssets = new(output);
+        private readonly TestLogger _logger = new TestLogger(output);
+        private readonly TestAssetsManager _testAssets = new TestAssetsManager(output);
 
         private static string MuxerPath
             => TestContext.Current.ToolsetUnderTest.DotNetHostPath;
@@ -445,11 +447,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
             var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
-            var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, buildReporter);
+            var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true", "/tl:Off"], processRunner, buildReporter);
 
             var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
-
             AssertEx.SequenceEqual(
             [
                 "A/A.cs: [A/A.csproj]",
@@ -510,10 +511,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
             var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
-            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], processRunner, buildReporter);
+            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: ["/tl:Off"], processRunner, buildReporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.Null(result);
-
             // note: msbuild prints errors to stdout, we match the pattern and report as error:
             Assert.Contains(
                 $"[Error] {project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)",
