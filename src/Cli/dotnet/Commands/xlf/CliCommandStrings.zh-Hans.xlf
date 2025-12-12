@@ -1051,11 +1051,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">日期</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(默认值)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">正在卸载工作负载清单 {0} 版本 {1}…</target>
@@ -1085,11 +1080,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Description</source>
         <target state="translated">说明</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">读取 ‘{0}’ 时遇到错误: {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1191,15 +1181,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Downloads</source>
         <target state="translated">下载</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">存在多个名称区分大小写的启动配置文件，这是不允许的:
-{0}
-将配置文件名称设为可区分的名称。</target>
-        <note />
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1590,26 +1571,6 @@ Make the profile names distinct.</source>
         <source>Latest Version</source>
         <target state="translated">最新版本</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">名为“{0}”的启动配置文件不存在。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">不支持启动配置文件类型“{0}”。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">具有指定名称的配置文件不是有效的 JSON 对象。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">启动设置文档的“profiles”属性不是 JSON 对象。</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -3650,11 +3611,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
         <target state="translated">已成功更新工作负载安装模式以使用 {0}。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">找不到可用的启动配置文件。</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">
