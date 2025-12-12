@@ -11,11 +11,7 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Restore;
 
 internal static class WorkloadRestoreCommandParser
 {
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
-    {
-        Description = CliStrings.SolutionOrProjectArgumentDescription,
-        Arity = ArgumentArity.ZeroOrMore
-    };
+    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = WorkloadRestoreCommandDefinition.SlnOrProjectArgument;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -26,10 +22,7 @@ internal static class WorkloadRestoreCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("restore", CliCommandStrings.WorkloadRestoreCommandDescription);
-
-        command.Arguments.Add(SlnOrProjectArgument);
-        WorkloadInstallCommandParser.AddWorkloadInstallCommandOptions(command);
+        Command command = WorkloadRestoreCommandDefinition.Create();
 
         command.SetAction((parseResult) => new WorkloadRestoreCommand(parseResult).Execute());
 

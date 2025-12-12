@@ -8,36 +8,19 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Update;
 
 internal static class WorkloadUpdateCommandParser
 {
-    public static readonly Option<string> TempDirOption = WorkloadInstallCommandParser.TempDirOption;
+    public static readonly Option<string> TempDirOption = WorkloadUpdateCommandDefinition.TempDirOption;
 
-    public static readonly Option<bool> FromPreviousSdkOption = new("--from-previous-sdk")
-    {
-        Description = CliCommandStrings.FromPreviousSdkOptionDescription
-    };
+    public static readonly Option<bool> FromPreviousSdkOption = WorkloadUpdateCommandDefinition.FromPreviousSdkOption;
 
-    public static readonly Option<bool> AdManifestOnlyOption = new("--advertising-manifests-only")
-    {
-        Description = CliCommandStrings.AdManifestOnlyOptionDescription,
-        Arity = ArgumentArity.Zero
-    };
+    public static readonly Option<bool> AdManifestOnlyOption = WorkloadUpdateCommandDefinition.AdManifestOnlyOption;
 
-    public static readonly Option<bool> PrintRollbackOption = new("--print-rollback")
-    {
-        Hidden = true,
-        Arity = ArgumentArity.Zero
-    };
+    public static readonly Option<bool> PrintRollbackOption = WorkloadUpdateCommandDefinition.PrintRollbackOption;
 
-    public static readonly Option<int> FromHistoryOption = new("--from-history")
-    {
-        Description = CliCommandStrings.FromHistoryOptionDescription
-    };
+    public static readonly Option<int> FromHistoryOption = WorkloadUpdateCommandDefinition.FromHistoryOption;
 
-    public static readonly Option<string> HistoryManifestOnlyOption = new("--manifests-only")
-    {
-        Description = CliCommandStrings.HistoryManifestOnlyOptionDescription
-    };
+    public static readonly Option<string> HistoryManifestOnlyOption = WorkloadUpdateCommandDefinition.HistoryManifestOnlyOption;
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = WorkloadUpdateCommandDefinition.VerbosityOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -48,20 +31,7 @@ internal static class WorkloadUpdateCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("update", CliCommandStrings.WorkloadUpdateCommandDescription);
-
-        InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
-
-        command.Options.Add(TempDirOption);
-        command.Options.Add(FromPreviousSdkOption);
-        command.Options.Add(AdManifestOnlyOption);
-        command.Options.Add(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
-        command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-        command.Options.Add(VerbosityOption);
-        command.Options.Add(PrintRollbackOption);
-        command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
-        command.Options.Add(FromHistoryOption);
-        command.Options.Add(HistoryManifestOnlyOption);
+        Command command = WorkloadUpdateCommandDefinition.Create();
 
         command.SetAction((parseResult) => new WorkloadUpdateCommand(parseResult).Execute());
 

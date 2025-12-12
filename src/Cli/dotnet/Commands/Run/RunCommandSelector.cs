@@ -28,7 +28,7 @@ internal sealed class RunCommandSelector : IDisposable
     private readonly FacadeLogger? _binaryLogger;
     private readonly bool _isInteractive;
     private readonly MSBuildArgs _msbuildArgs;
-    
+
     private ProjectCollection? _collection;
     private Microsoft.Build.Evaluation.Project? _project;
     private ProjectInstance? _projectInstance;
@@ -316,7 +316,7 @@ internal sealed class RunCommandSelector : IDisposable
 
         // Try to get available devices from the project
         bool targetExists = TryComputeAvailableDevices(noRestore, out var devices, out restoreWasPerformed);
-        
+
         // If the target doesn't exist, continue without device selection
         if (!targetExists)
         {
