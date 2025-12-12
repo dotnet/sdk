@@ -6,14 +6,12 @@ using Microsoft.DotNet.Cli.Commands.Package.Add;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
 
-internal static class AddPackageCommandDefinition
+internal sealed class AddPackageCommandDefinition() : PackageAddCommandDefinitionBase(Name)
 {
-    public const string Name = "package";
+    public new const string Name = "package";
 
-    public static Command Create()
-    {
-        Command command = new(Name, CliCommandStrings.PackageAddAppFullName);
-        PackageAddCommandDefinition.AddOptionsAndArguments(command);
-        return command;
-    }
+    public AddCommandDefinition Parent => (AddCommandDefinition)Parents.Single();
+
+    public override Argument<string>? GetProjectOrFileArgument()
+        => Parent.ProjectOrFileArgument;
 }
