@@ -13,20 +13,15 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
 internal static class ToolUninstallCommandParser
 {
-    public static readonly Argument<string> PackageIdArgument = new("packageId")
-    {
-        HelpName = "PACKAGE_ID",
-        Description = CliStrings.PackageReference,
-        Arity = ArgumentArity.ExactlyOne
-    };
+    public static readonly Argument<string> PackageIdArgument = ToolUninstallCommandDefinition.PackageIdArgument;
 
-    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption(CliCommandStrings.ToolUninstallGlobalOptionDescription);
+    public static readonly Option<bool> GlobalOption = ToolUninstallCommandDefinition.GlobalOption;
 
-    public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption(CliCommandStrings.ToolUninstallLocalOptionDescription);
+    public static readonly Option<bool> LocalOption = ToolUninstallCommandDefinition.LocalOption;
 
-    public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption(CliCommandStrings.ToolUninstallToolPathOptionDescription);
+    public static readonly Option<string> ToolPathOption = ToolUninstallCommandDefinition.ToolPathOption;
 
-    public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption(CliCommandStrings.ToolUninstallManifestPathOptionDescription);
+    public static readonly Option<string> ToolManifestOption = ToolUninstallCommandDefinition.ToolManifestOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -37,13 +32,7 @@ internal static class ToolUninstallCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("uninstall", CliCommandStrings.ToolUninstallCommandDescription);
-
-        command.Arguments.Add(PackageIdArgument);
-        command.Options.Add(GlobalOption);
-        command.Options.Add(LocalOption);
-        command.Options.Add(ToolPathOption);
-        command.Options.Add(ToolManifestOption);
+        Command command = ToolUninstallCommandDefinition.Create();
 
         command.SetAction((parseResult) => new ToolUninstallCommand(parseResult).Execute());
 

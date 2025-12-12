@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Clean;
 
 internal static class WorkloadCleanCommandParser
 {
-    public static readonly Option<bool> CleanAllOption = new("--all") { Description = CliCommandStrings.CleanAllOptionDescription };
+    public static readonly Option<bool> CleanAllOption = WorkloadCleanCommandDefinition.CleanAllOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -20,9 +20,7 @@ internal static class WorkloadCleanCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("clean", CliCommandStrings.WorkloadCleanCommandDescription);
-
-        command.Options.Add(CleanAllOption);
+        Command command = WorkloadCleanCommandDefinition.Create();
 
         command.SetAction((parseResult) => new WorkloadCleanCommand(parseResult).Execute());
 

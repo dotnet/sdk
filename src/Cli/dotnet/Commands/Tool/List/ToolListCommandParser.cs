@@ -11,25 +11,15 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
 internal static class ToolListCommandParser
 {
-    public static readonly Argument<string> PackageIdArgument = new("packageId")
-    {
-        HelpName = CliCommandStrings.ToolListPackageIdArgumentName,
-        Description = CliCommandStrings.ToolListPackageIdArgumentDescription,
-        Arity = ArgumentArity.ZeroOrOne,
-    };
+    public static readonly Argument<string> PackageIdArgument = ToolListCommandDefinition.PackageIdArgument;
 
-    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption(CliCommandStrings.ToolListGlobalOptionDescription);
+    public static readonly Option<bool> GlobalOption = ToolListCommandDefinition.GlobalOption;
 
-    public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption(CliCommandStrings.ToolListLocalOptionDescription);
+    public static readonly Option<bool> LocalOption = ToolListCommandDefinition.LocalOption;
 
-    public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption(CliCommandStrings.ToolListToolPathOptionDescription);
+    public static readonly Option<string> ToolPathOption = ToolListCommandDefinition.ToolPathOption;
 
-    public static readonly Option<ToolListOutputFormat> ToolListFormatOption = new("--format")
-    {
-        Arity = ArgumentArity.ZeroOrOne,
-        DefaultValueFactory = _ => ToolListOutputFormat.table,
-        Description = CliCommandStrings.ToolListFormatOptionDescription
-    };
+    public static readonly Option<ToolListOutputFormat> ToolListFormatOption = ToolListCommandDefinition.ToolListFormatOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -40,13 +30,7 @@ internal static class ToolListCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("list", CliCommandStrings.ToolListCommandDescription);
-
-        command.Arguments.Add(PackageIdArgument);
-        command.Options.Add(GlobalOption);
-        command.Options.Add(LocalOption);
-        command.Options.Add(ToolPathOption);
-        command.Options.Add(ToolListFormatOption);
+        Command command = ToolListCommandDefinition.Create();
 
         command.SetAction((parseResult) => new ToolListCommand(parseResult).Execute());
 

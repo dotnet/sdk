@@ -8,13 +8,13 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
 
 internal static class WorkloadRepairCommandParser
 {
-    public static readonly Option<string> ConfigOption = InstallingWorkloadCommandParser.ConfigOption;
+    public static readonly Option<string> ConfigOption = WorkloadRepairCommandDefinition.ConfigOption;
 
-    public static readonly Option<string[]> SourceOption = InstallingWorkloadCommandParser.SourceOption;
+    public static readonly Option<string[]> SourceOption = WorkloadRepairCommandDefinition.SourceOption;
 
-    public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+    public static readonly Option<string> VersionOption = WorkloadRepairCommandDefinition.VersionOption;
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = WorkloadRepairCommandDefinition.VerbosityOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -25,14 +25,7 @@ internal static class WorkloadRepairCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("repair", CliCommandStrings.WorkloadRepairCommandDescription);
-
-        command.Options.Add(VersionOption);
-        command.Options.Add(ConfigOption);
-        command.Options.Add(SourceOption);
-        command.Options.Add(VerbosityOption);
-        command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-        command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
+        Command command = WorkloadRepairCommandDefinition.Create();
 
         command.SetAction((parseResult) => new WorkloadRepairCommand(parseResult).Execute());
 
