@@ -1141,12 +1141,3 @@ internal enum BuildLevel
     /// </summary>
     All,
 }
-
-[Flags]
-internal enum AppKinds
-{
-    None = 0,
-    ProjectBased = 1 << 0,
-    FileBased = 1 << 1,
-    Any = ProjectBased | FileBased,
-}
