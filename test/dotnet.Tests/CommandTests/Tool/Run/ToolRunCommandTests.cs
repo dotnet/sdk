@@ -13,7 +13,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    public class ToolRunCommandTests: SdkTest
+    public class ToolRunCommandTests : SdkTest
     {
         private const string ManifestFilename = "dotnet-tools.json";
         private DirectoryPath _nugetGlobalPackagesFolder;
