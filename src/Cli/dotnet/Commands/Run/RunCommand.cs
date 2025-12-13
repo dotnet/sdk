@@ -157,7 +157,10 @@ public class RunCommand
         try
         {
             // Pre-run evaluation: Handle target framework and device selection for project-based scenarios
-            if (ProjectFileFullPath is not null && !TrySelectTargetFrameworkAndDeviceIfNeeded(logger))
+            using var selector = ProjectFileFullPath is not null
+                ? new RunCommandSelector(ProjectFileFullPath, Interactive, MSBuildArgs, logger)
+                : null;
+            if (selector is not null && !TrySelectTargetFrameworkAndDeviceIfNeeded(selector))
             {
                 // If --list-devices was specified, this is a successful exit
                 return ListDevices ? 0 : 1;
@@ -200,6 +203,17 @@ public class RunCommand
                 }
             }
 
+            // Deploy step: Call DeployToDevice target if available
+            // This must run even with --no-build, as the user may have selected a different device
+            if (selector is not null && !selector.TryDeployToDevice())
+            {
+                // Only error if we have a valid project (not a .sln file, etc.)
+                if (selector.HasValidProject)
+                {
+                    throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
+                }
+            }
+
             ICommand targetCommand = GetTargetCommand(projectFactory, cachedRunProperties, logger);
             ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
 
@@ -234,12 +248,10 @@ public class RunCommand
     /// Uses a single RunCommandSelector instance for both operations, re-evaluating
     /// the project after framework selection to get the correct device list.
     /// </summary>
-    /// <param name="logger">Optional logger for MSBuild operations (device selection)</param>
+    /// <param name="selector">The RunCommandSelector instance to use for selection</param>
     /// <returns>True if we can continue, false if we should exit</returns>
-    private bool TrySelectTargetFrameworkAndDeviceIfNeeded(FacadeLogger? logger)
+    private bool TrySelectTargetFrameworkAndDeviceIfNeeded(RunCommandSelector selector)
     {
-        Debug.Assert(ProjectFileFullPath is not null);
-
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
         
         // If user specified --device on command line, add it to global properties and MSBuildArgs
@@ -258,13 +270,10 @@ public class RunCommand
         
         if (!ListDevices && hasFramework && hasDevice)
         {
-            // Both framework and device are pre-specified, no need to create selector or logger
+            // Both framework and device are pre-specified
             return true;
         }
 
-        // Create a single selector for both framework and device selection
-        using var selector = new RunCommandSelector(ProjectFileFullPath, globalProperties, Interactive, MSBuildArgs, logger);
-        
         // Step 1: Select target framework if needed
         if (!selector.TrySelectTargetFramework(out string? selectedFramework))
         {

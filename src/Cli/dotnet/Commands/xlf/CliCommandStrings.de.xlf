@@ -2687,6 +2687,11 @@ Standardmäßig wird eine Framework-abhängige Anwendung veröffentlicht.</targe
         <target state="translated">Buildvorgang wird ausgeführt...</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">Das {0} Ziel ausführen, um zu ermitteln, dass ein Fehler bei den Ausführungsbefehlen für dieses Projekt aufgetreten ist. Beheben Sie die Fehler und Warnungen, und führen Sie dies erneut aus.</target>
