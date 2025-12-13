@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] Packages { get; set; }
         
         [Output]
-        public ITaskItem [] PackageDownloads { get; set; }
+        public ITaskItem[] PackageDownloads { get; set; }
 
         protected override void ExecuteCore()
         {
@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     var packageDownloadItem = new TaskItem(g.Key);
                     packageDownloadItem.SetMetadata("Version", string.Join(";",
-                        g.Select(p => "[" + p.GetMetadata("Version") + "]")));
+                        g.Select(p => "[" + p.GetMetadata("Version").Trim('[', ']') + "]")));
                     return packageDownloadItem;
                 }).ToArray();
         }
