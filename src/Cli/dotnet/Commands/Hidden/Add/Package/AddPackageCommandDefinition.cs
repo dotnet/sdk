@@ -2,30 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Package.Add;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
 
-internal static class AddPackageCommandDefinition
+internal sealed class AddPackageCommandDefinition() : PackageAddCommandDefinitionBase(Name)
 {
-    public const string Name = "package";
+    public new const string Name = "package";
 
-    public static Command Create()
-    {
-        Command command = new(Name, CliCommandStrings.PackageAddAppFullName);
+    public AddCommandDefinition Parent => (AddCommandDefinition)Parents.Single();
 
-        command.Arguments.Add(PackageAddCommandDefinition.CmdPackageArgument);
-        command.Options.Add(PackageAddCommandDefinition.VersionOption);
-        command.Options.Add(PackageAddCommandDefinition.FrameworkOption);
-        command.Options.Add(PackageAddCommandDefinition.NoRestoreOption);
-        command.Options.Add(PackageAddCommandDefinition.SourceOption);
-        command.Options.Add(PackageAddCommandDefinition.PackageDirOption);
-        command.Options.Add(PackageAddCommandDefinition.InteractiveOption);
-        command.Options.Add(PackageAddCommandDefinition.PrereleaseOption);
-        command.Options.Add(PackageCommandDefinition.ProjectOption);
-        command.Options.Add(PackageCommandDefinition.FileOption);
-
-        return command;
-    }
+    public override Argument<string>? GetProjectOrFileArgument()
+        => Parent.ProjectOrFileArgument;
 }

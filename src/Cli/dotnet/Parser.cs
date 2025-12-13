@@ -396,6 +396,9 @@ public static class Parser
             }
             else
             {
+                // TODO: avoid modifying the commands:
+                // https://github.com/dotnet/sdk/issues/52136
+
                 if (command.Name.Equals(ListReferenceCommandDefinition.Name))
                 {
                     Command listCommand = command.Parents.Single() as Command;
@@ -412,7 +415,10 @@ public static class Parser
                 else if (command.Name.Equals(AddPackageCommandDefinition.Name) || command.Name.Equals(AddCommandDefinition.Name))
                 {
                     // Don't show package completions in help
-                    PackageAddCommandDefinition.CmdPackageArgument.CompletionSources.Clear();
+                    foreach (var argument in command.Arguments)
+                    {
+                        argument.CompletionSources.Clear();
+                    }
                 }
                 else if (command.Name.Equals(WorkloadSearchCommandParser.GetCommand().Name))
                 {

@@ -17,9 +17,11 @@ internal static class DotnetCommandCallbacks
     {
         PathUtility.EnsureAllPathsExist([projectPath], CliStrings.CommonFileNotFound, allowDirectories: false);
         IEnumerable<string> commandArgs = ["add", projectPath, "package", packageName];
+
+        var packageAddCommandDef = new PackageAddCommandDefinition();
         if (!string.IsNullOrWhiteSpace(version))
         {
-            commandArgs = commandArgs.Append(PackageAddCommandDefinition.VersionOption.Name).Append(version);
+            commandArgs = commandArgs.Append(packageAddCommandDef.VersionOption.Name).Append(version);
         }
         var addPackageReferenceCommand = new PackageAddCommand(AddCommandParser.GetCommand().Parse([.. commandArgs]));
         return addPackageReferenceCommand.Execute() == 0;
