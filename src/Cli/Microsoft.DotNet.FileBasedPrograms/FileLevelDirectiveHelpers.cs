@@ -228,7 +228,8 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
     public static SourceFile Load(string filePath)
     {
         using var stream = File.OpenRead(filePath);
-        return new SourceFile(filePath, SourceText.From(stream, Encoding.UTF8));
+        // Let SourceText.From auto-detect the encoding (including BOM detection)
+        return new SourceFile(filePath, SourceText.From(stream, encoding: null));
     }
 
     public SourceFile WithText(SourceText newText)
@@ -239,7 +240,9 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
     public void Save()
     {
         using var stream = File.Open(Path, FileMode.Create, FileAccess.Write);
-        using var writer = new StreamWriter(stream, Encoding.UTF8);
+        // Use the encoding from SourceText, which preserves the original BOM state
+        var encoding = Text.Encoding ?? new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        using var writer = new StreamWriter(stream, encoding);
         Text.Write(writer);
     }
 
