@@ -1441,10 +1441,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RunCommand Condition="'$(RunCommand)' == ''">$(TargetPath)</RunCommand>
         <RunArguments Condition="'$(RunArguments)' == ''">$(StartArguments)</RunArguments>
       </PropertyGroup>
-      <PropertyGroup Condition="$([MSBuild]::IsOSUnixLike())">
-        <RunCommand Condition="'$(RunCommand)' == ''">mono</RunCommand>
-        <RunArguments Condition="'$(RunArguments)' == ''">&quot;$(TargetPath)&quot; $(StartArguments)</RunArguments>
-      </PropertyGroup>
     </When>
   </Choose>
 
