@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
@@ -66,10 +67,16 @@ internal abstract class RunApiInput
         {
             var sourceFile = SourceFile.Load(EntryPointFileFullPath);
             var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: true, ErrorReporters.CreateCollectingReporter(out var diagnostics));
-            string artifactsPath = ArtifactsPath ?? VirtualProjectBuildingCommand.GetArtifactsPath(EntryPointFileFullPath);
+            string artifactsPath = ArtifactsPath ?? VirtualProjectBuilder.GetArtifactsPath(EntryPointFileFullPath);
 
             var csprojWriter = new StringWriter();
-            VirtualProjectBuildingCommand.WriteProjectFile(csprojWriter, directives, isVirtualProject: true, targetFilePath: EntryPointFileFullPath, artifactsPath: artifactsPath);
+            VirtualProjectBuilder.WriteProjectFile(
+                csprojWriter,
+                directives,
+                VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion),
+                isVirtualProject: true,
+                targetFilePath: EntryPointFileFullPath,
+                artifactsPath: artifactsPath);
 
             return new RunApiOutput.Project
             {
@@ -88,11 +95,8 @@ internal abstract class RunApiInput
         {
             var msbuildArgs = MSBuildArgs.FromVerbosity(VerbosityOptions.quiet);
             var buildCommand = new VirtualProjectBuildingCommand(
-                entryPointFileFullPath: EntryPointFileFullPath,
-                msbuildArgs: msbuildArgs)
-            {
-                CustomArtifactsPath = ArtifactsPath,
-            };
+                EntryPointFileFullPath, msbuildArgs, artifactsPath: ArtifactsPath);
+
             buildCommand.MarkArtifactsFolderUsed();
 
             var runCommand = new RunCommand(
@@ -113,9 +117,8 @@ internal abstract class RunApiInput
                 environmentVariables: ReadOnlyDictionary<string, string>.Empty,
                 msbuildRestoreProperties: ReadOnlyDictionary<string, string>.Empty);
 
-            runCommand.TryGetLaunchProfileSettingsIfNeeded(out var launchSettings);
-            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(buildCommand.CreateProjectInstance, cachedRunProperties: null, logger: null);
-            runCommand.ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
+            var result = runCommand.ReadLaunchProfileSettings();
+            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, logger: null);
 
             return new RunApiOutput.RunCommand
             {
