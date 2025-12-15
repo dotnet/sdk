@@ -545,13 +545,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
 
         // Verify the complete file content is correct
         var savedContent = File.ReadAllText(tempFile);
-        var expectedContent = """
-            #!/usr/bin/env dotnet run
-
-            #:package MyPackage@1.0.0
-
-            Console.WriteLine();
-            """;
+        var expectedContent = "#!/usr/bin/env dotnet run\n\n#:package MyPackage@1.0.0\n\nConsole.WriteLine();";
         Assert.Equal(expectedContent, savedContent);
     }
 
