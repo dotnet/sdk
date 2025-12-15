@@ -543,9 +543,16 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
         Assert.True(bytes is not [0xEF, 0xBB, 0xBF, ..],
             "File should not have UTF-8 BOM");
 
-        // Verify shebang is still first
+        // Verify the complete file content is correct
         var savedContent = File.ReadAllText(tempFile);
-        Assert.StartsWith("#!/usr/bin/env dotnet run", savedContent);
+        var expectedContent = """
+            #!/usr/bin/env dotnet run
+
+            #:package MyPackage@1.0.0
+
+            Console.WriteLine();
+            """;
+        Assert.Equal(expectedContent, savedContent);
     }
 
     /// <summary>
