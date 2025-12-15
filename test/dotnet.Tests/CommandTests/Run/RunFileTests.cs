@@ -726,6 +726,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     /// <summary>
     /// Other files in the folder are not part of the compilation.
+    /// See <see href="https://github.com/dotnet/sdk/issues/51785"/>.
     /// </summary>
     [Fact]
     public void MultipleFiles_RunEntryPoint()
@@ -750,9 +751,32 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            // warning CS2002: Source file 'Program.cs' specified multiple times
-            .And.HaveStdOutContaining("warning CS2002")
-            .And.HaveStdOutContaining("Hello, String from Util");
+            .And.HaveStdOut("Hello, String from Util");
+    }
+
+    /// <summary>
+    /// Setting EnableDefaultCompileItems=true via Directory.Build.props should not cause CS2002 warning.
+    /// See <see href="https://github.com/dotnet/sdk/issues/51785"/>.
+    /// </summary>
+    [Fact]
+    public void MultipleFiles_EnableDefaultCompileItemsViaDirectoryBuildProps()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programDependingOnUtil);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+                <PropertyGroup>
+                    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+                </PropertyGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, String from Util");
     }
 
     /// <summary>
@@ -854,6 +878,124 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdOutContaining("error CS5001:"); // Program does not contain a static 'Main' method suitable for an entry point
+    }
+
+    /// <summary>
+    /// See <see href="https://github.com/dotnet/sdk/issues/51778"/>.
+    /// </summary>
+    [Theory, CombinatorialData]
+    public void WorkingDirectory(bool cscOnly)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = """
+            Console.WriteLine("v1");
+            Console.WriteLine(Environment.CurrentDirectory);
+            Console.WriteLine(Directory.GetCurrentDirectory());
+            Console.WriteLine(new DirectoryInfo(".").FullName);
+            Console.WriteLine(AppContext.GetData("EntryPointFileDirectoryPath"));
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance,
+            expectedLevel: cscOnly ? BuildLevel.Csc : BuildLevel.All,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v1", workDir));
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.Csc,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v2", workDir));
+
+        string GetExpectedOutput(string version, string workDir) => $"""
+            {version}
+            {workDir}
+            {workDir}
+            {workDir}
+            {Path.GetDirectoryName(programPath)}
+            """;
+    }
+
+    /// <summary>
+    /// Combination of <see cref="WorkingDirectory"/> and <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
+    [Fact]
+    public void WorkingDirectory_CscOnly_AfterMSBuild()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = """
+            #:property Configuration=Release
+            Console.WriteLine("v1");
+            Console.WriteLine(Environment.CurrentDirectory);
+            Console.WriteLine(Directory.GetCurrentDirectory());
+            Console.WriteLine(new DirectoryInfo(".").FullName);
+            Console.WriteLine(AppContext.GetData("EntryPointFileDirectoryPath"));
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.All,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v1", workDir));
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.None,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v1", workDir));
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.Csc,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v2", workDir));
+
+        // Can be overridden with a #:property.
+        var workDir2 = Path.Join(testInstance.Path, "dir2");
+        Directory.CreateDirectory(workDir2);
+        code = $"""
+            #:property RunWorkingDirectory={workDir2}
+            {code}
+            """;
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.All,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v2", workDir2));
+
+        string GetExpectedOutput(string version, string workDir) => $"""
+            {version}
+            {workDir}
+            {workDir}
+            {workDir}
+            {Path.GetDirectoryName(programPath)}
+            """;
     }
 
     /// <summary>
@@ -1706,9 +1848,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log, "run", "lib.cs")
             .WithWorkingDirectory(testInstance.Path)
-            .Execute()
+            .Execute("--no-interactive")
             .Should().Fail()
-            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
 
         new DotnetCommand(Log, "run", "lib.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
             .WithWorkingDirectory(testInstance.Path)
@@ -1833,7 +1975,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
 
         new DotnetCommand(Log, "run", "exe.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
             .WithWorkingDirectory(testInstance.Path)
@@ -2488,6 +2630,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [InlineData("../Lib")]
     [InlineData(@"..\Lib\Lib.csproj")]
     [InlineData(@"..\Lib")]
+    [InlineData("$(MSBuildProjectDirectory)/../$(LibProjectName)")]
+    [InlineData(@"$(MSBuildProjectDirectory)/../Lib\$(LibProjectName).csproj")]
     public void ProjectReference(string arg)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -2516,64 +2660,148 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         File.WriteAllText(Path.Join(appDir, "Program.cs"), $"""
             #:project {arg}
+            #:property LibProjectName=Lib
             Console.WriteLine(Lib.LibClass.GetMessage());
             """);
+
+        var expectedOutput = "Hello from Lib";
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(appDir)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("Hello from Lib");
+            .And.HaveStdOut(expectedOutput);
+
+        // Running from a different working directory shouldn't affect handling of the relative project paths.
+        new DotnetCommand(Log, "run", "App/Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
-    public void ProjectReference_Errors()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("app")]
+    public void ProjectReference_Errors(string? subdir)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        var relativeFilePath = Path.Join(subdir, "Program.cs");
+        var filePath = Path.Join(testInstance.Path, relativeFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        File.WriteAllText(filePath, """
             #:project wrong.csproj
             """);
 
         // Project file does not exist.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, FileBasedProgramsResources.InvalidProjectDirective,
-                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "wrong.csproj"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "wrong.csproj"))));
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        File.WriteAllText(filePath, """
             #:project dir/
             """);
 
         // Project directory does not exist.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, FileBasedProgramsResources.InvalidProjectDirective,
-                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "dir/"))));
 
-        Directory.CreateDirectory(Path.Join(testInstance.Path, "dir"));
+        Directory.CreateDirectory(Path.Join(testInstance.Path, subdir, "dir"));
 
         // Directory exists but has no project file.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, FileBasedProgramsResources.InvalidProjectDirective,
-                string.Format(FileBasedProgramsResources.CouldNotFindAnyProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindAnyProjectInDirectory, Path.Join(testInstance.Path, subdir, "dir/"))));
 
-        File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj1.csproj"), "<Project />");
-        File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj2.csproj"), "<Project />");
+        File.WriteAllText(Path.Join(testInstance.Path, subdir, "dir", "proj1.csproj"), "<Project />");
+        File.WriteAllText(Path.Join(testInstance.Path, subdir, "dir", "proj2.csproj"), "<Project />");
 
         // Directory exists but has multiple project files.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, FileBasedProgramsResources.InvalidProjectDirective,
-                string.Format(FileBasedProgramsResources.MoreThanOneProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.MoreThanOneProjectInDirectory, Path.Join(testInstance.Path, subdir, "dir/"))));
+
+        // Malformed MSBuild variable syntax.
+        File.WriteAllText(filePath, """
+            #:project $(Test
+            """);
+
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "$(Test"))));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("app")]
+    public void ProjectReference_Duplicate(string? subdir)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var relativeFilePath = Path.Join(subdir, "Program.cs");
+        var filePath = Path.Join(testInstance.Path, relativeFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, subdir, "dir"));
+        File.WriteAllText(Path.Join(testInstance.Path, subdir, "dir", "proj1.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project dir/
+            Console.WriteLine("Hello");
+            """);
+
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 2, FileBasedProgramsResources.DuplicateDirective, "#:project dir/"));
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project dir/proj1.csproj
+            Console.WriteLine("Hello");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate project reference
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project $(MSBuildProjectDirectory)/dir/
+            Console.WriteLine("Hello");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate project reference
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
     }
 
     [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
@@ -3128,7 +3356,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc);
     }
 
-    private void Build(TestDirectory testInstance, BuildLevel expectedLevel, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program", string programFileName = "Program.cs")
+    private void Build(TestDirectory testInstance, BuildLevel expectedLevel, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program", string programFileName = "Program.cs", string? workDir = null)
     {
         string prefix = expectedLevel switch
         {
@@ -3139,12 +3367,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         };
 
         new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
-            .WithWorkingDirectory(testInstance.Path)
+            .WithWorkingDirectory(workDir ?? testInstance.Path)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut(prefix + expectedOutput);
 
-        var binlogs = new DirectoryInfo(testInstance.Path)
+        var binlogs = new DirectoryInfo(workDir ?? testInstance.Path)
             .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly);
 
         binlogs.Select(f => f.Name)
@@ -3855,7 +4083,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </ItemGroup>
 
                       <ItemGroup>
-                        <Compile Include="{programPath}" />
+                        <Compile Condition="'$(EnableDefaultCompileItems)' != 'true'" Include="{programPath}" />
                       </ItemGroup>
 
                       <ItemGroup>
@@ -3922,7 +4150,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </PropertyGroup>
 
                       <ItemGroup>
-                        <Compile Include="{programPath}" />
+                        <Compile Condition="'$(EnableDefaultCompileItems)' != 'true'" Include="{programPath}" />
                       </ItemGroup>
 
                       <ItemGroup>
@@ -3992,7 +4220,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </PropertyGroup>
 
                       <ItemGroup>
-                        <Compile Include="{programPath}" />
+                        <Compile Condition="'$(EnableDefaultCompileItems)' != 'true'" Include="{programPath}" />
                       </ItemGroup>
 
                       <ItemGroup>

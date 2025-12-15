@@ -1540,7 +1540,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Convert a file-based program to a project-based program.</value>
   </data>
   <data name="ProjectConvertAskForOutputDirectory" xml:space="preserve">
-    <value>Specify the output directory ({0}):</value>
+    <value>Specify the output directory (press Enter for default: '{0}', directory must not exist):</value>
     <comment>{0} is the default value</comment>
   </data>
   <data name="ProjectConvertDryRun" xml:space="preserve">
@@ -1746,6 +1746,21 @@ The current OutputType is '{2}'.</value>
     <value>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</value>
   </data>
+  <data name="RunCommandSelectTargetFrameworkPrompt" xml:space="preserve">
+    <value>Select the target framework to run:</value>
+  </data>
+  <data name="RunCommandMoreFrameworksText" xml:space="preserve">
+    <value>Move up and down to reveal more frameworks</value>
+  </data>
+  <data name="RunCommandSearchPlaceholderText" xml:space="preserve">
+    <value>Type to search</value>
+  </data>
+  <data name="RunCommandAvailableTargetFrameworks" xml:space="preserve">
+    <value>Available target frameworks:</value>
+  </data>
+  <data name="RunCommandExampleText" xml:space="preserve">
+    <value>Example</value>
+  </data>
   <data name="RunCommandProjectAbbreviationDeprecated" xml:space="preserve">
     <value>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</value>
     <comment>{Locked="--project"}</comment>
@@ -1770,6 +1785,30 @@ Your project targets multiple frameworks. Specify which framework to run using '
   </data>
   <data name="RunRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to run for.</value>
+  </data>
+  <data name="CommandOptionDeviceDescription" xml:space="preserve">
+    <value>The device identifier to use for running the application.</value>
+  </data>
+  <data name="CommandOptionDeviceHelpName" xml:space="preserve">
+    <value>DEVICE</value>
+  </data>
+  <data name="CommandOptionListDevicesDescription" xml:space="preserve">
+    <value>List available devices for running the application.</value>
+  </data>
+  <data name="RunCommandAvailableDevices" xml:space="preserve">
+    <value>Available devices:</value>
+  </data>
+  <data name="RunCommandNoDevicesAvailable" xml:space="preserve">
+    <value>No devices are available for this project.</value>
+  </data>
+  <data name="RunCommandSelectDevicePrompt" xml:space="preserve">
+    <value>Select a device to run on:</value>
+  </data>
+  <data name="RunCommandMoreDevicesText" xml:space="preserve">
+    <value>Move up and down to reveal more devices</value>
+  </data>
+  <data name="RunCommandExceptionUnableToRunSpecifyDevice" xml:space="preserve">
+    <value>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</value>
   </data>
   <data name="RuntimeConfigDefinition" xml:space="preserve">
     <value>Path to &lt;application&gt;.runtimeconfig.json file.</value>

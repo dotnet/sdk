@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-vstest" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-vstest" "1" "2025-10-30" "" ".NET Documentation"
 .hy
 .SH dotnet vstest
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .RS
 .PP
 The \f[V]dotnet vstest\f[R] command is superseded by \f[V]dotnet test\f[R], which can now be used to run assemblies.
@@ -37,7 +37,7 @@ dotnet vstest [<TEST_FILE_NAMES>] [--Blame] [--Diag <PATH_TO_LOG_FILE>]
     [--ParentProcessId <PROCESS_ID>] [--Platform] <PLATFORM_TYPE>
     [--Port <PORT>] [--ResultsDirectory<PATH>] [--Settings <SETTINGS_FILE>]
     [--TestAdapterPath <PATH>] [--TestCaseFilter <EXPRESSION>]
-    [--Tests <TEST_NAMES>] [[--] <args>...]]
+    [--Tests <TEST_NAMES>] [[--] <args>...]
 
 dotnet vstest -?|--Help
 \f[R]
@@ -75,7 +75,7 @@ Logs are written to the provided file.
 .RS 2
 .PP
 Target .NET Framework version used for test execution.
-Examples of valid values are \f[V].NETFramework,Version=v4.6\f[R] or \f[V].NETCoreApp,Version=v1.0\f[R].
+An example of a valid value is \f[V].NETFramework,Version=v7.0\f[R].
 Other supported values are \f[V]Framework40\f[R], \f[V]Framework45\f[R], \f[V]FrameworkCore10\f[R], and \f[V]FrameworkUap10\f[R].
 .RE
 .IP \[bu] 2

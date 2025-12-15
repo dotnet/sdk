@@ -65,7 +65,7 @@ internal abstract class RunApiInput
         public override RunApiOutput Execute()
         {
             var sourceFile = SourceFile.Load(EntryPointFileFullPath);
-            var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: true, DiagnosticBag.Collect(out var diagnostics));
+            var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: true, ErrorReporters.CreateCollectingReporter(out var diagnostics));
             string artifactsPath = ArtifactsPath ?? VirtualProjectBuildingCommand.GetArtifactsPath(EntryPointFileFullPath);
 
             var csprojWriter = new StringWriter();
@@ -102,6 +102,8 @@ internal abstract class RunApiInput
                 launchProfile: null,
                 noLaunchProfile: false,
                 noLaunchProfileArguments: false,
+                device: null,
+                listDevices: false,
                 noRestore: false,
                 noCache: false,
                 interactive: false,
@@ -112,7 +114,7 @@ internal abstract class RunApiInput
                 msbuildRestoreProperties: ReadOnlyDictionary<string, string>.Empty);
 
             runCommand.TryGetLaunchProfileSettingsIfNeeded(out var launchSettings);
-            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(buildCommand.CreateProjectInstance, cachedRunProperties: null);
+            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(buildCommand.CreateProjectInstance, cachedRunProperties: null, logger: null);
             runCommand.ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
 
             return new RunApiOutput.RunCommand
