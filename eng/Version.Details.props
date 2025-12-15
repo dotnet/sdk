@@ -112,6 +112,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>5.3.0-2.25610.11</MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>5.3.0-2.25610.11</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>5.3.0-2.25610.11</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildBuildHostPackageVersion>5.3.0-2.25610.11</MicrosoftCodeAnalysisWorkspacesMSBuildBuildHostPackageVersion>
     <MicrosoftNetCompilersToolsetPackageVersion>5.3.0-2.25610.11</MicrosoftNetCompilersToolsetPackageVersion>
     <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.3.0-2.25610.11</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
     <!-- nuget/nuget.client dependencies -->
