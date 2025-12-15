@@ -1696,9 +1696,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var sourceFile = new SourceFile(filePath ?? programPath, SourceText.From(inputCSharp, Encoding.UTF8));
         actualDiagnostics = null;
-        var diagnosticBag = collectDiagnostics ? DiagnosticBag.Collect(out actualDiagnostics) : DiagnosticBag.ThrowOnFirst();
+        var diagnosticBag = collectDiagnostics ? ErrorReporters.CreateCollectingReporter(out actualDiagnostics) : VirtualProjectBuildingCommand.ThrowingReporter;
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: !force, diagnosticBag);
-        directives = FileLevelDirectiveHelpers.EvaluateDirectives(project: null, directives, sourceFile, diagnosticBag);
+        directives = VirtualProjectBuildingCommand.EvaluateDirectives(project: null, directives, sourceFile, diagnosticBag);
         var projectWriter = new StringWriter();
         VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives, isVirtualProject: false);
         actualProject = projectWriter.ToString();
@@ -1727,7 +1727,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     private static void VerifyDirectiveConversionErrors(string inputCSharp, IEnumerable<(int LineNumber, string Message)> expectedErrors)
     {
         var sourceFile = new SourceFile(programPath, SourceText.From(inputCSharp, Encoding.UTF8));
-        FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: true, DiagnosticBag.Collect(out var diagnostics));
+        FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: true, ErrorReporters.CreateCollectingReporter(out var diagnostics));
         VerifyErrors(diagnostics, expectedErrors);
     }
 
