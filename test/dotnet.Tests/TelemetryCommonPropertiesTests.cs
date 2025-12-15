@@ -215,7 +215,7 @@ namespace Microsoft.DotNet.Tests
                 }
             }
         }
-        
+
         [Theory]
         [InlineData("dummySessionId")]
         [InlineData(null)]
