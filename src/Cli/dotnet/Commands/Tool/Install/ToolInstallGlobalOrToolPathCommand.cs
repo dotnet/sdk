@@ -20,12 +20,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.ShellShim;
-using Microsoft.DotNet.Cli.Commands.Tool.Update;
-using Microsoft.DotNet.Cli.Commands.Tool.Common;
-using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
-using Microsoft.DotNet.Cli.Commands.Tool.List;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
