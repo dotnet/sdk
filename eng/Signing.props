@@ -64,6 +64,7 @@
     <FileSignInfo Include="MessagePack.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Spectre.Console.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="$(ExternalCertificateId)" />
 
     <!-- Additionally, we need to notarize any .pkg files -->
@@ -81,7 +82,7 @@
     <FileSignInfo Include="Verify.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Verify.DiffPlex.dll" CertificateName="$(ExternalCertificateId)" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="MicrosoftSHA2" />
 
