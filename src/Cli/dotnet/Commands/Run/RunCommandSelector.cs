@@ -121,6 +121,7 @@ internal sealed class RunCommandSelector : IDisposable
             // Create a fresh ProjectInstance for each build operation
             // to avoid accumulating state (existing item groups) from previous builds
             projectInstance = _project.CreateProjectInstance();
+            HasValidProject = true;
             return true;
         }
 
