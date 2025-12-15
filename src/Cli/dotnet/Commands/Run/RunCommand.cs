@@ -19,6 +19,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -545,7 +546,7 @@ public class RunCommand
 
         static ICommand CreateCommandForCscBuiltProgram(string entryPointFileFullPath, string[] args)
         {
-            var artifactsPath = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointFileFullPath);
+            var artifactsPath = VirtualProjectBuilder.GetArtifactsPath(entryPointFileFullPath);
             var exePath = Path.Join(artifactsPath, "bin", "debug", Path.GetFileNameWithoutExtension(entryPointFileFullPath) + FileNameSuffixes.CurrentPlatform.Exe);
             var commandSpec = new CommandSpec(path: exePath, args: ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args));
             var command = CommandFactoryUsingResolver.Create(commandSpec);
@@ -664,7 +665,7 @@ public class RunCommand
 
             if (!readCodeFromStdin)
             {
-                if (VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+                if (VirtualProjectBuilder.IsValidEntryPointPath(arg))
                 {
                     arg = Path.GetFullPath(arg);
                 }
@@ -749,7 +750,7 @@ public class RunCommand
             // If '-' is specified as the input file, read all text from stdin into a temporary file and use that as the entry point.
             // We create a new directory for each file so other files are not included in the compilation.
             // We fail if the file already exists to avoid reusing the same file for multiple stdin runs (in case the random name is duplicate).
-            string directory = VirtualProjectBuildingCommand.GetTempSubpath(Path.GetRandomFileName());
+            string directory = VirtualProjectBuilder.GetTempSubpath(Path.GetRandomFileName());
             VirtualProjectBuildingCommand.CreateTempSubdirectory(directory);
             entryPointFilePath = Path.Join(directory, "app.cs");
             using (var stdinStream = Console.OpenStandardInput())

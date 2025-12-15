@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands;
 
@@ -23,7 +24,7 @@ public static class CommandFactory
         var args = parseResult.GetValue(catchAllUserInputArgument) ?? [];
         LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
         var forwardedArgs = parseResult.OptionValuesToBeForwarded(command);
-        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuilder.IsValidEntryPointPath(arg))
         {
             var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs],
             [

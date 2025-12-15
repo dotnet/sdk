@@ -1,28 +1,23 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Security;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Xml;
-using Microsoft.Build.Construction;
-using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.Build.Logging.SimpleErrorLogger;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -69,19 +64,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         ("MSBuild.rsp", true),
     ];
 
-    /// <remarks>
-    /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectAddTests.SameAsTemplate</c>).
-    /// </remarks>
-    public static readonly FrozenDictionary<string, string> DefaultProperties = FrozenDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase,
-    [
-        new("OutputType", "Exe"),
-        new("TargetFramework", $"net{TargetFrameworkVersion}"),
-        new("ImplicitUsings", "enable"),
-        new("Nullable", "enable"),
-        new("PublishAot", "true"),
-        new("PackAsTool", "true"),
-    ]);
-
     /// <summary>
     /// For purposes of determining whether CSC is enough to build as opposed to full MSBuild,
     /// we can ignore properties that do not affect the build on their own.
@@ -101,43 +83,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
 
-    public VirtualProjectBuildingCommand(
-        string entryPointFileFullPath,
-        MSBuildArgs msbuildArgs)
-    {
-        Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
-
-        EntryPointFileFullPath = entryPointFileFullPath;
-        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
-            { "_BuildNonexistentProjectsByDefault", bool.TrueString },
-            { "RestoreUseSkipNonexistentTargets", bool.FalseString },
-            { "ProvideCommandLineArgs", bool.TrueString },
-        }
-        .AsReadOnly());
-
-        if (MSBuildArgs.RequestedTargets is null or [])
-        {
-            RequestedTargets = MSBuildArgs.GetTargetResult;
-        }
-        else if (MSBuildArgs.GetTargetResult is null or [])
-        {
-            RequestedTargets = MSBuildArgs.RequestedTargets;
-        }
-        else
-        {
-            RequestedTargets = MSBuildArgs.RequestedTargets
-                .Union(MSBuildArgs.GetTargetResult, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-        }
-    }
-
-    public string EntryPointFileFullPath { get; }
-    public MSBuildArgs MSBuildArgs { get; }
-    private string[]? RequestedTargets { get; }
-    public string? CustomArtifactsPath { get; init; }
-    public string ArtifactsPath => field ??= CustomArtifactsPath ?? GetArtifactsPath(EntryPointFileFullPath);
     public bool NoRestore { get; init; }
 
     /// <summary>
@@ -161,18 +106,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     public bool NoWriteBuildMarkers { get; init; }
 
-    private SourceFile EntryPointSourceFile
-    {
-        get
-        {
-            if (field == default)
-            {
-                field = SourceFile.Load(EntryPointFileFullPath);
-            }
-
-            return field;
-        }
-    }
+    public VirtualProjectBuilder Builder { get; }
+    public MSBuildArgs MSBuildArgs { get; }
 
     public ImmutableArray<CSharpDirective> Directives
     {
@@ -180,7 +115,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (field.IsDefault)
             {
-                field = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, reportAllErrors: false, VirtualProjectBuildingCommand.ThrowingReporter);
+                field = FileLevelDirectiveHelpers.FindDirectives(Builder.EntryPointSourceFile, reportAllErrors: false, ThrowingReporter);
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -190,10 +125,27 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         set;
     }
 
+    public VirtualProjectBuildingCommand(
+        string entryPointFileFullPath,
+        MSBuildArgs msbuildArgs,
+        string? artifactsPath = null)
+    {
+        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
+            { "_BuildNonexistentProjectsByDefault", bool.TrueString },
+            { "RestoreUseSkipNonexistentTargets", bool.FalseString },
+            { "ProvideCommandLineArgs", bool.TrueString },
+        }
+        .AsReadOnly());
+
+        Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFrameworkVersion, MSBuildArgs.GetResolvedTargets(), artifactsPath);
+    }
+
     public override int Execute()
     {
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
-        bool evalOnly = msbuildGet && RequestedTargets is null or [];
+        bool evalOnly = msbuildGet && Builder.RequestedTargets is null or [];
         bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
 
         var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
@@ -218,7 +170,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             if (!NoWriteBuildMarkers)
             {
-                CreateTempSubdirectory(ArtifactsPath);
+                CreateTempSubdirectory(Builder.ArtifactsPath);
                 MarkArtifactsFolderUsed();
             }
         }
@@ -262,8 +214,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     // Execute CSC.
                     int result = new CSharpCompilerCommand
                     {
-                        EntryPointFileFullPath = EntryPointFileFullPath,
-                        ArtifactsPath = ArtifactsPath,
+                        EntryPointFileFullPath = Builder.EntryPointFileFullPath,
+                        ArtifactsPath = Builder.ArtifactsPath,
                         CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
                         CscArguments = cache.PreviousEntry?.CscArguments ?? [],
                         BuildResultFile = cache.PreviousEntry?.BuildResultFile,
@@ -349,7 +301,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: RequestedTargets ?? [Constants.Build, Constants.CoreCompile]);
+                    targetsToBuild: Builder.RequestedTargets ?? [Constants.Build, Constants.CoreCompile]);
 
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
@@ -716,7 +668,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             RuntimeVersion = CSharpCompilerCommand.RuntimeVersion,
         };
 
-        var entryPointFile = new FileInfo(EntryPointFileFullPath);
+        var entryPointFile = new FileInfo(Builder.EntryPointFileFullPath);
 
         // Collect current implicit build files.
         CollectImplicitBuildFiles(entryPointFile.Directory, cacheEntry.ImplicitBuildFiles, out var exampleMSBuildFile);
@@ -764,7 +716,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         // Check cache files.
 
-        string artifactsDirectory = ArtifactsPath;
+        string artifactsDirectory = Builder.ArtifactsPath;
         var successCacheFile = new FileInfo(Path.Join(artifactsDirectory, BuildSuccessCacheFileName));
 
         if (!successCacheFile.Exists)
@@ -911,7 +863,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public RunFileBuildCacheEntry? GetPreviousCacheEntry()
     {
-        return DeserializeCacheEntry(Path.Join(ArtifactsPath, BuildSuccessCacheFileName));
+        return DeserializeCacheEntry(Path.Join(Builder.ArtifactsPath, BuildSuccessCacheFileName));
     }
 
     private void EnsurePreviousCacheEntry(CacheInfo cache)
@@ -927,7 +879,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         if (!NeedsToBuild(out cache))
         {
-            Reporter.Verbose.WriteLine("No need to build, the output is up to date. Cache: " + ArtifactsPath);
+            Reporter.Verbose.WriteLine("No need to build, the output is up to date. Cache: " + Builder.ArtifactsPath);
             return BuildLevel.None;
         }
 
@@ -1027,7 +979,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return;
         }
 
-        string directory = ArtifactsPath;
+        string directory = Builder.ArtifactsPath;
 
         try
         {
@@ -1046,13 +998,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return;
         }
 
-        string directory = ArtifactsPath;
+        string directory = Builder.ArtifactsPath;
 
         CreateTempSubdirectory(directory);
 
         MarkArtifactsFolderUsed();
 
-        File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
+        File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), Builder.EntryPointFileFullPath);
     }
 
     private void MarkBuildSuccess(CacheInfo cache)
@@ -1062,33 +1014,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return;
         }
 
-        string successCacheFile = Path.Join(ArtifactsPath, BuildSuccessCacheFileName);
+        string successCacheFile = Path.Join(Builder.ArtifactsPath, BuildSuccessCacheFileName);
         using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.None);
         JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
-    }
-
-    /// <summary>
-    /// If there are any <c>#:project</c> <paramref name="directives"/>, expands <c>$()</c> in them and ensures they point to project files (not directories).
-    /// </summary>
-    public static ImmutableArray<CSharpDirective> EvaluateDirectives(
-        ProjectInstance? project,
-        ImmutableArray<CSharpDirective> directives,
-        SourceFile sourceFile,
-        ErrorReporter errorReporter)
-    {
-        if (directives.OfType<CSharpDirective.Project>().Any())
-        {
-            return directives
-                .Select(d => d is CSharpDirective.Project p
-                    ? (project is null
-                        ? p
-                        : p.WithName(project.ExpandString(p.Name), CSharpDirective.Project.NameKind.Expanded))
-                       .EnsureProjectFilePath(sourceFile, errorReporter)
-                    : d)
-                .ToImmutableArray();
-        }
-
-        return directives;
     }
 
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
@@ -1096,97 +1024,19 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         return CreateProjectInstance(projectCollection, addGlobalProperties: null);
     }
 
-    private ProjectInstance CreateProjectInstance(
-        ProjectCollection projectCollection,
-        Action<IDictionary<string, string>>? addGlobalProperties)
+    public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, Action<IDictionary<string, string>>? addGlobalProperties)
     {
-        var project = CreateProjectInstance(projectCollection, Directives, addGlobalProperties);
+        Builder.CreateProjectInstance(
+            projectCollection,
+            ThrowingReporter,
+            out var project,
+            out var evaluatedDirectives,
+            Directives,
+            addGlobalProperties);
 
-        var directives = EvaluateDirectives(project, Directives, EntryPointSourceFile, VirtualProjectBuildingCommand.ThrowingReporter);
-        if (directives != Directives)
-        {
-            Directives = directives;
-            project = CreateProjectInstance(projectCollection, directives, addGlobalProperties);
-        }
+        Directives = evaluatedDirectives;
 
         return project;
-    }
-
-    private ProjectInstance CreateProjectInstance(
-        ProjectCollection projectCollection,
-        ImmutableArray<CSharpDirective> directives,
-        Action<IDictionary<string, string>>? addGlobalProperties)
-    {
-        var projectRoot = CreateProjectRootElement(projectCollection);
-
-        var globalProperties = projectCollection.GlobalProperties;
-        if (addGlobalProperties is not null)
-        {
-            globalProperties = new Dictionary<string, string>(projectCollection.GlobalProperties, StringComparer.OrdinalIgnoreCase);
-            addGlobalProperties(globalProperties);
-        }
-
-        return ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
-        {
-            ProjectCollection = projectCollection,
-            GlobalProperties = globalProperties,
-        });
-
-        ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
-        {
-            var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
-            var projectFileWriter = new StringWriter();
-            WriteProjectFile(
-                projectFileWriter,
-                directives,
-                isVirtualProject: true,
-                targetFilePath: EntryPointFileFullPath,
-                artifactsPath: ArtifactsPath,
-                includeRuntimeConfigInformation: RequestedTargets?.ContainsAny("Publish", "Pack") != true);
-            var projectFileText = projectFileWriter.ToString();
-
-            using var reader = new StringReader(projectFileText);
-            using var xmlReader = XmlReader.Create(reader);
-            var projectRoot = ProjectRootElement.Create(xmlReader, projectCollection);
-            projectRoot.FullPath = projectFileFullPath;
-            return projectRoot;
-        }
-    }
-
-    public static string GetArtifactsPath(string entryPointFileFullPath)
-    {
-        // Include entry point file name so the directory name is not completely opaque.
-        string fileName = Path.GetFileNameWithoutExtension(entryPointFileFullPath);
-        string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFileFullPath);
-        string directoryName = $"{fileName}-{hash}";
-
-        return GetTempSubpath(directoryName);
-    }
-
-    /// <summary>
-    /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
-    /// </summary>
-    public static string GetTempSubdirectory()
-    {
-        // We want a location where permissions are expected to be restricted to the current user.
-        string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? Path.GetTempPath()
-            : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-        if (string.IsNullOrEmpty(directory))
-        {
-            throw new InvalidOperationException(FileBasedProgramsResources.EmptyTempPath);
-        }
-
-        return Path.Join(directory, "dotnet", "runfile");
-    }
-
-    /// <summary>
-    /// Obtains a specific temporary path in a subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/{name}</c>.
-    /// </summary>
-    public static string GetTempSubpath(string name)
-    {
-        return Path.Join(GetTempSubdirectory(), name);
     }
 
     /// <summary>
@@ -1205,369 +1055,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             // We don't mind that permissions might be different if the directory already exists,
             // since it's under user's local directory and its path should be unique.
             Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-        }
-    }
-
-    public static void WriteProjectFile(
-        TextWriter writer,
-        ImmutableArray<CSharpDirective> directives,
-        bool isVirtualProject,
-        string? targetFilePath = null,
-        string? artifactsPath = null,
-        bool includeRuntimeConfigInformation = true,
-        string? userSecretsId = null,
-        IEnumerable<string>? excludeDefaultProperties = null)
-    {
-        Debug.Assert(userSecretsId == null || !isVirtualProject);
-        Debug.Assert(excludeDefaultProperties == null || !isVirtualProject);
-
-        int processedDirectives = 0;
-
-        var sdkDirectives = directives.OfType<CSharpDirective.Sdk>();
-        var propertyDirectives = directives.OfType<CSharpDirective.Property>();
-        var packageDirectives = directives.OfType<CSharpDirective.Package>();
-        var projectDirectives = directives.OfType<CSharpDirective.Project>();
-
-        const string defaultSdkName = "Microsoft.NET.Sdk";
-        string firstSdkName;
-        string? firstSdkVersion;
-
-        if (sdkDirectives.FirstOrDefault() is { } firstSdk)
-        {
-            firstSdkName = firstSdk.Name;
-            firstSdkVersion = firstSdk.Version;
-            processedDirectives++;
-        }
-        else
-        {
-            firstSdkName = defaultSdkName;
-            firstSdkVersion = null;
-        }
-
-        if (isVirtualProject)
-        {
-            Debug.Assert(!string.IsNullOrWhiteSpace(artifactsPath));
-
-            // Note that ArtifactsPath needs to be specified before Sdk.props
-            // (usually it's recommended to specify it in Directory.Build.props
-            // but importing Sdk.props manually afterwards also works).
-            writer.WriteLine($"""
-                <Project>
-
-                  <PropertyGroup>
-                    <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                    <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
-                    <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
-                    <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
-                    <FileBasedProgram>true</FileBasedProgram>
-                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                    <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                """);
-
-            // Only set these to false when using the default SDK with no additional SDKs
-            // to avoid including .resx and other files that are typically not expected in simple file-based apps.
-            // When other SDKs are used (e.g., Microsoft.NET.Sdk.Web), keep the default behavior.
-            bool usingOnlyDefaultSdk = firstSdkName == defaultSdkName && sdkDirectives.Count() <= 1;
-            if (usingOnlyDefaultSdk)
-            {
-                writer.WriteLine($"""
-                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
-                        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
-                    """);
-            }
-
-            // Write default properties before importing SDKs so they can be overridden by SDKs
-            // (and implicit build files which are imported by the default .NET SDK).
-            foreach (var (name, value) in DefaultProperties)
-            {
-                writer.WriteLine($"""
-                        <{name}>{EscapeValue(value)}</{name}>
-                    """);
-            }
-
-            writer.WriteLine($"""
-                  </PropertyGroup>
-
-                  <ItemGroup>
-                    <Clean Include="{EscapeValue(artifactsPath)}/*" />
-                  </ItemGroup>
-
-                """);
-
-            if (firstSdkVersion is null)
-            {
-                writer.WriteLine($"""
-                      <Import Project="Sdk.props" Sdk="{EscapeValue(firstSdkName)}" />
-                    """);
-            }
-            else
-            {
-                writer.WriteLine($"""
-                      <Import Project="Sdk.props" Sdk="{EscapeValue(firstSdkName)}" Version="{EscapeValue(firstSdkVersion)}" />
-                    """);
-            }
-        }
-        else
-        {
-            string slashDelimited = firstSdkVersion is null
-                ? firstSdkName
-                : $"{firstSdkName}/{firstSdkVersion}";
-            writer.WriteLine($"""
-                <Project Sdk="{EscapeValue(slashDelimited)}">
-
-                """);
-        }
-
-        foreach (var sdk in sdkDirectives.Skip(1))
-        {
-            if (isVirtualProject)
-            {
-                WriteImport(writer, "Sdk.props", sdk);
-            }
-            else if (sdk.Version is null)
-            {
-                writer.WriteLine($"""
-                      <Sdk Name="{EscapeValue(sdk.Name)}" />
-                    """);
-            }
-            else
-            {
-                writer.WriteLine($"""
-                      <Sdk Name="{EscapeValue(sdk.Name)}" Version="{EscapeValue(sdk.Version)}" />
-                    """);
-            }
-
-            processedDirectives++;
-        }
-
-        if (isVirtualProject || processedDirectives > 1)
-        {
-            writer.WriteLine();
-        }
-
-        // Write default and custom properties.
-        {
-            writer.WriteLine("""
-                  <PropertyGroup>
-                """);
-
-            // First write the default properties except those specified by the user.
-            if (!isVirtualProject)
-            {
-                var customPropertyNames = propertyDirectives
-                    .Select(static d => d.Name)
-                    .Concat(excludeDefaultProperties ?? [])
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
-                foreach (var (name, value) in DefaultProperties)
-                {
-                    if (!customPropertyNames.Contains(name))
-                    {
-                        writer.WriteLine($"""
-                                <{name}>{EscapeValue(value)}</{name}>
-                            """);
-                    }
-                }
-
-                if (userSecretsId != null && !customPropertyNames.Contains("UserSecretsId"))
-                {
-                    writer.WriteLine($"""
-                            <UserSecretsId>{EscapeValue(userSecretsId)}</UserSecretsId>
-                        """);
-                }
-            }
-
-            // Write custom properties.
-            foreach (var property in propertyDirectives)
-            {
-                writer.WriteLine($"""
-                        <{property.Name}>{EscapeValue(property.Value)}</{property.Name}>
-                    """);
-
-                processedDirectives++;
-            }
-
-            // Write virtual-only properties which cannot be overridden.
-            if (isVirtualProject)
-            {
-                writer.WriteLine("""
-                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
-                        <Features>$(Features);FileBasedProgram</Features>
-                    """);
-            }
-
-            writer.WriteLine("""
-                  </PropertyGroup>
-
-                """);
-        }
-
-        if (packageDirectives.Any())
-        {
-            writer.WriteLine("""
-                  <ItemGroup>
-                """);
-
-            foreach (var package in packageDirectives)
-            {
-                if (package.Version is null)
-                {
-                    writer.WriteLine($"""
-                            <PackageReference Include="{EscapeValue(package.Name)}" />
-                        """);
-                }
-                else
-                {
-                    writer.WriteLine($"""
-                            <PackageReference Include="{EscapeValue(package.Name)}" Version="{EscapeValue(package.Version)}" />
-                        """);
-                }
-
-                processedDirectives++;
-            }
-
-            writer.WriteLine("""
-                  </ItemGroup>
-
-                """);
-        }
-
-        if (projectDirectives.Any())
-        {
-            writer.WriteLine("""
-                  <ItemGroup>
-                """);
-
-            foreach (var projectReference in projectDirectives)
-            {
-                writer.WriteLine($"""
-                        <ProjectReference Include="{EscapeValue(projectReference.Name)}" />
-                    """);
-
-                processedDirectives++;
-            }
-
-            writer.WriteLine("""
-                  </ItemGroup>
-
-                """);
-        }
-
-        Debug.Assert(processedDirectives + directives.OfType<CSharpDirective.Shebang>().Count() == directives.Length);
-
-        if (isVirtualProject)
-        {
-            Debug.Assert(targetFilePath is not null);
-
-            // Only add explicit Compile item when EnableDefaultCompileItems is not true.
-            // When EnableDefaultCompileItems=true, the file is included via default MSBuild globbing.
-            // See https://github.com/dotnet/sdk/issues/51785
-            writer.WriteLine($"""
-                  <ItemGroup>
-                    <Compile Condition="'$(EnableDefaultCompileItems)' != 'true'" Include="{EscapeValue(targetFilePath)}" />
-                  </ItemGroup>
-
-                """);
-
-            if (includeRuntimeConfigInformation)
-            {
-                var targetDirectory = Path.GetDirectoryName(targetFilePath) ?? "";
-                writer.WriteLine($"""
-                      <ItemGroup>
-                        <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{EscapeValue(targetFilePath)}" />
-                        <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{EscapeValue(targetDirectory)}" />
-                      </ItemGroup>
-
-                    """);
-            }
-
-            foreach (var sdk in sdkDirectives)
-            {
-                WriteImport(writer, "Sdk.targets", sdk);
-            }
-
-            if (!sdkDirectives.Any())
-            {
-                Debug.Assert(firstSdkName == defaultSdkName && firstSdkVersion == null);
-                writer.WriteLine($"""
-                      <Import Project="Sdk.targets" Sdk="{defaultSdkName}" />
-                    """);
-            }
-
-            writer.WriteLine();
-        }
-
-        writer.WriteLine("""
-            </Project>
-            """);
-
-        static string EscapeValue(string value) => SecurityElement.Escape(value);
-
-        static void WriteImport(TextWriter writer, string project, CSharpDirective.Sdk sdk)
-        {
-            if (sdk.Version is null)
-            {
-                writer.WriteLine($"""
-                      <Import Project="{EscapeValue(project)}" Sdk="{EscapeValue(sdk.Name)}" />
-                    """);
-            }
-            else
-            {
-                writer.WriteLine($"""
-                      <Import Project="{EscapeValue(project)}" Sdk="{EscapeValue(sdk.Name)}" Version="{EscapeValue(sdk.Version)}" />
-                    """);
-            }
-        }
-    }
-
-    public static SourceText? RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text)
-    {
-        if (directives.Length == 0)
-        {
-            return null;
-        }
-
-        Debug.Assert(directives.OrderBy(d => d.Info.Span.Start).SequenceEqual(directives), "Directives should be ordered by source location.");
-
-        for (int i = directives.Length - 1; i >= 0; i--)
-        {
-            var directive = directives[i];
-            text = text.Replace(directive.Info.Span, string.Empty);
-        }
-
-        return text;
-    }
-
-    public static void RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text, string filePath)
-    {
-        if (RemoveDirectivesFromFile(directives, text) is { } modifiedText)
-        {
-            new SourceFile(filePath, modifiedText).Save();
-        }
-    }
-
-    public static bool IsValidEntryPointPath(string entryPointFilePath)
-    {
-        if (!File.Exists(entryPointFilePath))
-        {
-            return false;
-        }
-
-        if (entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        // Check if the first two characters are #!
-        try
-        {
-            using var stream = File.OpenRead(entryPointFilePath);
-            int first = stream.ReadByte();
-            int second = stream.ReadByte();
-            return first == '#' && second == '!';
-        }
-        catch
-        {
-            return false;
         }
     }
 
