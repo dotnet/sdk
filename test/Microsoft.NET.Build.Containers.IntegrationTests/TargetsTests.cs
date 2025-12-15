@@ -614,6 +614,49 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
+    [InlineData("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:9.0-noble-chiseled-extra")]
+    [InlineData("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled-extra")]
+    [Theory]
+    public void FDDConsoleAppWithCulturesAndOptingIntoChiseledGetsExtrasForNet9AndLater(string sdkVersion, string tfm, string containerFamily, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = sdkVersion,
+            ["TargetFrameworkVersion"] = tfm,
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = "linux-x64",
+            [KnownStrings.Properties.ContainerFamily] = containerFamily,
+            [KnownStrings.Properties.InvariantGlobalization] = false.ToString(),
+        }, projectName: $"{nameof(FDDConsoleAppWithCulturesAndOptingIntoChiseledGetsExtrasForNet9AndLater)}_{sdkVersion}_{tfm}_{containerFamily}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [InlineData("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:9.0-noble-chiseled-extra")]
+    [InlineData("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra")]
+    [Theory]
+    public void FDDAspNetAppWithCulturesAndOptingIntoChiseledGetsExtrasForNet9AndLater(string sdkVersion, string tfm, string containerFamily, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = sdkVersion,
+            ["TargetFrameworkVersion"] = tfm,
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = "linux-x64",
+            [KnownStrings.Properties.ContainerFamily] = containerFamily,
+            [KnownStrings.Properties.InvariantGlobalization] = false.ToString(),
+        }, bonusItems: new()
+        {
+            [KnownStrings.Items.FrameworkReference] = KnownFrameworkReferences.WebApp
+        }, projectName: $"{nameof(FDDAspNetAppWithCulturesAndOptingIntoChiseledGetsExtrasForNet9AndLater)}_{sdkVersion}_{tfm}_{containerFamily}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
     [Fact]
     public void AspNetFDDAppsGetAspNetBaseImage()
     {
