@@ -169,8 +169,7 @@ public class TargetsTests
             labels.Should().NotBeEmpty("Should have evaluated some labels by default")
                 .And.NotContain(label => LabelMatch("org.opencontainers.image.source", repoUrl, label))
                 .And.NotContain(label => LabelMatch("org.opencontainers.image.revision", commitHash, label)); ;
-        }
-        ;
+        };
     }
 
     [InlineData("https://git.cosmere.com/shard/whimsy.git", "https://git.cosmere.com/shard/whimsy")]
@@ -223,8 +222,7 @@ public class TargetsTests
         {
             labels.Should().NotBeEmpty("Should have evaluated some labels by default")
                 .And.NotContain(label => LabelMatch("org.opencontainers.image.base.name", expectedBaseImage, label));
-        }
-        ;
+        };
     }
 
     [InlineData(true)]
@@ -257,8 +255,7 @@ public class TargetsTests
             labels.Should().NotBeEmpty("Should have evaluated some labels by default")
                 .And.NotContain(label => LabelMatch("net.dot.runtime.majorminor", runtimeMajorMinor, label))
                 .And.NotContain(label => LabelMatch("net.dot.sdk.version", randomSdkVersion, label));
-        }
-        ;
+        };
     }
 
     [InlineData("7.0.100", "v7.0", "7.0")]
