@@ -20,9 +20,12 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly ToolInstallLocalInstaller _toolLocalPackageInstaller;
         private readonly IReporter _reporter;
+        private readonly PackageId _packageId;
+        private readonly bool _allowPackageDowngrade;
 
         private readonly string _explicitManifestFile;
         private readonly bool _createManifestIfNeeded;
+        private readonly bool _allowRollForward;
 
         internal readonly RestoreActionConfig _restoreActionConfig;
 
@@ -51,15 +54,92 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
             _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader, _restoreActionConfig);
+            _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
+
+            _packageId = new PackageId(parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument));
+            _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
+
         }
+        
 
         public override int Execute()
         {
             FilePath manifestFile = GetManifestFilePath();
-            return Install(manifestFile);
+
+            (FilePath? manifestFileOptional, string warningMessage) =
+                _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, _packageId);
+
+            if (warningMessage != null)
+            {
+                _reporter.WriteLine(warningMessage.Yellow());
+            }
+
+            manifestFile = manifestFileOptional ?? GetManifestFilePath();
+            var existingPackageWithPackageId = _toolManifestFinder.Find(manifestFile).Where(p => p.PackageId.Equals(_packageId));
+
+            if (!existingPackageWithPackageId.Any())
+            {
+                return InstallNewTool(manifestFile);
+            }
+
+            var existingPackage = existingPackageWithPackageId.Single();
+            var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile);
+
+            InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile);
+
+            _localToolsResolverCache.SaveToolPackage(
+                toolDownloadedPackage,
+                _toolLocalPackageInstaller.TargetFrameworkToInstall);
+
+            return 0;
         }
 
-        public int Install(FilePath manifestFile)
+        public int InstallToolUpdate(ToolManifestPackage existingPackage, IToolPackage toolDownloadedPackage, FilePath manifestFile)
+        {
+            if (existingPackage.Version > toolDownloadedPackage.Version && !_allowPackageDowngrade)
+            {
+                throw new GracefulException(new[]
+                    {
+                        string.Format(
+                            Update.LocalizableStrings.UpdateLocalToolToLowerVersion,
+                            toolDownloadedPackage.Version.ToNormalizedString(),
+                            existingPackage.Version.ToNormalizedString(),
+                            manifestFile.Value)
+                    },
+                    isUserError: false);
+            }
+            else if (existingPackage.Version == toolDownloadedPackage.Version)
+            {
+                _reporter.WriteLine(
+                    string.Format(
+                        Update.LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                        toolDownloadedPackage.Id,
+                        existingPackage.Version.ToNormalizedString(),
+                        manifestFile.Value));
+            }
+            else
+            {
+                _toolManifestEditor.Edit(
+                    manifestFile,
+                    _packageId,
+                    toolDownloadedPackage.Version,
+                    toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
+                _reporter.WriteLine(
+                    string.Format(
+                        Update.LocalizableStrings.UpdateLocalToolSucceeded,
+                        toolDownloadedPackage.Id,
+                        existingPackage.Version.ToNormalizedString(),
+                        toolDownloadedPackage.Version.ToNormalizedString(),
+                        manifestFile.Value).Green());
+            }
+
+            _localToolsResolverCache.SaveToolPackage(
+                toolDownloadedPackage,
+                _toolLocalPackageInstaller.TargetFrameworkToInstall);
+
+            return 0;
+        }
+        public int InstallNewTool(FilePath manifestFile)
         {
             IToolPackage toolDownloadedPackage =
                 _toolLocalPackageInstaller.Install(manifestFile);
@@ -68,7 +148,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 manifestFile,
                 toolDownloadedPackage.Id,
                 toolDownloadedPackage.Version,
-                toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
+                toolDownloadedPackage.Commands.Select(c => c.Name).ToArray(),
+                _allowRollForward);
 
             _localToolsResolverCache.SaveToolPackage(
                 toolDownloadedPackage,
@@ -85,7 +166,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             return 0;
         }
 
-        private FilePath GetManifestFilePath()
+        public FilePath GetManifestFilePath()
         {
             try
             {
