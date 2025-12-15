@@ -37,6 +37,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost" Version="$(MicrosoftCodeAnalysisWorkspacesMSBuildBuildHostPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.ExternalAccess.HotReload" Version="$(MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion)" />
 
     <!-- roslyn-sdk dependencies-->
