@@ -201,15 +201,6 @@
   <data name="RequiredCommandNotPassed" xml:space="preserve">
     <value>Required command was not provided.</value>
   </data>
-  <data name="CouldNotFindAnyProjectInDirectory" xml:space="preserve">
-    <value>Could not find any project in `{0}`.</value>
-  </data>
-  <data name="CouldNotFindProjectOrDirectory" xml:space="preserve">
-    <value>Could not find project or directory `{0}`.</value>
-  </data>
-  <data name="MoreThanOneProjectInDirectory" xml:space="preserve">
-    <value>Found more than one project in `{0}`. Specify which one to use.</value>
-  </data>
   <data name="FoundInvalidProject" xml:space="preserve">
     <value>Found a project `{0}` but it is invalid.</value>
   </data>
@@ -817,7 +808,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
     <comment>{Locked="dotnet workload update"}</comment>
   </data>
   <data name="PackageIdentityArgumentDescription" xml:space="preserve">
-    <value>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</value>
+    <value>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</value>
   </data>
   <data name="PackageIdentityArgumentIdOrVersionIsNull" xml:space="preserve">
     <value>Package reference id and version must not be null.</value>

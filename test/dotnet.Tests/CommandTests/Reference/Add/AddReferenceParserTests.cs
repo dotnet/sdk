@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Parse(["dotnet", "add", "reference", "my.csproj"]);
 
-            result.GetValue<string>(PackageCommandParser.ProjectOrFileArgument)
+            result.GetValue<string>(PackageCommandDefinition.ProjectOrFileArgument)
                 .Should()
                 .BeEquivalentTo(
                     PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Parse(["dotnet", "add", "reference", "my.csproj", "--interactive"]);
 
-            result.GetValue<bool>(ReferenceAddCommandParser.InteractiveOption)
+            result.GetValue<bool>(ReferenceAddCommandDefinition.InteractiveOption)
                 .Should().BeTrue();
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var argument = (result.Errors.SingleOrDefault()?.SymbolResult as ArgumentResult)?.Argument;
 
-            argument.Should().Be(ReferenceAddCommandParser.ProjectPathArgument);
+            argument.Should().Be(ReferenceAddCommandDefinition.ProjectPathArgument);
         }
     }
 }

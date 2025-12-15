@@ -73,7 +73,7 @@
   <ItemGroup Condition="$(MicrosoftAspNetCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)'))">
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
       <LatestRuntimeFrameworkVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</LatestRuntimeFrameworkVersion>
-      <RuntimePackRuntimeIdentifiers>${SupportedRuntimeIdentifiers}</RuntimePackRuntimeIdentifiers>
+      <RuntimePackRuntimeIdentifiers>$(SupportedRuntimeIdentifiers)</RuntimePackRuntimeIdentifiers>
       <TargetingPackVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</TargetingPackVersion>
       <DefaultRuntimeFrameworkVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</DefaultRuntimeFrameworkVersion>
     </KnownFrameworkReference>

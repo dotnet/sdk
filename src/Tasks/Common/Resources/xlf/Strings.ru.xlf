@@ -661,10 +661,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1225: компиляция собственного кода не поддерживается при прямом вызове целевого объекта публикации. Попробуйте запустить dotnet publish.</target>
         <note>{StrBegins="NETSDK1225: "}</note>
       </trans-unit>
-      <trans-unit id="Net9NotCompatibleWithDev1711">
-        <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
-        <target state="translated">NETSDK1223: Нацеливание на .NET 9.0 или более поздней версии в Visual Studio 2022 17.11 не поддерживается.</target>
-        <note>{StrBegins="NETSDK1223: "}</note>
+      <trans-unit id="Net10NotCompatibleWithVS17">
+        <source>NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</source>
+        <target state="translated">NETSDK1233: использование .NET 10.0 или более поздней версии в Visual Studio 2022 17.14 в качестве целевой платформу не поддерживается.</target>
+        <note>{StrBegins="NETSDK1233: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -860,6 +860,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1103: RollForward setting is only supported on .NET Core 3.0 or higher.</source>
         <target state="translated">NETSDK1103: параметр RollForward поддерживается только в .NET Core 3.0 или более поздних версий.</target>
         <note>{StrBegins="NETSDK1103: "}</note>
+      </trans-unit>
+      <trans-unit id="RoslynCompilerTypeFrameworkIsDeprecated">
+        <source>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</source>
+        <target state="new">NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</target>
+        <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
         <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>

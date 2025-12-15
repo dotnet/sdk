@@ -15,7 +15,7 @@ partial class CSharpCompilerCommand
         [
             "/unsafe-",
             "/checked-",
-            "/nowarn:1701,1702,IL2121,1701,1702",
+            "/nowarn:1701,1702,IL2121,1701,1702,8002",
             "/fullpaths",
             "/nostdlib+",
             "/errorreport:prompt",
@@ -202,7 +202,6 @@ partial class CSharpCompilerCommand
             "/deterministic+",
             "/langversion:14.0",
             "/features:FileBasedProgram",
-            $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/codestyle/cs/build/config/analysislevelstyle_default.globalconfig",
             $"/analyzerconfig:{objDir}/{fileNameWithoutExtension}.GeneratedMSBuildEditorConfig.editorconfig",
             $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig",
             $"/analyzer:{SdkPath}/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll",

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Solution.Add;
 using Microsoft.DotNet.Cli.Commands.Solution.List;
@@ -14,37 +12,21 @@ namespace Microsoft.DotNet.Cli.Commands.Solution;
 
 internal static class SolutionCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-sln";
-
-    public static readonly string CommandName = "solution";
-    public static readonly string CommandAlias = "sln";
-    public static readonly Argument<string> SlnArgument = new Argument<string>(CliCommandStrings.SolutionArgumentName)
-    {
-        HelpName = CliCommandStrings.SolutionArgumentName,
-        Description = CliCommandStrings.SolutionArgumentDescription,
-        Arity = ArgumentArity.ZeroOrOne
-    }.DefaultToCurrentDirectory();
-
-    private static readonly Command Command = ConstructCommand();
+    private static readonly Command Command = ConfigureCommand(SolutionCommandDefinition.Create());
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command ConstructCommand()
+    private static Command ConfigureCommand(Command command)
     {
-        DocumentedCommand command = new(CommandName, DocsLink, CliCommandStrings.SolutionAppFullName);
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-        command.Aliases.Add(CommandAlias);
-
-        command.Arguments.Add(SlnArgument);
-        command.Subcommands.Add(SolutionAddCommandParser.GetCommand());
-        command.Subcommands.Add(SolutionListCommandParser.GetCommand());
-        command.Subcommands.Add(SolutionRemoveCommandParser.GetCommand());
-        command.Subcommands.Add(SolutionMigrateCommandParser.GetCommand());
-
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
+        command.Subcommands.Single(c => c.Name == SolutionAddCommandDefinition.Name).SetAction(parseResult => new SolutionAddCommand(parseResult).Execute());
+        command.Subcommands.Single(c => c.Name == SolutionListCommandDefinition.Name).SetAction(parseResult => new SolutionListCommand(parseResult).Execute());
+        command.Subcommands.Single(c => c.Name == SolutionMigrateCommandDefinition.Name).SetAction(parseResult => new SolutionMigrateCommand(parseResult).Execute());
+        command.Subcommands.Single(c => c.Name == SolutionRemoveCommandDefinition.Name).SetAction(parseResult => new SolutionRemoveCommand(parseResult).Execute());
 
         return command;
     }
