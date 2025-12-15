@@ -25,6 +25,15 @@ You can download the .NET SDK as either an installer (MSI, PKG) or a zip (zip, t
 > [!NOTE]
 > When acquiring installers from the .NET SDK latest builds table, be aware that the installers are the **latest bits**. With development builds, internal NuGet feeds are necessary for some scenarios (for example, to acquire the runtime pack for self-contained apps). You can use the following NuGet.config to configure these feeds. See the following document [Configuring NuGet behavior](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior) for more information on where to modify your NuGet.config to apply the changes.
 
+### For .NET 11 builds
+```xml
+<configuration>
+  <packageSources>
+    <add key="dotnet11" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet11/nuget/v3/index.json" />
+  </packageSources>
+</configuration>
+```
+
 ### For .NET 10 builds
 ```xml
 <configuration>
@@ -33,25 +42,6 @@ You can download the .NET SDK as either an installer (MSI, PKG) or a zip (zip, t
   </packageSources>
 </configuration>
 ```
-
-### For .NET 9 builds
-```xml
-<configuration>
-  <packageSources>
-    <add key="dotnet9" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json" />
-  </packageSources>
-</configuration>
-```
-
-### For .NET 8 builds
-```xml
-<configuration>
-  <packageSources>
-    <add key="dotnet8" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json" />
-  </packageSources>
-</configuration>
-```
-
 ### Debian package dependencies
 
 Our Debian packages are put together slightly differently than the other OS specific installers. Instead of combining everything, we have separate component packages that depend on each other. If you're installing the SDK from the .deb file (via dpkg or similar), then you'll need to install the corresponding dependencies first:
