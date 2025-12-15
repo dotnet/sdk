@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">No mostrar la pancarta de inicio ni el mensaje de copyright.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildConfigurationOptionDescription">
@@ -2373,7 +2373,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="needs-review-translation">Especifique el directorio de salida ({0}):</target>
+        <target state="new">Specify the output directory (press Enter for default: '{0}', directory must not exist):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2653,7 +2653,7 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">No se puede usar el perfil de inicio '{0}' porque no se pudo localizar el archivo de configuración de inicio. Ubicaciones probadas:
+        <target state="translated">No se puede usar el perfil de inicio '{0}' porque no se pudo localizar el archivo de configuración de inicio. Ubicaciones probadas: 
 {1}</target>
         <note />
       </trans-unit>

@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Başlangıç bandını veya telif hakkı iletisini görüntüleme.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildConfigurationOptionDescription">
@@ -2373,7 +2373,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="needs-review-translation">Çıkış dizinini belirtin ({0}):</target>
+        <target state="new">Specify the output directory (press Enter for default: '{0}', directory must not exist):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -3452,9 +3452,9 @@ and the corresponding package Ids for installed tools using the command
 'dotnet tool list'.</source>
         <target state="translated">'{0}' paket kimliğine sahip araç bulunamadı.
 
-Araçlar, aracı çağırırken kullandığınız araç adından farklı olabilen
-paket kimlikleri kullanılarak kaldırılır. Yüklü araçların araç adlarını ve
-karşılık gelen paket kimliklerini bulmak için
+Araçlar, aracı çağırırken kullandığınız araç adından farklı olabilen 
+paket kimlikleri kullanılarak kaldırılır. Yüklü araçların araç adlarını ve 
+karşılık gelen paket kimliklerini bulmak için 
 'dotnet tool list' komutunu kullanabilirsiniz.</target>
         <note />
       </trans-unit>
