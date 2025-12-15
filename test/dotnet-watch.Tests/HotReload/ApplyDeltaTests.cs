@@ -755,6 +755,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
                 // remove default --verbose arg
                 App.DotnetWatchArgs.Clear();
+
+                // override the default used for testing ("trace"):
+                App.EnvironmentVariables.Add("DOTNET_CLI_CONTEXT_VERBOSE", "");
             }
 
             App.Start(testAsset, []);
