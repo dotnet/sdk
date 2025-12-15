@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Watch
 {
     internal sealed class CompilationHandler : IDisposable
     {
-        public readonly IncrementalMSBuildWorkspace Workspace;
+        public readonly HotReloadMSBuildWorkspace Workspace;
         private readonly DotNetWatchContext _context;
         private readonly HotReloadService _hotReloadService;
 
@@ -37,11 +37,18 @@ namespace Microsoft.DotNet.Watch
         private ImmutableList<HotReloadService.Update> _previousUpdates = [];
 
         private bool _isDisposed;
+        private int _solutionUpdateId;
+
+        /// <summary>
+        /// Current set of project instances indexed by <see cref="ProjectInstance.FullPath"/>.
+        /// Updated whenever the project graph changes.
+        /// </summary>
+        private ImmutableDictionary<string, ImmutableArray<ProjectInstance>> _projectInstances = [];
 
         public CompilationHandler(DotNetWatchContext context)
         {
             _context = context;
-            Workspace = new IncrementalMSBuildWorkspace(context.Logger);
+            Workspace = new HotReloadMSBuildWorkspace(Logger, projectFile => (instances: _projectInstances.GetValueOrDefault(projectFile, []), project: null));
             _hotReloadService = new HotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
         }
 
@@ -832,5 +839,70 @@ namespace Microsoft.DotNet.Watch
 
         private static ImmutableArray<HotReloadManagedCodeUpdate> ToManagedCodeUpdates(ImmutableArray<HotReloadService.Update> updates)
             => [.. updates.Select(update => new HotReloadManagedCodeUpdate(update.ModuleId, update.MetadataDelta, update.ILDelta, update.PdbDelta, update.UpdatedTypes, update.RequiredCapabilities))];
+
+        private static ImmutableDictionary<string, ImmutableArray<ProjectInstance>> CreateProjectInstanceMap(ProjectGraph graph)
+            => graph.ProjectNodes
+                .GroupBy(static node => node.ProjectInstance.FullPath)
+                .ToImmutableDictionary(
+                    keySelector: static group => group.Key,
+                    elementSelector: static group => group.Select(static node => node.ProjectInstance).ToImmutableArray());
+
+        public async Task UpdateProjectConeAsync(ProjectGraph projectGraph, string projectPath, CancellationToken cancellationToken)
+        {
+            Logger.LogInformation("Loading projects ...");
+            var stopwatch = Stopwatch.StartNew();
+
+            _projectInstances = CreateProjectInstanceMap(projectGraph);
+
+            var solution = await Workspace.UpdateProjectConeAsync(projectPath, cancellationToken);
+            await SolutionUpdatedAsync(solution, "project update", cancellationToken);
+
+            Logger.LogInformation("Projects loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
+        }
+
+        public async Task UpdateFileContentAsync(IReadOnlyList<ChangedFile> changedFiles, CancellationToken cancellationToken)
+        {
+            var solution = await Workspace.UpdateFileContentAsync(changedFiles.Select(static f => (f.Item.FilePath, f.Kind.Convert())), cancellationToken);
+            await SolutionUpdatedAsync(solution, "document update", cancellationToken);
+        }
+
+        private Task SolutionUpdatedAsync(Solution newSolution, string operationDisplayName, CancellationToken cancellationToken)
+            => ReportSolutionFilesAsync(newSolution, Interlocked.Increment(ref _solutionUpdateId), operationDisplayName, cancellationToken);
+
+        private async Task ReportSolutionFilesAsync(Solution solution, int updateId, string operationDisplayName, CancellationToken cancellationToken)
+        {
+            Logger.LogDebug("Solution after {Operation}: v{Version}", operationDisplayName, updateId);
+
+            if (!Logger.IsEnabled(LogLevel.Trace))
+            {
+                return;
+            }
+
+            foreach (var project in solution.Projects)
+            {
+                Logger.LogDebug("  Project: {Path}", project.FilePath);
+
+                foreach (var document in project.Documents)
+                {
+                    await InspectDocumentAsync(document, "Document").ConfigureAwait(false);
+                }
+
+                foreach (var document in project.AdditionalDocuments)
+                {
+                    await InspectDocumentAsync(document, "Additional").ConfigureAwait(false);
+                }
+
+                foreach (var document in project.AnalyzerConfigDocuments)
+                {
+                    await InspectDocumentAsync(document, "Config").ConfigureAwait(false);
+                }
+            }
+
+            async ValueTask InspectDocumentAsync(TextDocument document, string kind)
+            {
+                var text = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
+                Logger.LogDebug("    {Kind}: {FilePath} [{Checksum}]", kind, document.FilePath, Convert.ToBase64String(text.GetChecksum().ToArray()));
+            }
+        }
     }
 }
