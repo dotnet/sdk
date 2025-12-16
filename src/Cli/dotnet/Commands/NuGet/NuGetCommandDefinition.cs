@@ -173,7 +173,6 @@ internal static class NuGetCommandDefinition
         {
             command.Options.Add(configFile);
             command.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
-            command.SetAction(NuGetCommand.Run);
         }
 
         Command CreateAuthorCommand() => new("author") {
