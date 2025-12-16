@@ -17,13 +17,17 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// Helper class for Windows-specific PATH management operations.
 /// </summary>
 [SupportedOSPlatform("windows")]
-internal static class WindowsPathHelper
+internal sealed class WindowsPathHelper : IDisposable
 {
     private const string RegistryEnvironmentPath = @"SYSTEM\CurrentControlSet\Control\Session Manager\Environment";
     private const string PathVariableName = "Path";
     private const int HWND_BROADCAST = 0xffff;
     private const int WM_SETTINGCHANGE = 0x001A;
     private const int SMTO_ABORTIFHUNG = 0x0002;
+
+    private readonly StreamWriter? _logWriter;
+    private readonly string? _logFilePath;
+    private bool _disposed;
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     private static extern IntPtr SendMessageTimeout(
@@ -34,6 +38,57 @@ internal static class WindowsPathHelper
         int fuFlags,
         int uTimeout,
         out IntPtr lpdwResult);
+
+    /// <summary>
+    /// Creates a new instance of WindowsPathHelper with logging enabled.
+    /// </summary>
+    public WindowsPathHelper()
+    {
+        try
+        {
+            string tempPath = Path.GetTempPath();
+            string logFileName = $"dotnetup_path_changes_{DateTime.Now:yyyyMMdd}.log";
+            _logFilePath = Path.Combine(tempPath, logFileName);
+            _logWriter = new StreamWriter(_logFilePath, append: true);
+            _logWriter.AutoFlush = true;
+            LogMessage($"=== WindowsPathHelper session started at {DateTime.Now:yyyy-MM-dd HH:mm:ss} ===");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Warning: Failed to create log file: {ex.Message}");
+            _logWriter = null;
+            _logFilePath = null;
+        }
+    }
+
+    /// <summary>
+    /// Logs a message to the log file.
+    /// </summary>
+    private void LogMessage(string message)
+    {
+        try
+        {
+            _logWriter?.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Warning: Failed to write to log: {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            LogMessage($"=== WindowsPathHelper session ended at {DateTime.Now:yyyy-MM-dd HH:mm:ss} ===");
+            _logWriter?.Dispose();
+            if (_logFilePath != null)
+            {
+                Console.WriteLine($"PATH changes logged to: {_logFilePath}");
+            }
+            _disposed = true;
+        }
+    }
 
     /// <summary>
     /// Checks if the current process is running with elevated (administrator) privileges.
@@ -240,35 +295,105 @@ internal static class WindowsPathHelper
     }
 
     /// <summary>
-    /// Logs PATH changes to a file in the temp directory.
+    /// Removes the Program Files dotnet path from the admin PATH.
+    /// This is the main orchestrating method that should be called by commands.
     /// </summary>
-    public static void LogPathChange(string operation, string oldPath, string newPath)
+    /// <returns>0 on success, 1 on failure.</returns>
+    public int RemoveDotnetFromAdminPath()
     {
         try
         {
-            string tempPath = Path.GetTempPath();
-            string logFileName = $"dotnetup_path_changes_{DateTime.Now:yyyyMMdd}.log";
-            string logFilePath = Path.Combine(tempPath, logFileName);
+            LogMessage("Starting RemoveDotnetFromAdminPath operation");
+            Console.WriteLine("Reading current admin PATH from registry...");
+            
+            string oldPath = ReadAdminPath(expand: false);
+            LogMessage($"Old PATH (unexpanded): {oldPath}");
 
-            string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Operation: {operation}{Environment.NewLine}" +
-                            $"Old PATH: {oldPath}{Environment.NewLine}" +
-                            $"New PATH: {newPath}{Environment.NewLine}" +
-                            $"----------------------------------------{Environment.NewLine}";
+            if (!AdminPathContainsProgramFilesDotnet())
+            {
+                Console.WriteLine("Program Files dotnet path is not present in admin PATH. No changes needed.");
+                LogMessage("No changes needed - dotnet path not found");
+                return 0;
+            }
 
-            File.AppendAllText(logFilePath, logEntry);
+            Console.WriteLine("Removing Program Files dotnet path from admin PATH...");
+            LogMessage("Removing dotnet paths from admin PATH");
+            string newPath = RemoveProgramFilesDotnetFromAdminPath();
+            LogMessage($"New PATH (unexpanded): {newPath}");
 
-            Console.WriteLine($"PATH changes logged to: {logFilePath}");
+            Console.WriteLine("Writing updated admin PATH to registry...");
+            WriteAdminPath(newPath);
+            LogMessage("PATH written to registry");
+
+            // Broadcast environment change
+            BroadcastEnvironmentChange();
+            LogMessage("Environment change broadcasted");
+
+            Console.WriteLine("Successfully removed Program Files dotnet path from admin PATH.");
+            LogMessage("RemoveDotnetFromAdminPath operation completed successfully");
+            return 0;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Warning: Failed to log PATH changes: {ex.Message}");
+            Console.Error.WriteLine($"Error: Failed to remove dotnet from admin PATH: {ex.Message}");
+            LogMessage($"ERROR: {ex.Message}");
+            LogMessage($"Stack trace: {ex.StackTrace}");
+            return 1;
+        }
+    }
+
+    /// <summary>
+    /// Adds the Program Files dotnet path to the admin PATH.
+    /// This is the main orchestrating method that should be called by commands.
+    /// </summary>
+    /// <returns>0 on success, 1 on failure.</returns>
+    public int AddDotnetToAdminPath()
+    {
+        try
+        {
+            LogMessage("Starting AddDotnetToAdminPath operation");
+            Console.WriteLine("Reading current admin PATH from registry...");
+            
+            string oldPath = ReadAdminPath(expand: false);
+            LogMessage($"Old PATH (unexpanded): {oldPath}");
+
+            if (AdminPathContainsProgramFilesDotnet())
+            {
+                Console.WriteLine("Program Files dotnet path is already present in admin PATH. No changes needed.");
+                LogMessage("No changes needed - dotnet path already exists");
+                return 0;
+            }
+
+            Console.WriteLine("Adding Program Files dotnet path to admin PATH...");
+            LogMessage("Adding dotnet path to admin PATH");
+            string newPath = AddProgramFilesDotnetToPath(oldPath);
+            LogMessage($"New PATH (unexpanded): {newPath}");
+
+            Console.WriteLine("Writing updated admin PATH to registry...");
+            WriteAdminPath(newPath);
+            LogMessage("PATH written to registry");
+
+            // Broadcast environment change
+            BroadcastEnvironmentChange();
+            LogMessage("Environment change broadcasted");
+
+            Console.WriteLine("Successfully added Program Files dotnet path to admin PATH.");
+            LogMessage("AddDotnetToAdminPath operation completed successfully");
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: Failed to add dotnet to admin PATH: {ex.Message}");
+            LogMessage($"ERROR: {ex.Message}");
+            LogMessage($"Stack trace: {ex.StackTrace}");
+            return 1;
         }
     }
 
     /// <summary>
     /// Broadcasts a WM_SETTINGCHANGE message to notify other applications that the environment has changed.
     /// </summary>
-    public static void BroadcastEnvironmentChange()
+    private void BroadcastEnvironmentChange()
     {
         try
         {

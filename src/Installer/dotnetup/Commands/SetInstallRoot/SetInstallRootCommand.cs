@@ -41,12 +41,8 @@ internal class SetInstallRootCommand : CommandBase
                 {
                     // We're already elevated, modify the admin PATH directly
                     Console.WriteLine("Running with elevated privileges. Modifying admin PATH...");
-                    string oldPath = WindowsPathHelper.ReadAdminPath(expand: false);
-                    string newPath = WindowsPathHelper.RemoveProgramFilesDotnetFromAdminPath();
-                    WindowsPathHelper.WriteAdminPath(newPath);
-                    WindowsPathHelper.LogPathChange("SetInstallRoot user - Remove dotnet from admin PATH", oldPath, newPath);
-                    WindowsPathHelper.BroadcastEnvironmentChange();
-                    Console.WriteLine("Successfully removed Program Files dotnet path from admin PATH.");
+                    using var pathHelper = new WindowsPathHelper();
+                    pathHelper.RemoveDotnetFromAdminPath();
                 }
                 else
                 {
