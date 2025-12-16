@@ -23,8 +23,6 @@ internal class PackageListCommand(
             parseResult.GetValue(PackageCommandDefinition.ProjectOption) :
             parseResult.GetValue(ListCommandDefinition.SlnOrProjectArgument) ?? "");
 
-    private readonly VerbosityOptions _verbosity = parseResult.GetValue(PackageListCommandDefinition.VerbosityOption);
-
     private static string GetAbsolutePath(string currentDirectory, string relativePath)
     {
         return Path.GetFullPath(Path.Combine(currentDirectory, relativePath));
@@ -32,8 +30,6 @@ internal class PackageListCommand(
 
     public override int Execute()
     {
-        _verbosity.ApplyVerbosityOptions();
-
         string projectFile = GetProjectOrSolution();
         bool noRestore = _parseResult.HasOption(PackageListCommandDefinition.NoRestore);
         int restoreExitCode = 0;

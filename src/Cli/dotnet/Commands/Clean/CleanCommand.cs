@@ -42,9 +42,6 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
     public static int Run(ParseResult parseResult)
     {
         parseResult.HandleDebugSwitch();
-
-        parseResult.GetValue(CleanCommandDefinition.VerbosityOption).ApplyVerbosityOptions();
-
         return FromParseResult(parseResult).Execute();
     }
 }

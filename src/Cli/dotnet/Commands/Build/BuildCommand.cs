@@ -52,8 +52,6 @@ public static class BuildCommand
     {
         parseResult.HandleDebugSwitch();
 
-        parseResult.GetValue(BuildCommandDefinition.VerbosityOption).ApplyVerbosityOptions();
-
         return FromParseResult(parseResult).Execute();
     }
 }

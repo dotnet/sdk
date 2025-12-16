@@ -82,7 +82,7 @@ internal static class PackageListCommandDefinition
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = new Option<Utils.VerbosityOptions>("--verbosity", "-v")
+    public static readonly Option VerbosityOption = new Option<Utils.VerbosityOptions>("--verbosity", "-v")
     {
         Description = CliStrings.VerbosityOptionDescription,
         HelpName = CliStrings.LevelArgumentName

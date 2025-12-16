@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
@@ -145,7 +146,8 @@ internal static class CommonOptions
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
-            DefaultValueFactory = _ => defaultVerbosity
+            DefaultValueFactory = _ => defaultVerbosity,
+            Action = new ApplyVerbosityAction()
         }
         .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
@@ -154,7 +156,8 @@ internal static class CommonOptions
         new Option<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
-            HelpName = CliStrings.LevelArgumentName
+            HelpName = CliStrings.LevelArgumentName,
+            Action = new ApplyVerbosityAction()
         }
         .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
@@ -164,7 +167,8 @@ internal static class CommonOptions
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
-            Hidden = true
+            Hidden = true,
+            Action = new ApplyVerbosityAction()
         }
         .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
@@ -493,6 +497,62 @@ internal static class CommonOptions
     private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
 
     private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
+
+    /// <summary>
+    /// Action that sets DOTNET_CLI_CONTEXT_VERBOSE environment variable when verbosity is diagnostic.
+    /// </summary>
+    private class ApplyVerbosityAction : SynchronousCommandLineAction
+    {
+        public override int Invoke(ParseResult parseResult)
+        {
+            // Debug: Console.Error.WriteLine("ApplyVerbosityAction.Invoke called");
+            
+            // Try to get the verbosity value from any verbosity option in the parse result
+            foreach (var symbolResult in parseResult.CommandResult.Children)
+            {
+                if (symbolResult is OptionResult optionResult && 
+                    optionResult.Option.Name == "--verbosity")
+                {
+                    var value = optionResult.GetValueOrDefault<object>();
+                    
+                    // Handle both VerbosityOptions and VerbosityOptions?
+                    VerbosityOptions verbosity;
+                    if (value is VerbosityOptions v)
+                    {
+                        verbosity = v;
+                    }
+                    else if (value != null)
+                    {
+                        // Try to parse as VerbosityOptions
+                        if (Enum.TryParse<VerbosityOptions>(value.ToString(), out verbosity))
+                        {
+                            // Success
+                        }
+                        else
+                        {
+                            return 0;
+                        }
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                    
+                    if (verbosity.IsDiagnostic())
+                    {
+                        // Debug: Console.Error.WriteLine("Setting DOTNET_CLI_CONTEXT_VERBOSE");
+                        Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
+                        CommandLoggingContext.SetVerbose(true);
+                        Reporter.Reset();
+                    }
+                    
+                    break;
+                }
+            }
+
+            return 0;
+        }
+    }
 }
 
 

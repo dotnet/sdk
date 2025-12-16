@@ -98,8 +98,6 @@ internal abstract class WorkloadCommandBase : CommandBase
             ? parseResult.GetValue(CommonOptions.VerbosityOption(VerbosityOptions.normal))
             : parseResult.GetValue(verbosityOptions) ;
 
-        Verbosity.ApplyVerbosityOptions();
-
         ILogger nugetLogger = Verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
 
         Reporter = reporter ?? Utils.Reporter.Output;

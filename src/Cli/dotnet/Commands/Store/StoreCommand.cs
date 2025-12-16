@@ -46,8 +46,6 @@ public class StoreCommand : MSBuildForwardingApp
     {
         parseResult.HandleDebugSwitch();
 
-        parseResult.GetValue(StoreCommandDefinition.VerbosityOption).ApplyVerbosityOptions();
-
         return FromParseResult(parseResult).Execute();
     }
 }

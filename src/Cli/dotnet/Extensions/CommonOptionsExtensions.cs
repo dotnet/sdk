@@ -71,33 +71,6 @@ internal static class CommonOptionsExtensions
     }
 
     /// <summary>
-    /// Applies the verbosity options to the command logging context.
-    /// When verbosity is set to diagnostic, also enables verbose details via DOTNET_CLI_CONTEXT_VERBOSE.
-    /// </summary>
-    public static void ApplyVerbosityOptions(this VerbosityOptions verbosity)
-    {
-        if (verbosity.IsDiagnostic())
-        {
-            Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
-            CommandLoggingContext.SetVerbose(true);
-            // Reset the reporter to apply the new verbose setting
-            Reporter.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Applies the verbosity options to the command logging context.
-    /// When verbosity is set to diagnostic, also enables verbose details via DOTNET_CLI_CONTEXT_VERBOSE.
-    /// </summary>
-    public static void ApplyVerbosityOptions(this VerbosityOptions? verbosity)
-    {
-        if (verbosity.HasValue)
-        {
-            verbosity.Value.ApplyVerbosityOptions();
-        }
-    }
-
-    /// <summary>
     /// Converts <see cref="VerbosityOptions"/> to Microsoft.Extensions.Logging.<see cref="LogLevel"/>.
     /// </summary>
     public static LogLevel ToLogLevel(this VerbosityOptions verbosityOptions)

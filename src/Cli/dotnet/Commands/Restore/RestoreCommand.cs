@@ -64,8 +64,6 @@ public static class RestoreCommand
     {
         parseResult.HandleDebugSwitch();
 
-        parseResult.GetValue(RestoreCommandDefinition.VerbosityOption).ApplyVerbosityOptions();
-
         return FromParseResult(parseResult).Execute();
     }
 }

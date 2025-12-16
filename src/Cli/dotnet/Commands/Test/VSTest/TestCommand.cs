@@ -23,8 +23,6 @@ public class TestCommand(
     {
         parseResult.HandleDebugSwitch();
 
-        parseResult.GetValue(TestCommandDefinition.VerbosityOption).ApplyVerbosityOptions();
-
         FeatureFlag.Instance.PrintFlagFeatureState();
 
         // We use also current process id for the correlation id for possible future usage in case we need to know the parent process

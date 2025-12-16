@@ -23,8 +23,6 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
 
     public int Run(ParseResult parseResult, bool isHelp = false)
     {
-        parseResult.GetValue(TestCommandDefinition.VerbosityOption).ApplyVerbosityOptions();
-
         int? exitCode = null;
         try
         {
