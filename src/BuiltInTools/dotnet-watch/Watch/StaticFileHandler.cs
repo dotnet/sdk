@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Watch
             {
                 var file = files[i].Item;
 
-                if (file.StaticWebAssetPath is null)
+                if (file.StaticWebAssetRelativeUrl is null)
                 {
                     allFilesHandled = false;
                     continue;
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Watch
                                 refreshRequests.Add(refreshServer, filesPerServer = []);
                             }
 
-                            filesPerServer.Add(file.StaticWebAssetPath);
+                            filesPerServer.Add(StaticWebAsset.WebRoot + "/" + file.StaticWebAssetRelativeUrl);
                         }
                         else if (projectsWithoutRefreshServer.Add(projectNode))
                         {
@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Watch
 
             await Task.WhenAll(tasks).WaitAsync(cancellationToken);
 
-            logger.Log(MessageDescriptor.HotReloadOfStaticAssetsSucceeded);
+            logger.Log(MessageDescriptor.StaticAssetsReloaded);
 
             return allFilesHandled;
         }
