@@ -45,7 +45,7 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         BrowserRefreshServer? server;
         bool hasExistingServer;
 
-        var key = projectNode.GetProjectInstanceId();
+        var key = projectNode.ProjectInstance.GetId();
 
         lock (_serversGuard)
         {
@@ -74,7 +74,7 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
 
     public bool TryGetRefreshServer(ProjectGraphNode projectNode, [NotNullWhen(true)] out BrowserRefreshServer? server)
     {
-        var key = projectNode.GetProjectInstanceId();
+        var key = projectNode.ProjectInstance.GetId();
 
         lock (_serversGuard)
         {

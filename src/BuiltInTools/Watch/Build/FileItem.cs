@@ -14,8 +14,6 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         public required List<string> ContainingProjectPaths { get; init; }
 
-        public string? StaticWebAssetPath { get; init; }
-
-        public bool IsStaticFile => StaticWebAssetPath != null;
+        public string? StaticWebAssetRelativeUrl { get; init; }
     }
 }
