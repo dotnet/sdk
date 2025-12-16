@@ -41,7 +41,6 @@ You can download the .NET SDK as either an installer (MSI, PKG) or a zip (zip, t
     <add key="dotnet10" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10/nuget/v3/index.json" />
   </packageSources>
 </configuration>
-```
 ### Debian package dependencies
 
 Our Debian packages are put together slightly differently than the other OS specific installers. Instead of combining everything, we have separate component packages that depend on each other. If you're installing the SDK from the .deb file (via dpkg or similar), then you'll need to install the corresponding dependencies first:
