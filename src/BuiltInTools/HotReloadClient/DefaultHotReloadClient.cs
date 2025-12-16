@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload
 {
-    internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger, string startupHookPath, bool enableStaticAssetUpdates)
+    internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger, string startupHookPath, bool handlesStaticAssetUpdates)
         : HotReloadClient(logger, agentLogger)
     {
         private readonly string _namedPipeName = Guid.NewGuid().ToString("N");
@@ -225,7 +225,7 @@ namespace Microsoft.DotNet.HotReload
 
         public override async Task<Task<bool>> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken processExitedCancellationToken, CancellationToken cancellationToken)
         {
-            if (!enableStaticAssetUpdates)
+            if (!handlesStaticAssetUpdates)
             {
                 // The client has no concept of static assets.
                 return Task.FromResult(true);

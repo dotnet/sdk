@@ -85,7 +85,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
             Assert.NotNull(result);
 
-            await result.WaitForProcessRunningAsync(cancellationToken);
+            await result.Clients.WaitForConnectionEstablishedAsync(cancellationToken);
 
             return result;
         });
@@ -607,7 +607,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var ignoringChangeInExcludedFile = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInExcludedFile);
         var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
         var reEvaluationCompleted = w.Reporter.RegisterSemaphore(MessageDescriptor.ReEvaluationCompleted);
-        var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoCSharpChangesToApply);
+        var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoManagedCodeChangesToApply);
 
         Log("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
