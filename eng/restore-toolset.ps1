@@ -125,6 +125,7 @@ function InstallDotNetSharedFramework([string]$version) {
 
   if (!(Test-Path $fxDir)) {
     $installScript = GetDotNetInstallScript $dotnetRoot
+    $global:lastExitCode = 0
     & $installScript -Version $version -InstallDir $dotnetRoot -Runtime "dotnet" -SkipNonVersionedFiles
 
     if($lastExitCode -ne 0) {
