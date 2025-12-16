@@ -607,15 +607,7 @@ public partial interface IRepro
 
             // Verify that the DisableRuntimeMarshallingAttribute is present in the assembly
             var parameterlessAttributes = AssemblyInfo.GetParameterlessAttributes(assemblyPath);
-            bool contains = false;
-            foreach (var attribute in parameterlessAttributes)
-            {
-                if (attribute.Equals("DisableRuntimeMarshallingAttribute", StringComparison.Ordinal))
-                {
-                    contains = true;
-                    break;
-                }
-            }
+            bool contains = parameterlessAttributes.Any(attr => attr.Equals("DisableRuntimeMarshallingAttribute", StringComparison.Ordinal));
 
             Assert.True(contains, "DisableRuntimeMarshallingAttribute should be present in the assembly");
         }
