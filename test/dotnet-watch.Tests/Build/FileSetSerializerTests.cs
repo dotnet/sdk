@@ -144,7 +144,7 @@ public class FileSetSerializerTests(ITestOutputHelper output)
                 {
                     { "FullPath", "file.css" },
                     { "ProjectFullPath", "ProjectB.csproj" },
-                    { "StaticWebAssetPath", "/wwwroot/a/b/file.css" }
+                    { "StaticWebAssetRelativeUrl", "/wwwroot/a/b/file.css" }
                 })
             ]
         };

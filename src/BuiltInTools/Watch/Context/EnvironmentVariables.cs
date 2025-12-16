@@ -13,6 +13,7 @@ internal static class EnvironmentVariables
         public const string DotnetWatchIteration = "DOTNET_WATCH_ITERATION";
 
         public const string DotnetLaunchProfile = "DOTNET_LAUNCH_PROFILE";
+        public const string DotnetHostPath = "DOTNET_HOST_PATH";
 
         public const string DotNetWatchHotReloadNamedPipeName = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName;
         public const string DotNetStartupHooks = HotReload.AgentEnvironmentVariables.DotNetStartupHooks;

@@ -576,7 +576,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 => Path.GetRelativePath(testDir, fullPath).Replace('\\', '/');
 
             IEnumerable<(string relativePath, string? staticAssetUrl)> Inspect(IReadOnlyDictionary<string, FileItem> files)
-                => files.Select(f => (relativePath: GetRelativePath(f.Key), staticAssetUrl: f.Value.StaticWebAssetPath)).OrderBy(f => f.relativePath);
+                => files.Select(f => (relativePath: GetRelativePath(f.Key), staticAssetUrl: f.Value.StaticWebAssetRelativeUrl)).OrderBy(f => f.relativePath);
 
             IEnumerable<(string relativePath, string? staticAssetUrl)> ParseOutput(IEnumerable<string> output)
             {
