@@ -70,6 +70,8 @@ internal class ToolRestoreCommand : CommandBase
             _verbosity = VerbosityOptions.minimal;
         }
 
+        _verbosity.ApplyVerbosityOptions();
+
         _restoreActionConfig = new RestoreActionConfig(DisableParallel: result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
             NoCache: result.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || result.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
             IgnoreFailedSources: result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),

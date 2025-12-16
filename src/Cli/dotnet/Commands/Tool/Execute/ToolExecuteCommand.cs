@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Commands.Tool.Restore;
 using Microsoft.DotNet.Cli.Commands.Tool.Run;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -41,6 +42,8 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
     public override int Execute()
     {
+        _verbosity.ApplyVerbosityOptions();
+
         VersionRange versionRange = _parseResult.GetVersionRange();
         PackageId packageId = new PackageId(_packageToolIdentityArgument.Id);
 

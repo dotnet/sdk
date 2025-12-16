@@ -79,6 +79,8 @@ public class PublishCommand : RestoringCommand
     {
         parseResult.HandleDebugSwitch();
 
+        parseResult.GetValue(PublishCommandDefinition.VerbosityOption).ApplyVerbosityOptions();
+
         return FromParseResult(parseResult).Execute();
     }
 }

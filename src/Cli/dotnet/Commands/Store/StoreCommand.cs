@@ -46,6 +46,13 @@ public class StoreCommand : MSBuildForwardingApp
     {
         parseResult.HandleDebugSwitch();
 
+        // Apply verbosity options if diagnostic
+        var verbosityOption = StoreCommandParser.GetCommand().Options.OfType<Option<VerbosityOptions?>>().FirstOrDefault(o => o.Name == "--verbosity");
+        if (verbosityOption != null)
+        {
+            parseResult.GetValue(verbosityOption).ApplyVerbosityOptions();
+        }
+
         return FromParseResult(parseResult).Execute();
     }
 }

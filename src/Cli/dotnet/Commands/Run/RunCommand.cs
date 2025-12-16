@@ -789,6 +789,8 @@ public class RunCommand
     {
         parseResult.HandleDebugSwitch();
 
+        parseResult.GetValue(RunCommandDefinition.VerbosityOption).ApplyVerbosityOptions();
+
         return FromParseResult(parseResult).Execute();
     }
 

@@ -84,6 +84,8 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         _toolPath = parseResult.GetValue(ToolInstallCommandParser.ToolPathOption);
         _architectureOption = parseResult.GetValue(ToolInstallCommandParser.ArchitectureOption);
 
+        _verbosity.ApplyVerbosityOptions();
+
         _forwardRestoreArguments = parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand());
 
         _environmentPathInstruction = environmentPathInstruction

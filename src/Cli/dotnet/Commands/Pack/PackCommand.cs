@@ -135,6 +135,8 @@ public class PackCommand(
         parseResult.HandleDebugSwitch();
         parseResult.ShowHelpOrErrorIfAppropriate();
 
+        parseResult.GetValue(PackCommandDefinition.VerbosityOption).ApplyVerbosityOptions();
+
         var args = parseResult.GetValue(PackCommandDefinition.SlnOrProjectOrFileArgument)?.ToList() ?? new List<string>();
 
         if (args.Count > 0 && Path.GetExtension(args[0]).Equals(".nuspec", StringComparison.OrdinalIgnoreCase))
