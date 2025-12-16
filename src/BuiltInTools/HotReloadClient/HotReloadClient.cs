@@ -41,6 +41,13 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     internal Task PendingUpdates
         => _pendingUpdates;
 
+    /// <summary>
+    /// .NET Framework runtime does not support adding MethodImpl entries, therefore the capability is not in the baseline capability set.
+    /// All other runtimes (.NET and Mono) support it and rather than servicing all of them we include the capability here.
+    /// </summary>
+    protected static ImmutableArray<string> AddImplicitCapabilities(IEnumerable<string> capabilities)
+        => [.. capabilities, "AddExplicitInterfaceImplementation"];
+
     public abstract void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder);
 
     /// <summary>
