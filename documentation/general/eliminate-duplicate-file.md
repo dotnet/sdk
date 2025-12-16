@@ -176,6 +176,11 @@ In subsequent preview releases, we will migrate the acquisition channels under o
 
 This phased migration allows us to validate the tarball experience with our own tooling before encouraging broader adoption, and enables us to gather telemetry data on zip usage to inform the decisions about retaining zip archive support.
 
+### Runtime Tarball Support
+
+To provide a coherent installation experience, all .NET runtimes should be updated to include Windows tarballs alongside existing archive formats.
+This consistency allows consumers and tooling to handle the SDK and runtimes uniformly, simplifying installation scripts and automation workflows.
+
 ### Retaining Zip Archive Support
 
 Two key factors impact the decision of whether to retain zip archive support:
