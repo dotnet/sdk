@@ -507,8 +507,6 @@ internal static class CommonOptions
 
         public override int Invoke(ParseResult parseResult)
         {
-            // Debug: Console.Error.WriteLine("ApplyVerbosityAction.Invoke called");
-            
             // Try to get the verbosity value from any verbosity option in the parse result
             foreach (var symbolResult in parseResult.CommandResult.Children)
             {
@@ -523,17 +521,9 @@ internal static class CommonOptions
                     {
                         verbosity = v;
                     }
-                    else if (value != null)
+                    else if (value != null && Enum.TryParse<VerbosityOptions>(value.ToString(), out verbosity))
                     {
-                        // Try to parse as VerbosityOptions
-                        if (Enum.TryParse<VerbosityOptions>(value.ToString(), out verbosity))
-                        {
-                            // Success
-                        }
-                        else
-                        {
-                            return 0;
-                        }
+                        // Successfully parsed verbosity from value
                     }
                     else
                     {
@@ -542,7 +532,6 @@ internal static class CommonOptions
                     
                     if (verbosity.IsDiagnostic())
                     {
-                        // Debug: Console.Error.WriteLine("Setting DOTNET_CLI_CONTEXT_VERBOSE");
                         Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
                         CommandLoggingContext.SetVerbose(true);
                         Reporter.Reset();
