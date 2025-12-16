@@ -20,7 +20,7 @@ public class HotReloadClientTests(ITestOutputHelper output)
             Logger = new TestLogger(output);
             AgentLogger = new TestLogger(output);
             var clientTransport = new NamedPipeClientTransport(Logger);
-            Client = new DefaultHotReloadClient(Logger, AgentLogger, startupHookPath: "", enableStaticAssetUpdates: true, clientTransport);
+            Client = new DefaultHotReloadClient(Logger, AgentLogger, startupHookPath: "", handlesStaticAssetUpdates: true, clientTransport);
 
             _cancellationSource = new CancellationTokenSource();
 

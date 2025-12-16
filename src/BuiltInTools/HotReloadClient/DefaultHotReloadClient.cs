@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload
 {
-    internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger, string startupHookPath, bool enableStaticAssetUpdates, ClientTransport transport)
+    internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger, string startupHookPath, bool handlesStaticAssetUpdates, ClientTransport transport)
         : HotReloadClient(logger, agentLogger)
     {
         private Task<ImmutableArray<string>>? _capabilitiesTask;
@@ -212,7 +212,7 @@ namespace Microsoft.DotNet.HotReload
 
         public override async Task<Task<bool>> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken processExitedCancellationToken, CancellationToken cancellationToken)
         {
-            if (!enableStaticAssetUpdates)
+            if (!handlesStaticAssetUpdates)
             {
                 // The client has no concept of static assets.
                 return Task.FromResult(true);
