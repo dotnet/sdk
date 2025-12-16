@@ -932,6 +932,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="RunCommandException" xml:space="preserve">
     <value>The build failed. Fix the build errors and run again.</value>
   </data>
+  <data name="RunCommandDeployFailed" xml:space="preserve">
+    <value>Deployment to device failed. Fix any deployment errors and run again.</value>
+  </data>
   <data name="RunCommandExceptionCouldNotApplyLaunchSettings" xml:space="preserve">
     <value>The launch profile "{0}" could not be applied.
 {1}</value>

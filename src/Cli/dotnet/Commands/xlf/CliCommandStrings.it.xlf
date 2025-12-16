@@ -1372,6 +1372,11 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <target state="translated">Compilazione...</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">L'esecuzione della destinazione {0} per individuare i comandi di esecuzione non è riuscita per questo progetto. Correggere gli errori e gli avvisi ed eseguire di nuovo.</target>
