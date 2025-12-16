@@ -544,6 +544,17 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["PublishAot"] = "true";
 
             // Add source code that uses GeneratedComInterface which requires DisableRuntimeMarshalling
+            testProject.SourceFiles["Program.cs"] = @"
+using System;
+
+public class Program
+{
+    public static void Main()
+    {
+        Console.WriteLine(""Hello World"");
+    }
+}
+";
             testProject.SourceFiles["ComInterface.cs"] = @"
 using System;
 using System.Runtime.InteropServices;
