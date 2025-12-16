@@ -19,7 +19,7 @@ public class HotReloadClientTests(ITestOutputHelper output)
         {
             Logger = new TestLogger(output);
             AgentLogger = new TestLogger(output);
-            Client = new DefaultHotReloadClient(Logger, AgentLogger, startupHookPath: "", enableStaticAssetUpdates: true);
+            Client = new DefaultHotReloadClient(Logger, AgentLogger, startupHookPath: "", handlesStaticAssetUpdates: true);
 
             _cancellationSource = new CancellationTokenSource();
 
