@@ -29,6 +29,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public Dictionary<string, string> EnvironmentVariables { get; } = [];
 
+        public void SuppressVerboseLogging()
+        {
+            // remove default --verbose and -bl args
+            DotnetWatchArgs.Clear();
+
+            // override the default used for testing ("trace"):
+            EnvironmentVariables.Add("DOTNET_CLI_CONTEXT_VERBOSE", "");
+        }
+
         public void AssertOutputContains(string message)
             => AssertEx.ContainsSubstring(message, Process.Output);
 

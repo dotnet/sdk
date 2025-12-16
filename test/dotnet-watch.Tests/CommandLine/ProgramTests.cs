@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: string.Join(",", arguments))
                 .WithSource();
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, arguments);
 
             Assert.Equal(expectedApplicationArgs, await App.AssertOutputLineStartsWith("Arguments = "));
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
                 .WithSource();
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, arguments:
             [
                 "--no-hot-reload",
@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
                 .WithSource();
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, arguments:
             [
                 "run",
@@ -308,7 +308,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
                 .WithSource();
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, ["--verbose", "format", "--verbosity", "detailed"]);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
@@ -351,7 +351,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")
                .WithSource();
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, ["--list"]);
             var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
             var files = lines.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
