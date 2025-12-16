@@ -217,13 +217,6 @@ public class RunCommand
             }
 
             var targetCommand = GetTargetCommand(launchProfileParseResult.Profile, projectFactory, cachedRunProperties, logger);
-            ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
-
-            // Env variables specified on command line override those specified in launch profile:
-            foreach (var (name, value) in EnvironmentVariables)
-            {
-                targetCommand.EnvironmentVariable(name, value);
-            }
 
             // Send telemetry about the run operation
             SendRunTelemetry(launchProfileParseResult.Profile, projectBuilder);
