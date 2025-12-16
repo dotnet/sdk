@@ -80,6 +80,7 @@ internal static class CommonOptionsExtensions
         {
             Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
             CommandLoggingContext.SetVerbose(true);
+            // Reset the reporter to apply the new verbose setting
             Reporter.Reset();
         }
     }
