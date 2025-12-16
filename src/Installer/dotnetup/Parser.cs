@@ -9,6 +9,8 @@ using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.SetInstallRoot;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
@@ -38,6 +40,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
             rootCommand.Subcommands.Add(SdkCommandParser.GetCommand());
             rootCommand.Subcommands.Add(SdkInstallCommandParser.GetRootInstallCommand());
             rootCommand.Subcommands.Add(SdkUpdateCommandParser.GetRootUpdateCommand());
+            rootCommand.Subcommands.Add(ElevatedAdminPathCommandParser.GetCommand());
+            rootCommand.Subcommands.Add(SetInstallRootCommandParser.GetCommand());
 
             return rootCommand;
         }
