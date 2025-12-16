@@ -80,7 +80,7 @@ internal static class WindowsPathHelper
     public static List<string> GetProgramFilesDotnetPaths()
     {
         var paths = new List<string>();
-        
+
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         if (!string.IsNullOrEmpty(programFiles))
         {

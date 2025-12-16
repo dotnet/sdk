@@ -53,7 +53,7 @@ internal class SetInstallRootCommand : CommandBase
                     // Not elevated, shell out to elevated process
                     Console.WriteLine("Launching elevated process to modify admin PATH...");
                     int exitCode = WindowsPathHelper.StartElevatedProcess("elevatedadminpath removedotnet");
-                    
+
                     if (exitCode != 0)
                     {
                         Console.Error.WriteLine("Warning: Failed to modify admin PATH. You may need to manually remove the Program Files dotnet path from the system PATH.");
@@ -90,7 +90,7 @@ internal class SetInstallRootCommand : CommandBase
         try
         {
             Console.WriteLine($"Adding {userDotnetPath} to user PATH...");
-            
+
             var userPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
             var pathEntries = userPath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
 
@@ -119,7 +119,7 @@ internal class SetInstallRootCommand : CommandBase
 
             Console.WriteLine("User install root configured successfully.");
             Console.WriteLine("Note: You may need to restart your terminal or application for the changes to take effect.");
-            
+
             return 0;
         }
         catch (Exception ex)
