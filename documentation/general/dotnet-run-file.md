@@ -104,6 +104,9 @@ and working directory is not changed (e.g., `cd /x/ && dotnet run /y/file.cs` ru
 If a dash (`-`) is given instead of the target path (i.e., `dotnet run -`), the C# file to be executed is read from the standard input.
 In this case, the current working directory is not used to search for other files (launch profiles, other sources in case of multi-file apps);
 the compilation consists solely of the single file read from the standard input.
+However, the current working directory is still used as the working directory for building and executing the program.
+To reference projects relative to the current working directory (instead of relative to the temporary directory the file is isolated in),
+you can use something like `#:project $(MSBuildStartupDirectory)/relative/path`.
 
 `dotnet path.cs` is a shortcut for `dotnet run --file path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported)
 and it is not a DLL path, built-in command, or a NuGet tool (e.g., `dotnet watch` invokes the `dotnet-watch` tool
