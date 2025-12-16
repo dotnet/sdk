@@ -16,6 +16,8 @@ internal static class StoreCommandDefinition
         Arity = ArgumentArity.ZeroOrMore,
     };
 
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
+
     public static readonly Option<IEnumerable<string>> ManifestOption = new Option<IEnumerable<string>>("--manifest", "-m")
     {
         Description = CliCommandStrings.ProjectManifestDescription,
@@ -83,7 +85,7 @@ internal static class StoreCommandDefinition
         command.Options.Add(SkipSymbolsOption);
         command.Options.Add(CommonOptions.FrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription));
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription));
-        command.Options.Add(CommonOptions.VerbosityOption());
+        command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(CommonOptions.NoLogoOption(true));

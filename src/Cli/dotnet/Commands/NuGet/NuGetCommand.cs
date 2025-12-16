@@ -18,13 +18,15 @@ public class NuGetCommand
 
     public static int Run(ParseResult parseResult)
     {
-        // Apply verbosity options if diagnostic - check for verbosity in the arguments
-        var verbosityOption = parseResult.CommandResult.Command.Options
-            .OfType<Option<VerbosityOptions>>()
-            .FirstOrDefault(o => o.Name == "--verbosity");
-        if (verbosityOption != null)
+        // Try to apply verbosity options if diagnostic
+        // NuGet commands use CommonOptions.VerbosityOption(), so we need to search for it
+        foreach (var option in parseResult.CommandResult.Command.Options)
         {
-            parseResult.GetValue(verbosityOption).ApplyVerbosityOptions();
+            if (option.Name == "--verbosity" && option is Option<VerbosityOptions> verbosityOpt)
+            {
+                parseResult.GetValue(verbosityOpt).ApplyVerbosityOptions();
+                break;
+            }
         }
 
         return Run(parseResult.GetArguments(), new NuGetCommandRunner());

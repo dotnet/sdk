@@ -23,7 +23,7 @@ internal class PackageListCommand(
             parseResult.GetValue(PackageCommandDefinition.ProjectOption) :
             parseResult.GetValue(ListCommandDefinition.SlnOrProjectArgument) ?? "");
 
-    private readonly VerbosityOptions _verbosity = parseResult.GetValue((Option<VerbosityOptions>)PackageListCommandDefinition.VerbosityOption);
+    private readonly VerbosityOptions _verbosity = parseResult.GetValue(PackageListCommandDefinition.VerbosityOption);
 
     private static string GetAbsolutePath(string currentDirectory, string relativePath)
     {
