@@ -98,11 +98,19 @@ internal static class WindowsPathHelper
     }
 
     /// <summary>
+    /// Splits a PATH string into entries.
+    /// </summary>
+    private static List<string> SplitPath(string path)
+    {
+        return path.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+    }
+
+    /// <summary>
     /// Removes the Program Files dotnet path from the given PATH string.
     /// </summary>
     public static string RemoveProgramFilesDotnetFromPath(string path)
     {
-        var pathEntries = path.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+        var pathEntries = SplitPath(path);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
         // Remove entries that match Program Files dotnet paths (case-insensitive)
@@ -121,7 +129,7 @@ internal static class WindowsPathHelper
     /// </summary>
     public static string AddProgramFilesDotnetToPath(string path)
     {
-        var pathEntries = path.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+        var pathEntries = SplitPath(path);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
         // Get the primary Program Files dotnet path (non-x86)
@@ -153,7 +161,7 @@ internal static class WindowsPathHelper
     public static bool AdminPathContainsProgramFilesDotnet()
     {
         var adminPath = ReadAdminPath();
-        var pathEntries = adminPath.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        var pathEntries = SplitPath(adminPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
         return pathEntries.Any(entry =>
@@ -189,8 +197,6 @@ internal static class WindowsPathHelper
             Console.Error.WriteLine($"Warning: Failed to log PATH changes: {ex.Message}");
         }
     }
-
-
 
     /// <summary>
     /// Broadcasts a WM_SETTINGCHANGE message to notify other applications that the environment has changed.
