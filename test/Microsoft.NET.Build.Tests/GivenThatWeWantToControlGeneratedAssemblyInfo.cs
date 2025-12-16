@@ -43,6 +43,7 @@ namespace Microsoft.NET.Build.Tests
                     "/p:AssemblyTitle=TestTitle",
                     "/p:Trademark=TestTrademark",
                     "/p:NeutralLanguage=fr",
+                    "/p:EnableSourceControlManagerQueries=false",
                     attributeToOptOut == "All" ?
                         "/p:GenerateAssemblyInfo=false" :
                         $"/p:Generate{attributeToOptOut}=false"
@@ -90,6 +91,8 @@ namespace Microsoft.NET.Build.Tests
                 Name = "ProjectWithSourceRevisionId",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
+            // Disable the built-in source control integration
+            testProject.AdditionalProperties["EnableSourceControlManagerQueries"] = "false";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -107,6 +110,8 @@ namespace Microsoft.NET.Build.Tests
                 Name = "ProjectWithSourceRevisionId",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
+            // Disable the built-in source control integration
+            testProject.AdditionalProperties["EnableSourceControlManagerQueries"] = "false";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((path, project) =>
@@ -251,7 +256,7 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
-                .Execute($"/p:OutputType=Library", $"/p:TargetFramework={targetFramework}", $"/p:VersionPrefix=1.2.3")
+                .Execute($"/p:OutputType=Library", $"/p:TargetFramework={targetFramework}", $"/p:VersionPrefix=1.2.3", "/p:EnableSourceControlManagerQueries=false")
                 .Should()
                 .Pass();
 
