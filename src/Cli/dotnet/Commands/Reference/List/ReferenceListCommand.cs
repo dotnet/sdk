@@ -22,9 +22,9 @@ internal class ReferenceListCommand : CommandBase
     {
         ShowHelpOrErrorIfAppropriate(parseResult);
 
-        _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
-            parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument) ??
+        _fileOrDirectory = parseResult.HasOption(ReferenceCommandDefinition.ProjectOption) ?
+            parseResult.GetValue(ReferenceCommandDefinition.ProjectOption) :
+            parseResult.GetValue(ListCommandDefinition.SlnOrProjectArgument) ??
             Directory.GetCurrentDirectory();
     }
 
