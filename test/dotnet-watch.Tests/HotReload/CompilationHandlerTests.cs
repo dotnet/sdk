@@ -25,10 +25,13 @@ public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTest
         var loggerFactory = new LoggerFactory(reporter);
         var logger = loggerFactory.CreateLogger("Test");
         var factory = new ProjectGraphFactory(globalOptions: []);
+
         var projectGraph = factory.TryLoadProjectGraph(options.ProjectPath, logger, projectGraphRequired: false, CancellationToken.None);
+        Assert.NotNull(projectGraph);
+
         var handler = new CompilationHandler(logger, processRunner);
 
-        await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);
+        await handler.UpdateProjectConeAsync(projectGraph, hostProject, workingDirectory, CancellationToken.None);
 
         // all projects are present
         AssertEx.SequenceEqual(["Host", "Lib2", "Lib", "A", "B"], handler.Workspace.CurrentSolution.Projects.Select(p => p.Name));

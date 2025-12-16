@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph projectGraph)
+internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph projectGraph, ImmutableArray<ProjectInstance> restoredProjectInstances)
 {
     public readonly IReadOnlyDictionary<string, FileItem> Files = files;
     public readonly ProjectGraph ProjectGraph = projectGraph;
@@ -25,6 +26,9 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
 
     public IReadOnlySet<string> BuildFiles
         => _lazyBuildFiles.Value;
+
+    public ImmutableArray<ProjectInstance> RestoredProjectInstances
+        => restoredProjectInstances;
 
     public void WatchFiles(FileWatcher fileWatcher)
     {
@@ -86,14 +90,18 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             }
         }
 
+        // Capture the snapshot of original project instances after Restore target has been run.
+        // These instances can be used to evaluate additional targets (e.g. deployment) if needed.
+        var restoredProjectInstances = projectGraph.ProjectNodesTopologicallySorted.Select(node => node.ProjectInstance.DeepCopy()).ToImmutableArray();
+
         var fileItems = new Dictionary<string, FileItem>();
+
+        // Update the project instances of the graph with design-time build results.
+        // The properties and items set by DTB will be used by the Workspace to create Roslyn representation of projects.
 
         foreach (var project in projectGraph.ProjectNodesTopologicallySorted)
         {
-            // Deep copy so that we can reuse the graph for building additional targets later on.
-            // If we didn't copy the instance the targets might duplicate items that were already
-            // populated by design-time build.
-            var projectInstance = project.ProjectInstance.DeepCopy();
+            var projectInstance = project.ProjectInstance;
 
             // skip outer build project nodes:
             if (projectInstance.GetPropertyValue(PropertyNames.TargetFramework) == "")
@@ -116,7 +124,6 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             var projectPath = projectInstance.FullPath;
             var projectDirectory = Path.GetDirectoryName(projectPath)!;
 
-            // TODO: Compile and AdditionalItems should be provided by Roslyn
             var items = projectInstance.GetItems(ItemNames.Compile)
                 .Concat(projectInstance.GetItems(ItemNames.AdditionalFiles))
                 .Concat(projectInstance.GetItems(ItemNames.Watch));
@@ -166,6 +173,6 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
 
         buildReporter.ReportWatchedFiles(fileItems);
 
-        return new EvaluationResult(fileItems, projectGraph);
+        return new EvaluationResult(fileItems, projectGraph, restoredProjectInstances);
     }
 }

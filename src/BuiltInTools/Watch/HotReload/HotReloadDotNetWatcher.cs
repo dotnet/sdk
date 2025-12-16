@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
@@ -166,7 +167,7 @@ namespace Microsoft.DotNet.Watch
                         return;
                     }
 
-                    await compilationHandler.Workspace.UpdateProjectConeAsync(rootProjectOptions.ProjectPath, iterationCancellationToken);
+                    await compilationHandler.UpdateProjectConeAsync(evaluationResult.ProjectGraph, rootProjectOptions.ProjectPath, rootProjectOptions.WorkingDirectory, iterationCancellationToken);
 
                     // Solution must be initialized after we load the solution but before we start watching for file changes to avoid race condition
                     // when the EnC session captures content of the file after the changes has already been made.
@@ -373,7 +374,7 @@ namespace Microsoft.DotNet.Watch
                         // Deploy dependencies after rebuilding and before restarting.
                         if (!projectsToRedeploy.IsEmpty)
                         {
-                            DeployProjectDependencies(evaluationResult.ProjectGraph, projectsToRedeploy, iterationCancellationToken);
+                            DeployProjectDependencies(evaluationResult.RestoredProjectInstances, projectsToRedeploy, iterationCancellationToken);
                             _context.Logger.Log(MessageDescriptor.ProjectDependenciesDeployed, projectsToRedeploy.Length);
                         }
 
@@ -454,7 +455,7 @@ namespace Microsoft.DotNet.Watch
                                 // additional files/directories may have been added:
                                 evaluationResult.WatchFiles(fileWatcher);
 
-                                await compilationHandler.Workspace.UpdateProjectConeAsync(rootProjectOptions.ProjectPath, iterationCancellationToken);
+                                await compilationHandler.UpdateProjectConeAsync(evaluationResult.ProjectGraph, rootProjectOptions.ProjectPath, rootProjectOptions.WorkingDirectory, iterationCancellationToken);
 
                                 if (shutdownCancellationToken.IsCancellationRequested)
                                 {
@@ -501,7 +502,7 @@ namespace Microsoft.DotNet.Watch
                             {
                                 // Update the workspace to reflect changes in the file content:.
                                 // If the project was re-evaluated the Roslyn solution is already up to date.
-                                await compilationHandler.Workspace.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
+                                await compilationHandler.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
                             }
 
                             return changedFiles;
@@ -560,35 +561,38 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private void DeployProjectDependencies(ProjectGraph graph, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
+        private void DeployProjectDependencies(ImmutableArray<ProjectInstance> restoredProjectInstances, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
         {
             var projectPathSet = projectPaths.ToImmutableHashSet(PathUtilities.OSSpecificPathComparer);
             var buildReporter = new BuildReporter(_context.Logger, _context.Options, _context.EnvironmentOptions);
             var targetName = TargetNames.ReferenceCopyLocalPathsOutputGroup;
 
-            foreach (var node in graph.ProjectNodes)
+            foreach (var restoredProjectInstance in restoredProjectInstances)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var projectPath = node.ProjectInstance.FullPath;
+                // Avoid modification of the restored snapshot.
+                var projectInstance = restoredProjectInstance.DeepCopy();
+
+                var projectPath = projectInstance.FullPath;
 
                 if (!projectPathSet.Contains(projectPath))
                 {
                     continue;
                 }
 
-                if (!node.ProjectInstance.Targets.ContainsKey(targetName))
+                if (!projectInstance.Targets.ContainsKey(targetName))
                 {
                     continue;
                 }
 
-                if (node.GetOutputDirectory() is not { } relativeOutputDir)
+                if (projectInstance.GetOutputDirectory() is not { } relativeOutputDir)
                 {
                     continue;
                 }
 
                 using var loggers = buildReporter.GetLoggers(projectPath, targetName);
-                if (!node.ProjectInstance.Build([targetName], loggers, out var targetOutputs))
+                if (!projectInstance.Build([targetName], loggers, out var targetOutputs))
                 {
                     _context.Logger.LogDebug("{TargetName} target failed", targetName);
                     loggers.ReportOutput();
