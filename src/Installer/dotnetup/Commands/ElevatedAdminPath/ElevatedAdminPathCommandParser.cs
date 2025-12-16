@@ -24,6 +24,7 @@ internal static class ElevatedAdminPathCommandParser
     private static Command ConstructCommand()
     {
         Command command = new("elevatedadminpath", "Modifies the machine-wide admin PATH (requires elevated privileges)");
+        command.Hidden = true;
 
         command.Arguments.Add(OperationArgument);
 
