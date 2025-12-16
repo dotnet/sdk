@@ -503,6 +503,8 @@ internal static class CommonOptions
     /// </summary>
     private class ApplyVerbosityAction : SynchronousCommandLineAction
     {
+        public override bool Terminating => false;
+
         public override int Invoke(ParseResult parseResult)
         {
             // Debug: Console.Error.WriteLine("ApplyVerbosityAction.Invoke called");
