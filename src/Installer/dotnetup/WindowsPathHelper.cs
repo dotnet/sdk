@@ -48,7 +48,8 @@ internal static class WindowsPathHelper
     /// <summary>
     /// Reads the machine-wide PATH environment variable from the registry.
     /// </summary>
-    public static string ReadAdminPath()
+    /// <param name="expand">If true, expands environment variables in the PATH value.</param>
+    public static string ReadAdminPath(bool expand = false)
     {
         using var key = Registry.LocalMachine.OpenSubKey(RegistryEnvironmentPath, writable: false);
         if (key == null)
@@ -56,7 +57,7 @@ internal static class WindowsPathHelper
             throw new InvalidOperationException("Unable to open registry key for environment variables.");
         }
 
-        var pathValue = key.GetValue(PathVariableName) as string;
+        var pathValue = key.GetValue(PathVariableName, null, expand ? RegistryValueOptions.None : RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
         return pathValue ?? string.Empty;
     }
 
@@ -106,22 +107,92 @@ internal static class WindowsPathHelper
     }
 
     /// <summary>
+    /// Finds the indices of entries in a PATH that match the Program Files dotnet paths.
+    /// This method is designed for unit testing without registry access.
+    /// </summary>
+    /// <param name="pathEntries">The list of PATH entries to search.</param>
+    /// <param name="programFilesDotnetPaths">The list of Program Files dotnet paths to match.</param>
+    /// <returns>A list of indices where dotnet paths were found.</returns>
+    public static List<int> FindDotnetPathIndices(List<string> pathEntries, List<string> programFilesDotnetPaths)
+    {
+        var indices = new List<int>();
+        for (int i = 0; i < pathEntries.Count; i++)
+        {
+            var normalizedEntry = Path.TrimEndingDirectorySeparator(pathEntries[i]);
+            if (programFilesDotnetPaths.Any(pfPath =>
+                normalizedEntry.Equals(Path.TrimEndingDirectorySeparator(pfPath), StringComparison.OrdinalIgnoreCase)))
+            {
+                indices.Add(i);
+            }
+        }
+        return indices;
+    }
+
+    /// <summary>
+    /// Removes entries at the specified indices from a PATH string.
+    /// This method is designed for unit testing without registry access.
+    /// </summary>
+    /// <param name="path">The PATH string to modify.</param>
+    /// <param name="indicesToRemove">The indices of entries to remove.</param>
+    /// <returns>The modified PATH string with entries removed.</returns>
+    public static string RemovePathEntriesByIndices(string path, List<int> indicesToRemove)
+    {
+        if (indicesToRemove.Count == 0)
+        {
+            return path;
+        }
+
+        var pathEntries = SplitPath(path);
+        var indicesToRemoveSet = new HashSet<int>(indicesToRemove);
+
+        var filteredEntries = pathEntries
+            .Where((entry, index) => !indicesToRemoveSet.Contains(index))
+            .ToList();
+
+        return string.Join(';', filteredEntries);
+    }
+
+    /// <summary>
+    /// Checks if a PATH contains any Program Files dotnet paths.
+    /// This method is designed for unit testing without registry access.
+    /// </summary>
+    /// <param name="pathEntries">The list of PATH entries to check.</param>
+    /// <param name="programFilesDotnetPaths">The list of Program Files dotnet paths to match.</param>
+    /// <returns>True if any dotnet path is found, false otherwise.</returns>
+    public static bool PathContainsDotnet(List<string> pathEntries, List<string> programFilesDotnetPaths)
+    {
+        return FindDotnetPathIndices(pathEntries, programFilesDotnetPaths).Count > 0;
+    }
+
+    /// <summary>
     /// Removes the Program Files dotnet path from the given PATH string.
+    /// This is a convenience method that uses the expanded PATH for detection.
     /// </summary>
     public static string RemoveProgramFilesDotnetFromPath(string path)
     {
         var pathEntries = SplitPath(path);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
+        var indices = FindDotnetPathIndices(pathEntries, programFilesDotnetPaths);
+        return RemovePathEntriesByIndices(path, indices);
+    }
 
-        // Remove entries that match Program Files dotnet paths (case-insensitive)
-        pathEntries = pathEntries.Where(entry =>
-        {
-            var normalizedEntry = Path.TrimEndingDirectorySeparator(entry);
-            return !programFilesDotnetPaths.Any(pfPath =>
-                normalizedEntry.Equals(Path.TrimEndingDirectorySeparator(pfPath), StringComparison.OrdinalIgnoreCase));
-        }).ToList();
+    /// <summary>
+    /// Removes the Program Files dotnet path from the admin PATH while preserving unexpanded environment variables.
+    /// </summary>
+    /// <returns>The modified unexpanded PATH string.</returns>
+    public static string RemoveProgramFilesDotnetFromAdminPath()
+    {
+        // Read both expanded and unexpanded versions
+        string expandedPath = ReadAdminPath(expand: true);
+        string unexpandedPath = ReadAdminPath(expand: false);
 
-        return string.Join(';', pathEntries);
+        // Find indices to remove using the expanded path
+        var expandedEntries = SplitPath(expandedPath);
+        var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
+        var indicesToRemove = FindDotnetPathIndices(expandedEntries, programFilesDotnetPaths);
+
+        // Remove those indices from the unexpanded path
+        return RemovePathEntriesByIndices(unexpandedPath, indicesToRemove);
     }
 
     /// <summary>
@@ -157,19 +228,15 @@ internal static class WindowsPathHelper
 
     /// <summary>
     /// Checks if the admin PATH contains the Program Files dotnet path.
+    /// Uses the expanded PATH for accurate detection.
     /// </summary>
     public static bool AdminPathContainsProgramFilesDotnet()
     {
-        var adminPath = ReadAdminPath();
+        var adminPath = ReadAdminPath(expand: true);
         var pathEntries = SplitPath(adminPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
-        return pathEntries.Any(entry =>
-        {
-            var normalizedEntry = Path.TrimEndingDirectorySeparator(entry);
-            return programFilesDotnetPaths.Any(pfPath =>
-                normalizedEntry.Equals(Path.TrimEndingDirectorySeparator(pfPath), StringComparison.OrdinalIgnoreCase));
-        });
+        return PathContainsDotnet(pathEntries, programFilesDotnetPaths);
     }
 
     /// <summary>

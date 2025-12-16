@@ -46,7 +46,7 @@ internal class ElevatedAdminPathCommand : CommandBase
         try
         {
             Console.WriteLine("Reading current admin PATH from registry...");
-            string oldPath = WindowsPathHelper.ReadAdminPath();
+            string oldPath = WindowsPathHelper.ReadAdminPath(expand: false);
 
             if (!WindowsPathHelper.AdminPathContainsProgramFilesDotnet())
             {
@@ -55,7 +55,7 @@ internal class ElevatedAdminPathCommand : CommandBase
             }
 
             Console.WriteLine("Removing Program Files dotnet path from admin PATH...");
-            string newPath = WindowsPathHelper.RemoveProgramFilesDotnetFromPath(oldPath);
+            string newPath = WindowsPathHelper.RemoveProgramFilesDotnetFromAdminPath();
 
             Console.WriteLine("Writing updated admin PATH to registry...");
             WindowsPathHelper.WriteAdminPath(newPath);
@@ -82,7 +82,7 @@ internal class ElevatedAdminPathCommand : CommandBase
         try
         {
             Console.WriteLine("Reading current admin PATH from registry...");
-            string oldPath = WindowsPathHelper.ReadAdminPath();
+            string oldPath = WindowsPathHelper.ReadAdminPath(expand: false);
 
             if (WindowsPathHelper.AdminPathContainsProgramFilesDotnet())
             {
