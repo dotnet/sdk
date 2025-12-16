@@ -153,19 +153,6 @@ namespace Microsoft.DotNet.Watch
                         return;
                     }
 
-                    if (!await rootRunningProject.WaitForProcessRunningAsync(iterationCancellationToken))
-                    {
-                        // Process might have exited while we were trying to communicate with it.
-                        // Cancel the iteration, but wait for a file change before starting a new one.
-                        iterationCancellationSource.Cancel();
-                        iterationCancellationSource.Token.ThrowIfCancellationRequested();
-                    }
-
-                    if (shutdownCancellationToken.IsCancellationRequested)
-                    {
-                        // Ctrl+C:
-                        return;
-                    }
 
                     await compilationHandler.UpdateProjectConeAsync(evaluationResult.ProjectGraph, rootProjectOptions.ProjectPath, iterationCancellationToken);
 
@@ -247,80 +234,33 @@ namespace Microsoft.DotNet.Watch
                             continue;
                         }
 
-                        if (!rootProjectCapabilities.Contains("SupportsHotReload"))
-                        {
-                            _context.Logger.LogWarning("Project '{Name}' does not support Hot Reload and must be rebuilt.", rootProject.GetDisplayName());
-
-                            // file change already detected
-                            waitForFileChangeBeforeRestarting = false;
-                            iterationCancellationSource.Cancel();
-                            break;
-                        }
-
-                        HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.Main);
+                        var updates = new HotReloadProjectUpdatesBuilder();
                         var stopwatch = Stopwatch.StartNew();
 
-                        HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.StaticHandler);
-                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, evaluationResult.StaticWebAssetsManifests, stopwatch, iterationCancellationToken);
-                        HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.StaticHandler);
+                        await compilationHandler.GetStaticAssetUpdatesAsync(updates, changedFiles, projectMap, evaluationResult.StaticWebAssetsManifests, iterationCancellationToken);
 
-                        HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
-
-                        var (managedCodeUpdates, projectsToRebuild, projectsToRedeploy, projectsToRestart) = await compilationHandler.HandleManagedCodeChangesAsync(
-                            autoRestart: _context.Options.NonInteractive || _rudeEditRestartPrompt?.AutoRestartPreference is true,
+                        await compilationHandler.GetManagedCodeUpdatesAsync(
+                            updates,
                             restartPrompt: async (projectNames, cancellationToken) =>
                             {
-                                if (_rudeEditRestartPrompt != null)
-                                {
-                                    // stop before waiting for user input:
-                                    stopwatch.Stop();
-
-                                    string question;
-                                    if (runtimeProcessLauncher == null)
-                                    {
-                                        question = "Do you want to restart your app?";
-                                    }
-                                    else
-                                    {
-                                        _context.Logger.LogInformation("Affected projects:");
-
-                                        foreach (var projectName in projectNames.OrderBy(n => n))
-                                        {
-                                            _context.Logger.LogInformation("  {ProjectName}", projectName);
-                                        }
-
-                                        question = "Do you want to restart these projects?";
-                                    }
-
-                                    return await _rudeEditRestartPrompt.WaitForRestartConfirmationAsync(question, cancellationToken);
-                                }
-
-                                _context.Logger.LogDebug("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
-
-                                foreach (var projectName in projectNames)
-                                {
-                                    _context.Logger.LogDebug("  Project to restart: '{ProjectName}'", projectName);
-                                }
-
-                                return true;
+                                // stop before waiting for user input:
+                                stopwatch.Stop();
+                                var result = await RestartPrompt(projectNames, runtimeProcessLauncher, cancellationToken);
+                                stopwatch.Start();
+                                return result;
                             },
+                            autoRestart: _context.Options.NonInteractive || _rudeEditRestartPrompt?.AutoRestartPreference is true,
                             iterationCancellationToken);
 
-                        HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.CompilationHandler);
-
-                        stopwatch.Stop();
-
-                        HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.Main);
-
                         // Terminate root process if it had rude edits or is non-reloadable.
-                        if (projectsToRestart.SingleOrDefault(project => project.Options.IsRootProject) is { } rootProjectToRestart)
+                        if (updates.ProjectsToRestart.SingleOrDefault(project => project.Options.IsRootProject) is { } rootProjectToRestart)
                         {
                             // Triggers rootRestartCancellationToken.
                             waitForFileChangeBeforeRestarting = false;
                             break;
                         }
 
-                        if (!projectsToRebuild.IsEmpty)
+                        if (updates.ProjectsToRebuild is not [])
                         {
                             while (true)
                             {
@@ -333,7 +273,7 @@ namespace Microsoft.DotNet.Watch
                                     // Build projects sequentially to avoid failed attempts to overwrite dependent project outputs.
                                     // TODO: Ideally, dotnet build would be able to build multiple projects. https://github.com/dotnet/sdk/issues/51311
                                     var success = true;
-                                    foreach (var projectPath in projectsToRebuild)
+                                    foreach (var projectPath in updates.ProjectsToRebuild)
                                     {
                                         success = await BuildProjectAsync(projectPath, rootProjectOptions.BuildArguments, iterationCancellationToken);
                                         if (!success)
@@ -362,39 +302,35 @@ namespace Microsoft.DotNet.Watch
 
                             // Changes made since last snapshot of the accumulator shouldn't be included in next Hot Reload update.
                             // Apply them to the workspace.
-                            _ = await CaptureChangedFilesSnapshot(projectsToRebuild);
+                            _ = await CaptureChangedFilesSnapshot(updates.ProjectsToRebuild);
 
-                            _context.Logger.Log(MessageDescriptor.ProjectsRebuilt, projectsToRebuild.Length);
+                            _context.Logger.Log(MessageDescriptor.ProjectsRebuilt, updates.ProjectsToRebuild.Count);
                         }
 
                         // Deploy dependencies after rebuilding and before restarting.
-                        if (!projectsToRedeploy.IsEmpty)
+                        if (updates.ProjectsToRedeploy is not [])
                         {
-                            await DeployProjectDependenciesAsync(evaluationResult.RestoredProjectInstances, projectsToRedeploy, iterationCancellationToken);
-                            _context.Logger.Log(MessageDescriptor.ProjectDependenciesDeployed, projectsToRedeploy.Length);
+                            await DeployProjectDependenciesAsync(evaluationResult.RestoredProjectInstances, updates.ProjectsToRedeploy, iterationCancellationToken);
+                            _context.Logger.Log(MessageDescriptor.ProjectDependenciesDeployed, updates.ProjectsToRedeploy.Count);
                         }
 
                         // Apply updates only after dependencies have been deployed,
                         // so that updated code doesn't attempt to access the dependency before it has been deployed.
-                        if (!managedCodeUpdates.IsEmpty)
+                        if (updates.ManagedCodeUpdates.Count > 0 || updates.StaticAssetsToUpdate.Count > 0)
                         {
-                            await compilationHandler.ApplyUpdatesAsync(managedCodeUpdates, stopwatch, iterationCancellationToken);
+                            await compilationHandler.ApplyManagedCodeAndStaticAssetUpdatesAsync(updates.ManagedCodeUpdates, updates.StaticAssetsToUpdate, stopwatch, iterationCancellationToken);
                         }
 
-                        if (!projectsToRestart.IsEmpty)
+                        if (updates.ProjectsToRestart is not [])
                         {
                             await Task.WhenAll(
-                                projectsToRestart.Select(async runningProject =>
-                                {
-                                    var newRunningProject = await runningProject.RestartOperation(shutdownCancellationToken);
-                                    _ = await newRunningProject.WaitForProcessRunningAsync(shutdownCancellationToken);
-                                }))
+                                updates.ProjectsToRestart.Select(async runningProject => runningProject.RestartOperation(shutdownCancellationToken)))
                                 .WaitAsync(shutdownCancellationToken);
 
-                            _context.Logger.Log(MessageDescriptor.ProjectsRestarted, projectsToRestart.Length);
+                            _context.Logger.Log(MessageDescriptor.ProjectsRestarted, updates.ProjectsToRestart.Count);
                         }
 
-                        async Task<ImmutableArray<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableArray<string> rebuiltProjects)
+                        async Task<ImmutableArray<ChangedFile>> CaptureChangedFilesSnapshot(IReadOnlyList<string> rebuiltProjects)
                         {
                             var changedPaths = Interlocked.Exchange(ref changedFilesAccumulator, []);
                             if (changedPaths is [])
@@ -462,7 +398,7 @@ namespace Microsoft.DotNet.Watch
                                 _context.Logger.Log(MessageDescriptor.ReEvaluationCompleted);
                             }
 
-                            if (!rebuiltProjects.IsEmpty)
+                            if (rebuiltProjects is not [])
                             {
                                 // Filter changed files down to those contained in projects being rebuilt.
                                 // File changes that affect projects that are not being rebuilt will stay in the accumulator
@@ -552,7 +488,40 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-<<<<<<< HEAD
+        private async Task<bool> RestartPrompt(IEnumerable<string> projectNames, IRuntimeProcessLauncher? runtimeProcessLauncher, CancellationToken cancellationToken)
+        {
+            if (_rudeEditRestartPrompt != null)
+            {
+                string question;
+                if (runtimeProcessLauncher == null)
+                {
+                    question = "Do you want to restart your app?";
+                }
+                else
+                {
+                    _context.Logger.LogInformation("Affected projects:");
+
+                    foreach (var projectName in projectNames.OrderBy(n => n))
+                    {
+                        _context.Logger.LogInformation("  {ProjectName}", projectName);
+                    }
+
+                    question = "Do you want to restart these projects?";
+                }
+
+                return await _rudeEditRestartPrompt.WaitForRestartConfirmationAsync(question, cancellationToken);
+            }
+
+            _context.Logger.LogDebug("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
+
+            foreach (var projectName in projectNames)
+            {
+                _context.Logger.LogDebug("  Project to restart: '{ProjectName}'", projectName);
+            }
+
+            return true;
+        }
+
         private void AnalyzeFileChanges(
             List<ChangedFile> changedFiles,
             EvaluationResult evaluationResult,
@@ -607,7 +576,7 @@ namespace Microsoft.DotNet.Watch
             return extension.Equals(".props", PathUtilities.OSSpecificPathComparison)
                 || extension.Equals(".targets", PathUtilities.OSSpecificPathComparison)
                 || extension.EndsWith("proj", PathUtilities.OSSpecificPathComparison)
-                || extension.Equals("projitems", PathUtilities.OSSpecificPathComparison) // shared project items
+                || extension.Equals(".projitems", PathUtilities.OSSpecificPathComparison) // shared project items
                 || string.Equals(Path.GetFileName(filePath), "global.json", PathUtilities.OSSpecificPathComparison);
         }
 
@@ -651,7 +620,7 @@ namespace Microsoft.DotNet.Watch
             return false;
         }
 
-        private async ValueTask DeployProjectDependenciesAsync(ImmutableArray<ProjectInstance> restoredProjectInstances, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
+        private async ValueTask DeployProjectDependenciesAsync(ImmutableArray<ProjectInstance> restoredProjectInstances, IReadOnlyList<string> projectPaths, CancellationToken cancellationToken)
         {
             var projectPathSet = projectPaths.ToImmutableHashSet(PathUtilities.OSSpecificPathComparer);
             var buildManager = new BuildManager(_context.Logger, _context.Options, _context.EnvironmentOptions);

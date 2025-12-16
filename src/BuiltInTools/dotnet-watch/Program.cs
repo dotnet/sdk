@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
 using Microsoft.Extensions.Logging;

@@ -135,20 +135,6 @@ namespace Microsoft.DotNet.Watch
         public string GetMessage(params object?[] args)
             => Id.Id == 0 ? Format : string.Format(Format, args);
 
-        public MessageDescriptor WithLevelWhen(LogLevel level, bool condition)
-            => condition && Level != level
-                ? this with
-                  {
-                      Level = level,
-                      Emoji = level switch
-                      {
-                          LogLevel.Error or LogLevel.Critical => Emoji.Error,
-                          LogLevel.Warning => Emoji.Warning,
-                          _ => Emoji
-                      }
-                  }
-                : this;
-
         public static readonly ImmutableDictionary<string, Emoji> ComponentEmojis = ImmutableDictionary<string, Emoji>.Empty
             .Add(DotNetWatchContext.DefaultLogComponentName, Emoji.Watch)
             .Add(DotNetWatchContext.BuildLogComponentName, Emoji.Build)
@@ -189,8 +175,10 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor ApplyUpdate_FileContentDoesNotMatchBuiltSource = Create("{0} Expected if a source file is updated that is linked to project whose build is not up-to-date.", Emoji.Watch, LogLevel.Debug);
         public static readonly MessageDescriptor ConfiguredToLaunchBrowser = Create("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, LogLevel.Debug);
         public static readonly MessageDescriptor ConfiguredToUseBrowserRefresh = Create("Using browser-refresh middleware", Emoji.Default, LogLevel.Debug);
-        public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable = Create("Skipping configuring browser-refresh middleware since its refresh server suppressed via environment variable {0}.", Emoji.Watch, LogLevel.Debug);
-        public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported = Create("Skipping configuring browser-refresh middleware since the target framework version is not supported. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, LogLevel.Warning);
+        public static readonly MessageDescriptor BrowserRefreshSuppressedViaEnvironmentVariable_ManualRefreshRequired = Create("Browser refresh is suppressed via environment variable '{0}'. To reload static assets after an update refresh browser manually.", Emoji.Watch, LogLevel.Debug);
+        public static readonly MessageDescriptor BrowserRefreshSuppressedViaEnvironmentVariable_ApplicationWillBeRestarted = Create("Browser refresh is suppressed via environment variable '{0}'. Application will be restarted when updated.", Emoji.Watch, LogLevel.Warning);
+        public static readonly MessageDescriptor BrowserRefreshNotSupportedByProjectTargetFramework_ManualRefreshRequired = Create("Browser refresh is ot supported by the project target framework. To reload static assets after an update refresh browser manually. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, LogLevel.Warning);
+        public static readonly MessageDescriptor BrowserRefreshNotSupportedByProjectTargetFramework_ApplicationWillBeRestarted = Create("Browser refresh is ot supported by the project target framework. Application will be restarted when updated. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, LogLevel.Warning);
         public static readonly MessageDescriptor UpdatingDiagnostics = Create(LogEvents.UpdatingDiagnostics, Emoji.Default);
         public static readonly MessageDescriptor FailedToReceiveResponseFromConnectedBrowser = Create(LogEvents.FailedToReceiveResponseFromConnectedBrowser, Emoji.Default);
         public static readonly MessageDescriptor NoBrowserConnected = Create(LogEvents.NoBrowserConnected, Emoji.Default);
@@ -207,7 +195,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor FileAdditionTriggeredReEvaluation = Create("File addition triggered re-evaluation: '{0}'.", Emoji.Watch, LogLevel.Debug);
         public static readonly MessageDescriptor ProjectChangeTriggeredReEvaluation = Create("Project change triggered re-evaluation: '{0}'.", Emoji.Watch, LogLevel.Debug);
         public static readonly MessageDescriptor ReEvaluationCompleted = Create("Re-evaluation completed.", Emoji.Watch, LogLevel.Debug);
-        public static readonly MessageDescriptor NoCSharpChangesToApply = Create("No C# or Razor changes to apply.", Emoji.Watch, LogLevel.Information);
+        public static readonly MessageDescriptor NoManagedCodeChangesToApply = Create("No managed code changes to apply.", Emoji.Watch, LogLevel.Information);
         public static readonly MessageDescriptor Exited = Create("Exited", Emoji.Watch, LogLevel.Information);
         public static readonly MessageDescriptor ExitedWithUnknownErrorCode = Create("Exited with unknown error code", Emoji.Error, LogLevel.Error);
         public static readonly MessageDescriptor ExitedWithErrorCode = Create("Exited with error code {0}", Emoji.Error, LogLevel.Error);
@@ -226,6 +214,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor UnableToApplyChanges = Create("Unable to apply changes due to compilation errors.", Emoji.HotReload, LogLevel.Information);
         public static readonly MessageDescriptor RestartNeededToApplyChanges = Create("Restart is needed to apply the changes.", Emoji.HotReload, LogLevel.Information);
         public static readonly MessageDescriptor HotReloadEnabled = Create("Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.", Emoji.HotReload, LogLevel.Information);
+        public static readonly MessageDescriptor ProjectDoesNotSupportHotReload = Create("Project does not support Hot Reload: {0}. Application will be restarted when updated.", Emoji.Warning, LogLevel.Warning);
         public static readonly MessageDescriptor PressCtrlRToRestart = Create("Press Ctrl+R to restart.", Emoji.LightBulb, LogLevel.Information);
         public static readonly MessageDescriptor ApplicationKind_BlazorHosted = Create("Application kind: BlazorHosted. '{0}' references BlazorWebAssembly project '{1}'.", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor ApplicationKind_BlazorWebAssembly = Create("Application kind: BlazorWebAssembly.", Emoji.Default, LogLevel.Debug);

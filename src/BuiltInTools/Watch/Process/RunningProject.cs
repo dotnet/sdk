@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Graph;
@@ -16,17 +15,19 @@ namespace Microsoft.DotNet.Watch
         ProjectGraphNode projectNode,
         ProjectOptions options,
         HotReloadClients clients,
+        ILogger clientLogger,
         Task<int> runningProcess,
         int processId,
         CancellationTokenSource processExitedSource,
         CancellationTokenSource processTerminationSource,
         RestartOperation restartOperation,
-        ImmutableArray<string> capabilities) : IDisposable
+        ImmutableArray<string> managedCodeUpdateCapabilities) : IDisposable
     {
         public readonly ProjectGraphNode ProjectNode = projectNode;
         public readonly ProjectOptions Options = options;
         public readonly HotReloadClients Clients = clients;
-        public readonly ImmutableArray<string> Capabilities = capabilities;
+        public readonly ILogger ClientLogger = clientLogger;
+        public readonly ImmutableArray<string> ManagedCodeUpdateCapabilities = managedCodeUpdateCapabilities;
         public readonly Task<int> RunningProcess = runningProcess;
         public readonly int ProcessId = processId;
         public readonly RestartOperation RestartOperation = restartOperation;
@@ -60,26 +61,6 @@ namespace Microsoft.DotNet.Watch
             Clients.Dispose();
             processTerminationSource.Dispose();
             processExitedSource.Dispose();
-        }
-
-        /// <summary>
-        /// Waits for the application process to start.
-        /// Ensures that the build has been complete and the build outputs are available.
-        /// Returns false if the process has exited before the connection was established.
-        /// </summary>
-        public async ValueTask<bool> WaitForProcessRunningAsync(CancellationToken cancellationToken)
-        {
-            using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ProcessExitedCancellationToken);
-
-            try
-            {
-                await Clients.WaitForConnectionEstablishedAsync(processCommunicationCancellationSource.Token);
-                return true;
-            }
-            catch (OperationCanceledException) when (ProcessExitedCancellationToken.IsCancellationRequested)
-            {
-                return false;
-            }
         }
 
         /// <summary>
@@ -125,7 +106,7 @@ namespace Microsoft.DotNet.Watch
 
                 if (e is not OperationCanceledException)
                 {
-                    Clients.ClientLogger.LogError("Failed to apply updates to process {Process}: {Exception}", ProcessId, e.ToString());
+                    ClientLogger.LogError("Failed to apply updates to process {Process}: {Exception}", ProcessId, e.ToString());
                 }
             }
         }

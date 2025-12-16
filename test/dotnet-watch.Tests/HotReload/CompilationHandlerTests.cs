@@ -23,6 +23,7 @@ public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTest
 
         var factory = new ProjectGraphFactory(globalOptions: []);
         var projectGraph = factory.TryLoadProjectGraph(options.ProjectPath, NullLogger.Instance, projectGraphRequired: false, CancellationToken.None);
+        Assert.NotNull(projectGraph);
 
         var processOutputReporter = new TestProcessOutputReporter();
 
