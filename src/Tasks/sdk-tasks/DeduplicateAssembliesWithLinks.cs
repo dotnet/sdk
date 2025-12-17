@@ -12,23 +12,26 @@ using System.Security.Cryptography;
 namespace Microsoft.DotNet.Build.Tasks
 {
     /// <summary>
-    /// Deduplicates files in a directory by replacing duplicates with hardlinks.
-    /// Files are grouped by content hash, and a deterministic "master" file is selected
-    /// (closest to root, alphabetically first). All other duplicates are replaced with hardlinks.
+    /// Deduplicates assemblies (.dll and .exe files) in a directory by replacing duplicates with links (hard or symbolic).
+    /// Assemblies are grouped by content hash, and a deterministic "master" file is selected
+    /// (closest to root, alphabetically first). All other duplicates are replaced with links.
+    /// Text-based files (config, json, xml, etc.) are not deduplicated to avoid issues with configuration files.
     /// </summary>
-    public sealed class DeduplicateFilesWithHardLinks : Task
+    public sealed class DeduplicateAssembliesWithLinks : Task
     {
         /// <summary>
-        /// The root directory to scan for duplicate files.
+        /// The root directory to scan for duplicate assemblies.
         /// </summary>
         [Required]
         public string LayoutDirectory { get; set; } = null!;
 
         /// <summary>
-        /// Minimum file size in bytes to consider for deduplication (default: 1024).
-        /// Small files have minimal impact on archive size.
+        /// If true, creates hard links. If false, creates symbolic links.
+        /// Defaults to true (hard links).
         /// </summary>
-        public int MinimumFileSize { get; set; } = 1024;
+        public bool UseHardLinks { get; set; } = false;
+
+        private string LinkTypeName => UseHardLinks ? "hard links" : "symbolic links";
 
         public override bool Execute()
         {
@@ -38,33 +41,34 @@ namespace Microsoft.DotNet.Build.Tasks
                 return false;
             }
 
-            Log.LogMessage(MessageImportance.High, $"Scanning for duplicate files in '{LayoutDirectory}'...");
+            Log.LogMessage(MessageImportance.High, $"Scanning for duplicate assemblies in '{LayoutDirectory}' (using {LinkTypeName})...");
 
-            // Find all eligible files
+            // Find all eligible files - only assemblies
             var files = Directory.GetFiles(LayoutDirectory, "*", SearchOption.AllDirectories)
-                .Where(f => new FileInfo(f).Length >= MinimumFileSize)
+                .Where(f => IsAssembly(f))
                 .ToList();
 
-            Log.LogMessage(MessageImportance.Normal, $"Found {files.Count} files eligible for deduplication (>= {MinimumFileSize} bytes).");
+            Log.LogMessage(MessageImportance.Normal, $"Found {files.Count} assemblies eligible for deduplication.");
 
-            if (files.Count == 0)
+            var (filesByHash, hashingSuccess) = HashAndGroupFiles(files);
+            if (!hashingSuccess)
             {
-                return true;
+                return false;
             }
 
-            var filesByHash = HashAndGroupFiles(files);
             var duplicateGroups = filesByHash.Values.Where(g => g.Count > 1).ToList();
 
-            Log.LogMessage(MessageImportance.Normal, $"Found {duplicateGroups.Count} groups of duplicate files.");
+            Log.LogMessage(MessageImportance.Normal, $"Found {duplicateGroups.Count} groups of duplicate assemblies.");
 
-            DeduplicateFileGroups(duplicateGroups);
+            bool deduplicationSuccess = DeduplicateFileGroups(duplicateGroups);
 
-            return true;
+            return deduplicationSuccess;
         }
 
-        private Dictionary<string, List<FileEntry>> HashAndGroupFiles(List<string> files)
+        private (Dictionary<string, List<FileEntry>> filesByHash, bool success) HashAndGroupFiles(List<string> files)
         {
             var filesByHash = new Dictionary<string, List<FileEntry>>();
+            bool hasErrors = false;
 
             foreach (var filePath in files)
             {
@@ -89,17 +93,19 @@ namespace Microsoft.DotNet.Build.Tasks
                 }
                 catch (Exception ex)
                 {
-                    Log.LogWarning($"Failed to hash file '{filePath}': {ex.Message}");
+                    Log.LogError($"Failed to hash file '{filePath}': {ex.Message}");
+                    hasErrors = true;
                 }
             }
 
-            return filesByHash;
+            return (filesByHash, !hasErrors);
         }
 
-        private void DeduplicateFileGroups(List<List<FileEntry>> duplicateGroups)
+        private bool DeduplicateFileGroups(List<List<FileEntry>> duplicateGroups)
         {
             int totalFilesDeduped = 0;
             long totalBytesSaved = 0;
+            bool hasErrors = false;
 
             foreach (var group in duplicateGroups)
             {
@@ -110,13 +116,11 @@ namespace Microsoft.DotNet.Build.Tasks
                 var master = sorted[0];
                 var duplicates = sorted.Skip(1).ToList();
 
-                Log.LogMessage(MessageImportance.Low, $"Master file: {master.Path}");
-
                 foreach (var duplicate in duplicates)
                 {
                     try
                     {
-                        if (CreateHardLink(duplicate.Path, master.Path))
+                        if (CreateLink(duplicate.Path, master.Path))
                         {
                             totalFilesDeduped++;
                             totalBytesSaved += duplicate.Size;
@@ -125,13 +129,16 @@ namespace Microsoft.DotNet.Build.Tasks
                     }
                     catch (Exception ex)
                     {
-                        Log.LogWarning($"Failed to create hardlink from '{duplicate.Path}' to '{master.Path}': {ex.Message}");
+                        Log.LogError($"Failed to create {(UseHardLinks ? "hard link" : "symbolic link")} from '{duplicate.Path}' to '{master.Path}': {ex.Message}");
+                        hasErrors = true;
                     }
                 }
             }
 
             Log.LogMessage(MessageImportance.High,
-                $"Deduplication complete: {totalFilesDeduped} files replaced with hardlinks, saving {totalBytesSaved / (1024.0 * 1024.0):F2} MB.");
+                $"Deduplication complete: {totalFilesDeduped} files replaced with {LinkTypeName}, saving {totalBytesSaved / (1024.0 * 1024.0):F2} MB.");
+
+            return !hasErrors;
         }
 
         private string ComputeFileHash(string filePath)
@@ -148,22 +155,35 @@ namespace Microsoft.DotNet.Build.Tasks
             return relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Length - 1;
         }
 
-        private bool CreateHardLink(string duplicateFilePath, string masterFilePath)
+        private bool IsAssembly(string filePath)
         {
-            // TODO: Replace P/Invoke with File.CreateHardLink() when SDK targets .NET 11+
-            // See: https://github.com/dotnet/runtime/issues/69030
+            var extension = Path.GetExtension(filePath);
+            return extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
+                   extension.Equals(".exe", StringComparison.OrdinalIgnoreCase);
+        }
 
+        private bool CreateLink(string duplicateFilePath, string masterFilePath)
+        {
             // Delete the duplicate file first
             File.Delete(duplicateFilePath);
 
-            // Create hardlink
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (UseHardLinks)
             {
-                return CreateHardLinkWindows(duplicateFilePath, masterFilePath);
+                // TODO: Replace P/Invoke with File.CreateHardLink() when SDK targets .NET 11+
+                // See: https://github.com/dotnet/runtime/issues/69030
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return CreateHardLinkWindows(duplicateFilePath, masterFilePath);
+                }
+                else
+                {
+                    return CreateHardLinkUnix(duplicateFilePath, masterFilePath);
+                }
             }
             else
             {
-                return CreateHardLinkUnix(duplicateFilePath, masterFilePath);
+                File.CreateSymbolicLink(duplicateFilePath, masterFilePath);
+                return true;
             }
         }
 
