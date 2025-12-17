@@ -55,9 +55,7 @@ internal sealed class WindowsPathHelper : IDisposable
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Warning: Failed to create log file: {ex.Message}");
-            _logWriter = null;
-            _logFilePath = null;
+            throw new InvalidOperationException("Failed to create log file for PATH changes.", ex);
         }
     }
 
@@ -66,14 +64,7 @@ internal sealed class WindowsPathHelper : IDisposable
     /// </summary>
     private void LogMessage(string message)
     {
-        try
-        {
-            _logWriter?.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Warning: Failed to write to log: {ex.Message}");
-        }
+        _logWriter?.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}");
     }
 
     public void Dispose()
@@ -82,10 +73,6 @@ internal sealed class WindowsPathHelper : IDisposable
         {
             LogMessage($"=== WindowsPathHelper session ended at {DateTime.Now:yyyy-MM-dd HH:mm:ss} ===");
             _logWriter?.Dispose();
-            if (_logFilePath != null)
-            {
-                Console.WriteLine($"PATH changes logged to: {_logFilePath}");
-            }
             _disposed = true;
         }
     }
@@ -220,15 +207,21 @@ internal sealed class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Removes the Program Files dotnet path from the given PATH string.
-    /// This is a convenience method that uses the expanded PATH for detection.
+    /// Removes the Program Files dotnet path from the given PATH strings.
+    /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve environment variables.
     /// </summary>
-    public static string RemoveProgramFilesDotnetFromPath(string path)
+    /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
+    /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
+    /// <returns>The modified unexpanded PATH string.</returns>
+    public static string RemoveProgramFilesDotnetFromPath(string unexpandedPath, string expandedPath)
     {
-        var pathEntries = SplitPath(path);
+        // Find indices to remove using the expanded path
+        var expandedEntries = SplitPath(expandedPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
-        var indices = FindDotnetPathIndices(pathEntries, programFilesDotnetPaths);
-        return RemovePathEntriesByIndices(path, indices);
+        var indicesToRemove = FindDotnetPathIndices(expandedEntries, programFilesDotnetPaths);
+
+        // Remove those indices from the unexpanded path
+        return RemovePathEntriesByIndices(unexpandedPath, indicesToRemove);
     }
 
     /// <summary>
@@ -241,13 +234,7 @@ internal sealed class WindowsPathHelper : IDisposable
         string expandedPath = ReadAdminPath(expand: true);
         string unexpandedPath = ReadAdminPath(expand: false);
 
-        // Find indices to remove using the expanded path
-        var expandedEntries = SplitPath(expandedPath);
-        var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
-        var indicesToRemove = FindDotnetPathIndices(expandedEntries, programFilesDotnetPaths);
-
-        // Remove those indices from the unexpanded path
-        return RemovePathEntriesByIndices(unexpandedPath, indicesToRemove);
+        return RemoveProgramFilesDotnetFromPath(unexpandedPath, expandedPath);
     }
 
     /// <summary>
@@ -266,12 +253,7 @@ internal sealed class WindowsPathHelper : IDisposable
         }
 
         // Check if any Program Files dotnet path is already in PATH
-        bool alreadyExists = pathEntries.Any(entry =>
-        {
-            var normalizedEntry = Path.TrimEndingDirectorySeparator(entry);
-            return programFilesDotnetPaths.Any(pfPath =>
-                normalizedEntry.Equals(Path.TrimEndingDirectorySeparator(pfPath), StringComparison.OrdinalIgnoreCase));
-        });
+        bool alreadyExists = PathContainsDotnet(pathEntries, programFilesDotnetPaths);
 
         if (!alreadyExists)
         {

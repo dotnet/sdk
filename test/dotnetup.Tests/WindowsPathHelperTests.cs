@@ -21,8 +21,8 @@ public class WindowsPathHelperTests
         string dotnetPath = Path.Combine(programFiles, "dotnet");
         string path = $"C:\\SomeOtherPath;{dotnetPath};C:\\AnotherPath";
 
-        // Act
-        string result = WindowsPathHelper.RemoveProgramFilesDotnetFromPath(path);
+        // Act - pass the same path for both since no environment variables are used
+        string result = WindowsPathHelper.RemoveProgramFilesDotnetFromPath(path, path);
 
         // Assert
         result.Should().NotContain(dotnetPath);
@@ -42,8 +42,8 @@ public class WindowsPathHelperTests
         // Arrange
         string path = string.Empty;
 
-        // Act
-        string result = WindowsPathHelper.RemoveProgramFilesDotnetFromPath(path);
+        // Act - pass the same path for both since no environment variables are used
+        string result = WindowsPathHelper.RemoveProgramFilesDotnetFromPath(path, path);
 
         // Assert
         result.Should().BeEmpty();
