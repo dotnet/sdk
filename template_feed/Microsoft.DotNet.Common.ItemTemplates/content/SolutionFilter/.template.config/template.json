@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Solution"
+  ],
+  "name": "Solution Filter File",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "Create a solution filter file that references a parent solution",
+  "groupIdentity": "ItemSolutionFilter",
+  "precedence": "100",
+  "identity": "Microsoft.Standard.QuickStarts.SolutionFilter",
+  "shortName": [
+    "slnf",
+    "solutionfilter"
+  ],
+  "sourceName": "SolutionFilter1",
+  "symbols": {
+    "ParentSolution": {
+      "type": "parameter",
+      "displayName": "Parent solution file",
+      "description": "The parent solution file (sln or slnx) that this filter references (default: same name with .slnx extension).",
+      "datatype": "string",
+      "defaultValue": "SolutionFilter1.slnx",
+      "replaces": "SolutionFilter1.slnx"
+    }
+  },
+  "defaultName": "SolutionFilter1"
+}
