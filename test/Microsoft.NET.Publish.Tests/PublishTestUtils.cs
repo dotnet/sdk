@@ -23,7 +23,6 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net9.0" },
             new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         /// <summary>
@@ -38,7 +37,6 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net9.0" },
             new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         /// <summary>
@@ -52,7 +50,6 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net9.0" },
             new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         /// <summary>
@@ -65,7 +62,6 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net9.0" },
             new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         /// <summary>
@@ -77,7 +73,6 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net9.0" },
             new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         /// <summary>
@@ -88,7 +83,6 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net9.0" },
             new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         /// <summary>
@@ -98,7 +92,6 @@ namespace Microsoft.NET.Publish.Tests
         {
             new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
-            // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         /// <summary>
