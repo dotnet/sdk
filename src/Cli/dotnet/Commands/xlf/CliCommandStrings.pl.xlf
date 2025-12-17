@@ -2648,6 +2648,11 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
         <target state="translated">Trwa kompilowanie...</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">Uruchomienie obiektu docelowego {0} w celu odnalezienia poleceń przebiegu dla tego projektu nie powiodło się. Usuń błędy i ostrzeżenia, a następnie uruchom ponownie.</target>
