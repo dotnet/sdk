@@ -139,7 +139,7 @@ jobs:
       displayName: 🟣 Publish SDK Artifacts
       inputs:
         targetPath: $(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping
-        artifactName: $(System.PhaseName)_SDK
+        artifactName: $(System.PhaseName)_SDK_Attempt$(System.JobAttempt)
       continueOnError: true
       condition: succeededOrFailed()
 
