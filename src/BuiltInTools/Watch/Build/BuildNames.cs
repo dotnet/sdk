@@ -55,4 +55,5 @@ internal static class ProjectCapability
     public const string Aspire = nameof(Aspire);
     public const string AspNetCore = nameof(AspNetCore);
     public const string WebAssembly = nameof(WebAssembly);
+    public const string SupportsHotReload = nameof(SupportsHotReload);
 }

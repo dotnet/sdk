@@ -33,7 +33,7 @@
     <ItemGroup>
       <_FileItem Include="$(_Files)" />
       <!-- Use hardlinks so that executable permissions are preserved on Unix -->
-      <None Include="@(_FileItem)" Link="test-browser\%(_FileItem.Filename)%(_FileItem.Extension)" CopyToOutputDirectory="PreserveNewest" UseHardlinksIfPossible="true"/>
+      <None Include="@(_FileItem)" Link="test-browser\%(_FileItem.Filename)%(_FileItem.Extension)" CopyToOutputDirectory="PreserveNewest" UseHardlinksIfPossible="true" />
     </ItemGroup>
   </Target>
 

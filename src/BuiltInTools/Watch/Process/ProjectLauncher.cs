@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -41,7 +42,12 @@ internal sealed class ProjectLauncher(
             return null;
         }
 
-        if (!projectNode.IsNetCoreApp(Versions.Version6_0))
+        var launchProfile = projectOptions.GetLaunchProfile(context.Logger);
+
+        // TODO: extract TFM from Exe
+        // If an executable profile is being used to launch the application the TFM of the project is irrelevant.
+        if (launchProfile is not ExecutableLaunchProfile &&
+            !projectNode.IsNetCoreApp(Versions.Version6_0))
         {
             Logger.LogError($"Hot Reload based watching is only supported in .NET 6.0 or newer apps. Use --no-hot-reload switch or update the project's launchSettings.json to disable this feature.");
             return null;
