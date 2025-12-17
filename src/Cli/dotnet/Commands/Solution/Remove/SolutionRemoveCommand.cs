@@ -44,9 +44,9 @@ internal class SolutionRemoveCommand : CommandBase
                         : p));
 
             // Check if we're working with a solution filter file
-            if (solutionFileFullPath.HasExtension(".slnf"))
+            if (solutionFileFullPath.HasExtension(SlnfFileHelper.SlnfExtension))
             {
-                RemoveProjectsFromSolutionFilterAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+                RemoveProjectsFromSolutionFilter(solutionFileFullPath, relativeProjectPaths);
             }
             else
             {
@@ -139,14 +139,16 @@ internal class SolutionRemoveCommand : CommandBase
         await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
     }
 
-    private static async Task RemoveProjectsFromSolutionFilterAsync(string slnfFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
+    private static void RemoveProjectsFromSolutionFilter(string slnfFileFullPath, IEnumerable<string> projectPaths)
     {
         // Load the filtered solution to get the parent solution path and existing projects
         SolutionModel filteredSolution = SlnFileFactory.CreateFromFilteredSolutionFile(slnfFileFullPath);
         string parentSolutionPath = filteredSolution.Description!; // The parent solution path is stored in Description
 
         // Get existing projects in the filter
-        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();
+        // Use case-insensitive comparer on Windows for file path comparison
+        var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet(comparer);
 
         // Remove specified projects
         foreach (var projectPath in projectPaths)
@@ -167,7 +169,5 @@ internal class SolutionRemoveCommand : CommandBase
 
         // Save updated filter
         SlnfFileHelper.SaveSolutionFilter(slnfFileFullPath, parentSolutionPath, existingProjects.OrderBy(p => p));
-
-        await Task.CompletedTask;
     }
 }

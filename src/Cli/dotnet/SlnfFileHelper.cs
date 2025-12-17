@@ -16,6 +16,31 @@ namespace Microsoft.DotNet.Cli;
 /// </summary>
 public static class SlnfFileHelper
 {
+    /// <summary>
+    /// File extension for solution filter files
+    /// </summary>
+    public const string SlnfExtension = ".slnf";
+
+    /// <summary>
+    /// Normalizes path separators from backslashes to the OS-specific directory separator
+    /// </summary>
+    /// <param name="path">The path to normalize</param>
+    /// <returns>Path with OS-specific separators</returns>
+    public static string NormalizePathSeparatorsToOS(string path)
+    {
+        return path.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+    }
+
+    /// <summary>
+    /// Normalizes path separators to backslashes (as used in .slnf files)
+    /// </summary>
+    /// <param name="path">The path to normalize</param>
+    /// <returns>Path with backslash separators</returns>
+    public static string NormalizePathSeparatorsToBackslash(string path)
+    {
+        return path.Replace(Path.DirectorySeparatorChar, '\\');
+    }
+
     private class SlnfSolution
     {
         [JsonPropertyName("path")]
@@ -44,14 +69,14 @@ public static class SlnfFileHelper
         var relativeSolutionPath = Path.GetRelativePath(slnfDirectory, parentSolutionFullPath);
 
         // Normalize path separators to backslashes (as per slnf format)
-        relativeSolutionPath = relativeSolutionPath.Replace(Path.DirectorySeparatorChar, '\\');
+        relativeSolutionPath = NormalizePathSeparatorsToBackslash(relativeSolutionPath);
 
         var root = new SlnfRoot
         {
             Solution = new SlnfSolution
             {
                 Path = relativeSolutionPath,
-                Projects = projects?.Select(p => p.Replace(Path.DirectorySeparatorChar, '\\')).ToList() ?? new List<string>()
+                Projects = projects?.Select(NormalizePathSeparatorsToBackslash).ToList() ?? new List<string>()
             }
         };
 
@@ -83,14 +108,14 @@ public static class SlnfFileHelper
         }
 
         // Normalize path separators to backslashes (as per slnf format)
-        relativeSolutionPath = relativeSolutionPath.Replace(Path.DirectorySeparatorChar, '\\');
+        relativeSolutionPath = NormalizePathSeparatorsToBackslash(relativeSolutionPath);
 
         var root = new SlnfRoot
         {
             Solution = new SlnfSolution
             {
                 Path = relativeSolutionPath,
-                Projects = projects.Select(p => p.Replace(Path.DirectorySeparatorChar, '\\')).ToList()
+                Projects = projects.Select(NormalizePathSeparatorsToBackslash).ToList()
             }
         };
 

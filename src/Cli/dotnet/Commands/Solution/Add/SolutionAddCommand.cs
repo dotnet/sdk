@@ -65,9 +65,9 @@ internal class SolutionAddCommand : CommandBase
         }).ToList();
 
         // Check if we're working with a solution filter file
-        if (_solutionFileFullPath.HasExtension(".slnf"))
+        if (_solutionFileFullPath.HasExtension(SlnfFileHelper.SlnfExtension))
         {
-            AddProjectsToSolutionFilterAsync(fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+            AddProjectsToSolutionFilter(fullProjectPaths);
         }
         else
         {
@@ -233,7 +233,7 @@ internal class SolutionAddCommand : CommandBase
         }
     }
 
-    private async Task AddProjectsToSolutionFilterAsync(IEnumerable<string> projectPaths, CancellationToken cancellationToken)
+    private void AddProjectsToSolutionFilter(IEnumerable<string> projectPaths)
     {
         // Solution filter files don't support --in-root or --solution-folder options
         if (_inRoot || !string.IsNullOrEmpty(_solutionFolderPath))
@@ -249,17 +249,33 @@ internal class SolutionAddCommand : CommandBase
         SolutionModel parentSolution = SlnFileFactory.CreateFromFileOrDirectory(parentSolutionPath);
 
         // Get existing projects in the filter (already normalized to OS separator by CreateFromFilteredSolutionFile)
-        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();
+        // Use case-insensitive comparer on Windows for file path comparison
+        var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet(comparer);
 
         // Get solution-relative paths for new projects
+        var newProjects = ValidateAndGetNewProjects(projectPaths, parentSolution, parentSolutionPath, existingProjects);
+
+        // Add new projects to the existing list and save
+        var allProjects = existingProjects.Concat(newProjects).OrderBy(p => p);
+        SlnfFileHelper.SaveSolutionFilter(_solutionFileFullPath, parentSolutionPath, allProjects);
+    }
+
+    private List<string> ValidateAndGetNewProjects(
+        IEnumerable<string> projectPaths,
+        SolutionModel parentSolution,
+        string parentSolutionPath,
+        HashSet<string> existingProjects)
+    {
         var newProjects = new List<string>();
         string parentSolutionDirectory = Path.GetDirectoryName(parentSolutionPath) ?? string.Empty;
+        
         foreach (var projectPath in projectPaths)
         {
             string parentSolutionRelativePath = Path.GetRelativePath(parentSolutionDirectory, projectPath);
 
             // Normalize to OS separator for consistent comparison
-            parentSolutionRelativePath = parentSolutionRelativePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+            parentSolutionRelativePath = SlnfFileHelper.NormalizePathSeparatorsToOS(parentSolutionRelativePath);
 
             // Check if project exists in parent solution
             var projectInParent = parentSolution.FindProject(parentSolutionRelativePath);
@@ -280,10 +296,6 @@ internal class SolutionAddCommand : CommandBase
             Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, parentSolutionRelativePath);
         }
 
-        // Add new projects to the existing list and save
-        var allProjects = existingProjects.Concat(newProjects).OrderBy(p => p);
-        SlnfFileHelper.SaveSolutionFilter(_solutionFileFullPath, parentSolutionPath, allProjects);
-
-        await Task.CompletedTask;
+        return newProjects;
     }
 }
