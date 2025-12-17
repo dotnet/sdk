@@ -22,10 +22,10 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
         result.ShowHelpOrErrorIfAppropriate();
         return CommandFactory.CreateVirtualOrPhysicalCommand(
             CleanCommandParser.GetCommand(),
-            CleanCommandParser.SlnOrProjectOrFileArgument,
+            CleanCommandDefinition.SlnOrProjectOrFileArgument,
             static (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
-                    entryPointFileFullPath: appFilePath,
-                    msbuildArgs: msbuildArgs)
+                entryPointFileFullPath: appFilePath,
+                msbuildArgs: msbuildArgs)
             {
                 NoBuild = false,
                 NoRestore = true,
@@ -33,7 +33,7 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
                 NoWriteBuildMarkers = true,
             },
             static (msbuildArgs, msbuildPath) => new CleanCommand(msbuildArgs, msbuildPath),
-            [ CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption, CleanCommandParser.VerbosityOption, CleanCommandParser.NoLogoOption],
+            [ CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandDefinition.TargetOption, CleanCommandDefinition.VerbosityOption, CleanCommandDefinition.NoLogoOption],
             result,
             msbuildPath
         );

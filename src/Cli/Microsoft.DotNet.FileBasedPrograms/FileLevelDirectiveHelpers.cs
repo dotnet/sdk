@@ -13,20 +13,14 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-
-// https://github.com/dotnet/sdk/issues/51487: Remove usage of GracefulException from the source package
-#if !FILE_BASED_PROGRAMS_SOURCE_PACKAGE_GRACEFUL_EXCEPTION
-using Microsoft.DotNet.Cli.Utils;
-#endif
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.FileBasedPrograms;
 
-// https://github.com/dotnet/sdk/issues/51487: Use 'file class' where appropriate to reduce exposed internal API surface
 internal static class FileLevelDirectiveHelpers
 {
     public static SyntaxTokenParser CreateTokenizer(SourceText text)
@@ -42,7 +36,7 @@ internal static class FileLevelDirectiveHelpers
     /// The latter is useful for <c>dotnet run file.cs</c> where if there are app directives after the first token,
     /// compiler reports <see cref="ErrorCode.ERR_PPIgnoredFollowsToken"/> anyway, so we speed up success scenarios by not parsing the whole file up front in the SDK CLI.
     /// </param>
-    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, DiagnosticBag diagnostics)
+    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, ErrorReporter reportError)
     {
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
         var tokenizer = CreateTokenizer(sourceFile.Text);
@@ -50,7 +44,7 @@ internal static class FileLevelDirectiveHelpers
         var result = tokenizer.ParseLeadingTrivia();
         var triviaList = result.Token.LeadingTrivia;
 
-        FindLeadingDirectives(sourceFile, triviaList, diagnostics, builder);
+        FindLeadingDirectives(sourceFile, triviaList, reportError, builder);
 
         // In conversion mode, we want to report errors for any invalid directives in the rest of the file
         // so users don't end up with invalid directives in the converted project.
@@ -79,7 +73,7 @@ internal static class FileLevelDirectiveHelpers
         {
             if (trivia.ContainsDiagnostics && trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
             {
-                diagnostics.AddError(sourceFile, trivia.Span, FileBasedProgramsResources.CannotConvertDirective);
+                reportError(sourceFile, trivia.Span, FileBasedProgramsResources.CannotConvertDirective);
             }
         }
 
@@ -92,7 +86,7 @@ internal static class FileLevelDirectiveHelpers
     public static void FindLeadingDirectives(
         SourceFile sourceFile,
         SyntaxTriviaList triviaList,
-        DiagnosticBag diagnostics,
+        ErrorReporter reportError,
         ImmutableArray<CSharpDirective>.Builder? builder)
     {
         Debug.Assert(triviaList.Span.Start == 0);
@@ -150,7 +144,7 @@ internal static class FileLevelDirectiveHelpers
                         LeadingWhiteSpace = whiteSpace.Leading,
                         TrailingWhiteSpace = whiteSpace.Trailing,
                     },
-                    Diagnostics = diagnostics,
+                    ReportError = reportError,
                     SourceFile = sourceFile,
                     DirectiveKind = name,
                     DirectiveText = value,
@@ -159,7 +153,7 @@ internal static class FileLevelDirectiveHelpers
                 // Block quotes now so we can later support quoted values without a breaking change. https://github.com/dotnet/sdk/issues/49367
                 if (value.Contains('"'))
                 {
-                    diagnostics.AddError(sourceFile, context.Info.Span, FileBasedProgramsResources.QuoteInDirective);
+                    reportError(sourceFile, context.Info.Span, FileBasedProgramsResources.QuoteInDirective);
                 }
 
                 if (CSharpDirective.Parse(context) is { } directive)
@@ -169,7 +163,7 @@ internal static class FileLevelDirectiveHelpers
                     {
                         var existingDirective = deduplicated[directive];
                         var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
-                        diagnostics.AddError(sourceFile, directive.Info.Span, string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
+                        reportError(sourceFile, directive.Info.Span, string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
                     }
                     else
                     {
@@ -227,30 +221,6 @@ internal static class FileLevelDirectiveHelpers
             }
         }
     }
-
-    /// <summary>
-    /// If there are any <c>#:project</c> <paramref name="directives"/>, expands <c>$()</c> in them and ensures they point to project files (not directories).
-    /// </summary>
-    public static ImmutableArray<CSharpDirective> EvaluateDirectives(
-        ProjectInstance? project,
-        ImmutableArray<CSharpDirective> directives,
-        SourceFile sourceFile,
-        DiagnosticBag diagnostics)
-    {
-        if (directives.OfType<CSharpDirective.Project>().Any())
-        {
-            return directives
-                .Select(d => d is CSharpDirective.Project p
-                    ? (project is null
-                        ? p
-                        : p.WithName(project.ExpandString(p.Name), CSharpDirective.Project.NameKind.Expanded))
-                       .EnsureProjectFilePath(sourceFile, diagnostics)
-                    : d)
-                .ToImmutableArray();
-        }
-
-        return directives;
-    }
 }
 
 internal readonly record struct SourceFile(string Path, SourceText Text)
@@ -258,7 +228,8 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
     public static SourceFile Load(string filePath)
     {
         using var stream = File.OpenRead(filePath);
-        return new SourceFile(filePath, SourceText.From(stream, Encoding.UTF8));
+        // Let SourceText.From auto-detect the encoding (including BOM detection)
+        return new SourceFile(filePath, SourceText.From(stream, encoding: null));
     }
 
     public SourceFile WithText(SourceText newText)
@@ -269,7 +240,9 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
     public void Save()
     {
         using var stream = File.Open(Path, FileMode.Create, FileAccess.Write);
-        using var writer = new StreamWriter(stream, Encoding.UTF8);
+        // Use the encoding from SourceText, which preserves the original BOM state
+        var encoding = Text.Encoding ?? new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        using var writer = new StreamWriter(stream, encoding);
         Text.Write(writer);
     }
 
@@ -321,7 +294,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     public readonly struct ParseContext
     {
         public required ParseInfo Info { get; init; }
-        public required DiagnosticBag Diagnostics { get; init; }
+        public required ErrorReporter ReportError { get; init; }
         public required SourceFile SourceFile { get; init; }
         public required string DirectiveKind { get; init; }
         public required string DirectiveText { get; init; }
@@ -329,13 +302,15 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
     public static Named? Parse(in ParseContext context)
     {
-        return context.DirectiveKind switch
+        switch (context.DirectiveKind)
         {
-            "sdk" => Sdk.Parse(context),
-            "property" => Property.Parse(context),
-            "package" => Package.Parse(context),
-            "project" => Project.Parse(context),
-            var other => context.Diagnostics.AddError<Named>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.UnrecognizedDirective, other)),
+            case "sdk": return Sdk.Parse(context);
+            case "property": return Property.Parse(context);
+            case "package": return Package.Parse(context);
+            case "project": return Project.Parse(context);
+            default:
+                context.ReportError(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.UnrecognizedDirective, context.DirectiveKind));
+                return null;
         };
     }
 
@@ -347,13 +322,15 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         string directiveKind = context.DirectiveKind;
         if (firstPart.IsWhiteSpace())
         {
-            return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
+            context.ReportError(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
+            return null;
         }
 
         // If the name contains characters that resemble separators, report an error to avoid any confusion.
         if (Patterns.DisallowedNameCharacters.Match(context.DirectiveText, beginning: 0, length: firstPart.Length).Success)
         {
-            return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.InvalidDirectiveName, directiveKind, separator));
+            context.ReportError(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.InvalidDirectiveName, directiveKind, separator));
+            return null;
         }
 
         if (separatorIndex < 0)
@@ -428,7 +405,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
             if (propertyValue is null)
             {
-                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, FileBasedProgramsResources.PropertyDirectiveMissingParts);
+                context.ReportError(context.SourceFile, context.Info.Span, FileBasedProgramsResources.PropertyDirectiveMissingParts);
+                return null;
             }
 
             try
@@ -437,13 +415,14 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             }
             catch (XmlException ex)
             {
-                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, ex.Message), ex);
+                context.ReportError(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, ex.Message));
+                return null;
             }
 
             if (propertyName.Equals("RestoreUseStaticGraphEvaluation", StringComparison.OrdinalIgnoreCase) &&
                 MSBuildUtilities.ConvertStringToBool(propertyValue))
             {
-                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, FileBasedProgramsResources.StaticGraphRestoreNotSupported);
+                context.ReportError(context.SourceFile, context.Info.Span, FileBasedProgramsResources.StaticGraphRestoreNotSupported);
             }
 
             return new Property(context.Info)
@@ -499,7 +478,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         public string OriginalName { get; init; }
 
         /// <summary>
-        /// This is the <see cref="OriginalName"/> with MSBuild <c>$(..)</c> vars expanded (via <see cref="ProjectInstance.ExpandString"/>).
+        /// This is the <see cref="OriginalName"/> with MSBuild <c>$(..)</c> vars expanded.
+        /// E.g. The expansion might be implemented via ProjectInstance.ExpandString.
         /// </summary>
         public string? ExpandedName { get; init; }
 
@@ -515,7 +495,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             if (directiveText.IsWhiteSpace())
             {
                 string directiveKind = context.DirectiveKind;
-                return context.Diagnostics.AddError<Project?>(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
+                context.ReportError(context.SourceFile, context.Info.Span, string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind));
+                return null;
             }
 
             return new Project(context.Info, directiveText);
@@ -552,71 +533,37 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         /// <summary>
         /// If the directive points to a directory, returns a new directive pointing to the corresponding project file.
         /// </summary>
-        public Project EnsureProjectFilePath(SourceFile sourceFile, DiagnosticBag diagnostics)
+        public Project EnsureProjectFilePath(SourceFile sourceFile, ErrorReporter reportError)
         {
             var resolvedName = Name;
 
-            try
-            {
-                // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.
-                // Also normalize backslashes to forward slashes to ensure the directive works on all platforms.
-                var sourceDirectory = Path.GetDirectoryName(sourceFile.Path)
-                    ?? throw new InvalidOperationException($"Source file path '{sourceFile.Path}' does not have a containing directory.");
-                var resolvedProjectPath = Path.Combine(sourceDirectory, resolvedName.Replace('\\', '/'));
-                if (Directory.Exists(resolvedProjectPath))
-                {
-                    var fullFilePath = GetProjectFileFromDirectory(resolvedProjectPath).FullName;
+            // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.
+            // Also normalize backslashes to forward slashes to ensure the directive works on all platforms.
+            var sourceDirectory = Path.GetDirectoryName(sourceFile.Path)
+                ?? throw new InvalidOperationException($"Source file path '{sourceFile.Path}' does not have a containing directory.");
 
+            var resolvedProjectPath = Path.Combine(sourceDirectory, resolvedName.Replace('\\', '/'));
+            if (Directory.Exists(resolvedProjectPath))
+            {
+                if (ProjectLocator.TryGetProjectFileFromDirectory(resolvedProjectPath, out var projectFilePath, out var error))
+                {
                     // Keep a relative path only if the original directive was a relative path.
                     resolvedName = ExternalHelpers.IsPathFullyQualified(resolvedName)
-                        ? fullFilePath
-                        : ExternalHelpers.GetRelativePath(relativeTo: sourceDirectory, fullFilePath);
+                        ? projectFilePath
+                        : ExternalHelpers.GetRelativePath(relativeTo: sourceDirectory, projectFilePath);
                 }
-                else if (!File.Exists(resolvedProjectPath))
+                else
                 {
-                    throw new GracefulException(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, resolvedProjectPath);
+                    reportError(sourceFile, Info.Span, string.Format(FileBasedProgramsResources.InvalidProjectDirective, error));
                 }
             }
-            catch (GracefulException e)
+            else if (!File.Exists(resolvedProjectPath))
             {
-                diagnostics.AddError(sourceFile, Info.Span, string.Format(FileBasedProgramsResources.InvalidProjectDirective, e.Message), e);
+                reportError(sourceFile, Info.Span,
+                    string.Format(FileBasedProgramsResources.InvalidProjectDirective, string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, resolvedProjectPath)));
             }
 
             return WithName(resolvedName, NameKind.ProjectFilePath);
-        }
-
-        // https://github.com/dotnet/sdk/issues/51487: Delete copies of methods from MsbuildProject and MSBuildUtilities from the source package, sharing the original method(s) under src/Cli instead.
-        private static FileInfo GetProjectFileFromDirectory(string projectDirectory)
-        {
-            DirectoryInfo dir;
-            try
-            {
-                dir = new DirectoryInfo(projectDirectory);
-            }
-            catch (ArgumentException)
-            {
-                throw new GracefulException(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, projectDirectory);
-            }
-
-            if (!dir.Exists)
-            {
-                throw new GracefulException(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, projectDirectory);
-            }
-
-            FileInfo[] files = dir.GetFiles("*proj");
-            if (files.Length == 0)
-            {
-                throw new GracefulException(
-                    FileBasedProgramsResources.CouldNotFindAnyProjectInDirectory,
-                    projectDirectory);
-            }
-
-            if (files.Length > 1)
-            {
-                throw new GracefulException(FileBasedProgramsResources.MoreThanOneProjectInDirectory, projectDirectory);
-            }
-
-            return files.First();
         }
 
         public override string ToString() => $"#:project {Name}";
@@ -671,35 +618,27 @@ internal sealed class SimpleDiagnostic
     }
 }
 
-internal readonly struct DiagnosticBag
+internal delegate void ErrorReporter(SourceFile sourceFile, TextSpan textSpan, string message);
+
+internal static partial class ErrorReporters
 {
-    public bool IgnoreDiagnostics { get; private init; }
+    public static readonly ErrorReporter IgnoringReporter =
+        static (_, _, _) => { };
 
-    /// <summary>
-    /// If <see langword="null"/> and <see cref="IgnoreDiagnostics"/> is <see langword="false"/>, the first diagnostic is thrown as <see cref="GracefulException"/>.
-    /// </summary>
-    public ImmutableArray<SimpleDiagnostic>.Builder? Builder { get; private init; }
-
-    public static DiagnosticBag ThrowOnFirst() => default;
-    public static DiagnosticBag Collect(out ImmutableArray<SimpleDiagnostic>.Builder builder) => new() { Builder = builder = ImmutableArray.CreateBuilder<SimpleDiagnostic>() };
-    public static DiagnosticBag Ignore() => new() { IgnoreDiagnostics = true, Builder = null };
-
-    public void AddError(SourceFile sourceFile, TextSpan textSpan, string message, Exception? inner = null)
+    public static ErrorReporter CreateCollectingReporter(out ImmutableArray<SimpleDiagnostic>.Builder builder)
     {
-        if (Builder != null)
-        {
-            Debug.Assert(!IgnoreDiagnostics);
-            Builder.Add(new SimpleDiagnostic { Location = new SimpleDiagnostic.Position() { Path = sourceFile.Path, TextSpan = textSpan, Span = sourceFile.GetFileLinePositionSpan(textSpan).Span }, Message = message });
-        }
-        else if (!IgnoreDiagnostics)
-        {
-            throw new GracefulException($"{sourceFile.GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}", inner);
-        }
-    }
+        var capturedBuilder = builder = ImmutableArray.CreateBuilder<SimpleDiagnostic>();
 
-    public T? AddError<T>(SourceFile sourceFile, TextSpan span, string message, Exception? inner = null)
-    {
-        AddError(sourceFile, span, message, inner);
-        return default;
+        return (sourceFile, textSpan, message) =>
+            capturedBuilder.Add(new SimpleDiagnostic
+            {
+                Location = new SimpleDiagnostic.Position()
+                {
+                    Path = sourceFile.Path,
+                    TextSpan = textSpan,
+                    Span = sourceFile.GetFileLinePositionSpan(textSpan).Span
+                },
+                Message = message
+            });
     }
 }
