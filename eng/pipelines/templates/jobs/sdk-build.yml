@@ -132,6 +132,15 @@ jobs:
           BuildConfig: $(buildConfiguration)
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
 
+    ############### PUBLISH SDK ARTIFACTS ###############
+    - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
+      displayName: 🟣 Publish SDK Artifacts
+      inputs:
+        targetPath: $(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping
+        artifactName: $(System.PhaseName)_SDK
+      continueOnError: true
+      condition: succeededOrFailed()
+
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
       - ${{ if eq(parameters.runAoTTests, true) }}:
