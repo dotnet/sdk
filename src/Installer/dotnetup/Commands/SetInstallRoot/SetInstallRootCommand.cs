@@ -48,11 +48,19 @@ internal class SetInstallRootCommand : CommandBase
                 {
                     // Not elevated, shell out to elevated process
                     Console.WriteLine("Launching elevated process to modify admin PATH...");
-                    int exitCode = WindowsPathHelper.StartElevatedProcess("elevatedadminpath removedotnet");
-
-                    if (exitCode != 0)
+                    try
                     {
-                        Console.Error.WriteLine("Warning: Failed to modify admin PATH. You may need to manually remove the Program Files dotnet path from the system PATH.");
+                        bool succeeded = WindowsPathHelper.StartElevatedProcess("elevatedadminpath removedotnet");
+                        if (!succeeded)
+                        {
+                            Console.Error.WriteLine("Warning: Elevation was cancelled. Admin PATH was not modified.");
+                            // Continue anyway - we can still set up the user PATH
+                        }
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Console.Error.WriteLine($"Warning: Failed to modify admin PATH: {ex.Message}");
+                        Console.Error.WriteLine("You may need to manually remove the Program Files dotnet path from the system PATH.");
                         // Continue anyway - we can still set up the user PATH
                     }
                 }

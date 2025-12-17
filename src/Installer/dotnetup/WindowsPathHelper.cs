@@ -225,10 +225,11 @@ internal sealed class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Removes the Program Files dotnet path from the admin PATH while preserving unexpanded environment variables.
+    /// Gets the admin PATH with Program Files dotnet path removed while preserving unexpanded environment variables.
+    /// This does not modify the registry, only returns the modified PATH string.
     /// </summary>
     /// <returns>The modified unexpanded PATH string.</returns>
-    public static string RemoveProgramFilesDotnetFromAdminPath()
+    public static string GetAdminPathWithProgramFilesDotnetRemoved()
     {
         // Read both expanded and unexpanded versions
         string expandedPath = ReadAdminPath(expand: true);
@@ -286,40 +287,33 @@ internal sealed class WindowsPathHelper : IDisposable
         try
         {
             LogMessage("Starting RemoveDotnetFromAdminPath operation");
-            Console.WriteLine("Reading current admin PATH from registry...");
             
             string oldPath = ReadAdminPath(expand: false);
             LogMessage($"Old PATH (unexpanded): {oldPath}");
 
             if (!AdminPathContainsProgramFilesDotnet())
             {
-                Console.WriteLine("Program Files dotnet path is not present in admin PATH. No changes needed.");
                 LogMessage("No changes needed - dotnet path not found");
                 return 0;
             }
 
-            Console.WriteLine("Removing Program Files dotnet path from admin PATH...");
             LogMessage("Removing dotnet paths from admin PATH");
-            string newPath = RemoveProgramFilesDotnetFromAdminPath();
+            string newPath = GetAdminPathWithProgramFilesDotnetRemoved();
             LogMessage($"New PATH (unexpanded): {newPath}");
 
-            Console.WriteLine("Writing updated admin PATH to registry...");
             WriteAdminPath(newPath);
             LogMessage("PATH written to registry");
 
             // Broadcast environment change
             BroadcastEnvironmentChange();
-            LogMessage("Environment change broadcasted");
 
-            Console.WriteLine("Successfully removed Program Files dotnet path from admin PATH.");
             LogMessage("RemoveDotnetFromAdminPath operation completed successfully");
             return 0;
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: Failed to remove dotnet from admin PATH: {ex.Message}");
-            LogMessage($"ERROR: {ex.Message}");
-            LogMessage($"Stack trace: {ex.StackTrace}");
+            LogMessage($"ERROR: {ex.ToString()}");
             return 1;
         }
     }
@@ -334,40 +328,33 @@ internal sealed class WindowsPathHelper : IDisposable
         try
         {
             LogMessage("Starting AddDotnetToAdminPath operation");
-            Console.WriteLine("Reading current admin PATH from registry...");
             
             string oldPath = ReadAdminPath(expand: false);
             LogMessage($"Old PATH (unexpanded): {oldPath}");
 
             if (AdminPathContainsProgramFilesDotnet())
             {
-                Console.WriteLine("Program Files dotnet path is already present in admin PATH. No changes needed.");
                 LogMessage("No changes needed - dotnet path already exists");
                 return 0;
             }
 
-            Console.WriteLine("Adding Program Files dotnet path to admin PATH...");
             LogMessage("Adding dotnet path to admin PATH");
             string newPath = AddProgramFilesDotnetToPath(oldPath);
             LogMessage($"New PATH (unexpanded): {newPath}");
 
-            Console.WriteLine("Writing updated admin PATH to registry...");
             WriteAdminPath(newPath);
             LogMessage("PATH written to registry");
 
             // Broadcast environment change
             BroadcastEnvironmentChange();
-            LogMessage("Environment change broadcasted");
 
-            Console.WriteLine("Successfully added Program Files dotnet path to admin PATH.");
             LogMessage("AddDotnetToAdminPath operation completed successfully");
             return 0;
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: Failed to add dotnet to admin PATH: {ex.Message}");
-            LogMessage($"ERROR: {ex.Message}");
-            LogMessage($"Stack trace: {ex.StackTrace}");
+            LogMessage($"ERROR: {ex.ToString()}");
             return 1;
         }
     }
@@ -388,56 +375,69 @@ internal sealed class WindowsPathHelper : IDisposable
                 5000,
                 out IntPtr result);
 
-            Console.WriteLine("Environment change notification broadcasted.");
+            LogMessage("Environment change notification broadcasted");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Warning: Failed to broadcast environment change: {ex.Message}");
+            LogMessage($"WARNING: Failed to broadcast environment change: {ex.ToString()}");
         }
     }
 
     /// <summary>
     /// Starts an elevated process with the given arguments.
     /// </summary>
-    public static int StartElevatedProcess(string arguments)
+    /// <returns>True if the process succeeded (exit code 0), false if elevation was cancelled.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the process cannot be started or returns a non-zero exit code.</exception>
+    public static bool StartElevatedProcess(string arguments)
     {
+        var processPath = Environment.ProcessPath;
+        if (string.IsNullOrEmpty(processPath))
+        {
+            throw new InvalidOperationException("Unable to determine current process path.");
+        }
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = processPath,
+            Arguments = arguments,
+            Verb = "runas", // This triggers UAC elevation
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+
         try
         {
-            var processPath = Environment.ProcessPath;
-            if (string.IsNullOrEmpty(processPath))
-            {
-                Console.Error.WriteLine("Error: Unable to determine current process path.");
-                return 1;
-            }
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = processPath,
-                Arguments = arguments,
-                Verb = "runas", // This triggers UAC elevation
-                UseShellExecute = true
-            };
-
             using var process = Process.Start(startInfo);
             if (process == null)
             {
-                Console.Error.WriteLine("Error: Failed to start elevated process.");
-                return 1;
+                throw new InvalidOperationException("Failed to start elevated process.");
             }
 
+            string stdout = process.StandardOutput.ReadToEnd();
+            string stderr = process.StandardError.ReadToEnd();
             process.WaitForExit();
-            return process.ExitCode;
+
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException(
+                    $"Elevated process returned exit code {process.ExitCode}.{Environment.NewLine}" +
+                    $"STDOUT: {stdout}{Environment.NewLine}" +
+                    $"STDERR: {stderr}");
+            }
+
+            return true;
         }
         catch (System.ComponentModel.Win32Exception ex)
         {
-            // User cancelled UAC prompt
-            Console.Error.WriteLine($"Error: Elevation cancelled or failed: {ex.Message}");
-            return 1;
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: Failed to start elevated process: {ex.Message}");
-            return 1;
+            // User cancelled UAC prompt or elevation failed
+            // ERROR_CANCELLED = 1223
+            if (ex.NativeErrorCode == 1223)
+            {
+                return false;
+            }
+            throw;
         }
     }
 }
