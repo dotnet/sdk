@@ -147,8 +147,7 @@ internal class SolutionRemoveCommand : CommandBase
 
         // Get existing projects in the filter
         // Use case-insensitive comparer on Windows for file path comparison
-        var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet(comparer);
+        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();
 
         // Remove specified projects
         foreach (var projectPath in projectPaths)

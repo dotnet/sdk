@@ -249,9 +249,7 @@ internal class SolutionAddCommand : CommandBase
         SolutionModel parentSolution = SlnFileFactory.CreateFromFileOrDirectory(parentSolutionPath);
 
         // Get existing projects in the filter (already normalized to OS separator by CreateFromFilteredSolutionFile)
-        // Use case-insensitive comparer on Windows for file path comparison
-        var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet(comparer);
+        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();
 
         // Get solution-relative paths for new projects
         var newProjects = ValidateAndGetNewProjects(projectPaths, parentSolution, parentSolutionPath, existingProjects);
