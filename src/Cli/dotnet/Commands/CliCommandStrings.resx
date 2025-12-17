@@ -166,9 +166,6 @@
   <data name="BuildAppFullName" xml:space="preserve">
     <value>.NET Builder</value>
   </data>
-  <data name="NoLogoOptionDescription" xml:space="preserve">
-    <value>Do not display the startup banner or the copyright message.</value>
-  </data>
   <data name="BuildConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to use for building the project. The default for most projects is 'Debug'.</value>
   </data>

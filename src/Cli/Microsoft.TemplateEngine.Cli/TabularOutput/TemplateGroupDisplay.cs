@@ -232,10 +232,10 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                         groupsForDisplay)
                     .DefineColumn(t => t.Name, out object? nameColumn, LocalizableStrings.ColumnNameTemplateName, shrinkIfNeeded: true, minWidth: 15, showAlways: true)
                     .DefineColumn(t => t.ShortNames, LocalizableStrings.ColumnNameShortName, showAlways: true)
-                    .DefineColumn(t => t.Languages, out object? languageColumn, LocalizableStrings.ColumnNameLanguage, TabularOutputSettings.ColumnNames.Language, defaultColumn: true)
-                    .DefineColumn(t => t.Type, LocalizableStrings.ColumnNameType, TabularOutputSettings.ColumnNames.Type, defaultColumn: false)
-                    .DefineColumn(t => t.Author, LocalizableStrings.ColumnNameAuthor, TabularOutputSettings.ColumnNames.Author, defaultColumn: false, shrinkIfNeeded: true, minWidth: 10)
-                    .DefineColumn(t => t.Classifications, out object? tagsColumn, LocalizableStrings.ColumnNameTags, TabularOutputSettings.ColumnNames.Tags, defaultColumn: true)
+                    .DefineColumn(t => t.Languages, out object? languageColumn, LocalizableStrings.ColumnNameLanguage, TabularOutputColumnNames.Language, defaultColumn: true)
+                    .DefineColumn(t => t.Type, LocalizableStrings.ColumnNameType, TabularOutputColumnNames.Type, defaultColumn: false)
+                    .DefineColumn(t => t.Author, LocalizableStrings.ColumnNameAuthor, TabularOutputColumnNames.Author, defaultColumn: false, shrinkIfNeeded: true, minWidth: 10)
+                    .DefineColumn(t => t.Classifications, out object? tagsColumn, LocalizableStrings.ColumnNameTags, TabularOutputColumnNames.Tags, defaultColumn: true)
                     .OrderBy(nameColumn, StringComparer.OrdinalIgnoreCase);
             reporter.WriteLine(formatter.Layout());
         }
