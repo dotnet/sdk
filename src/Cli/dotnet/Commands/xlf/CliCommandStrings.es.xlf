@@ -2648,6 +2648,11 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
         <target state="translated">Compilando...</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">Error al ejecutar el destino {0} para detectar comandos de ejecución para este proyecto. Corrija los errores y advertencias y vuelva a ejecutarlo.</target>
