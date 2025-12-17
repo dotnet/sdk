@@ -58,7 +58,8 @@
     <Copy SourceFiles="@(SdkOutputFile)"
           DestinationFiles="@(SdkOutputFileDestination)"
           SkipUnchangedFiles="true"
-          UseHardLinksIfPossible="true"/>
+          UseHardLinksIfPossible="true"
+          UseSymbolicLinksIfPossible="true"/>
   </Target>
 
   <Target Name="LayoutWorkloadUserLocalMarker"

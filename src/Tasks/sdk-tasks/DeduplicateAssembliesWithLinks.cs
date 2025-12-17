@@ -27,7 +27,6 @@ namespace Microsoft.DotNet.Build.Tasks
 
         /// <summary>
         /// If true, creates hard links. If false, creates symbolic links.
-        /// Defaults to true (hard links).
         /// </summary>
         public bool UseHardLinks { get; set; } = false;
 
@@ -182,7 +181,10 @@ namespace Microsoft.DotNet.Build.Tasks
             }
             else
             {
-                File.CreateSymbolicLink(duplicateFilePath, masterFilePath);
+                // Create relative symlink so it works when directory is moved/archived
+                var duplicateDirectory = Path.GetDirectoryName(duplicateFilePath)!;
+                var relativePath = Path.GetRelativePath(duplicateDirectory, masterFilePath);
+                File.CreateSymbolicLink(duplicateFilePath, relativePath);
                 return true;
             }
         }
