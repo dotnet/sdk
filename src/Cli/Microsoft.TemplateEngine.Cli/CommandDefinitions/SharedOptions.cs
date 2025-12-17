@@ -7,6 +7,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     public static class SharedOptions
     {
+        // fitler options:
+        public static Option<string> AuthorOption { get; } = SharedOptionsFactory.CreateAuthorOption();
+        public static Option<string> BaselineOption { get; } = SharedOptionsFactory.CreateBaselineOption();
+        public static Option<string> LanguageOption { get; } = SharedOptionsFactory.CreateLanguageOption();
+        public static Option<string> TypeOption { get; } = SharedOptionsFactory.CreateTypeOption();
+        public static Option<string> TagOption { get; } = SharedOptionsFactory.CreateTagOption();
+        public static Option<string> PackageOption { get; } = SharedOptionsFactory.CreatePackageOption();
+
         public static Option<FileInfo> OutputOption { get; } = new("--output", "-o")
         {
             Description = SymbolStrings.Option_Output,
