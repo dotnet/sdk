@@ -109,6 +109,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/displayName": "localizedSymbol" }""", false, "someSymbol", "localizedSymbol", "(null)")]
         [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/description": "localizedSymbolDescription" }""", false, "someSymbol", "(null)", "localizedSymbolDescription")]
         [InlineData(/*lang=json*/ """{ description: ""}""", false, null, null, null)]
+        // Test case for NullReferenceException fix: malformed symbol key with only "symbols/" prefix
+        [InlineData(/*lang=json,strict*/ """{ "symbols/": "test" }""", false, null, null, null)]
         public void CanReadNonChoiceSymbol(
             string fileContent,
             bool errorExpected,
@@ -244,6 +246,10 @@ false,
         [InlineData(/*lang=json*/ """{ description: ""}""", false, null, null, null)]
         [InlineData(/*lang=json,strict*/ """{ "postActions/pa0/description": "localizedDescription" }""", false, "pa0", "localizedDescription", "(null)")]
         [InlineData(/*lang=json,strict*/ """{ "postActions/pa0/manualInstructions/first/text": "localizedDescription" }""", false, "pa0", "(null)", "first*localizedDescription")]
+        // Test case for NullReferenceException fix: malformed postAction key with only "postActions/" prefix
+        [InlineData(/*lang=json,strict*/ """{ "postActions/": "test" }""", false, null, null, null)]
+        // Test case for NullReferenceException fix: malformed manualInstruction key with missing instruction id
+        [InlineData(/*lang=json,strict*/ """{ "postActions/pa0/manualInstructions//text": "test" }""", false, "pa0", "(null)", "(null)")]
         public void CanReadPostAction(
     string fileContent,
     bool errorExpected,

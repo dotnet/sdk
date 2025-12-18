@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <summary>
         /// Name to be used when display the request.
         /// </summary>
-        public string DisplayName => string.IsNullOrWhiteSpace(Version) ? PackageIdentifier : $"{PackageIdentifier}::{Version}";
+        public string DisplayName => string.IsNullOrWhiteSpace(Version) ? PackageIdentifier : $"{PackageIdentifier}@{Version}";
 
         /// <summary>
         /// Installer to be used to install the request.
