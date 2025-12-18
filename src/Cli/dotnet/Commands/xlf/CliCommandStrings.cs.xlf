@@ -2588,6 +2588,11 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
         <target state="translated">Obnovení selhalo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">Obnovení bylo částečně neúspěšné.</target>
@@ -2646,6 +2651,11 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">Sestavování...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
