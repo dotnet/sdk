@@ -34,9 +34,14 @@ internal class SetInstallRootCommand : CommandBase
         try
         {
             // Check if admin PATH needs to be changed
-            if (WindowsPathHelper.AdminPathContainsProgramFilesDotnet())
+            if (WindowsPathHelper.AdminPathContainsProgramFilesDotnet(out var foundDotnetPaths))
             {
-                Console.WriteLine("Program Files dotnet path found in admin PATH. Removing it...");
+                Console.WriteLine("Program Files dotnet path(s) found in admin PATH:");
+                foreach (var path in foundDotnetPaths)
+                {
+                    Console.WriteLine($"  - {path}");
+                }
+                Console.WriteLine("Removing them...");
 
                 if (Environment.IsPrivilegedProcess)
                 {

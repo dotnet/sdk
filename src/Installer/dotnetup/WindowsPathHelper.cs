@@ -261,11 +261,30 @@ internal sealed class WindowsPathHelper : IDisposable
     /// </summary>
     public static bool AdminPathContainsProgramFilesDotnet()
     {
+        return AdminPathContainsProgramFilesDotnet(out _);
+    }
+
+    /// <summary>
+    /// Checks if the admin PATH contains the Program Files dotnet path.
+    /// Uses the expanded PATH for accurate detection.
+    /// </summary>
+    /// <param name="foundDotnetPaths">The list of dotnet paths found in the admin PATH.</param>
+    /// <returns>True if any dotnet path is found, false otherwise.</returns>
+    public static bool AdminPathContainsProgramFilesDotnet(out List<string> foundDotnetPaths)
+    {
         var adminPath = ReadAdminPath(expand: true);
         var pathEntries = SplitPath(adminPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
-        return PathContainsDotnet(pathEntries, programFilesDotnetPaths);
+        foundDotnetPaths = new List<string>();
+        var indices = FindDotnetPathIndices(pathEntries, programFilesDotnetPaths);
+        
+        foreach (var index in indices)
+        {
+            foundDotnetPaths.Add(pathEntries[index]);
+        }
+
+        return foundDotnetPaths.Count > 0;
     }
 
     /// <summary>
