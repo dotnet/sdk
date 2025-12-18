@@ -31,11 +31,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net11",
+          "choice": "net11.0",
           "description": ".NET 11"
         },
         {
-          "choice": "net11-windows",
+          "choice": "net11.0-windows",
           "description": ".NET 11 (Windows only)"
         },
          {
@@ -87,8 +87,8 @@
           "description": ".NET Framework 4.6.2"
         }
       ],
-      "replaces": "net11",
-      "defaultValue": "net11"
+      "replaces": "net11.0",
+      "defaultValue": "net11.0"
     },
     "HostIdentifier": {
       "type": "bind",
