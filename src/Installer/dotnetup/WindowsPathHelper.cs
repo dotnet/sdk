@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Security.Principal;
 using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -77,15 +76,7 @@ internal sealed class WindowsPathHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Checks if the current process is running with elevated (administrator) privileges.
-    /// </summary>
-    public static bool IsElevated()
-    {
-        using var identity = WindowsIdentity.GetCurrent();
-        var principal = new WindowsPrincipal(identity);
-        return principal.IsInRole(WindowsBuiltInRole.Administrator);
-    }
+
 
     /// <summary>
     /// Reads the machine-wide PATH environment variable from the registry.

@@ -7,12 +7,22 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.SetInstallRoot;
 
 internal static class SetInstallRootCommandParser
 {
-    public static readonly Argument<string> InstallTypeArgument = new("installtype")
+    public const string UserInstallType = "user";
+    public const string AdminInstallType = "admin";
+
+    public static readonly Argument<string> InstallTypeArgument = CreateInstallTypeArgument();
+
+    private static Argument<string> CreateInstallTypeArgument()
     {
-        HelpName = "INSTALL_TYPE",
-        Description = "The type of installation root to set: 'user'",
-        Arity = ArgumentArity.ExactlyOne,
-    };
+        var argument = new Argument<string>("installtype")
+        {
+            HelpName = "INSTALL_TYPE",
+            Description = "The type of installation root to set: 'user' or 'admin'",
+            Arity = ArgumentArity.ExactlyOne,
+        };
+        argument.AcceptOnlyFromAmong(UserInstallType, AdminInstallType);
+        return argument;
+    }
 
     private static readonly Command SetInstallRootCommand = ConstructCommand();
 

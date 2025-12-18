@@ -26,7 +26,7 @@ internal class ElevatedAdminPathCommand : CommandBase
         }
 
         // Check if running with elevated privileges
-        if (!WindowsPathHelper.IsElevated())
+        if (!Environment.IsPrivilegedProcess)
         {
             Console.Error.WriteLine("Error: This operation requires administrator privileges. Please run from an elevated command prompt.");
             return 1;
