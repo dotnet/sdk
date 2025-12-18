@@ -41,6 +41,14 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public bool AllowMissingPrunePackageData { get; set; }
 
+        /// <summary>
+        /// Specifies whether the task should try to "fall back" to the nearest compatible framework with prune package data
+        /// if the data can't be found for the current TargetFramework.  This can be helpful when initially bringing up the
+        /// build for a new framework version.
+        ///
+        /// Note that this does not use NuGet's framework matching algorithm, it simply keeps the same TargetFrameworkIdentifier,
+        /// and decrements the minor version if it's non-zero, or the major version if the minor version is zero.
+        /// </summary>
         public bool LoadPrunePackageDataFromNearestFramework { get; set; }
 
         [Output]
