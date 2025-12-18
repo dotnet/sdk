@@ -7,7 +7,6 @@ set NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
 set MicrosoftNETBuildExtensionsTargets=%HELIX_CORRELATION_PAYLOAD%\ex\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets
 set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
-set DOTNET_MULTILEVEL_LOOKUP=0
 set TestFullMSBuild=%1
 
 REM Use powershell to call partical Arcade logic to get full framework msbuild path and assign it

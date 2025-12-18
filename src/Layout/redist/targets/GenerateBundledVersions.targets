@@ -704,7 +704,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
                               RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(Net100RuntimePackRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
                               />
 
     <KnownAppHostPack Include="Microsoft.NETCore.App"

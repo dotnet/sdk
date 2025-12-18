@@ -1,10 +1,10 @@
 <Project>
 
-  <ItemGroup Label=".NET 10.0 templates">
-    <Bundled100Templates Include="Microsoft.DotNet.Web.ItemTemplates.10.0" PackageVersion="$(MicrosoftDotNetWebItemTemplates100PackageVersion)" />
-    <Bundled100Templates Include="Microsoft.DotNet.Web.ProjectTemplates.10.0" PackageVersion="$(MicrosoftDotNetWebProjectTemplates100PackageVersion)" UseVersionForTemplateInstallPath="true" />
-    <Bundled100Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftNETSdkWindowsDesktopPackageVersion)" />
-    <Bundled100Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftNETSdkWindowsDesktopPackageVersion)" />
+  <ItemGroup Label="Live templates">
+    <Bundled100Templates Include="Microsoft.DotNet.Web.ItemTemplates.11.0" PackageVersion="$(MicrosoftDotNetWebItemTemplates110PackageVersion)" />
+    <Bundled100Templates Include="Microsoft.DotNet.Web.ProjectTemplates.11.0" PackageVersion="$(MicrosoftDotNetWebProjectTemplates110PackageVersion)" UseVersionForTemplateInstallPath="true" />
+    <Bundled100Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)" />
+    <Bundled100Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplatesPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,12 +57,11 @@
 
   <Target Name="LayoutTemplatesForSDK" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates">
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
-          DestinationFolder="$(RedistInstallerLayoutPath)templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"
-          Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '10.0'" />
+          DestinationFolder="$(RedistInstallerLayoutPath)templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)" />
 
     <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
     <PropertyGroup>
-      <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '10.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
+      <CurrentTemplateInstallPath>%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
     </PropertyGroup>
 
     <Copy SourceFiles="@(RepoTemplate)"
@@ -75,7 +74,7 @@
 
     <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
     <PropertyGroup>
-      <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '10.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
+      <CurrentTemplateInstallPath>%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
       <CurrentTemplateFrameworkVersion>%(CurrentVersionBundledTemplates.TemplateFrameworkVersion)</CurrentTemplateFrameworkVersion>
     </PropertyGroup>
     <Copy SourceFiles="@(RepoTemplate)"
