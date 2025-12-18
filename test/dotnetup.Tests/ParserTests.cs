@@ -62,4 +62,32 @@ public class ParserTests
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
     }
+
+    [Fact]
+    public void Parser_ShouldParseElevatedAdminPathCommand()
+    {
+        // Arrange
+        var args = new[] { "elevatedadminpath", "removedotnet" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseSetInstallRootCommand()
+    {
+        // Arrange
+        var args = new[] { "setinstallroot", "user" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
 }
