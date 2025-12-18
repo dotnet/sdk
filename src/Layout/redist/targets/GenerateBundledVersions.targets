@@ -272,6 +272,7 @@
         maccatalyst-x64;
         maccatalyst-arm64;
         haiku-x64;
+        browser-wasm;
         " />
 
       <NetCoreAppHostRids Include="@(Net110AppHostRids)" />
