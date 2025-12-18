@@ -116,6 +116,14 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>6ec92e489cc9368695fb6a39c2afb55e1a735dec</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.3.0-1.25617.108">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>6ec92e489cc9368695fb6a39c2afb55e1a735dec</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.HotReload" Version="5.3.0-1.25617.108">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>6ec92e489cc9368695fb6a39c2afb55e1a735dec</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="5.3.0-1.25617.108">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>6ec92e489cc9368695fb6a39c2afb55e1a735dec</Sha>
