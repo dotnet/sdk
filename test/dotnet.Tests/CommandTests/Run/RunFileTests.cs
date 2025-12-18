@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -135,7 +137,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     internal static string DirectiveError(string path, int line, string messageFormat, params ReadOnlySpan<object> args)
     {
-        return $"{path}({line}): {CliCommandStrings.DirectiveError}: {string.Format(messageFormat, args)}";
+        return $"{path}({line}): {FileBasedProgramsResources.DirectiveError}: {string.Format(messageFormat, args)}";
     }
 
     /// <summary>
@@ -171,7 +173,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 .And.HaveStdErrContaining(string.Format(
                     CliCommandStrings.RunCommandExceptionNoProjects,
                     testInstance.Path,
-                    RunCommandParser.ProjectOption.Name));
+                    RunCommandDefinition.ProjectOption.Name));
         }
     }
 
@@ -263,6 +265,17 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Hello from Program
                 Release config
                 """);
+
+        // https://github.com/dotnet/sdk/issues/52108
+        new DotnetCommand(Log, "Program.cs", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:Program.cs
+                Hello from Program
+                Release config
+                """);
     }
 
     /// <summary>
@@ -289,7 +302,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 .And.HaveStdErrContaining(string.Format(
                     CliCommandStrings.RunCommandExceptionNoProjects,
                     testInstance.Path,
-                    RunCommandParser.ProjectOption.Name));
+                    RunCommandDefinition.ProjectOption.Name));
         }
     }
 
@@ -332,10 +345,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// </summary>
     [Theory]
     // error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.
-    [InlineData("build", "MSB1003")]
+    [InlineData("build", "MSB1003", false)]
     // dotnet watch: Could not find a MSBuild project file in '...'. Specify which project to use with the --project option.
-    [InlineData("watch", "--project")]
-    public void Precedence_BuiltInCommand(string cmd, string error)
+    [InlineData("watch", "--project", true)]
+    public void Precedence_BuiltInCommand(string cmd, string error, bool errorInStdErr)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, cmd), """
@@ -348,18 +361,26 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // dotnet build -> built-in command
-        new DotnetCommand(Log, cmd)
+        var failure = new DotnetCommand(Log, cmd)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdOutContaining(error);
+            .Should().Fail();
+
+        if (errorInStdErr)
+        {
+            failure.And.HaveStdErrContaining(error);
+        }
+        else
+        {
+            failure.And.HaveStdOutContaining(error);
+        }
 
         // dotnet ./build -> file-based app
         new DotnetCommand(Log, $"./{cmd}")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("hello 1");
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut("hello 1");
 
         // dotnet run build -> file-based app
         new DotnetCommand(Log, "run", cmd)
@@ -448,17 +469,116 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void ReadFromStdin()
     {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(testInstance.Path)
             .WithStandardInput("""
                 Console.WriteLine("Hello from stdin");
                 Console.WriteLine("Read: " + (Console.ReadLine() ?? "null"));
+                Console.WriteLine("Working directory: " + Environment.CurrentDirectory);
                 """)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("""
+            .And.HaveStdOut($"""
                 Hello from stdin
                 Read: null
+                Working directory: {testInstance.Path}
                 """);
+    }
+
+    /// <summary>
+    /// <c>Directory.Build.props</c> doesn't have any effect on <c>dotnet run -</c>.
+    /// </summary>
+    [Fact]
+    public void ReadFromStdin_BuildProps()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ImplicitUsings>disable</ImplicitUsings>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithStandardInput("""
+                Console.WriteLine("Hello from stdin");
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from stdin");
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithStandardInput("""
+                #:property ImplicitUsings=disable
+                Console.WriteLine("Hello from stdin");
+                """)
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+    }
+
+    /// <summary>
+    /// <c>Directory.Build.props</c> doesn't have any effect on <c>dotnet run -</c>.
+    /// </summary>
+    [Fact]
+    public void ReadFromStdin_ProjectReference()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.cs"), """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "app");
+        Directory.CreateDirectory(appDir);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(appDir)
+            .WithStandardInput($"""
+                #:project $(MSBuildStartupDirectory)/../lib
+                Console.WriteLine(Lib.LibClass.GetMessage());
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Lib");
+
+        // Relative paths are resolved from the isolated temp directory, hence they don't work.
+
+        var errorParts = DirectiveError("app.cs", 1, FileBasedProgramsResources.InvalidProjectDirective,
+            string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, "{}")).Split("{}");
+        errorParts.Should().HaveCount(2);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(appDir)
+            .WithStandardInput($"""
+                #:project ../lib
+                Console.WriteLine(Lib.LibClass.GetMessage());
+                """)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(errorParts[0])
+            .And.HaveStdErrContaining(errorParts[1]);
     }
 
     [Fact]
@@ -467,7 +587,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DotnetCommand(Log, "run", "-", "--no-build")
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandDefinition.NoBuildOption.Name));
     }
 
     [Fact]
@@ -476,7 +596,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DotnetCommand(Log, "run", "-", "--launch-profile=test")
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.LaunchProfileOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandDefinition.LaunchProfileOption.Name));
     }
 
     /// <summary>
@@ -492,7 +612,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithStandardInput("""Console.WriteLine("stdin code");""")
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionNoProjects, testInstance.Path, RunCommandParser.ProjectOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionNoProjects, testInstance.Path, RunCommandDefinition.ProjectOption.Name));
     }
 
     /// <summary>
@@ -517,7 +637,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandParser.ProjectOption.Name));
+                RunCommandDefinition.ProjectOption.Name));
     }
 
     /// <summary>
@@ -536,7 +656,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandParser.ProjectOption.Name));
+                RunCommandDefinition.ProjectOption.Name));
     }
 
     /// <summary>
@@ -639,7 +759,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandParser.ProjectOption.Name));
+                RunCommandDefinition.ProjectOption.Name));
     }
 
     [Fact]
@@ -677,7 +797,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandParser.ProjectOption.Name));
+                RunCommandDefinition.ProjectOption.Name));
     }
 
     /// <summary>
@@ -712,11 +832,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandParser.ProjectOption.Name));
+                RunCommandDefinition.ProjectOption.Name));
     }
 
     /// <summary>
     /// Other files in the folder are not part of the compilation.
+    /// See <see href="https://github.com/dotnet/sdk/issues/51785"/>.
     /// </summary>
     [Fact]
     public void MultipleFiles_RunEntryPoint()
@@ -741,9 +862,32 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            // warning CS2002: Source file 'Program.cs' specified multiple times
-            .And.HaveStdOutContaining("warning CS2002")
-            .And.HaveStdOutContaining("Hello, String from Util");
+            .And.HaveStdOut("Hello, String from Util");
+    }
+
+    /// <summary>
+    /// Setting EnableDefaultCompileItems=true via Directory.Build.props should not cause CS2002 warning.
+    /// See <see href="https://github.com/dotnet/sdk/issues/51785"/>.
+    /// </summary>
+    [Fact]
+    public void MultipleFiles_EnableDefaultCompileItemsViaDirectoryBuildProps()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programDependingOnUtil);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+                <PropertyGroup>
+                    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+                </PropertyGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, String from Util");
     }
 
     /// <summary>
@@ -812,7 +956,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 workDir,
-                RunCommandParser.ProjectOption.Name));
+                RunCommandDefinition.ProjectOption.Name));
     }
 
     /// <summary>
@@ -848,6 +992,124 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// See <see href="https://github.com/dotnet/sdk/issues/51778"/>.
+    /// </summary>
+    [Theory, CombinatorialData]
+    public void WorkingDirectory(bool cscOnly)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = """
+            Console.WriteLine("v1");
+            Console.WriteLine(Environment.CurrentDirectory);
+            Console.WriteLine(Directory.GetCurrentDirectory());
+            Console.WriteLine(new DirectoryInfo(".").FullName);
+            Console.WriteLine(AppContext.GetData("EntryPointFileDirectoryPath"));
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance,
+            expectedLevel: cscOnly ? BuildLevel.Csc : BuildLevel.All,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v1", workDir));
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.Csc,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v2", workDir));
+
+        string GetExpectedOutput(string version, string workDir) => $"""
+            {version}
+            {workDir}
+            {workDir}
+            {workDir}
+            {Path.GetDirectoryName(programPath)}
+            """;
+    }
+
+    /// <summary>
+    /// Combination of <see cref="WorkingDirectory"/> and <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
+    [Fact]
+    public void WorkingDirectory_CscOnly_AfterMSBuild()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = """
+            #:property Configuration=Release
+            Console.WriteLine("v1");
+            Console.WriteLine(Environment.CurrentDirectory);
+            Console.WriteLine(Directory.GetCurrentDirectory());
+            Console.WriteLine(new DirectoryInfo(".").FullName);
+            Console.WriteLine(AppContext.GetData("EntryPointFileDirectoryPath"));
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.All,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v1", workDir));
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.None,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v1", workDir));
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.Csc,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v2", workDir));
+
+        // Can be overridden with a #:property.
+        var workDir2 = Path.Join(testInstance.Path, "dir2");
+        Directory.CreateDirectory(workDir2);
+        code = $"""
+            #:property RunWorkingDirectory={workDir2}
+            {code}
+            """;
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance,
+            expectedLevel: BuildLevel.All,
+            programFileName: programPath,
+            workDir: workDir,
+            expectedOutput: GetExpectedOutput("v2", workDir2));
+
+        string GetExpectedOutput(string version, string workDir) => $"""
+            {version}
+            {workDir}
+            {workDir}
+            {workDir}
+            {Path.GetDirectoryName(programPath)}
+            """;
+    }
+
+    /// <summary>
     /// Implicit build files have an effect.
     /// </summary>
     [Fact]
@@ -868,6 +1130,184 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Hello from TestName");
+    }
+
+    /// <summary>
+    /// Implicit build files are taken from the folder of the symbolic link itself, not its target.
+    /// This is equivalent to the behavior of symlinked project files.
+    /// See <see href="https://github.com/dotnet/sdk/pull/52064#issuecomment-3628958688"/>.
+    /// </summary>
+    [Fact]
+    public void DirectoryBuildProps_SymbolicLink()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var dir1 = Path.Join(testInstance.Path, "dir1");
+        Directory.CreateDirectory(dir1);
+
+        var originalPath = Path.Join(dir1, "original.cs");
+        File.WriteAllText(originalPath, s_program);
+
+        File.WriteAllText(Path.Join(dir1, "Directory.Build.props"), """
+            <Project>
+                <PropertyGroup>
+                    <AssemblyName>OriginalAssemblyName</AssemblyName>
+                </PropertyGroup>
+            </Project>
+            """);
+
+        var dir2 = Path.Join(testInstance.Path, "dir2");
+        Directory.CreateDirectory(dir2);
+
+        var programFileName = "linked.cs";
+        var programPath = Path.Join(dir2, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
+
+        File.WriteAllText(Path.Join(dir2, "Directory.Build.props"), """
+            <Project>
+                <PropertyGroup>
+                    <AssemblyName>LinkedAssemblyName</AssemblyName>
+                </PropertyGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", programFileName)
+            .WithWorkingDirectory(dir2)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from LinkedAssemblyName");
+
+        // Removing the Directory.Build.props should be detected by up-to-date check.
+        File.Delete(Path.Join(dir2, "Directory.Build.props"));
+
+        new DotnetCommand(Log, "run", programFileName)
+            .WithWorkingDirectory(dir2)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from linked");
+    }
+
+    /// <summary>
+    /// Overriding default (implicit) properties of file-based apps via implicit build files.
+    /// </summary>
+    [Fact]
+    public void DefaultProps_DirectoryBuildProps()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine("Hi");
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ImplicitUsings>disable</ImplicitUsings>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+
+        // Converting to a project should not change the behavior.
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "Program"))
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+    }
+
+    /// <summary>
+    /// Overriding default (implicit) properties of file-based apps from custom SDKs.
+    /// </summary>
+    [Fact]
+    public void DefaultProps_CustomSdk()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var sdkDir = Path.Join(testInstance.Path, "MySdk");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Join(sdkDir, "Sdk.props"), """
+            <Project>
+              <PropertyGroup>
+                <ImplicitUsings>disable</ImplicitUsings>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Join(sdkDir, "Sdk.targets"), """
+            <Project />
+            """);
+        File.WriteAllText(Path.Join(sdkDir, "MySdk.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                <PackageType>MSBuildSdk</PackageType>
+                <IncludeBuildOutput>false</IncludeBuildOutput>
+              </PropertyGroup>
+              <ItemGroup>
+                <None Include="Sdk.*" Pack="true" PackagePath="Sdk" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "pack")
+            .WithWorkingDirectory(sdkDir)
+            .Execute()
+            .Should().Pass();
+
+        var appDir = Path.Join(testInstance.Path, "app");
+        Directory.CreateDirectory(appDir);
+        File.WriteAllText(Path.Join(appDir, "NuGet.config"), $"""
+            <configuration>
+              <packageSources>
+                <add key="local" value="{Path.Join(sdkDir, "bin", "Release")}" />
+                <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+              </packageSources>
+            </configuration>
+            """);
+        File.WriteAllText(Path.Join(appDir, "Program.cs"), """
+            #:sdk Microsoft.NET.Sdk
+            #:sdk MySdk@1.0.0
+            Console.WriteLine("Hi");
+            """);
+
+        // Use custom package cache to avoid reuse of the custom SDK packed by previous test runs.
+        var packagesDir = Path.Join(testInstance.Path, ".packages");
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithEnvironmentVariable("NUGET_PACKAGES", packagesDir)
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+
+        // Converting to a project should not change the behavior.
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithEnvironmentVariable("NUGET_PACKAGES", packagesDir)
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run")
+            .WithEnvironmentVariable("NUGET_PACKAGES", packagesDir)
+            .WithWorkingDirectory(Path.Join(appDir, "Program"))
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
     }
 
     [Fact]
@@ -957,7 +1397,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandParser.ProjectOption.Name));
+                RunCommandDefinition.ProjectOption.Name));
     }
 
     /// <summary>
@@ -1233,7 +1673,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Default projects include embedded resources by default.
+    /// File-based projects using the default SDK do not include embedded resources by default.
     /// </summary>
     [Fact]
     public void EmbeddedResource()
@@ -1241,6 +1681,21 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
+
+        // By default, with the default SDK, embedded resources are not included.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Resource not found
+                """);
+
+        // This behavior can be overridden to enable embedded resources.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:property EnableDefaultEmbeddedResourceItems=true
+            {s_programReadingEmbeddedResource}
+            """);
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -1250,9 +1705,23 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 [MyString, TestValue]
                 """);
 
-        // This behavior can be overridden.
+        // When using a non-default SDK, embedded resources are included by default.
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
-            #:property EnableDefaultEmbeddedResourceItems=false
+            #:sdk Microsoft.NET.Sdk.Web
+            {s_programReadingEmbeddedResource}
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                [MyString, TestValue]
+                """);
+
+        // When using the default SDK explicitly, embedded resources are not included.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:sdk Microsoft.NET.Sdk
             {s_programReadingEmbeddedResource}
             """);
 
@@ -1275,7 +1744,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         bool considered = ext is "sln" or "slnx" or "csproj";
 
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:property EnableDefaultEmbeddedResourceItems=true
+            {s_programReadingEmbeddedResource}
+            """);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
         File.WriteAllText(Path.Join(testInstance.Path, $"repo.{ext}"), "");
 
@@ -1296,7 +1768,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // It is an error when never restored before.
@@ -1328,7 +1800,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // It is an error when never restored before.
@@ -1372,7 +1844,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, "Console.WriteLine();");
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "restore", "Program.cs")
@@ -1392,14 +1864,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "restore", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErr(DirectiveError(programFile, 1, CliCommandStrings.StaticGraphRestoreNotSupported));
+            .And.HaveStdErr(DirectiveError(programFile, 1, FileBasedProgramsResources.StaticGraphRestoreNotSupported));
     }
 
     [Fact]
@@ -1410,7 +1882,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // It is an error when never built before.
@@ -1450,7 +1922,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // It is an error when never built before.
@@ -1484,13 +1956,237 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void Build_Library()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "lib.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Library
+            class C;
+            """);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Library"));
+    }
+
+    [Fact]
+    public void Build_Library_MultiTarget()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "lib.cs");
+        File.WriteAllText(programFile, $"""
+            #:property OutputType=Library
+            #:property PublishAot=false
+            #:property LangVersion=preview
+            #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
+            class C;
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <TargetFramework></TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--no-interactive")
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+
+        new DotnetCommand(Log, "run", "lib.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Library"));
+    }
+
+    [Fact]
+    public void Build_Module()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "module.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Module
+            #:property ProduceReferenceAssembly=false
+            class C;
+            """);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "module.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "module.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Module"));
+    }
+
+    [Fact]
+    public void Build_WinExe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "winexe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=WinExe
+            Console.WriteLine("Hello WinExe");
+            """);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "winexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "winexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello WinExe");
+    }
+
+    [Fact]
+    public void Build_Exe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "exe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Exe
+            Console.WriteLine("Hello Exe");
+            """);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello Exe");
+    }
+
+    [Fact]
+    public void Build_Exe_MultiTarget()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "exe.cs");
+        File.WriteAllText(programFile, $"""
+            #:property OutputType=Exe
+            #:property PublishAot=false
+            #:property LangVersion=preview
+            #:property TargetFrameworks=netstandard2.0;{ToolsetInfo.CurrentTargetFramework}
+            Console.WriteLine("Hello Exe");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51077: cannot set this via `#:property` directive.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <TargetFramework></TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "exe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+
+        new DotnetCommand(Log, "run", "exe.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello Exe");
+    }
+
+    [Fact]
+    public void Build_AppContainerExe()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "appcontainerexe.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=AppContainerExe
+            Console.WriteLine("Hello AppContainerExe");
+            """);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "appcontainerexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "appcontainerexe.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "AppContainerExe"));
+    }
+
+    [Fact]
     public void Publish()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(testInstance.Path, "artifacts");
@@ -1521,7 +2217,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(testInstance.Path, "artifacts");
@@ -1556,7 +2252,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             { "MyKey": "MyValue" }
             """);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(testInstance.Path, "artifacts");
@@ -1580,7 +2276,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(testInstance.Path, "artifacts");
@@ -1605,7 +2301,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programFile = Path.Join(testInstance.Path, "MyCustomProgram.cs");
         File.WriteAllText(programFile, s_program);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(testInstance.Path, "artifacts");
@@ -1673,7 +2369,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programFile = Path.Join(subDir.FullName, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(subDir.FullName, "artifacts");
@@ -1695,7 +2391,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
         File.WriteAllText(programFile, """
-            #:property PackAsTool=true
             Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
             #if !DEBUG
             Console.WriteLine("Release config");
@@ -1709,7 +2404,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("Hello; EntryPointFilePath set? True");
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var outputDir = Path.Join(testInstance.Path, "artifacts");
@@ -1742,7 +2437,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
         File.WriteAllText(programFile, """
-            #:property PackAsTool=true
             #:property PackageOutputPath=custom
             Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
             """);
@@ -1754,7 +2448,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("Hello; EntryPointFilePath set? True");
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var outputDir = Path.Join(testInstance.Path, "custom");
@@ -1790,7 +2484,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("Hello from Program");
 
-        var artifactsDir = new DirectoryInfo(VirtualProjectBuildingCommand.GetArtifactsPath(programFile));
+        var artifactsDir = new DirectoryInfo(VirtualProjectBuilder.GetArtifactsPath(programFile));
         artifactsDir.Should().HaveFiles(["build-start.cache", "build-success.cache"]);
 
         var dllFile = artifactsDir.File("bin/debug/Program.dll");
@@ -1815,7 +2509,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "build", "Program.cs")
@@ -1917,7 +2611,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Message: ''
                 """);
 
-        // quiet runs here so that launch-profile useage messages don't impact test assertions
+        // quiet runs here so that launch-profile usage messages don't impact test assertions
         new DotnetCommand(Log, "run", "-v", "q", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
@@ -2103,6 +2797,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [InlineData("../Lib")]
     [InlineData(@"..\Lib\Lib.csproj")]
     [InlineData(@"..\Lib")]
+    [InlineData("$(MSBuildProjectDirectory)/../$(LibProjectName)")]
+    [InlineData(@"$(MSBuildProjectDirectory)/../Lib\$(LibProjectName).csproj")]
     public void ProjectReference(string arg)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -2131,64 +2827,216 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         File.WriteAllText(Path.Join(appDir, "Program.cs"), $"""
             #:project {arg}
+            #:property LibProjectName=Lib
             Console.WriteLine(Lib.LibClass.GetMessage());
             """);
+
+        var expectedOutput = "Hello from Lib";
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(appDir)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("Hello from Lib");
+            .And.HaveStdOut(expectedOutput);
+
+        // Running from a different working directory shouldn't affect handling of the relative project paths.
+        new DotnetCommand(Log, "run", "App/Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
     }
 
-    [Fact]
-    public void ProjectReference_Errors()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("app")]
+    public void ProjectReference_Errors(string? subdir)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        var relativeFilePath = Path.Join(subdir, "Program.cs");
+        var filePath = Path.Join(testInstance.Path, relativeFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        File.WriteAllText(filePath, """
             #:project wrong.csproj
             """);
 
         // Project file does not exist.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "wrong.csproj"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "wrong.csproj"))));
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        File.WriteAllText(filePath, """
             #:project dir/
             """);
 
         // Project directory does not exist.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "dir/"))));
 
-        Directory.CreateDirectory(Path.Join(testInstance.Path, "dir"));
+        Directory.CreateDirectory(Path.Join(testInstance.Path, subdir, "dir"));
 
         // Directory exists but has no project file.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindAnyProjectInDirectory, Path.Join(testInstance.Path, subdir, "dir/"))));
 
-        File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj1.csproj"), "<Project />");
-        File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj2.csproj"), "<Project />");
+        File.WriteAllText(Path.Join(testInstance.Path, subdir, "dir", "proj1.csproj"), "<Project />");
+        File.WriteAllText(Path.Join(testInstance.Path, subdir, "dir", "proj2.csproj"), "<Project />");
 
         // Directory exists but has multiple project files.
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(Path.Join(testInstance.Path, "Program.cs"), 1, CliCommandStrings.InvalidProjectDirective,
-                string.Format(CliStrings.MoreThanOneProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.MoreThanOneProjectInDirectory, Path.Join(testInstance.Path, subdir, "dir/"))));
+
+        // Malformed MSBuild variable syntax.
+        File.WriteAllText(filePath, """
+            #:project $(Test
+            """);
+
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 1, FileBasedProgramsResources.InvalidProjectDirective,
+                string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, subdir, "$(Test"))));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("app")]
+    public void ProjectReference_Duplicate(string? subdir)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var relativeFilePath = Path.Join(subdir, "Program.cs");
+        var filePath = Path.Join(testInstance.Path, relativeFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, subdir, "dir"));
+        File.WriteAllText(Path.Join(testInstance.Path, subdir, "dir", "proj1.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project dir/
+            Console.WriteLine("Hello");
+            """);
+
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(filePath, 2, FileBasedProgramsResources.DuplicateDirective, "#:project dir/"));
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project dir/proj1.csproj
+            Console.WriteLine("Hello");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate project reference
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
+
+        File.WriteAllText(filePath, """
+            #:project dir/
+            #:project $(MSBuildProjectDirectory)/dir/
+            Console.WriteLine("Hello");
+            """);
+
+        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate project reference
+        new DotnetCommand(Log, "run", relativeFilePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
+    }
+
+    [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
+    [InlineData(true, null)]
+    [InlineData(false, null)]
+    [InlineData(true, "test-id")]
+    [InlineData(false, "test-id")]
+    public void UserSecrets(bool useIdArg, string? userSecretsId)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        string code = $"""
+            #:package Microsoft.Extensions.Configuration.UserSecrets@{CSharpCompilerCommand.RuntimeVersion}
+            {(userSecretsId is null ? "" : $"#:property UserSecretsId={userSecretsId}")}
+
+            using Microsoft.Extensions.Configuration;
+
+            IConfigurationRoot config = new ConfigurationBuilder()
+                .AddUserSecrets<Program>()
+                .Build();
+
+            Console.WriteLine("v1");
+            Console.WriteLine(config.GetDebugView());
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        if (useIdArg)
+        {
+            if (userSecretsId == null)
+            {
+                var result = new DotnetCommand(Log, "build", "-getProperty:UserSecretsId", "Program.cs")
+                    .WithWorkingDirectory(testInstance.Path)
+                    .Execute();
+                result.Should().Pass();
+                userSecretsId = result.StdOut!.Trim();
+            }
+
+            new DotnetCommand(Log, "user-secrets", "set", "MySecret", "MyValue", "--id", userSecretsId)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass();
+        }
+        else
+        {
+            new DotnetCommand(Log, "user-secrets", "set", "MySecret", "MyValue", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass();
+        }
+
+        Build(testInstance, BuildLevel.All, expectedOutput: """
+            v1
+            MySecret=MyValue (JsonConfigurationProvider for 'secrets.json' (Optional))
+            """);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: """
+            v2
+            MySecret=MyValue (JsonConfigurationProvider for 'secrets.json' (Optional))
+            """);
     }
 
     /// <summary>
@@ -2205,7 +3053,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(entryPointPath, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(entryPointPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // Build using MSBuild.
@@ -2487,7 +3335,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         string programName = Path.GetFileNameWithoutExtension(fileName);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(entryPointPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
         var artifactsBackupDir = Path.ChangeExtension(artifactsDir, ".bak");
         if (Directory.Exists(artifactsBackupDir)) Directory.Delete(artifactsBackupDir, recursive: true);
@@ -2562,7 +3410,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "Hello v1");
@@ -2675,7 +3523,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc);
     }
 
-    private void Build(TestDirectory testInstance, BuildLevel expectedLevel, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program", string programFileName = "Program.cs")
+    private void Build(TestDirectory testInstance, BuildLevel expectedLevel, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program", string programFileName = "Program.cs", string? workDir = null)
     {
         string prefix = expectedLevel switch
         {
@@ -2686,12 +3534,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         };
 
         new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
-            .WithWorkingDirectory(testInstance.Path)
+            .WithWorkingDirectory(workDir ?? testInstance.Path)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut(prefix + expectedOutput);
 
-        var binlogs = new DirectoryInfo(testInstance.Path)
+        var binlogs = new DirectoryInfo(workDir ?? testInstance.Path)
             .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly);
 
         binlogs.Select(f => f.Name)
@@ -2719,17 +3567,156 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, RunCommandDefinition.NoCacheOption.Name, RunCommandDefinition.NoBuildOption.Name));
+    }
+
+    /// <summary>
+    /// <see cref="UpToDate"/> optimization should see through symlinks.
+    /// See <see href="https://github.com/dotnet/sdk/issues/52063"/>.
+    /// </summary>
+    [Fact]
+    public void UpToDate_SymbolicLink()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var originalPath = Path.Join(testInstance.Path, "original.cs");
+        var code = """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("v1");
+            """;
+        var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        var programFileName = "linked";
+        var programPath = Path.Join(testInstance.Path, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "v1", programFileName: programFileName);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// Similar to <see cref="UpToDate_SymbolicLink"/> but with a chain of symlinks.
+    /// </summary>
+    [Fact]
+    public void UpToDate_SymbolicLink2()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var originalPath = Path.Join(testInstance.Path, "original.cs");
+        var code = """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("v1");
+            """;
+        var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        var intermediateFileName = "linked1";
+        var intermediatePath = Path.Join(testInstance.Path, intermediateFileName);
+
+        File.CreateSymbolicLink(path: intermediatePath, pathToTarget: originalPath);
+
+        var programFileName = "linked2";
+        var programPath = Path.Join(testInstance.Path, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: intermediatePath);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "v1", programFileName: programFileName);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// <see cref="UpToDate"/> optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
+    /// See <see href="https://github.com/dotnet/sdk/issues/52057"/>.
+    /// </summary>
+    [Fact]
+    public void UpToDate_ProjectReferences()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var libPath = Path.Join(libDir, "Lib.cs");
+        var libCode = """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib v1";
+            }
+            """;
+        File.WriteAllText(libPath, libCode);
+
+        var appDir = Path.Join(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+
+        var code = """
+            #:project ../Lib
+            Console.WriteLine("v1 " + Lib.LibClass.GetMessage());
+            """;
+
+        var programPath = Path.Join(appDir, "Program.cs");
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var programFileName = "App/Program.cs";
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1 Hello from Lib v1", programFileName: programFileName);
+
+        // We cannot detect changes in referenced projects, so we always rebuild.
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1 Hello from Lib v1", programFileName: programFileName);
+
+        libCode = libCode.Replace("v1", "v2");
+        File.WriteAllText(libPath, libCode);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1 Hello from Lib v2", programFileName: programFileName);
     }
 
     /// <summary>
     /// Up-to-date checks and optimizations currently don't support other included files.
     /// </summary>
-    [Fact]
-    public void UpToDate_DefaultItems()
+    [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
+    public void UpToDate_DefaultItems(bool optOut)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        var code = $"""
+            {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            #:property EnableDefaultEmbeddedResourceItems=true
+            {s_programReadingEmbeddedResource}
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "[MyString, TestValue]");
@@ -2737,12 +3724,51 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // Update the RESX file.
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"));
 
-        Build(testInstance, BuildLevel.None, expectedOutput: "[MyString, TestValue]"); // note: outdated output (build skipped)
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.None, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]"); // note: outdated output (build skipped)
 
         // Update the C# file.
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + code);
 
-        Build(testInstance, BuildLevel.Csc, expectedOutput: "[MyString, TestValue]"); // note: outdated output (only CSC used)
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]"); // note: outdated output (only CSC used)
+
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "[MyString, UpdatedValue]");
+    }
+
+    /// <summary>
+    /// Combination of <see cref="UpToDate_DefaultItems"/> with <see cref="CscOnly_AfterMSBuild"/> optimization.
+    /// </summary>
+    /// <remarks>
+    /// Note: we cannot test <see cref="CscOnly"/> because that optimization doesn't support neither <c>#:property</c> nor <c>#:sdk</c> which we need to enable default items.
+    /// </remarks>
+    [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
+    public void UpToDate_DefaultItems_CscOnly_AfterMSBuild(bool optOut)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var code = $"""
+            #:property Configuration=Release
+            {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            #:property EnableDefaultEmbeddedResourceItems=true
+            {s_programReadingEmbeddedResource}
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "[MyString, TestValue]");
+
+        // Update the C# file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + code);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, TestValue]" : "[MyString, TestValue]");
+
+        // Update the RESX file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"));
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.None, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]");
+
+        // Update the C# file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v3\n" + code);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]");
 
         Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "[MyString, UpdatedValue]");
     }
@@ -2757,7 +3783,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v1");
@@ -2875,7 +3901,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), "<Project />");
@@ -2918,7 +3944,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "run", "Program.cs", "-bl", "--no-restore")
@@ -2964,12 +3990,68 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v1", programFileName: programFileName);
     }
 
+    [Fact] // https://github.com/dotnet/sdk/issues/50778
+    public void CscOnly_Args()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, s_program);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.Csc, args: ["test", "args"], expectedOutput: """
+            echo args:test;args
+            Hello from Program
+            """);
+    }
+
+    /// <summary>
+    /// Combination of <see cref="UpToDate_SymbolicLink"/> and <see cref="CscOnly"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_SymbolicLink()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var originalPath = Path.Join(testInstance.Path, "original.cs");
+        var code = """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("v1");
+            """;
+        var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        var programFileName = "linked";
+        var programPath = Path.Join(testInstance.Path, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v1", programFileName: programFileName);
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "v1", programFileName: programFileName);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// Tests an optimization which remembers CSC args from prior MSBuild runs and can skip subsequent MSBuild invocations and call CSC directly.
+    /// This optimization kicks in when the file has some <c>#:</c> directives (then the simpler "hard-coded CSC args" optimization cannot be used).
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild()
     {
@@ -2988,7 +4070,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release");
@@ -3025,6 +4107,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: "v4 ");
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_SpacesInPath()
     {
@@ -3044,7 +4129,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release", programFileName: programFileName);
@@ -3055,6 +4140,111 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2 Release", programFileName: programFileName);
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_Args()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = $"""
+            #:property Configuration=Release
+            {s_program}
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, args: ["test", "args"], expectedOutput: """
+            echo args:test;args
+            Hello from Program
+            Release config
+            """);
+
+        code = code.Replace("Hello", "Hi");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, ["test", "args"], expectedOutput: """
+            echo args:test;args
+            Hi from Program
+            Release config
+            """);
+    }
+
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// If hard links are enabled, the <c>bin/app.dll</c> and <c>obj/app.dll</c> files are going to be the same,
+    /// so our "copy obj to bin" logic must account for that.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_HardLinks()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = $"""
+            #:property CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=true
+            #:property CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible=true
+            {s_program}
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All);
+
+        code = code.Replace("Hello", "Hi");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "Hi from Program");
+    }
+
+    /// <summary>
+    /// Combination of <see cref="UpToDate_SymbolicLink"/> and <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_SymbolicLink()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var originalPath = Path.Join(testInstance.Path, "original.cs");
+        var code = """
+            #!/usr/bin/env dotnet
+            #:property Configuration=Release
+            Console.WriteLine("v1");
+            """;
+        var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        var programFileName = "linked";
+        var programPath = Path.Join(testInstance.Path, programFileName);
+
+        File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(originalPath, code, utf8NoBom);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// This optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_ProjectReferences()
     {
@@ -3093,7 +4283,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var programFileName = "App/Program.cs";
@@ -3111,8 +4301,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// If users have more complex build customizations, they can opt out of the optimization which
-    /// reuses CSC arguments and skips subsequent MSBuild invocations.
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// If users have more complex build customizations, they can opt out of the optimization.
     /// </summary>
     [Theory, CombinatorialData]
     public void CscOnly_AfterMSBuild_OptOut(bool canSkipMSBuild, bool inDirectoryBuildProps)
@@ -3145,7 +4335,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release");
@@ -3156,6 +4346,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, canSkipMSBuild ? BuildLevel.Csc : BuildLevel.All, expectedOutput: "v2 Release");
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_AuxiliaryFilesNotReused()
     {
@@ -3173,7 +4366,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release");
@@ -3231,6 +4424,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -3241,15 +4442,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
                       <PropertyGroup>
-                        <OutputType>Exe</OutputType>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <TargetFramework>net11.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
+                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
@@ -3258,7 +4453,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </ItemGroup>
 
                       <ItemGroup>
-                        <Compile Include="{programPath}" />
+                        <Compile Condition="'$(EnableDefaultCompileItems)' != 'true'" Include="{programPath}" />
                       </ItemGroup>
 
                       <ItemGroup>
@@ -3301,6 +4496,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+                        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -3310,19 +4515,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
-                        <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
                       <ItemGroup>
-                        <Compile Include="{programPath}" />
+                        <Compile Condition="'$(EnableDefaultCompileItems)' != 'true'" Include="{programPath}" />
                       </ItemGroup>
 
                       <ItemGroup>
@@ -3338,7 +4536,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":1,"Character":0},"End":{"Line":1,"Character":30}{{nop}}}{{nop}}},
-                "Message":{{ToJson(CliCommandStrings.CannotConvertDirective)}}}]}
+                "Message":{{ToJson(FileBasedProgramsResources.CannotConvertDirective)}}}]}
                 """.ReplaceLineEndings(""));
     }
 
@@ -3368,6 +4566,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+                        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -3377,19 +4585,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
-                        <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
                       <ItemGroup>
-                        <Compile Include="{programPath}" />
+                        <Compile Condition="'$(EnableDefaultCompileItems)' != 'true'" Include="{programPath}" />
                       </ItemGroup>
 
                       <ItemGroup>
@@ -3405,7 +4606,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 [{"Location":{
                 "Path":{{ToJson(programPath)}},
                 "Span":{"Start":{"Line":0,"Character":0},"End":{"Line":1,"Character":0}{{nop}}}{{nop}}},
-                "Message":{{ToJson(string.Format(CliCommandStrings.UnrecognizedDirective, "unknown"))}}}]}
+                "Message":{{ToJson(string.Format(FileBasedProgramsResources.UnrecognizedDirective, "unknown"))}}}]}
                 """.ReplaceLineEndings(""));
     }
 
@@ -3464,7 +4665,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """");
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(filePath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(filePath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var prefix = cscOnly
@@ -3565,6 +4766,35 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($"EntryPointFilePath: {filePath}");
+    }
+
+    [Fact]
+    public void EntryPointFilePath_SymbolicLink()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var fileName = "Program.cs";
+        var programPath = Path.Join(testInstance.Path, fileName);
+        File.WriteAllText(programPath, """
+            #!/usr/bin/env dotnet
+            var entryPointFilePath = AppContext.GetData("EntryPointFilePath") as string;
+            Console.WriteLine($"EntryPointFilePath: {entryPointFilePath}");
+            """);
+
+        new DotnetCommand(Log, "run", fileName)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"EntryPointFilePath: {programPath}");
+
+        var linkName = "linked";
+        var linkPath = Path.Join(testInstance.Path, linkName);
+        File.CreateSymbolicLink(linkPath, programPath);
+
+        new DotnetCommand(Log, "run", linkName)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"EntryPointFilePath: {linkPath}");
     }
 
     [Fact]

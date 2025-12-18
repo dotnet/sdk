@@ -92,7 +92,22 @@
         <target state="translated">.NET ビルダー</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">著作権情報を表示しません。</target>
         <note />
@@ -184,11 +199,6 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">{0} オプションと {1} オプションを同時に使用することはできません。いずれかのオプションを削除してください。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="new">Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
-        <note>{Locked="--force"}</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">'{0}' という名前のコマンドを持つマニフェスト ファイルでツールが見つかりません。</target>
@@ -232,11 +242,6 @@ Paths searched: '{1}', '{2}'.</source>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">.NET Clean コマンド</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">著作権情報を表示しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -458,16 +463,6 @@ If not specified the file will be generated inside the default 'TestResults' dir
         <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdDirectoryDescription">
-        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">実行するディレクトリのパスを定義します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDirectoryPathName">
-        <source>DIRECTORY_PATH</source>
-        <target state="translated">DIRECTORY_PATH</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
         <source>Prevent restoring multiple projects in parallel.</source>
         <target state="translated">複数のプロジェクトを並行して復元できないようにします。</target>
@@ -585,7 +580,7 @@ This is equivalent to deleting project.assets.json.</source>
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
+        <target state="translated">実行する必要があるテストの最小数を指定します。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -743,14 +738,19 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="translated">新しいパッケージを検索するときにプレリリース バージョンのパッケージを検討します。'--outdated' オプションが必要です。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">実行するプロジェクト ファイルのパス (フォルダー名または完全パス) を定義します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
+      <trans-unit id="CmdProjectDescriptionFormat">
+        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectPathName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+      <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
+        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectOrSolutionPathName">
+        <source>PROJECT_OR_SOLUTION_PATH</source>
+        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -796,8 +796,8 @@ The specified directory will be created if it does not exist.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">実行するソリューション ファイルのパスを定義します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
+        <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -883,11 +883,11 @@ The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="new">global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
-The following test projects are using VSTest test runner:
+        <target state="translated">global.json では、テスト ランナーを Microsoft.Testing.Platform と定義します。すべてのプロジェクトで、そのテスト ランナーを使用する必要があります。
+次のテスト プロジェクトでは、VSTest テスト ランナーを使用しています:
 {0}
 
-See https://aka.ms/dotnet-test/mtp for more information.</target>
+詳細については、https://aka.ms/dotnet-test/mtp を参照してください。</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
 {0} is one or more project names.</note>
       </trans-unit>
@@ -986,11 +986,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">launchSettings.json または [app].run.json を使用してアプリケーションを構成しないでください。</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">実行するプロジェクト ファイルへのパス (プロジェクトが 1 つのみの場合、既定は現在のディレクトリです)。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
@@ -1071,11 +1066,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">日付</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(既定)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">ワークロード マニフェスト {0} のバージョン {1} をアンインストールしています...</target>
@@ -1106,11 +1096,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">説明</target>
         <note />
       </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">'{0}' の読み取り中にエラーが発生しました: {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
-      </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
         <target state="translated">クエリの詳細な結果を表示します。</target>
@@ -1125,11 +1110,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <source>Enables diagnostic output.</source>
         <target state="translated">診断出力を有効にします。</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DirectiveError">
-        <source>error</source>
-        <target state="new">error</target>
-        <note>Used when reporting directive errors like "file(location): error: message".</note>
       </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
@@ -1162,39 +1142,39 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">からテストを検出しています</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestCommand">
-        <source>.NET Test Command</source>
-        <target state="translated">.NET Test コマンド</target>
-        <note />
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Microsoft.Testing.Platform 用の .NET テスト コマンド ('global.json' ファイルでオプトイン済み)。これは Microsoft.Testing.Platform のみをサポートしており、VSTest には対応していません。詳細については、https://aka.ms/dotnet-test をご覧ください。</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">VSTest 用の .NET テスト コマンド。Microsoft.Testing.Platform を使用するには、global.json ファイルで Microsoft.Testing.Platform ベースのコマンドにオプトインしてください。詳細については、https://aka.ms/dotnet-test をご覧ください。</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
-        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <target state="translated">Microsoft.Testing.Platform から送信されたサポートされているプロトコル バージョンは '{0}' です。SDK は互換性のない '{1}' をサポートしています。</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestMismatchingExecutionId">
         <source>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</source>
-        <target state="new">Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</target>
+        <target state="translated">ハンドシェイク メッセージで受信した 'ExecutionId' が '{0}' のときに、メッセージ '{1}' の 'ExecutionId' 値 '{2}' を受信しました。</target>
         <note>{Locked="ExecutionId"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureHasHandshake">
         <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
-        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <target state="translated">ハンドシェイクに対応する 'NamedPipeServer' の破棄中にエラーが発生しました: </target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
         <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
-        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DotnetTestPipeIncompleteSize">
-        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <target state="translated">'NamedPipeServer' の破棄中にエラーが発生し、ハンドシェイクが見つかりませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
         <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <target state="translated">'dotnet' は 'dotnet test' 名前付きパイプから予期せず重複するメッセージを受信しました。</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -1217,25 +1197,21 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">ダウンロード</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">大文字と小文字が区別される名前の起動プロファイルがいくつかありますが、これは許可されていません: 
-{0}
-プロファイル名を区別できるようにしてください。</target>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="translated">期間:</target>
         <note />
       </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0}</source>
-        <target state="new">Duplicate directives are not supported: {0}</target>
-        <note>{0} is the directive type and name.</note>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="translated">エラー:</target>
+        <note />
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
 {2}</source>
-        <target state="new">The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+        <target state="translated">RunCommand '{0}' および RunArguments '{1}' でテスト モジュールを実行中に、次の例外が発生しました:
 
 {2}</target>
         <note>{Locked="RunCommand"}{Locked="RunArguments"}
@@ -1279,6 +1255,11 @@ Make the profile names distinct.</source>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">広告マニフェスト {0} を更新できませんでした: {1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="translated">失敗:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -1568,13 +1549,8 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
         <source>Method '{0}' did not exit successfully</source>
-        <target state="new">Method '{0}' did not exit successfully</target>
+        <target state="translated">メソッド '{0}' が正常に終了しませんでした</target>
         <note />
-      </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="new">The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
@@ -1590,11 +1566,6 @@ Make the profile names distinct.</source>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">標準入力からファイルを読み取るために '-' も使用している場合は、オプション '{0}' を指定できません。</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive is invalid: {0}</source>
-        <target state="new">The '#:project' directive is invalid: {0}</target>
-        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1615,26 +1586,6 @@ Make the profile names distinct.</source>
         <source>Latest Version</source>
         <target state="translated">最新バージョン</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">'{0} ' という名前の起動プロファイルは存在しません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">起動プロファイルの種類 '{0}' はサポートされていません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">指定された名前のプロファイルは、有効な JSON オブジェクトではありません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">起動設定のドキュメントの 'profiles' プロパティが JSON オブジェクトではありません。</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -1730,17 +1681,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="MismatchingHandshakeInfo">
         <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
-        <target state="new">A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</target>
+        <target state="translated">テスト アプリケーションに対して、前回のハンドシェイク '{0}' と一致しない新しいハンドシェイク '{1}' を受信しました。</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}'.</source>
-        <target state="new">Missing name of '{0}'.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
-        <target state="new">A test session start event was received without a corresponding test session end.</target>
+        <target state="translated">対応するテスト セッションの終了がないまま、テスト セッション開始イベントを受信しました。</target>
         <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
@@ -1955,11 +1901,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       <trans-unit id="PackAppFullName">
         <source>.NET Core NuGet Package Packer</source>
         <target state="translated">.NET Core NuGet パッケージ パッカー</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">著作権情報を表示しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdOutputDir">
@@ -2364,7 +2305,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
       3. 1 つ以上のワークロードをバージョンと共に ('@' 文字で結合して) 指定すると、指定されたバージョンに一致するワークロード バージョンが出力されます。--take オプションを指定して提供する数を指定し、--format を指定して形式を変更します。
-         例: 
+         例:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -2446,8 +2387,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">出力ディレクトリ ({0}) を指定します:</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="needs-review-translation">出力ディレクトリ ({0}) を指定します:</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2500,24 +2441,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">プロジェクト</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name: {0}</source>
-        <target state="new">Invalid property name: {0}</target>
-        <note>{0} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">.NET Platform 用パブリッシャー</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">著作権情報を表示しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2662,6 +2588,11 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">復元に失敗しました。</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">復元が部分的に失敗しました。</target>
@@ -2670,6 +2601,11 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RestoreSuccessful">
         <source>Tool '{0}' (version '{1}') was restored. Available commands: {2}</source>
         <target state="translated">ツール '{0}' (バージョン '{1}') は復元されました。使用できるコマンド: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="translated">再試行済み</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2702,15 +2638,35 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">.NET Run コマンド</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="new">Available devices:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="new">Available target frameworks:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">ビルドしています...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">このプロジェクトで実行コマンドを検出するための {0} ターゲットの実行に失敗しました。エラーと警告を修正して、もう一度実行してください。</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="new">Example</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2727,7 +2683,7 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">起動設定ファイルが見つからないため、起動プロファイル '{0}' を使用できません。試行された場所: 
+        <target state="translated">起動設定ファイルが見つからないため、起動プロファイル '{0}' を使用できません。試行された場所:
 {1}</target>
         <note />
       </trans-unit>
@@ -2752,6 +2708,11 @@ The current OutputType is '{2}'.</source>
 現在の {1} は '{2}' です。</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</source>
@@ -2759,10 +2720,40 @@ Your project targets multiple frameworks. Specify which framework to run using '
 プロジェクトは複数のフレームワークを対象としています。'{0}' を使用して、実行するフレームワークを指定してください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="new">Move up and down to reveal more devices</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="new">No devices are available for this project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">警告 NETSDK1174: --project の省略形である -p は推奨されていません。--project を使用してください。</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="new">Select a device to run on:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="new">Select the target framework to run:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -2951,6 +2942,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">最適化されたアセンブリのプロファイルに使用できるシンボル ファイルの作成をスキップします。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="translated">スキップ済み:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">スキップされました</target>
@@ -3046,11 +3042,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">標準出力</target>
         <note />
       </trans-unit>
-      <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property'.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">状態</target>
@@ -3086,6 +3077,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">パッケージを格納するターゲット ランタイム。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="translated">成功:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">概要</target>
@@ -3099,11 +3095,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">このコマンドに NuGet パッケージをダウンロードして抽出するための一時ディレクトリを指定します (セキュリティで保護する必要があります)。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestAppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">.NET Test Driver</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3557,6 +3548,11 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">ツール '{0}' がバージョン '{1}' からバージョン '{2}' に正常に更新されました。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="translated">合計:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Try">
         <source>try {0}</source>
         <target state="translated">{0} を試す</target>
@@ -3564,22 +3560,22 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="UnexpectedHelpMessage">
         <source>An unexpected help-related message was received when `--help` wasn't used.</source>
-        <target state="new">An unexpected help-related message was received when `--help` wasn't used.</target>
+        <target state="translated">'--help' が使用されていないときに、予期しないヘルプ関連のメッセージを受信しました。</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedMessageInHelpMode">
         <source>A message of type '{0}' was received in help mode, which is not expected.</source>
-        <target state="new">A message of type '{0}' was received in help mode, which is not expected.</target>
+        <target state="translated">種類 '{0}' のメッセージをヘルプ モードで受信しましたが、これは想定されていません。</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedMessageWithoutHandshake">
         <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
-        <target state="new">A message of type '{0}' was received before we got any handshakes, which is unexpected.</target>
+        <target state="translated">ハンドシェイクを受信する前に、種類 '{0}' のメッセージを受信しましたが、これは想定されていません。</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
         <source>A test session end event was received without a corresponding test session start.</source>
-        <target state="new">A test session end event was received without a corresponding test session start.</target>
+        <target state="translated">対応するテスト セッションの開始がないまま、テスト セッション終了イベントを受信しました。</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
@@ -3596,11 +3592,6 @@ and the corresponding package Ids for installed tools using the command
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">ログに記録されていない変更がある行は、.NET CLI ワークロード コマンド以外のアクションからの変更を表します。通常、これは .NET SDK または Visual Studio の更新を表します。</target>
         <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}'.</source>
-        <target state="new">Unrecognized directive '{0}'.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
@@ -3677,11 +3668,6 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">{0} を使用するようにワークロード インストール モードが正常に更新されました。</target>
         <note />
       </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">使用可能な起動プロファイルが見つかりませんでした。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Usage">
         <source>Usage</source>
         <target state="translated">使用法</target>
@@ -3725,6 +3711,16 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">プロパティ ' {0} ' は、指定されている場合はオブジェクトである必要があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">

@@ -92,7 +92,22 @@
         <target state="translated">.NET Builder</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>
         <note />
@@ -184,11 +199,6 @@ Prohledané cesty: „{1}“, „{2}“.</target>
         <target state="translated">Možnosti {0} a {1} nelze použít společně.  Jednu z možností odeberte.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="new">Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
-        <note>{Locked="--force"}</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">V souboru manifestu se nepovedlo najít nástroj, který obsahuje příkaz s názvem {0}.</target>
@@ -232,11 +242,6 @@ Prohledané cesty: „{1}“, „{2}“.</target>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">Příkaz rozhraní .NET pro vyčištění</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -458,16 +463,6 @@ Pokud není zadaný, soubor se vygeneruje ve výchozím adresáři TestResults.<
         <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdDirectoryDescription">
-        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definuje cestu k adresáři pro spuštění. Pokud se nezadá, použije se výchozí nastavení aktuálního adresáře.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDirectoryPathName">
-        <source>DIRECTORY_PATH</source>
-        <target state="translated">DIRECTORY_PATH</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
         <source>Prevent restoring multiple projects in parallel.</source>
         <target state="translated">Zabrání souběžnému obnovení několika projektů.</target>
@@ -585,7 +580,7 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
+        <target state="translated">Určuje minimální počet testů, jejichž spuštění se očekává.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -743,14 +738,19 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
         <target state="translated">Při hledání novějších balíčků se budou brát v úvahu i balíčky v předběžných verzích. Vyžaduje přepínač --outdated.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definuje cestu k souboru projektu, který se má spustit (název složky nebo úplná cesta). Pokud se nezadá, použije se výchozí nastavení aktuálního adresáře.</target>
+      <trans-unit id="CmdProjectDescriptionFormat">
+        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectPathName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+      <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
+        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectOrSolutionPathName">
+        <source>PROJECT_OR_SOLUTION_PATH</source>
+        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -796,8 +796,8 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definuje cestu k souboru řešení, který se má spustit. Pokud se nezadá, použije se výchozí nastavení aktuálního adresáře.</target>
+        <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -883,11 +883,11 @@ The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="new">global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
-The following test projects are using VSTest test runner:
+        <target state="translated">Soubor global.json definuje, že spouštěč testů bude Microsoft.Testing.Platform. Tento spouštěč testů musí používat všechny projekty.
+Následující testovací projekty používají spouštěč testů VSTest:
 {0}
 
-See https://aka.ms/dotnet-test/mtp for more information.</target>
+Další informace najdete na https://aka.ms/dotnet-test/mtp.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
 {0} is one or more project names.</note>
       </trans-unit>
@@ -986,11 +986,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Nepokoušejte se ke konfiguraci aplikace použít launchSettings.json nebo [app].run.json.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">Cesta ke spouštěnému souboru projektu (výchozí je aktuální adresář, pokud existuje jenom jeden projekt)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
@@ -1071,11 +1066,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Datum</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(výchozí)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">Probíhá odinstalace manifestu úlohy {0} verze {1}...</target>
@@ -1106,11 +1096,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Popis</target>
         <note />
       </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">Při čtení {0} došlo k chybě: {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
-      </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
         <target state="translated">Zobrazit podrobné výsledky dotazu</target>
@@ -1125,11 +1110,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <source>Enables diagnostic output.</source>
         <target state="translated">Povolí diagnostický výstup.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DirectiveError">
-        <source>error</source>
-        <target state="new">error</target>
-        <note>Used when reporting directive errors like "file(location): error: message".</note>
       </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
@@ -1162,39 +1142,39 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Zjišťování testů z</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestCommand">
-        <source>.NET Test Command</source>
-        <target state="translated">Testovací příkaz .NET</target>
-        <note />
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Testovací příkaz .NET pro Microsoft.Testing.Platform (vyjádřen výslovný souhlas prostřednictvím souboru global.json). Podporuje jenom Microsoft.Testing.Platform a nepodporuje VSTest. Další informace najdete na https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Testovací příkaz .NET pro VSTest. Pokud chcete použít Microsoft.Testing.Platform, prostřednictvím souboru global.json vyjádřete výslovný souhlas s příkazem založeným na Microsoft.Testing.Platform. Další informace najdete na https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
-        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <target state="translated">Podporované verze protokolů odesílané Microsoft.Testing.Platform jsou {0}. Sada SDK podporuje {1}, což není kompatibilní.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestMismatchingExecutionId">
         <source>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</source>
-        <target state="new">Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</target>
+        <target state="translated">Byla přijata hodnota ExecutionId {0} pro zprávu {1}, zatímco ExecutionId přijaté zprávy metodou handshake bylo {2}.</target>
         <note>{Locked="ExecutionId"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureHasHandshake">
         <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
-        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <target state="translated">Chyba při rušení serveru NamedPipeServer odpovídajícího zprávě metodou handshake:</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
         <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
-        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DotnetTestPipeIncompleteSize">
-        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <target state="translated">Při rušení serveru NamedPipeServer došlo k chybě a nebyla nalezena žádná zpráva metodou handshake.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
         <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <target state="translated">Příkaz dotnet neočekávaně obdržel překrývající se zprávy z pojmenovaného kanálu dotnet test.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -1217,25 +1197,21 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Soubory ke stažení</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">Existuje několik spouštěcích profilů s názvy rozlišujícími malá a velká písmena, což není povoleno:
-{0}
-Nastavte odlišné názvy profilů.</target>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="translated">doba trvání:</target>
         <note />
       </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0}</source>
-        <target state="new">Duplicate directives are not supported: {0}</target>
-        <note>{0} is the directive type and name.</note>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="translated">chyba:</target>
+        <note />
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
 {2}</source>
-        <target state="new">The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+        <target state="translated">Při spuštění testovacího modulu s příkazem RunCommand {0} a argumenty RunArguments {1} došlo k následující výjimce:
 
 {2}</target>
         <note>{Locked="RunCommand"}{Locked="RunArguments"}
@@ -1279,6 +1255,11 @@ Nastavte odlišné názvy profilů.</target>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Nepovedlo se aktualizovat manifest reklamy {0}: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="translated">neúspěšné:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -1568,13 +1549,8 @@ Nastavte odlišné názvy profilů.</target>
       </trans-unit>
       <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
         <source>Method '{0}' did not exit successfully</source>
-        <target state="new">Method '{0}' did not exit successfully</target>
+        <target state="translated">Metoda {0} nebyla úspěšně ukončena.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="new">The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
@@ -1590,11 +1566,6 @@ Nastavte odlišné názvy profilů.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Nelze zadat parametr {0}, pokud se k načtení souboru ze standardního vstupního zařízení používá také parametr -.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive is invalid: {0}</source>
-        <target state="new">The '#:project' directive is invalid: {0}</target>
-        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1615,26 +1586,6 @@ Nastavte odlišné názvy profilů.</target>
         <source>Latest Version</source>
         <target state="translated">Nejnovější verze</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">Profil spuštění s názvem {0} neexistuje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">Typ profilu spuštění {0} se nepodporuje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">Profil se zadaným názvem není platný objekt JSON.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">Vlastnost profiles v dokumentu nastavení spuštění není objektem JSON.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -1730,17 +1681,12 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="MismatchingHandshakeInfo">
         <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
-        <target state="new">A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</target>
+        <target state="translated">Byla přijata nová zpráva metodou handshake {0} pro testovací aplikaci, který neodpovídá předchozí zprávě metodou handshake {1}.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}'.</source>
-        <target state="new">Missing name of '{0}'.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
-        <target state="new">A test session start event was received without a corresponding test session end.</target>
+        <target state="translated">Byla přijata počáteční událost testovací relace bez odpovídajícího konce testovací relace.</target>
         <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
@@ -1955,11 +1901,6 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       <trans-unit id="PackAppFullName">
         <source>.NET Core NuGet Package Packer</source>
         <target state="translated">Nástroj .NET Core pro balení balíčku NuGet</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdOutputDir">
@@ -2446,8 +2387,8 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">Zadejte výstupní adresář ({0}):</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="needs-review-translation">Zadejte výstupní adresář ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2500,24 +2441,9 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Projekty</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name: {0}</source>
-        <target state="new">Invalid property name: {0}</target>
-        <note>{0} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Vydavatel pro platformu .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2662,6 +2588,11 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
         <target state="translated">Obnovení selhalo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">Obnovení bylo částečně neúspěšné.</target>
@@ -2670,6 +2601,11 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
       <trans-unit id="RestoreSuccessful">
         <source>Tool '{0}' (version '{1}') was restored. Available commands: {2}</source>
         <target state="translated">Nástroj {0} (verze {1}) se obnovil. Dostupné příkazy: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="translated">zkoušeno opakovaně</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2702,15 +2638,35 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
         <target state="translated">Příkaz rozhraní .NET pro spuštění</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="new">Available devices:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="new">Available target frameworks:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">Sestavování...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">Spuštění cíle {0} ke zjištění příkazů spuštění pro tento projekt se nezdařilo. Opravte chyby a upozornění a spusťte je znovu.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="new">Example</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2752,6 +2708,11 @@ Cílem spustitelného projektu by mělo být TFM (například net5.0) a jeho Out
 Aktuální {1} je {2}.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</source>
@@ -2759,10 +2720,40 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Cílem projektu je více architektur. Pomocí parametru {0} určete, která architektura se má spustit.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="new">Move up and down to reveal more devices</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="new">No devices are available for this project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Upozornění NETSDK1174: Zkratka -p pro --project je zastaralá. Použijte prosím --project.</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="new">Select a device to run on:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="new">Select the target framework to run:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -2951,6 +2942,11 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">Vynechá vytvoření souborů symbolů, které lze použít k profilaci optimalizovaných sestavení.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="translated">přeskočeno:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">vynecháno</target>
@@ -3046,11 +3042,6 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">Standardní výstup</target>
         <note />
       </trans-unit>
-      <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property'.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">Stav</target>
@@ -3086,6 +3077,11 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">Cílový modul runtime pro uložení balíčků</target>
         <note />
       </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="translated">úspěšné:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">Souhrn</target>
@@ -3099,11 +3095,6 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">Zadejte dočasný adresář pro tento příkaz, který se má stáhnout a extrahujte balíčky NuGet (musí být zabezpečené).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestAppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">Testovací ovladač .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3557,6 +3548,11 @@ příkazu „dotnet tool list“.</target>
         <target state="translated">Nástroj {0} byl úspěšně aktualizován z verze {1} na verzi {2}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="translated">celkem:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Try">
         <source>try {0}</source>
         <target state="translated">{0} pokus</target>
@@ -3564,22 +3560,22 @@ příkazu „dotnet tool list“.</target>
       </trans-unit>
       <trans-unit id="UnexpectedHelpMessage">
         <source>An unexpected help-related message was received when `--help` wasn't used.</source>
-        <target state="new">An unexpected help-related message was received when `--help` wasn't used.</target>
+        <target state="translated">Byla obdržena neočekávaná zpráva týkající se nápovědy, když nebyl použit parametr --help.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedMessageInHelpMode">
         <source>A message of type '{0}' was received in help mode, which is not expected.</source>
-        <target state="new">A message of type '{0}' was received in help mode, which is not expected.</target>
+        <target state="translated">V režimu nápovědy byla přijata zpráva typu {0}, což není očekáváno.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedMessageWithoutHandshake">
         <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
-        <target state="new">A message of type '{0}' was received before we got any handshakes, which is unexpected.</target>
+        <target state="translated">Zpráva typu {0} byla přijata předtím, než jsme obdrželi jakékoli zprávy metodou handshake, což je neočekávané.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
         <source>A test session end event was received without a corresponding test session start.</source>
-        <target state="new">A test session end event was received without a corresponding test session start.</target>
+        <target state="translated">Byla přijata koncová událost testovací relace bez odpovídajícího začátku testovací relace.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
@@ -3596,11 +3592,6 @@ příkazu „dotnet tool list“.</target>
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">Řádky s nezaprotokolovanými změnami představují změny z jiných akcí než příkazů úloh rozhraní příkazového řádku .NET. Obvykle to představuje aktualizaci sady .NET SDK nebo sady Visual Studio.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}'.</source>
-        <target state="new">Unrecognized directive '{0}'.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
@@ -3677,11 +3668,6 @@ příkazu „dotnet tool list“.</target>
         <target state="translated">Režim instalace úlohy se úspěšně aktualizoval na {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Nenašel se použitelný profil spuštění.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Usage">
         <source>Usage</source>
         <target state="translated">Použití</target>
@@ -3725,6 +3711,16 @@ příkazu „dotnet tool list“.</target>
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">Vlastnost {0} musí být objektem, pokud je zadána.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">

@@ -6,8 +6,10 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
@@ -16,6 +18,8 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
@@ -29,6 +33,10 @@ public class Program
     public static ITelemetry TelemetryClient;
     public static int Main(string[] args)
     {
+        // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
+        // See https://github.com/dotnet/docs/issues/46226.
+        using var termSignalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ => Environment.Exit(0));
+
         using AutomaticEncodingRestorer _ = new();
 
         // Setting output encoding is not available on those platforms
@@ -235,10 +243,7 @@ public class Program
         if (TelemetryClient.Enabled)
         {
             // Get the global.json state to report in telemetry along with this command invocation.
-            // We don't care about the actual SDK resolution, just the global.json information,
-            // so just pass empty string as executable directory for resolution.
-            NativeWrapper.SdkResolutionResult result = NativeWrapper.NETCoreSdkResolverNativeWrapper.ResolveSdk(string.Empty, Environment.CurrentDirectory);
-            globalJsonState = result.GlobalJsonState;
+            globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
         }
 
         TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, performanceData, globalJsonState));
@@ -303,19 +308,19 @@ public class Program
         {
             // If we didn't match any built-in commands, and a C# file path is the first argument,
             // parse as `dotnet run --file file.cs ..rest_of_args` instead.
-            if (parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
-                && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile))
+            if (parseResult.GetResult(Parser.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
+                && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
             {
                 List<string> otherTokens = new(parseResult.Tokens.Count - 1);
                 foreach (var token in parseResult.Tokens)
                 {
-                    if (token.Type != TokenType.Argument || token.Value != unmatchedCommandOrFile)
+                    if (token != unmatchedCommandOrFile)
                     {
                         otherTokens.Add(token.Value);
                     }
                 }
 
-                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile, .. otherTokens]);
+                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
 
                 InvokeBuiltInCommand(parseResult, out var exitCode);
                 return exitCode;

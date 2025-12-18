@@ -92,7 +92,22 @@
         <target state="translated">Generatore .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
         <note />
@@ -184,11 +199,6 @@ Percorsi cercati: '{1}', '{2}'.</target>
         <target state="translated">Impossibile utilizzare contemporaneamente le opzioni {0} e {1}.  Rimuove una delle opzioni.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="new">Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
-        <note>{Locked="--force"}</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">Non è possibile trovare uno strumento nel file manifesto che include un comando denominato '{0}'.</target>
@@ -232,11 +242,6 @@ Percorsi cercati: '{1}', '{2}'.</target>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">Comando di pulizia .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -458,16 +463,6 @@ Se non specificato, il file verrà generato all'interno della directory 'TestRes
         <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdDirectoryDescription">
-        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definisce il percorso della directory da eseguire. Se non specificato, per impostazione predefinita viene usata la directory corrente.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDirectoryPathName">
-        <source>DIRECTORY_PATH</source>
-        <target state="translated">DIRECTORY_PATH</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
         <source>Prevent restoring multiple projects in parallel.</source>
         <target state="translated">Impedisce il ripristino di più progetti in parallelo.</target>
@@ -585,7 +580,7 @@ Equivale a eliminare project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
+        <target state="translated">Specifica il numero minimo dei test che si prevede saranno eseguiti.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -743,14 +738,19 @@ Equivale a eliminare project.assets.json.</target>
         <target state="translated">Prende in considerazione i pacchetti con versioni preliminari quando si cercano i pacchetti più recenti. Richiede l'opzione '--outdated'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definisce il percorso del file progetto da eseguire (nome cartella o percorso completo). Se non specificato, per impostazione predefinita viene usata la directory corrente.</target>
+      <trans-unit id="CmdProjectDescriptionFormat">
+        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectPathName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+      <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
+        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectOrSolutionPathName">
+        <source>PROJECT_OR_SOLUTION_PATH</source>
+        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -796,8 +796,8 @@ Se non esiste, la directory specificata verrà creata.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definisce il percorso del file soluzione da eseguire. Se non specificato, per impostazione predefinita viene usata la directory corrente.</target>
+        <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -883,11 +883,11 @@ The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="new">global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
-The following test projects are using VSTest test runner:
+        <target state="translated">global.json definisce il Test runner come Microsoft.Testing.Platform. Tutti i progetti devono usare tale Test Runner.
+I progetti di test seguenti usano il Test Runner VSTest:
 {0}
 
-See https://aka.ms/dotnet-test/mtp for more information.</target>
+Per altre informazioni, vedere https://aka.ms/dotnet-test/mtp.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
 {0} is one or more project names.</note>
       </trans-unit>
@@ -986,11 +986,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Evitare di usare launchSettings.json o [app].run.json per configurare l'applicazione.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">Percorso del file di progetto da eseguire. Se è presente un solo progetto, per impostazione predefinita viene usata la directory corrente.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
@@ -1071,11 +1066,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Data</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(Predefinita)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">Disinstallazione del manifesto del carico di lavoro {0} versione {1} in corso...</target>
@@ -1106,11 +1096,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Descrizione</target>
         <note />
       </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">Si è verificato un errore durante la lettura di "{0}": {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
-      </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
         <target state="translated">Mostra il risultato in dettaglio della query.</target>
@@ -1125,11 +1110,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <source>Enables diagnostic output.</source>
         <target state="translated">Abilita l'output di diagnostica.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DirectiveError">
-        <source>error</source>
-        <target state="new">error</target>
-        <note>Used when reporting directive errors like "file(location): error: message".</note>
       </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
@@ -1162,39 +1142,39 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Individuazione di test da</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestCommand">
-        <source>.NET Test Command</source>
-        <target state="translated">Comando di test .NET</target>
-        <note />
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Comando di test .NET per Microsoft.Testing.Platform (attivato tramite il file 'global.json'). Supporta solo Microsoft.Testing.Platform e non VSTest. Per altre informazioni, vedere https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Comando di test .NET per VSTest. Per usare Microsoft.Testing.Platform, attivare il comando basato su Microsoft.Testing.Platform tramite global.json. Per altre informazioni, vedere https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
-        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <target state="translated">Le versioni di protocollo supportate inviate da Microsoft.Testing.Platform sono '{0}'. L'SDK supporta '{1}', che non è compatibile.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestMismatchingExecutionId">
         <source>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</source>
-        <target state="new">Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</target>
+        <target state="translated">È stato ricevuto l''ExecutionId' del valore '{0}' per il messaggio '{1}' mentre l''ExecutionId' ricevuto nel messaggio di handshake era '{2}'.</target>
         <note>{Locked="ExecutionId"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureHasHandshake">
         <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
-        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <target state="translated">Errore durante l'eliminazione del 'NamePipeServer' corrispondente all'handshake:</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
         <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
-        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DotnetTestPipeIncompleteSize">
-        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <target state="translated">Errore durante l'eliminazione di 'NamedPipeServer' e non è stato trovato alcun handshake.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
         <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <target state="translated">'dotnet' ha ricevuto inaspettatamente messaggi sovrapposti dal named pipe 'dotnet test'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -1217,25 +1197,21 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Download</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">Esistono diversi profili di avvio con nomi con distinzione tra maiuscole e minuscole, che non sono consentiti:
-{0}
-Rendi distinti i nomi profilo.</target>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="translated">durata:</target>
         <note />
       </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0}</source>
-        <target state="new">Duplicate directives are not supported: {0}</target>
-        <note>{0} is the directive type and name.</note>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="translated">errore:</target>
+        <note />
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
 {2}</source>
-        <target state="new">The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+        <target state="translated">Si è verificata l'eccezione seguente durante l'esecuzione del modulo di test con RunCommand '{0}' e RunArguments '{1}':
 
 {2}</target>
         <note>{Locked="RunCommand"}{Locked="RunArguments"}
@@ -1279,6 +1255,11 @@ Rendi distinti i nomi profilo.</target>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Non è stato possibile scaricare il manifesto di pubblicità {0}: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="translated">non riuscito:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -1568,13 +1549,8 @@ Rendi distinti i nomi profilo.</target>
       </trans-unit>
       <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
         <source>Method '{0}' did not exit successfully</source>
-        <target state="new">Method '{0}' did not exit successfully</target>
+        <target state="translated">Il metodo '{0}' non è stato chiuso correttamente</target>
         <note />
-      </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="new">The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
@@ -1590,11 +1566,6 @@ Rendi distinti i nomi profilo.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Non è possibile specificare l'opzione '{0}' quando si utilizza anche '-' per leggere il file dall'input standard.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive is invalid: {0}</source>
-        <target state="new">The '#:project' directive is invalid: {0}</target>
-        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1615,26 +1586,6 @@ Rendi distinti i nomi profilo.</target>
         <source>Latest Version</source>
         <target state="translated">Ultima versione</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">Non esiste un profilo di avvio con il nome '{0}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">Il tipo '{0}' del profilo di avvio non è supportato.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">Un profilo con il nome specificato non è un oggetto JSON valido.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">La proprietà 'profiles' del documento delle impostazioni di avvio non è un oggetto JSON.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -1730,17 +1681,12 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       </trans-unit>
       <trans-unit id="MismatchingHandshakeInfo">
         <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
-        <target state="new">A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</target>
+        <target state="translated">È stato ricevuto un nuovo handshake '{0}' per l'applicazione di test che non corrisponde all'handshake precedente '{1}'.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}'.</source>
-        <target state="new">Missing name of '{0}'.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
-        <target state="new">A test session start event was received without a corresponding test session end.</target>
+        <target state="translated">È stato ricevuto un evento di inizio sessione di test senza un evento di fine sessione corrispondente.</target>
         <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
@@ -1955,11 +1901,6 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       <trans-unit id="PackAppFullName">
         <source>.NET Core NuGet Package Packer</source>
         <target state="translated">Strumento di creazione pacchetti NuGet di .NET Core</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdOutputDir">
@@ -2446,8 +2387,8 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">Specifica la directory di output ({0}):</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="needs-review-translation">Specifica la directory di output ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2500,24 +2441,9 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <target state="translated">Progetto/i</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name: {0}</source>
-        <target state="new">Invalid property name: {0}</target>
-        <note>{0} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Editore per la piattaforma .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2662,6 +2588,11 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
         <target state="translated">Il ripristino non è riuscito.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">Il ripristino non è riuscito parzialmente.</target>
@@ -2670,6 +2601,11 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
       <trans-unit id="RestoreSuccessful">
         <source>Tool '{0}' (version '{1}') was restored. Available commands: {2}</source>
         <target state="translated">Lo strumento '{0}' (versione '{1}') è stato ripristinato. Comandi disponibili: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="translated">ripetuto</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2702,15 +2638,35 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
         <target state="translated">Comando esecuzione .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="new">Available devices:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="new">Available target frameworks:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">Compilazione...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">L'esecuzione della destinazione {0} per individuare i comandi di esecuzione non è riuscita per questo progetto. Correggere gli errori e gli avvisi ed eseguire di nuovo.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="new">Example</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2727,7 +2683,7 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">Non è possibile usare il profilo di avvio "{0}" perché il file delle impostazioni di avvio non è stato trovato. Posizioni tentate: 
+        <target state="translated">Non è possibile usare il profilo di avvio "{0}" perché il file delle impostazioni di avvio non è stato trovato. Posizioni tentate:
 {1}</target>
         <note />
       </trans-unit>
@@ -2752,6 +2708,11 @@ Un progetto eseguibile deve essere destinato a un TFM eseguibile, ad esempio net
 Il valore corrente di {1} è '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</source>
@@ -2759,10 +2720,40 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Il progetto è destinato a più framework. Specificare il framework da eseguire con '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="new">Move up and down to reveal more devices</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="new">No devices are available for this project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Avviso NETSDK1174: l'abbreviazione di -p per --project è deprecata. Usare --project.</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="new">Select a device to run on:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="new">Select the target framework to run:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -2951,6 +2942,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">Non crea i file di simboli che è possibile usare per la profilatura degli assembly ottimizzati.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="translated">ignorato:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">ignorato</target>
@@ -3046,11 +3042,6 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">Output standard</target>
         <note />
       </trans-unit>
-      <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property'.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">Stato</target>
@@ -3086,6 +3077,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">Runtime di destinazione per cui archiviare i pacchetti.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="translated">operazione completata:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">Riepilogo</target>
@@ -3099,11 +3095,6 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">Specificare una directory temporanea per questo comando per scaricare ed estrarre i pacchetti NuGet (deve essere protetta).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestAppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">Driver di test .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3557,6 +3548,11 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
         <target state="translated">Lo strumento '{0}' è stato aggiornato dalla versione '{1}' alla versione '{2}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="translated">totale:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Try">
         <source>try {0}</source>
         <target state="translated">prova {0}</target>
@@ -3564,22 +3560,22 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
       </trans-unit>
       <trans-unit id="UnexpectedHelpMessage">
         <source>An unexpected help-related message was received when `--help` wasn't used.</source>
-        <target state="new">An unexpected help-related message was received when `--help` wasn't used.</target>
+        <target state="translated">È stato ricevuto un messaggio imprevisto relativo alla Guida quando non è stato usato '--help'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedMessageInHelpMode">
         <source>A message of type '{0}' was received in help mode, which is not expected.</source>
-        <target state="new">A message of type '{0}' was received in help mode, which is not expected.</target>
+        <target state="translated">È stato ricevuto un messaggio di tipo '{0}' in modalità Guida, cosa non prevista.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedMessageWithoutHandshake">
         <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
-        <target state="new">A message of type '{0}' was received before we got any handshakes, which is unexpected.</target>
+        <target state="translated">È stato ricevuto un messaggio di tipo '{0}' prima di ricevere handshake, cosa imprevista.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
         <source>A test session end event was received without a corresponding test session start.</source>
-        <target state="new">A test session end event was received without a corresponding test session start.</target>
+        <target state="translated">È stato ricevuto un evento di fine sessione di test senza un evento di inizio sessione corrispondente.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
@@ -3596,11 +3592,6 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">Le righe con modifiche non registrate rappresentano modifiche da azioni diverse dai comandi del carico di lavoro dell'interfaccia della riga di comando .NET. In genere si tratta di un aggiornamento di .NET SDK o di Visual Studio.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}'.</source>
-        <target state="new">Unrecognized directive '{0}'.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
@@ -3677,11 +3668,6 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
         <target state="translated">La modalità di installazione del carico di lavoro è stata aggiornata per l'uso di {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Non è stato trovato alcun profilo di avvio utilizzabile.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Usage">
         <source>Usage</source>
         <target state="translated">Sintassi</target>
@@ -3725,6 +3711,16 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">Se è specificata, la proprietà '{0}' deve essere un oggetto.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">

@@ -102,7 +102,6 @@ Examples:
 </source>
         <target state="needs-review-translation">Bir ortam değişkeninin değerini ayarlar. 
 Değişken yoksa oluşturur, varsa değişkeni geçersiz kılar. 
-Bu, testleri yalıtılmış bir işlemde çalıştırılmaya zorlar. 
 Bu bağımsız değişken, birden çok değişken sağlamak için birden çok kez belirtilebilir.
 
 Örnek:
@@ -186,16 +185,6 @@ Examples:
       <trans-unit id="ConfigurationArgumentName">
         <source>CONFIGURATION</source>
         <target state="translated">CONFIGURATION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotFindAnyProjectInDirectory">
-        <source>Could not find any project in `{0}`.</source>
-        <target state="translated">`{0}` içinde proje bulunamadı.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotFindProjectOrDirectory">
-        <source>Could not find project or directory `{0}`.</source>
-        <target state="translated">`{0}` projesi veya dizini bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotFindSolutionIn">
@@ -371,6 +360,11 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="Error">
         <source>Error</source>
         <target state="translated">Hata</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_NU1302_HttpSourceUsed">
+        <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
+        <target state="translated">'tool install' işlemini {0} 'HTTP' kaynağıyla çalıştırıyorsunuz. NuGet için HTTPS kaynakları gereklidir. Bir HTTP kaynağı kullanmak için NuGet.Config dosyanızda 'allowInsecureConnections' ayarını açıkça true olarak ayarlamanız gerekir. Daha fazla bilgi için şuraya bakın: https://aka.ms/nuget-https-everywhere.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectDepsJsonAt">
@@ -677,11 +671,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="MoreThanOnePackagedShimAvailable">
         <source>More than one packaged shim is available: {0}.</source>
         <target state="translated">Birden fazla paketlenmiş dolgu var: {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MoreThanOneProjectInDirectory">
-        <source>Found more than one project in `{0}`. Specify which one to use.</source>
-        <target state="translated">`{0}` içinde birden fazla proje bulundu. Hangisinin kullanılacağını belirtin.</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOneSolutionInDirectory">
@@ -1092,6 +1081,16 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">{0} paketi bir .NET aracı değil.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersion">
+        <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
+        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

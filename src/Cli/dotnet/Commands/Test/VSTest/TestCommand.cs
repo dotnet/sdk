@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.CommandLine;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -40,19 +41,39 @@ public class TestCommand(
             VSTestTrace.SafeWriteTrace(() => $"Argument list: '{commandLineParameters}'");
         }
 
-        // settings parameters are after -- (including --), these should not be considered by the parser
-        string[] settings = [.. args.SkipWhile(a => a != "--")];
-        // all parameters before --
-        args = [.. args.TakeWhile(a => a != "--")];
+        (args, string[] settings) = SeparateSettingsFromArgs(args);
 
         // Fix for https://github.com/Microsoft/vstest/issues/1453
         // Run dll/exe directly using the VSTestForwardingApp
-        if (ContainsBuiltTestSources(args))
+        // Note: ContainsBuiltTestSources need to know how many settings are there, to skip those from unmatched tokens
+        // When we don't have settings, we pass 0.
+        // When we have settings, we want to exclude the '--' as it doesn't end up in unmatched tokens, so we pass settings.Length - 1
+        if (ContainsBuiltTestSources(parseResult, GetSettingsCount(settings)))
         {
             return ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId);
         }
 
         return ForwardToMsbuild(parseResult, settings, testSessionCorrelationId);
+    }
+
+    internal /*internal for testing*/ static (string[] Args, string[] Settings) SeparateSettingsFromArgs(string[] args)
+    {
+        // settings parameters are after -- (including --), these should not be considered by the parser
+        string[] settings = [.. args.SkipWhile(a => a != "--")];
+        // all parameters before --
+        args = [.. args.TakeWhile(a => a != "--")];
+        return (args, settings);
+    }
+
+    internal /*internal for testing*/ static int GetSettingsCount(string[] settings)
+    {
+        if (settings.Length == 0)
+        {
+            return 0;
+        }
+
+        Debug.Assert(settings[0] == "--", "Settings should start with --");
+        return settings.Length - 1;
     }
 
     private static int ForwardToMsbuild(ParseResult parseResult, string[] settings, string testSessionCorrelationId)
@@ -184,12 +205,7 @@ public class TestCommand(
 
         VSTestTrace.SafeWriteTrace(() => $"MSBuild args from forwarded options: {string.Join(", ", parsedArgs)}");
 
-        var msbuildArgs = new List<string>(additionalBuildProperties)
-        {
-            "-nologo",
-        };
-
-        msbuildArgs.AddRange(parsedArgs);
+        List<string> msbuildArgs = [.. additionalBuildProperties, .. parsedArgs];
 
         if (settings.Any())
         {
@@ -200,7 +216,7 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{runSettingsArg}\"");
         }
 
-        string? verbosityArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--verbosity")?.SingleOrDefault() ?? null;
+        string? verbosityArg = result.ForwardedOptionValues(TestCommandParser.GetCommand(), "--verbosity")?.SingleOrDefault() ?? null;
         if (verbosityArg != null)
         {
             string[] verbosity = verbosityArg.Split(':', 2);
@@ -217,14 +233,16 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestSessionCorrelationId={testSessionCorrelationId}");
         }
 
-        bool noRestore = result.GetValue(TestCommandParser.NoRestoreOption) || result.GetValue(TestCommandParser.NoBuildOption);
+        bool noRestore = result.GetValue(CommonOptions.NoRestoreOption) || result.GetValue(VSTestOptions.NoBuildOption);
 
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
             CommonOptions.PropertiesOption,
             CommonOptions.RestorePropertiesOption,
-            TestCommandParser.VsTestTargetOption,
-            TestCommandParser.VerbosityOption);
+            VSTestOptions.VsTestTargetOption,
+            TestCommandDefinition.VerbosityOption,
+            CommonOptions.NoLogoOption())
+            .CloneWithNoLogo(true);
 
         TestCommand testCommand = new(
             parsedMSBuildArgs,
@@ -240,7 +258,7 @@ public class TestCommand(
             }
         }
 
-        
+
         Dictionary<string, string> variables = VSTestForwardingApp.GetVSTestRootVariables();
         foreach (var (rootVariableName, rootValue) in variables) {
             testCommand.EnvironmentVariable(rootVariableName, rootValue);
@@ -270,9 +288,9 @@ public class TestCommand(
 
         var artifactsPostProcessArgs = new List<string> { "--artifactsProcessingMode-postprocess", $"--testSessionCorrelationId:{testSessionCorrelationId}" };
 
-        if (parseResult.GetResult(TestCommandParser.DiagOption) is not null)
+        if (parseResult.GetResult(VSTestOptions.DiagOption) is not null)
         {
-            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(TestCommandParser.DiagOption)}");
+            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(VSTestOptions.DiagOption)}");
         }
 
         try
@@ -296,10 +314,11 @@ public class TestCommand(
         }
     }
 
-    private static bool ContainsBuiltTestSources(string[] args)
+    internal /*internal for testing*/ static bool ContainsBuiltTestSources(ParseResult parseResult, int settingsLength)
     {
-        foreach (string arg in args)
+        for (int i = 0; i < parseResult.UnmatchedTokens.Count - settingsLength; i++)
         {
+            string arg = parseResult.UnmatchedTokens[i];
             if (!arg.StartsWith("-") &&
                 (arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)))
             {

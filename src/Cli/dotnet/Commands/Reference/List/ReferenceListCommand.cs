@@ -8,8 +8,8 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.List;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
@@ -22,9 +22,9 @@ internal class ReferenceListCommand : CommandBase
     {
         ShowHelpOrErrorIfAppropriate(parseResult);
 
-        _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
-            parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument) ??
+        _fileOrDirectory = parseResult.HasOption(ReferenceCommandDefinition.ProjectOption) ?
+            parseResult.GetValue(ReferenceCommandDefinition.ProjectOption) :
+            parseResult.GetValue(ListCommandDefinition.SlnOrProjectArgument) ??
             Directory.GetCurrentDirectory();
     }
 

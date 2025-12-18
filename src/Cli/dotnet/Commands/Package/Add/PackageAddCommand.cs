@@ -6,24 +6,26 @@ using System.Diagnostics;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 using NuGet.ProjectModel;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly PackageIdentityWithRange _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument)!;
+    private readonly PackageIdentityWithRange _packageId = parseResult.GetValue(PackageAddCommandDefinition.CmdPackageArgument)!;
 
     public override int Execute()
     {
-        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_parseResult);
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandDefinition.ProcessPathOptions(_parseResult);
 
-        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuildingCommand.IsValidEntryPointPath(fileOrDirectory))
+        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
         {
             return ExecuteForFileBasedApp(fileOrDirectory);
         }
@@ -33,7 +35,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         string projectFilePath;
         if (!File.Exists(fileOrDirectory))
         {
-            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory).FullName;
+            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory);
         }
         else
         {
@@ -42,7 +44,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
 
         var tempDgFilePath = string.Empty;
 
-        if (!_parseResult.GetValue(PackageAddCommandParser.NoRestoreOption))
+        if (!_parseResult.GetValue(PackageAddCommandDefinition.NoRestoreOption))
         {
 
             try
@@ -89,7 +91,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             $"-property:RestoreDotnetCliToolReferences=false",
 
             // Output should not include MSBuild version header
-            "-nologo",
+            "--nologo",
 
             // Set verbosity to quiet to avoid cluttering the output for this 'inner' build
             "-v:quiet"
@@ -132,7 +134,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             .OptionValuesToBeForwarded()
             .SelectMany(a => a.Split(' ', 2)));
 
-        if (_parseResult.GetValue(PackageAddCommandParser.NoRestoreOption))
+        if (_parseResult.GetValue(PackageAddCommandDefinition.NoRestoreOption))
         {
             args.Add("--no-restore");
         }
@@ -151,9 +153,9 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         // Check disallowed options.
         ReadOnlySpan<Option> disallowedOptions =
         [
-            PackageAddCommandParser.FrameworkOption,
-            PackageAddCommandParser.SourceOption,
-            PackageAddCommandParser.PackageDirOption,
+            PackageAddCommandDefinition.FrameworkOption,
+            PackageAddCommandDefinition.SourceOption,
+            PackageAddCommandDefinition.PackageDirOption,
         ];
         foreach (var option in disallowedOptions)
         {
@@ -163,10 +165,12 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             }
         }
 
-        bool hasVersion = _packageId.HasVersion;
-        bool prerelease = _parseResult.GetValue(PackageAddCommandParser.PrereleaseOption);
+        string? specifiedVersion = _packageId.HasVersion
+            ? _packageId.VersionRange?.OriginalString ?? string.Empty
+            : _parseResult.GetValue(PackageAddCommandDefinition.VersionOption);
+        bool prerelease = _parseResult.GetValue(PackageAddCommandDefinition.PrereleaseOption);
 
-        if (hasVersion && prerelease)
+        if (specifiedVersion != null && prerelease)
         {
             throw new GracefulException(CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime);
         }
@@ -174,7 +178,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         var fullPath = Path.GetFullPath(path);
 
         // Create restore command, used also for obtaining MSBuild properties.
-        bool interactive = _parseResult.GetValue(PackageAddCommandParser.InteractiveOption);
+        bool interactive = _parseResult.GetValue(PackageAddCommandDefinition.InteractiveOption);
         var command = new VirtualProjectBuildingCommand(
             entryPointFileFullPath: fullPath,
             msbuildArgs: MSBuildArgs.FromProperties(new Dictionary<string, string>(2)
@@ -188,21 +192,18 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             NoCache = true,
             NoBuild = true,
         };
+
         var projectCollection = new ProjectCollection();
         var projectInstance = command.CreateProjectInstance(projectCollection);
 
         // Set initial version to Directory.Packages.props and/or C# file
         // (we always need to add the package reference to the C# file but when CPM is enabled, it's added without a version).
-        string version = hasVersion
-            ? _packageId.VersionRange?.OriginalString ?? string.Empty
-            : (prerelease
-                ? "*-*"
-                : "*");
+        string version = specifiedVersion ?? (prerelease ? "*-*" : "*");
         bool skipUpdate = false;
         var central = SetCentralVersion(version);
         var local = SetLocalVersion(central != null ? null : version);
 
-        if (!_parseResult.GetValue(PackageAddCommandParser.NoRestoreOption))
+        if (!_parseResult.GetValue(PackageAddCommandDefinition.NoRestoreOption))
         {
             // Restore.
             int exitCode = command.Execute();
@@ -214,7 +215,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             }
 
             // If no version was specified by the user, save the actually restored version.
-            if (!hasVersion && !skipUpdate)
+            if (specifiedVersion == null && !skipUpdate)
             {
                 var projectAssetsFile = projectInstance.GetProperty("ProjectAssetsFile")?.EvaluatedValue;
                 if (!File.Exists(projectAssetsFile))
@@ -306,7 +307,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
 
                     // If user didn't specify a version and a version is already specified in Directory.Packages.props,
                     // don't update the Directory.Packages.props (that's how the project-based equivalent behaves as well).
-                    if (!hasVersion)
+                    if (specifiedVersion == null)
                     {
                         skipUpdate = true;
                         return (Revert: NoOp, Update: Unreachable, Save: Revert);

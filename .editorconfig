@@ -265,6 +265,8 @@ dotnet_diagnostic.CA5381.severity = warning
 dotnet_diagnostic.CA5384.severity = warning
 # Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size
 dotnet_diagnostic.CA5385.severity = warning
+# Parameter has no matching param tag in the XML comment
+dotnet_diagnostic.CS1573.severity = suggestion
 dotnet_diagnostic.CS1591.severity = suggestion
 # UseIsNullCheck
 dotnet_diagnostic.IDE0041.severity = warning
@@ -515,7 +517,7 @@ dotnet_diagnostic.IDE0040.severity = warning
 insert_final_newline = false
 
 # Verify settings
-[*.{received,verified}.{txt,xml,json}]
+[*.{received,verified}.{txt,xml,json,sh,zsh,nu,fish,ps1}]
 charset = "utf-8-bom"
 end_of_line = lf
 indent_size = unset

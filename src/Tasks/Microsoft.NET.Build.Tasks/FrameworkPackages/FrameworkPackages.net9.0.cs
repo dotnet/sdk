@@ -177,7 +177,6 @@ internal partial class FrameworkPackages
             { "Microsoft.JSInterop", "9.0.0" },
             { "Microsoft.Net.Http.Headers", "9.0.0" },
             { "System.Diagnostics.EventLog", "9.0.0" },
-            { "System.Security.Cryptography.Pkcs", "8.0.1" },
             { "System.Security.Cryptography.Xml", "9.0.0" },
             { "System.Threading.RateLimiting", "9.0.0" },
             // removed packages
@@ -186,13 +185,22 @@ internal partial class FrameworkPackages
 
         internal static FrameworkPackages WindowsDesktop { get; } = new(Net90, FrameworkNames.WindowsDesktopApp, NETCoreApp80.WindowsDesktop)
         {
-            { "System.Configuration.ConfigurationManager", "8.0.1" },
-            { "System.Diagnostics.EventLog", "8.0.1" },
-            { "System.Diagnostics.PerformanceCounter", "8.0.1" },
-            { "System.Drawing.Common", "8.0.10" },
-            { "System.IO.Packaging", "8.0.1" },
-            { "System.Security.Cryptography.Pkcs", "8.0.1" },
-            { "System.Security.Cryptography.Xml", "8.0.2" },
+            { "Microsoft.Win32.Registry.AccessControl", "9.0.0" },
+            { "Microsoft.Win32.SystemEvents", "9.0.0" },
+            { "System.CodeDom", "9.0.0" },
+            { "System.Configuration.ConfigurationManager", "9.0.0" },
+            { "System.Diagnostics.EventLog", "9.0.0" },
+            { "System.Diagnostics.PerformanceCounter", "9.0.0" },
+            { "System.DirectoryServices", "9.0.0" },
+            { "System.Drawing.Common", "9.0.0" },
+            { "System.IO.Packaging", "9.0.0" },
+            { "System.Resources.Extensions", "9.0.0" },
+            { "System.Security.Cryptography.Pkcs", "9.0.0" },
+            { "System.Security.Cryptography.ProtectedData", "9.0.0" },
+            { "System.Security.Cryptography.Xml", "9.0.0" },
+            { "System.Security.Permissions", "9.0.0" },
+            { "System.Threading.AccessControl", "9.0.0" },
+            { "System.Windows.Extensions", "9.0.0" },
         };
 
         internal static void Register() => FrameworkPackages.Register(Instance, AspNetCore, WindowsDesktop);
