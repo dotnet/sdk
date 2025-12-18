@@ -93,26 +93,49 @@ internal class SetInstallRootCommand : CommandBase
 
             Console.WriteLine($"Adding {userDotnetPath} to user PATH...");
 
-            var userPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
-            var pathEntries = userPath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-            // Check if the user dotnet path is already in the user PATH
-            bool alreadyExists = pathEntries.Any(entry =>
-                Path.TrimEndingDirectorySeparator(entry).Equals(
-                    Path.TrimEndingDirectorySeparator(userDotnetPath),
-                    StringComparison.OrdinalIgnoreCase));
-
-            if (!alreadyExists)
+            if (OperatingSystem.IsWindows())
             {
-                // Add to the beginning of PATH
-                pathEntries.Insert(0, userDotnetPath);
-                var newUserPath = string.Join(Path.PathSeparator, pathEntries);
-                Environment.SetEnvironmentVariable("PATH", newUserPath, EnvironmentVariableTarget.User);
-                Console.WriteLine($"Successfully added {userDotnetPath} to user PATH.");
+                // On Windows, read both expanded and unexpanded user PATH from registry
+                string unexpandedUserPath = WindowsPathHelper.ReadUserPath(expand: false);
+                string expandedUserPath = WindowsPathHelper.ReadUserPath(expand: true);
+
+                // Use the helper method to add the path while preserving unexpanded variables
+                string newUserPath = WindowsPathHelper.AddPathEntry(unexpandedUserPath, expandedUserPath, userDotnetPath);
+
+                if (newUserPath != unexpandedUserPath)
+                {
+                    WindowsPathHelper.WriteUserPath(newUserPath);
+                    Console.WriteLine($"Successfully added {userDotnetPath} to user PATH.");
+                }
+                else
+                {
+                    Console.WriteLine($"User dotnet path is already in user PATH.");
+                }
             }
             else
             {
-                Console.WriteLine($"User dotnet path is already in user PATH.");
+                // On non-Windows, use Environment API which expands variables
+                var userPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
+                var pathEntries = userPath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                // Check if the user dotnet path is already in the user PATH
+                bool alreadyExists = pathEntries.Any(entry =>
+                    Path.TrimEndingDirectorySeparator(entry).Equals(
+                        Path.TrimEndingDirectorySeparator(userDotnetPath),
+                        StringComparison.OrdinalIgnoreCase));
+
+                if (!alreadyExists)
+                {
+                    // Add to the beginning of PATH
+                    pathEntries.Insert(0, userDotnetPath);
+                    var newUserPath = string.Join(Path.PathSeparator, pathEntries);
+                    Environment.SetEnvironmentVariable("PATH", newUserPath, EnvironmentVariableTarget.User);
+                    Console.WriteLine($"Successfully added {userDotnetPath} to user PATH.");
+                }
+                else
+                {
+                    Console.WriteLine($"User dotnet path is already in user PATH.");
+                }
             }
 
             // Set DOTNET_ROOT for user
@@ -174,19 +197,17 @@ internal class SetInstallRootCommand : CommandBase
 
                 // Remove user dotnet path from user PATH
                 Console.WriteLine($"Removing {userDotnetPath} from user PATH...");
-                var userPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
-                var pathEntries = userPath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
 
-                // Remove entries that match the user dotnet path
-                int removedCount = pathEntries.RemoveAll(entry =>
-                    Path.TrimEndingDirectorySeparator(entry).Equals(
-                        Path.TrimEndingDirectorySeparator(userDotnetPath),
-                        StringComparison.OrdinalIgnoreCase));
+                // Read both expanded and unexpanded user PATH from registry to preserve environment variables
+                string unexpandedUserPath = WindowsPathHelper.ReadUserPath(expand: false);
+                string expandedUserPath = WindowsPathHelper.ReadUserPath(expand: true);
 
-                if (removedCount > 0)
+                // Use the helper method to remove the path while preserving unexpanded variables
+                string newUserPath = WindowsPathHelper.RemovePathEntry(unexpandedUserPath, expandedUserPath, userDotnetPath);
+
+                if (newUserPath != unexpandedUserPath)
                 {
-                    var newUserPath = string.Join(Path.PathSeparator, pathEntries);
-                    Environment.SetEnvironmentVariable("PATH", newUserPath, EnvironmentVariableTarget.User);
+                    WindowsPathHelper.WriteUserPath(newUserPath);
                     Console.WriteLine($"Successfully removed {userDotnetPath} from user PATH.");
                 }
                 else

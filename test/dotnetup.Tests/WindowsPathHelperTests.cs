@@ -59,10 +59,11 @@ public class WindowsPathHelperTests
         }
 
         // Arrange
-        string path = "C:\\SomeOtherPath;C:\\AnotherPath";
+        string unexpandedPath = "C:\\SomeOtherPath;C:\\AnotherPath";
+        string expandedPath = unexpandedPath; // No environment variables to expand in test
 
         // Act
-        string result = WindowsPathHelper.AddProgramFilesDotnetToPath(path);
+        string result = WindowsPathHelper.AddProgramFilesDotnetToPath(unexpandedPath, expandedPath);
 
         // Assert
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
@@ -84,10 +85,11 @@ public class WindowsPathHelperTests
         // Arrange
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         string dotnetPath = Path.Combine(programFiles, "dotnet");
-        string path = $"C:\\SomeOtherPath;{dotnetPath};C:\\AnotherPath";
+        string unexpandedPath = $"C:\\SomeOtherPath;{dotnetPath};C:\\AnotherPath";
+        string expandedPath = unexpandedPath; // No environment variables to expand in test
 
         // Act
-        string result = WindowsPathHelper.AddProgramFilesDotnetToPath(path);
+        string result = WindowsPathHelper.AddProgramFilesDotnetToPath(unexpandedPath, expandedPath);
 
         // Assert
         // Count occurrences of dotnetPath in result

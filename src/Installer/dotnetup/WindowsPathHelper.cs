@@ -109,6 +109,36 @@ internal sealed class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
+    /// Reads the user PATH environment variable from the registry.
+    /// </summary>
+    /// <param name="expand">If true, expands environment variables in the PATH value.</param>
+    public static string ReadUserPath(bool expand = false)
+    {
+        using var key = Registry.CurrentUser.OpenSubKey("Environment", writable: false);
+        if (key == null)
+        {
+            return string.Empty;
+        }
+
+        var pathValue = key.GetValue(PathVariableName, null, expand ? RegistryValueOptions.None : RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
+        return pathValue ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Writes the user PATH environment variable to the registry.
+    /// </summary>
+    public static void WriteUserPath(string path)
+    {
+        using var key = Registry.CurrentUser.OpenSubKey("Environment", writable: true);
+        if (key == null)
+        {
+            throw new InvalidOperationException("Unable to open registry key for user environment variables.");
+        }
+
+        key.SetValue(PathVariableName, path, RegistryValueKind.ExpandString);
+    }
+
+    /// <summary>
     /// Gets the default Program Files dotnet installation path(s).
     /// </summary>
     public static List<string> GetProgramFilesDotnetPaths()
@@ -230,29 +260,91 @@ internal sealed class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Adds the Program Files dotnet path to the given PATH string if it's not already present.
+    /// Adds the Program Files dotnet path to the given PATH strings if it's not already present.
+    /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve environment variables.
     /// </summary>
-    public static string AddProgramFilesDotnetToPath(string path)
+    /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
+    /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
+    /// <returns>The modified unexpanded PATH string.</returns>
+    public static string AddProgramFilesDotnetToPath(string unexpandedPath, string expandedPath)
     {
-        var pathEntries = SplitPath(path);
+        var expandedEntries = SplitPath(expandedPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
         // Get the primary Program Files dotnet path (non-x86)
         string primaryDotnetPath = programFilesDotnetPaths.FirstOrDefault() ?? string.Empty;
         if (string.IsNullOrEmpty(primaryDotnetPath))
         {
-            return path;
+            return unexpandedPath;
         }
 
-        // Check if any Program Files dotnet path is already in PATH
-        bool alreadyExists = PathContainsDotnet(pathEntries, programFilesDotnetPaths);
+        // Check if any Program Files dotnet path is already in the expanded PATH
+        bool alreadyExists = PathContainsDotnet(expandedEntries, programFilesDotnetPaths);
 
         if (!alreadyExists)
         {
-            pathEntries.Insert(0, primaryDotnetPath);
+            // Add to the beginning of the unexpanded PATH
+            var unexpandedEntries = SplitPath(unexpandedPath);
+            unexpandedEntries.Insert(0, primaryDotnetPath);
+            return string.Join(';', unexpandedEntries);
         }
 
-        return string.Join(';', pathEntries);
+        return unexpandedPath;
+    }
+
+    /// <summary>
+    /// Adds a path entry to the given PATH strings if it's not already present.
+    /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve environment variables.
+    /// </summary>
+    /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
+    /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
+    /// <param name="pathToAdd">The path to add.</param>
+    /// <returns>The modified unexpanded PATH string.</returns>
+    public static string AddPathEntry(string unexpandedPath, string expandedPath, string pathToAdd)
+    {
+        var expandedEntries = SplitPath(expandedPath);
+        
+        // Check if path is already in the expanded PATH
+        var normalizedPathToAdd = Path.TrimEndingDirectorySeparator(pathToAdd);
+        bool alreadyExists = expandedEntries.Any(entry =>
+            Path.TrimEndingDirectorySeparator(entry).Equals(normalizedPathToAdd, StringComparison.OrdinalIgnoreCase));
+
+        if (!alreadyExists)
+        {
+            // Add to the beginning of the unexpanded PATH
+            var unexpandedEntries = SplitPath(unexpandedPath);
+            unexpandedEntries.Insert(0, pathToAdd);
+            return string.Join(';', unexpandedEntries);
+        }
+
+        return unexpandedPath;
+    }
+
+    /// <summary>
+    /// Removes a specific path entry from the given PATH strings.
+    /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve environment variables.
+    /// </summary>
+    /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
+    /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
+    /// <param name="pathToRemove">The path to remove.</param>
+    /// <returns>The modified unexpanded PATH string.</returns>
+    public static string RemovePathEntry(string unexpandedPath, string expandedPath, string pathToRemove)
+    {
+        var expandedEntries = SplitPath(expandedPath);
+        
+        // Find indices to remove using the expanded path
+        var normalizedPathToRemove = Path.TrimEndingDirectorySeparator(pathToRemove);
+        var indicesToRemove = new List<int>();
+        for (int i = 0; i < expandedEntries.Count; i++)
+        {
+            if (Path.TrimEndingDirectorySeparator(expandedEntries[i]).Equals(normalizedPathToRemove, StringComparison.OrdinalIgnoreCase))
+            {
+                indicesToRemove.Add(i);
+            }
+        }
+
+        // Remove those indices from the unexpanded path
+        return RemovePathEntriesByIndices(unexpandedPath, indicesToRemove);
     }
 
     /// <summary>
@@ -339,8 +431,9 @@ internal sealed class WindowsPathHelper : IDisposable
         {
             LogMessage("Starting AddDotnetToAdminPath operation");
             
-            string oldPath = ReadAdminPath(expand: false);
-            LogMessage($"Old PATH (unexpanded): {oldPath}");
+            string unexpandedPath = ReadAdminPath(expand: false);
+            string expandedPath = ReadAdminPath(expand: true);
+            LogMessage($"Old PATH (unexpanded): {unexpandedPath}");
 
             if (AdminPathContainsProgramFilesDotnet())
             {
@@ -349,7 +442,7 @@ internal sealed class WindowsPathHelper : IDisposable
             }
 
             LogMessage("Adding dotnet path to admin PATH");
-            string newPath = AddProgramFilesDotnetToPath(oldPath);
+            string newPath = AddProgramFilesDotnetToPath(unexpandedPath, expandedPath);
             LogMessage($"New PATH (unexpanded): {newPath}");
 
             WriteAdminPath(newPath);
