@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
+using Microsoft.DotNet.Cli.Utils;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -20,9 +21,9 @@ namespace Microsoft.NET.ToolPack.Tests
 
         private string SetupNuGetPackage(bool multiTarget, string packageType = null, [CallerMemberName] string callingMethod = "")
         {
-
+            string id = $"{callingMethod}-{_targetFrameworkOrFrameworks}";
             TestAsset helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("PortableTool", callingMethod + multiTarget)
+                .CopyTestAsset("PortableTool", id)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -39,7 +40,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
             var packCommand = new PackCommand(helloWorldAsset);
 
-            var result = packCommand.Execute();
+            var result = packCommand.Execute($"/bl:{id}-{{}}.binlog");
             result.Should().Pass();
 
             return packCommand.GetNuGetPackage();
@@ -192,11 +193,9 @@ namespace Microsoft.NET.ToolPack.Tests
                 string[] args = multiTarget ? new[] { $"/p:TargetFramework={_targetFrameworkOrFrameworks}" } : Array.Empty<string>();
                 getValuesCommand.Execute(args)
                     .Should().Pass();
-                string runCommandPath = getValuesCommand.GetValues().Single();
-                Path.GetExtension(runCommandPath)
-                    .Should().Be(extension);
-                File.Exists(runCommandPath).Should()
-                    .BeTrue("run command should be apphost executable (for WinExe) to debug. But it will not be packed");
+                var runCommand = new FileInfo(getValuesCommand.GetValues().Single());
+                runCommand.Name
+                    .Should().Be("consoledemo" + Constants.ExeSuffix, because: "The RunCommand should recognize that this is an AppHost-using project and should use the AppHost for non-tool use cases.");
             }
         }
 
@@ -322,6 +321,43 @@ namespace Microsoft.NET.ToolPack.Tests
 
             var result = packCommand.Execute();
             result.Should().Fail().And.HaveStdOutContaining("NETSDK1146");
+
+        }
+
+        [Fact]
+        public void It_packs_with_RuntimeIdentifier()
+        {
+            var testProject = new TestProject("ToolWithRuntimeIdentifier")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
+            };
+            testProject.AdditionalProperties["PackAsTool"] = "true";
+            testProject.AdditionalProperties["ImplicitUsings"] = "enable";
+            testProject.AdditionalProperties["CreateRidSpecificToolPackages"] = "false";
+            testProject.AdditionalProperties["UseAppHost"] = "false";
+
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var packCommand = new PackCommand(testAsset);
+
+            packCommand.Execute().Should().Pass();
+
+            packCommand.GetPackageDirectory().Should().HaveFile($"{testProject.Name}.1.0.0.nupkg");
+            packCommand.GetPackageDirectory().Should().NotHaveFile($"{testProject.Name}.{testProject.RuntimeIdentifier}.1.0.0.nupkg");
+
+            var nupkgPath = packCommand.GetNuGetPackage();
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var toolSettingsItem = nupkgReader.GetToolItems().SelectMany(g => g.Items).SingleOrDefault(i => i.Equals($"tools/{testProject.TargetFrameworks}/{testProject.RuntimeIdentifier}/DotnetToolSettings.xml"));
+                toolSettingsItem.Should().NotBeNull();
+
+                var toolSettingsXml = XDocument.Load(nupkgReader.GetStream(toolSettingsItem));
+                toolSettingsXml.Root.Attribute("Version").Value.Should().Be("1");
+            }
 
         }
     }

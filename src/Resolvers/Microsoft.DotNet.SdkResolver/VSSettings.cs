@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.DotNetSdkResolver
         }
 
         // Test constructor
-        public VSSettings(string settingsFilePath, bool disallowPrereleaseByDefault)
+        public VSSettings(string? settingsFilePath, bool disallowPrereleaseByDefault)
         {
             _settingsFilePath = settingsFilePath;
             _disallowPrereleaseByDefault = disallowPrereleaseByDefault;

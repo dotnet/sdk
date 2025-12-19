@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.TemplateEngine.Cli
 {

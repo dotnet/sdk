@@ -9,6 +9,7 @@ using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Commands.Workload.Update;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -88,8 +89,9 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         INuGetPackageDownloader nugetPackageDownloader,
         IWorkloadManifestUpdater workloadManifestUpdater,
         string tempDirPath,
+        Option<VerbosityOptions> verbosityOptions = null,
         bool? shouldUseWorkloadSetsFromGlobalJson = null)
-        : base(parseResult, reporter: reporter, tempDirPath: tempDirPath, nugetPackageDownloader: nugetPackageDownloader)
+        : base(parseResult, reporter: reporter, tempDirPath: tempDirPath, nugetPackageDownloader: nugetPackageDownloader, verbosityOptions: verbosityOptions)
     {
         _arguments = parseResult.GetArguments();
         _printDownloadLinkOnly = parseResult.GetValue(InstallingWorkloadCommandParser.PrintDownloadLinkOnlyOption);

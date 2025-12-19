@@ -5,7 +5,7 @@
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <CanRunTestAsTool>false</CanRunTestAsTool>
-    <OutputPath>$(ArtifactsBinDir)redist\$(Configuration)</OutputPath>
+    <OutputPath>$(TestHostFolder)</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

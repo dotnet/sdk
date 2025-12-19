@@ -76,7 +76,9 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Regression test for https://github.com/dotnet/sdk/issues/13513
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //   error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void DesignTimeBuildSucceedsWhenTargetingNetCore21WithRuntimeIdentifier()
         {
             var testProject = new TestProject()

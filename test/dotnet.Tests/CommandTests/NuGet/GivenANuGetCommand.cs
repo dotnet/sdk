@@ -6,6 +6,8 @@
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Moq;
+using Newtonsoft.Json.Linq;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Run.Tests
 {
@@ -132,6 +134,51 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                 .Pass()
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("has the following dependency");
+        }
+
+        [Fact]
+        public void ItCanUpdatePackages()
+        {
+            // Arrange
+            var testAssetName = "TestAppSimple";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(testAssetName)
+                .WithSource();
+            var projectDirectory = testAsset.Path;
+
+            NuGetConfigWriter.Write(projectDirectory, TestContext.Current.TestPackages);
+
+            new DotnetCommand(Log, "package", "add", "dotnet-hello@1.0.0")
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            // Act
+            var commandResult = new DotnetCommand(Log, "package", "update", "dotnet-hello")
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            // Assert
+            var listPackageCommandResult = new DotnetCommand(Log, "package", "list", "--format", "json")
+                .WithWorkingDirectory(projectDirectory)
+                .Execute();
+            listPackageCommandResult.Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            var updatedPackageVersionString = JObject.Parse(listPackageCommandResult.StdOut)
+                .SelectToken("$.projects[0].frameworks[0].topLevelPackages[?(@.id == 'dotnet-hello')].requestedVersion")
+                .ToString();
+
+            var v1 = NuGetVersion.Parse("1.0.0");
+            var updatedVersion = NuGetVersion.Parse(updatedPackageVersionString);
+
+            updatedVersion.Should().BeGreaterThan(v1);
         }
     }
 }

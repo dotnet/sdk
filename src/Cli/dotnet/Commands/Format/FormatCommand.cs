@@ -13,14 +13,13 @@ public class FormatCommand(IEnumerable<string> argsToForward) : FormatForwarding
 {
     public static FormatCommand FromArgs(string[] args)
     {
-        var parser = Parser.Instance;
-        var result = parser.ParseFrom("dotnet format", args);
+        var result = Parser.Parse(["dotnet", "format", ..args]);
         return FromParseResult(result);
     }
 
     public static FormatCommand FromParseResult(ParseResult result)
     {
-        return new FormatCommand(result.GetValue(FormatCommandParser.Arguments));
+        return new FormatCommand(result.GetValue(FormatCommandDefinition.Arguments));
     }
 
     public static int Run(ParseResult parseResult)

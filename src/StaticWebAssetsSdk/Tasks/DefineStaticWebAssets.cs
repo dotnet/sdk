@@ -110,6 +110,26 @@ public partial class DefineStaticWebAssets : Task
                 if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                 {
                     var candidateMatchPath = GetDiscoveryCandidateMatchPath(candidate);
+                    if (Path.IsPathRooted(candidateMatchPath) && candidateMatchPath == candidate.ItemSpec)
+                    {
+                        var normalizedAssetPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
+                        var normalizedDirectoryPath = Path.GetDirectoryName(BuildEngine.ProjectFileOfTaskNode);
+                        if (normalizedAssetPath.StartsWith(normalizedDirectoryPath))
+                        {
+                            var directoryPathLength = normalizedDirectoryPath switch
+                            {
+                                null => 0,
+                                "" => 0,
+#pragma warning disable IDE0056 // Indexers are not available. in .NET Framework
+                                var withSeparator when withSeparator[withSeparator.Length - 1] == Path.DirectorySeparatorChar || withSeparator[withSeparator.Length - 1] == Path.AltDirectorySeparatorChar => normalizedDirectoryPath.Length,
+                                _ => normalizedDirectoryPath.Length + 1
+                            };
+#pragma warning restore IDE0056
+                            var result = normalizedAssetPath.Substring(directoryPathLength);
+                            Log.LogMessage(MessageImportance.Low, "FullPath '{0}' starts with content root '{1}' for candidate '{2}'. Using '{3}' as relative path.", normalizedAssetPath, normalizedDirectoryPath, candidate.ItemSpec, result);
+                            candidateMatchPath = result;
+                        }
+                    }
                     relativePathCandidate = candidateMatchPath;
                     if (matcher != null && string.IsNullOrEmpty(candidate.GetMetadata("RelativePath")))
                     {
@@ -218,6 +238,14 @@ public partial class DefineStaticWebAssets : Task
                     break;
                 }
 
+                // IMPORTANT: Apply fingerprint pattern (which can change the file name) BEFORE computing identity
+                // for non-Discovered assets so that a synthesized identity incorporates the fingerprint pattern.
+                if (FingerprintCandidates)
+                {
+                    matchContext.SetPathAndReinitialize(relativePathCandidate);
+                    relativePathCandidate = StaticWebAsset.Normalize(fingerprintPatternMatcher.AppendFingerprintPattern(matchContext, identity));
+                }
+
                 if (!string.Equals(SourceType, StaticWebAsset.SourceTypes.Discovered, StringComparison.OrdinalIgnoreCase))
                 {
                     // We ignore the content root for publish only assets since it doesn't matter.
@@ -226,14 +254,19 @@ public partial class DefineStaticWebAssets : Task
 
                     if (computed)
                     {
+                        // If we synthesized identity and there is a fingerprint placeholder pattern in the file name
+                        // expand it to the concrete fingerprinted file name while keeping RelativePath pattern form.
+                        if (FingerprintCandidates && !string.IsNullOrEmpty(fingerprint))
+                        {
+                            var fileNamePattern = Path.GetFileName(identity);
+                            if (fileNamePattern.Contains("#["))
+                            {
+                                var expanded = StaticWebAssetPathPattern.ExpandIdentityFileNameForFingerprint(fileNamePattern, fingerprint);
+                                identity = Path.Combine(Path.GetDirectoryName(identity) ?? string.Empty, expanded);
+                            }
+                        }
                         assetsCache.AppendCopyCandidate(hash, candidate.ItemSpec, identity);
                     }
-                }
-
-                if (FingerprintCandidates)
-                {
-                    matchContext.SetPathAndReinitialize(relativePathCandidate);
-                    relativePathCandidate = StaticWebAsset.Normalize(fingerprintPatternMatcher.AppendFingerprintPattern(matchContext, identity));
                 }
 
                 var asset = StaticWebAsset.FromProperties(
@@ -337,7 +370,13 @@ public partial class DefineStaticWebAssets : Task
                 // Alternatively, we could be explicit here and support ContentRootSubPath to indicate where it needs to go.
                 var identitySubPath = Path.GetDirectoryName(relativePath);
                 var itemSpecFileName = Path.GetFileName(candidateFullPath);
-                var finalIdentity = Path.Combine(normalizedContentRoot, identitySubPath, itemSpecFileName);
+                var relativeFileName = Path.GetFileName(relativePath);
+                // If the relative path filename has been modified (e.g. fingerprint pattern appended) use it when synthesizing identity.
+                if (!string.IsNullOrEmpty(relativeFileName) && !string.Equals(relativeFileName, itemSpecFileName, StringComparison.OrdinalIgnoreCase))
+                {
+                    itemSpecFileName = relativeFileName;
+                }
+                var finalIdentity = Path.Combine(normalizedContentRoot, identitySubPath ?? string.Empty, itemSpecFileName);
                 Log.LogMessage(MessageImportance.Low, "Identity for candidate '{0}' is '{1}' because it did not start with the content root '{2}'", candidate.ItemSpec, finalIdentity, normalizedContentRoot);
                 return (finalIdentity, true);
             }
@@ -473,7 +512,7 @@ public partial class DefineStaticWebAssets : Task
                 {
                     case (StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
                     case (not StaticWebAsset.AssetCopyOptions.Never, not StaticWebAsset.AssetCopyOptions.Never):
-                        var errorMessage = "Two assets found targeting the same path with incompatible asset kinds: " + Environment.NewLine +
+                        var errorMessage = "Two assets found targeting the same path with incompatible asset kinds:" + Environment.NewLine +
                             "'{0}' with kind '{1}'" + Environment.NewLine +
                             "'{2}' with kind '{3}'" + Environment.NewLine +
                             "for path '{4}'";

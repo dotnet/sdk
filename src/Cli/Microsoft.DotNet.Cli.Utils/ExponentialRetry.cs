@@ -55,7 +55,7 @@ public static class ExponentialRetry
                 return result;
             }
         }
-        throw new Exception("Timer should not be exhausted");
+        throw new Exception($"Timer for task {taskDescription} should not be exhausted.");
     }
 
     public static async Task<T> ExecuteWithRetry<T>(Func<T> action,

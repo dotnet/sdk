@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.CommandLineParserTests
@@ -19,16 +19,16 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         [Fact]
         public void RestoreCapturesArgumentsToForwardToMSBuildWhenTargetIsSpecified()
         {
-            var result = Parser.Instance.Parse(@"dotnet restore .\some.csproj --packages c:\.nuget\packages /p:SkipInvalidConfigurations=true");
+            var result = Parser.Parse(["dotnet", "restore", @".\some.csproj", "--packages", @"c:\.nuget\packages", "/p:SkipInvalidConfigurations=true"]);
 
-            result.GetValue(RestoreCommandParser.SlnOrProjectOrFileArgument).Should().BeEquivalentTo(@".\some.csproj");
+            result.GetValue(RestoreCommandDefinition.SlnOrProjectOrFileArgument).Should().BeEquivalentTo(@".\some.csproj");
             result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()).Should().Contain(@"--property:SkipInvalidConfigurations=true");
         }
 
         [Fact]
         public void RestoreCapturesArgumentsToForwardToMSBuildWhenTargetIsNotSpecified()
         {
-            var result = Parser.Instance.Parse(@"dotnet restore --packages c:\.nuget\packages /p:SkipInvalidConfigurations=true");
+            var result = Parser.Parse(["dotnet", "restore", "--packages", @"c:\.nuget\packages", "/p:SkipInvalidConfigurations=true"]);
 
             result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()).Should().Contain(@"--property:SkipInvalidConfigurations=true");
         }
@@ -37,13 +37,11 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         public void RestoreDistinguishesRepeatSourceArgsFromCommandArgs()
         {
             var restore =
-                Parser.Instance
-                      .Parse(
-                          @"dotnet restore --no-cache --packages ""D:\OSS\corefx\packages"" --source https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json --source https://dotnet.myget.org/F/dotnet-core/api/v3/index.json --source https://api.nuget.org/v3/index.json D:\OSS\corefx\external\runtime\runtime.depproj");
+                Parser.Parse(["dotnet", "restore", "--no-cache", "--packages", @"D:\OSS\corefx\packages", "--source", "https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json", "--source", "https://dotnet.myget.org/F/dotnet-core/api/v3/index.json", "--source", "https://api.nuget.org/v3/index.json", @"D:\OSS\corefx\external\runtime\runtime.depproj"]);
 
-            restore.GetValue(RestoreCommandParser.SlnOrProjectOrFileArgument).Should().BeEquivalentTo(@"D:\OSS\corefx\external\runtime\runtime.depproj");
+            restore.GetValue(RestoreCommandDefinition.SlnOrProjectOrFileArgument).Should().BeEquivalentTo(@"D:\OSS\corefx\external\runtime\runtime.depproj");
 
-            restore.GetValue(RestoreCommandParser.SourceOption)
+            restore.GetValue(RestoreCommandDefinition.SourceOption)
                 .Should()
                 .BeEquivalentTo(
                     "https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json",

@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
         {
             sdkBand ??= _sdkFeatureVersion;
 
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", _installingWorkload });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", _installingWorkload });
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkBand, workloadResolver, userProfileDir);
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory: workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: _manifestUpdater, tempDirPath: testDirectory);
@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private WorkloadCleanCommand GenerateWorkloadCleanCommand(WorkloadResolver workloadResolver, string userProfileDir, string dotnetRoot)
         {
-            var cleanParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "clean" });
+            var cleanParseResult = Parser.Parse(new string[] { "dotnet", "workload", "clean" });
             return MakeWorkloadCleanCommand(cleanParseResult, workloadResolver, userProfileDir, dotnetRoot);
         }
 
@@ -135,7 +135,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private WorkloadCleanCommand GenerateWorkloadCleanAllCommand(WorkloadResolver workloadResolver, string userProfileDir, string dotnetRoot)
         {
-            var cleanParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "clean", "--all" });
+            var cleanParseResult = Parser.Parse(new string[] { "dotnet", "workload", "clean", "--all" });
             return MakeWorkloadCleanCommand(cleanParseResult, workloadResolver, userProfileDir, dotnetRoot);
         }
 

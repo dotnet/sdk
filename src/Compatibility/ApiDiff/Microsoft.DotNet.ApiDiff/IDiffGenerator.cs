@@ -13,5 +13,5 @@ public interface IDiffGenerator
     /// <summary>
     /// Asynchronously runs the diff generator and may populate the <see cref="Results"/> dictionary depending on the use case.
     /// </summary>
-    Task RunAsync();
+    Task RunAsync(CancellationToken cancellationToken);
 }

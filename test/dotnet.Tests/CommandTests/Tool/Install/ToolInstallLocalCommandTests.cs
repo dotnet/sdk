@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ToolPackageStoreMock toolPackageStoreMock =
                 new(new DirectoryPath(_pathToPlacePackages), _fileSystem);
             _toolPackageStore = toolPackageStoreMock;
-            
+
             _toolPackageDownloaderMock = new ToolPackageDownloaderMock(
                 store: _toolPackageStore,
                 fileSystem: _fileSystem,
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _toolManifestFinder = new ToolManifestFinder(new DirectoryPath(_temporaryDirectory), _fileSystem, new FakeDangerousFileDetector());
             _toolManifestEditor = new ToolManifestEditor(_fileSystem);
 
-            _parseResult = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()}");
+            _parseResult = Parser.Parse($"dotnet tool install {_packageIdA.ToString()}");
 
             _localToolsResolverCache
                 = new LocalToolsResolverCache(
@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenPassingRestoreActionConfigOptions()
         {
-            var parseResult = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
+            var parseResult = Parser.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
             var toolInstallCommand = new ToolInstallLocalCommand(parseResult);
             toolInstallCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
-            var parseResult = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
+            var parseResult = Parser.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
             var toolInstallCommand = new ToolInstallLocalCommand(parseResult,
                 _packageIdA,
                 _toolPackageDownloaderMock,
@@ -128,34 +128,47 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
-        public void GivenNoManifestFileItShouldThrow()
+        public void GivenCreateManifestIfNeededWithoutArgumentTheDefaultIsTrueForLegacyBehavior()
         {
             _fileSystem.File.Delete(_manifestFilePath);
-            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+            ParseResult parseResult =
+            Parser.Parse(
+               $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
 
-            Action a = () => toolInstallLocalCommand.Execute();
-            a.Should().Throw<GracefulException>()
-                .And.Message.Should()
-                .Contain(CliStrings.CannotFindAManifestFile);
+            var toolInstallLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            toolInstallLocalCommand.Execute().Should().Be(0);
         }
 
         [Fact]
         public void GivenNoManifestFileItShouldThrowAndContainNoManifestGuide()
         {
             _fileSystem.File.Delete(_manifestFilePath);
-            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+            ParseResult parseResult =
+            Parser.Parse(
+               $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed false");
+
+            var toolInstallLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
 
             Action a = () => toolInstallLocalCommand.Execute();
-            a.Should().Throw<GracefulException>()
-                .And.Message.Should()
-                .Contain(CliCommandStrings.ToolInstallNoManifestGuide);
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
-                .Contain(CliStrings.CannotFindAManifestFile);
-
-            a.Should().Throw<GracefulException>()
-                .And.VerboseMessage.Should().Contain(string.Format(CliStrings.ListOfSearched, ""));
+                .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
         [Fact]
@@ -167,7 +180,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.WriteAllText(explicitManifestFilePath, _jsonContent);
 
             ParseResult parseResult =
-                Parser.Instance.Parse(
+                Parser.Parse(
                     $"dotnet tool install {_packageIdA.ToString()} --tool-manifest {explicitManifestFilePath}");
 
             var installLocalCommand = new ToolInstallLocalCommand(
@@ -187,7 +200,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithRollForwardItShouldRollForwardToTrueInManifestFile()
         {
             ParseResult parseResult =
-                Parser.Instance.Parse(
+                Parser.Parse(
                     $"dotnet tool install {_packageIdA.ToString()} --allow-roll-forward");
 
             var installLocalCommand = new ToolInstallLocalCommand(
@@ -208,7 +221,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithoutRollForwardItShouldDefaultRollForwardToFalseInManifestFile()
         {
             ParseResult parseResult =
-                Parser.Instance.Parse(
+                Parser.Parse(
                     $"dotnet tool install {_packageIdA.ToString()}");
 
             var installLocalCommand = new ToolInstallLocalCommand(
@@ -257,7 +270,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldNotChangeManifestFile()
         {
-            ParseResult result = Parser.Instance.Parse($"dotnet tool install non-exist");
+            ParseResult result = Parser.Parse($"dotnet tool install non-exist");
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
@@ -297,9 +310,38 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     _toolCommandNameA),
-                out RestoredCommand restoredCommand
+                out ToolCommand restoredCommand
             ).Should().BeFalse("it should not add to cache if add to manifest failed. " +
                                "But restore do not need to 'revert' since it just set in nuget global directory");
+        }
+
+        [Fact]
+        public void WhenRunWithExistingManifestInConfigDirectoryItShouldAddToExistingManifest()
+        {
+            // Test backward compatibility: ensure tools can be added to existing manifests in .config directories
+            _fileSystem.File.Delete(_manifestFilePath);
+            var configDirectory = Path.Combine(_temporaryDirectory, ".config");
+            _fileSystem.Directory.CreateDirectory(configDirectory);
+            var configManifestPath = Path.Combine(configDirectory, "dotnet-tools.json");
+            _fileSystem.File.WriteAllText(configManifestPath, _jsonContent);
+
+            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+
+            toolInstallLocalCommand.Execute().Should().Be(0);
+
+            // Verify the tool was added to the existing .config manifest
+            var manifestPackages = _toolManifestFinder.Find();
+            manifestPackages.Should().HaveCount(1);
+            manifestPackages.First().PackageId.Should().Be(_packageIdA);
+
+            // Verify that the manifest under the .config folder has been updated
+            _fileSystem.File.Exists(configManifestPath).Should().BeTrue("The .config manifest file should exist");
+            var configManifestContent = _fileSystem.File.ReadAllText(configManifestPath);
+            configManifestContent.Should().Contain(_packageIdA.ToString(), "The .config manifest should contain the installed tool");
+            configManifestContent.Should().NotBe(_jsonContent, "The .config manifest should have been updated with the new tool");
+
+            // Verify that no manifest exists in the root folder after the install command is run
+            _fileSystem.File.Exists(_manifestFilePath).Should().BeFalse("No manifest should exist in the root folder");
         }
 
         private ToolInstallLocalCommand GetDefaultTestToolInstallLocalCommand()
@@ -317,7 +359,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithExactVersionItShouldSucceed()
         {
-            ParseResult result = Parser.Instance.Parse(
+            ParseResult result = Parser.Parse(
                 $"dotnet tool install {_packageIdA.ToString()} --version {_packageVersionA.ToNormalizedString()}");
 
             var installLocalCommand = new ToolInstallLocalCommand(
@@ -336,7 +378,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithValidVersionRangeItShouldSucceed()
         {
-            ParseResult result = Parser.Instance.Parse(
+            ParseResult result = Parser.Parse(
                 $"dotnet tool install {_packageIdA.ToString()} --version 1.*");
 
             var installLocalCommand = new ToolInstallLocalCommand(
@@ -356,7 +398,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithPrereleaseAndPackageVersionItShouldSucceed()
         {
             ParseResult result =
-                Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()} --prerelease");
+                Parser.Parse($"dotnet tool install {_packageIdA.ToString()} --prerelease");
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
@@ -377,7 +419,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     addedPackage.CommandNames.Single()),
-                out RestoredCommand restoredCommand
+                out ToolCommand restoredCommand
             ).Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
@@ -392,7 +434,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.CreateDirectory(currentFolder);
 
             ParseResult parseResult =
-                Parser.Instance.Parse(
+                Parser.Parse(
                     $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
 
             var installLocalCommand = new ToolInstallLocalCommand(
@@ -405,7 +447,29 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
-            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
+        }
+
+        [Fact]
+        public void GivenNoManifestFileItUsesCreateManifestIfNeededByDefault()
+        {
+            _fileSystem.File.Delete(_manifestFilePath);
+
+            ParseResult parseResult =
+                Parser.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()}");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
         [Fact]
@@ -417,7 +481,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.CreateDirectory(currentFolder);
 
             ParseResult parseResult =
-                Parser.Instance.Parse(
+                Parser.Parse(
                     $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
 
             var installLocalCommand = new ToolInstallLocalCommand(
@@ -430,7 +494,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
-            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
         [Fact]
@@ -439,7 +503,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Delete(_manifestFilePath);
 
             ParseResult parseResult =
-                Parser.Instance.Parse(
+                Parser.Parse(
                     $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
 
             var installLocalCommand = new ToolInstallLocalCommand(
@@ -452,7 +516,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
-            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
         private IToolPackageDownloader GetToolToolPackageInstallerWithPreviewInFeed()
@@ -500,7 +564,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     addedPackage.CommandNames.Single()),
-                out RestoredCommand restoredCommand
+                out ToolCommand restoredCommand
             ).Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value);

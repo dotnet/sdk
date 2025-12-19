@@ -18,10 +18,10 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
 
         private const string HelpText = @"Description:
       .NET SDK Check Command
-    
+
     Usage:
       dotnet sdk check [options]
-    
+
     Options:
       -?, -h, --help    Show command line help.";
 
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         [InlineData(false)]
         public void WhenNewFeatureBandExistsItIsAdvertised(bool newerBandExists)
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "sdk", "check" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
             var oldSdks = GetFakeEnvironmentInfo(new[] { "3.1.100" }, Array.Empty<string>());
             var newSdks = GetFakeEnvironmentInfo(new[] { "5.0.100" }, Array.Empty<string>());
 
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         [Fact]
         public void ItContainsInfoForAllInstalledBundles()
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "sdk", "check" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
             var bundles = GetFakeEnvironmentInfo(new[] { "1.0.10", "2.1.809", "3.1.402", "5.0.100" }, new[] { "1.1.4", "2.1.8", "3.1.0", "3.1.3", "5.0.0" });
 
             new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         [InlineData(new string[] { "1.1.10", "2.1.300", "2.1.810", "3.1.400" }, new string[] { "1.1.10", "2.1.20", "3.1.0" }, new string[] { "3.1.404", "3.1.10" })]
         public void WhenANewPatchIsAvailableItIsAdvertised(string[] sdkVersions, string[] runtimeVersions, string[] latestPatchVersions)
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "sdk", "check" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
             var bundles = GetFakeEnvironmentInfo(sdkVersions, runtimeVersions);
 
             new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             new string[] { "1.0.10", "1.0.9", "2.0.308", "2.1.804", "1.0.0", "1.0.1", "2.0.3", "2.1.8" })]
         public void WhenABundleIsOutOfSupportItPrintsWarning(string[] sdkVersions, string[] runtimeVersions, string[] outOfSupportVersions)
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "sdk", "check" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
             var bundles = GetFakeEnvironmentInfo(sdkVersions, runtimeVersions);
 
             new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         [InlineData(new string[] { "1.0.10", "2.0.308", "3.0.309", "3.0.100", "3.1.401" }, new string[] { "1.0.1", "2.0.3", "3.0.3", "3.0.1", "3.1.4" }, new string[] { "3.0.309", "3.0.100", "3.0.3", "3.0.1" })]
         public void WhenABundleIsInMaintenanceModeItPrintsWarning(string[] sdkVersions, string[] runtimeVersions, string[] maintenanceVersions)
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "sdk", "check" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
             var bundles = GetFakeEnvironmentInfo(sdkVersions, runtimeVersions);
 
             new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
@@ -192,7 +192,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         [Fact]
         public void ItUsesConfigFile()
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "sdk", "check" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
             var dotnetRoot = _testAssetsManager.CreateTestDirectory().Path;
             var bundles = GetFakeEnvironmentInfo(new[] { "1.0.10", "2.1.809", "3.1.100", "5.0.100" }, new[] { "1.1.4", "2.1.8", "3.1.0", "3.1.3", "5.0.0" });
             var replacementString = "Mock command output";

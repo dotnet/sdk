@@ -282,6 +282,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = false
             };
             referencedProject.PackageReferences.Add(new TestPackageReference("System.Text.Json", "8.0.0"));
+            referencedProject.AdditionalProperties["RestoreEnablePackagePruning"] = prunePackages.ToString();
 
             var testProject = new TestProject()
             {
@@ -328,9 +329,14 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netstandard1.1", false)]
         [InlineData("netstandard1.0", false)]
         [InlineData("net451", false)]
-        [InlineData("net462")]
-        [InlineData("net481")]
-        public void PrunePackageDataSucceeds(string targetFramework, bool shouldPrune = true)
+        [InlineData("net462", false)]
+        [InlineData("net481", false)]
+        //  These target frameworks shouldn't prune packages unless explicitly enabled
+        [InlineData("net9.0", false, "")]
+        [InlineData("netstandard2.1", false, "")]
+        //  .NET 10 and up should prune packages by default
+        [InlineData("net10.0", true, "")]
+        public void PrunePackageDataSucceeds(string targetFramework, bool shouldPrune = true, string enablePackagePruning = "True")
         {
             var nugetFramework = NuGetFramework.Parse(targetFramework);
 
@@ -341,7 +347,7 @@ namespace Microsoft.NET.Build.Tests
                     TargetFrameworks = targetFramework
                 };
 
-                testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "True";
+                testProject.AdditionalProperties["RestoreEnablePackagePruning"] = enablePackagePruning;
 
                 if (!string.IsNullOrEmpty(frameworkReference))
                 {
@@ -390,7 +396,7 @@ namespace Microsoft.NET.Build.Tests
                 prunedPackages.Should().BeEmpty();
             }
 
-            if (nugetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase) && nugetFramework.Version.Major >= 3)
+            if (shouldPrune && nugetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase) && nugetFramework.Version.Major >= 3)
             {
                 foreach(var frameworkReference in new [] {
                         "Microsoft.AspNetCore.App",
@@ -441,6 +447,88 @@ namespace Microsoft.NET.Build.Tests
 
             items2.Should().BeEquivalentTo(items1);
 
+        }
+
+        [CoreMSBuildOnlyTheory]
+        [InlineData("net10.0;net9.0", true)]
+        [InlineData("net10.0;net8.0", true)]
+        [InlineData("net6.0;net7.0", false)]
+        public void WithMultitargetedProjects_PruningsDefaultsAreApplies(string frameworks, bool prunePackages)
+        {
+            var referencedProject = new TestProject("ReferencedProject")
+            {
+                TargetFrameworks = frameworks,
+                IsExe = false
+            };
+            referencedProject.PackageReferences.Add(new TestPackageReference("System.Text.Json", "6.0.0"));
+            referencedProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
+
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = frameworks,
+            };
+
+            testProject.ReferencedProjects.Add(referencedProject);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand.Execute().Should().Pass();
+
+            var assetsFilePath = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "project.assets.json");
+            var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, new NullLogger());
+
+            foreach(var lockFileTarget in lockFile.Targets)
+            {
+                if (prunePackages)
+                {
+                    lockFileTarget.Libraries.Should().NotContain(library => library.Name.Equals("System.Text.Json", StringComparison.OrdinalIgnoreCase));
+                }
+                else
+                {
+                    lockFileTarget.Libraries.Should().Contain(library => library.Name.Equals("System.Text.Json", StringComparison.OrdinalIgnoreCase));
+                }
+            }
+        }
+
+        [Fact]
+        public void WithMultitargetedProject_NETFrameworkIsNotPruned()
+        {
+            var project = new TestProject("MultitargetedPruning")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework + ";net462",
+            };
+            project.PackageReferences.Add(new TestPackageReference("System.ValueTuple", "4.6.1"));
+            project.SourceFiles.Add("Test.cs", @"
+public class Class1
+{
+    public (int, int) GetTuple() => (1, 2);
+}
+");
+            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: "NETFrameworkIsNotPruned");
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+            var assetsFilePath = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "project.assets.json");
+            var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, new NullLogger());
+
+            foreach (var lockFileTarget in lockFile.Targets)
+            {
+                var valueTupleLibrary = lockFileTarget.Libraries.Where(library => library.Name.Equals("System.ValueTuple", StringComparison.OrdinalIgnoreCase)).Single();
+                var runtimeAssemblies = valueTupleLibrary.RuntimeAssemblies.Where(a => !Path.GetFileName(a.Path).Equals("_._"));
+                var compileTimeAssemblies = valueTupleLibrary.CompileTimeAssemblies.Where(a => !Path.GetFileName(a.Path).Equals("_._"));
+
+                if (lockFileTarget.TargetFramework.Framework.Equals(".NETFramework", StringComparison.OrdinalIgnoreCase))
+                {
+                    runtimeAssemblies.Should().NotBeEmpty();
+                    compileTimeAssemblies.Should().NotBeEmpty();
+                }
+                else
+                {
+                    runtimeAssemblies.Should().BeEmpty();
+                    compileTimeAssemblies.Should().BeEmpty();
+                }
+            }
         }
 
         static List<KeyValuePair<string, string>> ParsePrunePackageReferenceJson(string json)

@@ -1,4 +1,4 @@
-﻿Failed to instatiate template 'Constraints - Restricted Template', the following constraints are not met:
+﻿Failed to instantiate template 'Constraints - Restricted Template', the following constraints are not met:
    Template engine host: Running template on dotnetcli (version: %VERSION%) is not supported, supported hosts is/are: do-not-exist((1.0.0, )).
 
 To run the template anyway, use '--force' option:

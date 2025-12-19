@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.NativeWrapper
         }
 
         // MSBuild SDK resolvers are required to be AnyCPU, but we have a native dependency and .NETFramework does not
-        // have a built-in facility for dynamically loading user native dlls for the appropriate platform. We therefore 
+        // have a built-in facility for dynamically loading user native dlls for the appropriate platform. We therefore
         // preload the version with the correct architecture (from a corresponding sub-folder relative to us) on static
         // construction so that subsequent P/Invokes can find it.
         private static void PreloadWindowsLibrary(string dllFileName)
@@ -80,6 +80,7 @@ namespace Microsoft.DotNet.NativeWrapper
             resolved_sdk_dir = 0,
             global_json_path = 1,
             requested_version = 2,
+            global_json_state = 3,
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
@@ -122,6 +123,12 @@ namespace Microsoft.DotNet.NativeWrapper
             IntPtr reserved,
             hostfxr_get_dotnet_environment_info_result_fn result,
             IntPtr result_context);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate void hostfxr_error_writer_fn(IntPtr message);
+
+        [DllImport(Constants.HostFxr, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr hostfxr_set_error_writer(IntPtr error_writer);
 
         public static class Windows
         {

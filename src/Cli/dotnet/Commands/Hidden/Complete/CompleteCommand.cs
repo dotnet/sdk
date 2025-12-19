@@ -19,8 +19,7 @@ public class CompleteCommand
 
     public static int RunWithReporter(string[] args, IReporter reporter)
     {
-        var parser = Parser.Instance;
-        var result = parser.ParseFrom("dotnet complete", args);
+        var result = Parser.Parse(["dotnet", "complete", ..args]);
         return RunWithReporter(result, reporter);
     }
 
@@ -52,16 +51,16 @@ public class CompleteCommand
 
     private static CompletionItem[] Completions(ParseResult complete)
     {
-        var input = complete.GetValue(CompleteCommandParser.PathArgument) ?? string.Empty;
+        var input = complete.GetValue(CompleteCommandDefinition.PathArgument) ?? string.Empty;
 
-        var position = complete.GetValue(CompleteCommandParser.PositionOption);
+        var position = complete.GetValue(CompleteCommandDefinition.PositionOption);
 
         if (position > input.Length)
         {
             input += " ";
         }
 
-        var result = Parser.Instance.Parse(input);
+        var result = Parser.Parse(input);
 
         return [.. result.GetCompletions(position).Distinct()];
     }

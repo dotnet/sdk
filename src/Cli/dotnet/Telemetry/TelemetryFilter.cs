@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.Globalization;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Clean;
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
@@ -26,11 +27,19 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
     {
         var result = new List<ApplicationInsightsEntryFormat>();
         Dictionary<string, double> measurements = null;
+        string globalJsonState = string.Empty;
         if (objectToFilter is Tuple<ParseResult, Dictionary<string, double>> parseResultWithMeasurements)
         {
             objectToFilter = parseResultWithMeasurements.Item1;
             measurements = parseResultWithMeasurements.Item2;
             measurements = RemoveZeroTimes(measurements);
+        }
+        else if (objectToFilter is Tuple<ParseResult, Dictionary<string, double>, string> parseResultWithMeasurementsAndGlobalJsonState)
+        {
+            objectToFilter = parseResultWithMeasurementsAndGlobalJsonState.Item1;
+            measurements = parseResultWithMeasurementsAndGlobalJsonState.Item2;
+            measurements = RemoveZeroTimes(measurements);
+            globalJsonState = parseResultWithMeasurementsAndGlobalJsonState.Item3;
         }
 
         if (objectToFilter is ParseResult parseResult)
@@ -38,14 +47,23 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
             var topLevelCommandName = parseResult.RootSubCommandResult();
             if (topLevelCommandName != null)
             {
+                Dictionary<string, string> properties = new()
+                {
+                    ["verb"] = topLevelCommandName
+                };
+                if (!string.IsNullOrEmpty(globalJsonState))
+                {
+                    properties["globalJson"] = globalJsonState;
+                }
+
                 result.Add(new ApplicationInsightsEntryFormat(
                     "toplevelparser/command",
-                    new Dictionary<string, string>()
-                    {{ "verb", topLevelCommandName }}
-                    , measurements
-                    ));
+                    properties,
+                    measurements
+                ));
 
                 LogVerbosityForAllTopLevelCommand(result, parseResult, topLevelCommandName, measurements);
+                LogVulnerableOptionForPackageUpdateCommand(result, parseResult, topLevelCommandName, measurements);
 
                 foreach (IParseResultLogRule rule in ParseResultLogRules)
                 {
@@ -92,21 +110,21 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["build", "publish"],
-            optionsToLog: [ BuildCommandParser.FrameworkOption, PublishCommandParser.FrameworkOption,
-                BuildCommandParser.RuntimeOption, PublishCommandParser.RuntimeOption, BuildCommandParser.ConfigurationOption,
-                PublishCommandParser.ConfigurationOption ]
+            optionsToLog: [ BuildCommandDefinition.FrameworkOption, PublishCommandDefinition.FrameworkOption,
+                BuildCommandDefinition.RuntimeOption, PublishCommandDefinition.RuntimeOption, BuildCommandDefinition.ConfigurationOption,
+                PublishCommandDefinition.ConfigurationOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["run", "clean", "test"],
-            optionsToLog: [ RunCommandParser.FrameworkOption, CleanCommandParser.FrameworkOption,
-                TestCommandParser.FrameworkOption, RunCommandParser.ConfigurationOption, CleanCommandParser.ConfigurationOption,
-                TestCommandParser.ConfigurationOption ]
+            optionsToLog: [ RunCommandDefinition.FrameworkOption, CleanCommandDefinition.FrameworkOption,
+                TestCommandDefinition.FrameworkOption, RunCommandDefinition.ConfigurationOption, CleanCommandDefinition.ConfigurationOption,
+                TestCommandDefinition.ConfigurationOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["pack"],
-            optionsToLog: [PackCommandParser.ConfigurationOption]
+            optionsToLog: [PackCommandDefinition.ConfigurationOption]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
@@ -117,10 +135,31 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["publish"],
-            optionsToLog: [PublishCommandParser.RuntimeOption]
+            optionsToLog: [PublishCommandDefinition.RuntimeOption]
         ),
         new AllowListToSendVerbSecondVerbFirstArgument(["workload", "tool", "new"]),
     ];
+
+    private static void LogVulnerableOptionForPackageUpdateCommand(
+        ICollection<ApplicationInsightsEntryFormat> result,
+        ParseResult parseResult,
+        string topLevelCommandName,
+        Dictionary<string, double> measurements = null)
+    {
+        if (topLevelCommandName == "package" && parseResult.CommandResult.Command != null && parseResult.CommandResult.Command.Name == "update")
+        {
+            var hasVulnerableOption = parseResult.HasOption("--vulnerable");
+
+            result.Add(new ApplicationInsightsEntryFormat(
+                "sublevelparser/command",
+                new Dictionary<string, string>()
+                {
+                    { "verb", "package update" },
+                    { "vulnerable", hasVulnerableOption.ToString()}
+                },
+                measurements));
+        }
+    }
 
     private static void LogVerbosityForAllTopLevelCommand(
         ICollection<ApplicationInsightsEntryFormat> result,
@@ -129,7 +168,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         Dictionary<string, double> measurements = null)
     {
         if (parseResult.IsDotnetBuiltInCommand() &&
-            parseResult.SafelyGetValueForOption(CommonOptions.VerbosityOption) is VerbosityOptions verbosity)
+            parseResult.SafelyGetValueForOption<VerbosityOptions>("--verbosity") is VerbosityOptions verbosity)
         {
             result.Add(new ApplicationInsightsEntryFormat(
                 "sublevelparser/command",

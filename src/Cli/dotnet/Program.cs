@@ -4,8 +4,13 @@
 #nullable disable
 
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.ShellShim;
@@ -13,6 +18,8 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
@@ -23,8 +30,13 @@ public class Program
 {
     private static readonly string ToolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
 
+    public static ITelemetry TelemetryClient;
     public static int Main(string[] args)
     {
+        // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
+        // See https://github.com/dotnet/docs/issues/46226.
+        using var termSignalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ => Environment.Exit(0));
+
         using AutomaticEncodingRestorer _ = new();
 
         // Setting output encoding is not available on those platforms
@@ -112,12 +124,12 @@ public class Program
         }
     }
 
-    internal static int ProcessArgs(string[] args, ITelemetry telemetryClient = null)
+    internal static int ProcessArgs(string[] args)
     {
-        return ProcessArgs(args, new TimeSpan(0), telemetryClient);
+        return ProcessArgs(args, new TimeSpan(0));
     }
 
-    internal static int ProcessArgs(string[] args, TimeSpan startupTime, ITelemetry telemetryClient = null)
+    internal static int ProcessArgs(string[] args, TimeSpan startupTime)
     {
         Dictionary<string, double> performanceData = [];
 
@@ -125,7 +137,7 @@ public class Program
         ParseResult parseResult;
         using (new PerformanceMeasurement(performanceData, "Parse Time"))
         {
-            parseResult = Parser.Instance.Parse(args);
+            parseResult = Parser.Parse(args);
 
             // Avoid create temp directory with root permission and later prevent access in non sudo
             // This method need to be run very early before temp folder get created
@@ -134,16 +146,20 @@ public class Program
         }
         PerformanceLogEventSource.Log.BuiltInCommandParserStop();
 
-        using (IFirstTimeUseNoticeSentinel disposableFirstTimeUseNoticeSentinel =
-            new FirstTimeUseNoticeSentinel())
+        using (IFirstTimeUseNoticeSentinel disposableFirstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel())
         {
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = disposableFirstTimeUseNoticeSentinel;
             IAspNetCertificateSentinel aspNetCertificateSentinel = new AspNetCertificateSentinel();
-            IFileSentinel toolPathSentinel = new FileSentinel(
-                new FilePath(
-                    Path.Combine(
-                        CliFolderPathCalculator.DotnetUserProfileFolderPath,
-                        ToolPathSentinelFileName)));
+            IFileSentinel toolPathSentinel = new FileSentinel(new FilePath(Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, ToolPathSentinelFileName)));
+
+            PerformanceLogEventSource.Log.TelemetryRegistrationStart();
+
+            TelemetryClient ??= new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
+            TelemetryEventEntry.Subscribe(TelemetryClient.TrackEvent);
+            TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
+
+            PerformanceLogEventSource.Log.TelemetryRegistrationStop();
+
             if (parseResult.GetValue(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
             {
                 // We found --diagnostic or -d, but we still need to determine whether the option should
@@ -214,58 +230,57 @@ public class Program
                     skipFirstTimeUseCheck: getStarOptionPassed);
                 PerformanceLogEventSource.Log.FirstTimeConfigurationStop();
             }
-
-            PerformanceLogEventSource.Log.TelemetryRegistrationStart();
-
-            telemetryClient ??= new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
-            TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
-            TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
-
-            PerformanceLogEventSource.Log.TelemetryRegistrationStop();
         }
 
         if (CommandLoggingContext.IsVerbose)
         {
-            Console.WriteLine($"Telemetry is: {(telemetryClient.Enabled ? "Enabled" : "Disabled")}");
+            Console.WriteLine($"Telemetry is: {(TelemetryClient.Enabled ? "Enabled" : "Disabled")}");
         }
         PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStart();
         performanceData.Add("Startup Time", startupTime.TotalMilliseconds);
-        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, performanceData));
+
+        string globalJsonState = string.Empty;
+        if (TelemetryClient.Enabled)
+        {
+            // Get the global.json state to report in telemetry along with this command invocation.
+            globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
+        }
+
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, performanceData, globalJsonState));
         PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStop();
 
         int exitCode;
         if (parseResult.CanBeInvoked())
         {
-            PerformanceLogEventSource.Log.BuiltInCommandStart();
-
-            try
-            {
-                exitCode = parseResult.Invoke();
-                exitCode = AdjustExitCode(parseResult, exitCode);
-            }
-            catch (Exception exception)
-            {
-                exitCode = Parser.ExceptionHandler(exception, parseResult);
-            }
-
-            PerformanceLogEventSource.Log.BuiltInCommandStop();
+            InvokeBuiltInCommand(parseResult, out exitCode);
         }
         else
         {
             PerformanceLogEventSource.Log.ExtensibleCommandResolverStart();
             try
             {
-                var resolvedCommand = CommandFactoryUsingResolver.Create(
-                        "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand),
-                        args.GetSubArguments(),
-                        FrameworkConstants.CommonFrameworks.NetStandardApp15);
-                PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
+                string commandName = "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand);
+                var resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
+                    new DefaultCommandResolverPolicy(),
+                    commandName,
+                    args.GetSubArguments(),
+                    FrameworkConstants.CommonFrameworks.NetStandardApp15);
 
-                PerformanceLogEventSource.Log.ExtensibleCommandStart();
-                var result = resolvedCommand.Execute();
-                PerformanceLogEventSource.Log.ExtensibleCommandStop();
+                if (resolvedCommandSpec is null && TryRunFileBasedApp(parseResult) is { } fileBasedAppExitCode)
+                {
+                    exitCode = fileBasedAppExitCode;
+                }
+                else
+                {
+                    var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
+                    PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
 
-                exitCode = result.ExitCode;
+                    PerformanceLogEventSource.Log.ExtensibleCommandStart();
+                    var result = resolvedCommand.Execute();
+                    PerformanceLogEventSource.Log.ExtensibleCommandStop();
+
+                    exitCode = result.ExitCode;
+                }
             }
             catch (CommandUnknownException e)
             {
@@ -275,13 +290,63 @@ public class Program
             }
         }
 
+        TelemetryClient.TrackEvent("command/finish", properties: new Dictionary<string, string>
+                    {
+                        { "exitCode", exitCode.ToString() }
+                    },
+            measurements: new Dictionary<string, double>());
+
         PerformanceLogEventSource.Log.TelemetryClientFlushStart();
-        telemetryClient.Flush();
+        TelemetryClient.Flush();
         PerformanceLogEventSource.Log.TelemetryClientFlushStop();
 
-        telemetryClient.Dispose();
+        TelemetryClient.Dispose();
 
         return exitCode;
+
+        static int? TryRunFileBasedApp(ParseResult parseResult)
+        {
+            // If we didn't match any built-in commands, and a C# file path is the first argument,
+            // parse as `dotnet run --file file.cs ..rest_of_args` instead.
+            if (parseResult.GetResult(Parser.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
+                && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
+            {
+                List<string> otherTokens = new(parseResult.Tokens.Count - 1);
+                foreach (var token in parseResult.Tokens)
+                {
+                    if (token != unmatchedCommandOrFile)
+                    {
+                        otherTokens.Add(token.Value);
+                    }
+                }
+
+                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
+
+                InvokeBuiltInCommand(parseResult, out var exitCode);
+                return exitCode;
+            }
+
+            return null;
+        }
+
+        static void InvokeBuiltInCommand(ParseResult parseResult, out int exitCode)
+        {
+            Debug.Assert(parseResult.CanBeInvoked());
+
+            PerformanceLogEventSource.Log.BuiltInCommandStart();
+
+            try
+            {
+                exitCode = Parser.Invoke(parseResult);
+                exitCode = AdjustExitCode(parseResult, exitCode);
+            }
+            catch (Exception exception)
+            {
+                exitCode = Parser.ExceptionHandler(exception, parseResult);
+            }
+
+            PerformanceLogEventSource.Log.BuiltInCommandStop();
+        }
     }
 
     private static int AdjustExitCode(ParseResult parseResult, int exitCode)
@@ -335,7 +400,7 @@ public class Program
         var environmentPath = EnvironmentPathFactory.CreateEnvironmentPath(isDotnetBeingInvokedFromNativeInstaller, environmentProvider);
         _ = new DotNetCommandFactory(alwaysRunOutOfProc: true);
         var aspnetCertificateGenerator = new AspNetCoreCertificateGenerator();
-        var reporter = Reporter.Output;
+        var reporter = Reporter.Error;
         var dotnetConfigurer = new DotnetFirstTimeUseConfigurer(
             firstTimeUseNoticeSentinel,
             aspNetCertificateSentinel,

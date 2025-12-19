@@ -26,6 +26,8 @@ namespace Microsoft.NET.TestFramework.Commands
         public Action<string>? CommandOutputHandler { get; set; }
         public Action<Process>? ProcessStartedHandler { get; set; }
 
+        public Encoding? StandardOutputEncoding { get; set; }
+
         protected TestCommand(ITestOutputHelper log)
         {
             Log = log;
@@ -54,6 +56,12 @@ namespace Microsoft.NET.TestFramework.Commands
                 process.StandardInput.Write(stdin);
                 process.StandardInput.Close();
             };
+            return this;
+        }
+
+        public TestCommand WithStandardOutputEncoding(Encoding encoding)
+        {
+            StandardOutputEncoding = encoding;
             return this;
         }
 
@@ -154,11 +162,28 @@ namespace Microsoft.NET.TestFramework.Commands
                 Log.WriteLine($"❌{line}");
             });
 
-            var display = $"dotnet {string.Join(" ", spec.Arguments)}";
+            if (StandardOutputEncoding is not null)
+            {
+                command.StandardOutputEncoding(StandardOutputEncoding);
+            }
+
+            string fileToShow = Path.GetFileNameWithoutExtension(spec.FileName!).Equals("dotnet", StringComparison.OrdinalIgnoreCase) ?
+                "dotnet" :
+                spec.FileName!;
+            var display = $"{fileToShow} {string.Join(" ", spec.Arguments)}";
 
             Log.WriteLine($"Executing '{display}':");
             var result = ((Command)command).Execute(ProcessStartedHandler);
             Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
+
+            if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
+            {
+                var binlogFiles = Directory.GetFiles(spec.WorkingDirectory ?? Environment.CurrentDirectory, "*.binlog");
+                foreach (string binlogFile in binlogFiles)
+                {
+                    File.Copy(binlogFile, Path.Combine(uploadRoot, Path.GetFileName(binlogFile)), true);
+                }
+            }
 
             return result;
         }

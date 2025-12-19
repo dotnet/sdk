@@ -4,37 +4,37 @@
     <body>
       <trans-unit id="AssemblyLoaded">
         <source>Assembly '{0}' loaded.</source>
-        <target state="new">Assembly '{0}' loaded.</target>
+        <target state="translated">Assembly '{0}' carregado.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssemblyReferenceLoaded">
         <source>Assembly '{0}' referenced by '{1}' loaded.</source>
-        <target state="new">Assembly '{0}' referenced by '{1}' loaded.</target>
+        <target state="translated">Assembly '{0}' referenciado por '{1}' carregado.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotResolveReference">
         <source>Could not resolve reference '{0}' directly or transitively referenced by {1} in any of the provided search directories.</source>
-        <target state="new">Could not resolve reference '{0}' directly or transitively referenced by {1} in any of the provided search directories.</target>
+        <target state="translated">Não foi possível resolver a referência '{0}', referenciada direta ou transitivamente por {1}, em nenhum dos diretórios de pesquisa fornecidos.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssemblies">
         <source>Loading assemblies '{0}'.</source>
-        <target state="new">Loading assemblies '{0}'.</target>
+        <target state="translated">Carregando assemblies '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssembliesFromArchive">
         <source>Loading assemblies '{0}' ({1}).</source>
-        <target state="new">Loading assemblies '{0}' ({1}).</target>
+        <target state="translated">Carregando assemblies '{0}' ({1}).</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssembly">
         <source>Loading assembly '{0}'.</source>
-        <target state="new">Loading assembly '{0}'.</target>
+        <target state="translated">Carregando o assembly '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssemblyFromStream">
         <source>Loading assembly '{0}' from stream.</source>
-        <target state="new">Loading assembly '{0}' from stream.</target>
+        <target state="translated">Carregando o assembly '{0}' a partir do fluxo.</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="RootAssemblyDisplayString">
         <source>'{0}'</source>
-        <target state="new">'{0}'</target>
+        <target state="translated">'{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="RootAssemblyFromPackageDisplayString">
         <source>'{0}' ({1})</source>
-        <target state="new">'{0}' ({1})</target>
+        <target state="translated">'{0}' ({1})</target>
         <note />
       </trans-unit>
       <trans-unit id="ShouldNotBeNullAndContainAtLeastOneElement">

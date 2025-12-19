@@ -4,8 +4,10 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -64,7 +66,7 @@ internal class ToolUpdateCommand : CommandBase
         string message)
     {
         List<string> options = [];
-        if (parseResult.GetResult(ToolAppliedOption.UpdateAllOption) is not null)
+        if (parseResult.HasOption(ToolAppliedOption.UpdateAllOption))
         {
             options.Add(ToolAppliedOption.UpdateAllOption.Name);
         }
@@ -82,7 +84,7 @@ internal class ToolUpdateCommand : CommandBase
 
     internal static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
     {
-        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.Version?.ToString()) &&
+        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.VersionRange?.OriginalString) &&
             !string.IsNullOrEmpty(parseResult.GetValue(ToolAppliedOption.VersionOption)))
         {
             throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);

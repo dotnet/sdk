@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Xml;
 using Microsoft.DotNet.Cli.Utils;
 using Msbuild.Tests.Utilities;
 
@@ -207,6 +208,26 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
 
+        [Fact]
+        public void ItPrintsReferenceWithMSBuildPropertyInPath()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var lib = NewLib(testDir, "lib");
+            string OutputText = CliStrings.ProjectReferenceOneOrMore;
+            OutputText += $@"
+{new string('-', OutputText.Length)}
+{lib.Path}..\ref1\ref1.csproj";
+
+            string ref1Name = NewLib(testDir, "ref1").CsProjName;
+            AddInvalidRef($"$(MSBuildThisFileDirectory)..\\ref1\\{ref1Name}", lib);
+
+            var cmd = new ListReferenceCommand(Log)
+                .WithProject(lib.CsProjPath)
+                .Execute();
+            cmd.Should().Pass();
+            cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
+        }
+
         private TestSetup Setup([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(Setup), string identifier = "")
         {
             return new TestSetup(
@@ -242,6 +263,20 @@ Commands:
             new DotnetCommand(Log, "add", proj.CsProjPath, "reference")
                 .Execute(path)
                 .Should().Pass();
+        }
+
+        private static void AddInvalidRef(string referenceValue, ProjDir proj)
+        {
+            var csprojXml = new XmlDocument();
+            csprojXml.Load(proj.CsProjPath);
+
+            var projectReference = csprojXml.CreateElement("ProjectReference");
+            projectReference.SetAttribute("Include", referenceValue);
+            csprojXml.DocumentElement
+                ?.AppendChild(csprojXml.CreateElement("ItemGroup"))
+                ?.AppendChild(projectReference);
+
+            csprojXml.Save(proj.CsProjPath);
         }
     }
 }

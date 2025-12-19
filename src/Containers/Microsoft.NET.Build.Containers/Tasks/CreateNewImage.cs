@@ -3,7 +3,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.Logging;
+using Microsoft.Extensions.Logging.MSBuild;
 using Microsoft.NET.Build.Containers.Resources;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -160,8 +160,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
             }
         }
-
-        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
+        var userId = imageBuilder.IsWindows ? null : ContainerBuilder.TryParseUserId(ContainerUser);
+        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, userId);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 

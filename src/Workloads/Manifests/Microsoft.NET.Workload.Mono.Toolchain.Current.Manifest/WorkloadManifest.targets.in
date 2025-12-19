@@ -46,22 +46,21 @@
   <Import Project="$(MSBuildThisFileDirectory)WasmFeatures.props" Condition="'$(RuntimeIdentifier)' == 'browser-wasm' or '$(RuntimeIdentifier)' == 'wasi-wasm'" />
 
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
-    <!-- Keep in sync with WasmApp.Native.targets -->
-    <_WasmPropertiesDifferFromRuntimePackThusNativeBuildNeeded Condition="
+    <!-- Keep in sync with $(PropertiesThatTriggerRelinking) -->
+    <_WasmNativeWorkloadNeeded Condition="
         '$(WasmEnableSIMD)' == 'false' or
         '$(WasmEnableExceptionHandling)' == 'false' or
         '$(InvariantTimezone)' == 'true' or
-        ('$(_UsingBlazorOrWasmSdk)' != 'true' and '$(InvariantGlobalization)' == 'true') or
-        '$(WasmNativeStrip)' == 'false'">true</_WasmPropertiesDifferFromRuntimePackThusNativeBuildNeeded>
-
-    <!-- $(WasmBuildNative)==true is needed to enable workloads, when using native references, without AOT -->
-    <!-- FIXME: is the blazor condition here correct? -->
-    <_WasmNativeWorkloadNeeded Condition="
-        '$(_WasmPropertiesDifferFromRuntimePackThusNativeBuildNeeded)' == 'true' or
+        '$(WasmNativeStrip)' == 'false' or
+        '$(WasmNativeDebugSymbols)' == 'true' or
+        '$(WasmSingleFileBundle)' == 'false' or
+        '$(EnableDiagnostics)' == 'true' or
+        '$(WasmProfilers)' != '' or
         '$(RunAOTCompilation)' == 'true' or
         '$(WasmBuildNative)' == 'true' or
         '$(WasmGenerateAppBundle)' == 'true' or
         '$(_UsingBlazorOrWasmSdk)' != 'true' or
+        '$(EmccInitialHeapSize)' != '' or
         '$(EmccMaximumHeapSize)' != '' " >true</_WasmNativeWorkloadNeeded>
 
     <UsingBrowserRuntimeWorkload Condition="'$(_BrowserWorkloadNotSupportedForTFM)' == 'true'">false</UsingBrowserRuntimeWorkload>
@@ -91,6 +90,12 @@
     <WasmGenerateAppBundle>false</WasmGenerateAppBundle>
     <UsingBlazorAOTWorkloadManifest>true</UsingBlazorAOTWorkloadManifest>
   </PropertyGroup>
+
+  <ItemGroup>
+    <KnownWebAssemblySdkPack Update="@(KnownWebAssemblySdkPack)">
+      <WebAssemblySdkPackVersion>$(_RuntimePackInWorkloadVersionCurrent)</WebAssemblySdkPackVersion>
+    </KnownWebAssemblySdkPack>
+  </ItemGroup>
 
   <!-- Support for "browser" target platform identifier -->
   <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'browser' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))">
@@ -221,7 +226,6 @@
 
   <PropertyGroup Condition="'$(TargetsCurrent)' == 'true' and '$(_MonoWorkloadTargetsMobile)' == 'true'">
     <_MonoWorkloadRuntimePackPackageVersion>$(_RuntimePackInWorkloadVersionCurrent)</_MonoWorkloadRuntimePackPackageVersion>
-    <_KnownWebAssemblySdkPackVersion>$(_RuntimePackInWorkloadVersionCurrent)</_KnownWebAssemblySdkPackVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetsCurrent)' == 'true' and '$(_MonoWorkloadTargetsMobile)' == 'true'">
@@ -236,10 +240,6 @@
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <TargetingPackVersion Condition="'%(KnownFrameworkReference.TargetFramework)' == '${NetVersion}.0'">$(_MonoWorkloadRuntimePackPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
-    <KnownWebAssemblySdkPack Update="@(KnownWebAssemblySdkPack)">
-      <WebAssemblySdkPackVersion Condition="'%(KnownWebAssemblySdkPack.TargetFramework)' == '${NetVersion}.0'">$(_KnownWebAssemblySdkPackVersion)</WebAssemblySdkPackVersion>
-    </KnownWebAssemblySdkPack>
   </ItemGroup>
-
 
 </Project>

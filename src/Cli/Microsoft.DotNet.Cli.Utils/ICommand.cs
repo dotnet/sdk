@@ -25,6 +25,8 @@ public interface ICommand
 
     ICommand SetCommandArgs(string commandArgs);
 
+    ICommand StandardOutputEncoding(Encoding encoding);
+
     string CommandName { get; }
 
     string CommandArgs { get; }

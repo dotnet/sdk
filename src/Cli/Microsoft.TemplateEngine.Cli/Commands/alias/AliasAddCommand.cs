@@ -4,15 +4,9 @@
 using System.CommandLine;
 using Microsoft.TemplateEngine.Abstractions;
 
-namespace Microsoft.TemplateEngine.Cli.Commands
+namespace Microsoft.TemplateEngine.Cli.Commands;
+
+internal sealed class AliasAddCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
+    : BaseAliasAddCommand(hostBuilder, CommandDefinition.Alias.Add.Command)
 {
-    internal class AliasAddCommand : BaseAliasAddCommand
-    {
-        internal AliasAddCommand(
-            Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, "add")
-        {
-            Hidden = true;
-        }
-    }
 }

@@ -5,15 +5,16 @@ using System.Reflection;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
-public class Product
+public static class Product
 {
     public static string LongName => LocalizableStrings.DotNetSdkInfo;
-    public static readonly string Version = GetProductVersion();
+    public static readonly string Version;
+    public static readonly string TargetFrameworkVersion = "10.0";
 
-    private static string GetProductVersion()
+    static Product()
     {
         DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
-        return versionFile.BuildNumber ??
+        Version = versionFile.BuildNumber ??
                 System.Diagnostics.FileVersionInfo.GetVersionInfo(
                         typeof(Product).GetTypeInfo().Assembly.Location)
                     .ProductVersion ??

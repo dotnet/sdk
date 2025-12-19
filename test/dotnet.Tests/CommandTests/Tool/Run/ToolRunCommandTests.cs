@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithRollForwardOptionItShouldIncludeRollForwardInNativeHost()
         {
-            var parseResult = Parser.Instance.Parse($"dotnet tool run dotnet-a --allow-roll-forward");
+            var parseResult = Parser.Parse($"dotnet tool run dotnet-a --allow-roll-forward");
 
             var toolRunCommand = new ToolRunCommand(parseResult);
 
@@ -40,13 +40,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             }, toolRunCommand._allowRollForward);
 
             result.Should().NotBeNull();
-            result.Args.Should().Contain("--roll-forward", "Major", fakeExecutable.Value);
+            result.Args.Should().ContainAll("--roll-forward", "Major", fakeExecutable.Value);
         }
 
         [Fact]
         public void WhenRunWithoutRollForwardOptionItShouldNotIncludeRollForwardInNativeHost()
         {
-            var parseResult = Parser.Instance.Parse($"dotnet tool run dotnet-a");
+            var parseResult = Parser.Parse($"dotnet tool run dotnet-a");
 
             var toolRunCommand = new ToolRunCommand(parseResult);
 
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new DirectoryPath(Path.Combine(temporaryDirectory, "cache")));
 
             localToolsResolverCache.Save(
-                new Dictionary<RestoredCommandIdentifier, RestoredCommand>
+                new Dictionary<RestoredCommandIdentifier, ToolCommand>
                 {
                     [new RestoredCommandIdentifier(
                             new PackageId("local.tool.console.a"),
@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                             NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                             Constants.AnyRid,
                             toolCommandNameA)]
-                        = new RestoredCommand(toolCommandNameA, "dotnet", fakeExecutable)
+                        = new ToolCommand(toolCommandNameA, "dotnet", fakeExecutable)
                 });
 
             var localToolsCommandResolver = new LocalToolsCommandResolver(

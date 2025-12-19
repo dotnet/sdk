@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         /// <summary>
         /// Creates a temp test directory under test execution folder.
-        /// Format: artifacts\tmp\Debug\dotnet-new.IntegrationTests\<paramref name="testName"/>\<paramref name="folderName"/>\date-time-utc-now[optional counter].
+        /// Format: artifacts\tmp\Debug\testing\dotnet-new.IntegrationTests\<paramref name="testName"/>\<paramref name="folderName"/>\date-time-utc-now[optional counter].
         /// </summary>
         /// <remarks>
         /// Use this method when temp folder should be under location that is aware of repo nuget.config.
@@ -183,9 +183,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 Assert.Fail($"The repo root cannot be evaluated.");
             }
-            if (!File.Exists(Path.Combine(repoRoot, "sdk.sln")))
+            if (!File.Exists(Path.Combine(repoRoot, "sdk.slnx")))
             {
-                Assert.Fail($"The repo root doesn't contain 'sdk.sln'.");
+                Assert.Fail($"The repo root doesn't contain 'sdk.slnx'.");
             }
             return repoRoot;
         }

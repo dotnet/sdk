@@ -411,22 +411,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
   </Target>
 
-  <UsingTask TaskName="ResolveReadyToRunCompilers" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <Target Name="ResolveReadyToRunCompilers">
-    <ResolveReadyToRunCompilers RuntimePacks="@(ResolvedRuntimePack)"
-                                Crossgen2Packs="@(ResolvedCrossgen2Pack)"
-                                TargetingPacks="@(ResolvedTargetingPack)"
-                                RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
-                                NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
-                                EmitSymbols="$(PublishReadyToRunEmitSymbols)"
-                                ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
-                                PerfmapFormatVersion="$(PublishReadyToRunPerfmapFormatVersion)">
-
-      <Output TaskParameter="CrossgenTool" ItemName="CrossgenTool" />
-      <Output TaskParameter="Crossgen2Tool" ItemName="Crossgen2Tool" />
-    </ResolveReadyToRunCompilers>
-  </Target>
-
   <!--
     ============================================================
                                         _ComputeResolvedFilesToPublishTypes
@@ -1138,7 +1122,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                     TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
                     RuntimeIdentifier="$(RuntimeIdentifier)"
                     OutputDir="$(PublishDir)"
-                    ShowDiagnosticOutput="$(TraceSingleFileBundler)">
+                    ShowDiagnosticOutput="$(TraceSingleFileBundler)"
+                    EnableMacOSCodeSign="$(_EnableMacOSCodeSign)">
       <Output TaskParameter="ExcludedFiles" ItemName="_FilesExcludedFromBundle"/>
     </GenerateBundle>
 
@@ -1248,6 +1233,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       ReferenceAssemblies="@(_ReferenceAssemblies)"
                       RuntimePackAssets="@(RuntimePackAsset)"
                       IncludeMainProject="$(IncludeMainProjectInDepsFile)"
+                      TrimDepsJsonLibrariesWithoutAssets="$(TrimDepsJsonLibrariesWithoutAssets)"
                       RuntimeIdentifier="$(RuntimeIdentifier)"
                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
                       RuntimeFrameworks="@(RuntimeFramework)"
@@ -1280,14 +1266,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetEmbeddedApphostPaths"
           AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <Target Name="ComputeEmbeddedApphostPaths">
+  <Target Name="ComputeEmbeddedApphostPaths" Condition="'$(PackAsTool)' == 'true'">
 
     <ItemGroup>
       <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
     </ItemGroup>
 
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(TargetFramework)"
+      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(TargetFramework)))"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)"
       >

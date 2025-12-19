@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "sdk.sln",
+    "path": "sdk.slnx",
     "projects": [
       "src\\BlazorWasmSdk\\Tasks\\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj",
       "src\\BlazorWasmSdk\\Tool\\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.csproj",
@@ -26,6 +26,10 @@
       "src\\Layout\\redist\\tools\\tool_msbuild.csproj",
       "src\\Layout\\redist\\tools\\tool_nuget.csproj",
       "src\\Microsoft.DotNet.TemplateLocator\\Microsoft.DotNet.TemplateLocator.csproj",
+      "src\\Microsoft.CodeAnalysis.NetAnalyzers\\src\\Microsoft.CodeAnalysis.CSharp.NetAnalyzers\\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj",
+      "src\\Microsoft.CodeAnalysis.NetAnalyzers\\src\\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers\\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.vbproj",
+      "src\\Microsoft.CodeAnalysis.NetAnalyzers\\src\\Microsoft.CodeAnalysis.NetAnalyzers\\Microsoft.CodeAnalysis.NetAnalyzers.csproj",
+      "src\\Microsoft.CodeAnalysis.NetAnalyzers\\src\\Microsoft.CodeAnalysis.NetAnalyzers.Package.csproj",
       "src\\Microsoft.Win32.Msi\\Microsoft.Win32.Msi.csproj",
       "src\\RazorSdk\\Tasks\\Microsoft.NET.Sdk.Razor.Tasks.csproj",
       "src\\RazorSdk\\Tool\\Microsoft.NET.Sdk.Razor.Tool.csproj",

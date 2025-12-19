@@ -1,15 +1,17 @@
 <Project>
 
-  <PropertyGroup>
-    <TestHostFolder>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</TestHostFolder>
-  </PropertyGroup>
-
   <Target Name="OverlaySdkOnLKG" AfterTargets="AfterBuild" DependsOnTargets="GenerateInstallerLayout">
     <PropertyGroup>
       <_DotNetHiveRoot>$(DOTNET_INSTALL_DIR)</_DotNetHiveRoot>
       <_DotNetHiveRoot Condition="'$(_DotNetHiveRoot)' == ''">$(RepoRoot).dotnet/</_DotNetHiveRoot>
       <_DotNetHiveRoot Condition="!HasTrailingSlash('$(_DotNetHiveRoot)')">$(_DotNetHiveRoot)/</_DotNetHiveRoot>
     </PropertyGroup>
+
+    <!-- Get stage 0 SDK version without having to duplicate the LKG SDK property between the global.json
+    and a property. -->
+    <Exec Command="$(DotnetTool) --version" ConsoleToMsbuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="Stage0SdkVersion"/>
+    </Exec>
 
     <!-- Copy artifacts from the stage0 SDK folder.
          Ignore the sdk, templates and host files for which only live built artifacts should be used. -->
@@ -18,21 +20,27 @@
                        Exclude="$(_DotNetHiveRoot)sdk\**\*;
                                 $(_DotNetHiveRoot)templates\**\*;
                                 $(_DotNetHiveRoot)host\**\*"/>
-      <OverlaySDKFile Include="@(_OverlaySDKFile->'$(TestHostFolder)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
+      <OverlaySDKFile Include="@(_OverlaySDKFile->'$(TestHostDotNetRoot)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
     </ItemGroup>
 
     <ItemGroup>
       <_InstallerOutputFile Include="$(RedistInstallerLayoutPath)**\*" />
-      <InstallerOutputFile Include="@(_InstallerOutputFile->'$(TestHostFolder)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
+      <InstallerOutputFile Include="@(_InstallerOutputFile->'$(TestHostDotNetRoot)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
       <!-- Use available live built artifacts instead of stage0 files. -->
       <InstallerOutputFile Include="@(OverlaySDKFile)" Exclude="@(InstallerOutputFile)" />
     </ItemGroup>
 
     <!-- Copy artifacts to the testhost folder. -->
+    <!-- Using hard linking below will cause the SDK testing overlay to create changes in the installer layout.
+         Needs review and fix. https://github.com/dotnet/sdk/issues/51112 -->
     <Copy DestinationFiles="@(InstallerOutputFile)"
           SourceFiles="@(InstallerOutputFile->Metadata('Source'))"
           SkipUnchangedFiles="true"
-          UseHardLinksIfPossible="true" />
+          UseHardLinksIfPossible="false" />
+
+    <OverrideAndCreateBundledNETCoreAppPackageVersion
+      Stage0BundledVersionsPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
+      Stage2BundledVersionsPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
   </Target>
 
   <Target Name="PublishTestWorkloads"
@@ -53,10 +61,10 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(WorkloadManifestContent)"
-          DestinationFiles="@(WorkloadManifestContent->'$(TestHostFolder)sdk-manifests\$(VersionBand)\%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(WorkloadManifestContent->'$(TestHostDotNetRoot)sdk-manifests\$(VersionBand)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Copy SourceFiles="@(WorkloadPackContent)"
-          DestinationFiles="@(WorkloadPackContent->'$(TestHostFolder)packs\%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(WorkloadPackContent->'$(TestHostDotNetRoot)packs\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 </Project>

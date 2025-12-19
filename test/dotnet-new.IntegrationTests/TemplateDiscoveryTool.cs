@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             testOutputHelper = new SharedTestOutputHelper(messageSink);
             string home = Utilities.CreateTemporaryFolder("home");
             dotnetNewTestExecutionDir = Utilities.GetTestExecutionTempFolder();
-            string toolManifestPath = Path.Combine(dotnetNewTestExecutionDir, @".config\dotnet-tools.json");
+            string toolManifestPath = Path.Combine(dotnetNewTestExecutionDir, "dotnet-tools.json");
             if (!File.Exists(toolManifestPath))
             {
                 new DotnetNewCommand(

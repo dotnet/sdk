@@ -57,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
             var toolLocationHelper_GetPlatformSDKDisplayName = "ReceiverType=Microsoft.Build.Utilities.ToolLocationHelper; ObjectInstanceType=; MethodName=GetPlatformSDKDisplayName(String, String)";
             var lines = File.ReadAllLines(logPath);
             var allOnFastPathWithExceptions = lines.All(l => (toolLocationHelper_GetPlatformSDKLocation.Equals(l) || toolLocationHelper_GetPlatformSDKDisplayName.Equals(l)));
-            allOnFastPathWithExceptions.Should().BeTrue();
+            allOnFastPathWithExceptions.Should().BeTrue("If this test fails, file a bug to add the new fast path in MSBuild like https://github.com/dotnet/msbuild/issues/12029. You may add an exclusion with a comment in this test while that is in process.");
         }
     }
 }

@@ -152,8 +152,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.wasm.gz")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.Private.CoreLib.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.Private.CoreLib.wasm.gz")).Should().Exist();
 
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }
@@ -1610,6 +1610,16 @@ public class TestReference
             var outputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
             var fileInWwwroot = new FileInfo(Path.Combine(outputDirectory, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.wasm"));
             fileInWwwroot.Should().Exist();
+        }
+
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [InlineData("")]
+        [InlineData("/p:BlazorFingerprintBlazorJs=false")]
+        public void Publish_BlazorWasmReferencedByAspNetCoreServer(string publishArg)
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer");
+            var publishCommand = CreatePublishCommand(testInstance, "Server");
+            ExecuteCommand(publishCommand, publishArg).Should().Pass();
         }
 
         private void VerifyTypeGranularTrimming(string blazorPublishDirectory)

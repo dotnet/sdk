@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.Tools
         internal const int UnableToLocateMSBuildExitCode = 3;
 
         private static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
-        private static string[] SeverityLevels => new[] { "info", "warn", "error" };
+        private static string[] SeverityLevels => new[] { "info", "warn", "error", "hidden" };
 
         public static readonly Argument<string> SlnOrProjectArgument = new Argument<string>(Resources.SolutionOrProjectArgumentName)
         {
@@ -164,18 +164,18 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public static FormatOptions ParseCommonOptions(this ParseResult parseResult, FormatOptions formatOptions, ILogger logger)
         {
-            if (parseResult.GetResult(NoRestoreOption) is not null)
+            if (parseResult.GetValue(NoRestoreOption))
             {
                 formatOptions = formatOptions with { NoRestore = true };
             }
 
-            if (parseResult.GetResult(VerifyNoChanges) is not null)
+            if (parseResult.GetValue(VerifyNoChanges))
             {
                 formatOptions = formatOptions with { ChangesAreErrors = true };
                 formatOptions = formatOptions with { SaveFormattedFiles = false };
             }
 
-            if (parseResult.GetResult(IncludeGeneratedOption) is not null)
+            if (parseResult.GetValue(IncludeGeneratedOption))
             {
                 formatOptions = formatOptions with { IncludeGeneratedFiles = true };
             }
@@ -290,6 +290,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 FixSeverity.Error => DiagnosticSeverity.Error,
                 FixSeverity.Warn => DiagnosticSeverity.Warning,
                 FixSeverity.Info => DiagnosticSeverity.Info,
+                FixSeverity.Hidden => DiagnosticSeverity.Hidden,
                 _ => throw new ArgumentOutOfRangeException(nameof(severity)),
             };
         }
@@ -300,7 +301,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             if (parseResult.GetValue<string>(SlnOrProjectArgument) is string { Length: > 0 } slnOrProject)
             {
-                if (parseResult.GetResult(FolderOption) is not null)
+                if (parseResult.GetValue(FolderOption))
                 {
                     formatOptions = formatOptions with { WorkspaceFilePath = slnOrProject };
                     formatOptions = formatOptions with { WorkspaceType = WorkspaceType.Folder };

@@ -144,7 +144,7 @@ _testhost_build() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--use-current-runtime --framework --configuration --runtime --version-suffix --no-restore --interactive --verbosity --debug --output --artifacts-path --no-incremental --no-dependencies --nologo --self-contained --no-self-contained --arch --os --disable-build-servers --help" 
+    opts="--use-current-runtime --framework --configuration --runtime --version-suffix --no-restore --interactive --verbosity --debug --output --artifacts-path --no-incremental --no-dependencies --no-logo --self-contained --no-self-contained --arch --os --disable-build-servers --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -168,7 +168,7 @@ _testhost_build() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -229,7 +229,7 @@ _testhost_clean() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--framework --runtime --configuration --interactive --verbosity --output --artifacts-path --nologo --disable-build-servers --help" 
+    opts="--framework --runtime --configuration --interactive --verbosity --output --artifacts-path --no-logo --disable-build-servers --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -970,7 +970,7 @@ _testhost_pack() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--output --artifacts-path --no-build --include-symbols --include-source --serviceable --nologo --interactive --no-restore --verbosity --version-suffix --configuration --disable-build-servers --use-current-runtime --help" 
+    opts="--output --artifacts-path --no-build --include-symbols --include-source --serviceable --no-logo --interactive --no-restore --verbosity --version-suffix --version --configuration --disable-build-servers --use-current-runtime --runtime --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -982,11 +982,15 @@ _testhost_pack() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
         --configuration|-c)
+            COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
+            return
+        ;;
+        --runtime|-r)
             COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
             return
         ;;
@@ -1002,7 +1006,7 @@ _testhost_package() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="search add list remove --help" 
+    opts="search add list remove update --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1027,6 +1031,11 @@ _testhost_package() {
             
         (remove)
             _testhost_package_remove $(($1+1))
+            return
+            ;;
+            
+        (update)
+            _testhost_package_update $(($1+1))
             return
             ;;
             
@@ -1058,7 +1067,7 @@ _testhost_package_add() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--version --framework --no-restore --source --package-directory --interactive --prerelease --project --help" 
+    opts="--version --framework --no-restore --source --package-directory --interactive --prerelease --project --file --help" 
     opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
@@ -1111,12 +1120,44 @@ _testhost_package_remove() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--interactive --project --help" 
+    opts="--interactive --project --file --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
         return
     fi
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+
+_testhost_package_update() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="--project --vulnerable --interactive --verbosity --help" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    case $prev in
+        --vulnerable)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
+            return
+        ;;
+        --interactive)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
+            return
+        ;;
+        --verbosity|-v)
+            COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+    esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
@@ -1152,7 +1193,7 @@ _testhost_project_convert() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--output --force --help" 
+    opts="--output --force --interactive --dry-run --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1169,7 +1210,7 @@ _testhost_publish() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--use-current-runtime --output --artifacts-path --manifest --no-build --self-contained --no-self-contained --nologo --framework --runtime --configuration --version-suffix --interactive --no-restore --verbosity --arch --os --disable-build-servers --help" 
+    opts="--use-current-runtime --output --artifacts-path --manifest --no-build --self-contained --no-self-contained --no-logo --framework --runtime --configuration --version-suffix --interactive --no-restore --verbosity --arch --os --disable-build-servers --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1197,7 +1238,7 @@ _testhost_publish() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1306,7 +1347,7 @@ _testhost_restore() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--disable-build-servers --source --packages --use-current-runtime --disable-parallel --configfile --no-http-cache --ignore-failed-sources --force --runtime --no-dependencies --verbosity --interactive --artifacts-path --use-lock-file --locked-mode --lock-file-path --force-evaluate --arch --help" 
+    opts="--disable-build-servers --source --packages --use-current-runtime --disable-parallel --configfile --no-http-cache --ignore-failed-sources --force --runtime --no-dependencies --verbosity --interactive --artifacts-path --use-lock-file --locked-mode --lock-file-path --force-evaluate --no-logo --arch --os --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1338,7 +1379,7 @@ _testhost_run() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--configuration --framework --runtime --project --launch-profile --no-launch-profile --no-build --interactive --no-restore --no-cache --self-contained --no-self-contained --verbosity --arch --os --disable-build-servers --artifacts-path --environment --help" 
+    opts="--configuration --framework --runtime --project --file --launch-profile --no-launch-profile --device --list-devices --no-build --interactive --no-restore --no-cache --self-contained --no-self-contained --verbosity --arch --os --disable-build-servers --artifacts-path --environment --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1366,7 +1407,7 @@ _testhost_run() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1500,7 +1541,7 @@ _testhost_store() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--manifest --framework-version --output --working-dir --skip-optimization --skip-symbols --framework --runtime --verbosity --use-current-runtime --disable-build-servers --help" 
+    opts="--manifest --framework-version --output --working-dir --skip-optimization --skip-symbols --framework --runtime --verbosity --use-current-runtime --disable-build-servers --no-logo --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1516,7 +1557,7 @@ _testhost_store() {
             COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1532,7 +1573,7 @@ _testhost_test() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--settings --list-tests --environment --filter --test-adapter-path --logger --output --artifacts-path --diag --no-build --results-directory --collect --blame --blame-crash --blame-crash-dump-type --blame-crash-collect-always --blame-hang --blame-hang-dump-type --blame-hang-timeout --nologo --configuration --framework --runtime --no-restore --interactive --verbosity --arch --os --disable-build-servers --help" 
+    opts="--settings --list-tests --environment --filter --test-adapter-path --logger --output --artifacts-path --diag --no-build --results-directory --collect --blame --blame-crash --blame-crash-dump-type --blame-crash-collect-always --blame-hang --blame-hang-dump-type --blame-hang-timeout --no-logo --configuration --framework --runtime --no-restore --interactive --verbosity --arch --os --disable-build-servers --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1564,7 +1605,7 @@ _testhost_test() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1580,7 +1621,7 @@ _testhost_tool() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="install uninstall update list run search restore --help" 
+    opts="install uninstall update list run search restore execute --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1623,6 +1664,11 @@ _testhost_tool() {
             return
             ;;
             
+        (execute)
+            _testhost_tool_execute $(($1+1))
+            return
+            ;;
+            
     esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1645,6 +1691,10 @@ _testhost_tool_install() {
     case $prev in
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+        --create-manifest-if-needed)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
     esac
@@ -1767,6 +1817,35 @@ _testhost_tool_restore() {
     fi
     
     case $prev in
+        --verbosity|-v)
+            COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+    esac
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+
+_testhost_tool_execute() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="--version --yes --interactive --allow-roll-forward --prerelease --configfile --source --add-source --disable-parallel --ignore-failed-sources --no-http-cache --verbosity --help" 
+    opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    case $prev in
+        --yes|-y)
+            COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
+            return
+        ;;
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return

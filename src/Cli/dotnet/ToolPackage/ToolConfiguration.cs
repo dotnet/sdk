@@ -1,7 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
+
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
@@ -10,14 +11,16 @@ internal class ToolConfiguration
     public ToolConfiguration(
         string commandName,
         string toolAssemblyEntryPoint,
-        IEnumerable<string> warnings = null)
+        string runner,
+        IDictionary<string, PackageIdentity>? ridSpecificPackages = null,
+        IEnumerable<string>? warnings = null)
     {
         if (string.IsNullOrWhiteSpace(commandName))
         {
             throw new ToolConfigurationException(CliStrings.ToolSettingsMissingCommandName);
         }
 
-        if (string.IsNullOrWhiteSpace(toolAssemblyEntryPoint))
+        if (string.IsNullOrWhiteSpace(toolAssemblyEntryPoint) && ridSpecificPackages?.Any() != true)
         {
             throw new ToolConfigurationException(
                 string.Format(
@@ -30,6 +33,8 @@ internal class ToolConfiguration
 
         CommandName = commandName;
         ToolAssemblyEntryPoint = toolAssemblyEntryPoint;
+        Runner = runner;
+        RidSpecificPackages = ridSpecificPackages;
         Warnings = warnings ?? [];
     }
 
@@ -57,7 +62,13 @@ internal class ToolConfiguration
         }
     }
 
+    
+
     public string CommandName { get; }
     public string ToolAssemblyEntryPoint { get; }
+    public string Runner { get; }
+
+    public IDictionary<string, PackageIdentity>? RidSpecificPackages { get; }
+
     public IEnumerable<string> Warnings { get; }
 }

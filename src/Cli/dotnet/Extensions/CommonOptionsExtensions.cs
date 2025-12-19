@@ -5,6 +5,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Extensions;
 

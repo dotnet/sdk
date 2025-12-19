@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet tool update -g --tool-path /tmp/folder {PackageId}");
+            var result = Parser.Parse($"dotnet tool update -g --tool-path /tmp/folder {PackageId}");
 
             var toolUpdateCommand = new ToolUpdateCommand(
                 result);
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithBothGlobalAndLocalShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet tool update --local --tool-path /tmp/folder {PackageId}");
+            var result = Parser.Parse($"dotnet tool update --local --tool-path /tmp/folder {PackageId}");
 
             var toolUpdateCommand = new ToolUpdateCommand(
                 result);
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithGlobalAndToolManifestShowErrorMessage()
         {
             var result =
-                Parser.Instance.Parse($"dotnet tool update -g --tool-manifest folder/my-manifest.format {PackageId}");
+                Parser.Parse($"dotnet tool update -g --tool-manifest folder/my-manifest.format {PackageId}");
 
             var toolUpdateCommand = new ToolUpdateCommand(
                 result);
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithToolPathAndToolManifestShowErrorMessage()
         {
             var result =
-                Parser.Instance.Parse(
+                Parser.Parse(
                     $"dotnet tool update --tool-path /tmp/folder --tool-manifest folder/my-manifest.format {PackageId}");
 
             var toolUpdateCommand = new ToolUpdateCommand(
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithAllAndVersionShowErrorMessage()
         {
             var result =
-                Parser.Instance.Parse(
+                Parser.Parse(
                     $"dotnet tool update --all --version 1.0.0");
 
             var toolUpdateCommand = new ToolUpdateCommand(
@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithoutAllOrPackageIdShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet tool update");
+            var result = Parser.Parse($"dotnet tool update");
 
             var toolUpdateCommand = new ToolUpdateCommand(result);
 
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithBothAllAndPackageIdShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet tool update packageId --all");
+            var result = Parser.Parse($"dotnet tool update packageId --all");
 
             var toolUpdateCommand = new ToolUpdateCommand(result);
 

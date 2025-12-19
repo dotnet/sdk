@@ -157,9 +157,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [Fact]
         public async Task GivenARelativeSourcePathInstallSucceeds()
         {
+            new RunExeCommand(Log, "dotnet", "nuget", "locals", "all", "--list")
+                .Execute().Should().Pass();
+
             string getTestLocalFeedPath = GetTestLocalFeedPath();
             string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
-            Log.WriteLine(relativePath);
+            Log.WriteLine("Relative path: " + relativePath);
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),

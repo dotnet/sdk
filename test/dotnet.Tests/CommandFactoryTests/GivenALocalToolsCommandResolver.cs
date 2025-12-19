@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Tests
             _fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
             _fileSystem.File.CreateEmptyFile(fakeExecutable.Value);
             _localToolsResolverCache.Save(
-                new Dictionary<RestoredCommandIdentifier, RestoredCommand>
+                new Dictionary<RestoredCommandIdentifier, ToolCommand>
                 {
                     [new RestoredCommandIdentifier(
                             new PackageId("local.tool.console.a"),
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Tests
                             NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                             Constants.AnyRid,
                             toolCommandNameA)]
-                        = new RestoredCommand(toolCommandNameA, "dotnet", fakeExecutable)
+                        = new ToolCommand(toolCommandNameA, "dotnet", fakeExecutable)
                 });
 
             var localToolsCommandResolver = new LocalToolsCommandResolver(
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Tests
             _fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
             _fileSystem.File.CreateEmptyFile(fakeExecutable.Value);
             _localToolsResolverCache.Save(
-                new Dictionary<RestoredCommandIdentifier, RestoredCommand>
+                new Dictionary<RestoredCommandIdentifier, ToolCommand>
                 {
                     [new RestoredCommandIdentifier(
                             new PackageId("local.tool.console.a"),
@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.Tests
                             NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                             Constants.AnyRid,
                             toolCommandNameA)]
-                        = new RestoredCommand(toolCommandNameA, "dotnet", fakeExecutable)
+                        = new ToolCommand(toolCommandNameA, "dotnet", fakeExecutable)
                 });
 
             var localToolsCommandResolver = new LocalToolsCommandResolver(
@@ -191,7 +191,7 @@ namespace Microsoft.DotNet.Tests
             _fileSystem.File.CreateEmptyFile(fakeExecutableA.Value);
             _fileSystem.File.CreateEmptyFile(fakeExecutableDotnetA.Value);
             _localToolsResolverCache.Save(
-                new Dictionary<RestoredCommandIdentifier, RestoredCommand>
+                new Dictionary<RestoredCommandIdentifier, ToolCommand>
                 {
                     [new RestoredCommandIdentifier(
                             new PackageId("local.tool.console.a"),
@@ -199,14 +199,14 @@ namespace Microsoft.DotNet.Tests
                             NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                             Constants.AnyRid,
                             new ToolCommandName("a"))]
-                        = new RestoredCommand(new ToolCommandName("a"), "dotnet", fakeExecutableA),
+                        = new ToolCommand(new ToolCommandName("a"), "dotnet", fakeExecutableA),
                     [new RestoredCommandIdentifier(
                             new PackageId("local.tool.console.dotnet.a"),
                             NuGetVersion.Parse("1.0.4"),
                             NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                             Constants.AnyRid,
                             new ToolCommandName("dotnet-a"))]
-                        = new RestoredCommand(new ToolCommandName("dotnet-a"), "dotnet", fakeExecutableDotnetA)
+                        = new ToolCommand(new ToolCommandName("dotnet-a"), "dotnet", fakeExecutableDotnetA)
                 });
 
             var localToolsCommandResolver = new LocalToolsCommandResolver(

@@ -101,6 +101,20 @@ namespace Microsoft.NET.TestFramework
                         return false;
                     }
                 }
+                else if (osId.Equals("centos", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (nugetFramework.Version < new Version(2, 0, 0, 0))
+                    {
+                        return false;
+                    }
+                }
+                else if (osId.Equals("debian", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (nugetFramework.Version < new Version(2, 0, 0, 0))
+                    {
+                        return false;
+                    }
+                }
                 else if (Version.TryParse(versionString, out Version? osVersion))
                 {
                     if (osId.Equals("fedora", StringComparison.OrdinalIgnoreCase))

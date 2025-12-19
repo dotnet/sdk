@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             SetupFileLayoutAndFeed(temporaryDirectory, toolPackageStoreMock);
 
-            _parseResult = Parser.Instance.Parse("dotnet tool restore");
+            _parseResult = Parser.Parse("dotnet tool restore");
 
             _localToolsResolverCache
                 = new LocalToolsResolverCache(
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         _packageVersionA,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                         Constants.AnyRid,
-                        _toolCommandNameA), out RestoredCommand _)
+                        _toolCommandNameA), out ToolCommand _)
                 .Should().BeTrue();
 
             _localToolsResolverCache.TryLoad(
@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         _packageVersionB,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                         Constants.AnyRid,
-                        _toolCommandNameB), out RestoredCommand _)
+                        _toolCommandNameB), out ToolCommand _)
                 .Should().BeTrue();
         }
 

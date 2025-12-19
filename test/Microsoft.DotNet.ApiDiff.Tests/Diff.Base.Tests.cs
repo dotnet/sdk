@@ -61,7 +61,7 @@ public abstract class DiffBaseTests
             addPartialModifier,
             DiffGeneratorFactory.DefaultDiagnosticOptions);
 
-        await generator.RunAsync();
+        await generator.RunAsync(CancellationToken.None);
 
         foreach ((string expectedAssemblyName, string expectedCode) in expected)
         {

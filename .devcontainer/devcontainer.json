@@ -27,5 +27,10 @@
     "DOTNET_ROOT": "${containerWorkspaceFolder}/.dotnet",
     "DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR": "${containerWorkspaceFolder}/.dotnet",
     "NUGET_PACKAGES": "/home/vscode/.nuget/packages"
+  },
+  "remoteUser": "vscode",
+  "hostRequirements": {
+    "cpus": 16,
+    "memory": "32gb"
   }
 }

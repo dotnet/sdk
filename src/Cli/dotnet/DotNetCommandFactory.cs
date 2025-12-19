@@ -38,7 +38,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string curren
         var command = Parser.GetBuiltInCommand(commandName);
         if (command?.Action is AsynchronousCommandLineAction action)
         {
-            commandFunc = (args) => action.InvokeAsync(Parser.Instance.Parse(args)).Result;
+            commandFunc = (args) => Parser.Invoke([commandName, ..args]);
             return true;
         }
         commandFunc = null;

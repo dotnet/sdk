@@ -255,7 +255,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("PostActions/RestoreNuGet/Files_MatchSpecifiedFiles", "TestAssets.PostActions.RestoreNuGet.Files_MatchSpecifiedFiles", "Tool.Library/Tool.Library.csproj;Tool.Test/Tool.Test.csproj", "Tool/Tool.csproj")]
         [InlineData("PostActions/RestoreNuGet/Files_MismatchSpecifiedFiles", "TestAssets.PostActions.RestoreNuGet.Files_MismatchSpecifiedFiles", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
         [InlineData("PostActions/RestoreNuGet/Files_PatternWithFileName", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithFileName", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
-        [InlineData("PostActions/RestoreNuGet/Files_PatternWithWildcard", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithWildcard", "Tool.Library/Tool.Library.csproj;Tool.Test/Tool.Test.csproj", "Tool/Tool.csproj")]
+        [InlineData("PostActions/RestoreNuGet/Files_PatternWithWildcard", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithWildcard", "Tool.Library/Tool.Library.csproj;Tool.Test/Tool.Test.csproj", "Tool/Tool.csproj", Skip = "https://github.com/dotnet/sdk/issues/49318")]
         [InlineData("PostActions/RestoreNuGet/Files_PatternWithGlobstar", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithGlobstar", "Tool.Library/Tool.Library.csproj", "Tool/Tool.csproj;Tool.Test/Tool.Test.csproj")]
         [InlineData("PostActions/RestoreNuGet/Files_SupportSemicolonDelimitedList", "TestAssets.PostActions.RestoreNuGet.Files_SupportSemicolonDelimitedList", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
         public void Restore_FilesTest(string templatePartLocation, string templateName, string expectedRestoredProjects, string unexpectedRestoredProjects)
@@ -775,7 +775,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("solution folder: src")
                 .And.NotHaveStdOutContaining("Manual instructions: Add the generated files to solution manually.");
 
-            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(workingDirectory, "MySolution.sln")));
+            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(workingDirectory, "MySolution.slnx")));
         }
 
         [Fact]
@@ -811,7 +811,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining(Path.Combine(outputDirectory, "MySolution.sln"))
                 .And.HaveStdOutContaining(Path.Combine(outputDirectory, "MyProject.csproj"));
 
-            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(outputDirectory, "MySolution.sln")));
+            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(outputDirectory, "MySolution.slnx")));
         }
 
         [Fact]
@@ -847,7 +847,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining(Path.Combine(outputDirectory, "MySolution.sln"))
                 .And.HaveStdOutContaining(Path.Combine(outputDirectory, "MyProject.csproj"));
 
-            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(outputDirectory, "MySolution.sln")));
+            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(outputDirectory, "MySolution.slnx")));
         }
 
         [Fact]
@@ -883,7 +883,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining(Path.Combine(workingDirectory, outputDirectory, "MySolution.sln"))
                 .And.HaveStdOutContaining(Path.Combine(workingDirectory, outputDirectory, "MyProject.csproj"));
 
-            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(workingDirectory, outputDirectory, "MySolution.sln")));
+            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(workingDirectory, outputDirectory, "MySolution.slnx")));
         }
 
         [Fact]
@@ -916,11 +916,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("solution folder: Server")
                 .And.NotHaveStdOutContaining("Manual instructions: Add generated Server project to solution manually to folder 'Server'.");
 
-            Assert.True(File.Exists(Path.Combine(workingDirectory, "MySolution.sln")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, "MySolution.slnx")));
             Assert.True(File.Exists(Path.Combine(workingDirectory, "Server/Server.csproj")));
             Assert.True(File.Exists(Path.Combine(workingDirectory, "Client/Client.csproj")));
 
-            string solutionFileContents = File.ReadAllText(Path.Combine(workingDirectory, "MySolution.sln"));
+            string solutionFileContents = File.ReadAllText(Path.Combine(workingDirectory, "MySolution.slnx"));
             Assert.Contains("Server.csproj", solutionFileContents);
             Assert.DoesNotContain("Client.csproj", solutionFileContents);
         }

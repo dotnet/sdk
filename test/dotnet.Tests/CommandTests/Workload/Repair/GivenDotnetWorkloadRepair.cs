@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         public GivenDotnetWorkloadRepair(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
-            _parseResult = Parser.Instance.Parse("dotnet workload repair");
+            _parseResult = Parser.Parse("dotnet workload repair");
             _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
 
             // Install a workload
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute();
@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
 
             // Install a workload
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute();

@@ -61,7 +61,18 @@ namespace Microsoft.NET.TestFramework.Utilities
                 string.Equals(Hash, other.Hash, StringComparison.Ordinal);
         }
 
-        public override int GetHashCode() => LastWriteTimeUtc.GetHashCode();
+        public override int GetHashCode()
+        {
+#if NETCOREAPP3_1_OR_GREATER
+            return HashCode.Combine(Path, LastWriteTimeUtc, Hash);
+#else
+            int hashCode = 1601069575;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string?>.Default.GetHashCode(Path);
+            hashCode = hashCode * -1521134295 + EqualityComparer<DateTime?>.Default.GetHashCode(LastWriteTimeUtc);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string?>.Default.GetHashCode(Hash);
+            return hashCode;
+#endif
+        }
 
         private string GetDebuggerDisplay()
         {

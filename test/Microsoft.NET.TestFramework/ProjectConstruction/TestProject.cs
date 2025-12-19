@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
 
 namespace Microsoft.NET.TestFramework.ProjectConstruction
@@ -24,6 +23,8 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         /// </summary>
         public string? Name { get; set; }
 
+        public string TargetExtension { get; set; } = ".csproj";
+
         public bool IsSdkProject { get; set; } = true;
 
         public bool IsExe { get; set; }
@@ -32,7 +33,6 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         /// This value merely sets the OutputType and is not automatically tied here to whether the project is a WPF or Windows Form App Executable.
         /// </summary>
         public bool IsWinExe { get; set; }
-
 
         public string? ProjectSdk { get; set; }
 
@@ -56,7 +56,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
         public bool UseArtifactsOutput { get; set; }
 
-        public List<TestProject?> ReferencedProjects { get; } = new List<TestProject?>();
+        public List<TestProject> ReferencedProjects { get; } = [];
 
         public List<string> References { get; } = new List<string>();
 
@@ -86,6 +86,12 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         /// Values can be retrieved with <see cref="GetPropertyValues"/>
         /// </summary>
         public List<string> PropertiesToRecord { get; } = new List<string>();
+
+        /// <summary>
+        /// The target before which to record properties specified in <see cref="PropertiesToRecord"/>.
+        /// Defaults to "AfterBuild".
+        /// </summary>
+        public string TargetToRecordPropertiesBefore { get; private set; } = "AfterBuild";
 
         public IEnumerable<string> TargetFrameworkIdentifiers
         {
@@ -126,12 +132,12 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             }
         }
 
-        internal void Create(TestAsset targetTestAsset, string testProjectsSourceFolder, string targetExtension = ".csproj")
+        internal void Create(TestAsset targetTestAsset, string testProjectsSourceFolder)
         {
             string targetFolder = Path.Combine(targetTestAsset.Path, Name ?? string.Empty);
             Directory.CreateDirectory(targetFolder);
 
-            string targetProjectPath = Path.Combine(targetFolder, Name + targetExtension);
+            string targetProjectPath = Path.Combine(targetFolder, Name + TargetExtension);
 
             string sourceProject;
             string sourceProjectBase = Path.Combine(testProjectsSourceFolder, "ProjectConstruction");
@@ -139,7 +145,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             {
                 sourceProject = Path.Combine(sourceProjectBase, "SdkProject", "SdkProject.csproj");
             }
-            else if (targetExtension == ".vbproj")
+            else if (TargetExtension == ".vbproj")
             {
                 sourceProject = Path.Combine(sourceProjectBase, "NetFrameworkProjectVB", "NetFrameworkProject.vbproj");
             }
@@ -252,7 +258,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                     if(importGroup?.Attribute("Project") is not null)
                     {
                         importGroup.Attribute("Project")!.Value = "$(VSINSTALLDIR)\\MSBuild\\Microsoft\\Portable\\$(TargetFrameworkVersion)\\Microsoft.Portable.CSharp.targets";
-                    }  
+                    }
                 }
 
                 if(TargetFrameworkVersion is not null)
@@ -309,7 +315,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 foreach (var referencedProject in ReferencedProjects)
                 {
                     projectReferenceItemGroup.Add(new XElement(ns + "ProjectReference",
-                    new XAttribute("Include", $"../{referencedProject?.Name}/{referencedProject?.Name}.csproj")));
+                    new XAttribute("Include", $"../{referencedProject.Name}/{referencedProject.Name}{referencedProject.TargetExtension}")));
                 }
             }
 
@@ -375,12 +381,12 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
                 propertyGroup?.Add(new XElement(ns + "CustomAfterDirectoryBuildTargets", $"$(CustomAfterDirectoryBuildTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
                 propertyGroup?.Add(new XElement(ns + "CustomAfterMicrosoftCommonCrossTargetingTargets", $"$(CustomAfterMicrosoftCommonCrossTargetingTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
-                
+
                 var customAfterDirectoryBuildTargets = new XDocument(new XElement(ns + "Project"));
 
                 var target = new XElement(ns + "Target",
                     new XAttribute("Name", "WritePropertyValues"),
-                    new XAttribute("BeforeTargets", "AfterBuild"));
+                    new XAttribute("BeforeTargets", TargetToRecordPropertiesBefore));
 
                 customAfterDirectoryBuildTargets.Root?.Add(target);
 
@@ -425,7 +431,7 @@ class Program
 
                     foreach (var dependency in ReferencedProjects)
                     {
-                        string? safeDependencyName = dependency?.Name?.Replace('.', '_');
+                        string? safeDependencyName = dependency.Name?.Replace('.', '_');
 
                         source += $"        Console.WriteLine({safeDependencyName}.{safeDependencyName}Class.Name);" + Environment.NewLine;
                         source += $"        Console.WriteLine({safeDependencyName}.{safeDependencyName}Class.List);" + Environment.NewLine;
@@ -454,7 +460,7 @@ namespace {safeThisName}
 ";
                     foreach (var dependency in ReferencedProjects)
                     {
-                        string? safeDependencyName = dependency?.Name?.Replace('.', '_');
+                        string? safeDependencyName = dependency.Name?.Replace('.', '_');
 
                         source += $"        public string {safeDependencyName}Name {{ get {{ return {safeDependencyName}.{safeDependencyName}Class.Name; }} }}" + Environment.NewLine;
                         source += $"        public List<string> {safeDependencyName}List {{ get {{ return {safeDependencyName}.{safeDependencyName}Class.List; }} }}" + Environment.NewLine;
@@ -464,22 +470,15 @@ namespace {safeThisName}
     @"    }
 }";
                     string sourcePath = Path.Combine(targetFolder, Name + ".cs");
-
                     File.WriteAllText(sourcePath, source);
                 }
-
-            }
-            else
-            {
-                foreach (var kvp in SourceFiles)
-                {
-                    File.WriteAllText(Path.Combine(targetFolder, kvp.Key), kvp.Value);
-                }
             }
 
-            foreach (var kvp in EmbeddedResources)
+            foreach (var kvp in SourceFiles.Concat(EmbeddedResources))
             {
-                File.WriteAllText(Path.Combine(targetFolder, kvp.Key), kvp.Value);
+                var targetPath = Path.Combine(targetFolder, kvp.Key);
+                Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+                File.WriteAllText(targetPath, kvp.Value);
             }
         }
 
@@ -496,6 +495,15 @@ namespace {safeThisName}
         public void RecordProperties(params string[] propertyNames)
         {
             PropertiesToRecord.AddRange(propertyNames);
+        }
+
+        /// <summary>
+        /// Tells this TestProject to record properties specified in <see cref="PropertiesToRecord"/> before the specified target.
+        /// By default properties are recorded before the "AfterBuild" target (so after the actual compile+copy targets have run).
+        /// </summary>
+        public void RecordPropertiesBeforeTarget(string targetName)
+        {
+            TargetToRecordPropertiesBefore = targetName;
         }
 
         /// <returns>
@@ -520,12 +528,6 @@ namespace {safeThisName}
             }
 
             return propertyValues;
-        }
-
-        public static bool ReferenceAssembliesAreInstalled(TargetDotNetFrameworkVersion targetFrameworkVersion)
-        {
-            var referenceAssemblies = ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(targetFrameworkVersion);
-            return referenceAssemblies != null;
         }
 
         private OutputPathCalculator GetOutputPathCalculator(string testRoot)

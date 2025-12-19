@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             var outputProgram = Path.Combine(outputDirectory.FullName, $"{testAppName}{Constants.ExeSuffix}");
 
             outputDirectory.Should().HaveFiles(new[] {
-                "System.dll", // File that should only exist if self contained 
+                "System.dll", // File that should only exist if self contained
             });
 
             new RunExeCommand(Log, outputProgram)
@@ -150,7 +150,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
 
         [Theory]
         [InlineData(true, false, false)] // PublishSC sets SC to true even if SC is false in the project file
-        [InlineData(false, false, false)] // PublishSC sets SC to false even if SC is true in the project file 
+        [InlineData(false, false, false)] // PublishSC sets SC to false even if SC is true in the project file
         [InlineData(true, true, false)] // PublishSC does not take effect if SC is global
         public void PublishSelfContainedPropertyDoesOrDoesntOverrideSelfContained(bool publishSelfContained, bool selfContainedIsGlobal, bool publishSelfContainedIsGlobal)
         {

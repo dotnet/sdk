@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet tool uninstall -g --tool-path /tmp/folder {PackageId}");
+            var result = Parser.Parse($"dotnet tool uninstall -g --tool-path /tmp/folder {PackageId}");
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithBothGlobalAndLocalShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet tool uninstall --local --tool-path /tmp/folder {PackageId}");
+            var result = Parser.Parse($"dotnet tool uninstall --local --tool-path /tmp/folder {PackageId}");
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithGlobalAndToolManifestShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet tool uninstall -g --tool-manifest folder/my-manifest.format {PackageId}");
+            var result = Parser.Parse($"dotnet tool uninstall -g --tool-manifest folder/my-manifest.format {PackageId}");
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithToolPathAndToolManifestShowErrorMessage()
         {
-            var result = Parser.Instance.Parse(
+            var result = Parser.Parse(
                     $"dotnet tool uninstall --tool-path /tmp/folder --tool-manifest folder/my-manifest.format {PackageId}");
 
             var toolUninstallCommand = new ToolUninstallCommand(result);

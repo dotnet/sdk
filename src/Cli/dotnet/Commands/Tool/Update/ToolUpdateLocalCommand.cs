@@ -38,8 +38,7 @@ internal class ToolUpdateLocalCommand : CommandBase
             (IToolPackageStore,
                 IToolPackageStoreQuery,
                 IToolPackageDownloader downloader) toolPackageStoresAndDownloader
-                    = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
-                        additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()));
+                    = ToolPackageFactory.CreateToolPackageStoresAndDownloader();
             _toolPackageDownloader = toolPackageStoresAndDownloader.downloader;
         }
         else

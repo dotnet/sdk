@@ -24,6 +24,12 @@ public class DockerRegistryManager
     public const string FullyQualifiedBaseImageAspNetDigest = $"{BaseImageSource}/{AspNetBaseImage}@{Net9ImageDigest}";
     private static string? s_registryContainerId;
 
+    private static string SDK_AzureContainerRegistryImage => "dotnetdhmirror-f8bzbjakh8cga6ab.azurecr.io/registry:2";
+    private static string Docker_HubRegistryImage => "docker.io/library/registry:2";
+
+    // TODO: some logic to pivot between this and Docker Hub
+    private static string RegistryImageToUse => SDK_AzureContainerRegistryImage;
+
     internal class SameArchManifestPicker : IManifestPicker
     {
         public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier)
@@ -61,7 +67,7 @@ public class DockerRegistryManager
             {
                 logger.LogInformation("Spawning local registry at '{registry}', attempt #{attempt}.", LocalRegistry, spawnRegistryAttempt);
 
-                CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", "5010:5000", "--detach", "docker.io/library/registry:2").Execute();
+                CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", "5010:5000", "--detach", RegistryImageToUse).Execute();
 
                 processResult.Should().Pass().And.HaveStdOut();
 

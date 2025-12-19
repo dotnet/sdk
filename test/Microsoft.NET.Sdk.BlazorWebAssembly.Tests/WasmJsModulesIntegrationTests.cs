@@ -44,7 +44,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(blazorBootJson.FullName));
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
             resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-            initializers.TryGetProperty("blazorwasm-minimal.lib.module.js", out _).Should().BeTrue();
+            initializers.ValueKind.Should().Be(JsonValueKind.Array);
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "blazorwasm-minimal.lib.module.js");
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
         }
@@ -86,11 +89,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(blazorBootJson.FullName));
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
             resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-            initializers.TryGetProperty("blazorwasm.lib.module.js", out _).Should().BeTrue();
-            initializers.TryGetProperty("_content/RazorClassLibrary/razorclasslibrary.lib.module.js", out var hash).Should().BeTrue();
-
-            // Do some validation to ensure the hash is included
-            Convert.TryFromBase64String(hash.GetString().Substring("SHA256-".Length), new byte[256], out _).Should().BeTrue();
+            initializers.ValueKind.Should().Be(JsonValueKind.Array);
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "blazorwasm.lib.module.js");
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "_content/RazorClassLibrary/razorclasslibrary.lib.module.js");
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorhosted.modules.json")).Should().NotExist();
         }
@@ -128,8 +133,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(blazorBootJson.FullName));
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
             resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-            initializers.TryGetProperty("blazorwasm-minimal.lib.module.js", out var hash).Should().BeTrue();
-            Convert.TryFromBase64String(hash.GetString().Substring("SHA256-".Length), new byte[256], out _).Should().BeTrue();
+            initializers.ValueKind.Should().Be(JsonValueKind.Array);
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "blazorwasm-minimal.lib.module.js");
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
 
@@ -185,33 +192,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
 
-            var buildLibrary = GetLibraryInitializer(Path.Combine(intermediateOutputPath, WasmBootConfigFileName));
-            var publishLibrary = GetLibraryInitializer(Path.Combine(intermediateOutputPath, $"publish.{WasmBootConfigFileName}"));
-
-            publishLibrary.GetString().Should().NotBe(buildLibrary.GetString());
-
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
             var lib = new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.lib.module.js"));
             lib.Should().Exist();
-
-            var wwwrootPublishLibrary = GetLibraryInitializer(Path.Combine(outputPath, "wwwroot", "_framework", WasmBootConfigFileName));
-            publishLibrary.GetString().Should().Be(wwwrootPublishLibrary.GetString());
 
             AssertPublishAssets(
                 manifest,
                 outputPath,
                 intermediateOutputPath);
-
-            static JsonElement GetLibraryInitializer(string path)
-            {
-                var blazorBootJson = new FileInfo(path);
-                blazorBootJson.Should().Exist();
-                var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(path));
-                contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
-                resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-                initializers.TryGetProperty("blazorwasm-minimal.lib.module.js", out var buildLibrary).Should().BeTrue();
-                return buildLibrary;
-            }
         }
 
         [Fact]

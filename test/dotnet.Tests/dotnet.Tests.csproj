@@ -18,7 +18,7 @@
 
     <!-- Use layout folder for the output folder, to support in-process tests which expect to be running
          on a valid layout. -->
-    <OutputPath>$(ArtifactsBinDir)redist\$(Configuration)</OutputPath>
+    <OutputPath>$(TestHostFolder)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
@@ -26,6 +26,7 @@
     <!-- Removed here: https://github.com/dotnet/sdk/pull/46562 -->
     <Compile Remove="CommandTests\Test\MSBuildHandlerTests.cs" />
     <None Include="CompletionTests\snapshots\**\*" TargetPath="snapshots\%(RecursiveDir)\%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="CommandTests\Test\snapshots\**\*" TargetPath="snapshots\%(RecursiveDir)\%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="ShellShimTests\WpfBinaryTestAssets\testwpf.dll" TargetPath="WpfBinaryTestAssets\testwpf.dll" CopyToOutputDirectory="PreserveNewest" />
     <None Include="CollectCodeCoverage.runsettings" CopyToOutputDirectory="PreserveNewest" />
     <None Include="queryResultSample.json" CopyToOutputDirectory="PreserveNewest" />
@@ -76,7 +77,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Basic.CompilerLog.Util" />
     <PackageReference Include="Moq" />
+    <PackageReference Include="MSBuild.StructuredLogger" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
@@ -99,7 +102,7 @@
 
   <Target Name="CompareCliSnapshots">
     <ItemGroup>
-      <SnapshotFiles Include="$(ArtifactsBinDir)redist\$(Configuration)\snapshots\**\*.received.*" />
+      <SnapshotFiles Include="$(TestHostFolder)snapshots\**\*.received.*" />
     </ItemGroup>
     <Copy SourceFiles="@(SnapshotFiles)" DestinationFolder="$(MSBuildThisFileDirectory)CompletionTests\snapshots\%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
@@ -108,6 +111,6 @@
     <ItemGroup>
       <SnapshotFiles Include="$(MSBuildThisFileDirectory)CompletionTests\snapshots\**\*.received.*" />
     </ItemGroup>
-    <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles->Replace('received', 'verified'))" />
+    <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles-&gt;Replace('received', 'verified'))" />
   </Target>
 </Project>
