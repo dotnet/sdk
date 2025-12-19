@@ -84,7 +84,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
         await ImagePublisher.PublishImageAsync(multiArchImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
-            .ConfigureAwait(false); 
+            .ConfigureAwait(false);
 
         return !Log.HasLoggedErrors;
     }
@@ -127,7 +127,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 imageDigest = manifestV2.Config.digest;
                 imageSha = DigestUtils.GetShaFromDigest(imageDigest);
                 layers = manifestV2.Layers;
-            }     
+            }
 
             images[i] = new BuiltImage()
             {
@@ -159,7 +159,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         {
             Log.LogError(Strings.ImageConfigMissingArchitecture);
             return (string.Empty, string.Empty);
-        } 
+        }
         var os = configJson["os"]?.ToString();
         if (os is null)
         {
