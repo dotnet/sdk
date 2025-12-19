@@ -47,6 +47,9 @@ internal static class ContentStore
             or "application/vnd.oci.image.layer.v1.tar+gzip"
             or "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip"
                 => ".tar.gz",
+            "application/vnd.docker.image.rootfs.diff.tar.zstd"
+            or "application/vnd.oci.image.layer.v1.tar+zstd"
+                => ".tar.zst",
             "application/vnd.docker.image.rootfs.diff.tar"
             or "application/vnd.oci.image.layer.v1.tar"
                 => ".tar",
