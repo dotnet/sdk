@@ -1551,7 +1551,7 @@ public class EndToEndTests : IDisposable
     /// TODO: In the future, this image should be mirrored to the test ACR and the manifest updated
     /// to use the ACR reference for deterministic test runs.
     /// </remarks>
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact]
     public async Task EndToEnd_ZstdCompressedBaseImage()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_ZstdCompressedBaseImage));
