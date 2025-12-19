@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
-using Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
+using System.CommandLine.Completions;
+using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Package.Add;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
 using Microsoft.DotNet.Cli.Extensions;
@@ -12,19 +12,19 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.Add;
 
 internal static class AddCommandParser
 {
-    private static readonly Command Command = SetAction(AddCommandDefinition.Create());
+    private static readonly Command Command = SetActionAndCompletions(new AddCommandDefinition());
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetAction(Command command)
+    private static Command SetActionAndCompletions(AddCommandDefinition def)
     {
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
+        def.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-        command.Subcommands.Single(c => c.Name == AddPackageCommandDefinition.Name).SetAction((parseResult) => new PackageAddCommand(parseResult).Execute());
-        command.Subcommands.Single(c => c.Name == AddReferenceCommandDefinition.Name).SetAction((parseResult) => new ReferenceAddCommand(parseResult).Execute());
-        return command;
+        PackageCommandParser.ConfigureAddCommand(def.PackageCommand);
+        def.ReferenceCommand.SetAction(parseResult => new ReferenceAddCommand(parseResult).Execute());
+        return def;
     }
 }
