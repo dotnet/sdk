@@ -13,7 +13,6 @@
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
   <PropertyGroup>
     <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
