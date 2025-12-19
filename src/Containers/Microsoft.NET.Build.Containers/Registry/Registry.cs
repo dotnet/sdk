@@ -414,6 +414,12 @@ internal sealed class Registry
             // Assume file is up to date and just return it
             return localPath;
         }
+
+        // Log when we encounter zstd-compressed layers
+        if (descriptor.MediaType == SchemaTypes.DockerLayerZstd || descriptor.MediaType == SchemaTypes.OciLayerZstdV1)
+        {
+            _logger.LogTrace("Downloading zstd-compressed layer (mediaType: {0}). Layer will be passed through unmodified.", descriptor.MediaType);
+        }
     
         string tempTarballPath = ContentStore.GetTempFile();
     
