@@ -1,0 +1,6 @@
+# This file contains a list of commits that should be ignored by git blame
+# Each commit that is purely formatting changes should be added here
+# Usage: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Run dotnet format to fix code formatting
+0ce0dde866fd5a9eab5f60e2e7f07f9f87e8c8c5
