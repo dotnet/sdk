@@ -14,7 +14,7 @@ internal class ArchiveFileRegistry : ILocalRegistry
         ArchiveOutputPath = archiveOutputPath;
     }
 
-    internal async Task LoadAsync<T>(T image, SourceImageReference sourceReference, 
+    internal async Task LoadAsync<T>(T image, SourceImageReference sourceReference,
         DestinationImageReference destinationReference, CancellationToken cancellationToken,
         Func<T, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc)
     {
@@ -25,7 +25,7 @@ internal class ArchiveFileRegistry : ILocalRegistry
         // if doesn't end with a file extension, assume it's a directory
         if (!Path.HasExtension(fullPath))
         {
-           fullPath += Path.DirectorySeparatorChar;
+            fullPath += Path.DirectorySeparatorChar;
         }
 
         // pointing to a directory? -> append default name
@@ -50,13 +50,13 @@ internal class ArchiveFileRegistry : ILocalRegistry
 
     public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
-        CancellationToken cancellationToken) 
+        CancellationToken cancellationToken)
         => await LoadAsync(image, sourceReference, destinationReference, cancellationToken,
             DockerCli.WriteImageToStreamAsync);
 
     public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
-        CancellationToken cancellationToken) 
+        CancellationToken cancellationToken)
         => await LoadAsync(multiArchImage, sourceReference, destinationReference, cancellationToken,
             DockerCli.WriteMultiArchOciImageToStreamAsync);
 
