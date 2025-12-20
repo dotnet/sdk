@@ -89,7 +89,7 @@ public static class ParseResultExtensions
     public static string RootSubCommandResult(this ParseResult parseResult)
     {
         CommandResult commandResult = parseResult.CommandResult;
-        while (commandResult != parseResult.RootCommandResult && commandResult.Parent is CommandResult parentCommand)
+        while (commandResult.Parent is CommandResult parentCommand && parentCommand != parseResult.RootCommandResult)
         {
             commandResult = parentCommand;
         }

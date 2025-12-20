@@ -271,6 +271,8 @@ public class Program
         ParseResult parseResult = ParseArgs(args);
         SetupDotnetFirstRun(parseResult);
 
+        TelemetryEventEntry.SendFiltered(parseResult);
+
         if (parseResult.CanBeInvoked())
         {
             InvokeBuiltInCommand(parseResult, out var exitCode);
