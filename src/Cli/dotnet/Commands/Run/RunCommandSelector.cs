@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Utils;
 using Spectre.Console;
 
@@ -26,24 +27,31 @@ internal sealed class RunCommandSelector : IDisposable
     private readonly Dictionary<string, string> _globalProperties;
     private readonly FacadeLogger? _binaryLogger;
     private readonly bool _isInteractive;
+    private readonly MSBuildArgs _msbuildArgs;
     
     private ProjectCollection? _collection;
     private Microsoft.Build.Evaluation.Project? _project;
-    private ProjectInstance? _projectInstance;
+
+    /// <summary>
+    /// Gets whether the selector has a valid project that can be evaluated.
+    /// This is false for .sln files or other invalid project files.
+    /// </summary>
+    public bool HasValidProject { get; private set; }
 
     /// <param name="projectFilePath">Path to the project file to evaluate</param>
-    /// <param name="globalProperties">Global MSBuild properties to use during evaluation</param>
     /// <param name="isInteractive">Whether to prompt the user for selections</param>
+    /// <param name="msbuildArgs">MSBuild arguments containing properties and verbosity settings</param>
     /// <param name="binaryLogger">Optional binary logger for MSBuild operations. The logger will not be disposed by this class.</param>
     public RunCommandSelector(
         string projectFilePath,
-        Dictionary<string, string> globalProperties,
         bool isInteractive,
+        MSBuildArgs msbuildArgs,
         FacadeLogger? binaryLogger = null)
     {
         _projectFilePath = projectFilePath;
-        _globalProperties = globalProperties;
+        _globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
         _isInteractive = isInteractive;
+        _msbuildArgs = msbuildArgs;
         _binaryLogger = binaryLogger;
     }
 
@@ -98,9 +106,9 @@ internal sealed class RunCommandSelector : IDisposable
 
         // Dispose existing project to force re-evaluation
         _project = null;
-        _projectInstance = null;
         _collection?.Dispose();
         _collection = null;
+        HasValidProject = false;
     }
 
     /// <summary>
@@ -110,8 +118,10 @@ internal sealed class RunCommandSelector : IDisposable
     {
         if (_project is not null)
         {
-            Debug.Assert(_projectInstance is not null);
-            projectInstance = _projectInstance;
+            // Create a fresh ProjectInstance for each build operation
+            // to avoid accumulating state (existing item groups) from previous builds
+            projectInstance = _project.CreateProjectInstance();
+            HasValidProject = true;
             return true;
         }
 
@@ -119,17 +129,18 @@ internal sealed class RunCommandSelector : IDisposable
         {
             _collection = new ProjectCollection(
                 globalProperties: _globalProperties,
-                loggers: null,
+                loggers: GetLoggers(),
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
             _project = _collection.LoadProject(_projectFilePath);
-            _projectInstance = _project.CreateProjectInstance();
-            projectInstance = _projectInstance;
+            projectInstance = _project.CreateProjectInstance();
+            HasValidProject = true;
             return true;
         }
         catch (InvalidProjectFileException)
         {
             // Invalid project file, return false
             projectInstance = null;
+            HasValidProject = false;
             return false;
         }
     }
@@ -216,11 +227,14 @@ internal sealed class RunCommandSelector : IDisposable
     /// <summary>
     /// Computes available devices by calling the ComputeAvailableDevices MSBuild target if it exists.
     /// </summary>
+    /// <param name="noRestore">Whether restore should be skipped before computing devices</param>
     /// <param name="devices">List of available devices if the target exists, null otherwise</param>
+    /// <param name="restoreWasPerformed">True if restore was performed, false otherwise</param>
     /// <returns>True if the target was found and executed, false otherwise</returns>
-    public bool TryComputeAvailableDevices(out List<DeviceItem>? devices)
+    public bool TryComputeAvailableDevices(bool noRestore, out List<DeviceItem>? devices, out bool restoreWasPerformed)
     {
         devices = null;
+        restoreWasPerformed = false;
 
         if (!OpenProjectIfNeeded(out var projectInstance))
         {
@@ -234,10 +248,27 @@ internal sealed class RunCommandSelector : IDisposable
             return false;
         }
 
+        // If restore is allowed, run restore first so device computation sees the restored assets
+        if (!noRestore)
+        {
+            // Run the Restore target
+            var restoreResult = projectInstance.Build(
+                targets: ["Restore"],
+                loggers: GetLoggers(),
+                remoteLoggers: null,
+                out _);
+            if (!restoreResult)
+            {
+                return false;
+            }
+
+            restoreWasPerformed = true;
+        }
+
         // Build the target
         var buildResult = projectInstance.Build(
             targets: [Constants.ComputeAvailableDevices],
-            loggers: _binaryLogger is null ? null : [_binaryLogger],
+            loggers: GetLoggers(),
             remoteLoggers: null,
             out var targetOutputs);
 
@@ -274,19 +305,24 @@ internal sealed class RunCommandSelector : IDisposable
     /// or shows an error (non-interactive mode).
     /// </summary>
     /// <param name="listDevices">Whether to list devices and exit</param>
+    /// <param name="noRestore">Whether restore should be skipped</param>
     /// <param name="selectedDevice">The selected device, or null if not needed</param>
     /// <param name="runtimeIdentifier">The RuntimeIdentifier for the selected device, or null if not provided</param>
+    /// <param name="restoreWasPerformed">True if restore was performed, false otherwise</param>
     /// <returns>True if we should continue, false if we should exit</returns>
     public bool TrySelectDevice(
         bool listDevices,
+        bool noRestore,
         out string? selectedDevice,
-        out string? runtimeIdentifier)
+        out string? runtimeIdentifier,
+        out bool restoreWasPerformed)
     {
         selectedDevice = null;
         runtimeIdentifier = null;
+        restoreWasPerformed = false;
 
         // Try to get available devices from the project
-        bool targetExists = TryComputeAvailableDevices(out var devices);
+        bool targetExists = TryComputeAvailableDevices(noRestore, out var devices, out restoreWasPerformed);
         
         // If the target doesn't exist, continue without device selection
         if (!targetExists)
@@ -355,8 +391,6 @@ internal sealed class RunCommandSelector : IDisposable
             runtimeIdentifier = devices[0].RuntimeIdentifier;
             return true;
         }
-
-
 
         if (_isInteractive)
         {
@@ -432,5 +466,46 @@ internal sealed class RunCommandSelector : IDisposable
             // If Spectre.Console fails (e.g., terminal doesn't support it), return null
             return null;
         }
+    }
+
+    /// <summary>
+    /// Attempts to deploy to a device by calling the DeployToDevice MSBuild target if it exists.
+    /// This reuses the already-loaded project instance for performance.
+    /// </summary>
+    /// <returns>True if deployment succeeded or was skipped (no target), false if deployment failed</returns>
+    public bool TryDeployToDevice()
+    {
+        if (!OpenProjectIfNeeded(out var projectInstance))
+        {
+            // Invalid project file
+            return false;
+        }
+
+        // Check if the DeployToDevice target exists in the project
+        if (!projectInstance.Targets.ContainsKey(Constants.DeployToDevice))
+        {
+            // Target doesn't exist, skip deploy step
+            return true;
+        }
+
+        // Build the DeployToDevice target
+        var buildResult = projectInstance.Build(
+            targets: [Constants.DeployToDevice],
+            loggers: GetLoggers(),
+            remoteLoggers: null,
+            out _);
+
+        return buildResult;
+    }
+
+    /// <summary>
+    /// Gets the list of loggers to use for MSBuild operations.
+    /// Creates a fresh console logger each time to avoid disposal issues when calling Build() multiple times.
+    /// </summary>
+    private IEnumerable<ILogger> GetLoggers()
+    {
+        if (_binaryLogger is not null)
+            yield return _binaryLogger;
+        yield return CommonRunHelpers.GetConsoleLogger(_msbuildArgs);
     }
 }
