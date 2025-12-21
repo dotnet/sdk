@@ -41,7 +41,7 @@ bld/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
-# Visual Studio 2017 auto generated files
+# Visual Studio auto generated files
 Generated\ Files/
 
 # MSTest test Results
@@ -376,7 +376,7 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 
-# Backup folder for Package Reference Convert tool in Visual Studio 2017
+# Backup folder for Package Reference Convert tool in Visual Studio
 MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
