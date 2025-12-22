@@ -184,29 +184,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
-  <!-- The ILLink Targets expect projects to set SelfContained specifically, but the real condition they're trying to detect is
-       'does this publish scenario require runtime components'. SelfContained is just the 'legacy' signal for that.
-       See https://github.com/dotnet/sdk/pull/51765#issuecomment-3537080089 for more context.
-
-       To work around this current constraint, we can detect the scenarios where runtime components are required
-       and set SelfContained accordingly before ILLink runs. It's ok to set SelfContained this 'late' because
-       the ProcessFrameworkReferences Task (which is where runtime packs are resolved) has already run by this
-       point and it has been updated to use this 'expanded' definition of when runtime components are required
-       already (e.g. the ProcessFrameworkReferences.DeploymentModelRequiresRuntimeComponents member).
-
-       The _RequiresILLinkPack property is set based on this expanded definition, so we can reuse it as our signal here.
-       It's possible that this property is what the ILLink targets should be using directly instead of SelfContained, but
-       we may want to have more 'abstract', non-private signal.
-
-       We try to be explicit and only override the SelfContained value when it was set to false _by the .NET SDK_,
-       not by the user.
-  -->
-  <Target Name="_AlignSelfContainedBeforeILLink" BeforeTargets="PrepareForPublish" Condition="'$(_SelfContainedWasSpecified)' != 'true' and '$(SelfContained)' == 'false' and '$(_RequiresILLinkPack)' == 'true'">
-    <PropertyGroup>
-      <SelfContained>true</SelfContained>
-    </PropertyGroup>
-  </Target>
-
   <!--
     ============================================================
                                         PrepareForPublish
