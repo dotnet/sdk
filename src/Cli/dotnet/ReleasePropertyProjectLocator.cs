@@ -4,8 +4,11 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.Diagnostics;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
@@ -108,7 +111,12 @@ internal class ReleasePropertyProjectLocator
     {
         foreach (string arg in _slnOrProjectArgs.Append(Directory.GetCurrentDirectory()))
         {
-            if (IsValidProjectFilePath(arg))
+            if (VirtualProjectBuilder.IsValidEntryPointPath(arg))
+            {
+                return new VirtualProjectBuildingCommand(Path.GetFullPath(arg), MSBuildArgs.FromProperties(globalProps))
+                    .CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
+            }
+            else if (IsValidProjectFilePath(arg))
             {
                 return TryGetProjectInstance(arg, globalProps);
             }
@@ -118,18 +126,18 @@ internal class ReleasePropertyProjectLocator
             }
             else if (Directory.Exists(arg)) // Get here if the user did not provide a .proj or a .sln. (See CWD appended to args above)
             {
-                try // First, look for a project in the directory.
+                // First, look for a project in the directory.
+                if (MsbuildProject.TryGetProjectFileFromDirectory(arg, out var projectFilePath))
                 {
-                    return TryGetProjectInstance(MsbuildProject.GetProjectFileFromDirectory(arg).FullName, globalProps);
+                    return TryGetProjectInstance(projectFilePath, globalProps);
                 }
-                catch (GracefulException)  // Fall back to looking for a solution if multiple project files are found, or there's no project in the directory.
-                {
-                    string? potentialSln = SlnFileFactory.ListSolutionFilesInDirectory(arg, false).FirstOrDefault();
 
-                    if (!string.IsNullOrEmpty(potentialSln))
-                    {
-                        return GetArbitraryProjectFromSolution(potentialSln, globalProps);
-                    }
+                // Fall back to looking for a solution if multiple project files are found, or there's no project in the directory.
+                string? potentialSln = SlnFileFactory.ListSolutionFilesInDirectory(arg, false).FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(potentialSln))
+                {
+                    return GetArbitraryProjectFromSolution(potentialSln, globalProps);
                 }
             }
         }

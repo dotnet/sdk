@@ -56,6 +56,9 @@ internal sealed class SessionTerminatedNotification : SessionNotification
     [Required]
     [JsonPropertyName("exit_code")]
     public required int? ExitCode { get; init; }
+
+    public override string ToString()
+        => $"pid={Pid}, exit_code={ExitCode}";
 }
 
 /// <summary>
@@ -70,6 +73,9 @@ internal sealed class ProcessRestartedNotification : SessionNotification
     [Required]
     [JsonPropertyName("pid")]
     public required int PID { get; init; }
+
+    public override string ToString()
+        => $"pid={PID}";
 }
 
 /// <summary>
@@ -91,4 +97,7 @@ internal sealed class ServiceLogsNotification : SessionNotification
     [Required]
     [JsonPropertyName("log_message")]
     public required string LogMessage { get; init; }
+
+    public override string ToString()
+        => $"log_message='{LogMessage}', is_std_err={IsStdErr}";
 }

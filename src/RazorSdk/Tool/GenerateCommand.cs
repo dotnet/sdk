@@ -4,11 +4,11 @@
 #nullable disable
 
 using System.Diagnostics;
+using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Razor.Serialization;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
+using Microsoft.NET.Sdk.Razor.Tool.Json;
 using Newtonsoft.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -309,8 +309,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 var reader = new JsonTextReader(new StreamReader(stream));
 
                 var serializer = new JsonSerializer();
-                serializer.Converters.Add(new RazorDiagnosticJsonConverter());
-                serializer.Converters.Add(new TagHelperDescriptorJsonConverter());
+                serializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
 
                 var descriptors = serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
                 return descriptors;
@@ -435,7 +434,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         {
             public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
 
-            public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => TagHelpers;
+            public IReadOnlyList<TagHelperDescriptor> GetDescriptors(CancellationToken cancellationToken) => TagHelpers;
         }
     }
 }

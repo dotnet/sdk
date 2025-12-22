@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Tests.ArgumentForwarding
 {
@@ -150,7 +150,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         [Fact]
         public void ForwardAsWorks()
         {
-            var cmd = Microsoft.DotNet.Cli.Commands.Package.Add.PackageAddCommandParser.GetCommand();
+            var cmd = Microsoft.DotNet.Cli.Commands.Package.Add.PackageAddCommandDefinition.Create();
             var parseResult = cmd.Parse(["package", "add", "thing", "--prerelease"]);
             var forwardedValues = parseResult.OptionValuesToBeForwarded();
             forwardedValues.Should().Contain("--prerelease");

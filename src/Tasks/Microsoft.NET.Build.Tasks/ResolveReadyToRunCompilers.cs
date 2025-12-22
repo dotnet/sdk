@@ -210,7 +210,7 @@ namespace Microsoft.NET.Build.Tasks
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
                     _targetRuntimeIdentifier,
-                    new[] { "linux", "osx", "win", "freebsd", "illumos" },
+                    ["linux", "osx", "win", "freebsd", "illumos", "haiku"],
                     out _);
 
             targetOS = portablePlatform switch
@@ -220,6 +220,7 @@ namespace Microsoft.NET.Build.Tasks
                 "win" => "windows",
                 "freebsd" => "freebsd",
                 "illumos" => "illumos",
+                "haiku" => "haiku",
                 _ => null
             };
 

@@ -19,30 +19,46 @@ Targeting an SDK (and hence also loading analyzers) with newer major version in 
 
 ## Overview
 
-- The SDK will contain a VSIX with the analyzer DLLs and an MEF-exported implementation of `IAnalyzerAssemblyRedirector`.
+- The SDK will deploy analyzer DLLs and Roslyn will deploy an implementation of `IAnalyzerAssemblyRedirector`
+  (could be deployed by SDK but we are saving on analyzer loads and Roslyn already has a VSIX with a DLL).
   Implementations of this interface are imported by Roslyn and can redirect analyzer DLL loading.
 
-- The SDK's implementation of `IAnalyzerAssemblyRedirector` will redirect any analyzer DLL matching some pattern
-  to the corresponding DLL deployed via the VSIX.
+- That implementation of `IAnalyzerAssemblyRedirector` will redirect any analyzer DLL matching some pattern
+  to the corresponding DLL deployed with VS.
   Details of this process are described below.
 
 - Note that when `IAnalyzerAssemblyRedirector` is involved, Roslyn is free to not use shadow copy loading and instead load the DLLs directly.
 
+- It is possible to opt out of analyzer redirecting by setting environment variable `DOTNET_ANALYZER_REDIRECTING=0`.
+  That is an unsupported scenario though and compiler version mismatch errors will likely occur.
+
 ## Details
 
-The VSIX contains some analyzers, for example:
+The VS deployment contains some analyzers, for example:
 
 ```
-AspNetCoreAnalyzers\9.0.0-preview.5.24306.11\analyzers\dotnet\cs\Microsoft.AspNetCore.App.Analyzers.dll
-NetCoreAnalyzers\9.0.0-preview.5.24306.7\analyzers\dotnet\cs\System.Text.RegularExpressions.Generator.dll
-WindowsDesktopAnalyzers\9.0.0-preview.5.24306.8\analyzers\dotnet\System.Windows.Forms.Analyzers.dll
-SDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
-WebSDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk.Web\analyzers\cs\Microsoft.AspNetCore.Analyzers.dll
+AspNetCoreAnalyzers\analyzers\dotnet\cs\Microsoft.AspNetCore.App.Analyzers.dll
+NetCoreAnalyzers\analyzers\dotnet\cs\System.Text.RegularExpressions.Generator.dll
+WindowsDesktopAnalyzers\analyzers\dotnet\System.Windows.Forms.Analyzers.dll
+SDKAnalyzers\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
+WebSDKAnalyzers\Sdks\Microsoft.NET.Sdk.Web\analyzers\cs\Microsoft.AspNetCore.Analyzers.dll
+```
+
+And metadata at `metadata.json`:
+
+```json
+{
+  "AspNetCoreAnalyzers": "9.0.0-preview.5.24306.11",
+  "NetCoreAnalyzers": "9.0.0-preview.5.24306.7",
+  "WindowsDesktopAnalyzers": "9.0.0-preview.5.24306.8",
+  "SDKAnalyzers": "9.0.100-dev",
+  "WebSDKAnalyzers": "9.0.100-dev",
+}
 ```
 
 Given an analyzer assembly load going through our `IAnalyzerAssemblyRedirector`,
 we will redirect it if the original path of the assembly being loaded matches the path of a VSIX-deployed analyzer -
-only segments of these paths starting after the version segment are compared,
+only relevant segments (see example below) of these paths are compared,
 plus the major and minor component of the versions must match.
 
 For example, the analyzer
@@ -54,15 +70,19 @@ C:\Program Files\dotnet\sdk\9.0.100-preview.5.24307.3\Sdks\Microsoft.NET.Sdk\ana
 will be redirected to
 
 ```
-{VSIX}\SDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
+{InstallDir}\SDKAnalyzers\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
 ```
 
-because
+where `metadata.json` has `"SDKAnalyzers": "9.0.100-dev"`, because
 1. the suffix `Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll` matches, and
 2. the version `9.0.100-preview.5.24307.3` has the same major and minor component (`9.0`) as the version `9.0.100-dev`
    (both versions are read from the paths, not DLL metadata).
 
 Analyzers that cannot be matched will continue to be loaded from the SDK
 (and will fail to load if they reference Roslyn that is newer than is in VS).
+
+### Implementation
+
+Analyzer DLLs are contained in transport package `VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers`.
 
 [torn-sdk]: https://github.com/dotnet/sdk/issues/42087

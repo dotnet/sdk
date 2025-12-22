@@ -9,13 +9,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         internal DetailsCommandArgs(DetailsCommand detailsCommand, ParseResult parseResult) : base(detailsCommand, parseResult)
         {
-            string nameCriteria = parseResult.GetValue(DetailsCommand.NameArgument)
-                ?? throw new ArgumentException($"{nameof(parseResult)} should contain one argument for {nameof(DetailsCommand.NameArgument)}", nameof(parseResult));
+            string nameCriteria = parseResult.GetValue(CommandDefinition.Details.NameArgument)
+                ?? throw new ArgumentException($"{nameof(parseResult)} should contain one argument for {CommandDefinition.Details.NameArgument.Name}", nameof(parseResult));
 
             NameCriteria = nameCriteria;
             VersionCriteria = null;
-            Interactive = parseResult.GetValue(detailsCommand.InteractiveOption);
-            AdditionalSources = parseResult.GetValue(detailsCommand.AddSourceOption);
+            Interactive = parseResult.GetValue(CommandDefinition.Details.InteractiveOption);
+            AdditionalSources = parseResult.GetValue(CommandDefinition.Details.AddSourceOption);
         }
 
         internal bool Interactive { get; }

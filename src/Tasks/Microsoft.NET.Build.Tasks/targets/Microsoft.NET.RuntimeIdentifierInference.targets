@@ -96,7 +96,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   ... for these properties is limited to publishing only scenarios.
 
   .NET Tools that build RID-specific packages will also need a primary package without a RuntimeIdentifier, so we disable RID inference for them
-  in order to build the primary package
+  in order to build the primary package, but only when we are actually packing.
 
   Finally, library projects and non-executable projects have awkward interactions here so they are excluded.
   -->
@@ -105,7 +105,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                  '$(RuntimeIdentifier)' == '' and
                  '$(_IsExecutable)' == 'true' and
                  '$(IsRidAgnostic)' != 'true' and
-                 '$(PackAsTool)' != true and
+                 ('$(PackAsTool)' != 'true' or '$(_IsPacking)' != 'true') and
                  (
                    '$(SelfContained)' == 'true' or
                    ('$(_IsPublishing)' == 'true' and
@@ -216,10 +216,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                   $([MSBuild]::VersionLessThan('$(_TargetFrameworkVersionWithoutV)', '5.0'))">$(DefaultAppHostRuntimeIdentifier.Replace("arm64", "x64"))</DefaultAppHostRuntimeIdentifier>
   </PropertyGroup>
 
-  <Target Name="_CheckForUnsupportedAppHostUsage"
-          BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
-          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(HasRuntimeOutput)' == 'true'">
-
+  <Target Name="_CheckRIDAsserts"
+          Condition="'$(PackAsTool)' != 'true' or '$(_IsPacking)' != 'true'">
     <!-- The following RID errors are asserts, and we don't expect them to ever occur. The error message is added as a safeguard.-->
     <NETSdkError Condition="'$(SelfContained)' == 'true' and '$(RuntimeIdentifier)' == '' and '$(AllowSelfContainedWithoutRuntimeIdentifier)' != 'true'"
                  ResourceName="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed"
@@ -236,6 +234,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="'$(PublishAot)' == 'true' and '$(RuntimeIdentifier)' == '' and '$(_IsPublishing)' == 'true' and '$(AllowPublishAotWithoutRuntimeIdentifier)' != 'true'"
                 ResourceName="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed"
                 FormatArguments="PublishAot"/>
+
+  </Target>
+  
+  <Target Name="_CheckForUnsupportedAppHostUsage"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+          DependsOnTargets="_CheckRIDAsserts"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(HasRuntimeOutput)' == 'true'">
+
 
     <!-- End of implicit RID resolver checks.-->
 
@@ -365,6 +371,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetDefaultPlatformTargetForNetFramework"
+           AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.PickBestRid"
+           AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.SelectRuntimeIdentifierSpecificItems"
            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <!--

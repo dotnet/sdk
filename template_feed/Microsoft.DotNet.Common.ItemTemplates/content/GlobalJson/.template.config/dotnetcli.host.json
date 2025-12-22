@@ -9,6 +9,10 @@
       "longName": "roll-forward",
       "shortName": ""
     },
+    "TestRunner": {
+      "longName": "test-runner",
+      "shortName": ""
+    },
     "dotnet-cli-version": {
       "isHidden": "true"
     }

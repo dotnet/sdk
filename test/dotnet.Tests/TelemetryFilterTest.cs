@@ -5,6 +5,7 @@
 
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Utilities;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests
@@ -48,6 +49,20 @@ namespace Microsoft.DotNet.Tests
                   e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
                   e.Measurement.ContainsKey("Startup Time") &&
                   e.Measurement["Startup Time"] == 12345);
+        }
+
+        [Fact]
+        public void TopLevelCommandNameShouldBeSentToTelemetryWithGlobalJsonState()
+        {
+            string globalJsonState = "invalid_data";
+            var parseResult = Parser.Parse(["build"]);
+            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>(), globalJsonState));
+            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                  e.Properties.ContainsKey("verb") &&
+                  e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
+                  e.Measurement == null &&
+                  e.Properties.ContainsKey("globalJson") &&
+                  e.Properties["globalJson"] == Sha256Hasher.HashWithNormalizedCasing(globalJsonState));
         }
 
         [Fact]

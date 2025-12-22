@@ -66,7 +66,7 @@ This product collects usage data
   <String Id="WelcomeHeader" Value=".NET SDK" Localizable="no"/>
   <!--_locComment="{Locked='.NET SDK'}"-->
   <String Id="WelcomeDescription" Value="The .NET SDK is used to build, run, and test .NET applications. You can choose from multiple languages, editors, and developer tools, and take advantage of a large ecosystem of libraries to build apps for web, mobile, desktop, gaming, and IoT. We hope you enjoy it!"/>
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;." />
+  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;." />
   <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:" />
   <String Id="LearnMoreTitle" Value="Learn more about .NET" />
   <String Id="ResourcesHeader" Value="Resources" />
@@ -78,7 +78,7 @@ This product collects usage data
   <String Id="InstallationNoteTitle" Value="Installation note" />
   <String Id="InstallationNote" Value="A command will be run during the install process that will improve project restore speed and enable offline access. It will take up to a minute to complete." />
   <!--_locComment="{Locked='Visual Studio'}"-->
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;." />
+  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;." />
   <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:" />
   <String Id="InstallPathx64x86" Value="The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;" />
   <String Id="InstallPathARM64x86" Value="The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;" />

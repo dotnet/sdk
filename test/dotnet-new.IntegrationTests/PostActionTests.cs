@@ -775,7 +775,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("solution folder: src")
                 .And.NotHaveStdOutContaining("Manual instructions: Add the generated files to solution manually.");
 
-            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(workingDirectory, "MySolution.sln")));
+            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(workingDirectory, "MySolution.slnx")));
         }
 
         [Fact]
@@ -811,7 +811,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining(Path.Combine(outputDirectory, "MySolution.sln"))
                 .And.HaveStdOutContaining(Path.Combine(outputDirectory, "MyProject.csproj"));
 
-            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(outputDirectory, "MySolution.sln")));
+            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(outputDirectory, "MySolution.slnx")));
         }
 
         [Fact]
@@ -847,7 +847,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining(Path.Combine(outputDirectory, "MySolution.sln"))
                 .And.HaveStdOutContaining(Path.Combine(outputDirectory, "MyProject.csproj"));
 
-            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(outputDirectory, "MySolution.sln")));
+            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(outputDirectory, "MySolution.slnx")));
         }
 
         [Fact]
@@ -883,7 +883,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining(Path.Combine(workingDirectory, outputDirectory, "MySolution.sln"))
                 .And.HaveStdOutContaining(Path.Combine(workingDirectory, outputDirectory, "MyProject.csproj"));
 
-            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(workingDirectory, outputDirectory, "MySolution.sln")));
+            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(workingDirectory, outputDirectory, "MySolution.slnx")));
         }
 
         [Fact]
@@ -916,11 +916,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("solution folder: Server")
                 .And.NotHaveStdOutContaining("Manual instructions: Add generated Server project to solution manually to folder 'Server'.");
 
-            Assert.True(File.Exists(Path.Combine(workingDirectory, "MySolution.sln")));
+            Assert.True(File.Exists(Path.Combine(workingDirectory, "MySolution.slnx")));
             Assert.True(File.Exists(Path.Combine(workingDirectory, "Server/Server.csproj")));
             Assert.True(File.Exists(Path.Combine(workingDirectory, "Client/Client.csproj")));
 
-            string solutionFileContents = File.ReadAllText(Path.Combine(workingDirectory, "MySolution.sln"));
+            string solutionFileContents = File.ReadAllText(Path.Combine(workingDirectory, "MySolution.slnx"));
             Assert.Contains("Server.csproj", solutionFileContents);
             Assert.DoesNotContain("Client.csproj", solutionFileContents);
         }

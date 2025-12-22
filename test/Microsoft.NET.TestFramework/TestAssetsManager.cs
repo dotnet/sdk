@@ -27,6 +27,10 @@ namespace Microsoft.NET.TestFramework
             TestAssetsRoot = testAssetsDirectory;
         }
 
+        /// <summary>
+        /// Creates a new 'bubble' for the given test asset project in a subdirectory
+        /// of the current test execution context, scoped by the calling method and optional unique identifier.
+        /// </summary>
         public TestAsset CopyTestAsset(
             string testProjectName,
             [CallerMemberName] string callingMethod = "",
@@ -95,7 +99,7 @@ namespace Microsoft.NET.TestFramework
 
             var testAsset = CreateTestProjectsInDirectory(testProjects, testDestinationDirectory);
 
-            var slnCreationResult = new DotnetNewCommand(Log, "sln")
+            var slnCreationResult = new DotnetNewCommand(Log, "sln", "--format", "sln")
                 .WithVirtualHive()
                 .WithWorkingDirectory(testDestinationDirectory)
                 .Execute();

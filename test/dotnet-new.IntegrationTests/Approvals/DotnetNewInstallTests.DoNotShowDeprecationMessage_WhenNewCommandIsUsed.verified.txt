@@ -1,7 +1,7 @@
 ﻿The following template packages will be installed:
-   Microsoft.DotNet.Web.ItemTemplates::5.0.0
+   Microsoft.DotNet.Web.ItemTemplates@5.0.0
 
-Success: Microsoft.DotNet.Web.ItemTemplates::5.0.0 installed the following templates:
+Success: Microsoft.DotNet.Web.ItemTemplates@5.0.0 installed the following templates:
 Template Name         Short Name      Language  Tags       
 --------------------  --------------  --------  -----------
 MVC ViewImports       viewimports     [C#]      Web/ASP.NET

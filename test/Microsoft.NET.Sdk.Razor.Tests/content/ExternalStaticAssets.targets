@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build">
 
   <Target Name="GetStaticWebAssetsProjectConfiguration" Returns="@(_StaticWebAssetThisProjectConfiguration)">
     <ItemGroup>
@@ -19,7 +18,7 @@
       </_StaticWebAssetThisProjectConfiguration>
     </ItemGroup>
   </Target>
-  
+
   <Target Name="GetCurrentProjectBuildStaticWebAssetItems" Returns="@(_BuildAsset)">
     <ItemGroup>
       <CandidateBuildAssets Include="wwwroot\**" />
@@ -66,4 +65,5 @@
       </_PublishAsset>
     </ItemGroup>
   </Target>
+
 </Project>

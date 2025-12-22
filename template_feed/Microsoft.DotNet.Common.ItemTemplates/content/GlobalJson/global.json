@@ -4,5 +4,12 @@
     "rollForward": "ROLL_FORWARD_VALUE",
     //#endif
     "version": "SDK_VERSION"
+  //#if (TestRunner=="")
   }
+  //#else
+  },
+  "test": {
+    "runner": "TEST_RUNNER_VALUE"
+  }
+  //#endif
 }
