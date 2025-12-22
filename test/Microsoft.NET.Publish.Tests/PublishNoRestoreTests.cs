@@ -7,9 +7,9 @@ using NuGet.Packaging.Signing;
 
 namespace Microsoft.NET.Publish.Tests;
 
-public class NoRestoreTests : SdkTest
+public class PublishNoRestoreTests : SdkTest
 {
-    public NoRestoreTests(ITestOutputHelper log) : base(log)
+    public PublishNoRestoreTests(ITestOutputHelper log) : base(log)
     {
     }
 
