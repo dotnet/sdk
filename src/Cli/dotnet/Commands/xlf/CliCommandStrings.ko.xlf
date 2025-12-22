@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="BuildCmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildConfigurationOptionDescription">
@@ -186,7 +186,7 @@ Paths searched: '{1}', '{2}'.</source>
       </trans-unit>
       <trans-unit id="CannotConvertDirective">
         <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">일부 지시문을 변환할 수 없습니다. 파일을 실행하여 모든 컴파일 오류를 확인하세요. 변환을 강제로 진행하려면 '--force'를 지정하세요.</target>
+        <target state="new">Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
         <note>{Locked="--force"}</note>
       </trans-unit>
       <trans-unit id="CannotFindCommandName">
@@ -236,7 +236,7 @@ Paths searched: '{1}', '{2}'.</source>
       </trans-unit>
       <trans-unit id="CleanCmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -460,12 +460,12 @@ If not specified the file will be generated inside the default 'TestResults' dir
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
         <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">실행할 디렉터리의 경로를 정의합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
+        <target state="new">Defines the path of directory to run. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryPathName">
         <source>DIRECTORY_PATH</source>
-        <target state="translated">DIRECTORY_PATH</target>
+        <target state="new">DIRECTORY_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
@@ -745,12 +745,12 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
       </trans-unit>
       <trans-unit id="CmdProjectDescription">
         <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">실행할 프로젝트 파일의 경로(폴더 이름 또는 전체 경로)를 정의합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
+        <target state="new">Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectPathName">
         <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+        <target state="new">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -797,7 +797,7 @@ The specified directory will be created if it does not exist.</source>
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">실행할 솔루션 파일의 경로를 정의합니다. 지정하지 않으면 기본적으로 현재 디렉터리가 사용됩니다.</target>
+        <target state="new">Defines the path of the solution file to run. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -988,7 +988,7 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">실행할 프로젝트 파일의 경로입니다(프로젝트가 하나만 있는 경우 현재 디렉터리로 기본 설정됨).</target>
+        <target state="new">The path to the project file to run (defaults to the current directory if there is only one project).</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
@@ -1073,7 +1073,7 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       </trans-unit>
       <trans-unit id="DefaultLaunchProfileDisplayName">
         <source>(Default)</source>
-        <target state="translated">(기본값)</target>
+        <target state="new">(Default)</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -1108,7 +1108,7 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
         <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">'{0}'을 읽는 동안 오류가 발생했습니다. {1}</target>
+        <target state="new">An error was encountered when reading '{0}': {1}</target>
         <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
@@ -1128,7 +1128,7 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       </trans-unit>
       <trans-unit id="DirectiveError">
         <source>error</source>
-        <target state="translated">오류</target>
+        <target state="new">error</target>
         <note>Used when reporting directive errors like "file(location): error: message".</note>
       </trans-unit>
       <trans-unit id="DirectivesRemoved">
@@ -1194,7 +1194,7 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       </trans-unit>
       <trans-unit id="DotnetTestPipeIncompleteSize">
         <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="translated">'dotnet'이 'dotnet test'로 명명된 파이프에서 예기치 않게 4바이트 미만의 데이터를 받았습니다.</target>
+        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
@@ -1226,14 +1226,14 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>There are several launch profiles with case-sensitive names, which isn't permitted:
 {0}
 Make the profile names distinct.</source>
-        <target state="translated">대/소문자를 구분하는 이름을 가진 여러 시작 프로필이 있으며 이는 허용되지 않습니다.
+        <target state="new">There are several launch profiles with case-sensitive names, which isn't permitted:
 {0}
-고유한 프로필 이름을 사용하세요.</target>
+Make the profile names distinct.</target>
         <note />
       </trans-unit>
       <trans-unit id="DuplicateDirective">
         <source>Duplicate directives are not supported: {0}</source>
-        <target state="translated">중복 지시문은 지원되지 않습니다. {0}</target>
+        <target state="new">Duplicate directives are not supported: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
       <trans-unit id="DurationColon">
@@ -1593,7 +1593,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">지시문에는 특수 문자가 없는 이름과 '#:{0} 이름{1}값'과 같이 '{1}'(으)로 구분된 선택적 값이 포함되어야 합니다.</target>
+        <target state="new">The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
@@ -1613,7 +1613,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
         <source>The '#:project' directive is invalid: {0}</source>
-        <target state="translated">'#:p roject' 지시문이 잘못되었습니다. {0}</target>
+        <target state="new">The '#:project' directive is invalid: {0}</target>
         <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
@@ -1638,22 +1638,22 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="LaunchProfileDoesNotExist">
         <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">이름이 '{0}'인 시작 프로필이 없습니다.</target>
+        <target state="new">A launch profile with the name '{0}' doesn't exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfileHandlerCannotBeLocated">
         <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">시작 프로필 형식 '{0}'은(는) 지원되지 않습니다.</target>
+        <target state="new">The launch profile type '{0}' is not supported.</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfileIsNotAJsonObject">
         <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">지정된 이름의 프로필은 유효한 JSON 개체가 아닙니다.</target>
+        <target state="new">A profile with the specified name isn't a valid JSON object.</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
         <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">시작 설정 문서의 '프로필' 속성이 JSON 개체가 아닙니다.</target>
+        <target state="new">The 'profiles' property of the launch settings document is not a JSON object.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
@@ -1755,7 +1755,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="MissingDirectiveName">
         <source>Missing name of '{0}'.</source>
-        <target state="translated">'{0}' 이름이 없습니다.</target>
+        <target state="new">Missing name of '{0}'.</target>
         <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
@@ -1979,7 +1979,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PackCmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdOutputDir">
@@ -2467,7 +2467,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory ({0}):</source>
-        <target state="translated">출력 디렉터리 지정({0}):</target>
+        <target state="new">Specify the output directory ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2522,12 +2522,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PropertyDirectiveInvalidName">
         <source>Invalid property name: {0}</source>
-        <target state="translated">잘못된 속성 이름: {0}</target>
+        <target state="new">Invalid property name: {0}</target>
         <note>{0} is an inner exception message.</note>
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="translated">property 지시문에는 '#:property PropertyName=PropertyValue'와 같이 '='로 구분된 두 부분이 있어야 합니다.</target>
+        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
@@ -2537,7 +2537,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PublishCmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2574,7 +2574,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="QuoteInDirective">
         <source>Directives currently cannot contain double quotes (").</source>
-        <target state="translated">지시문은 현재 큰따옴표(")를 포함할 수 없습니다.</target>
+        <target state="new">Directives currently cannot contain double quotes (").</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
@@ -3083,7 +3083,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="StaticGraphRestoreNotSupported">
         <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="translated">정적 그래프 복원은 파일 기반 앱에서 지원되지 않습니다. '#:property'를 제거합니다.</target>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property'.</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
@@ -3634,7 +3634,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="UnrecognizedDirective">
         <source>Unrecognized directive '{0}'.</source>
-        <target state="translated">인식할 수 없는 지시문 '{0}'입니다.</target>
+        <target state="new">Unrecognized directive '{0}'.</target>
         <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
@@ -3714,7 +3714,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="UsableLaunchProfileCannotBeLocated">
         <source>A usable launch profile could not be located.</source>
-        <target state="translated">사용할 수 있는 시작 프로필을 찾을 수 없습니다.</target>
+        <target state="new">A usable launch profile could not be located.</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">
