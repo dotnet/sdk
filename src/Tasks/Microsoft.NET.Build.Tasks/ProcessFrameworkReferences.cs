@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Cli;
@@ -10,6 +11,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
 using NuGet.Versioning;
+using static Microsoft.NET.Build.Tasks.ResolveTargetingPackAssets;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -900,49 +902,82 @@ namespace Microsoft.NET.Build.Tasks
                         // ILCompiler supports cross target compilation. If there is a cross-target request,
                         // we need to download that package as well unless we use KnownRuntimePack entries for the target.
                         // We expect RuntimeIdentifier to be defined during publish but can allow during build
-                        if (EffectiveRuntimeIdentifier != null && !AotUseKnownRuntimePackForTarget)
+                        if (!AotUseKnownRuntimePackForTarget)
                         {
-                            Log.LogMessage(MessageImportance.Low, $"Checking for cross-targeting compilation packs");
-                            var targetRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, EffectiveRuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph2);
-                            if (targetRuntimeIdentifier == null)
+                            List<string> aotPackRuntimeIdentifiers = new List<string>();
+                            if (EffectiveRuntimeIdentifier != null)
                             {
-                                return ToolPackSupport.UnsupportedForTargetRuntimeIdentifier;
+                                aotPackRuntimeIdentifiers.Add(EffectiveRuntimeIdentifier);
                             }
-
-                            // If there's an available runtime pack, use it instead of the ILCompiler package for target-specific bits.
-                            bool useRuntimePackForAllTargets = false;
-                            string targetPackNamePattern = packNamePattern;
-                            if (knownPack.GetMetadata("ILCompilerRuntimePackNamePattern") is string runtimePackNamePattern && runtimePackNamePattern != string.Empty)
+                            foreach (var aotPackRuntimeIdentifier in RuntimeIdentifiers ?? Array.Empty<string>())
                             {
-                                targetPackNamePattern = runtimePackNamePattern;
-                                useRuntimePackForAllTargets = true;
-                            }
-
-                            if (useRuntimePackForAllTargets || !hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
-                            {
-                                var targetIlcPackName = targetPackNamePattern.Replace("**RID**", targetRuntimeIdentifier);
-                                var targetIlcPack = new TaskItem(targetIlcPackName);
-                                targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageId, targetIlcPackName);
-                                targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
-                                TargetILCompilerPacks = new[] { targetIlcPack };
-                                Log.LogMessage(MessageImportance.Low, $"Added {targetIlcPackName}@{packVersion} for cross-targeting compilation");
-
-                                string? targetILCompilerPackPath = GetPackPath(targetIlcPackName, packVersion);
-                                if (targetILCompilerPackPath != null)
+                                if (aotPackRuntimeIdentifier != EffectiveRuntimeIdentifier)
                                 {
-                                    targetIlcPack.SetMetadata(MetadataKeys.PackageDirectory, targetILCompilerPackPath);
-                                }
-                                else if (EnableRuntimePackDownload)
-                                {
-                                    // We need to download the runtime pack
-                                    var targetIlcPackToDownload = new TaskItem(targetIlcPackName);
-                                    targetIlcPackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
-                                    packagesToDownload.Add(targetIlcPackToDownload);
+                                    aotPackRuntimeIdentifiers.Add(aotPackRuntimeIdentifier);
                                 }
                             }
-                            else
+                            
+
+                            foreach (var aotPackRuntimeIdentifier in aotPackRuntimeIdentifiers)
                             {
-                                Log.LogMessage(MessageImportance.Low, $"No cross-targeting compilation packs required.");
+                                Log.LogMessage(MessageImportance.Low, $"Checking for cross-targeting compilation packs for {aotPackRuntimeIdentifier}");
+                                var targetRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, aotPackRuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph2);
+                                if (targetRuntimeIdentifier == null)
+                                {
+                                    if (targetRuntimeIdentifier == EffectiveRuntimeIdentifier)
+                                    {
+                                        // We can't find the right pack for AOT, return an error
+                                        return ToolPackSupport.UnsupportedForTargetRuntimeIdentifier;
+                                    }
+                                    else
+                                    {
+                                        // When processing additional RIDs, don't error out during restore, we just won't have a pack to download.
+                                        // If a publish is attempted for that RID later, it will fail then.
+                                        Log.LogMessage(MessageImportance.Low, $"No compilation pack found for {aotPackRuntimeIdentifier}");
+                                        continue;
+                                    }
+                                }
+
+                                // If there's an available runtime pack, use it instead of the ILCompiler package for target-specific bits.
+                                bool useRuntimePackForAllTargets = false;
+                                string targetPackNamePattern = packNamePattern;
+                                if (knownPack.GetMetadata("ILCompilerRuntimePackNamePattern") is string runtimePackNamePattern && runtimePackNamePattern != string.Empty)
+                                {
+                                    targetPackNamePattern = runtimePackNamePattern;
+                                    useRuntimePackForAllTargets = true;
+                                }
+
+                                if (useRuntimePackForAllTargets || !hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
+                                {
+                                    var targetIlcPackName = targetPackNamePattern.Replace("**RID**", targetRuntimeIdentifier);
+                                    var targetIlcPack = new TaskItem(targetIlcPackName);
+                                    targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageId, targetIlcPackName);
+                                    targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
+                                    if (aotPackRuntimeIdentifier == EffectiveRuntimeIdentifier)
+                                    {
+                                        TargetILCompilerPacks = new[] { targetIlcPack };
+                                        Log.LogMessage(MessageImportance.Low, $"Added {targetIlcPackName}@{packVersion} for cross-targeting compilation for {aotPackRuntimeIdentifier}");
+                                    }
+                                    
+
+                                    string? targetILCompilerPackPath = GetPackPath(targetIlcPackName, packVersion);
+                                    if (targetILCompilerPackPath != null)
+                                    {
+                                        targetIlcPack.SetMetadata(MetadataKeys.PackageDirectory, targetILCompilerPackPath);
+                                    }
+                                    else if (EnableRuntimePackDownload)
+                                    {
+                                        // We need to download the runtime pack
+                                        var targetIlcPackToDownload = new TaskItem(targetIlcPackName);
+                                        targetIlcPackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
+                                        packagesToDownload.Add(targetIlcPackToDownload);
+                                        Log.LogMessage(MessageImportance.Low, $"Added PackageDownload for {targetIlcPackName}@{packVersion} for cross-targeting compilation for {aotPackRuntimeIdentifier}");
+                                    }
+                                }
+                                else
+                                {
+                                    Log.LogMessage(MessageImportance.Low, $"No cross-targeting compilation packs required for {aotPackRuntimeIdentifier}.");
+                                }
                             }
                         }
 
