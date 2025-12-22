@@ -22,28 +22,27 @@ public static class BuildCommand
         parseResult.ShowHelpOrErrorIfAppropriate();
 
         CommonOptions.ValidateSelfContainedOptions(
-            parseResult.HasOption(BuildCommandParser.SelfContainedOption),
-            parseResult.HasOption(BuildCommandParser.NoSelfContainedOption));
+            parseResult.HasOption(BuildCommandDefinition.SelfContainedOption),
+            parseResult.HasOption(BuildCommandDefinition.NoSelfContainedOption));
 
-        bool noRestore = parseResult.HasOption(BuildCommandParser.NoRestoreOption);
+        bool noRestore = parseResult.HasOption(BuildCommandDefinition.NoRestoreOption);
 
         return CommandFactory.CreateVirtualOrPhysicalCommand(
             BuildCommandParser.GetCommand(),
-            BuildCommandParser.SlnOrProjectOrFileArgument,
-            (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
+            BuildCommandDefinition.SlnOrProjectOrFileArgument,
+            configureVirtualCommand: (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
-                msbuildArgs: msbuildArgs
-            )
+                msbuildArgs: msbuildArgs)
             {
                 NoRestore = noRestore,
                 NoCache = true,
             },
-            (msbuildArgs, msbuildPath) => new RestoringCommand(
+            createPhysicalCommand: (msbuildArgs, msbuildPath) => new RestoringCommand(
                 msbuildArgs: msbuildArgs.CloneWithAdditionalArgs("-consoleloggerparameters:Summary"),
                 noRestore: noRestore,
                 msbuildPath: msbuildPath
             ),
-            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, BuildCommandParser.TargetOption, BuildCommandParser.VerbosityOption, BuildCommandParser.NoLogoOption],
+            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, BuildCommandDefinition.TargetOption, BuildCommandDefinition.VerbosityOption, BuildCommandDefinition.NoLogoOption],
             parseResult,
             msbuildPath
         );

@@ -11,16 +11,15 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -39,6 +38,9 @@ public class RunCommand
     /// Full path to an entry-point <c>.cs</c> file to run without a project file.
     /// </summary>
     public string? EntryPointFileFullPath { get; }
+
+    public string ProjectOrEntryPointPath =>
+        ProjectFileFullPath ?? EntryPointFileFullPath!;
 
     /// <summary>
     /// Whether <c>dotnet run -</c> is being executed.
@@ -144,9 +146,9 @@ public class RunCommand
 
     public int Execute()
     {
-        if (!TryGetLaunchProfileSettingsIfNeeded(out var launchSettings))
+        if (NoBuild && NoCache)
         {
-            return 1;
+            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandDefinition.NoCacheOption.Name, RunCommandDefinition.NoBuildOption.Name);
         }
 
         // Create a single logger for all MSBuild operations (device selection + build/run)
@@ -157,7 +159,10 @@ public class RunCommand
         try
         {
             // Pre-run evaluation: Handle target framework and device selection for project-based scenarios
-            if (ProjectFileFullPath is not null && !TrySelectTargetFrameworkAndDeviceIfNeeded(logger))
+            using var selector = ProjectFileFullPath is not null
+                ? new RunCommandSelector(ProjectFileFullPath, Interactive, MSBuildArgs, logger)
+                : null;
+            if (selector is not null && !TrySelectTargetFrameworkAndDeviceIfNeeded(selector))
             {
                 // If --list-devices was specified, this is a successful exit
                 return ListDevices ? 0 : 1;
@@ -169,48 +174,52 @@ public class RunCommand
                 return 1;
             }
 
+            var launchProfileParseResult = ReadLaunchProfileSettings();
+            if (launchProfileParseResult.FailureReason != null)
+            {
+                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, LaunchProfileParser.GetLaunchProfileDisplayName(LaunchProfile), launchProfileParseResult.FailureReason).Bold().Red());
+            }
+
             Func<ProjectCollection, ProjectInstance>? projectFactory = null;
             RunProperties? cachedRunProperties = null;
-            VirtualProjectBuildingCommand? virtualCommand = null;
+            VirtualProjectBuildingCommand? projectBuilder = null;
             if (ShouldBuild)
             {
-                if (string.Equals("true", launchSettings?.DotNetRunMessages, StringComparison.OrdinalIgnoreCase))
+                if (launchProfileParseResult.Profile?.DotNetRunMessages == true)
                 {
                     Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
                 }
 
-                EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out virtualCommand);
+                EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out projectBuilder);
             }
-            else
+            else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
             {
-                if (NoCache)
-                {
-                    throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
-                }
+                // The entry-point is not used to run the application if the launch profile specifies Executable command. 
 
-                if (EntryPointFileFullPath is not null)
-                {
-                    Debug.Assert(!ReadCodeFromStdin);
-                    virtualCommand = CreateVirtualCommand();
-                    virtualCommand.MarkArtifactsFolderUsed();
+                Debug.Assert(!ReadCodeFromStdin);
+                projectBuilder = CreateProjectBuilder();
+                projectBuilder.MarkArtifactsFolderUsed();
 
-                    var cacheEntry = virtualCommand.GetPreviousCacheEntry();
-                    projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : virtualCommand.CreateProjectInstance;
-                    cachedRunProperties = cacheEntry?.Run;
-                }
+                var cacheEntry = projectBuilder.GetPreviousCacheEntry();
+                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : projectBuilder.CreateProjectInstance;
+                cachedRunProperties = cacheEntry?.Run;
             }
 
-            ICommand targetCommand = GetTargetCommand(projectFactory, cachedRunProperties, logger);
-            ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
-
-            // Env variables specified on command line override those specified in launch profile:
-            foreach (var (name, value) in EnvironmentVariables)
+            // Deploy step: Call DeployToDevice target if available
+            // This must run even with --no-build, as the user may have selected a different device
+            if (selector is not null && !selector.TryDeployToDevice())
             {
-                targetCommand.EnvironmentVariable(name, value);
+                // Only error if we have a valid project (not a .sln file, etc.)
+                if (selector.HasValidProject)
+                {
+                    throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
+                }
             }
+
+            var targetCommand = GetTargetCommand(launchProfileParseResult.Profile, projectFactory, cachedRunProperties, logger);
 
             // Send telemetry about the run operation
-            SendRunTelemetry(launchSettings, virtualCommand);
+            SendRunTelemetry(launchProfileParseResult.Profile, projectBuilder);
 
             // Ignore Ctrl-C for the remainder of the command's execution
             Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
@@ -229,17 +238,24 @@ public class RunCommand
         }
     }
 
+    internal ICommand GetTargetCommand(LaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
+        => launchSettings switch
+        {
+            null => GetTargetCommandForProject(launchSettings: null, projectFactory, cachedRunProperties, logger),
+            ProjectLaunchProfile projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties, logger),
+            ExecutableLaunchProfile executableSettings => GetTargetCommandForExecutable(executableSettings),
+            _ => throw new InvalidOperationException()
+        };
+
     /// <summary>
     /// Checks if target framework selection and device selection are needed.
     /// Uses a single RunCommandSelector instance for both operations, re-evaluating
     /// the project after framework selection to get the correct device list.
     /// </summary>
-    /// <param name="logger">Optional logger for MSBuild operations (device selection)</param>
+    /// <param name="selector">The RunCommandSelector instance to use for selection</param>
     /// <returns>True if we can continue, false if we should exit</returns>
-    private bool TrySelectTargetFrameworkAndDeviceIfNeeded(FacadeLogger? logger)
+    private bool TrySelectTargetFrameworkAndDeviceIfNeeded(RunCommandSelector selector)
     {
-        Debug.Assert(ProjectFileFullPath is not null);
-
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(MSBuildArgs);
         
         // If user specified --device on command line, add it to global properties and MSBuildArgs
@@ -258,13 +274,10 @@ public class RunCommand
         
         if (!ListDevices && hasFramework && hasDevice)
         {
-            // Both framework and device are pre-specified, no need to create selector or logger
+            // Both framework and device are pre-specified
             return true;
         }
 
-        // Create a single selector for both framework and device selection
-        using var selector = new RunCommandSelector(ProjectFileFullPath, globalProperties, Interactive, MSBuildArgs, logger);
-        
         // Step 1: Select target framework if needed
         if (!selector.TrySelectTargetFramework(out string? selectedFramework))
         {
@@ -391,51 +404,68 @@ public class RunCommand
         }
     }
 
-    internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
+    private ICommand GetTargetCommandForExecutable(ExecutableLaunchProfile launchSettings)
     {
-        if (launchSettings == null)
+        var workingDirectory = launchSettings.WorkingDirectory ?? Path.GetDirectoryName(ProjectOrEntryPointPath);
+
+        var commandArgs = (NoLaunchProfileArguments || ApplicationArgs is not [])
+            ? ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(ApplicationArgs)
+            : launchSettings.CommandLineArgs ?? "";
+
+        var commandSpec = new CommandSpec(launchSettings.ExecutablePath, commandArgs);
+        var command = CommandFactoryUsingResolver.Create(commandSpec)
+            .WorkingDirectory(workingDirectory);
+
+        SetEnvironmentVariables(command, launchSettings);
+
+        return command;
+    }
+
+    private void SetEnvironmentVariables(ICommand command, LaunchProfile? launchSettings)
+    {
+        // Handle Project-specific settings
+        if (launchSettings is ProjectLaunchProfile projectSettings)
         {
-            return;
+            if (!string.IsNullOrEmpty(projectSettings.ApplicationUrl))
+            {
+                command.EnvironmentVariable("ASPNETCORE_URLS", projectSettings.ApplicationUrl);
+            }
         }
 
-        if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
+        if (launchSettings != null)
         {
-            targetCommand.EnvironmentVariable("ASPNETCORE_URLS", launchSettings.ApplicationUrl);
+            command.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
+
+            foreach (var entry in launchSettings.EnvironmentVariables)
+            {
+                command.EnvironmentVariable(entry.Key, entry.Value);
+            }
         }
 
-        targetCommand.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
-
-        foreach (var entry in launchSettings.EnvironmentVariables)
+        // Env variables specified on command line override those specified in launch profile:
+        foreach (var (name, value) in EnvironmentVariables)
         {
-            string value = Environment.ExpandEnvironmentVariables(entry.Value);
-            //NOTE: MSBuild variables are not expanded like they are in VS
-            targetCommand.EnvironmentVariable(entry.Key, value);
-        }
-
-        if (!NoLaunchProfileArguments && string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
-        {
-            targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
+            command.EnvironmentVariable(name, value);
         }
     }
 
-    internal bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
+    internal LaunchProfileParseResult ReadLaunchProfileSettings()
     {
-        launchSettingsModel = default;
         if (NoLaunchProfile)
         {
-            return true;
+            return LaunchProfileParseResult.Success(model: null);
         }
 
         var launchSettingsPath = ReadCodeFromStdin
             ? null
-            : LaunchSettingsLocator.TryFindLaunchSettings(
+            : LaunchSettings.TryFindLaunchSettingsFile(
                 projectOrEntryPointFilePath: ProjectFileFullPath ?? EntryPointFileFullPath!,
                 launchProfile: LaunchProfile,
                 static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message));
 
         if (launchSettingsPath is null)
         {
-            return true;
+            return LaunchProfileParseResult.Success(model: null);
         }
 
         if (!RunCommandVerbosity.IsQuiet())
@@ -443,39 +473,18 @@ public class RunCommand
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        string profileName = string.IsNullOrEmpty(LaunchProfile) ? CliCommandStrings.DefaultLaunchProfileDisplayName : LaunchProfile;
-
-        try
-        {
-            var applyResult = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsPath, LaunchProfile);
-            if (!applyResult.Success)
-            {
-                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, applyResult.FailureReason).Bold().Red());
-            }
-            else
-            {
-                launchSettingsModel = applyResult.LaunchSettings;
-            }
-        }
-        catch (IOException ex)
-        {
-            Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName).Bold().Red());
-            Reporter.Error.WriteLine(ex.Message.Bold().Red());
-            return false;
-        }
-
-        return true;
+        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, LaunchProfile);
     }
 
-    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? virtualCommand)
+    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? projectBuilder)
     {
         int buildResult;
         if (EntryPointFileFullPath is not null)
         {
-            virtualCommand = CreateVirtualCommand();
-            buildResult = virtualCommand.Execute();
-            projectFactory = CanUseRunPropertiesForCscBuiltProgram(virtualCommand.LastBuild.Level, virtualCommand.LastBuild.Cache?.PreviousEntry) ? null : virtualCommand.CreateProjectInstance;
-            cachedRunProperties = virtualCommand.LastBuild.Cache?.CurrentEntry.Run;
+            projectBuilder = CreateProjectBuilder();
+            buildResult = projectBuilder.Execute();
+            projectFactory = CanUseRunPropertiesForCscBuiltProgram(projectBuilder.LastBuild.Level, projectBuilder.LastBuild.Cache?.PreviousEntry) ? null : projectBuilder.CreateProjectInstance;
+            cachedRunProperties = projectBuilder.LastBuild.Cache?.CurrentEntry.Run;
         }
         else
         {
@@ -483,7 +492,7 @@ public class RunCommand
 
             projectFactory = null;
             cachedRunProperties = null;
-            virtualCommand = null;
+            projectBuilder = null;
             buildResult = new RestoringCommand(
                 MSBuildArgs.CloneWithExplicitArgs([ProjectFileFullPath, .. MSBuildArgs.OtherMSBuildArgs]),
                 NoRestore || _restoreDoneForDeviceSelection,
@@ -504,7 +513,7 @@ public class RunCommand
             (level == BuildLevel.None && previousCache?.BuildLevel == BuildLevel.Csc);
     }
 
-    private VirtualProjectBuildingCommand CreateVirtualCommand()
+    private VirtualProjectBuildingCommand CreateProjectBuilder()
     {
         Debug.Assert(EntryPointFileFullPath != null);
 
@@ -526,7 +535,6 @@ public class RunCommand
     /// that will be used to build the project. `run` wants to operate silently if possible,
     /// so we disable as much MSBuild output as possible, unless we're forced to be interactive.
     /// </summary>
-    /// <returns></returns>
     private MSBuildArgs SetupSilentBuildArgs(MSBuildArgs msbuildArgs)
     {
         msbuildArgs = msbuildArgs.CloneWithNoLogo(true);
@@ -547,48 +555,70 @@ public class RunCommand
         }
     }
 
-    internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
+    private ICommand GetTargetCommandForProject(ProjectLaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
     {
+        ICommand command;
         if (cachedRunProperties != null)
         {
             // We can skip project evaluation if we already evaluated the project during virtual build
             // or we have cached run properties in previous run (and this is a --no-build or skip-msbuild run).
             Reporter.Verbose.WriteLine("Getting target command: from cache.");
-            return CreateCommandFromRunProperties(cachedRunProperties.WithApplicationArguments(ApplicationArgs));
+            command = CreateCommandFromRunProperties(cachedRunProperties.WithApplicationArguments(ApplicationArgs));
         }
-
-        if (projectFactory is null && ProjectFileFullPath is null)
+        else if (projectFactory is null && ProjectFileFullPath is null)
         {
             // If we are running a file-based app and projectFactory is null, it means csc was used instead of full msbuild.
             // So we can skip project evaluation to continue the optimized path.
             Debug.Assert(EntryPointFileFullPath is not null);
             Reporter.Verbose.WriteLine("Getting target command: for csc-built program.");
-            return CreateCommandForCscBuiltProgram(EntryPointFileFullPath, ApplicationArgs);
+            command = CreateCommandForCscBuiltProgram(EntryPointFileFullPath, ApplicationArgs);
+        }
+        else
+        {
+            Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
+    
+            ProjectInstance project;
+            try
+            {
+                project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
+                ValidatePreconditions(project);
+                InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
+            }
+            finally
+            {
+                    }
+
+            var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
+            command = CreateCommandFromRunProperties(runProperties);
         }
 
-        Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
-        var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
-        ValidatePreconditions(project);
-        InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
-        var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
-        var command = CreateCommandFromRunProperties(runProperties);
+        SetEnvironmentVariables(command, launchSettings);
+
+        if (!NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs) && launchSettings?.CommandLineArgs != null)
+        {
+            command.SetCommandArgs(launchSettings.CommandLineArgs);
+        }
+
         return command;
 
         static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, MSBuildArgs msbuildArgs, ILogger? binaryLogger)
         {
-            Debug.Assert(projectFilePath is not null || projectFactory is not null);
-
             var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
-
             var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
-            if (projectFilePath is not null)
+            if (projectFactory != null)
+            {
+                return projectFactory(collection);
+            }
+
+            try
             {
                 return collection.LoadProject(projectFilePath).CreateProjectInstance();
             }
-
-            Debug.Assert(projectFactory is not null);
-            return projectFactory(collection);
+            catch (InvalidProjectFileException e)
+            {
+                throw new GracefulException(string.Format(CliCommandStrings.RunCommandSpecifiedFileIsNotAValidProject, projectFilePath), e);
+            }
         }
 
         static void ValidatePreconditions(ProjectInstance project)
@@ -630,7 +660,7 @@ public class RunCommand
 
         static ICommand CreateCommandForCscBuiltProgram(string entryPointFileFullPath, string[] args)
         {
-            var artifactsPath = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointFileFullPath);
+            var artifactsPath = VirtualProjectBuilder.GetArtifactsPath(entryPointFileFullPath);
             var exePath = Path.Join(artifactsPath, "bin", "debug", Path.GetFileNameWithoutExtension(entryPointFileFullPath) + FileNameSuffixes.CurrentPlatform.Exe);
             var commandSpec = new CommandSpec(path: exePath, args: ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args));
             var command = CommandFactoryUsingResolver.Create(commandSpec);
@@ -749,7 +779,7 @@ public class RunCommand
 
             if (!readCodeFromStdin)
             {
-                if (VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+                if (VirtualProjectBuilder.IsValidEntryPointPath(arg))
                 {
                     arg = Path.GetFullPath(arg);
                 }
@@ -782,7 +812,7 @@ public class RunCommand
         // them to the restore args.
         // this is because we can't model the binlog command structure in MSbuild in the System.CommandLine parser, but we need
         // bl information to synchronize the restore and build logger configurations
-        var applicationArguments = parseResult.GetValue(RunCommandParser.ApplicationArguments)?.ToList();
+        var applicationArguments = parseResult.GetValue(RunCommandDefinition.ApplicationArguments)?.ToList();
 
         LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
 
@@ -798,12 +828,12 @@ public class RunCommand
             parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
-        string? projectOption = parseResult.GetValue(RunCommandParser.ProjectOption);
-        string? fileOption = parseResult.GetValue(RunCommandParser.FileOption);
+        string? projectOption = parseResult.GetValue(RunCommandDefinition.ProjectOption);
+        string? fileOption = parseResult.GetValue(RunCommandDefinition.FileOption);
 
         if (projectOption != null && fileOption != null)
         {
-            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.ProjectOption.Name, RunCommandParser.FileOption.Name);
+            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandDefinition.ProjectOption.Name, RunCommandDefinition.FileOption.Name);
         }
 
         string[] args = [.. nonBinLogArgs];
@@ -814,8 +844,8 @@ public class RunCommand
             ref args,
             out string? entryPointFilePath);
 
-        bool noBuild = parseResult.HasOption(RunCommandParser.NoBuildOption);
-        string launchProfile = parseResult.GetValue(RunCommandParser.LaunchProfileOption) ?? string.Empty;
+        bool noBuild = parseResult.HasOption(RunCommandDefinition.NoBuildOption);
+        string launchProfile = parseResult.GetValue(RunCommandDefinition.LaunchProfileOption) ?? string.Empty;
 
         if (readCodeFromStdin && entryPointFilePath != null)
         {
@@ -823,18 +853,18 @@ public class RunCommand
 
             if (noBuild)
             {
-                throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name);
+                throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandDefinition.NoBuildOption.Name);
             }
 
             if (!string.IsNullOrWhiteSpace(launchProfile))
             {
-                throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.LaunchProfileOption.Name);
+                throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandDefinition.LaunchProfileOption.Name);
             }
 
             // If '-' is specified as the input file, read all text from stdin into a temporary file and use that as the entry point.
             // We create a new directory for each file so other files are not included in the compilation.
             // We fail if the file already exists to avoid reusing the same file for multiple stdin runs (in case the random name is duplicate).
-            string directory = VirtualProjectBuildingCommand.GetTempSubpath(Path.GetRandomFileName());
+            string directory = VirtualProjectBuilder.GetTempSubpath(Path.GetRandomFileName());
             VirtualProjectBuildingCommand.CreateTempSubdirectory(directory);
             entryPointFilePath = Path.Join(directory, "app.cs");
             using (var stdinStream = Console.OpenStandardInput())
@@ -847,20 +877,20 @@ public class RunCommand
             nonBinLogArgs[0] = entryPointFilePath;
         }
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), RunCommandParser.VerbosityOption);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), RunCommandDefinition.VerbosityOption);
 
         var command = new RunCommand(
             noBuild: noBuild,
             projectFileFullPath: projectFilePath,
             entryPointFileFullPath: entryPointFilePath,
             launchProfile: launchProfile,
-            noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
-            noLaunchProfileArguments: parseResult.HasOption(RunCommandParser.NoLaunchProfileArgumentsOption),
-            device: parseResult.GetValue(RunCommandParser.DeviceOption),
-            listDevices: parseResult.HasOption(RunCommandParser.ListDevicesOption),
-            noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
-            noCache: parseResult.HasOption(RunCommandParser.NoCacheOption),
-            interactive: parseResult.GetValue(RunCommandParser.InteractiveOption),
+            noLaunchProfile: parseResult.HasOption(RunCommandDefinition.NoLaunchProfileOption),
+            noLaunchProfileArguments: parseResult.HasOption(RunCommandDefinition.NoLaunchProfileArgumentsOption),
+            device: parseResult.GetValue(RunCommandDefinition.DeviceOption),
+            listDevices: parseResult.HasOption(RunCommandDefinition.ListDevicesOption),
+            noRestore: parseResult.HasOption(RunCommandDefinition.NoRestoreOption) || parseResult.HasOption(RunCommandDefinition.NoBuildOption),
+            noCache: parseResult.HasOption(RunCommandDefinition.NoCacheOption),
+            interactive: parseResult.GetValue(RunCommandDefinition.InteractiveOption),
             msbuildArgs: msbuildArgs,
             applicationArgs: args,
             readCodeFromStdin: readCodeFromStdin,
@@ -931,14 +961,14 @@ public class RunCommand
     /// Sends telemetry about the run operation.
     /// </summary>
     private void SendRunTelemetry(
-        ProjectLaunchSettingsModel? launchSettings,
-        VirtualProjectBuildingCommand? virtualCommand)
+        LaunchProfile? launchSettings,
+        VirtualProjectBuildingCommand? projectBuilder)
     {
         try
         {
-            if (virtualCommand != null)
+            if (projectBuilder != null)
             {
-                SendFileBasedTelemetry(launchSettings, virtualCommand);
+                SendFileBasedTelemetry(launchSettings, projectBuilder);
             }
             else
             {
@@ -959,13 +989,13 @@ public class RunCommand
     /// Builds and sends telemetry data for file-based app runs.
     /// </summary>
     private void SendFileBasedTelemetry(
-        ProjectLaunchSettingsModel? launchSettings,
-        VirtualProjectBuildingCommand virtualCommand)
+        LaunchProfile? launchSettings,
+        VirtualProjectBuildingCommand projectBuilder)
     {
         Debug.Assert(EntryPointFileFullPath != null);
         var projectIdentifier = RunTelemetry.GetFileBasedIdentifier(EntryPointFileFullPath, Sha256Hasher.Hash);
 
-        var directives = virtualCommand.Directives;
+        var directives = projectBuilder.Directives;
         var sdkCount = RunTelemetry.CountSdks(directives);
         var packageReferenceCount = RunTelemetry.CountPackageReferences(directives);
         var projectReferenceCount = RunTelemetry.CountProjectReferences(directives);
@@ -981,14 +1011,14 @@ public class RunCommand
             packageReferenceCount: packageReferenceCount,
             projectReferenceCount: projectReferenceCount,
             additionalPropertiesCount: additionalPropertiesCount,
-            usedMSBuild: virtualCommand.LastBuild.Level is BuildLevel.All,
-            usedRoslynCompiler: virtualCommand.LastBuild.Level is BuildLevel.Csc);
+            usedMSBuild: projectBuilder.LastBuild.Level is BuildLevel.All,
+            usedRoslynCompiler: projectBuilder.LastBuild.Level is BuildLevel.Csc);
     }
 
     /// <summary>
     /// Builds and sends telemetry data for project-based app runs.
     /// </summary>
-    private void SendProjectBasedTelemetry(ProjectLaunchSettingsModel? launchSettings)
+    private void SendProjectBasedTelemetry(LaunchProfile? launchSettings)
     {
         Debug.Assert(ProjectFileFullPath != null);
         var projectIdentifier = RunTelemetry.GetProjectBasedIdentifier(ProjectFileFullPath, GetRepositoryRoot(), Sha256Hasher.Hash);
