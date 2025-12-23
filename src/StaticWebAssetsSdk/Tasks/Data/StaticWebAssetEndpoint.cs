@@ -538,4 +538,38 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     IDictionary ITaskItem.CloneCustomMetadata() => ((ITaskItem2)this).CloneCustomMetadataEscaped();
 
     #endregion
+
+    public static bool RouteHasPathPrefix(
+        ReadOnlySpan<char> route,
+        ReadOnlySpan<char> prefix,
+        List<PathTokenizer.Segment> routeSegments,
+        List<PathTokenizer.Segment> prefixSegments)
+    {
+        routeSegments.Clear();
+        prefixSegments.Clear();
+
+        var routeTokenizer = new PathTokenizer(route);
+        var routeSegmentCollection = routeTokenizer.Fill(routeSegments);
+
+        var prefixTokenizer = new PathTokenizer(prefix);
+        var prefixSegmentCollection = prefixTokenizer.Fill(prefixSegments);
+
+        if (prefixSegmentCollection.Count > routeSegmentCollection.Count)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < prefixSegmentCollection.Count; i++)
+        {
+            var prefixSegmentSpan = prefixSegmentCollection[i];
+            var routeSegmentSpan = routeSegmentCollection[i];
+
+            if (!prefixSegmentSpan.Equals(routeSegmentSpan, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
