@@ -124,8 +124,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 
   <!-- Various properties imply that a RuntimeIdentifier will be needed for publish.  If any of these are set,
-       then set a default value for PublishRuntimeIdentifier -->
+       then set a default value for PublishRuntimeIdentifier if RuntimeIdentifier isn't set -->
   <PropertyGroup Condition="'$(PublishRuntimeIdentifier)' == '' And
+                            '$(RuntimeIdentifier)' == '' And
                             (
                               '$(PublishSelfContained)' == 'true' or
                               '$(PublishReadyToRun)' == 'true' or
