@@ -305,19 +305,19 @@ public class Program
         {
             // If we didn't match any built-in commands, and a C# file path is the first argument,
             // parse as `dotnet run --file file.cs ..rest_of_args` instead.
-            if (parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
-                && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile))
+            if (parseResult.GetResult(Parser.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
+                && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
             {
                 List<string> otherTokens = new(parseResult.Tokens.Count - 1);
                 foreach (var token in parseResult.Tokens)
                 {
-                    if (token.Type != TokenType.Argument || token.Value != unmatchedCommandOrFile)
+                    if (token != unmatchedCommandOrFile)
                     {
                         otherTokens.Add(token.Value);
                     }
                 }
 
-                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile, .. otherTokens]);
+                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
 
                 InvokeBuiltInCommand(parseResult, out var exitCode);
                 return exitCode;
