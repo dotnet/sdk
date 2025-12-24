@@ -1,86 +1,48 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
-using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
-internal static class WorkloadCommandNuGetRestoreActionConfigOptions
+internal sealed class WorkloadCommandNuGetRestoreActionConfigOptions(bool hidden = false)
 {
-    public static Option<bool> DisableParallelOption = new Option<bool>("--disable-parallel")
+    public readonly Option<bool> DisableParallelOption = new("--disable-parallel")
     {
         Description = CliCommandStrings.CmdDisableParallelOptionDescription,
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.Zero,
+        Hidden = hidden
     };
 
-    public static Option<bool> NoCacheOption = new Option<bool>("--no-cache")
+    public readonly Option<bool> NoCacheOption = new("--no-cache")
     {
         Description = CliCommandStrings.CmdNoCacheOptionDescription,
-        Hidden = true,
-        Arity = ArgumentArity.Zero
+        Hidden = hidden,
+        Arity = ArgumentArity.Zero,
     };
 
-    public static Option<bool> NoHttpCacheOption = new Option<bool>("--no-http-cache")
+    public readonly Option<bool> NoHttpCacheOption = new("--no-http-cache")
     {
         Description = CliCommandStrings.CmdNoCacheOptionDescription,
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.Zero,
+        Hidden = hidden
     };
 
-    public static Option<bool> IgnoreFailedSourcesOption = new Option<bool>("--ignore-failed-sources")
+    public readonly Option<bool> IgnoreFailedSourcesOption = new("--ignore-failed-sources")
     {
         Description = CliCommandStrings.CmdIgnoreFailedSourcesOptionDescription,
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.Zero,
+        Hidden = hidden
     };
 
-    public static Option<bool> InteractiveRestoreOption = CommonOptions.InteractiveOption();
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption(hidden: hidden);
 
-    public static Option<bool> HiddenDisableParallelOption = new Option<bool>("--disable-parallel")
+    public void AddTo(IList<Option> options)
     {
-        Description = CliCommandStrings.CmdDisableParallelOptionDescription,
-        Arity = ArgumentArity.Zero
-    }.Hide();
-
-    public static Option<bool> HiddenNoCacheOption = new Option<bool>("--no-cache")
-    {
-        Description = CliCommandStrings.CmdNoCacheOptionDescription,
-        Arity = ArgumentArity.Zero
-    }.Hide();
-
-    public static Option<bool> HiddenNoHttpCacheOption = new Option<bool>("--no-http-cache")
-    {
-        Description = CliCommandStrings.CmdNoCacheOptionDescription,
-        Arity = ArgumentArity.Zero
-    }.Hide();
-
-    public static Option<bool> HiddenIgnoreFailedSourcesOption = new Option<bool>("--ignore-failed-sources")
-    {
-        Description = CliCommandStrings.CmdIgnoreFailedSourcesOptionDescription,
-        Arity = ArgumentArity.Zero
-    }.Hide();
-
-    public static Option<bool> HiddenInteractiveRestoreOption = new Option<bool>("--interactive")
-    {
-        Description = CliStrings.CommandInteractiveOptionDescription,
-    }.Hide();
-
-    public static RestoreActionConfig ToRestoreActionConfig(this ParseResult parseResult)
-    {
-        return new RestoreActionConfig(DisableParallel: parseResult.GetValue(DisableParallelOption),
-            NoCache: parseResult.GetValue(NoCacheOption) || parseResult.GetValue(NoHttpCacheOption),
-            IgnoreFailedSources: parseResult.GetValue(IgnoreFailedSourcesOption),
-            Interactive: parseResult.GetValue(InteractiveRestoreOption));
-    }
-
-    public static void AddWorkloadCommandNuGetRestoreActionConfigOptions(this Command command, bool Hide = false)
-    {
-        command.Options.Add(Hide ? HiddenDisableParallelOption : DisableParallelOption);
-        command.Options.Add(Hide ? HiddenIgnoreFailedSourcesOption : IgnoreFailedSourcesOption);
-        command.Options.Add(Hide ? HiddenNoCacheOption : NoCacheOption);
-        command.Options.Add(Hide ? HiddenNoHttpCacheOption : NoHttpCacheOption);
-        command.Options.Add(Hide ? HiddenInteractiveRestoreOption : InteractiveRestoreOption);
+        options.Add(DisableParallelOption);
+        options.Add(NoCacheOption);
+        options.Add(NoHttpCacheOption);
+        options.Add(IgnoreFailedSourcesOption);
+        options.Add(InteractiveOption);
     }
 }

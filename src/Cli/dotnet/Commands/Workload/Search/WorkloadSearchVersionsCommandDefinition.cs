@@ -1,37 +1,38 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
-internal static class WorkloadSearchVersionsCommandDefinition
+internal sealed class WorkloadSearchVersionsCommandDefinition : WorkloadCommandDefinitionBase
 {
-    public static readonly Argument<IEnumerable<string>> WorkloadVersionArgument =
-        new(CliCommandStrings.WorkloadVersionArgument)
-        {
-            Arity = ArgumentArity.ZeroOrMore,
-            Description = CliCommandStrings.WorkloadVersionArgumentDescription
-        };
+    public readonly Argument<IEnumerable<string>> WorkloadVersionArgument = new(CliCommandStrings.WorkloadVersionArgument)
+    {
+        Arity = ArgumentArity.ZeroOrMore,
+        Description = CliCommandStrings.WorkloadVersionArgumentDescription
+    };
 
-    public static readonly Option<int> TakeOption = new("--take") { DefaultValueFactory = (_) => 5 };
+    public readonly Option<int> TakeOption = new("--take")
+    {
+        DefaultValueFactory = (_) => 5
+    };
 
-    public static readonly Option<string> FormatOption = new("--format")
+    public readonly Option<string> FormatOption = new("--format")
     {
         Description = CliCommandStrings.FormatOptionDescription
     };
 
-    public static readonly Option<bool> IncludePreviewsOption = new("--include-previews");
+    public readonly Option<bool> IncludePreviewsOption = new("--include-previews");
 
-    public static Command Create()
+    public WorkloadSearchVersionsCommandDefinition()
+        : base("version", CliCommandStrings.PrintSetVersionsDescription)
     {
-        var command = new Command("version", CliCommandStrings.PrintSetVersionsDescription);
-        command.Arguments.Add(WorkloadVersionArgument);
-        command.Options.Add(FormatOption);
-        command.Options.Add(TakeOption);
-        command.Options.Add(IncludePreviewsOption);
+        Arguments.Add(WorkloadVersionArgument);
+        Options.Add(FormatOption);
+        Options.Add(TakeOption);
+        Options.Add(IncludePreviewsOption);
 
         TakeOption.Validators.Add(optionResult =>
         {
@@ -41,15 +42,15 @@ internal static class WorkloadSearchVersionsCommandDefinition
             }
         });
 
-        command.Validators.Add(result =>
+        Validators.Add(result =>
         {
-            if (result.GetValue(WorkloadSearchCommandParser.WorkloadIdStubArgument) != null)
+            if (result.GetValue(Parent.WorkloadIdStubArgument) != null)
             {
-                result.AddError(string.Format(CliCommandStrings.CannotCombineSearchStringAndVersion, WorkloadSearchCommandParser.WorkloadIdStubArgument.Name, command.Name));
+                result.AddError(string.Format(CliCommandStrings.CannotCombineSearchStringAndVersion, Parent.WorkloadIdStubArgument.Name, Name));
             }
         });
 
-        command.Validators.Add(result =>
+        Validators.Add(result =>
         {
             var versionArgument = result.GetValue(WorkloadVersionArgument);
             if (versionArgument is not null && !versionArgument.All(v => v.Contains('@')) && !WorkloadSetVersion.IsWorkloadSetPackageVersion(versionArgument.SingleOrDefault(defaultValue: string.Empty)))
@@ -57,7 +58,8 @@ internal static class WorkloadSearchVersionsCommandDefinition
                 result.AddError(string.Format(CliStrings.UnrecognizedCommandOrArgument, string.Join(' ', versionArgument)));
             }
         });
-
-        return command;
     }
+
+    public WorkloadSearchCommandDefinition Parent
+        => (WorkloadSearchCommandDefinition)Parents.Single();
 }

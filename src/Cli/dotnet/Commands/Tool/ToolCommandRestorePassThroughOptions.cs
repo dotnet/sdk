@@ -35,5 +35,5 @@ internal static class ToolCommandRestorePassThroughOptions
         Arity = ArgumentArity.Zero
     }.ForwardAs("--ignore-failed-sources");
 
-    public static Option<bool> InteractiveRestoreOption = CommonOptions.InteractiveOption();
+    public static Option<bool> InteractiveRestoreOption = CommonOptions.CreateInteractiveOption();
 }

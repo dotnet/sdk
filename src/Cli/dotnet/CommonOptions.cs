@@ -140,7 +140,7 @@ internal static class CommonOptions
         return allValues.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
-    public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
+    public static Option<VerbosityOptions> CreateVerbosityOption(VerbosityOptions defaultVerbosity) =>
         new Option<VerbosityOptions>("--verbosity", "-v")
         {
             Description = CliStrings.VerbosityOptionDescription,
@@ -150,7 +150,7 @@ internal static class CommonOptions
         .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
 
-    public static Option<VerbosityOptions?> VerbosityOption() =>
+    public static Option<VerbosityOptions?> CreateVerbosityOption() =>
         new Option<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
@@ -159,7 +159,7 @@ internal static class CommonOptions
         .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
 
-    public static Option<VerbosityOptions> HiddenVerbosityOption =
+    public static Option<VerbosityOptions> CreateHiddenVerbosityOption() =>
         new Option<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
@@ -278,16 +278,17 @@ internal static class CommonOptions
     /// If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
     /// If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
     /// </remarks>
-    public static Option<bool> InteractiveOption(bool acceptArgument = false) =>
+    public static Option<bool> CreateInteractiveOption(bool acceptArgument = false, bool hidden = false) =>
         new(InteractiveOptionName)
         {
             Description = CliStrings.CommandInteractiveOptionDescription,
             Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
             // this default is called when no tokens/options are passed on the CLI args
-            DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
+            DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected(),
+            Hidden = hidden,
         };
 
-    public static Option<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
+    public static Option<bool> InteractiveMsBuildForwardOption = CreateInteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
     public static Option<bool> DisableBuildServersOption =
         new Option<bool>("--disable-build-servers")

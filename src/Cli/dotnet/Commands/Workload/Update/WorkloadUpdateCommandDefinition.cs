@@ -2,60 +2,47 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Update;
 
-internal static class WorkloadUpdateCommandDefinition
+internal sealed class WorkloadUpdateCommandDefinition : InstallingWorkloadCommandDefinition
 {
-    public static readonly Option<string> TempDirOption = WorkloadInstallCommandParser.TempDirOption;
+    public const string FromHistoryOptionName = "--from-history";
 
-    public static readonly Option<bool> FromPreviousSdkOption = new("--from-previous-sdk")
+    public readonly Option<bool> FromPreviousSdkOption = new("--from-previous-sdk")
     {
         Description = CliCommandStrings.FromPreviousSdkOptionDescription
     };
 
-    public static readonly Option<bool> AdManifestOnlyOption = new("--advertising-manifests-only")
+    public readonly Option<bool> AdManifestOnlyOption = new("--advertising-manifests-only")
     {
         Description = CliCommandStrings.AdManifestOnlyOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<bool> PrintRollbackOption = new("--print-rollback")
+    public readonly Option<bool> PrintRollbackOption = new("--print-rollback")
     {
         Hidden = true,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<int> FromHistoryOption = new("--from-history")
+    public readonly Option<int> FromHistoryOption = new(FromHistoryOptionName)
     {
         Description = CliCommandStrings.FromHistoryOptionDescription
     };
 
-    public static readonly Option<string> HistoryManifestOnlyOption = new("--manifests-only")
+    public readonly Option<string> HistoryManifestOnlyOption = new("--manifests-only")
     {
         Description = CliCommandStrings.HistoryManifestOnlyOptionDescription
     };
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
-
-    public static Command Create()
+    public WorkloadUpdateCommandDefinition()
+        : base("update", CliCommandStrings.WorkloadUpdateCommandDescription)
     {
-        Command command = new("update", CliCommandStrings.WorkloadUpdateCommandDescription);
-
-        InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
-
-        command.Options.Add(TempDirOption);
-        command.Options.Add(FromPreviousSdkOption);
-        command.Options.Add(AdManifestOnlyOption);
-        command.Options.Add(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
-        command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-        command.Options.Add(VerbosityOption);
-        command.Options.Add(PrintRollbackOption);
-        command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
-        command.Options.Add(FromHistoryOption);
-        command.Options.Add(HistoryManifestOnlyOption);
-
-        return command;
+        Options.Add(FromPreviousSdkOption);
+        Options.Add(AdManifestOnlyOption);
+        Options.Add(PrintRollbackOption);
+        Options.Add(FromHistoryOption);
+        Options.Add(HistoryManifestOnlyOption);
     }
 }

@@ -1,29 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Restore;
 
-internal static class WorkloadRestoreCommandDefinition
+internal sealed class WorkloadRestoreCommandDefinition : InstallingWorkloadCommandDefinition
 {
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
     {
         Description = CliStrings.SolutionOrProjectArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static Command Create()
+    public readonly Option<bool> SkipManifestUpdateOption = CreateSkipManifestUpdateOption();
+
+    public WorkloadRestoreCommandDefinition()
+        : base("restore", CliCommandStrings.WorkloadRestoreCommandDescription)
     {
-        Command command = new("restore", CliCommandStrings.WorkloadRestoreCommandDescription);
-
-        command.Arguments.Add(SlnOrProjectArgument);
-        WorkloadInstallCommandParser.AddWorkloadInstallCommandOptions(command);
-
-        return command;
+        Arguments.Add(SlnOrProjectArgument);
+        Options.Add(SkipManifestUpdateOption);
     }
 }

@@ -1174,7 +1174,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode)
     {
         UpdateInstallMode(sdkFeatureBand, newMode);
-        string newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
+        string newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandDefinition.UpdateMode_WorkloadSet : WorkloadConfigCommandDefinition.UpdateMode_Manifests;
         Reporter.WriteLine(string.Format(CliCommandStrings.UpdatedWorkloadMode, newModeString));
     }
 

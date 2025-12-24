@@ -1,31 +1,29 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
-internal static class WorkloadSearchCommandDefinition
+internal sealed class WorkloadSearchCommandDefinition : WorkloadCommandDefinitionBase
 {
-    public static readonly Argument<string> WorkloadIdStubArgument =
-        new(CliCommandStrings.WorkloadIdStubArgumentName)
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = CliCommandStrings.WorkloadIdStubArgumentDescription
-        };
-
-    public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
-
-    public static Command Create()
+    public readonly Argument<string> WorkloadIdStubArgument = new(CliCommandStrings.WorkloadIdStubArgumentName)
     {
-        var command = new Command("search", CliCommandStrings.WorkloadSearchCommandDescription);
-        command.Subcommands.Add(WorkloadSearchVersionsCommandParser.GetCommand());
-        command.Arguments.Add(WorkloadIdStubArgument);
-        command.Options.Add(CommonOptions.HiddenVerbosityOption);
-        command.Options.Add(VersionOption);
+        Arity = ArgumentArity.ZeroOrOne,
+        Description = CliCommandStrings.WorkloadIdStubArgumentDescription
+    };
 
-        return command;
+    public readonly Option<string> VersionOption = CreateSdkVersionOption();
+    public override Option<Utils.VerbosityOptions> VerbosityOption { get; } = CommonOptions.CreateHiddenVerbosityOption();
+
+    public readonly WorkloadSearchVersionsCommandDefinition VersionCommand = new();
+
+    public WorkloadSearchCommandDefinition()
+        : base("search", CliCommandStrings.WorkloadSearchCommandDescription)
+    {
+        Subcommands.Add(VersionCommand);
+        Arguments.Add(WorkloadIdStubArgument);
+        Options.Add(VerbosityOption);
+        Options.Add(VersionOption);
     }
 }

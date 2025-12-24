@@ -2,31 +2,31 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
 
-internal static class WorkloadRepairCommandDefinition
+internal sealed class WorkloadRepairCommandDefinition : WorkloadCommandDefinitionBase
 {
-    public static readonly Option<string> ConfigOption = InstallingWorkloadCommandParser.ConfigOption;
+    public readonly Option<string> ConfigOption = CreateConfigOption();
 
-    public static readonly Option<string[]> SourceOption = InstallingWorkloadCommandParser.SourceOption;
+    public readonly Option<string[]> SourceOption = CreateSourceOption();
 
-    public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+    public readonly Option<string> SdkVersionOption = CreateSdkVersionOption();
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
+    public override Option<Utils.VerbosityOptions> VerbosityOption { get; } = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal);
 
-    public static Command Create()
+    public override Option<bool> SkipSignCheckOption { get; } = CreateSkipSignCheckOption();
+
+    public override WorkloadCommandNuGetRestoreActionConfigOptions RestoreOptions { get; } = new();
+
+    public WorkloadRepairCommandDefinition()
+        : base("repair", CliCommandStrings.WorkloadRepairCommandDescription)
     {
-        Command command = new("repair", CliCommandStrings.WorkloadRepairCommandDescription);
-
-        command.Options.Add(VersionOption);
-        command.Options.Add(ConfigOption);
-        command.Options.Add(SourceOption);
-        command.Options.Add(VerbosityOption);
-        command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-        command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
-
-        return command;
+        Options.Add(SdkVersionOption);
+        Options.Add(ConfigOption);
+        Options.Add(SourceOption);
+        Options.Add(VerbosityOption);
+        RestoreOptions.AddTo(Options);
+        Options.Add(SkipSignCheckOption);
     }
 }

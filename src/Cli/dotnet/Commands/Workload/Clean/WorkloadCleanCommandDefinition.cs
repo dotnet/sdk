@@ -1,22 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Clean;
 
-internal static class WorkloadCleanCommandDefinition
+internal sealed class WorkloadCleanCommandDefinition : WorkloadCommandDefinitionBase
 {
-    public static readonly Option<bool> CleanAllOption = new("--all") { Description = CliCommandStrings.CleanAllOptionDescription };
-
-    public static Command Create()
+    public readonly Option<bool> CleanAllOption = new("--all")
     {
-        Command command = new("clean", CliCommandStrings.WorkloadCleanCommandDescription);
+        Description = CliCommandStrings.CleanAllOptionDescription
+    };
 
-        command.Options.Add(CleanAllOption);
+    public readonly Option<string> SdkVersionOption = CreateSdkVersionOption();
 
-        return command;
+    public WorkloadCleanCommandDefinition()
+        : base("clean", CliCommandStrings.WorkloadCleanCommandDescription)
+    {
+        Options.Add(CleanAllOption);
     }
 }
