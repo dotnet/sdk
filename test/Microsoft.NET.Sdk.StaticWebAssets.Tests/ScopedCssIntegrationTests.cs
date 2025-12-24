@@ -395,6 +395,100 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
+        // Regression test for https://github.com/dotnet/sdk/issues/50646
+        [Fact]
+        public void Build_RegeneratesScopedCss_WhenCssScopeMetadataChanges()
+        {
+            // Arrange
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            // Act 1: First build without custom scope
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
+            var scopedCssFile = Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css");
+            var bundleFile = Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css");
+
+            new FileInfo(scopedCssFile).Should().Exist();
+            new FileInfo(bundleFile).Should().Exist();
+
+            // Get initial thumbprints
+            var initialScopedCssThumbprint = FileThumbPrint.Create(scopedCssFile);
+            var initialBundleThumbprint = FileThumbPrint.Create(bundleFile);
+
+            // Verify initial build uses auto-generated scope (starts with 'b-')
+            var initialContent = File.ReadAllText(scopedCssFile);
+            initialContent.Should().MatchRegex(@"\[b-[a-z0-9]+\]");
+
+            // Act 2: Add custom CssScope metadata to the project
+            File.WriteAllText(
+                Path.Combine(projectDirectory.Path, "Directory.Build.targets"),
+                """
+                <Project>
+                  <ItemGroup>
+                    <None Update="Components\Pages\Counter.razor.css">
+                      <CssScope>my-custom-scope</CssScope>
+                    </None>
+                  </ItemGroup>
+                </Project>
+                """);
+
+            build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
+
+            // Assert: Files should be regenerated with the new scope
+            var newScopedCssThumbprint = FileThumbPrint.Create(scopedCssFile);
+            var newBundleThumbprint = FileThumbPrint.Create(bundleFile);
+
+            Assert.NotEqual(initialScopedCssThumbprint, newScopedCssThumbprint);
+            Assert.NotEqual(initialBundleThumbprint, newBundleThumbprint);
+
+            // Verify the new content uses the custom scope
+            var newContent = File.ReadAllText(scopedCssFile);
+            newContent.Should().Contain("[my-custom-scope]");
+            newContent.Should().NotMatchRegex(@"\[b-[a-z0-9]+\]");
+
+            // Act 3: Change the custom scope to a different value
+            File.WriteAllText(
+                Path.Combine(projectDirectory.Path, "Directory.Build.targets"),
+                """
+                <Project>
+                  <ItemGroup>
+                    <None Update="Components\Pages\Counter.razor.css">
+                      <CssScope>my-updated-scope</CssScope>
+                    </None>
+                  </ItemGroup>
+                </Project>
+                """);
+
+            build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
+
+            // Assert: Files should be regenerated again with the updated scope
+            var updatedScopedCssThumbprint = FileThumbPrint.Create(scopedCssFile);
+            var updatedBundleThumbprint = FileThumbPrint.Create(bundleFile);
+
+            Assert.NotEqual(newScopedCssThumbprint, updatedScopedCssThumbprint);
+            Assert.NotEqual(newBundleThumbprint, updatedBundleThumbprint);
+
+            // Verify the content uses the updated scope
+            var updatedContent = File.ReadAllText(scopedCssFile);
+            updatedContent.Should().Contain("[my-updated-scope]");
+            updatedContent.Should().NotContain("[my-custom-scope]");
+
+            // Act 4: Verify that building again without changes doesn't regenerate
+            var finalScopedCssThumbprint = FileThumbPrint.Create(scopedCssFile);
+            var finalBundleThumbprint = FileThumbPrint.Create(bundleFile);
+
+            build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
+
+            Assert.Equal(finalScopedCssThumbprint, FileThumbPrint.Create(scopedCssFile));
+            Assert.Equal(finalBundleThumbprint, FileThumbPrint.Create(bundleFile));
+        }
+
         // This test verifies if the targets that VS calls to update scoped css works to update these files
         [Fact]
         public void RegeneratingScopedCss_ForProject()
