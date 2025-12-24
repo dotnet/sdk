@@ -32,7 +32,7 @@ internal static class CleanCommandDefinition
 
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Clean");
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal);
 
     public static Command Create()
     {

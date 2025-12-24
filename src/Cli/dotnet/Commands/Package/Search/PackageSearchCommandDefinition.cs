@@ -42,7 +42,7 @@ internal sealed class PackageSearchCommandDefinition : Command
         Arity = ArgumentArity.Zero
     }.ForwardAs("--exact-match");
 
-    public readonly Option<bool> Interactive = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
+    public readonly Option<bool> Interactive = CommonOptions.CreateInteractiveOption().ForwardIfEnabled("--interactive");
 
     public readonly Option<bool> Prerelease = new Option<bool>("--prerelease")
     {

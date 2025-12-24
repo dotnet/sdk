@@ -26,7 +26,7 @@ internal abstract class PackageRemoveCommandDefinitionBase : Command
         Arity = ArgumentArity.OneOrMore,
     };
 
-    public readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption().ForwardIfEnabled("--interactive");
     public readonly Option<string?> ProjectOption = PackageCommandDefinition.CreateProjectOption();
     public readonly Option<string?> FileOption = PackageCommandDefinition.CreateFileOption();
 

@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class ToolInstallCommandDefinition
 {
-    public static readonly Argument<PackageIdentityWithRange> PackageIdentityArgument = CommonArguments.RequiredPackageIdentityArgument("dotnetsay", "2.1.7");
+    public static readonly Argument<PackageIdentityWithRange> PackageIdentityArgument = CommonArguments.CreateRequiredPackageIdentityArgument("dotnetsay", "2.1.7");
 
     public static readonly Option<string> VersionOption = new("--version")
     {
@@ -57,7 +57,7 @@ internal static class ToolInstallCommandDefinition
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal);
 
     // Don't use the common options version as we don't want this to be a forwarded option
     public static readonly Option<string> ArchitectureOption = new("--arch", "-a")

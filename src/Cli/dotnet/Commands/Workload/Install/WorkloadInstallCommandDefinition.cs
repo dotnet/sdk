@@ -5,54 +5,15 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
-internal static class WorkloadInstallCommandDefinition
+internal sealed class WorkloadInstallCommandDefinition : InstallingWorkloadCommandDefinition
 {
-    public static readonly Argument<IEnumerable<string>> WorkloadIdArgument = new("workloadId")
+    public readonly Argument<IEnumerable<string>> WorkloadIdArgument = CreateWorkloadIdArgument();
+    public readonly Option<bool> SkipManifestUpdateOption = CreateSkipManifestUpdateOption();
+
+    public WorkloadInstallCommandDefinition()
+        : base("install", CliCommandStrings.WorkloadInstallCommandDescription)
     {
-        HelpName = CliCommandStrings.WorkloadIdArgumentName,
-        Arity = ArgumentArity.OneOrMore,
-        Description = CliCommandStrings.WorkloadIdArgumentDescription
-    };
-
-    public static readonly Option<bool> SkipSignCheckOption = new("--skip-sign-check")
-    {
-        Description = CliCommandStrings.SkipSignCheckOptionDescription,
-        Hidden = true,
-        Arity = ArgumentArity.Zero
-    };
-
-    public static readonly Option<bool> SkipManifestUpdateOption = new("--skip-manifest-update")
-    {
-        Description = CliCommandStrings.SkipManifestUpdateOptionDescription,
-        Arity = ArgumentArity.Zero
-    };
-
-    public static readonly Option<string> TempDirOption = new("--temp-dir")
-    {
-        Description = CliCommandStrings.TempDirOptionDescription
-    };
-
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
-
-    public static Command Create()
-    {
-        Command command = new("install", CliCommandStrings.WorkloadInstallCommandDescription);
-
-        command.Arguments.Add(WorkloadIdArgument);
-        AddWorkloadInstallCommandOptions(command);
-
-        return command;
-    }
-
-    internal static void AddWorkloadInstallCommandOptions(Command command)
-    {
-        InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
-
-        command.Options.Add(SkipManifestUpdateOption);
-        command.Options.Add(TempDirOption);
-        command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-        command.Options.Add(VerbosityOption);
-        command.Options.Add(SkipSignCheckOption);
-        command.Options.Add(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
+        Arguments.Add(WorkloadIdArgument);
+        Options.Add(SkipManifestUpdateOption);
     }
 }

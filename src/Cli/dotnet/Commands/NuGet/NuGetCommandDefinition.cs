@@ -57,7 +57,7 @@ internal static class NuGetCommandDefinition
         {
             Arity = ArgumentArity.Zero
         });
-        deleteCommand.Options.Add(CommonOptions.InteractiveOption());
+        deleteCommand.Options.Add(CommonOptions.CreateInteractiveOption());
 
         return deleteCommand;
     }
@@ -114,7 +114,7 @@ internal static class NuGetCommandDefinition
         {
             Arity = ArgumentArity.Zero
         });
-        pushCommand.Options.Add(CommonOptions.InteractiveOption());
+        pushCommand.Options.Add(CommonOptions.CreateInteractiveOption());
         pushCommand.Options.Add(new Option<bool>("--skip-duplicate")
         {
             Arity = ArgumentArity.Zero
@@ -138,7 +138,7 @@ internal static class NuGetCommandDefinition
         verifyCommand.Options.Add(new Option<IEnumerable<string>>(fingerprint)
             .ForwardAsManyArgumentsEachPrefixedByOption(fingerprint)
             .AllowSingleArgPerToken());
-        verifyCommand.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
+        verifyCommand.Options.Add(CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal));
 
         return verifyCommand;
     }
@@ -167,12 +167,12 @@ internal static class NuGetCommandDefinition
         // as well as the standard NugetCommand.Run handler
 
         trustCommand.Options.Add(configFile);
-        trustCommand.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
+        trustCommand.Options.Add(CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal));
 
         foreach (var command in trustCommand.Subcommands)
         {
             command.Options.Add(configFile);
-            command.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
+            command.Options.Add(CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal));
         }
 
         Command CreateAuthorCommand() => new("author") {
@@ -242,7 +242,7 @@ internal static class NuGetCommandDefinition
         {
             Arity = ArgumentArity.Zero
         });
-        signCommand.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));
+        signCommand.Options.Add(CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal));
 
         return signCommand;
     }

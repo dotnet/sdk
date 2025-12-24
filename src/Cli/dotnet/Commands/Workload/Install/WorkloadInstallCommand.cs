@@ -17,7 +17,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
-internal class WorkloadInstallCommand : InstallingWorkloadCommand
+internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand<WorkloadInstallCommandDefinition>
 {
     private bool _skipManifestUpdate;
     private readonly IReadOnlyCollection<string> _workloadIds;
@@ -37,10 +37,10 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         bool? skipWorkloadManifestUpdate = null)
         : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
               nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
-              tempDirPath: tempDirPath, verbosityOptions: WorkloadInstallCommandParser.VerbosityOption)
+              tempDirPath: tempDirPath)
     {
-        _skipManifestUpdate = skipWorkloadManifestUpdate ?? parseResult.GetValue(WorkloadInstallCommandParser.SkipManifestUpdateOption);
-        var unprocessedWorkloadIds = workloadIds ?? parseResult.GetValue(WorkloadInstallCommandParser.WorkloadIdArgument);
+        _skipManifestUpdate = skipWorkloadManifestUpdate ?? parseResult.GetValue(Definition.SkipManifestUpdateOption);
+        var unprocessedWorkloadIds = workloadIds ?? parseResult.GetValue(Definition.WorkloadIdArgument);
         if (unprocessedWorkloadIds?.Any(id => id.Contains('@')) == true)
         {
             _workloadIds = unprocessedWorkloadIds.Select(id => id.Split('@')[0]).ToList().AsReadOnly();
@@ -153,19 +153,19 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         else if (_skipManifestUpdate && usedRollback)
         {
             throw new GracefulException(string.Format(CliCommandStrings.CannotCombineSkipManifestAndRollback,
-                WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name), isUserError: true);
+                Definition.SkipManifestUpdateOption.Name, Definition.FromRollbackFileOption.Name), isUserError: true);
         }
         else if (_skipManifestUpdate && SpecifiedWorkloadSetVersionOnCommandLine)
         {
             throw new GracefulException(string.Format(CliCommandStrings.CannotCombineSkipManifestAndVersion,
-                WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.VersionOption.Name), isUserError: true);
+                Definition.SkipManifestUpdateOption.Name, Definition.SdkVersionOption.Name), isUserError: true);
         }
         else if (_skipManifestUpdate && SpecifiedWorkloadSetVersionInGlobalJson &&
             !IsRunningRestore)  //  When running restore, we first update workloads, then query the projects to figure out what workloads should be installed, then run the install command.
                                 //  When we run the install command we set skipManifestUpdate to true as an optimization to avoid trying to update twice
         {
             throw new GracefulException(string.Format(CliCommandStrings.CannotUseSkipManifestWithGlobalJsonWorkloadVersion,
-                WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, _globalJsonPath), isUserError: true);
+                Definition.SkipManifestUpdateOption.Name, _globalJsonPath), isUserError: true);
         }
         else
         {
