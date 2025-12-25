@@ -4,11 +4,11 @@
 #nullable disable
 
 using System.Diagnostics;
+using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Razor.Serialization;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
+using Microsoft.NET.Sdk.Razor.Tool.Json;
 using Newtonsoft.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -191,23 +191,25 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 b.RegisterExtensions();
 
                 b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
-                b.Features.Add(new DefaultTypeNameFeature());
 
-                if (GenerateDeclaration.HasValue())
+                b.ConfigureCodeGenerationOptions(b =>
                 {
-                    b.Features.Add(new SetSuppressPrimaryMethodBodyOptionFeature());
-                    b.Features.Add(new SuppressChecksumOptionsFeature());
-                }
+                    if (GenerateDeclaration.HasValue())
+                    {
+                        b.SuppressPrimaryMethodBody = true;
+                        b.SuppressChecksum = true;
+                    }
 
-                if (SupportLocalizedComponentNames.HasValue())
-                {
-                    b.Features.Add(new SetSupportLocalizedComponentNamesFeature());
-                }
+                    if (SupportLocalizedComponentNames.HasValue())
+                    {
+                        b.SupportLocalizedComponentNames = true;
+                    }
 
-                if (RootNamespace.HasValue())
-                {
-                    b.SetRootNamespace(RootNamespace.Value());
-                }
+                    if (RootNamespace.HasValue())
+                    {
+                        b.RootNamespace = RootNamespace.Value();
+                    }
+                });
 
                 if (CSharpLanguageVersion.HasValue())
                 {
@@ -307,8 +309,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 var reader = new JsonTextReader(new StreamReader(stream));
 
                 var serializer = new JsonSerializer();
-                serializer.Converters.Add(new RazorDiagnosticJsonConverter());
-                serializer.Converters.Add(new TagHelperDescriptorJsonConverter());
+                serializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
 
                 var descriptors = serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
                 return descriptors;
@@ -326,10 +327,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var items = new SourceItem[sources.Count];
             for (var i = 0; i < items.Length; i++)
             {
-                var fileKind = fileKinds.Count > 0 ? fileKinds[i] : "mvc";
+                var fileKind = fileKinds.Count > 0
+                    ? ConvertFileKind(fileKinds[i])
+                    : RazorFileKind.Legacy;
+
                 if (AspNetCore.Razor.Language.FileKinds.IsComponent(fileKind))
                 {
-                    fileKind = AspNetCore.Razor.Language.FileKinds.GetComponentFileKindFromFilePath(sources[i]);
+                    fileKind = GetComponentFileKindFromFilePath(sources[i]);
                 }
 
                 var cssScopeValue = cssScopeAssociations.TryGetValue(sources[i], out var cssScopeIndex)
@@ -340,6 +344,33 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
 
             return items;
+        }
+
+        private static RazorFileKind ConvertFileKind(string fileKind)
+        {
+            if (string.Equals(fileKind, "component", StringComparison.OrdinalIgnoreCase))
+            {
+                return RazorFileKind.Component;
+            }
+
+            if (string.Equals(fileKind, "componentImport", StringComparison.OrdinalIgnoreCase))
+            {
+                return RazorFileKind.ComponentImport;
+            }
+
+            if (string.Equals(fileKind, "mvc", StringComparison.OrdinalIgnoreCase))
+            {
+                return RazorFileKind.Legacy;
+            }
+
+            return RazorFileKind.Legacy;
+        }
+
+        private static RazorFileKind GetComponentFileKindFromFilePath(string filePath)
+        {
+            return AspNetCore.Razor.Language.FileKinds.TryGetFileKindFromPath(filePath, out var kind) && kind != RazorFileKind.Legacy
+                ? kind
+                : RazorFileKind.Component;
         }
 
         private OutputItem[] GenerateCode(RazorProjectEngine engine, SourceItem[] inputs)
@@ -361,10 +392,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         {
             public OutputItem(
                 SourceItem inputItem,
-                RazorCSharpDocument cSharpDocument)
+                RazorCSharpDocument csharpDocument)
             {
                 InputItem = inputItem;
-                CSharpDocument = cSharpDocument;
+                CSharpDocument = csharpDocument;
             }
 
             public SourceItem InputItem { get; }
@@ -374,7 +405,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         private readonly struct SourceItem
         {
-            public SourceItem(string sourcePath, string outputPath, string physicalRelativePath, string fileKind, string cssScope)
+            public SourceItem(string sourcePath, string outputPath, string physicalRelativePath, RazorFileKind fileKind, string cssScope)
             {
                 SourcePath = sourcePath;
                 OutputPath = outputPath;
@@ -394,7 +425,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             public string FilePath { get; }
 
-            public string FileKind { get; }
+            public RazorFileKind FileKind { get; }
 
             public string CssScope { get; }
         }
@@ -403,37 +434,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         {
             public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
 
-            public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => TagHelpers;
-        }
-
-        private class SetSuppressPrimaryMethodBodyOptionFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
-        {
-            public int Order { get; set; }
-
-            public void Configure(RazorCodeGenerationOptionsBuilder options)
-            {
-                if (options == null)
-                {
-                    throw new ArgumentNullException(nameof(options));
-                }
-
-                options.SuppressPrimaryMethodBody = true;
-            }
-        }
-
-        private class SetSupportLocalizedComponentNamesFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
-        {
-            public int Order { get; set; }
-
-            public void Configure(RazorCodeGenerationOptionsBuilder options)
-            {
-                if (options == null)
-                {
-                    throw new ArgumentNullException(nameof(options));
-                }
-
-                options.SupportLocalizedComponentNames = true;
-            }
+            public IReadOnlyList<TagHelperDescriptor> GetDescriptors(CancellationToken cancellationToken) => TagHelpers;
         }
     }
 }

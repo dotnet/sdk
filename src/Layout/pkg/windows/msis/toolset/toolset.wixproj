@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.WixToolset.Sdk">
+
+  <ItemGroup>
+    <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix5\product\dotnethome_x64.wxs" />
+    <Compile Include="..\registrykeys.wxs" />
+    <Compile Include="..\provider.wxs" />
+    <Compile Include="..\directories.wxs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <HarvestDirectory Include="$(SdkLayoutDirectoryToHarvest)"
+                      ComponentGroupName="InstallFiles"
+                      DirectoryRefId="DOTNETHOME"
+                      PreprocessorVariable="DotnetSrc"
+                      SuppressRegistry="true"
+                      SuppressRootDirectory="true"
+                      Transforms="..\..\StableFileIdForApphostTransform.xslt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WixToolset.Heat" />
+    <PackageReference Include="Microsoft.WixToolset.Util.wixext" />
+    <PackageReference Include="Microsoft.WixToolset.UI.wixext" />
+    <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
+  </ItemGroup>
+
+  <Target Name="SetInstallerInfo" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <!-- Templates support rebuilding the same project for multiple MSIs so we expect some properties to be passed to this project when building. -->
+      <DefineConstants>$(DefineConstants);ProductName=$(ToolsetBrandName) ($(InstallerPlatform))</DefineConstants>
+      <DefineConstants>$(DefineConstants);DependencyKeyName=Dotnet_CLI</DefineConstants>
+    </PropertyGroup>
+  </Target>
+
+</Project>

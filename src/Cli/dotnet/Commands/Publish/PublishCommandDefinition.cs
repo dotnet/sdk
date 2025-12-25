@@ -1,0 +1,93 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Extensions;
+
+namespace Microsoft.DotNet.Cli.Commands.Publish;
+
+internal static class PublishCommandDefinition
+{
+    public static readonly string DocsLink = "https://aka.ms/dotnet-publish";
+
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
+    {
+        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
+        Arity = ArgumentArity.ZeroOrMore
+    };
+
+    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
+    {
+        Description = CliCommandStrings.PublishOutputOptionDescription,
+        HelpName = CliCommandStrings.PublishOutputOption
+    }.ForwardAsOutputPath("PublishDir");
+
+    public static readonly Option<IEnumerable<string>> ManifestOption = new Option<IEnumerable<string>>("--manifest")
+    {
+        Description = CliCommandStrings.ManifestOptionDescription,
+        HelpName = CliCommandStrings.ManifestOption
+    }.ForwardAsSingle(o => $"-property:TargetManifestFiles={string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))}")
+    .AllowSingleArgPerToken();
+
+    public static readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
+    {
+        Description = CliCommandStrings.NoBuildOptionDescription,
+        Arity = ArgumentArity.Zero
+    }.ForwardAs("-property:NoBuild=true");
+
+    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
+
+    public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+
+    public static readonly Option<bool> SelfContainedOption = CommonOptions.SelfContainedOption;
+
+    public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
+
+    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.PublishRuntimeOptionDescription);
+
+    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.PublishFrameworkOptionDescription);
+
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PublishConfigurationOptionDescription);
+    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Publish", [("_IsPublishing", "true")]);
+
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandDefinition.VerbosityOption;
+
+    public static Command Create()
+    {
+        var command = new Command("publish", CliCommandStrings.PublishAppDescription)
+        {
+            DocsLink = DocsLink
+        };
+
+        command.Arguments.Add(SlnOrProjectOrFileArgument);
+        RestoreCommandDefinition.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
+
+        command.Options.Add(OutputOption);
+        command.Options.Add(CommonOptions.ArtifactsPathOption);
+        command.Options.Add(ManifestOption);
+        command.Options.Add(NoBuildOption);
+        command.Options.Add(SelfContainedOption);
+        command.Options.Add(NoSelfContainedOption);
+        command.Options.Add(NoLogoOption);
+        command.Options.Add(FrameworkOption);
+        command.Options.Add(RuntimeOption);
+        command.Options.Add(ConfigurationOption);
+        command.Options.Add(CommonOptions.VersionSuffixOption);
+        command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
+        command.Options.Add(NoRestoreOption);
+        command.Options.Add(VerbosityOption);
+        command.Options.Add(CommonOptions.ArchitectureOption);
+        command.Options.Add(CommonOptions.OperatingSystemOption);
+        command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(TargetOption);
+        command.Options.Add(CommonOptions.GetPropertyOption);
+        command.Options.Add(CommonOptions.GetItemOption);
+        command.Options.Add(CommonOptions.GetTargetResultOption);
+        command.Options.Add(CommonOptions.GetResultOutputFileOption);
+
+        return command;
+    }
+}

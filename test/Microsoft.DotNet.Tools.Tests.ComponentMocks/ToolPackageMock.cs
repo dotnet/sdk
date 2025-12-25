@@ -4,8 +4,9 @@
 #nullable disable
 
 using System.Text.Json;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
@@ -15,7 +16,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
     internal class ToolPackageMock : IToolPackage
     {
         private IFileSystem _fileSystem;
-        private Lazy<RestoredCommand> _command;
+        private Lazy<ToolCommand> _command;
         private IEnumerable<string> _warnings;
         private readonly IReadOnlyList<FilePath> _packagedShims;
 
@@ -32,7 +33,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             Id = id;
             Version = version ?? throw new ArgumentNullException(nameof(version));
             PackageDirectory = packageDirectory;
-            _command = new Lazy<RestoredCommand>(GetCommand);
+            _command = new Lazy<ToolCommand>(GetCommand);
             _warnings = warnings ?? new List<string>();
             _packagedShims = packagedShims ?? new List<FilePath>();
             Frameworks = frameworks ?? new List<NuGetFramework>();
@@ -43,7 +44,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         public NuGetVersion Version { get; private set; }
         public DirectoryPath PackageDirectory { get; private set; }
 
-        public RestoredCommand Command
+        public ToolCommand Command
         {
             get
             {
@@ -63,7 +64,11 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         public IEnumerable<NuGetFramework> Frameworks { get; private set; }
 
-        private RestoredCommand GetCommand()
+        public PackageId ResolvedPackageId { get; private set; }
+
+        public NuGetVersion ResolvedPackageVersion { get; private set; }
+
+        private ToolCommand GetCommand()
         {
             try
             {
@@ -71,17 +76,12 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 // Currently only "dotnet" commands are supported
                 var executablePath = _fileSystem.File.ReadAllText(Path.Combine(PackageDirectory.Value, "project.assets.json"));
 
-                var fakeSettingFile = _fileSystem.File.ReadAllText(Path.Combine(PackageDirectory.Value, ProjectRestorerMock.FakeCommandSettingsFileName));
+                var settingsFilePath = Path.Combine(PackageDirectory.Value, @$"{Id}\{Version}\tools\net6.0\any", "DotnetToolSettings.xml");
 
-                string name;
-                using (JsonDocument doc = JsonDocument.Parse(fakeSettingFile))
-                {
-                    JsonElement root = doc.RootElement;
-                    name = root.GetProperty("Name").GetString();
-                }
+                var configuration = ToolConfigurationDeserializer.Deserialize(settingsFilePath, _fileSystem);
 
-                return new RestoredCommand(
-                        new ToolCommandName(name),
+                return new ToolCommand(
+                        new ToolCommandName(configuration.CommandName),
                         "dotnet",
                         PackageDirectory.WithFile(executablePath));
             }
@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             {
                 throw new ToolPackageException(
                     string.Format(
-                        CommonLocalizableStrings.FailedToRetrieveToolConfiguration,
+                        CliStrings.FailedToRetrieveToolConfiguration,
                         Id,
                         ex.Message),
                     ex);

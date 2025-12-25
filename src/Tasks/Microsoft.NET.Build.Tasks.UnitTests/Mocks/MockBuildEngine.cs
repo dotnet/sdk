@@ -8,7 +8,11 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    public class MockBuildEngine : IBuildEngine4
+    /// <summary>
+    /// Must be internal to avoid loading msbuild assemblies before the test assembly,
+    /// which might need to set the msbuild location.
+    /// </summary>
+    internal class MockBuildEngine : IBuildEngine4
     {
         public int ColumnNumberOfTaskNode { get; set; }
 

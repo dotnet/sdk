@@ -20,9 +20,13 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public List<string> EnvironmentToRemove { get; } = new List<string>();
 
+        public bool RedirectStandardInput { get; set; }
+
         //  These only work via Execute(), not when using GetProcessStartInfo()
         public Action<string>? CommandOutputHandler { get; set; }
         public Action<Process>? ProcessStartedHandler { get; set; }
+
+        public Encoding? StandardOutputEncoding { get; set; }
 
         protected TestCommand(ITestOutputHelper log)
         {
@@ -43,6 +47,24 @@ namespace Microsoft.NET.TestFramework.Commands
             return this;
         }
 
+        public TestCommand WithStandardInput(string stdin)
+        {
+            Debug.Assert(ProcessStartedHandler == null);
+            RedirectStandardInput = true;
+            ProcessStartedHandler = (process) =>
+            {
+                process.StandardInput.Write(stdin);
+                process.StandardInput.Close();
+            };
+            return this;
+        }
+
+        public TestCommand WithStandardOutputEncoding(Encoding encoding)
+        {
+            StandardOutputEncoding = encoding;
+            return this;
+        }
+
         /// <summary>
         /// Instructs not to escape the arguments when launching command.
         /// This may be used to pass ready arguments line as single string argument.
@@ -58,12 +80,6 @@ namespace Microsoft.NET.TestFramework.Commands
         public TestCommand WithTraceOutput()
         {
             WithEnvironmentVariable("DOTNET_CLI_VSTEST_TRACE", "1");
-            return this;
-        }
-
-        public TestCommand WithEnableTestingPlatform()
-        {
-            WithEnvironmentVariable("DOTNET_CLI_TESTINGPLATFORM_ENABLE", "1");
             return this;
         }
 
@@ -89,6 +105,8 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 commandSpec.Arguments = Arguments.Concat(commandSpec.Arguments).ToList();
             }
+
+            commandSpec.RedirectStandardInput = RedirectStandardInput;
 
             return commandSpec;
         }
@@ -144,11 +162,28 @@ namespace Microsoft.NET.TestFramework.Commands
                 Log.WriteLine($"❌{line}");
             });
 
-            var display = $"dotnet {string.Join(" ", spec.Arguments)}";
+            if (StandardOutputEncoding is not null)
+            {
+                command.StandardOutputEncoding(StandardOutputEncoding);
+            }
+
+            string fileToShow = Path.GetFileNameWithoutExtension(spec.FileName!).Equals("dotnet", StringComparison.OrdinalIgnoreCase) ?
+                "dotnet" :
+                spec.FileName!;
+            var display = $"{fileToShow} {string.Join(" ", spec.Arguments)}";
 
             Log.WriteLine($"Executing '{display}':");
             var result = ((Command)command).Execute(ProcessStartedHandler);
             Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
+
+            if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
+            {
+                var binlogFiles = Directory.GetFiles(spec.WorkingDirectory ?? Environment.CurrentDirectory, "*.binlog");
+                foreach (string binlogFile in binlogFiles)
+                {
+                    File.Copy(binlogFile, Path.Combine(uploadRoot, Path.GetFileName(binlogFile)), true);
+                }
+            }
 
             return result;
         }

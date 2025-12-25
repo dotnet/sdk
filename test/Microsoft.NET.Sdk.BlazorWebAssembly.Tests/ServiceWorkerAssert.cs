@@ -40,7 +40,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 // nor do we list the service worker itself or its assets manifest, as these don't need to be fetched in the same way
                 if (IsCompressedFile(relativePath)
                     || string.Equals(relativePath, Path.Combine(staticWebAssetsBasePath, serviceWorkerPath), StringComparison.Ordinal)
-                    || string.Equals(relativePath, Path.Combine(staticWebAssetsBasePath, assetsManifestPath), StringComparison.Ordinal))
+                    || string.Equals(relativePath, Path.Combine(staticWebAssetsBasePath, assetsManifestPath), StringComparison.Ordinal)
+                    || relativePath.EndsWith(".modules.json"))
                 {
                     continue;
                 }

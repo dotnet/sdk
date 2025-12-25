@@ -4,7 +4,6 @@
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,5 +36,11 @@
      <!-- This causes conflicts with System.Threading.Tasks.Task. Giving it an alias to avoid the conflict. -->
     <Using Include="Microsoft.Build.Utilities.Task" Alias="Task" />
   </ItemGroup>
+
+  <!--
+    Encountered an error about this target being missing when rebuilding within VS.
+    See: https://github.com/dotnet/msbuild/issues/4303#issuecomment-482345617
+  -->
+  <Target Name="GetTargetPath" />
 
 </Project>

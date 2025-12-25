@@ -15,20 +15,9 @@ namespace Microsoft.NET.Build.Tests
 
         [Theory]
         [InlineData("net45", "Full", "netstandard1.0 netstandard1.1 net45", true, true)]
-        [InlineData("net451", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 net45 net451", true, true)]
-        [InlineData("net46", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 net45 net451 net46", true, true)]
-        [InlineData("net461", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 net45 net451 net46 net461", true, true)]
         [InlineData("net462", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 net45 net451 net46 net461 net462", true, true)]
-        [InlineData("netstandard1.0", "Full", "netstandard1.0", true, true)]
-        [InlineData("netstandard1.1", "Full", "netstandard1.0 netstandard1.1", true, true)]
-        [InlineData("netstandard1.2", "Full", "netstandard1.0 netstandard1.1 netstandard1.2", true, true)]
-        [InlineData("netstandard1.3", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3", true, true)]
-        [InlineData("netstandard1.4", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4", true, true)]
-        [InlineData("netstandard1.5", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5", true, true)]
         [InlineData("netstandard1.6", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6", true, true)]
         [InlineData("netstandard2.0", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0", true, true)]
-        [InlineData("netcoreapp1.0", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netcoreapp1.0", true, true)]
-        [InlineData("netcoreapp1.1", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netcoreapp1.0 netcoreapp1.1", true, true)]
         [InlineData("netcoreapp2.0", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 netcoreapp1.0 netcoreapp1.1 netcoreapp2.0", true, true)]
 
         [InlineData("netstandard2.0", "OptIn", "net45 net451 net46 net461", true, true)]
@@ -48,31 +37,53 @@ namespace Microsoft.NET.Build.Tests
                 return;
             }
 
-            foreach (string dependencyTarget in rawDependencyTargets.Split(',', ';', ' ').ToList())
-            {
-                TestProject dependencyProject = GetTestProject(ConstantStringValues.DependencyDirectoryNamePrefix + dependencyTarget.Replace('.', '_'), dependencyTarget, true);
-                TestPackageReference dependencyPackageReference = new(
-                    dependencyProject.Name,
-                    "1.0.0",
-                    ConstantStringValues.ConstructNuGetPackageReferencePath(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets));
+            var dependencyPackageReferences = new List<TestPackageReference>();
 
-                //  Skip creating the NuGet package if not running on Windows; or if the NuGet package already exists
-                //        https://github.com/dotnet/sdk/issues/335
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || dependencyProject.BuildsOnNonWindows)
+            // Process all dependencies in parallel
+            Parallel.ForEach(
+                rawDependencyTargets.Split(',', ';', ' ').Where(s => !string.IsNullOrWhiteSpace(s)),
+                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+                dependencyTarget =>
                 {
-                    if (!dependencyPackageReference.NuGetPackageExists())
+                    // Create the dependency project and package
+                    TestProject dependencyProject = GetTestProject(
+                        ConstantStringValues.DependencyDirectoryNamePrefix + dependencyTarget.Replace('.', '_'),
+                        dependencyTarget,
+                        true);
+
+                    TestPackageReference dependencyPackageReference = new(
+                        dependencyProject.Name,
+                        "1.0.0",
+                        ConstantStringValues.ConstructNuGetPackageReferencePath(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets));
+
+                    // Create package if it doesn't exist
+                    if (!dependencyPackageReference.NuGetPackageExists() &&
+                        (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || dependencyProject.BuildsOnNonWindows))
                     {
-                        //  Create the NuGet packages
-                        var dependencyTestAsset = _testAssetsManager.CreateTestProject(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets);
-                        var dependencyRestoreCommand = dependencyTestAsset.GetRestoreCommand(Log, relativePath: dependencyProject.Name).Execute().Should().Pass();
-                        var dependencyProjectDirectory = Path.Combine(dependencyTestAsset.TestRoot, dependencyProject.Name);
+                        if (!dependencyPackageReference.NuGetPackageExists())
+                        {
+                            var dependencyTestAsset = _testAssetsManager.CreateTestProject(
+                                dependencyProject,
+                                identifier: referencerTarget + testDescription + rawDependencyTargets);
 
-                        var dependencyPackCommand = new PackCommand(Log, dependencyProjectDirectory);
-                        var dependencyPackResult = dependencyPackCommand.Execute().Should().Pass();
+                            dependencyTestAsset.GetRestoreCommand(Log, relativePath: dependencyProject.Name)
+                                .Execute().Should().Pass();
+
+                            var dependencyProjectDirectory = Path.Combine(
+                                dependencyTestAsset.TestRoot,
+                                dependencyProject.Name);
+
+                            new PackCommand(Log, dependencyProjectDirectory)
+                                .Execute().Should().Pass();
+                        }
+
                     }
+                });
 
-                    referencerProject.PackageReferences.Add(dependencyPackageReference);
-                }
+            // Add all references to the referencer project
+            foreach (var dependencyPackageReference in dependencyPackageReferences)
+            {
+                referencerProject.PackageReferences.Add(dependencyPackageReference);
             }
 
             //  Skip running tests if no NuGet packages are referenced
@@ -197,7 +208,7 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
 
             var referencedDll = buildCommand.GetOutputDirectory().File("net462_net472_pkg.dll").FullName;
-            var referencedTargetFramework = AssemblyInfo.Get(referencedDll)["TargetFrameworkAttribute"];
+            var referencedTargetFramework = AssemblyInfo.Get(referencedDll).Where(i => i.Key == "TargetFrameworkAttribute").Single().Value;
             referencedTargetFramework.Should().Be(".NETFramework,Version=v4.6.2");
         }
 

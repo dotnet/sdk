@@ -3,12 +3,12 @@
 
 #nullable disable
 
-using Microsoft.DotNet.BuildServer;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.BuildServer;
+using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.CommandFactory;
 using Moq;
 using NuGet.Frameworks;
-using LocalizableStrings = Microsoft.DotNet.BuildServer.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.BuildServerTests
 {
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
 
             a.Should().Throw<BuildServerException>().WithMessage(
                 string.Format(
-                    LocalizableStrings.ShutdownCommandFailed,
+                    CliStrings.ShutdownCommandFailed,
                     ErrorMessage));
         }
 

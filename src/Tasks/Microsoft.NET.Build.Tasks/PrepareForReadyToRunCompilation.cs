@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
@@ -18,6 +20,7 @@ namespace Microsoft.NET.Build.Tasks
         public bool EmitSymbols { get; set; }
         public bool ReadyToRunUseCrossgen2 { get; set; }
         public bool Crossgen2Composite { get; set; }
+        public string Crossgen2ContainerFormat { get; set; }
 
         [Required]
         public string OutputPath { get; set; }
@@ -208,7 +211,7 @@ namespace Microsoft.NET.Build.Tasks
                     // an input to the ReadyToRunCompiler task
                     TaskItem r2rCompilationEntry = new(file);
                     r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, outputR2RImage);
-                    if (outputPDBImage != null && ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5)
+                    if (outputPDBImage != null && ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5 && EmitSymbols)
                     {
                         r2rCompilationEntry.SetMetadata(MetadataKeys.EmitSymbols, "true");
                         r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
@@ -276,7 +279,21 @@ namespace Microsoft.NET.Build.Tasks
 
                 var compositeR2RImageRelativePath = MainAssembly.GetMetadata(MetadataKeys.RelativePath);
                 compositeR2RImageRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, "r2r" + Path.GetExtension(compositeR2RImageRelativePath));
+
+                // For non-PE formats, we may need to do a post-processing step to get the final R2R image
+                // after running crossgen2. In this case, compositeR2RImageRelativePath is the intermediate file
+                // produced by crossgen2, and compositeR2RFinalImageRelativePath is the final file to be published
+                // by any post-crossgen2 linking steps and used at runtime.
+                var compositeR2RFinalImageRelativePath = compositeR2RImageRelativePath;
+
+                if (Crossgen2ContainerFormat == "macho")
+                {
+                    compositeR2RImageRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".o");
+                    compositeR2RFinalImageRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".dylib");
+                }
+
                 var compositeR2RImage = Path.Combine(OutputPath, compositeR2RImageRelativePath);
+                var compositeR2RImageFinal = Path.Combine(OutputPath, compositeR2RFinalImageRelativePath);
 
                 TaskItem r2rCompilationEntry = new(MainAssembly)
                 {
@@ -331,10 +348,17 @@ namespace Microsoft.NET.Build.Tasks
                 // Publish it
                 TaskItem compositeR2RFileToPublish = new(MainAssembly)
                 {
-                    ItemSpec = compositeR2RImage
+                    ItemSpec = compositeR2RImageFinal
                 };
                 compositeR2RFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
-                compositeR2RFileToPublish.SetMetadata(MetadataKeys.RelativePath, compositeR2RImageRelativePath);
+                compositeR2RFileToPublish.SetMetadata(MetadataKeys.RelativePath, compositeR2RFinalImageRelativePath);
+
+                if (compositeR2RImageFinal != compositeR2RImage)
+                {
+                    compositeR2RFileToPublish.SetMetadata(MetadataKeys.RequiresNativeLink, "true");
+                    compositeR2RFileToPublish.SetMetadata(MetadataKeys.NativeLinkerInputPath, compositeR2RImage);
+                }
+
                 r2rFilesPublishList.Add(compositeR2RFileToPublish);
             }
         }

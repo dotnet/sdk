@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -22,6 +24,7 @@ namespace Microsoft.NET.Build.Tasks
         public bool UseCrossgen2 { get; set; }
         public string Crossgen2ExtraCommandLineArgs { get; set; }
         public ITaskItem[] Crossgen2PgoFiles { get; set; }
+        public string Crossgen2ContainerFormat { get; set; }
 
         [Output]
         public bool WarningsDetected { get; set; }
@@ -230,11 +233,11 @@ namespace Microsoft.NET.Build.Tasks
 
                     if (UseCrossgen2 && !IsPdbCompilation)
                     {
-                        result.AppendLine($"-r:\"{reference}\"");
+                        result.AppendLine($"-r:\"{reference.ItemSpec}\"");
                     }
                     else
                     {
-                        result.AppendLine($"-r \"{reference}\"");
+                        result.AppendLine($"-r \"{reference.ItemSpec}\"");
                     }
                 }
             }
@@ -338,6 +341,11 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     result.AppendLine($"-m:\"{mibc.ItemSpec}\"");
                 }
+            }
+
+            if (!string.IsNullOrEmpty(Crossgen2ContainerFormat))
+            {
+                result.AppendLine($"--obj-format:{Crossgen2ContainerFormat}");
             }
 
             if (!string.IsNullOrEmpty(Crossgen2ExtraCommandLineArgs))

@@ -12,9 +12,9 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
     {
         private static readonly FormatWhitespaceHandler s_formattingHandler = new();
 
-        internal static CliCommand GetCommand()
+        internal static Command GetCommand()
         {
-            var command = new CliCommand("whitespace", Resources.Run_whitespace_formatting)
+            var command = new Command("whitespace", Resources.Run_whitespace_formatting)
             {
                 FolderOption
             };
@@ -28,8 +28,8 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
         internal static void EnsureFolderNotSpecifiedWithNoRestore(CommandResult symbolResult)
         {
             var folder = symbolResult.GetValue(FolderOption);
-            var noRestore = symbolResult.GetResult(NoRestoreOption);
-            if (folder && noRestore != null)
+            var noRestore = symbolResult.GetValue(NoRestoreOption);
+            if (folder && noRestore)
             {
                 symbolResult.AddError(Resources.Cannot_specify_the_folder_option_with_no_restore);
             }
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             }
         }
 
-        private class FormatWhitespaceHandler : AsynchronousCliAction
+        private class FormatWhitespaceHandler : AsynchronousCommandLineAction
         {
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {

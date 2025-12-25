@@ -12,9 +12,9 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
     {
         private static readonly FormatCommandDefaultHandler s_formatCommandHandler = new();
 
-        public static CliRootCommand GetCommand()
+        public static RootCommand GetCommand()
         {
-            var formatCommand = new CliRootCommand(Resources.Formats_code_to_match_editorconfig_settings)
+            var formatCommand = new RootCommand(Resources.Formats_code_to_match_editorconfig_settings)
             {
                 FormatWhitespaceCommand.GetCommand(),
                 FormatStyleCommand.GetCommand(),
@@ -28,7 +28,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             return formatCommand;
         }
 
-        private class FormatCommandDefaultHandler : AsynchronousCliAction
+        private class FormatCommandDefaultHandler : AsynchronousCommandLineAction
         {
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {

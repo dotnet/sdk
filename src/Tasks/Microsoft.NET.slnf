@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\sdk.sln",
+    "path": "..\\..\\sdk.slnx",
     "projects": [
       "src\\Cli\\Microsoft.DotNet.Cli.Sln.Internal\\Microsoft.DotNet.Cli.Sln.Internal.csproj",
       "src\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj",
@@ -53,8 +53,6 @@
       "test\\Microsoft.Win32.Msi.Tests\\Microsoft.Win32.Msi.Tests.csproj",
       "test\\Msbuild.Tests.Utilities\\Msbuild.Tests.Utilities.csproj",
       "test\\TelemetryStdOutLogger\\TelemetryStdOutLogger.csproj",
-      "test\\dotnet-msbuild.Tests\\dotnet-msbuild.Tests.csproj",
-      "test\\dotnet-sln.Tests\\dotnet-sln.Tests.csproj",
       "test\\dotnet.Tests\\dotnet.Tests.csproj",
       "test\\msbuild.Integration.Tests\\msbuild.Integration.Tests.csproj"
     ]

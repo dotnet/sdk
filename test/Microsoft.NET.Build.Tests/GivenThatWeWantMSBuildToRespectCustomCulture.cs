@@ -27,11 +27,9 @@ namespace Microsoft.NET.Build.Tests
             new FileInfo(Path.Combine(outputDirectory, "test-2", "MSBuildCultureResourceGeneration.resources.dll")).Should().Exist();
         }
 
+        [Theory]
         [InlineData("net7.0")]
         [InlineData("net6.0")]
-        // Until MSBuild 17.13 is merged into FullFW MSBuild in sdk tests - the WarnOnCultureOverwritten
-        //  is not supported - and the build will fail copy (more details in the last test).
-        [CoreMSBuildOnlyTheory]
         public void SupportRespectAlreadyAssignedItemCulture_IsNotSupported_BuildShouldWarn(string targetFramework)
         {
             var testAsset = _testAssetsManager
@@ -45,26 +43,6 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute("/p:WarnOnCultureOverwritten=true").Should().Pass().And
                 // warning MSB3002: Explicitly set culture "test-1" for item "Resources.test-1.resx" was overwritten with inferred culture "", because 'RespectAlreadyAssignedItemCulture' property was not set.
                 .HaveStdOutContaining("warning MSB3002:");
-        }
-
-        [Theory]
-        [InlineData("net7.0")]
-        [InlineData("net6.0")]
-        // Is this Failing? Check if WarnOnCultureOverwritten hasn't been made a default opt-in in sdk or MSBuild.
-        //
-        // Without explicit opt-in via WarnOnCultureOverwritten - the test will fail, as
-        //  proper recognition of custom cultures in RAR is not supported and hence the build will fail during copy:
-        //
-        // Microsoft.Common.CurrentVersion.targets(4959,5): error MSB3030: Could not copy the file "obj\Debug\net7.0\test-1\MSBuildCultureResourceGeneration.resources.dll" because it was not found.
-        public void SupportRespectAlreadyAssignedItemCulture_IsNotSupported_BuildShouldFail(string targetFramework)
-        {
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("MSBuildCultureResourceGeneration", identifier: targetFramework)
-                .WithSource()
-                .WithTargetFramework(targetFramework);
-
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute().Should().Fail();
         }
     }
 }

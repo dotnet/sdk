@@ -7,21 +7,9 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class LegacyUpdateApplyCommand : BaseUpdateCommand
+    internal sealed class LegacyUpdateApplyCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
+        : BaseUpdateCommand(hostBuilder, CommandDefinition.Update.LegacyApplyCommand)
     {
-        public LegacyUpdateApplyCommand(
-            NewCommand parentCommand,
-            Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(parentCommand, hostBuilder, "--update-apply", SymbolStrings.Command_Legacy_Update_Check_Description)
-        {
-            Hidden = true;
-            parentCommand.AddNoLegacyUsageValidators(this, except: new CliOption[] { InteractiveOption, AddSourceOption });
-        }
-
-        internal override CliOption<bool> InteractiveOption => ParentCommand.InteractiveOption;
-
-        internal override CliOption<string[]> AddSourceOption => ParentCommand.AddSourceOption;
-
         protected override Task<NewCommandStatus> ExecuteAsync(UpdateCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken)
         {
             PrintDeprecationMessage<LegacyUpdateApplyCommand, UpdateCommand>(args.ParseResult);

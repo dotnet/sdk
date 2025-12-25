@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Versioning;
@@ -208,7 +210,7 @@ namespace Microsoft.NET.Build.Tasks
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
                     _targetRuntimeIdentifier,
-                    new[] { "linux", "osx", "win", "freebsd", "illumos" },
+                    ["linux", "osx", "win", "freebsd", "illumos", "haiku"],
                     out _);
 
             targetOS = portablePlatform switch
@@ -218,6 +220,7 @@ namespace Microsoft.NET.Build.Tasks
                 "win" => "windows",
                 "freebsd" => "freebsd",
                 "illumos" => "illumos",
+                "haiku" => "haiku",
                 _ => null
             };
 

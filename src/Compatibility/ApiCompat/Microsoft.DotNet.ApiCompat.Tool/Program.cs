@@ -19,22 +19,22 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             // Important: Keep parameters exposed in sync with the msbuild task frontend.
 
             // Global options
-            CliOption<bool> generateSuppressionFileOption = new("--generate-suppression-file")
+            Option<bool> generateSuppressionFileOption = new("--generate-suppression-file")
             {
                 Description = "If true, generates a compatibility suppression file.",
                 Recursive = true
             };
-            CliOption<bool> preserveUnnecessarySuppressionsOption = new("--preserve-unnecessary-suppressions")
+            Option<bool> preserveUnnecessarySuppressionsOption = new("--preserve-unnecessary-suppressions")
             {
                 Description = "If true, preserves unnecessary suppressions when re-generating the suppression file.",
                 Recursive = true
             };
-            CliOption<bool> permitUnnecessarySuppressionsOption = new("--permit-unnecessary-suppressions")
+            Option<bool> permitUnnecessarySuppressionsOption = new("--permit-unnecessary-suppressions")
             {
                 Description = "If true, permits unnecessary suppressions in the suppression file.",
                 Recursive = true
             };
-            CliOption<string[]> suppressionFilesOption = new("--suppression-file")
+            Option<string[]> suppressionFilesOption = new("--suppression-file")
             {
                 Description = "The path to one or more suppression files to read from.",
                 AllowMultipleArgumentsPerToken = true,
@@ -42,51 +42,51 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 HelpName = "file",
                 Recursive = true
             };
-            CliOption<string?> suppressionOutputFileOption = new("--suppression-output-file")
+            Option<string?> suppressionOutputFileOption = new("--suppression-output-file")
             {
                 Description = "The path to a suppression file to write to when --generate-suppression-file is true.",
                 Recursive = true
             };
-            CliOption<string?> noWarnOption = new("--noWarn")
+            Option<string?> noWarnOption = new("--noWarn")
             {
                 Description = "A NoWarn string that allows to disable specific rules.",
                 Recursive = true
             };
-            CliOption<bool> respectInternalsOption = new("--respect-internals")
+            Option<bool> respectInternalsOption = new("--respect-internals")
             {
                 Description = "If true, includes both internal and public API.",
                 Recursive = true
             };
-            CliOption<string?> roslynAssembliesPathOption = new("--roslyn-assemblies-path")
+            Option<string?> roslynAssembliesPathOption = new("--roslyn-assemblies-path")
             {
                 Description = "The path to the directory that contains the Microsoft.CodeAnalysis assemblies.",
                 HelpName = "file",
                 Recursive = true
             };
-            CliOption<MessageImportance> verbosityOption = new("--verbosity", "-v")
+            Option<MessageImportance> verbosityOption = new("--verbosity", "-v")
             {
                 Description = "Controls the log level verbosity. Allowed values are high, normal, and low.",
                 DefaultValueFactory = _ => MessageImportance.Normal,
                 Recursive = true
             };
-            CliOption<bool> enableRuleAttributesMustMatchOption = new("--enable-rule-attributes-must-match")
+            Option<bool> enableRuleAttributesMustMatchOption = new("--enable-rule-attributes-must-match")
             {
                 Description = "If true, enables rule to check that attributes match.",
                 Recursive = true
             };
-            CliOption<string[]> excludeAttributesFilesOption = new("--exclude-attributes-file")
+            Option<string[]> excludeAttributesFilesOption = new("--exclude-attributes-file")
             {
                 Description = "The path to one or more attribute exclusion files with types in DocId format.",
                 Recursive = true
             };
-            CliOption<bool> enableRuleCannotChangeParameterNameOption = new("--enable-rule-cannot-change-parameter-name")
+            Option<bool> enableRuleCannotChangeParameterNameOption = new("--enable-rule-cannot-change-parameter-name")
             {
                 Description = "If true, enables rule to check that the parameter names between public methods do not change.",
                 Recursive = true
             };
 
             // Root command
-            CliOption<string[]> leftAssembliesOption = new("--left-assembly", "--left", "-l")
+            Option<string[]> leftAssembliesOption = new("--left-assembly", "--left", "-l")
             {
                 Description = "The path to one or more assemblies that serve as the left side to compare.",
                 CustomParser = ParseAssemblyArgument,
@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.OneOrMore,
                 Required = true
             };
-            CliOption<string[]> rightAssembliesOption = new("--right-assembly", "--right", "-r")
+            Option<string[]> rightAssembliesOption = new("--right-assembly", "--right", "-r")
             {
                 Description = "The path to one or more assemblies that serve as the right side to compare.",
                 CustomParser = ParseAssemblyArgument,
@@ -102,11 +102,11 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.OneOrMore,
                 Required = true
             };
-            CliOption<bool> strictModeOption = new("--strict-mode")
+            Option<bool> strictModeOption = new("--strict-mode")
             {
                 Description = "If true, performs api compatibility checks in strict mode"
             };
-            CliOption<string[][]?> leftAssembliesReferencesOption = new("--left-assembly-references", "--lref")
+            Option<string[][]?> leftAssembliesReferencesOption = new("--left-assembly-references", "--lref")
 
             {
                 Description = "Paths to assembly references or the underlying directories for a given left. Values must be separated by commas: ','.",
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.ZeroOrMore,
                 HelpName = "file1,file2,..."
             };
-            CliOption<string[][]?> rightAssembliesReferencesOption = new("--right-assembly-references", "--rref")
+            Option<string[][]?> rightAssembliesReferencesOption = new("--right-assembly-references", "--rref")
             {
                 Description = "Paths to assembly references or the underlying directories for a given right. Values must be separated by commas: ','.",
                 CustomParser = ParseAssemblyReferenceArgument,
@@ -123,18 +123,18 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.ZeroOrMore,
                 HelpName = "file1,file2,..."
             };
-            CliOption<bool> createWorkItemPerAssemblyOption = new("--create-work-item-per-assembly")
+            Option<bool> createWorkItemPerAssemblyOption = new("--create-work-item-per-assembly")
             {
                 Description = "If true, enqueues a work item per passed in left and right assembly."
             };
-            CliOption<(string, string)[]?> leftAssembliesTransformationPatternOption = new("--left-assemblies-transformation-pattern")
+            Option<(string, string)[]?> leftAssembliesTransformationPatternOption = new("--left-assemblies-transformation-pattern")
             {
                 Description = "A transformation pattern for the left side assemblies.",
                 CustomParser = ParseTransformationPattern,
                 AllowMultipleArgumentsPerToken = true,
                 Arity = ArgumentArity.ZeroOrMore
             };
-            CliOption<(string, string)[]?> rightAssembliesTransformationPatternOption = new("--right-assemblies-transformation-pattern")
+            Option<(string, string)[]?> rightAssembliesTransformationPatternOption = new("--right-assemblies-transformation-pattern")
             {
                 Description = "A transformation pattern for the right side assemblies.",
                 CustomParser = ParseTransformationPattern,
@@ -142,7 +142,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.ZeroOrMore
             };
 
-            CliRootCommand rootCommand = new("Microsoft.DotNet.ApiCompat v" + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion)
+            RootCommand rootCommand = new("Microsoft.DotNet.ApiCompat v" + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion)
             {
                 TreatUnmatchedTokensAsErrors = true
             };
@@ -223,40 +223,40 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             });
 
             // Package command
-            CliArgument<string> packageArgument = new("--package")
+            Argument<string> packageArgument = new("--package")
             {
                 Description = "The path to the package that should be validated",
                 Arity = ArgumentArity.ExactlyOne
             };
-            CliOption<string?> runtimeGraphOption = new("--runtime-graph")
+            Option<string?> runtimeGraphOption = new("--runtime-graph")
             {
                 Description = "The path to the runtime graph to read from.",
                 HelpName = "json"
             };
-            CliOption<bool> runApiCompatOption = new("--run-api-compat")
+            Option<bool> runApiCompatOption = new("--run-api-compat")
             {
                 Description = "If true, performs api compatibility checks on the package assets.",
                 DefaultValueFactory = _ => true
             };
-            CliOption<bool> enableStrictModeForCompatibleTfmsOption = new("--enable-strict-mode-for-compatible-tfms")
+            Option<bool> enableStrictModeForCompatibleTfmsOption = new("--enable-strict-mode-for-compatible-tfms")
             {
                 Description = "Validates api compatibility in strict mode for contract and implementation assemblies for all compatible target frameworks.",
                 DefaultValueFactory = _ => true
             };
-            CliOption<bool> enableStrictModeForCompatibleFrameworksInPackageOption = new("--enable-strict-mode-for-compatible-frameworks-in-package")
+            Option<bool> enableStrictModeForCompatibleFrameworksInPackageOption = new("--enable-strict-mode-for-compatible-frameworks-in-package")
             {
                 Description = "Validates api compatibility in strict mode for assemblies that are compatible based on their target framework."
             };
-            CliOption<bool> enableStrictModeForBaselineValidationOption = new("--enable-strict-mode-for-baseline-validation")
+            Option<bool> enableStrictModeForBaselineValidationOption = new("--enable-strict-mode-for-baseline-validation")
             {
                 Description = "Validates api compatibility in strict mode for package baseline checks."
             };
-            CliOption<string?> baselinePackageOption = new("--baseline-package")
+            Option<string?> baselinePackageOption = new("--baseline-package")
             {
                 Description = "The path to a baseline package to validate against the current package.",
                 HelpName = "nupkg"
             };
-            CliOption<Dictionary<NuGetFramework, IEnumerable<string>>?> packageAssemblyReferencesOption = new("--package-assembly-references")
+            Option<Dictionary<NuGetFramework, IEnumerable<string>>?> packageAssemblyReferencesOption = new("--package-assembly-references")
             {
                 Description = "Paths to assembly references or their underlying directories for a specific target framework in the package. Values must be separated by commas: ','.",
                 CustomParser = ParsePackageAssemblyReferenceArgument,
@@ -264,7 +264,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.ZeroOrMore,
                 HelpName = "tfm=file1,file2,..."
             };
-            CliOption<Dictionary<NuGetFramework, IEnumerable<string>>?> baselinePackageAssemblyReferencesOption = new("--baseline-package-assembly-references")
+            Option<Dictionary<NuGetFramework, IEnumerable<string>>?> baselinePackageAssemblyReferencesOption = new("--baseline-package-assembly-references")
             {
                 Description = "Paths to assembly references or their underlying directories for a specific target framework in the baseline package. Values must be separated by commas: ','.",
                 CustomParser = ParsePackageAssemblyReferenceArgument,
@@ -272,14 +272,14 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.ZeroOrMore,
                 HelpName = "tfm=file1,file2,..."
             };
-            CliOption<string[]?> baselinePackageFrameworksToIgnoreOption = new("--baseline-package-frameworks-to-ignore")
+            Option<string[]?> baselinePackageFrameworksToIgnoreOption = new("--baseline-package-frameworks-to-ignore")
             {
                 Description = "Target frameworks to ignore from the baseline package. Supports the wildcard character '*' at the end of the string. Culture and casing is ignored. The framework string must match the folder name in the baseline package.",
                 AllowMultipleArgumentsPerToken = true,
                 Arity = ArgumentArity.ZeroOrMore
             };
 
-            CliCommand packageCommand = new("package", "Validates the compatibility of package assets");
+            Command packageCommand = new("package", "Validates the compatibility of package assets");
             packageCommand.Arguments.Add(packageArgument);
             packageCommand.Options.Add(runtimeGraphOption);
             packageCommand.Options.Add(runApiCompatOption);

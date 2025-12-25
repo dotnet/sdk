@@ -545,7 +545,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: new[] { (typeof(ITemplateConstraintFactory), (IIdentifiedComponent)new TestConstraintFactory("test")) });
             IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse("new list");
             var args = new ListCommandArgs((ListCommand)parseResult.CommandResult.Command, parseResult);
@@ -576,7 +576,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: new[] { (typeof(ITemplateConstraintFactory), (IIdentifiedComponent)new TestConstraintFactory("test")) });
             IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse("new list --ignore-constraints");
             var args = new ListCommandArgs((ListCommand)parseResult.CommandResult.Command, parseResult);
@@ -596,8 +596,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
         private static ListCommandArgs GetListCommandArgsFor(string commandInput)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            CliRootCommand rootCommand = new();
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            RootCommand rootCommand = new();
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             rootCommand.Add(myCommand);
 
             ParseResult parseResult = rootCommand.Parse(commandInput);

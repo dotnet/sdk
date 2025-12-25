@@ -65,7 +65,7 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     // and other features. This is why we want to bake into the format itself the information that specifies under which paths the file will
     // be available at runtime so that tasks/tools can operate independently and produce correct results.
     // The current token we support is the 'fingerprint' token, which computes a web friendly version of the hash of the file suitable
-    // to be embedded in other contexts.     
+    // to be embedded in other contexts.
     // We might include other tokens in the future, like `[{basepath}]` to give a file the ability to have its path be relative to the consuming
     // project base path, etc.
     public static StaticWebAssetPathPattern Parse(ReadOnlyMemory<char> rawPathMemory, string assetIdentity = null)
@@ -296,7 +296,7 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     public IEnumerable<StaticWebAssetPathPattern> ExpandPatternExpression()
     {
         // We are going to analyze each segment and produce the following:
-        // - For literals, we just concatenate 
+        // - For literals, we just concatenate
         // - For parameter expressions without '?' we return the parameter expression.
         // - For parameter expressions with '?' we return
         // For example:
@@ -505,4 +505,71 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     private static bool IsLiteralSegment(StaticWebAssetPathSegment segment) => segment.Parts.Count == 1 && segment.Parts[0].IsLiteral;
 
     internal static string PathWithoutTokens(string path) => Parse(path).ComputePatternLabel();
+
+    internal static string ExpandIdentityFileNameForFingerprint(string fileNamePattern, string fingerprint)
+    {
+        var pattern = Parse(fileNamePattern);
+        var sb = new StringBuilder();
+        foreach (var segment in pattern.Segments)
+        {
+            var isLiteral = segment.Parts.Count == 1 && segment.Parts[0].IsLiteral;
+            if (isLiteral)
+            {
+                sb.Append(segment.Parts[0].Name);
+                continue;
+            }
+
+            if (segment.IsOptional && !segment.IsPreferred)
+            {
+                continue; // skip non-preferred optional segments
+            }
+
+            bool missingRequired = false;
+            foreach (var part in segment.Parts)
+            {
+                if (!part.IsLiteral && part.Value.IsEmpty)
+                {
+                    var tokenName = part.Name.ToString();
+                    if (string.Equals(tokenName, "fingerprint", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(fingerprint))
+                    {
+                        missingRequired = true;
+                        break;
+                    }
+                }
+            }
+            if (missingRequired)
+            {
+                if (!segment.IsOptional)
+                {
+                    throw new InvalidOperationException($"Token 'fingerprint' not provided for '{fileNamePattern}'.");
+                }
+                continue;
+            }
+
+            foreach (var part in segment.Parts)
+            {
+                if (part.IsLiteral)
+                {
+                    sb.Append(part.Name);
+                }
+                else if (!part.Value.IsEmpty)
+                {
+                    sb.Append(part.Value);
+                }
+                else
+                {
+                    var tokenName = part.Name.ToString();
+                    if (string.Equals(tokenName, "fingerprint", StringComparison.OrdinalIgnoreCase))
+                    {
+                        sb.Append(fingerprint);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Unsupported token '{tokenName}' in '{fileNamePattern}'.");
+                    }
+                }
+            }
+        }
+        return sb.ToString();
+    }
 }

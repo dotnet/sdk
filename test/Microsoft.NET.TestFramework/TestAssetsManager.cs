@@ -27,6 +27,10 @@ namespace Microsoft.NET.TestFramework
             TestAssetsRoot = testAssetsDirectory;
         }
 
+        /// <summary>
+        /// Creates a new 'bubble' for the given test asset project in a subdirectory
+        /// of the current test execution context, scoped by the calling method and optional unique identifier.
+        /// </summary>
         public TestAsset CopyTestAsset(
             string testProjectName,
             [CallerMemberName] string callingMethod = "",
@@ -56,19 +60,17 @@ namespace Microsoft.NET.TestFramework
         /// Pass in the unique theory parameters that can indentify that theory from others.
         /// The Identifier is used to distinguish between theory child tests.  Generally it should be created using a combination of all of the theory parameter values.
         /// This is distinct from the test project name and is used to prevent file collisions between theory tests that use the same test project.</param>
-        /// <param name="targetExtension">The extension type of the desired test project, e.g. .csproj, or .fsproj.</param>
         /// <returns>A new TestAsset directory for the TestProject.</returns>
         public TestAsset CreateTestProject(
             TestProject testProject,
             [CallerMemberName] string callingMethod = "",
-            string identifier = "",
-            string targetExtension = ".csproj")
+            string? identifier = "")
         {
             var testDestinationDirectory =
                 GetTestDestinationDirectoryPath(testProject.Name, callingMethod, identifier);
             TestDestinationDirectories.Add(testDestinationDirectory);
 
-            var testAsset = CreateTestProjectsInDirectory(new List<TestProject>() { testProject }, testDestinationDirectory, targetExtension);
+            var testAsset = CreateTestProjectsInDirectory(new List<TestProject>() { testProject }, testDestinationDirectory);
             testAsset.TestProject = testProject;
 
             return testAsset;
@@ -89,16 +91,15 @@ namespace Microsoft.NET.TestFramework
         public TestAsset CreateTestProjects(
             IEnumerable<TestProject> testProjects,
             [CallerMemberName] string callingMethod = "",
-            string identifier = "",
-            string targetExtension = ".csproj")
+            string identifier = "")
         {
             var testDestinationDirectory =
                 GetTestDestinationDirectoryPath(callingMethod, callingMethod, identifier);
             TestDestinationDirectories.Add(testDestinationDirectory);
 
-            var testAsset = CreateTestProjectsInDirectory(testProjects, testDestinationDirectory, targetExtension);
+            var testAsset = CreateTestProjectsInDirectory(testProjects, testDestinationDirectory);
 
-            var slnCreationResult = new DotnetNewCommand(Log, "sln")
+            var slnCreationResult = new DotnetNewCommand(Log, "sln", "--format", "sln")
                 .WithVirtualHive()
                 .WithWorkingDirectory(testDestinationDirectory)
                 .Execute();
@@ -122,8 +123,7 @@ namespace Microsoft.NET.TestFramework
 
         private TestAsset CreateTestProjectsInDirectory(
             IEnumerable<TestProject> testProjects,
-            string testDestinationDirectory,
-            string targetExtension = ".csproj")
+            string testDestinationDirectory)
         {
             var testAsset = new TestAsset(testDestinationDirectory, TestContext.Current.SdkVersion, Log);
 
@@ -135,15 +135,12 @@ namespace Microsoft.NET.TestFramework
                 var project = projectStack.Pop();
                 if (!createdProjects.Contains(project))
                 {
-                    project.Create(testAsset, TestAssetsRoot, targetExtension);
+                    project.Create(testAsset, TestAssetsRoot);
                     createdProjects.Add(project);
 
                     foreach (var referencedProject in project.ReferencedProjects)
                     {
-                        if(referencedProject is not null)
-                        {
-                            projectStack.Push(referencedProject);
-                        }
+                        projectStack.Push(referencedProject);
                     }
                 }
             }
@@ -151,9 +148,9 @@ namespace Microsoft.NET.TestFramework
             return testAsset;
         }
 
-        public TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, string? identifier = null)
+        public TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, string? identifier = null, string? baseDirectory = null)
         {
-            string dir = GetTestDestinationDirectoryPath(testName, testName, identifier ?? string.Empty);
+            string dir = GetTestDestinationDirectoryPath(testName, testName, identifier ?? string.Empty, baseDirectory: baseDirectory);
             return new TestDirectory(dir, TestContext.Current.SdkVersion);
         }
 
@@ -177,9 +174,10 @@ namespace Microsoft.NET.TestFramework
             string? testProjectName,
             string? callingMethodAndFileName,
             string? identifier,
-            bool allowCopyIfPresent = false)
+            bool allowCopyIfPresent = false,
+            string? baseDirectory = null)
         {
-            string? baseDirectory = TestContext.Current.TestExecutionDirectory;
+            baseDirectory ??= TestContext.Current.TestExecutionDirectory;
             var directoryName = new StringBuilder(callingMethodAndFileName).Append(identifier);
 
             if (testProjectName != callingMethodAndFileName)

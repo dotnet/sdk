@@ -7,14 +7,14 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public class TestRazorProjectItem : RazorProjectItem
     {
-        private readonly string _fileKind;
+        private readonly RazorFileKind? _fileKind;
 
         public TestRazorProjectItem(
             string filePath,
             string physicalPath = null,
             string relativePhysicalPath = null,
             string basePath = "/",
-            string fileKind = null,
+            RazorFileKind? fileKind = null,
             string cssScope = null)
         {
             FilePath = filePath;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override string BasePath { get; }
 
-        public override string FileKind => _fileKind ?? base.FileKind;
+        public override RazorFileKind FileKind => _fileKind ?? base.FileKind;
 
         public override string FilePath { get; }
 

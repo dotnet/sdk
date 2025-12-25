@@ -1,6 +1,4 @@
-﻿//See https://aka.ms/new-console-template for more information
-
-//Opt -out telemetry
+﻿//Opt -out telemetry
 
 using Microsoft.Testing.Extensions;
 using Microsoft.Testing.Platform.Builder;
@@ -34,7 +32,6 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 	public Type[] DataTypesProduced => new[] {
 		typeof(TestNodeUpdateMessage),
 		typeof(SessionFileArtifact),
-		typeof(TestNodeFileArtifact),
 		typeof(FileArtifact), };
 
 	public Task<CreateTestSessionResult> CreateTestSessionAsync(CreateTestSessionContext context)
@@ -84,19 +81,21 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 		{
 			Uid = "Test5",
 			DisplayName = "Test5",
+#pragma warning disable CS0618 // Type or member is obsolete
 			Properties = new PropertyBag(new CancelledTestNodeStateProperty(new Exception("this is a cancelled exception"), "not OK")),
+#pragma warning restore CS0618 // Type or member is obsolete
 		}));
 
 		await context.MessageBus.PublishAsync(this, new FileArtifact(new FileInfo("file.txt"), "file", "file description"));
 
 		await context.MessageBus.PublishAsync(this, new SessionFileArtifact(context.Request.Session.SessionUid, new FileInfo("sessionFile.txt"), "sessionFile", "description"));
 
-		await context.MessageBus.PublishAsync(this, new TestNodeFileArtifact(context.Request.Session.SessionUid, new TestNode()
+		await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
 		{
 			Uid = "Test6 id",
 			DisplayName = "Test6",
-			Properties = new PropertyBag(new PassedTestNodeStateProperty("OK")),
-		}, new FileInfo("testNodeFile.txt"), "testNodeFile", "description"));
+			Properties = new PropertyBag(new PassedTestNodeStateProperty("OK"), new FileArtifactProperty(new FileInfo("testNodeFile.txt"), "testNodeFile", "description")),
+		}));
 
 		context.Complete();
 	}

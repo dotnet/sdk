@@ -18,7 +18,7 @@ public class ResolveStaticWebAssetEndpointRoutes : Task
     public override bool Execute()
     {
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
-        var assets = Assets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity, a => a);
+        var assets = StaticWebAsset.ToAssetDictionary(Assets);
 
         foreach (var endpoint in endpoints)
         {

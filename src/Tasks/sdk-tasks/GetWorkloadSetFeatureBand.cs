@@ -1,13 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.DotNet.Workloads.Workload;
-using WorkloadSetVersionUtil = Microsoft.DotNet.Workloads.Workload.WorkloadSetVersion;
+#nullable disable
 
 namespace Microsoft.DotNet.Build.Tasks
 {
@@ -21,7 +15,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public override bool Execute()
         {
-            WorkloadSetFeatureBand = WorkloadSetVersionUtil.GetFeatureBand(WorkloadSetVersion).ToString();
+            WorkloadSetFeatureBand = Cli.WorkloadSetVersion.GetFeatureBand(WorkloadSetVersion).ToString();
             return true;
         }
     }
