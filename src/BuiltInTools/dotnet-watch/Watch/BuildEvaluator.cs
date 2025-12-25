@@ -36,11 +36,16 @@ namespace Microsoft.DotNet.Watch
         }
 
         protected virtual MSBuildFileSetFactory CreateMSBuildFileSetFactory()
-            => new(
-                _context.RootProjectOptions.ProjectPath,
+        {
+            // file-based programs only supported in Hot Reload mode:
+            Debug.Assert(_context.RootProjectOptions.Representation.PhysicalPath != null);
+
+            return new(
+                _context.RootProjectOptions.Representation.PhysicalPath,
                 _context.RootProjectOptions.BuildArguments,
                 _context.ProcessRunner,
                 new BuildReporter(_context.BuildLogger, _context.Options, _context.EnvironmentOptions));
+        }
 
         public IReadOnlyList<string> GetProcessArguments(int iteration)
         {
