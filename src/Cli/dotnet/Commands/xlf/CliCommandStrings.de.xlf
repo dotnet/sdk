@@ -355,11 +355,11 @@ Wird ein Absturz erkannt, wird in "TestResults/guid/guid_Sequence.xml" eine Sequ
 
 Basierend auf den zusätzlichen Einstellungen kann auch ein Blockade- oder Absturzabbild erfasst werden.
 
-Beispiel:
+Beispiel: 
   Es wird ein Timeout für die Testausführung ausgelöst, wenn der Test länger als 1 Stunde (Standardtimeout) dauert, und es wird ein Absturzabbild erfasst, wenn der Testhost unerwartet beendet wird.
   (Für Absturzabbilder ist eine zusätzlicher Setup erforderlich, siehe unten.)
   dotnet test --blame-hang --blame-crash
-Beispiel:
+Beispiel: 
   Es wird ein Timeout für die Testausführung ausgelöst, wenn der Test mehr als 20 Minuten dauert, und es wird ein Blockadeabbild erfasst.
   dotnet test --blame-hang-timeout 20min
 </target>
@@ -725,17 +725,17 @@ Dies entspricht dem Löschen von "project.assets.json".</target>
       </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
         <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Definiert den Pfad der auszuführenden Projektdatei. Verwenden Sie den Pfad zur Projektdatei oder den Pfad zu dem Verzeichnis, das die Projektdatei enthält. Wenn keine Angabe erfolgt, wird standardmäßig das aktuelle Verzeichnis verwendet.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
         <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Definiert den Pfad des zu testenden Projekts oder der zu testenden Projektmappendatei. Verwenden Sie den Pfad zur Projektdatei oder den Pfad zu dem Verzeichnis, das die Projektdatei enthält. Wenn keine Angabe erfolgt, wird standardmäßig das aktuelle Verzeichnis verwendet.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
         <source>PROJECT_OR_SOLUTION_PATH</source>
-        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
+        <target state="translated">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -782,7 +782,7 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Definiert den Pfad der zu testenden Projektmappendatei. Verwenden Sie den Pfad zur Projektmappendatei oder den Pfad zu dem Verzeichnis, das die Projektmappendatei enthält. Wenn keine Angabe erfolgt, wird standardmäßig das aktuelle Verzeichnis verwendet.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -2267,11 +2267,11 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
     </source>
         <target state="translated">„dotnet workload search version“ hat je nach Argument drei Funktionen:
       1. Wird kein Argument angegeben, dann wird eine Liste der zuletzt veröffentlichten Workloadversionen aus diesem Featureband ausgegeben. Akzeptiert die Option „--take“, um anzugeben, wie viele angegeben werden sollen, und „--format“, um das Format zu ändern.
-         Beispiel:
+         Beispiel: 
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
       2. Wenn eine Workloadversion als Argument angegeben wird, dann werden eine Tabelle mit verschiedenen Workloads und deren Versionen für die angegebene Workloadversion ausgegeben. Akzeptiert die Option „--format“, um das Ausgabeformat zu ändern.
-         Beispiel:
+         Beispiel: 
            dotnet workload search version 9.0.201
            Workloadmanifest-ID                               Manifest-Featureband      Manifestversion
            ------------------------------------------------------------------------------------------------
@@ -2290,7 +2290,7 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
       3. Wenn eine oder mehrere Workloads zusammen mit ihren Versionen bereitgestellt werden (indem sie mit dem @-Zeichen verbunden werden), werden die Workloadversionen, die mit den angegebenen Versionen übereinstimmen, ausgegebenen. Akzeptiert die Option „--take“, um anzugeben, wie viele angegeben werden sollen, und „--format“, um das Format zu ändern.
-         Beispiel:
+         Beispiel: 
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -2373,7 +2373,7 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="needs-review-translation">Ausgabeverzeichnis ({0}) angeben:</target>
+        <target state="translated">Geben Sie das Ausgabeverzeichnis an (drücken Sie die EINGABETASTE, um die Standardeinstellung zu verwenden: „{0}“, das Verzeichnis darf nicht vorhanden sein):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2620,7 +2620,7 @@ Standardmäßig wird eine Framework-abhängige Anwendung veröffentlicht.</targe
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
         <source>Available target frameworks:</source>
-        <target state="new">Available target frameworks:</target>
+        <target state="translated">Verfügbare Zielframeworks:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -2635,7 +2635,7 @@ Standardmäßig wird eine Framework-abhängige Anwendung veröffentlicht.</targe
       </trans-unit>
       <trans-unit id="RunCommandExampleText">
         <source>Example</source>
-        <target state="new">Example</target>
+        <target state="translated">Beispiel</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -2687,7 +2687,7 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">Nach oben und unten bewegen, um weitere Frameworks anzuzeigen</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -2697,12 +2697,12 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
       </trans-unit>
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">Zum Suchen eingeben</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">Wählen Sie das auszuführende Zielframework aus:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
