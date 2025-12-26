@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
@@ -140,34 +141,46 @@ internal static class CommonOptions
         return allValues.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
-    public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
-        new Option<VerbosityOptions>("--verbosity", "-v")
+    public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity)
+    {
+        var option = new Option<VerbosityOptions>("--verbosity", "-v")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
             DefaultValueFactory = _ => defaultVerbosity
-        }
-        .ForwardAsSingle(o => $"--verbosity:{o}")
-        .AggregateRepeatedTokens();
+        };
+        option.Action = new ApplyVerbosityAction<VerbosityOptions>(option);
+        return option.ForwardAsSingle(o => $"--verbosity:{o}")
+            .AggregateRepeatedTokens();
+    }
 
-    public static Option<VerbosityOptions?> VerbosityOption() =>
-        new Option<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
+    public static Option<VerbosityOptions?> VerbosityOption()
+    {
+        var option = new Option<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName
-        }
-        .ForwardAsSingle(o => $"--verbosity:{o}")
-        .AggregateRepeatedTokens();
+        };
+        option.Action = new ApplyVerbosityAction<VerbosityOptions?>(option);
+        return option.ForwardAsSingle(o => $"--verbosity:{o}")
+            .AggregateRepeatedTokens();
+    }
 
-    public static Option<VerbosityOptions> HiddenVerbosityOption =
-        new Option<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
+    public static Option<VerbosityOptions> HiddenVerbosityOption
+    {
+        get
         {
-            Description = CliStrings.VerbosityOptionDescription,
-            HelpName = CliStrings.LevelArgumentName,
-            Hidden = true
+            var option = new Option<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
+            {
+                Description = CliStrings.VerbosityOptionDescription,
+                HelpName = CliStrings.LevelArgumentName,
+                Hidden = true
+            };
+            option.Action = new ApplyVerbosityAction<VerbosityOptions>(option);
+            return option.ForwardAsSingle(o => $"--verbosity:{o}")
+                .AggregateRepeatedTokens();
         }
-        .ForwardAsSingle(o => $"--verbosity:{o}")
-        .AggregateRepeatedTokens();
+    }
 
     public static Option<string> FrameworkOption(string description) =>
         new Option<string>("--framework", "-f")
@@ -493,6 +506,39 @@ internal static class CommonOptions
     private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
 
     private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
+
+    /// <summary>
+    /// Action that sets DOTNET_CLI_CONTEXT_VERBOSE environment variable when verbosity is diagnostic.
+    /// </summary>
+    private class ApplyVerbosityAction<T> : SynchronousCommandLineAction
+    {
+        private readonly Option<T> _verbosityOption;
+
+        public ApplyVerbosityAction(Option<T> verbosityOption)
+        {
+            _verbosityOption = verbosityOption;
+        }
+
+        public override bool Terminating => false;
+
+        public override int Invoke(ParseResult parseResult)
+        {
+            var value = parseResult.GetValue(_verbosityOption);
+            
+            // Handle both VerbosityOptions and VerbosityOptions?
+            if (value is VerbosityOptions verbosity)
+            {
+                if (verbosity.IsDiagnostic())
+                {
+                    Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
+                    CommandLoggingContext.SetVerbose(true);
+                    Reporter.Reset();
+                }
+            }
+
+            return 0;
+        }
+    }
 }
 
 
