@@ -8,6 +8,8 @@ export NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
 export MicrosoftNETBuildExtensionsTargets=$HELIX_CORRELATION_PAYLOAD/ex/msbuildExtensions/Microsoft/Microsoft.NET.Build.Extensions/Microsoft.NET.Build.Extensions.targets
 export DOTNET_ROOT=$HELIX_CORRELATION_PAYLOAD/d
 export PATH=$DOTNET_ROOT:$PATH
+# remove once the 11 runtime is in the SDK
+export NETCoreAppMaximumVersion=11.0
 
 export TestExecutionDirectory=$(realpath "$(mktemp -d "${TMPDIR:-/tmp}"/dotnetSdkTests.XXXXXXXX)")
 export DOTNET_CLI_HOME=$TestExecutionDirectory/.dotnet

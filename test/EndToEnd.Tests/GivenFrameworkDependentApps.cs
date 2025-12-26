@@ -15,7 +15,7 @@ namespace EndToEnd.Tests
         [ClassData(typeof(SupportedNetCoreAppVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfNetCore(string minorVersion)
         {
-            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0" || minorVersion == "6.0" || minorVersion == "7.0" || minorVersion == "8.0" || minorVersion == "9.0" || minorVersion == "10.0")
+            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0" || minorVersion == "6.0" || minorVersion == "7.0" || minorVersion == "8.0" || minorVersion == "9.0" || minorVersion == "10.0" || minorVersion == "11.0")
             {
                 //  https://github.com/dotnet/core-sdk/issues/621
                 return;
@@ -27,7 +27,7 @@ namespace EndToEnd.Tests
         [ClassData(typeof(SupportedAspNetCoreVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreApp(string minorVersion)
         {
-            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0" || minorVersion == "6.0" || minorVersion == "7.0" || minorVersion == "8.0" || minorVersion == "9.0" || minorVersion == "10.0")
+            if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0" || minorVersion == "6.0" || minorVersion == "7.0" || minorVersion == "8.0" || minorVersion == "9.0" || minorVersion == "10.0" || minorVersion == "11.0")
             {
                 //  https://github.com/dotnet/core-sdk/issues/621
                 return;

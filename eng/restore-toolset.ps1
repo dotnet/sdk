@@ -19,6 +19,7 @@ function InitializeCustomSDKToolset {
   InstallDotNetSharedFramework "7.0.0"
   InstallDotNetSharedFramework "8.0.0"
   InstallDotNetSharedFramework "9.0.0"
+  InstallDotNetSharedFramework "10.0.0"
 
   CreateBuildEnvScripts
   CreateVSShortcut
@@ -124,6 +125,7 @@ function InstallDotNetSharedFramework([string]$version) {
 
   if (!(Test-Path $fxDir)) {
     $installScript = GetDotNetInstallScript $dotnetRoot
+    $global:lastExitCode = 0
     & $installScript -Version $version -InstallDir $dotnetRoot -Runtime "dotnet" -SkipNonVersionedFiles
 
     if($lastExitCode -ne 0) {
