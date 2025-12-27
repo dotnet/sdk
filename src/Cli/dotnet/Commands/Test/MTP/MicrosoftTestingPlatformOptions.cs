@@ -107,6 +107,10 @@ internal static class MicrosoftTestingPlatformOptions
     };
 
     public static readonly Option<string[]> MTPTargetOption = CommonOptions.RequiredMSBuildTargetOption(CliConstants.MTPTarget);
+
+    public static readonly Option<bool> SelfContainedOption = CommonOptions.SelfContainedOption;
+
+    public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 }
 
 internal enum OutputOptions
