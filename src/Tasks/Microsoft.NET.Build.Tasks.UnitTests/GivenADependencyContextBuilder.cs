@@ -7,6 +7,7 @@ using FluentAssertions;
 using FluentAssertions.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.DependencyModel;
+using Microsoft.NET.TestFramework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
@@ -229,7 +230,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 []);
             string mainProjectDirectory = Path.GetDirectoryName(mainProject.ProjectPath);
 
-            
+
             ITaskItem[] referencePaths = dllReference ? references.Select(reference =>
                 new MockTaskItem($"/usr/Path/{reference}.dll", new Dictionary<string, string> {
                     { "CopyLocal", "false" },
@@ -528,6 +529,187 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             CheckRuntimeFallbacks("os-new_arch", 2);
             CheckRuntimeFallbacks("new_os-new_arch", 1);
             CheckRuntimeFallbacks("unrelated_os-unknown_arch", 0);
+        }
+
+        [Fact]
+        public void ItIncludesLocalPathForResolvedNuGetFiles()
+        {
+            string mainProjectName = "simple.dependencies";
+            LockFile lockFile = TestLockFiles.GetLockFile(mainProjectName);
+            LockFileLookup lockFileLookup = new(lockFile);
+
+            SingleProjectInfo mainProject = SingleProjectInfo.Create(
+                "/usr/Path",
+                mainProjectName,
+                ".dll",
+                "1.0.0",
+                []);
+
+            ProjectContext projectContext = lockFile.CreateProjectContext(
+                FrameworkConstants.CommonFrameworks.NetCoreApp10.GetShortFolderName(),
+                runtime: null,
+                Constants.DefaultPlatformLibrary,
+                runtimeFrameworks: null,
+                isSelfContained: false);
+
+            string packageName = "Newtonsoft.Json";
+            string packageVersion = "9.0.1";
+
+            // Runtime assemblies
+            ResolvedFile runtime = new(
+                "Newtonsoft.Json.dll",
+                destinationSubDirectory: null,
+                new PackageIdentity(packageName, new NuGetVersion(packageVersion)),
+                AssetType.Runtime,
+                $"lib/{ToolsetInfo.CurrentTargetFramework}/Newtonsoft.Json.dll");
+            ResolvedFile runtimeWithCustomSubPath = new(
+                "CustomSubPath.dll",
+                "pkg/",
+                new PackageIdentity(packageName, new NuGetVersion(packageVersion)),
+                AssetType.Runtime,
+                $"lib/{ToolsetInfo.CurrentTargetFramework}/CustomSubPath.dll");
+
+            // Native libraries
+            ResolvedFile native = new(
+                "nativelib.dll",
+                "runtimes/win-x64/native/",
+                new PackageIdentity(packageName, new NuGetVersion(packageVersion)),
+                AssetType.Native,
+                "runtimes/win-x64/native/nativelib.dll");
+            ResolvedFile nativeWithCustomSubPath = new(
+                "nativecustomsubpath.dll",
+                "pkg/runtimes/win-x64/native/",
+                new PackageIdentity(packageName, new NuGetVersion(packageVersion)),
+                AssetType.Native,
+                "runtimes/win-x64/native/nativecustomsubpath.dll");
+
+            // Resource assemblies
+            MockTaskItem resourceTaskItem = new("de/Newtonsoft.Json.resources.dll",
+                new Dictionary<string, string>
+                {
+                    [MetadataKeys.DestinationSubDirectory] = "de/",
+                    [MetadataKeys.AssetType] = "resources",
+                    [MetadataKeys.NuGetPackageId] = packageName,
+                    [MetadataKeys.NuGetPackageVersion] = packageVersion,
+                    [MetadataKeys.PathInPackage] = $"lib/{ToolsetInfo.CurrentTargetFramework}/de/Newtonsoft.Json.resources.dll",
+                    [MetadataKeys.Culture] = "de",
+                });
+            MockTaskItem resourceWithCustomSubPathTaskItem = new("fr/Newtonsoft.Json.resources.dll",
+                new Dictionary<string, string>
+                {
+                    [MetadataKeys.DestinationSubDirectory] = "pkg/fr/",
+                    [MetadataKeys.AssetType] = "resources",
+                    [MetadataKeys.NuGetPackageId] = packageName,
+                    [MetadataKeys.NuGetPackageVersion] = packageVersion,
+                    [MetadataKeys.PathInPackage] = $"lib/{ToolsetInfo.CurrentTargetFramework}/fr/Newtonsoft.Json.resources.dll",
+                    [MetadataKeys.Culture] = "fr",
+                });
+            ResolvedFile resource = new(resourceTaskItem, false);
+            ResolvedFile resourceWithCustomSubPath = new(resourceWithCustomSubPathTaskItem, false);
+
+            DependencyContext dependencyContext = new DependencyContextBuilder(mainProject, includeRuntimeFileVersions: false, runtimeGraph: null, projectContext: projectContext, libraryLookup: lockFileLookup)
+                .WithResolvedNuGetFiles([runtime, runtimeWithCustomSubPath, native, nativeWithCustomSubPath, resource, resourceWithCustomSubPath])
+                .Build();
+
+            var library = dependencyContext.RuntimeLibraries.FirstOrDefault(l => l.Name == "Newtonsoft.Json");
+            library.Should().NotBeNull();
+
+            // Runtime assembly
+            library.RuntimeAssemblyGroups.Should().HaveCount(1);
+            IReadOnlyList<RuntimeFile> runtimeFiles = library.RuntimeAssemblyGroups[0].RuntimeFiles;
+            runtimeFiles.Should().HaveCount(2);
+            runtimeFiles.Should().Contain(
+                f => f.LocalPath == runtime.DestinationSubPath && f.Path == runtime.PathInPackage,
+                $"runtime assemblies should have item with LocalPath={runtime.DestinationSubPath} and Path matching {runtime.PathInPackage}");
+            runtimeFiles.Should().Contain(
+                f => f.LocalPath == runtimeWithCustomSubPath.DestinationSubPath && f.Path == runtimeWithCustomSubPath.PathInPackage,
+                $"runtime assemblies should have item with LocalPath={runtimeWithCustomSubPath.DestinationSubPath} and Path matching {runtimeWithCustomSubPath.PathInPackage}");
+
+            // Native library
+            library.NativeLibraryGroups.Should().HaveCount(1);
+            IReadOnlyList<RuntimeFile> nativeFiles = library.NativeLibraryGroups[0].RuntimeFiles;
+            nativeFiles.Should().HaveCount(2);
+            nativeFiles.Should().Contain(
+                f => f.LocalPath == native.DestinationSubPath && f.Path == native.PathInPackage,
+                $"native libraries should have item with LocalPath={native.PathInPackage} and Path={native.DestinationSubPath}");
+            nativeFiles.Should().Contain(
+                f => f.LocalPath == nativeWithCustomSubPath.DestinationSubPath && f.Path == nativeWithCustomSubPath.PathInPackage,
+                $"native libraries should have item with LocalPath={nativeWithCustomSubPath.PathInPackage} and Path={nativeWithCustomSubPath.DestinationSubPath}");
+
+            // Resource assembly
+            IReadOnlyList<ResourceAssembly> resourceAssemblies = library.ResourceAssemblies;
+            resourceAssemblies.Should().HaveCount(2);
+            resourceAssemblies.Should().Contain(
+                f => f.LocalPath == resource.DestinationSubPath && f.Path == resource.PathInPackage,
+                $"resource assemblies should have item with LocalPath={resource.PathInPackage} and Path={resource.DestinationSubPath}");
+            resourceAssemblies.Should().Contain(
+                f => f.LocalPath == resourceWithCustomSubPath.DestinationSubPath && f.Path == resourceWithCustomSubPath.PathInPackage,
+                $"resource assemblies should have item with LocalPath={resourceWithCustomSubPath.PathInPackage} and Path={resourceWithCustomSubPath.DestinationSubPath}");
+        }
+
+        [Fact]
+        public void ItIncludesLocalPathForReferences()
+        {
+            string mainProjectName = "simple.dependencies";
+            LockFile lockFile = TestLockFiles.GetLockFile(mainProjectName);
+            LockFileLookup lockFileLookup = new(lockFile);
+
+            SingleProjectInfo mainProject = SingleProjectInfo.Create(
+                "/usr/Path",
+                mainProjectName,
+                ".dll",
+                "1.0.0",
+                []);
+
+            ProjectContext projectContext = lockFile.CreateProjectContext(
+                FrameworkConstants.CommonFrameworks.NetCoreApp10.GetShortFolderName(),
+                runtime: null,
+                Constants.DefaultPlatformLibrary,
+                runtimeFrameworks: null,
+                isSelfContained: false);
+
+            MockTaskItem[] directReferenceTaskItems =
+            [
+                new MockTaskItem("DirectReference.dll", new Dictionary<string, string>
+                {
+                    [MetadataKeys.DestinationSubDirectory] = "direct-ref/",
+                })
+            ];
+            IEnumerable<ReferenceInfo> directReferences = ReferenceInfo.CreateDirectReferenceInfos(
+                directReferenceTaskItems,
+                [],
+                lockFileLookup: lockFileLookup,
+                i => true,
+                includeProjectsNotInAssetsFile: true);
+
+            MockTaskItem[] dependencyReferenceTaskItems =
+            [
+                new MockTaskItem("DependencyReference.dll", new Dictionary<string, string>
+                {
+                    [MetadataKeys.DestinationSubDirectory] = "dependency-ref/",
+                })
+            ];
+            IEnumerable<ReferenceInfo> dependencyReferences = ReferenceInfo.CreateDependencyReferenceInfos(
+                dependencyReferenceTaskItems,
+                [],
+                i => true);
+
+            DependencyContext dependencyContext = new DependencyContextBuilder(mainProject, includeRuntimeFileVersions: false, runtimeGraph: null, projectContext: projectContext, libraryLookup: lockFileLookup)
+                .WithDirectReferences(directReferences)
+                .WithDependencyReferences(dependencyReferences)
+                .Build();
+
+            ReferenceInfo[] expectedReferences = [.. directReferences, .. dependencyReferences];
+            foreach (ReferenceInfo referenceInfo in expectedReferences)
+            {
+                var lib = dependencyContext.RuntimeLibraries.FirstOrDefault(l => l.Name == referenceInfo.Name);
+                lib.Should().NotBeNull();
+                lib.RuntimeAssemblyGroups.Should().HaveCount(1);
+                lib.RuntimeAssemblyGroups[0].RuntimeFiles.Should().HaveCount(1);
+                lib.RuntimeAssemblyGroups[0].RuntimeFiles.Should().Contain(
+                    f => f.LocalPath == referenceInfo.DestinationSubPath && f.Path == referenceInfo.FileName,
+                    $"runtime assemblies should have item with LocalPath={referenceInfo.DestinationSubPath} and Path matching {referenceInfo.FileName}");
+            }
         }
     }
 }
