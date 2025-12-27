@@ -626,7 +626,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.TaintedDataAnalysis
             private bool IsSanitizingMethod(
                 IMethodSymbol method,
                 ImmutableArray<IArgumentOperation> arguments,
-                ISet<string> taintedParameterNames,
+                PooledHashSet<string> taintedParameterNames,
                 [NotNullWhen(returnValue: true)] out PooledHashSet<(string, string)>? taintedParameterPairs)
             {
                 taintedParameterPairs = null;

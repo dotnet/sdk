@@ -77,7 +77,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }, OperationKind.Invocation);
         }
 
-        private static IEnumerable<ILocalReferenceOperation> GetReferencedDisposableArguments(IInvocationOperation invocation,
+        private static List<ILocalReferenceOperation> GetReferencedDisposableArguments(IInvocationOperation invocation,
             IList<IArgumentOperation> disposableArguments)
         {
             // Get the references of the disposable arguments
