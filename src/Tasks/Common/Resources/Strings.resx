@@ -1014,5 +1014,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</value>
     <comment>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</comment>
   </data>
-  <!-- The latest message added is RoslynCompilerTypeFrameworkIsDeprecated. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="CannotHaveSolutionLevelTargetFramework" xml:space="preserve">
+    <value>NETSDK1235: The "--framework" option isn't recommended when building a solution. Specifying a solution-level framework results in all projects building for that framework, which can cause referenced projects to build multiple times and can lead to inconsistent builds.</value>
+    <comment>{StrBegins="NETSDK1235: "}{Locked="--framework"}</comment>
+  </data>
+  <!-- The latest message added is CannotHaveSolutionLevelTargetFramework. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
