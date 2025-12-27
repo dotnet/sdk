@@ -37,6 +37,11 @@
         <target state="translated">Nie można zlokalizować zestawu .NET SDK. Sprawdź, czy jest zainstalowana, ścieżka PATH jest skonfigurowana pod kątem poprawnej architektury i czy wersja określona w pliku global.json (jeśli istnieje) jest zgodna z zainstalowaną wersją.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnableToLocateNETCoreSdkButPreviewAvailable">
+        <source>Unable to locate the .NET SDK. A preview SDK (version {0}) is available but is being blocked by your Visual Studio settings. To use preview SDKs, go to Tools -&gt; Options -&gt; Environment -&gt; Preview Features and check "Use previews of the .NET SDK", or add "allowPrerelease": true to global.json.</source>
+        <target state="new">Unable to locate the .NET SDK. A preview SDK (version {0}) is available but is being blocked by your Visual Studio settings. To use preview SDKs, go to Tools -&gt; Options -&gt; Environment -&gt; Preview Features and check "Use previews of the .NET SDK", or add "allowPrerelease": true to global.json.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
