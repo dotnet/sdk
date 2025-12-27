@@ -54,7 +54,7 @@ public abstract class PackageAddCommandDefinitionBase : Command
         HelpName = CliCommandStrings.CmdPackageDirectory
     }.ForwardAsSingle(o => $"--package-directory {o}");
 
-    public static Option<bool> CreateInteractiveOption() => CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
+    public static Option<bool> CreateInteractiveOption() => CommonOptions.CreateInteractiveOption().ForwardIfEnabled("--interactive");
 
     public readonly Argument<PackageIdentityWithRange> PackageIdArgument = CommonArguments.CreateRequiredPackageIdentityArgument();
     public readonly Option<string> VersionOption = CreateVersionOption();

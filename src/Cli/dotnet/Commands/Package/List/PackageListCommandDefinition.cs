@@ -86,7 +86,7 @@ internal abstract class PackageListCommandDefinitionBase : Command
     }.ForwardAsManyArgumentsEachPrefixedByOption("--source")
     .AllowSingleArgPerToken();
 
-    public readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption().ForwardIfEnabled("--interactive");
 
     public readonly Option NoRestore = new Option<bool>("--no-restore")
     {

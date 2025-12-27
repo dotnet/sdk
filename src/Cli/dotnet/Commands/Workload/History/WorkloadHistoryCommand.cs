@@ -12,7 +12,7 @@ using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.History;
 
-internal class WorkloadHistoryCommand : WorkloadCommandBase
+internal class WorkloadHistoryCommand : WorkloadCommandBase<WorkloadHistoryCommandDefinition>
 {
     private readonly IInstaller _workloadInstaller;
     private readonly IWorkloadResolver _workloadResolver;
@@ -24,7 +24,7 @@ internal class WorkloadHistoryCommand : WorkloadCommandBase
         IReporter reporter = null,
         IInstaller workloadInstaller = null,
         INuGetPackageDownloader nugetPackageDownloader = null
-    ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, null, nugetPackageDownloader)
+    ) : base(parseResult, reporter, null, nugetPackageDownloader)
     {
         var creationResult = new WorkloadResolverFactory().Create();
 
@@ -33,10 +33,11 @@ internal class WorkloadHistoryCommand : WorkloadCommandBase
         _workloadResolver = creationResult.WorkloadResolver;
         _sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
 
-        _workloadInstaller = workloadInstaller ??
-                             WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, _sdkFeatureBand,
-                                 _workloadResolver, Verbosity, userProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath, TempDirectoryPath,
-                                 packageSourceLocation: null, _parseResult.ToRestoreActionConfig());
+        _workloadInstaller = workloadInstaller ?? WorkloadInstallerFactory.GetWorkloadInstaller(
+            Reporter, _sdkFeatureBand,
+            _workloadResolver, Verbosity, userProfileDir, VerifySignatures, PackageDownloader,
+            creationResult.DotnetPath, TempDirectoryPath,
+            packageSourceLocation: null);
     }
 
     public override int Execute()

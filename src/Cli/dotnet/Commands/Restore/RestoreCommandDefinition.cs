@@ -26,7 +26,7 @@ internal static class RestoreCommandDefinition
     .AllowSingleArgPerToken();
 
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Restore");
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.minimal);
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.minimal);
     public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
 
     private static IEnumerable<Option> FullRestoreOptions() => [

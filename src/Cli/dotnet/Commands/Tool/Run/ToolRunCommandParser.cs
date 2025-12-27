@@ -9,22 +9,11 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
 internal static class ToolRunCommandParser
 {
-    public static readonly Argument<string> CommandNameArgument = new("commandName")
-    {
-        HelpName = CliCommandStrings.CommandNameArgumentName,
-        Description = CliCommandStrings.CommandNameArgumentDescription
-    };
+    public static readonly Argument<string> CommandNameArgument = ToolRunCommandDefinition.CommandNameArgument;
 
-    public static readonly Argument<IEnumerable<string>> CommandArgument = new("toolArguments")
-    {
-        Description = CliCommandStrings.ToolRunArgumentsDescription
-    };
+    public static readonly Argument<IEnumerable<string>> CommandArgument = ToolRunCommandDefinition.CommandArgument;
 
-    public static readonly Option<bool> RollForwardOption = new("--allow-roll-forward")
-    {
-        Description = CliCommandStrings.RollForwardOptionDescription,
-        Arity = ArgumentArity.Zero
-    };
+    public static readonly Option<bool> RollForwardOption = ToolRunCommandDefinition.RollForwardOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -35,11 +24,7 @@ internal static class ToolRunCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("run", CliCommandStrings.ToolRunCommandDescription);
-
-        command.Arguments.Add(CommandNameArgument);
-        command.Arguments.Add(CommandArgument);
-        command.Options.Add(RollForwardOption);
+        Command command = ToolRunCommandDefinition.Create();
 
         command.SetAction((parseResult) => new ToolRunCommand(parseResult).Execute());
 

@@ -16,7 +16,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Update;
 
-internal class WorkloadUpdateCommand : InstallingWorkloadCommand
+internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand<WorkloadUpdateCommandDefinition>
 {
     private readonly bool _adManifestOnlyOption;
     private readonly bool _printRollbackDefinitionOnly;
@@ -24,6 +24,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
     private readonly WorkloadHistoryRecorder _recorder;
     private readonly bool _isRestoring;
     private readonly bool _shouldShutdownInstaller;
+
     public WorkloadUpdateCommand(
         ParseResult parseResult,
         IReporter reporter = null,
@@ -37,12 +38,12 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         bool? shouldUseWorkloadSetsFromGlobalJson = null)
         : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
               nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
-              tempDirPath: tempDirPath, shouldUseWorkloadSetsFromGlobalJson: shouldUseWorkloadSetsFromGlobalJson, verbosityOptions: WorkloadUpdateCommandParser.VerbosityOption)
+              tempDirPath: tempDirPath, shouldUseWorkloadSetsFromGlobalJson: shouldUseWorkloadSetsFromGlobalJson)
 
     {
-        _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);
-        _adManifestOnlyOption = parseResult.GetValue(WorkloadUpdateCommandParser.AdManifestOnlyOption);
-        _printRollbackDefinitionOnly = parseResult.GetValue(WorkloadUpdateCommandParser.PrintRollbackOption);
+        _fromPreviousSdk = parseResult.GetValue(Definition.FromPreviousSdkOption);
+        _adManifestOnlyOption = parseResult.GetValue(Definition.AdManifestOnlyOption);
+        _printRollbackDefinitionOnly = parseResult.GetValue(Definition.PrintRollbackOption);
         var resolvedReporter = _printDownloadLinkOnly || _printRollbackDefinitionOnly ? NullReporter.Instance : Reporter;
 
         _workloadInstaller = _workloadInstallerFromConstructor ?? WorkloadInstallerFactory.GetWorkloadInstaller(resolvedReporter,
@@ -63,8 +64,8 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
 
         }
 
-        _fromHistorySpecified = parseResult.GetValue(WorkloadUpdateCommandParser.FromHistoryOption);
-        _historyManifestOnlyOption = !string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadUpdateCommandParser.HistoryManifestOnlyOption));
+        _fromHistorySpecified = parseResult.GetValue(Definition.FromHistoryOption);
+        _historyManifestOnlyOption = !string.IsNullOrWhiteSpace(parseResult.GetValue(Definition.HistoryManifestOnlyOption));
         _isRestoring = isRestoring;
     }
 
@@ -100,7 +101,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
             bool? shouldUseWorkloadSetsPerGlobalJson = _shouldUseWorkloadSets ?? (SpecifiedWorkloadSetVersionInGlobalJson ? true : null);
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(
                 _includePreviews,
-                shouldUseWorkloadSetsPerGlobalJson ?? ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir),
+                shouldUseWorkloadSetsPerGlobalJson ?? WorkloadManifestUpdater.ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir),
                 string.IsNullOrWhiteSpace(_fromCacheOption) ?
                     null :
                     new DirectoryPath(_fromCacheOption))
