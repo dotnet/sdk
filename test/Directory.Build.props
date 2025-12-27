@@ -30,7 +30,7 @@
 
   <!-- Global usings -->
   <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(IncludeTestUsings)'!='false'">
     <Using Include="FluentAssertions" />
     <Using Include="Microsoft.NET.TestFramework" />
     <Using Include="Microsoft.NET.TestFramework.Assertions" />
