@@ -36,17 +36,18 @@ internal static class WorkloadCommandParser
         def.InfoOption.Action = new ShowWorkloadsInfoAction();
         def.VersionOption.Action = new ShowWorkloadsVersionOption();
 
-        WorkloadInstallCommandParser.ConfigureCommand(def.InstallCommand);
-        WorkloadUpdateCommandParser.ConfigureCommand(def.UpdateCommand);
-        WorkloadListCommandParser.ConfigureCommand(def.ListCommand);
-        WorkloadSearchCommandParser.ConfigureCommand(def.SearchCommand);
-        WorkloadUninstallCommandParser.ConfigureCommand(def.UninstallCommand);
-        WorkloadRepairCommandParser.ConfigureCommand(def.RepairCommand);
-        WorkloadRestoreCommandParser.ConfigureCommand(def.RestoreCommand);
-        WorkloadCleanCommandParser.ConfigureCommand(def.CleanCommand);
-        WorkloadElevateCommandParser.ConfigureCommand(def.ElevateCommand);
-        WorkloadConfigCommandParser.ConfigureCommand(def.ConfigCommand);
-        WorkloadHistoryCommandParser.ConfigureCommand(def.HistoryCommand);
+        def.InstallCommand.SetAction(parseResult => new WorkloadInstallCommand(parseResult).Execute());
+        def.UpdateCommand.SetAction(parseResult => new WorkloadUpdateCommand(parseResult).Execute());
+        def.ListCommand.SetAction(parseResult => new WorkloadListCommand(parseResult).Execute());
+        def.SearchCommand.SetAction(parseResult => new WorkloadSearchCommand(parseResult).Execute());
+        def.SearchCommand.VersionCommand.SetAction(parseResult => new WorkloadSearchVersionsCommand(parseResult).Execute());
+        def.UninstallCommand.SetAction(parseResult => new WorkloadUninstallCommand(parseResult).Execute());
+        def.RepairCommand.SetAction(parseResult => new WorkloadRepairCommand(parseResult).Execute());
+        def.RestoreCommand.SetAction(parseResult => new WorkloadRestoreCommand(parseResult).Execute());
+        def.CleanCommand.SetAction(parseResult => new WorkloadCleanCommand(parseResult).Execute());
+        def.ElevateCommand.SetAction(parseResult => new WorkloadElevateCommand(parseResult).Execute());
+        def.ConfigCommand.SetAction(parseResult => new WorkloadConfigCommand(parseResult).Execute());
+        def.HistoryCommand.SetAction(parseResult => new WorkloadHistoryCommand(parseResult).Execute());
 
         return def;
     }
