@@ -129,6 +129,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        without a RuntimeIdentifier -->
   <PropertyGroup Condition="'$(PublishRuntimeIdentifier)' == '' And
                             '$(RuntimeIdentifier)' == '' And
+                            '$(_IsExecutable)' == 'true' And
                             (
                               '$(PublishSelfContained)' == 'true' or
                               '$(PublishReadyToRun)' == 'true' or
