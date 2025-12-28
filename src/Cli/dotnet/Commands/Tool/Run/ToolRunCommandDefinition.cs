@@ -7,33 +7,30 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
-internal static class ToolRunCommandDefinition
+internal sealed class ToolRunCommandDefinition : Command
 {
-    public static readonly Argument<string> CommandNameArgument = new("commandName")
+    public readonly Argument<string> CommandNameArgument = new("commandName")
     {
         HelpName = CliCommandStrings.CommandNameArgumentName,
         Description = CliCommandStrings.CommandNameArgumentDescription
     };
 
-    public static readonly Argument<IEnumerable<string>> CommandArgument = new("toolArguments")
+    public readonly Argument<IEnumerable<string>> CommandArgument = new("toolArguments")
     {
         Description = CliCommandStrings.ToolRunArgumentsDescription
     };
 
-    public static readonly Option<bool> RollForwardOption = new("--allow-roll-forward")
+    public readonly Option<bool> RollForwardOption = new("--allow-roll-forward")
     {
         Description = CliCommandStrings.RollForwardOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static Command Create()
+    public ToolRunCommandDefinition()
+        : base("run", CliCommandStrings.ToolRunCommandDescription)
     {
-        Command command = new("run", CliCommandStrings.ToolRunCommandDescription);
-
-        command.Arguments.Add(CommandNameArgument);
-        command.Arguments.Add(CommandArgument);
-        command.Options.Add(RollForwardOption);
-
-        return command;
+        Arguments.Add(CommandNameArgument);
+        Arguments.Add(CommandArgument);
+        Options.Add(RollForwardOption);
     }
 }

@@ -1,39 +1,30 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Tool.Common;
-using Microsoft.DotNet.Cli.Commands.Tool.Install;
-using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Restore;
 
-internal static class ToolRestoreCommandDefinition
+internal sealed class ToolRestoreCommandDefinition : Command
 {
-    public static readonly Option<string> ConfigOption = ToolInstallCommandParser.ConfigOption;
+    public readonly Option<string> ConfigOption = ToolAppliedOption.CreateConfigOption();
 
-    public static readonly Option<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
+    public readonly Option<string[]> AddSourceOption = ToolAppliedOption.CreateAddSourceOption();
 
-    public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption(CliCommandStrings.ToolRestoreManifestPathOptionDescription);
+    public readonly Option<string> ToolManifestOption = ToolAppliedOption.CreateToolManifestOption(CliCommandStrings.ToolRestoreManifestPathOptionDescription);
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
+    public readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal);
 
-    public static Command Create()
+    public readonly NuGetRestoreOptions RestoreOptions = new(forward: true);
+
+    public ToolRestoreCommandDefinition()
+        : base("restore", CliCommandStrings.ToolRestoreCommandDescription)
     {
-        Command command = new("restore", CliCommandStrings.ToolRestoreCommandDescription);
+        Options.Add(ConfigOption);
+        Options.Add(AddSourceOption);
+        Options.Add(ToolManifestOption);
+        Options.Add(VerbosityOption);
 
-        command.Options.Add(ConfigOption);
-        command.Options.Add(AddSourceOption);
-        command.Options.Add(ToolManifestOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.NoHttpCacheOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
-        command.Options.Add(VerbosityOption);
-
-        return command;
+        RestoreOptions.AddTo(Options);
     }
 }

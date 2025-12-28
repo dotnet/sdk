@@ -58,7 +58,7 @@ internal abstract class InstallingWorkloadCommandDefinition : WorkloadCommandDef
 
     public sealed override Option<bool> SkipSignCheckOption { get; } = CreateSkipSignCheckOption();
 
-    public sealed override WorkloadCommandNuGetRestoreActionConfigOptions RestoreOptions { get; } = new();
+    public sealed override NuGetRestoreOptions RestoreOptions { get; } = new();
 
     public InstallingWorkloadCommandDefinition(string name, string description)
         : base(name, description)

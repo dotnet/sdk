@@ -24,7 +24,7 @@ internal sealed class WorkloadListCommandDefinition : WorkloadCommandDefinitionB
         Description = CliCommandStrings.IncludePreviewOptionDescription
     }.Hide();
 
-    public override WorkloadCommandNuGetRestoreActionConfigOptions RestoreOptions { get; } = new();
+    public override NuGetRestoreOptions RestoreOptions { get; } = new(hidden: true);
 
     public WorkloadListCommandDefinition()
         : base("list", CliCommandStrings.WorkloadListCommandDescription)

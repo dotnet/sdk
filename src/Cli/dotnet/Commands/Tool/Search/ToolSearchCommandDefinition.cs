@@ -1,55 +1,46 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
-internal static class ToolSearchCommandDefinition
+internal sealed class ToolSearchCommandDefinition : Command
 {
-    public static readonly Argument<string> SearchTermArgument = new("searchTerm")
+    public readonly Argument<string> SearchTermArgument = new("searchTerm")
     {
         HelpName = CliCommandStrings.ToolSearchSearchTermArgumentName,
         Description = CliCommandStrings.ToolSearchSearchTermDescription
     };
 
-    public static readonly Option<bool> DetailOption = new("--detail")
+    public readonly Option<bool> DetailOption = new("--detail")
     {
         Description = CliCommandStrings.DetailDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<string> SkipOption = new("--skip")
+    public readonly Option<string> SkipOption = new("--skip")
     {
         Description = CliCommandStrings.ToolSearchSkipDescription,
         HelpName = CliCommandStrings.ToolSearchSkipArgumentName
     };
 
-    public static readonly Option<string> TakeOption = new("--take")
+    public readonly Option<string> TakeOption = new("--take")
     {
         Description = CliCommandStrings.ToolSearchTakeDescription,
         HelpName = CliCommandStrings.ToolSearchTakeArgumentName
     };
 
-    public static readonly Option<bool> PrereleaseOption = new("--prerelease")
+    public readonly Option<bool> PrereleaseOption = ToolAppliedOption.CreatePrereleaseOption();
+
+    public ToolSearchCommandDefinition()
+        : base("search", CliCommandStrings.ToolSearchCommandDescription)
     {
-        Description = CliCommandStrings.ToolSearchPrereleaseDescription,
-        Arity = ArgumentArity.Zero
-    };
+        Arguments.Add(SearchTermArgument);
 
-    public static Command Create()
-    {
-        Command command = new("search", CliCommandStrings.ToolSearchCommandDescription);
-
-        command.Arguments.Add(SearchTermArgument);
-
-        command.Options.Add(DetailOption);
-        command.Options.Add(SkipOption);
-        command.Options.Add(TakeOption);
-        command.Options.Add(PrereleaseOption);
-
-        return command;
+        Options.Add(DetailOption);
+        Options.Add(SkipOption);
+        Options.Add(TakeOption);
+        Options.Add(PrereleaseOption);
     }
 }

@@ -52,7 +52,7 @@ internal static class WorkloadCommandParser
         return def;
     }
 
-    public static RestoreActionConfig ToRestoreActionConfig(this WorkloadCommandNuGetRestoreActionConfigOptions options, ParseResult parseResult)
+    public static RestoreActionConfig ToRestoreActionConfig(this NuGetRestoreOptions options, ParseResult parseResult)
     {
         return new RestoreActionConfig(DisableParallel: parseResult.GetValue(options.DisableParallelOption),
             NoCache: parseResult.GetValue(options.NoCacheOption) || parseResult.GetValue(options.NoHttpCacheOption),

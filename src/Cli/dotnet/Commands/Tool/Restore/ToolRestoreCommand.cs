@@ -17,7 +17,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Restore;
 
-internal class ToolRestoreCommand : CommandBase
+internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
 {
     private readonly string _configFilePath;
     private readonly IReporter _errorReporter;
@@ -62,18 +62,15 @@ internal class ToolRestoreCommand : CommandBase
         _reporter = reporter ?? Reporter.Output;
         _errorReporter = reporter ?? Reporter.Error;
 
-        _configFilePath = result.GetValue(ToolRestoreCommandParser.ConfigOption);
-        _sources = result.GetValue(ToolRestoreCommandParser.AddSourceOption);
-        _verbosity = result.GetValue(ToolRestoreCommandParser.VerbosityOption);
-        if (!result.HasOption(ToolRestoreCommandParser.VerbosityOption) && result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption))
+        _configFilePath = result.GetValue(Definition.ConfigOption);
+        _sources = result.GetValue(Definition.AddSourceOption);
+        _verbosity = result.GetValue(Definition.VerbosityOption);
+        if (!result.HasOption(Definition.VerbosityOption) && result.GetValue(Definition.RestoreOptions.InteractiveOption))
         {
             _verbosity = VerbosityOptions.minimal;
         }
 
-        _restoreActionConfig = new RestoreActionConfig(DisableParallel: result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-            NoCache: result.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || result.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
-            IgnoreFailedSources: result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
-            Interactive: result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
+        _restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(result);
     }
 
     public override int Execute()
@@ -166,7 +163,7 @@ internal class ToolRestoreCommand : CommandBase
 
     private FilePath? GetCustomManifestFileLocation()
     {
-        string customFile = _parseResult.GetValue(ToolRestoreCommandParser.ToolManifestOption);
+        string customFile = _parseResult.GetValue(Definition.ToolManifestOption);
         FilePath? customManifestFileLocation;
         if (!string.IsNullOrEmpty(customFile))
         {

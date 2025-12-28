@@ -12,7 +12,7 @@ internal abstract class WorkloadCommandDefinitionBase(string name, string descri
     public virtual Option<bool>? SkipSignCheckOption => null;
     public virtual Option<string>? TempDirOption => null;
     public virtual Option<Utils.VerbosityOptions>? VerbosityOption => null;
-    public virtual WorkloadCommandNuGetRestoreActionConfigOptions? RestoreOptions => null;
+    public virtual NuGetRestoreOptions? RestoreOptions => null;
 
     public static Option<string> CreateSdkVersionOption() => new("--sdk-version")
     {

@@ -14,13 +14,12 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class CommonOptions
 {
-    public static Option<bool> YesOption =
-        new Option<bool>("--yes", "-y")
-        {
-            Description = CliStrings.YesOptionDescription,
-            Arity = ArgumentArity.Zero,
-            IsDynamic = true
-        };
+    public static Option<bool> CreateYesOption() => new("--yes", "-y")
+    {
+        Description = CliStrings.YesOptionDescription,
+        Arity = ArgumentArity.Zero,
+        IsDynamic = true
+    };
 
     public static Option<ReadOnlyDictionary<string, string>?> PropertiesOption =
         // these are all of the forms that the property switch can be understood by in MSBuild

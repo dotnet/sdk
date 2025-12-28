@@ -2,47 +2,51 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 
-namespace Microsoft.DotNet.Cli.Commands.Workload;
+namespace Microsoft.DotNet.Cli.Commands;
 
-internal sealed class WorkloadCommandNuGetRestoreActionConfigOptions(bool hidden = false)
+internal sealed class NuGetRestoreOptions(bool hidden = false, bool forward = false)
 {
-    public readonly Option<bool> DisableParallelOption = new("--disable-parallel")
+    public readonly Option<bool> DisableParallelOption = ForwardWhen<bool>(new("--disable-parallel")
     {
         Description = CliCommandStrings.CmdDisableParallelOptionDescription,
         Arity = ArgumentArity.Zero,
         Hidden = hidden
-    };
+    }, forward);
 
-    public readonly Option<bool> NoCacheOption = new("--no-cache")
+    public readonly Option<bool> NoCacheOption = ForwardWhen<bool>(new("--no-cache")
     {
         Description = CliCommandStrings.CmdNoCacheOptionDescription,
-        Hidden = hidden,
+        Hidden = true,
         Arity = ArgumentArity.Zero,
-    };
+    }, forward);
 
-    public readonly Option<bool> NoHttpCacheOption = new("--no-http-cache")
+    public readonly Option<bool> NoHttpCacheOption = ForwardWhen<bool>(new("--no-http-cache")
     {
         Description = CliCommandStrings.CmdNoCacheOptionDescription,
         Arity = ArgumentArity.Zero,
         Hidden = hidden
-    };
+    }, forward);
 
-    public readonly Option<bool> IgnoreFailedSourcesOption = new("--ignore-failed-sources")
+    public readonly Option<bool> IgnoreFailedSourcesOption = ForwardWhen<bool>(new("--ignore-failed-sources")
     {
         Description = CliCommandStrings.CmdIgnoreFailedSourcesOptionDescription,
         Arity = ArgumentArity.Zero,
         Hidden = hidden
-    };
+    }, forward);
 
     public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption(hidden: hidden);
+
+    private static Option<T> ForwardWhen<T>(Option<T> option, bool forward)
+        => forward ? option.Forward() : option;
 
     public void AddTo(IList<Option> options)
     {
         options.Add(DisableParallelOption);
+        options.Add(IgnoreFailedSourcesOption);
         options.Add(NoCacheOption);
         options.Add(NoHttpCacheOption);
-        options.Add(IgnoreFailedSourcesOption);
         options.Add(InteractiveOption);
     }
 }

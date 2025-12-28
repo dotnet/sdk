@@ -2,52 +2,53 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Execute;
 
-internal static class ToolExecuteCommandDefinition
+internal sealed class ToolExecuteCommandDefinition : ToolExecuteCommandDefinitionBase
 {
-    public static readonly Argument<PackageIdentityWithRange> PackageIdentityArgument = ToolInstallCommandParser.PackageIdentityArgument;
+    public ToolExecuteCommandDefinition()
+        : base("execute")
+    {
+        Aliases.Add("exec");
+    }
+}
 
-    public static readonly Argument<IEnumerable<string>> CommandArgument = new("commandArguments")
+internal abstract class ToolExecuteCommandDefinitionBase : Command
+{
+    public readonly Argument<PackageIdentityWithRange> PackageIdentityArgument = CommonArguments.CreateRequiredPackageIdentityArgument("dotnetsay", "2.1.7");
+
+    public readonly Argument<IEnumerable<string>> CommandArgument = new("commandArguments")
     {
         Description = CliCommandStrings.ToolRunArgumentsDescription
     };
 
-    public static readonly Option<string> VersionOption = ToolInstallCommandParser.VersionOption;
-    public static readonly Option<bool> RollForwardOption = ToolInstallCommandParser.RollForwardOption;
-    public static readonly Option<bool> PrereleaseOption = ToolInstallCommandParser.PrereleaseOption;
-    public static readonly Option<string> ConfigOption = ToolInstallCommandParser.ConfigOption;
-    public static readonly Option<string[]> SourceOption = ToolInstallCommandParser.SourceOption;
-    public static readonly Option<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
-    public static readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption();
-    public static readonly Option<bool> YesOption = CommonOptions.YesOption;
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
+    public readonly Option<string> VersionOption = ToolAppliedOption.CreateVersionOption();
+    public readonly Option<bool> RollForwardOption = ToolAppliedOption.CreateRollForwardOption();
+    public readonly Option<bool> PrereleaseOption = ToolAppliedOption.CreatePrereleaseOption();
+    public readonly Option<string> ConfigOption = ToolAppliedOption.CreateConfigOption();
+    public readonly Option<string[]> SourceOption = ToolAppliedOption.CreateSourceOption();
+    public readonly Option<string[]> AddSourceOption = ToolAppliedOption.CreateAddSourceOption();
+    public readonly Option<bool> YesOption = CommonOptions.CreateYesOption();
+    public readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal);
 
-    public static Command Create()
+    public readonly NuGetRestoreOptions RestoreOptions = new(forward: true);
+
+    public ToolExecuteCommandDefinitionBase(string name)
+        : base(name, CliCommandStrings.ToolExecuteCommandDescription)
     {
-        Command command = new("execute", CliCommandStrings.ToolExecuteCommandDescription);
+        Arguments.Add(PackageIdentityArgument);
+        Arguments.Add(CommandArgument);
 
-        command.Aliases.Add("exec");
+        Options.Add(VersionOption);
+        Options.Add(YesOption);
+        Options.Add(RollForwardOption);
+        Options.Add(PrereleaseOption);
+        Options.Add(ConfigOption);
+        Options.Add(SourceOption);
+        Options.Add(AddSourceOption);
+        Options.Add(VerbosityOption);
 
-        command.Arguments.Add(PackageIdentityArgument);
-        command.Arguments.Add(CommandArgument);
-
-        command.Options.Add(VersionOption);
-        command.Options.Add(YesOption);
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(RollForwardOption);
-        command.Options.Add(PrereleaseOption);
-        command.Options.Add(ConfigOption);
-        command.Options.Add(SourceOption);
-        command.Options.Add(AddSourceOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.NoHttpCacheOption);
-        command.Options.Add(VerbosityOption);
-
-        return command;
+        RestoreOptions.AddTo(Options);
     }
 }

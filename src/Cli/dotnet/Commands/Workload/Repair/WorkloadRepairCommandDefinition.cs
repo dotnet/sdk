@@ -17,7 +17,7 @@ internal sealed class WorkloadRepairCommandDefinition : WorkloadCommandDefinitio
 
     public override Option<bool> SkipSignCheckOption { get; } = CreateSkipSignCheckOption();
 
-    public override WorkloadCommandNuGetRestoreActionConfigOptions RestoreOptions { get; } = new();
+    public override NuGetRestoreOptions RestoreOptions { get; } = new();
 
     public WorkloadRepairCommandDefinition()
         : base("repair", CliCommandStrings.WorkloadRepairCommandDescription)
