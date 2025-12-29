@@ -276,18 +276,7 @@ internal sealed class WindowsPathHelper : IDisposable
             return unexpandedPath;
         }
 
-        // Check if any Program Files dotnet path is already in the expanded PATH
-        bool alreadyExists = PathContainsDotnet(expandedEntries, programFilesDotnetPaths);
-
-        if (!alreadyExists)
-        {
-            // Add to the beginning of the unexpanded PATH
-            var unexpandedEntries = SplitPath(unexpandedPath);
-            unexpandedEntries.Insert(0, primaryDotnetPath);
-            return string.Join(';', unexpandedEntries);
-        }
-
-        return unexpandedPath;
+        return AddPathEntry(unexpandedPath, expandedPath, primaryDotnetPath);
     }
 
     /// <summary>
