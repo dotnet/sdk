@@ -129,7 +129,7 @@ public class WindowsPathHelperTests
         var dotnetPaths = new List<string> { "C:\\Program Files\\dotnet", "C:\\Program Files (x86)\\dotnet" };
 
         // Act
-        var indices = WindowsPathHelper.FindDotnetPathIndices(pathEntries, dotnetPaths);
+        var indices = WindowsPathHelper.FindPathIndices(pathEntries, dotnetPaths);
 
         // Assert
         indices.Should().HaveCount(2);
@@ -231,7 +231,7 @@ public class WindowsPathHelperTests
         var dotnetPaths = new List<string> { "C:\\Program Files\\dotnet" };
 
         // Act
-        var indices = WindowsPathHelper.FindDotnetPathIndices(pathEntries, dotnetPaths);
+        var indices = WindowsPathHelper.FindPathIndices(pathEntries, dotnetPaths);
 
         // Assert
         indices.Should().HaveCount(1);

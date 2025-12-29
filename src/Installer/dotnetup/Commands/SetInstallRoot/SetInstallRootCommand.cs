@@ -203,7 +203,7 @@ internal class SetInstallRootCommand : CommandBase
                 string expandedUserPath = WindowsPathHelper.ReadUserPath(expand: true);
 
                 // Use the helper method to remove the path while preserving unexpanded variables
-                string newUserPath = WindowsPathHelper.RemovePathEntry(unexpandedUserPath, expandedUserPath, userDotnetPath);
+                string newUserPath = WindowsPathHelper.RemovePathEntries(unexpandedUserPath, expandedUserPath, [userDotnetPath]);
 
                 if (newUserPath != unexpandedUserPath)
                 {

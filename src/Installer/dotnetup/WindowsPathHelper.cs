@@ -170,13 +170,13 @@ internal sealed class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Finds the indices of entries in a PATH that match the Program Files dotnet paths.
+    /// Finds the indices of entries in a PATH that match the specified paths.
     /// This method is designed for unit testing without registry access.
     /// </summary>
     /// <param name="pathEntries">The list of PATH entries to search.</param>
-    /// <param name="programFilesDotnetPaths">The list of Program Files dotnet paths to match.</param>
-    /// <returns>A list of indices where dotnet paths were found.</returns>
-    public static List<int> FindDotnetPathIndices(List<string> pathEntries, List<string> programFilesDotnetPaths)
+    /// <param name="programFilesDotnetPaths">The list of paths to match.</param>
+    /// <returns>A list of indices where paths were found.</returns>
+    public static List<int> FindPathIndices(List<string> pathEntries, List<string> programFilesDotnetPaths)
     {
         var indices = new List<int>();
         for (int i = 0; i < pathEntries.Count; i++)
@@ -224,7 +224,7 @@ internal sealed class WindowsPathHelper : IDisposable
     /// <returns>True if any dotnet path is found, false otherwise.</returns>
     public static bool PathContainsDotnet(List<string> pathEntries, List<string> programFilesDotnetPaths)
     {
-        return FindDotnetPathIndices(pathEntries, programFilesDotnetPaths).Count > 0;
+        return FindPathIndices(pathEntries, programFilesDotnetPaths).Count > 0;
     }
 
     /// <summary>
@@ -237,12 +237,10 @@ internal sealed class WindowsPathHelper : IDisposable
     public static string RemoveProgramFilesDotnetFromPath(string unexpandedPath, string expandedPath)
     {
         // Find indices to remove using the expanded path
-        var expandedEntries = SplitPath(expandedPath);
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
-        var indicesToRemove = FindDotnetPathIndices(expandedEntries, programFilesDotnetPaths);
 
         // Remove those indices from the unexpanded path
-        return RemovePathEntriesByIndices(unexpandedPath, indicesToRemove);
+        return RemovePathEntries(unexpandedPath, expandedPath, programFilesDotnetPaths);
     }
 
     /// <summary>
@@ -328,20 +326,12 @@ internal sealed class WindowsPathHelper : IDisposable
     /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
     /// <param name="pathToRemove">The path to remove.</param>
     /// <returns>The modified unexpanded PATH string.</returns>
-    public static string RemovePathEntry(string unexpandedPath, string expandedPath, string pathToRemove)
+    public static string RemovePathEntries(string unexpandedPath, string expandedPath, List<string> pathsToRemove)
     {
         var expandedEntries = SplitPath(expandedPath);
         
         // Find indices to remove using the expanded path
-        var normalizedPathToRemove = Path.TrimEndingDirectorySeparator(pathToRemove);
-        var indicesToRemove = new List<int>();
-        for (int i = 0; i < expandedEntries.Count; i++)
-        {
-            if (Path.TrimEndingDirectorySeparator(expandedEntries[i]).Equals(normalizedPathToRemove, StringComparison.OrdinalIgnoreCase))
-            {
-                indicesToRemove.Add(i);
-            }
-        }
+        var indicesToRemove = FindPathIndices(expandedEntries, pathsToRemove);
 
         // Remove those indices from the unexpanded path
         return RemovePathEntriesByIndices(unexpandedPath, indicesToRemove);
@@ -369,7 +359,7 @@ internal sealed class WindowsPathHelper : IDisposable
         var programFilesDotnetPaths = GetProgramFilesDotnetPaths();
 
         foundDotnetPaths = new List<string>();
-        var indices = FindDotnetPathIndices(pathEntries, programFilesDotnetPaths);
+        var indices = FindPathIndices(pathEntries, programFilesDotnetPaths);
         
         foreach (var index in indices)
         {
