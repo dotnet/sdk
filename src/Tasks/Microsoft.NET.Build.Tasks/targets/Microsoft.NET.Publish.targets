@@ -956,13 +956,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <ItemGroup>
-      <_SourceItemsToCopyToPublishDirectoryAlways KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectoryAlways KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                                  KeepMetadata="$(_GCTPDIKeepMetadata)"
                                                   Include="@(_NoneWithTargetPath->'%(FullPath)')"
                                                   Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='Always'"/>
-      <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectory KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                            KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(_NoneWithTargetPath->'%(FullPath)')"
                                             Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
-      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepMetadata="$(_GCTPDIKeepMetadata)"
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                            KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(_NoneWithTargetPath->'%(FullPath)')"
                                             Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
