@@ -483,10 +483,11 @@ internal sealed class WindowsPathHelper : IDisposable
             FileName = processPath,
             Arguments = arguments,
             Verb = "runas", // This triggers UAC elevation
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
+            UseShellExecute = true,
+            //RedirectStandardOutput = true,
+            //RedirectStandardError = true,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden
         };
 
         try
@@ -497,16 +498,22 @@ internal sealed class WindowsPathHelper : IDisposable
                 throw new InvalidOperationException("Failed to start elevated process.");
             }
 
-            string stdout = process.StandardOutput.ReadToEnd();
-            string stderr = process.StandardError.ReadToEnd();
+            //string stdout = process.StandardOutput.ReadToEnd();
+            //string stderr = process.StandardError.ReadToEnd();
             process.WaitForExit();
 
-            if (process.ExitCode != 0)
+            if (process.ExitCode == -2147450730)
+            {
+                //  NOTE: Process exit code -2147450730 means that the right .NET runtime could not be found
+                //  This should not happen when using NativeAOT dotnetup, but when testing using IL it can happen and
+                //  can be caused if DOTNET_ROOT has been set to a path that doesn't have the right runtime to run dotnetup.
+                throw new InvalidOperationException("Elevated process failed: Unable to find matching .NET Runtime." + Environment.NewLine +
+                    "This is probably because dotnetup is not being run as self-contained and DOTNET_ROOT is set to a path that doesn't have a matching runtime.");
+            }
+            else if (process.ExitCode != 0)
             {
                 throw new InvalidOperationException(
-                    $"Elevated process returned exit code {process.ExitCode}.{Environment.NewLine}" +
-                    $"STDOUT: {stdout}{Environment.NewLine}" +
-                    $"STDERR: {stderr}");
+                    $"Elevated process returned exit code {process.ExitCode}");
             }
 
             return true;
