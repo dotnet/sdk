@@ -58,7 +58,7 @@ internal class SetInstallRootCommand : CommandBase
                 // Not elevated, shell out to elevated process
                 Console.WriteLine("Launching elevated process to modify system PATH...");
 
-                bool succeeded = WindowsPathHelper.StartElevatedProcess("elevatedadminpath removedotnet");
+                bool succeeded = WindowsPathHelper.StartElevatedProcess("removedotnet");
                 if (!succeeded)
                 {
                     Console.Error.WriteLine("Warning: Elevation was cancelled. Admin PATH was not modified.");
@@ -152,7 +152,7 @@ internal class SetInstallRootCommand : CommandBase
                 {
                     // Not elevated, shell out to elevated process
                     Console.WriteLine("Launching elevated process to modify admin PATH...");
-                    bool succeeded = WindowsPathHelper.StartElevatedProcess("elevatedadminpath adddotnet");
+                    bool succeeded = WindowsPathHelper.StartElevatedProcess("adddotnet");
                     if (!succeeded)
                     {
                         Console.Error.WriteLine("Warning: Elevation was cancelled. Admin PATH was not modified.");

@@ -10,10 +10,18 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
 internal class ElevatedAdminPathCommand : CommandBase
 {
     private readonly string _operation;
+    private readonly string _outputFile;
 
     public ElevatedAdminPathCommand(ParseResult result) : base(result)
     {
         _operation = result.GetValue(ElevatedAdminPathCommandParser.OperationArgument)!;
+        _outputFile = result.GetValue(ElevatedAdminPathCommandParser.OutputFile)!;
+    }
+
+    void Log(string message)
+    {
+        Console.WriteLine(message);
+        File.AppendAllText(_outputFile, message + Environment.NewLine);
     }
 
     public override int Execute()
@@ -21,23 +29,31 @@ internal class ElevatedAdminPathCommand : CommandBase
         // This command only works on Windows
         if (!OperatingSystem.IsWindows())
         {
-            Console.Error.WriteLine("Error: The elevatedadminpath command is only supported on Windows.");
+            Log("Error: The elevatedadminpath command is only supported on Windows.");
             return 1;
         }
 
         // Check if running with elevated privileges
         if (!Environment.IsPrivilegedProcess)
         {
-            Console.Error.WriteLine("Error: This operation requires administrator privileges. Please run from an elevated command prompt.");
+            Log("Error: This operation requires administrator privileges. Please run from an elevated command prompt.");
             return 1;
         }
 
-        return _operation.ToLowerInvariant() switch
+        try
         {
-            "removedotnet" => RemoveDotnet(),
-            "adddotnet" => AddDotnet(),
-            _ => throw new InvalidOperationException($"Unknown operation: {_operation}")
-        };
+            return _operation.ToLowerInvariant() switch
+            {
+                "removedotnet" => RemoveDotnet(),
+                "adddotnet" => AddDotnet(),
+                _ => throw new InvalidOperationException($"Unknown operation: {_operation}")
+            };
+        }
+        catch (Exception ex)
+        {
+            Log($"Error: {ex.ToString()}");
+            return 1;
+        }
     }
 
     [SupportedOSPlatform("windows")]

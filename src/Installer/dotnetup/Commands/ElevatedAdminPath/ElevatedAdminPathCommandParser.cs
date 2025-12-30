@@ -14,6 +14,13 @@ internal static class ElevatedAdminPathCommandParser
         Arity = ArgumentArity.ExactlyOne,
     };
 
+    public static readonly Argument<string> OutputFile = new("outputfile")
+    {
+        HelpName = "OUTPUT_FILE",
+        Description = "A file where any output that should be displayed to the user should be written.",
+        Arity = ArgumentArity.ExactlyOne,
+    };
+
     private static readonly Command ElevatedAdminPathCommand = ConstructCommand();
 
     public static Command GetCommand()
@@ -27,6 +34,7 @@ internal static class ElevatedAdminPathCommandParser
         command.Hidden = true;
 
         command.Arguments.Add(OperationArgument);
+        command.Arguments.Add(OutputFile);
 
         command.SetAction(parseResult => new ElevatedAdminPathCommand(parseResult).Execute());
 
