@@ -89,12 +89,9 @@ internal class SetInstallRootCommand : CommandBase
                     //  UAC prompt was cancelled
                     return 1;
                 }
-            }
 
-            Console.WriteLine($"Adding {userDotnetPath} to user PATH...");
+                Console.WriteLine($"Adding {userDotnetPath} to user PATH...");
 
-            if (OperatingSystem.IsWindows())
-            {
                 // On Windows, read both expanded and unexpanded user PATH from registry
                 string unexpandedUserPath = WindowsPathHelper.ReadUserPath(expand: false);
                 string expandedUserPath = WindowsPathHelper.ReadUserPath(expand: true);
@@ -111,41 +108,21 @@ internal class SetInstallRootCommand : CommandBase
                 {
                     Console.WriteLine($"User dotnet path is already in user PATH.");
                 }
+
+                // Set DOTNET_ROOT for user
+                Environment.SetEnvironmentVariable("DOTNET_ROOT", userDotnetPath, EnvironmentVariableTarget.User);
+                Console.WriteLine($"Set DOTNET_ROOT to {userDotnetPath}");
+
+                Console.WriteLine("User install root configured successfully.");
+                Console.WriteLine("Note: You may need to restart your terminal or application for the changes to take effect.");
+
+                return 0;
             }
             else
             {
-                // On non-Windows, use Environment API which expands variables
-                var userPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
-                var pathEntries = userPath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-                // Check if the user dotnet path is already in the user PATH
-                bool alreadyExists = pathEntries.Any(entry =>
-                    Path.TrimEndingDirectorySeparator(entry).Equals(
-                        Path.TrimEndingDirectorySeparator(userDotnetPath),
-                        StringComparison.OrdinalIgnoreCase));
-
-                if (!alreadyExists)
-                {
-                    // Add to the beginning of PATH
-                    pathEntries.Insert(0, userDotnetPath);
-                    var newUserPath = string.Join(Path.PathSeparator, pathEntries);
-                    Environment.SetEnvironmentVariable("PATH", newUserPath, EnvironmentVariableTarget.User);
-                    Console.WriteLine($"Successfully added {userDotnetPath} to user PATH.");
-                }
-                else
-                {
-                    Console.WriteLine($"User dotnet path is already in user PATH.");
-                }
+                Console.Error.WriteLine("Error: Non-Windows platforms not yet supported");
+                return 1;
             }
-
-            // Set DOTNET_ROOT for user
-            Environment.SetEnvironmentVariable("DOTNET_ROOT", userDotnetPath, EnvironmentVariableTarget.User);
-            Console.WriteLine($"Set DOTNET_ROOT to {userDotnetPath}");
-
-            Console.WriteLine("User install root configured successfully.");
-            Console.WriteLine("Note: You may need to restart your terminal or application for the changes to take effect.");
-
-            return 0;
         }
         catch (Exception ex)
         {
@@ -175,21 +152,13 @@ internal class SetInstallRootCommand : CommandBase
                 {
                     // Not elevated, shell out to elevated process
                     Console.WriteLine("Launching elevated process to modify admin PATH...");
-                    try
+                    bool succeeded = WindowsPathHelper.StartElevatedProcess("elevatedadminpath adddotnet");
+                    if (!succeeded)
                     {
-                        bool succeeded = WindowsPathHelper.StartElevatedProcess("elevatedadminpath adddotnet");
-                        if (!succeeded)
-                        {
-                            Console.Error.WriteLine("Warning: Elevation was cancelled. Admin PATH was not modified.");
-                            return 1;
-                        }
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        Console.Error.WriteLine($"Error: Failed to modify admin PATH: {ex.Message}");
-                        Console.Error.WriteLine("You may need to manually add the Program Files dotnet path to the system PATH.");
+                        Console.Error.WriteLine("Warning: Elevation was cancelled. Admin PATH was not modified.");
                         return 1;
                     }
+
                 }
 
                 // Get the user dotnet installation path
@@ -227,7 +196,7 @@ internal class SetInstallRootCommand : CommandBase
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: Failed to configure admin install root: {ex.Message}");
+                Console.Error.WriteLine($"Error: Failed to configure admin install root: {ex.ToString()}");
                 return 1;
             }
         }

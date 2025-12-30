@@ -17,7 +17,7 @@ internal static class SetInstallRootCommandParser
         var argument = new Argument<string>("installtype")
         {
             HelpName = "INSTALL_TYPE",
-            Description = "The type of installation root to set: 'user' or 'admin'",
+            Description = $"The type of installation root to set: '{UserInstallType}' or '{AdminInstallType}'",
             Arity = ArgumentArity.ExactlyOne,
         };
         argument.AcceptOnlyFromAmong(UserInstallType, AdminInstallType);
