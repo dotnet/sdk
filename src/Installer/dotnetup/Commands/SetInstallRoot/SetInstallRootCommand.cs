@@ -34,21 +34,21 @@ internal class SetInstallRootCommand : CommandBase
         // Check if admin PATH needs to be changed
         if (WindowsPathHelper.AdminPathContainsProgramFilesDotnet(out var foundDotnetPaths))
         {
-            if (foundDotnetPaths.Count == 1)
-            {
-                Console.WriteLine($"Removing {foundDotnetPaths[0]} from system PATH.");
-            }
-            else
-            {
-                Console.WriteLine("Removing the following dotnet paths from system PATH:");
-                foreach (var path in foundDotnetPaths)
-                {
-                    Console.WriteLine($"  - {path}");
-                }
-            }
-
             if (Environment.IsPrivilegedProcess)
             {
+                if (foundDotnetPaths.Count == 1)
+                {
+                    Console.WriteLine($"Removing {foundDotnetPaths[0]} from system PATH.");
+                }
+                else
+                {
+                    Console.WriteLine("Removing the following dotnet paths from system PATH:");
+                    foreach (var path in foundDotnetPaths)
+                    {
+                        Console.WriteLine($"  - {path}");
+                    }
+                }
+
                 // We're already elevated, modify the admin PATH directly
                 using var pathHelper = new WindowsPathHelper();
                 pathHelper.RemoveDotnetFromAdminPath();
@@ -56,7 +56,18 @@ internal class SetInstallRootCommand : CommandBase
             else
             {
                 // Not elevated, shell out to elevated process
-                Console.WriteLine("Launching elevated process to modify system PATH...");
+                if (foundDotnetPaths.Count == 1)
+                {
+                    Console.WriteLine($"Launching elevated process to remove {foundDotnetPaths[0]} from system PATH.");
+                }
+                else
+                {
+                    Console.WriteLine("Launching elevated process to remove the following dotnet paths from system PATH:");
+                    foreach (var path in foundDotnetPaths)
+                    {
+                        Console.WriteLine($"  - {path}");
+                    }
+                }
 
                 bool succeeded = WindowsPathHelper.StartElevatedProcess("removedotnet");
                 if (!succeeded)
@@ -72,11 +83,6 @@ internal class SetInstallRootCommand : CommandBase
 
     private int SetUserInstallRoot()
     {
-        // Get the default user dotnet installation path
-        string userDotnetPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
-
-        Console.WriteLine($"Setting up user install root at: {userDotnetPath}");
-
 
         // Add the user dotnet path to the user PATH
         try
@@ -84,13 +90,10 @@ internal class SetInstallRootCommand : CommandBase
             // On Windows, check if we need to modify the admin PATH
             if (OperatingSystem.IsWindows())
             {
-                if (!HandleWindowsAdminPath())
-                {
-                    //  UAC prompt was cancelled
-                    return 1;
-                }
+                // Get the default user dotnet installation path
+                string userDotnetPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
 
-                Console.WriteLine($"Adding {userDotnetPath} to user PATH...");
+                bool needToRemoveAdminPath = WindowsPathHelper.AdminPathContainsProgramFilesDotnet();
 
                 // On Windows, read both expanded and unexpanded user PATH from registry
                 string unexpandedUserPath = WindowsPathHelper.ReadUserPath(expand: false);
@@ -99,22 +102,42 @@ internal class SetInstallRootCommand : CommandBase
                 // Use the helper method to add the path while preserving unexpanded variables
                 string newUserPath = WindowsPathHelper.AddPathEntry(unexpandedUserPath, expandedUserPath, userDotnetPath);
 
-                if (newUserPath != unexpandedUserPath)
+                bool needToAddToUserPath = newUserPath != unexpandedUserPath;
+
+                var existingDotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT", EnvironmentVariableTarget.User);
+                bool needToSetDotnetRoot = !string.Equals(userDotnetPath, existingDotnetRoot, StringComparison.OrdinalIgnoreCase);
+
+                if (!needToRemoveAdminPath && !needToAddToUserPath && !needToSetDotnetRoot)
                 {
+                    Console.WriteLine($"User install root already configured for {userDotnetPath}");
+                    return 0;
+                }
+
+                Console.WriteLine($"Setting up user install root at: {userDotnetPath}");
+
+                if (needToRemoveAdminPath)
+                {
+                    if (!HandleWindowsAdminPath())
+                    {
+                        //  UAC prompt was cancelled
+                        return 1;
+                    }
+                }
+
+                if (needToAddToUserPath)
+                {
+                    Console.WriteLine($"Adding {userDotnetPath} to user PATH...");
                     WindowsPathHelper.WriteUserPath(newUserPath);
-                    Console.WriteLine($"Successfully added {userDotnetPath} to user PATH.");
                 }
-                else
+
+                if (needToSetDotnetRoot)
                 {
-                    Console.WriteLine($"User dotnet path is already in user PATH.");
+                    // Set DOTNET_ROOT for user
+                    Console.WriteLine($"Setting DOTNET_ROOT to {userDotnetPath}");
+                    Environment.SetEnvironmentVariable("DOTNET_ROOT", userDotnetPath, EnvironmentVariableTarget.User);
                 }
 
-                // Set DOTNET_ROOT for user
-                Environment.SetEnvironmentVariable("DOTNET_ROOT", userDotnetPath, EnvironmentVariableTarget.User);
-                Console.WriteLine($"Set DOTNET_ROOT to {userDotnetPath}");
-
-                Console.WriteLine("User install root configured successfully.");
-                Console.WriteLine("Note: You may need to restart your terminal or application for the changes to take effect.");
+                Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
 
                 return 0;
             }
