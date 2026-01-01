@@ -67,7 +67,7 @@ public class ParserTests
     public void Parser_ShouldParseElevatedAdminPathCommand()
     {
         // Arrange
-        var args = new[] { "elevatedadminpath", "removedotnet" };
+        var args = new[] { "elevatedadminpath", "removedotnet", @"C:\Users\User\AppData\Local\Temp\dotnetup_elevated\output.txt" };
 
         // Act
         var parseResult = Parser.Parse(args);
