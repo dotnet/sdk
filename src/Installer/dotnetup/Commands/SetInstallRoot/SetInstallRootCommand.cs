@@ -72,7 +72,7 @@ internal class SetInstallRootCommand : CommandBase
                 bool succeeded = WindowsPathHelper.StartElevatedProcess("removedotnet");
                 if (!succeeded)
                 {
-                    Console.Error.WriteLine("Warning: Elevation was cancelled. Admin PATH was not modified.");
+                    Console.Error.WriteLine("Warning: Elevation was cancelled. System PATH was not modified.");
                     return false;
                 }
             }
@@ -126,7 +126,7 @@ internal class SetInstallRootCommand : CommandBase
 
                 if (needToAddToUserPath)
                 {
-                    Console.WriteLine($"Adding {userDotnetPath} to user PATH...");
+                    Console.WriteLine($"Adding {userDotnetPath} to user PATH.");
                     WindowsPathHelper.WriteUserPath(newUserPath);
                 }
 
@@ -156,76 +156,88 @@ internal class SetInstallRootCommand : CommandBase
 
     private int SetAdminInstallRoot()
     {
-        Console.WriteLine("Setting up admin install root...");
-
-        // On Windows, add Program Files dotnet path back to admin PATH and remove user settings
-        if (OperatingSystem.IsWindows())
+        try
         {
-            try
+            // On Windows, add Program Files dotnet path back to admin PATH and remove user settings
+            if (OperatingSystem.IsWindows())
             {
-                // Add Program Files dotnet path back to admin PATH
-                if (Environment.IsPrivilegedProcess)
-                {
-                    // We're already elevated, modify the admin PATH directly
-                    Console.WriteLine("Running with elevated privileges. Modifying admin PATH...");
-                    using var pathHelper = new WindowsPathHelper();
-                    pathHelper.AddDotnetToAdminPath();
-                }
-                else
-                {
-                    // Not elevated, shell out to elevated process
-                    Console.WriteLine("Launching elevated process to modify admin PATH...");
-                    bool succeeded = WindowsPathHelper.StartElevatedProcess("adddotnet");
-                    if (!succeeded)
-                    {
-                        Console.Error.WriteLine("Warning: Elevation was cancelled. Admin PATH was not modified.");
-                        return 1;
-                    }
-
-                }
+                // Instead of calling WindowsPathHelper.AdminPathContainsProgramFilesDotnet, we want to check to see if the "primary" Program Files dotnet path is present
+                // If Program Files (x86)\dotnet is on the PATH but Program Files\dotnet is not, then we still want to modify the admin PATH
+                var programFilesDotnetPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
+                bool needToModifyAdminPath = !WindowsPathHelper.SplitPath(WindowsPathHelper.ReadAdminPath(expand: true)).Contains(programFilesDotnetPaths.First());
 
                 // Get the user dotnet installation path
                 string userDotnetPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
-
-                // Remove user dotnet path from user PATH
-                Console.WriteLine($"Removing {userDotnetPath} from user PATH...");
-
                 // Read both expanded and unexpanded user PATH from registry to preserve environment variables
                 string unexpandedUserPath = WindowsPathHelper.ReadUserPath(expand: false);
                 string expandedUserPath = WindowsPathHelper.ReadUserPath(expand: true);
-
                 // Use the helper method to remove the path while preserving unexpanded variables
                 string newUserPath = WindowsPathHelper.RemovePathEntries(unexpandedUserPath, expandedUserPath, [userDotnetPath]);
 
-                if (newUserPath != unexpandedUserPath)
+                bool needToModifyUserPath = newUserPath != unexpandedUserPath;
+
+                bool needToUnsetDotnetRoot = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_ROOT", EnvironmentVariableTarget.User));
+
+                if (!needToModifyAdminPath && !needToModifyUserPath && !needToUnsetDotnetRoot)
                 {
+                    Console.WriteLine("Admin install root already configured.");
+                    return 0;
+                }
+
+                //Console.WriteLine("Setting up admin install root...");
+
+                if (needToModifyAdminPath)
+                {
+                    // Add Program Files dotnet path back to admin PATH
+                    if (Environment.IsPrivilegedProcess)
+                    {
+                        // We're already elevated, modify the admin PATH directly
+                        Console.WriteLine($"Adding {programFilesDotnetPaths[0]} to system PATH.");
+                        using var pathHelper = new WindowsPathHelper();
+                        pathHelper.AddDotnetToAdminPath();
+                    }
+                    else
+                    {
+                        // Not elevated, shell out to elevated process
+                        Console.WriteLine($"Launching elevated process to add {programFilesDotnetPaths[0]} to system PATH.");
+                        bool succeeded = WindowsPathHelper.StartElevatedProcess("adddotnet");
+                        if (!succeeded)
+                        {
+                            Console.Error.WriteLine("Warning: Elevation was cancelled. System PATH was not modified.");
+                            return 1;
+                        }
+
+                    }
+                }
+
+                if (needToModifyUserPath)
+                {
+                    // Remove user dotnet path from user PATH
+                    Console.WriteLine($"Removing {userDotnetPath} from user PATH.");
                     WindowsPathHelper.WriteUserPath(newUserPath);
-                    Console.WriteLine($"Successfully removed {userDotnetPath} from user PATH.");
                 }
-                else
+
+                if (needToUnsetDotnetRoot)
                 {
-                    Console.WriteLine($"User dotnet path was not found in user PATH.");
+                    // Unset user DOTNET_ROOT environment variable
+                    Console.WriteLine("Unsetting DOTNET_ROOT environment variable.");
+                    Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
                 }
 
-                // Unset user DOTNET_ROOT environment variable
-                Console.WriteLine("Unsetting user DOTNET_ROOT environment variable...");
-                Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
-                Console.WriteLine("Successfully unset DOTNET_ROOT.");
-
-                Console.WriteLine("Admin install root configured successfully.");
-                Console.WriteLine("Note: You may need to restart your terminal or application for the changes to take effect.");
+                Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
 
                 return 0;
+               
             }
-            catch (Exception ex)
+            else
             {
-                Console.Error.WriteLine($"Error: Failed to configure admin install root: {ex.ToString()}");
+                Console.Error.WriteLine("Error: Admin install root is only supported on Windows.");
                 return 1;
             }
         }
-        else
+        catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: Admin install root is only supported on Windows.");
+            Console.Error.WriteLine($"Error: Failed to configure admin install root: {ex.ToString()}");
             return 1;
         }
     }
