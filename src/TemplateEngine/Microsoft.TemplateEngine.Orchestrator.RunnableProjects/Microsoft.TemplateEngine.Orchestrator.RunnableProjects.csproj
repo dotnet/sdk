@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetCurrent);netstandard2.0;$(NetFrameworkCurrent)</TargetFrameworks>
+    <TargetFrameworks>$(NetMinimum);$(NetCurrent);netstandard2.0;$(NetFrameworkMinimum)</TargetFrameworks>
     <Description>An extension for Template Engine that allows projects that still run to be used as templates</Description>
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
