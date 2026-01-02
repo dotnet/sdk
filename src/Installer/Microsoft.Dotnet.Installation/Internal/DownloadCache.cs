@@ -68,9 +68,16 @@ internal class DownloadCache
         // Ensure cache directory exists
         Directory.CreateDirectory(CacheDirectory);
 
-        // Generate a unique filename based on the URL
-        string fileName = GenerateCacheFileName(downloadUrl, sourceFilePath);
+        // Use the filename from the download URL
+        string fileName = GetFileNameFromUrl(downloadUrl);
         string cachedFilePath = Path.Combine(CacheDirectory, fileName);
+
+        // Skip if this filename is already cached for a different URL
+        // (collision case - we'll download the right file when needed and hash check will catch it)
+        if (_cacheIndex.Values.Contains(fileName) && !_cacheIndex.ContainsKey(downloadUrl))
+        {
+            return;
+        }
 
         // Copy the file to the cache
         File.Copy(sourceFilePath, cachedFilePath, overwrite: true);
@@ -81,25 +88,20 @@ internal class DownloadCache
     }
 
     /// <summary>
-    /// Generates a cache filename based on the download URL and source file.
+    /// Extracts the filename from a download URL.
     /// </summary>
-    private string GenerateCacheFileName(string downloadUrl, string sourceFilePath)
+    private string GetFileNameFromUrl(string downloadUrl)
     {
-        // Use a hash of the URL plus the original extension to create a unique filename
-        string urlHash = ComputeSimpleHash(downloadUrl);
-        string extension = Path.GetExtension(sourceFilePath);
-        return $"{urlHash}{extension}";
-    }
-
-    /// <summary>
-    /// Computes a simple hash of a string for filename generation.
-    /// </summary>
-    private string ComputeSimpleHash(string input)
-    {
-        // Use a simple hash based on the string's hash code
-        // This is sufficient for cache file naming (not security critical)
-        int hashCode = input.GetHashCode();
-        return Math.Abs(hashCode).ToString("X8");
+        Uri uri = new Uri(downloadUrl);
+        string fileName = Path.GetFileName(uri.LocalPath);
+        
+        // Fallback to a default name if we can't extract a filename
+        if (string.IsNullOrEmpty(fileName))
+        {
+            fileName = "download.dat";
+        }
+        
+        return fileName;
     }
 
     /// <summary>
