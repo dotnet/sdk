@@ -30,12 +30,10 @@ public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBase
         ExecuteCommand(build).Should().Pass();
 
         var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-        var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
         // Verify the TypeScript manifest was created
         var manifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.typescript.files.txt");
         new FileInfo(manifestPath).Should().Exist();
-
         // Verify the static web assets manifest contains the TypeScript outputs
         var finalPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
         var buildManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(finalPath));
