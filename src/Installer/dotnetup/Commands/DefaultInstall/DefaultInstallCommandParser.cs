@@ -3,9 +3,9 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.SetInstallRoot;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
 
-internal static class SetInstallRootCommandParser
+internal static class DefaultInstallCommandParser
 {
     public const string UserInstallType = "user";
     public const string AdminInstallType = "admin";
@@ -24,20 +24,20 @@ internal static class SetInstallRootCommandParser
         return argument;
     }
 
-    private static readonly Command SetInstallRootCommand = ConstructCommand();
+    private static readonly Command DefaultInstallCommand = ConstructCommand();
 
     public static Command GetCommand()
     {
-        return SetInstallRootCommand;
+        return DefaultInstallCommand;
     }
 
     private static Command ConstructCommand()
     {
-        Command command = new("setinstallroot", "Sets the dotnet installation root");
+        Command command = new("defaultinstall", "Sets the default dotnet installation");
 
         command.Arguments.Add(InstallTypeArgument);
 
-        command.SetAction(parseResult => new SetInstallRootCommand(parseResult).Execute());
+        command.SetAction(parseResult => new DefaultInstallCommand(parseResult).Execute());
 
         return command;
     }

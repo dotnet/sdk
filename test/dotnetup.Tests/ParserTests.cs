@@ -78,10 +78,10 @@ public class ParserTests
     }
 
     [Fact]
-    public void Parser_ShouldParseSetInstallRootCommand()
+    public void Parser_ShouldParseDefaultInstallCommand()
     {
         // Arrange
-        var args = new[] { "setinstallroot", "user" };
+        var args = new[] { "defaultinstall", "user" };
 
         // Act
         var parseResult = Parser.Parse(args);

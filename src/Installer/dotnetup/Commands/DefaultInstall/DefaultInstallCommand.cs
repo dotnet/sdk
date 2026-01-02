@@ -5,16 +5,16 @@ using System.CommandLine;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.SetInstallRoot;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
 
-internal class SetInstallRootCommand : CommandBase
+internal class DefaultInstallCommand : CommandBase
 {
     private readonly string _installType;
     private readonly IDotnetInstallManager _dotnetInstaller;
 
-    public SetInstallRootCommand(ParseResult result, IDotnetInstallManager? dotnetInstaller = null) : base(result)
+    public DefaultInstallCommand(ParseResult result, IDotnetInstallManager? dotnetInstaller = null) : base(result)
     {
-        _installType = result.GetValue(SetInstallRootCommandParser.InstallTypeArgument)!;
+        _installType = result.GetValue(DefaultInstallCommandParser.InstallTypeArgument)!;
         _dotnetInstaller = dotnetInstaller ?? new DotnetInstallManager();
     }
 
@@ -22,8 +22,8 @@ internal class SetInstallRootCommand : CommandBase
     {
         return _installType.ToLowerInvariant() switch
         {
-            SetInstallRootCommandParser.UserInstallType => SetUserInstallRoot(),
-            SetInstallRootCommandParser.AdminInstallType => SetAdminInstallRoot(),
+            DefaultInstallCommandParser.UserInstallType => SetUserInstallRoot(),
+            DefaultInstallCommandParser.AdminInstallType => SetAdminInstallRoot(),
             _ => throw new InvalidOperationException($"Unknown install type: {_installType}")
         };
     }
