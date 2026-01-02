@@ -155,7 +155,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 {
                     SpectreAnsiConsole.WriteLine($"You have an existing admin install of .NET in {currentDotnetInstallRoot.Path}. We can configure your system to use the new install of .NET " +
                         $"in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
-                    SpectreAnsiConsole.WriteLine("You can change this later with the \"dotnet defaultinstall\" command.");
+                    SpectreAnsiConsole.WriteLine("You can change this later with the \"dotnetup defaultinstall\" command.");
                     resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
                         $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
                         defaultValue: true);

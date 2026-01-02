@@ -28,6 +28,7 @@ internal class DotnetArchiveDownloader : IDisposable
     private readonly HttpClient _httpClient;
     private readonly bool _shouldDisposeHttpClient;
     private ReleaseManifest _releaseManifest;
+    private readonly DownloadCache _downloadCache;
 
     public DotnetArchiveDownloader()
         : this(new ReleaseManifest())
@@ -37,6 +38,7 @@ internal class DotnetArchiveDownloader : IDisposable
     public DotnetArchiveDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null)
     {
         _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
+        _downloadCache = new DownloadCache();
         if (httpClient == null)
         {
             _httpClient = CreateDefaultHttpClient();
@@ -192,6 +194,7 @@ internal class DotnetArchiveDownloader : IDisposable
 
     /// <summary>
     /// Downloads the archive for the specified installation and verifies its hash.
+    /// Checks the download cache first to avoid re-downloading.
     /// </summary>
     /// <param name="install">The .NET installation details</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
@@ -212,9 +215,43 @@ internal class DotnetArchiveDownloader : IDisposable
             throw new ArgumentException($"{nameof(downloadUrl)} cannot be null or empty");
         }
 
+        // Check the cache first
+        string? cachedFilePath = _downloadCache.GetCachedFilePath(downloadUrl);
+        if (cachedFilePath != null)
+        {
+            try
+            {
+                // Verify the cached file's hash
+                VerifyFileHash(cachedFilePath, expectedHash);
+                
+                // Copy from cache to destination
+                File.Copy(cachedFilePath, destinationPath, overwrite: true);
+                
+                // Report 100% progress immediately since we're using cache
+                progress?.Report(new DownloadProgress(100, 100));
+                return;
+            }
+            catch
+            {
+                // If cached file is corrupted, fall through to download
+            }
+        }
+
+        // Download the file if not in cache or cache is invalid
         DownloadArchive(downloadUrl, destinationPath, progress);
 
+        // Verify the downloaded file
         VerifyFileHash(destinationPath, expectedHash);
+
+        // Add the verified file to the cache
+        try
+        {
+            _downloadCache.AddToCache(downloadUrl, destinationPath);
+        }
+        catch
+        {
+            // Ignore errors adding to cache - it's not critical
+        }
     }
 
 
