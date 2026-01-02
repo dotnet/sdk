@@ -1,0 +1,178 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.StaticWebAssets.TypeScript.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+
+<!--
+  Provides integration between the Microsoft.TypeScript.MSBuild NuGet package and
+  ASP.NET Core Static Web Assets for Razor Class Libraries.
+
+  Problem:
+    The TypeScript MSBuild package outputs compiled .js files to wwwroot, which is treated
+    as an input folder by the Static Web Assets SDK. However, TypeScript compilation runs
+    during the Compile phase, AFTER Static Web Assets discovery has already occurred.
+
+    This creates two problems:
+    1. Clean build: TypeScript outputs are not discovered as static web assets because
+       they don't exist yet when ResolveProjectStaticWebAssets runs.
+    2. Rebuild: The Razor SDK's default globbing adds wwwroot files to Content. During Clean,
+       TypeScript targets delete the .js files, but Content items persist in memory.
+       When Build runs, DefineStaticWebAssets fails because it finds Content items
+       referencing files that no longer exist.
+
+  Solution:
+    1. Hook into ResolveStaticWebAssetsInputsDependsOn to register TypeScript outputs
+       as static web assets AFTER compilation.
+    2. Remove TypeScript outputs from Content before CoreClean and ResolveProjectStaticWebAssets
+       to prevent stale item references.
+-->
+<Project ToolsVersion="14.0">
+
+  <!--
+    Target: ResolveTypeScriptStaticWebAssetsConfiguration
+
+    Sets up the path for the TypeScript manifest file.
+    DependsOnTargets ResolveStaticWebAssetsConfiguration to ensure
+    _StaticWebAssetsManifestBase is defined.
+  -->
+  <Target Name="ResolveTypeScriptStaticWebAssetsConfiguration"
+          DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+    <PropertyGroup>
+      <_TypeScriptSwaManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.typescript.files.txt</_TypeScriptSwaManifestPath>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    Hook into ResolveStaticWebAssetsInputs - this is the correct extension point
+    for adding computed/generated assets. It runs:
+      1. AFTER Compile phase (where TypeScript runs)
+      2. AFTER ResolveCoreStaticWebAssets (core SWA discovery)
+      3. BEFORE compression and endpoint generation
+  -->
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      RegisterTypeScriptStaticWebAssets;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <!--
+    Target: RegisterTypeScriptStaticWebAssets
+
+    Registers TypeScript outputs as Static Web Assets using the SDK's
+    DefineStaticWebAssets and DefineStaticWebAssetEndpoints tasks.
+
+    This ensures TypeScript outputs get:
+      - Proper asset identity and metadata
+      - Compression (.gz, .br files)
+      - Endpoint definitions in the manifest
+      - Fingerprinting support (if enabled)
+
+    DependsOnTargets:
+      - CompileTypeScriptWithTSConfig: Ensures TypeScript is compiled first
+      - GetTypeScriptOutputForPublishing: Populates @(GeneratedJavascript) item group
+  -->
+  <Target Name="RegisterTypeScriptStaticWebAssets"
+          DependsOnTargets="ResolveTypeScriptStaticWebAssetsConfiguration;CompileTypeScriptWithTSConfig;GetTypeScriptOutputForPublishing">
+
+    <!-- Filter to only wwwroot outputs that exist on disk -->
+    <ItemGroup>
+      <_TypeScriptWwwrootAssets Include="@(GeneratedJavascript)"
+        Condition="$([System.String]::new('%(Identity)').Contains('wwwroot')) And Exists('%(Identity)')" />
+    </ItemGroup>
+
+    <!--
+      Write manifest file to track registered assets across builds.
+      WriteOnlyWhenDifferent prevents unnecessary timestamp changes for incremental builds.
+      FileWrites ensures the manifest is cleaned up during Clean target.
+    -->
+    <WriteLinesToFile
+      File="$(_TypeScriptSwaManifestPath)"
+      Lines="@(_TypeScriptWwwrootAssets)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+      Condition="'@(_TypeScriptWwwrootAssets)' != ''" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_TypeScriptSwaManifestPath)" />
+    </ItemGroup>
+
+    <!--
+      Register TypeScript outputs as static web assets.
+      DefineStaticWebAssets is the SDK task that properly creates StaticWebAsset items
+      with all required metadata (Identity, RelativePath, ContentRoot, etc.)
+    -->
+    <DefineStaticWebAssets
+      Condition="'@(_TypeScriptWwwrootAssets)' != ''"
+      CandidateAssets="@(_TypeScriptWwwrootAssets)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      RelativePathPattern="wwwroot/**"
+      SourceType="Discovered"
+      SourceId="$(PackageId)"
+      ContentRoot="$(MSBuildProjectDirectory)\wwwroot\"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetMergeSource="$(StaticWebAssetMergeTarget)">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_TypeScriptStaticWebAssets" />
+    </DefineStaticWebAssets>
+
+    <!--
+      Define endpoints for TypeScript assets.
+      This creates the endpoint entries that map URL paths to assets,
+      which are needed for the runtime to serve the files correctly.
+    -->
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_TypeScriptStaticWebAssets)' != ''"
+      CandidateAssets="@(_TypeScriptStaticWebAssets)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+  </Target>
+
+  <!--
+    Target: RemoveTypeScriptFromContentBeforeSwaDiscovery
+
+    Removes TypeScript outputs from Content items BEFORE two critical phases:
+
+    1. BEFORE CoreClean (during Rebuild):
+       The Razor SDK's globbing automatically adds *.js files in wwwroot to Content.
+       During Rebuild, Clean deletes these files but Content items still exist
+       (they come from SDK glob patterns, not the files themselves).
+       If we don't remove them before Clean, ResolveProjectStaticWebAssets will
+       try to process Content items pointing to deleted files and fail.
+
+    2. BEFORE ResolveProjectStaticWebAssets (during normal Build):
+       Prevents duplicate discovery - we register TypeScript outputs manually
+       via DefineStaticWebAssets, so we don't want the SDK to also discover
+       them via Content items.
+
+    The manifest file is read to know which files were previously registered.
+    The manifest itself is cleaned up by CoreClean via the FileWrites item group.
+  -->
+  <Target Name="RemoveTypeScriptFromContentBeforeSwaDiscovery"
+          DependsOnTargets="ResolveTypeScriptStaticWebAssetsConfiguration"
+          BeforeTargets="CoreClean;ResolveProjectStaticWebAssets">
+
+    <!-- Read the manifest to know what TypeScript files were registered -->
+    <ReadLinesFromFile File="$(_TypeScriptSwaManifestPath)"
+                       Condition="Exists('$(_TypeScriptSwaManifestPath)')">
+      <Output TaskParameter="Lines" ItemName="_RegisteredTypeScriptAssets" />
+    </ReadLinesFromFile>
+
+    <!-- Remove those from Content to prevent duplicate discovery and stale references -->
+    <ItemGroup>
+      <Content Remove="@(_RegisteredTypeScriptAssets)" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>
