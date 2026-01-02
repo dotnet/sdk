@@ -34,7 +34,7 @@ internal class DefaultInstallCommand : CommandBase
             {
                 var changes = _installRootManager.GetUserInstallRootChanges();
 
-                if (!changes.NeedsRemoveAdminPath && !changes.NeedsAddToUserPath && !changes.NeedsSetDotnetRoot)
+                if (!changes.NeedsChange())
                 {
                     Console.WriteLine($"User install root already configured for {changes.UserDotnetPath}");
                     return 0;
@@ -77,7 +77,7 @@ internal class DefaultInstallCommand : CommandBase
             {
                 var changes = _installRootManager.GetAdminInstallRootChanges();
 
-                if (!changes.NeedsModifyAdminPath && !changes.NeedsModifyUserPath && !changes.NeedsUnsetDotnetRoot)
+                if (!changes.NeedsChange())
                 {
                     Console.WriteLine("Admin install root already configured.");
                     return 0;

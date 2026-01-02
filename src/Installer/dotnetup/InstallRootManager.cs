@@ -18,69 +18,6 @@ internal class InstallRootManager
     }
 
     /// <summary>
-    /// Gets the current installation type (user or admin) based on environment configuration.
-    /// </summary>
-    public InstallRootType GetCurrentInstallRoot()
-    {
-        if (!OperatingSystem.IsWindows())
-        {
-            // For non-Windows platforms, we don't support admin install, so it's always user
-            return InstallRootType.User;
-        }
-
-        // Check if admin PATH contains Program Files dotnet
-        bool adminPathHasDotnet = WindowsPathHelper.AdminPathContainsProgramFilesDotnet();
-        
-        // Get the user dotnet installation path
-        string userDotnetPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
-        
-        // Check if user PATH contains user dotnet path
-        string expandedUserPath = WindowsPathHelper.ReadUserPath(expand: true);
-        bool userPathHasDotnet = WindowsPathHelper.SplitPath(expandedUserPath).Contains(userDotnetPath, StringComparer.OrdinalIgnoreCase);
-
-        // If admin PATH has dotnet and user PATH doesn't, it's admin install
-        // If user PATH has dotnet (regardless of admin PATH), it's user install
-        if (userPathHasDotnet)
-        {
-            return InstallRootType.User;
-        }
-        else if (adminPathHasDotnet)
-        {
-            return InstallRootType.Admin;
-        }
-        else
-        {
-            // Neither is configured, default to user
-            return InstallRootType.User;
-        }
-    }
-
-    /// <summary>
-    /// Checks if the install root needs to be changed to the specified type.
-    /// </summary>
-    public bool NeedsChange(InstallRootType targetType, out UserInstallRootChanges? userChanges, out AdminInstallRootChanges? adminChanges)
-    {
-        userChanges = null;
-        adminChanges = null;
-
-        if (!OperatingSystem.IsWindows())
-        {
-            return false;
-        }
-
-        if (targetType == InstallRootType.User)
-        {
-            userChanges = GetUserInstallRootChanges();
-            return userChanges.NeedsRemoveAdminPath || userChanges.NeedsAddToUserPath || userChanges.NeedsSetDotnetRoot;
-        }
-        else
-        {
-            adminChanges = GetAdminInstallRootChanges();
-            return adminChanges.NeedsModifyAdminPath || adminChanges.NeedsModifyUserPath || adminChanges.NeedsUnsetDotnetRoot;
-        }
-    }
-
-    /// <summary>
     /// Gets the changes needed to configure user install root.
     /// </summary>
     public UserInstallRootChanges GetUserInstallRootChanges()
@@ -285,15 +222,6 @@ internal class InstallRootManager
 }
 
 /// <summary>
-/// Represents the type of install root.
-/// </summary>
-internal enum InstallRootType
-{
-    User,
-    Admin
-}
-
-/// <summary>
 /// Represents the changes needed to configure user install root.
 /// </summary>
 internal record UserInstallRootChanges(
@@ -302,7 +230,13 @@ internal record UserInstallRootChanges(
     bool NeedsAddToUserPath,
     bool NeedsSetDotnetRoot,
     string? NewUserPath,
-    List<string>? FoundAdminDotnetPaths);
+    List<string>? FoundAdminDotnetPaths)
+{
+    /// <summary>
+    /// Checks if any changes are needed to configure user install root.
+    /// </summary>
+    public bool NeedsChange() => NeedsRemoveAdminPath || NeedsAddToUserPath || NeedsSetDotnetRoot;
+}
 
 /// <summary>
 /// Represents the changes needed to configure admin install root.
@@ -313,4 +247,10 @@ internal record AdminInstallRootChanges(
     bool NeedsModifyUserPath,
     bool NeedsUnsetDotnetRoot,
     string UserDotnetPath,
-    string? NewUserPath);
+    string? NewUserPath)
+{
+    /// <summary>
+    /// Checks if any changes are needed to configure admin install root.
+    /// </summary>
+    public bool NeedsChange() => NeedsModifyAdminPath || NeedsModifyUserPath || NeedsUnsetDotnetRoot;
+}
