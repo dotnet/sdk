@@ -18,12 +18,7 @@ internal static class RestoreCommandDefinition
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<IEnumerable<string>> SourceOption = new Option<IEnumerable<string>>("--source", "-s")
-    {
-        Description = CliCommandStrings.CmdSourceOptionDescription,
-        HelpName = CliCommandStrings.CmdSourceOption
-    }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
-    .AllowSingleArgPerToken();
+    public static readonly Option<IEnumerable<string>> SourceOption = ;
 
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Restore");
     public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.minimal);
@@ -106,29 +101,54 @@ internal static class RestoreCommandDefinition
         return $"-property:RuntimeIdentifiers={string.Join("%3B", convertedRids)}";
     }
 
+    private static Option<IEnumerable<string>> CreateSourceOption(bool showHelp, bool useShortOptions)
+    {
+        var option = new Option<IEnumerable<string>>("--source")
+        {
+            Description = showHelp ? CliCommandStrings.CmdSourceOptionDescription : string.Empty,
+            HelpName = CliCommandStrings.CmdSourceOption
+        }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")  // '%3B' corresponds to ';'
+         .AllowSingleArgPerToken();
+
+        if (useShortOptions)
+        {
+            option.Aliases.Add("-s");
+        }
+
+        return option;
+    }
+
+    private static Option<IEnumerable<string>> CreateRuntimeOption(bool showHelp, bool useShortOptions)
+    {
+        Option<IEnumerable<string>> runtimeOption = new Option<IEnumerable<string>>("--runtime")
+        {
+            Description = CliCommandStrings.CmdRuntimeOptionDescription,
+            HelpName = CliCommandStrings.CmdRuntimeOption,
+            Hidden = !showHelp,
+            IsDynamic = true
+        }.ForwardAsSingle(RestoreRuntimeArgFunc)
+                     .AllowSingleArgPerToken()
+                     .AddCompletions(CliCompletion.RunTimesFromProjectFile);
+
+        if (useShortOptions)
+        {
+            runtimeOption.Aliases.Add("-r");
+        }
+
+        return runtimeOption;
+    }
+
+    private static Option<bool> CreateNoDependenciesOption(bool showHelp)
+        => new Option<bool>("--no-dependencies")
+        {
+            Description = CliCommandStrings.CmdNoDependenciesOptionDescription,
+            Arity = ArgumentArity.Zero,
+            Hidden = !showHelp
+        }.ForwardAs("-property:RestoreRecursive=false");
+
     private static IEnumerable<Option> ImplicitRestoreOptions(bool showHelp, bool useShortOptions, bool includeRuntimeOption, bool includeNoDependenciesOption)
     {
-        if (showHelp && useShortOptions)
-        {
-            yield return SourceOption;
-        }
-        else
-        {
-            Option<IEnumerable<string>> sourceOption = new Option<IEnumerable<string>>("--source")
-            {
-                Description = showHelp ? CliCommandStrings.CmdSourceOptionDescription : string.Empty,
-                HelpName = CliCommandStrings.CmdSourceOption,
-                Hidden = !showHelp
-            }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}") // '%3B' corresponds to ';'
-            .AllowSingleArgPerToken();
-
-            if (useShortOptions)
-            {
-                sourceOption.Aliases.Add("-s");
-            }
-
-            yield return sourceOption;
-        }
+        yield return CreateSourceOption(showHelp, useShortOptions);
 
         yield return new Option<string>("--packages")
         {
@@ -190,33 +210,9 @@ internal static class RestoreCommandDefinition
         yield return CommonOptions.RestorePropertiesOption;
 
         if (includeRuntimeOption)
-        {
-            Option<IEnumerable<string>> runtimeOption = new Option<IEnumerable<string>>("--runtime")
-            {
-                Description = CliCommandStrings.CmdRuntimeOptionDescription,
-                HelpName = CliCommandStrings.CmdRuntimeOption,
-                Hidden = !showHelp,
-                IsDynamic = true
-            }.ForwardAsSingle(RestoreRuntimeArgFunc)
-             .AllowSingleArgPerToken()
-             .AddCompletions(CliCompletion.RunTimesFromProjectFile);
-
-            if (useShortOptions)
-            {
-                runtimeOption.Aliases.Add("-r");
-            }
-
-            yield return runtimeOption;
-        }
+            yield return CreateRuntimeOption(showHelp, useShortOptions);
 
         if (includeNoDependenciesOption)
-        {
-            yield return new Option<bool>("--no-dependencies")
-            {
-                Description = CliCommandStrings.CmdNoDependenciesOptionDescription,
-                Arity = ArgumentArity.Zero,
-                Hidden = !showHelp
-            }.ForwardAs("-property:RestoreRecursive=false");
-        }
+            yield return CreateNoDependenciesOption(showHelp);
     }
 }
