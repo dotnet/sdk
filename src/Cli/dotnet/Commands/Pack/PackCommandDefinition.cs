@@ -105,7 +105,8 @@ internal static class PackCommandDefinition
         command.Options.Add(CommonOptions.GetTargetResultOption);
         command.Options.Add(CommonOptions.GetResultOutputFileOption);
 
-        RestoreCommandDefinition.AddImplicitRestoreOptions(command, showHelp: false, useShortOptions: false);
+        var implicitOptions = new ImplicitRestoreOptions(showHelp: false, useShortOptions: false);
+        implicitOptions.AddTo(command.Options);
 
         command.Options.Add(RestoreCommandDefinition.CreateNoDependenciesOption(showHelp: false));
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription));

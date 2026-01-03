@@ -63,7 +63,8 @@ internal static class PublishCommandDefinition
         };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
-        RestoreCommandDefinition.AddImplicitRestoreOptions(command, showHelp: false, useShortOptions: false);
+        var implicitOptions = new ImplicitRestoreOptions(showHelp: false, useShortOptions: false);
+        implicitOptions.AddTo(command.Options);
         command.Options.Add(RestoreCommandDefinition.CreateNoDependenciesOption(showHelp: false));
         command.Options.Add(OutputOption);
         command.Options.Add(CommonOptions.ArtifactsPathOption);
