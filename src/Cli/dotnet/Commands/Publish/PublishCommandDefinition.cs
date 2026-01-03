@@ -19,6 +19,8 @@ internal static class PublishCommandDefinition
         Arity = ArgumentArity.ZeroOrMore
     };
 
+    public static readonly ImplicitRestoreOptions ImplicitRestoreOptions = new(showHelp: false, useShortOptions: false);
+
     public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.PublishOutputOptionDescription,
@@ -55,6 +57,18 @@ internal static class PublishCommandDefinition
 
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandDefinition.VerbosityOption;
 
+    public static readonly Option<bool> NoDependenciesOption = RestoreCommandDefinition.CreateNoDependenciesOption(showHelp: false);
+    public static readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
+    public static readonly Option<string> VersionSuffixOption = CommonOptions.CreateVersionSuffixOption();
+    public static readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
+    public static readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
+    public static readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
+    public static readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
+    public static readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
+    public static readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
+    public static readonly Option<string[]?> GetTargetResultOption = CommonOptions.CreateGetTargetResultOption();
+    public static readonly Option<string[]?> GetResultOutputFileOption = CommonOptions.CreateGetResultOutputFileOption();
+
     public static Command Create()
     {
         var command = new Command("publish", CliCommandStrings.PublishAppDescription)
@@ -63,11 +77,10 @@ internal static class PublishCommandDefinition
         };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
-        var implicitOptions = new ImplicitRestoreOptions(showHelp: false, useShortOptions: false);
-        implicitOptions.AddTo(command.Options);
-        command.Options.Add(RestoreCommandDefinition.CreateNoDependenciesOption(showHelp: false));
+        ImplicitRestoreOptions.AddTo(command.Options);
+        command.Options.Add(NoDependenciesOption);
         command.Options.Add(OutputOption);
-        command.Options.Add(CommonOptions.CreateArtifactsPathOption());
+        command.Options.Add(ArtifactsPathOption);
         command.Options.Add(ManifestOption);
         command.Options.Add(NoBuildOption);
         command.Options.Add(SelfContainedOption);
@@ -76,18 +89,18 @@ internal static class PublishCommandDefinition
         command.Options.Add(FrameworkOption);
         command.Options.Add(RuntimeOption);
         command.Options.Add(ConfigurationOption);
-        command.Options.Add(CommonOptions.CreateVersionSuffixOption());
-        command.Options.Add(CommonOptions.CreateInteractiveMsBuildForwardOption());
+        command.Options.Add(VersionSuffixOption);
+        command.Options.Add(InteractiveOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(VerbosityOption);
-        command.Options.Add(CommonOptions.ArchitectureOption);
-        command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.CreateDisableBuildServersOption());
+        command.Options.Add(ArchitectureOption);
+        command.Options.Add(OperatingSystemOption);
+        command.Options.Add(DisableBuildServersOption);
         command.Options.Add(TargetOption);
-        command.Options.Add(CommonOptions.CreateGetPropertyOption());
-        command.Options.Add(CommonOptions.CreateGetItemOption());
-        command.Options.Add(CommonOptions.CreateGetTargetResultOption());
-        command.Options.Add(CommonOptions.CreateGetResultOutputFileOption());
+        command.Options.Add(GetPropertyOption);
+        command.Options.Add(GetItemOption);
+        command.Options.Add(GetTargetResultOption);
+        command.Options.Add(GetResultOutputFileOption);
 
         return command;
     }

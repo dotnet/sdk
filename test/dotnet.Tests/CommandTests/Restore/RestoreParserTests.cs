@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
 
             restore.GetValue(RestoreCommandDefinition.SlnOrProjectOrFileArgument).Should().BeEquivalentTo(@"D:\OSS\corefx\external\runtime\runtime.depproj");
 
-            restore.GetValue(RestoreCommandDefinition.SourceOption)
+            restore.GetValue(RestoreCommandDefinition.ImplicitRestoreOptions.SourceOption)
                 .Should()
                 .BeEquivalentTo(
                     "https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json",

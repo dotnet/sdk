@@ -4,7 +4,6 @@
 using System.CommandLine;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
-using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.Commands.Restore;
 
@@ -18,9 +17,43 @@ internal static class RestoreCommandDefinition
         Arity = ArgumentArity.ZeroOrMore
     };
 
+    public static readonly ImplicitRestoreOptions ImplicitRestoreOptions = new(showHelp: true, useShortOptions: true);
+
     public static readonly Option<string[]> TargetOption = CommonOptions.CreateRequiredMSBuildTargetOption("Restore");
     public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.minimal);
     public static readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
+
+    public static readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
+    public static readonly Option<IEnumerable<string>> RuntimeOption = CreateRuntimeOption(showHelp: true, useShortOptions: true);
+    public static readonly Option<bool> NoDependenciesOption = CreateNoDependenciesOption(showHelp: true);
+    public static readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
+    public static readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
+    public static readonly Option<bool> UseLockFileOption = new Option<bool>("--use-lock-file")
+    {
+        Description = CliCommandStrings.CmdUseLockFileOptionDescription,
+        Arity = ArgumentArity.Zero
+    }.ForwardAs("-property:RestorePackagesWithLockFile=true");
+    public static readonly Option<bool> LockedModeOption = new Option<bool>("--locked-mode")
+    {
+        Description = CliCommandStrings.CmdLockedModeOptionDescription,
+        Arity = ArgumentArity.Zero
+    }.ForwardAs("-property:RestoreLockedMode=true");
+    public static readonly Option<string> LockFilePathOption = new Option<string>("--lock-file-path")
+    {
+        Description = CliCommandStrings.CmdLockFilePathOptionDescription,
+        HelpName = CliCommandStrings.CmdLockFilePathOption
+    }.ForwardAsSingle(o => $"-property:NuGetLockFilePath={o}");
+    public static readonly Option<bool> ForceEvaluateOption = new Option<bool>("--force-evaluate")
+    {
+        Description = CliCommandStrings.CmdReevaluateOptionDescription,
+        Arity = ArgumentArity.Zero
+    }.ForwardAs("-property:RestoreForceEvaluate=true");
+    public static readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
+    public static readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
+    public static readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
+    public static readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
+    public static readonly Option<string[]?> GetTargetResultOption = CommonOptions.CreateGetTargetResultOption();
+    public static readonly Option<string[]?> GetResultOutputFileOption = CommonOptions.CreateGetResultOutputFileOption();
 
     public static Command Create()
     {
@@ -30,45 +63,28 @@ internal static class RestoreCommandDefinition
         };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
-        command.Options.Add(CommonOptions.CreateDisableBuildServersOption());
+        command.Options.Add(DisableBuildServersOption);
 
-        var implicitOptions = new ImplicitRestoreOptions(showHelp: true, useShortOptions: true);
-        implicitOptions.AddTo(command.Options);
+        ImplicitRestoreOptions.AddTo(command.Options);
 
-        command.Options.Add(CreateRuntimeOption(showHelp: true, useShortOptions: true));
-        command.Options.Add(CreateNoDependenciesOption(showHelp: true));
+        command.Options.Add(RuntimeOption);
+        command.Options.Add(NoDependenciesOption);
         command.Options.Add(VerbosityOption);
-        command.Options.Add(CommonOptions.CreateInteractiveMsBuildForwardOption());
-        command.Options.Add(CommonOptions.CreateArtifactsPathOption());
-        command.Options.Add(new Option<bool>("--use-lock-file")
-        {
-            Description = CliCommandStrings.CmdUseLockFileOptionDescription,
-            Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:RestorePackagesWithLockFile=true"));
-        command.Options.Add(new Option<bool>("--locked-mode")
-        {
-            Description = CliCommandStrings.CmdLockedModeOptionDescription,
-            Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:RestoreLockedMode=true"));
-        command.Options.Add(new Option<string>("--lock-file-path")
-        {
-            Description = CliCommandStrings.CmdLockFilePathOptionDescription,
-            HelpName = CliCommandStrings.CmdLockFilePathOption
-        }.ForwardAsSingle(o => $"-property:NuGetLockFilePath={o}"));
-        command.Options.Add(new Option<bool>("--force-evaluate")
-        {
-            Description = CliCommandStrings.CmdReevaluateOptionDescription,
-            Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:RestoreForceEvaluate=true"));
+        command.Options.Add(InteractiveOption);
+        command.Options.Add(ArtifactsPathOption);
+        command.Options.Add(UseLockFileOption);
+        command.Options.Add(LockedModeOption);
+        command.Options.Add(LockFilePathOption);
+        command.Options.Add(ForceEvaluateOption);
         command.Options.Add(TargetOption);
         command.Options.Add(NoLogoOption);
 
-        command.Options.Add(CommonOptions.ArchitectureOption);
-        command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.CreateGetPropertyOption());
-        command.Options.Add(CommonOptions.CreateGetItemOption());
-        command.Options.Add(CommonOptions.CreateGetTargetResultOption());
-        command.Options.Add(CommonOptions.CreateGetResultOutputFileOption());
+        command.Options.Add(ArchitectureOption);
+        command.Options.Add(OperatingSystemOption);
+        command.Options.Add(GetPropertyOption);
+        command.Options.Add(GetItemOption);
+        command.Options.Add(GetTargetResultOption);
+        command.Options.Add(GetResultOutputFileOption);
 
         return command;
     }

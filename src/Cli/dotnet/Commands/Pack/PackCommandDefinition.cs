@@ -19,6 +19,8 @@ internal static class PackCommandDefinition
         Arity = ArgumentArity.ZeroOrMore
     };
 
+    public static readonly ImplicitRestoreOptions ImplicitRestoreOptions = new(showHelp: false, useShortOptions: false);
+
     public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.PackCmdOutputDirDescription,
@@ -58,6 +60,17 @@ internal static class PackCommandDefinition
     public static readonly Option<string[]> TargetOption = CommonOptions.CreateRequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandDefinition.VerbosityOption;
 
+    public static readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
+    public static readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
+    public static readonly Option<string> VersionSuffixOption = CommonOptions.CreateVersionSuffixOption();
+    public static readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
+    public static readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
+    public static readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
+    public static readonly Option<string[]?> GetTargetResultOption = CommonOptions.CreateGetTargetResultOption();
+    public static readonly Option<string[]?> GetResultOutputFileOption = CommonOptions.CreateGetResultOutputFileOption();
+    public static readonly Option<bool> NoDependenciesOption = RestoreCommandDefinition.CreateNoDependenciesOption(showHelp: false);
+    public static readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription);
+
     public static Option<NuGetVersion> VersionOption =
         new Option<NuGetVersion>("--version")
         {
@@ -86,30 +99,29 @@ internal static class PackCommandDefinition
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(OutputOption);
-        command.Options.Add(CommonOptions.CreateArtifactsPathOption());
+        command.Options.Add(ArtifactsPathOption);
         command.Options.Add(NoBuildOption);
         command.Options.Add(IncludeSymbolsOption);
         command.Options.Add(IncludeSourceOption);
         command.Options.Add(ServiceableOption);
         command.Options.Add(NoLogoOption);
-        command.Options.Add(CommonOptions.CreateInteractiveMsBuildForwardOption());
+        command.Options.Add(InteractiveOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(VerbosityOption);
-        command.Options.Add(CommonOptions.CreateVersionSuffixOption());
+        command.Options.Add(VersionSuffixOption);
         command.Options.Add(VersionOption);
         command.Options.Add(ConfigurationOption);
-        command.Options.Add(CommonOptions.CreateDisableBuildServersOption());
+        command.Options.Add(DisableBuildServersOption);
         command.Options.Add(TargetOption);
-        command.Options.Add(CommonOptions.CreateGetPropertyOption());
-        command.Options.Add(CommonOptions.CreateGetItemOption());
-        command.Options.Add(CommonOptions.CreateGetTargetResultOption());
-        command.Options.Add(CommonOptions.CreateGetResultOutputFileOption());
+        command.Options.Add(GetPropertyOption);
+        command.Options.Add(GetItemOption);
+        command.Options.Add(GetTargetResultOption);
+        command.Options.Add(GetResultOutputFileOption);
 
-        var implicitOptions = new ImplicitRestoreOptions(showHelp: false, useShortOptions: false);
-        implicitOptions.AddTo(command.Options);
+        ImplicitRestoreOptions.AddTo(command.Options);
 
-        command.Options.Add(RestoreCommandDefinition.CreateNoDependenciesOption(showHelp: false));
-        command.Options.Add(CommonOptions.CreateRuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription));
+        command.Options.Add(NoDependenciesOption);
+        command.Options.Add(RuntimeOption);
 
         return command;
     }

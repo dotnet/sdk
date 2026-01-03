@@ -34,6 +34,15 @@ internal static class CleanCommandDefinition
 
     public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal);
 
+    public static readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.CleanRuntimeOptionDescription);
+    public static readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
+    public static readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
+    public static readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
+    public static readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
+    public static readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
+    public static readonly Option<string[]?> GetTargetResultOption = CommonOptions.CreateGetTargetResultOption();
+    public static readonly Option<string[]?> GetResultOutputFileOption = CommonOptions.CreateGetResultOutputFileOption();
+
     public static Command Create()
     {
         Command command = new("clean", CliCommandStrings.CleanAppFullName)
@@ -43,19 +52,19 @@ internal static class CleanCommandDefinition
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(CommonOptions.CreateRuntimeOption(CliCommandStrings.CleanRuntimeOptionDescription));
+        command.Options.Add(RuntimeOption);
         command.Options.Add(ConfigurationOption);
-        command.Options.Add(CommonOptions.CreateInteractiveMsBuildForwardOption());
+        command.Options.Add(InteractiveOption);
         command.Options.Add(VerbosityOption);
         command.Options.Add(OutputOption);
-        command.Options.Add(CommonOptions.CreateArtifactsPathOption());
+        command.Options.Add(ArtifactsPathOption);
         command.Options.Add(NoLogoOption);
-        command.Options.Add(CommonOptions.CreateDisableBuildServersOption());
+        command.Options.Add(DisableBuildServersOption);
         command.Options.Add(TargetOption);
-        command.Options.Add(CommonOptions.CreateGetPropertyOption());
-        command.Options.Add(CommonOptions.CreateGetItemOption());
-        command.Options.Add(CommonOptions.CreateGetTargetResultOption());
-        command.Options.Add(CommonOptions.CreateGetResultOutputFileOption());
+        command.Options.Add(GetPropertyOption);
+        command.Options.Add(GetItemOption);
+        command.Options.Add(GetTargetResultOption);
+        command.Options.Add(GetResultOutputFileOption);
         command.Subcommands.Add(CleanFileBasedAppArtifactsCommandDefinition.Create());
 
         return command;
