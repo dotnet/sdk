@@ -11,11 +11,11 @@ internal static class RunCommandDefinition
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-run";
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.RunConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.RunConfigurationOptionDescription);
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.RunFrameworkOptionDescription);
+    public static readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.RunFrameworkOptionDescription);
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.RunRuntimeOptionDescription);
+    public static readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.RunRuntimeOptionDescription);
 
     public static readonly Option<string> ProjectOption = new("--project")
     {
@@ -56,7 +56,7 @@ internal static class RunCommandDefinition
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveMsBuildForwardOption;
+    public static readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
 
     public static readonly Option<bool> NoCacheOption = new("--no-cache")
     {
@@ -100,8 +100,8 @@ internal static class RunCommandDefinition
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.DisableBuildServersOption);
-        command.Options.Add(CommonOptions.ArtifactsPathOption);
+        command.Options.Add(CommonOptions.CreateDisableBuildServersOption());
+        command.Options.Add(CommonOptions.CreateArtifactsPathOption());
         command.Options.Add(CommonOptions.EnvOption);
 
         command.Arguments.Add(ApplicationArguments);

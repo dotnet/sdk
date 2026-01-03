@@ -38,7 +38,7 @@ internal static class PublishCommandDefinition
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
-    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
+    public static readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
@@ -46,12 +46,12 @@ internal static class PublishCommandDefinition
 
     public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.PublishRuntimeOptionDescription);
+    public static readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.PublishRuntimeOptionDescription);
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.PublishFrameworkOptionDescription);
+    public static readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.PublishFrameworkOptionDescription);
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PublishConfigurationOptionDescription);
-    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Publish", [("_IsPublishing", "true")]);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.PublishConfigurationOptionDescription);
+    public static readonly Option<string[]> TargetOption = CommonOptions.CreateRequiredMSBuildTargetOption("Publish", [("_IsPublishing", "true")]);
 
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandDefinition.VerbosityOption;
 
@@ -67,7 +67,7 @@ internal static class PublishCommandDefinition
         implicitOptions.AddTo(command.Options);
         command.Options.Add(RestoreCommandDefinition.CreateNoDependenciesOption(showHelp: false));
         command.Options.Add(OutputOption);
-        command.Options.Add(CommonOptions.ArtifactsPathOption);
+        command.Options.Add(CommonOptions.CreateArtifactsPathOption());
         command.Options.Add(ManifestOption);
         command.Options.Add(NoBuildOption);
         command.Options.Add(SelfContainedOption);
@@ -76,18 +76,18 @@ internal static class PublishCommandDefinition
         command.Options.Add(FrameworkOption);
         command.Options.Add(RuntimeOption);
         command.Options.Add(ConfigurationOption);
-        command.Options.Add(CommonOptions.VersionSuffixOption);
-        command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
+        command.Options.Add(CommonOptions.CreateVersionSuffixOption());
+        command.Options.Add(CommonOptions.CreateInteractiveMsBuildForwardOption());
         command.Options.Add(NoRestoreOption);
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.CreateDisableBuildServersOption());
         command.Options.Add(TargetOption);
-        command.Options.Add(CommonOptions.GetPropertyOption);
-        command.Options.Add(CommonOptions.GetItemOption);
-        command.Options.Add(CommonOptions.GetTargetResultOption);
-        command.Options.Add(CommonOptions.GetResultOutputFileOption);
+        command.Options.Add(CommonOptions.CreateGetPropertyOption());
+        command.Options.Add(CommonOptions.CreateGetItemOption());
+        command.Options.Add(CommonOptions.CreateGetTargetResultOption());
+        command.Options.Add(CommonOptions.CreateGetResultOutputFileOption());
 
         return command;
     }

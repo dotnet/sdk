@@ -66,7 +66,7 @@ internal static class CommonOptions
         return new(dictionary);
     }
 
-    public static Option<string[]?> MSBuildTargetOption(string? defaultTargetName = null, (string key, string value)[]? additionalProperties = null) =>
+    public static Option<string[]?> CreateMSBuildTargetOption(string? defaultTargetName = null, (string key, string value)[]? additionalProperties = null) =>
         new Option<string[]?>("--target", "/target", "-target", "-t", "--t", "/t")
         {
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
@@ -79,7 +79,7 @@ internal static class CommonOptions
         .ForwardAsMany(targets => ForwardTargetsAndAdditionalProperties(targets, additionalProperties))
         .AllowSingleArgPerToken();
 
-    public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName, (string key, string value)[]? additionalProperties = null) =>
+    public static Option<string[]> CreateRequiredMSBuildTargetOption(string defaultTargetName, (string key, string value)[]? additionalProperties = null) =>
         new Option<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
         {
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
@@ -107,13 +107,13 @@ internal static class CommonOptions
         return argsToReturn;
     }
 
-    public static readonly Option<string[]?> GetPropertyOption = MSBuildMultiOption("getProperty");
+    public static Option<string[]?> CreateGetPropertyOption() => MSBuildMultiOption("getProperty");
 
-    public static readonly Option<string[]?> GetItemOption = MSBuildMultiOption("getItem");
+    public static Option<string[]?> CreateGetItemOption() => MSBuildMultiOption("getItem");
 
-    public static readonly Option<string[]?> GetTargetResultOption = MSBuildMultiOption("getTargetResult");
+    public static Option<string[]?> CreateGetTargetResultOption() => MSBuildMultiOption("getTargetResult");
 
-    public static readonly Option<string[]?> GetResultOutputFileOption = MSBuildMultiOption("getResultOutputFile");
+    public static Option<string[]?> CreateGetResultOutputFileOption() => MSBuildMultiOption("getResultOutputFile");
 
     private static Option<string[]?> MSBuildMultiOption(string name)
         => new Option<string[]?>($"--{name}", $"-{name}", $"/{name}")
@@ -168,7 +168,7 @@ internal static class CommonOptions
         .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
 
-    public static Option<string> FrameworkOption(string description) =>
+    public static Option<string> CreateFrameworkOption(string description) =>
         new Option<string>("--framework", "-f")
         {
             Description = description,
@@ -178,7 +178,7 @@ internal static class CommonOptions
         .ForwardAsSingle(o => $"--property:TargetFramework={o}")
         .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
-    public static Option<string> ArtifactsPathOption =
+    public static Option<string> CreateArtifactsPathOption() =>
         new Option<string>(
             //  --artifacts-path is pretty verbose, should we use --artifacts instead (or possibly support both)?
             "--artifacts-path")
@@ -199,7 +199,7 @@ internal static class CommonOptions
 
     public const string RuntimeOptionName = "--runtime";
 
-    public static Option<string> RuntimeOption(string description) =>
+    public static Option<string> CreateRuntimeOption(string description) =>
         new Option<string>(RuntimeOptionName, "-r")
         {
             HelpName = RuntimeArgName,
@@ -208,22 +208,14 @@ internal static class CommonOptions
         }.ForwardAsMany(RuntimeArgFunc!)
         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
-    public static Option<string> LongFormRuntimeOption =
-        new Option<string>(RuntimeOptionName)
-        {
-            HelpName = RuntimeArgName,
-            IsDynamic = true,
-        }.ForwardAsMany(RuntimeArgFunc!)
-        .AddCompletions(CliCompletion.RunTimesFromProjectFile);
-
-    public static Option<bool> CurrentRuntimeOption(string description) =>
+    public static Option<bool> CreateUseCurrentRuntimeOption(string description) =>
         new Option<bool>("--use-current-runtime", "--ucr")
         {
             Description = description,
             Arity = ArgumentArity.Zero
         }.ForwardAs("--property:UseCurrentRuntimeIdentifier=True");
 
-    public static Option<string?> ConfigurationOption(string description) =>
+    public static Option<string?> CreateConfigurationOption(string description) =>
         new Option<string?>("--configuration", "-c")
         {
             Description = description,
@@ -232,7 +224,7 @@ internal static class CommonOptions
         }.ForwardAsSingle(o => $"--property:Configuration={o}")
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
-    public static Option<string> VersionSuffixOption =
+    public static Option<string> CreateVersionSuffixOption() =>
         new Option<string>("--version-suffix")
         {
             Description = CliStrings.CmdVersionSuffixDescription,
@@ -287,9 +279,11 @@ internal static class CommonOptions
             Hidden = hidden,
         };
 
-    public static Option<bool> InteractiveMsBuildForwardOption = CreateInteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
+    public static Option<bool> CreateInteractiveMsBuildForwardOption()
+        => CreateInteractiveOption(acceptArgument: true)
+           .ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
-    public static Option<bool> DisableBuildServersOption =
+    public static Option<bool> CreateDisableBuildServersOption() =>
         new Option<bool>("--disable-build-servers")
         {
             Description = CliStrings.DisableBuildServersOptionDescription,
@@ -410,7 +404,7 @@ internal static class CommonOptions
     /// </list>
     /// Finally, if neither the option nor the environment variable is set, the option will default to the provided <paramref name="defaultValue"/>.
     /// </summary>
-    public static Option<bool> NoLogoOption(bool defaultValue = true, string forwardAs = "--nologo", string? description = null)
+    public static Option<bool> CreateNoLogoOption(bool defaultValue = true, string forwardAs = "--nologo", string? description = null)
     {
         return new Option<bool>("--no-logo", "--nologo", "-nologo", "/nologo")
         {

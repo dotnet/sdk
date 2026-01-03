@@ -81,12 +81,12 @@ internal static class StoreCommandDefinition
         command.Options.Add(WorkingDirOption);
         command.Options.Add(SkipOptimizationOption);
         command.Options.Add(SkipSymbolsOption);
-        command.Options.Add(CommonOptions.FrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription));
-        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.CreateFrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription));
+        command.Options.Add(CommonOptions.CreateRuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription));
         command.Options.Add(CommonOptions.CreateVerbosityOption());
-        command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
-        command.Options.Add(CommonOptions.DisableBuildServersOption);
-        command.Options.Add(CommonOptions.NoLogoOption(true));
+        command.Options.Add(CommonOptions.CreateUseCurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.CreateDisableBuildServersOption());
+        command.Options.Add(CommonOptions.CreateNoLogoOption(true));
 
         return command;
     }

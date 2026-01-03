@@ -32,7 +32,7 @@ internal sealed class ImplicitRestoreOptions
             Hidden = !showHelp
         }.ForwardAsSingle(o => $"-property:RestorePackagesPath={CommandDirectoryContext.GetFullPath(o)}");
 
-        CurrentRuntimeOption = CommonOptions.CurrentRuntimeOption(CliCommandStrings.CmdCurrentRuntimeOptionDescription);
+        CurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CliCommandStrings.CmdCurrentRuntimeOptionDescription);
 
         DisableParallelOption = new Option<bool>("--disable-parallel")
         {

@@ -18,9 +18,9 @@ internal static class RestoreCommandDefinition
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Restore");
+    public static readonly Option<string[]> TargetOption = CommonOptions.CreateRequiredMSBuildTargetOption("Restore");
     public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.minimal);
-    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
+    public static readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
 
     public static Command Create()
     {
@@ -30,7 +30,7 @@ internal static class RestoreCommandDefinition
         };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
-        command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.CreateDisableBuildServersOption());
 
         var implicitOptions = new ImplicitRestoreOptions(showHelp: true, useShortOptions: true);
         implicitOptions.AddTo(command.Options);
@@ -38,8 +38,8 @@ internal static class RestoreCommandDefinition
         command.Options.Add(CreateRuntimeOption(showHelp: true, useShortOptions: true));
         command.Options.Add(CreateNoDependenciesOption(showHelp: true));
         command.Options.Add(VerbosityOption);
-        command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
-        command.Options.Add(CommonOptions.ArtifactsPathOption);
+        command.Options.Add(CommonOptions.CreateInteractiveMsBuildForwardOption());
+        command.Options.Add(CommonOptions.CreateArtifactsPathOption());
         command.Options.Add(new Option<bool>("--use-lock-file")
         {
             Description = CliCommandStrings.CmdUseLockFileOptionDescription,
@@ -65,10 +65,10 @@ internal static class RestoreCommandDefinition
 
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.GetPropertyOption);
-        command.Options.Add(CommonOptions.GetItemOption);
-        command.Options.Add(CommonOptions.GetTargetResultOption);
-        command.Options.Add(CommonOptions.GetResultOutputFileOption);
+        command.Options.Add(CommonOptions.CreateGetPropertyOption());
+        command.Options.Add(CommonOptions.CreateGetItemOption());
+        command.Options.Add(CommonOptions.CreateGetTargetResultOption());
+        command.Options.Add(CommonOptions.CreateGetResultOutputFileOption());
 
         return command;
     }

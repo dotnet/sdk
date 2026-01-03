@@ -11,7 +11,7 @@ internal static class MSBuildCommandDefinition
     public static readonly string DocsLink = "https://aka.ms/dotnet-msbuild";
 
     public static readonly Argument<string[]> Arguments = new("arguments");
-    public static readonly Option<string[]?> TargetOption = CommonOptions.MSBuildTargetOption();
+    public static readonly Option<string[]?> TargetOption = CommonOptions.CreateMSBuildTargetOption();
 
     public static Command Create()
     {
@@ -21,7 +21,7 @@ internal static class MSBuildCommandDefinition
             DocsLink = DocsLink,
         };
 
-        command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.CreateDisableBuildServersOption());
         command.Options.Add(TargetOption);
 
         return command;

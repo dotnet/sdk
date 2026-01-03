@@ -29,10 +29,10 @@ public static class CommandFactory
             var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs],
             [
                 .. optionsToUseWhenParsingMSBuildFlags,
-                CommonOptions.GetPropertyOption,
-                CommonOptions.GetItemOption,
-                CommonOptions.GetTargetResultOption,
-                CommonOptions.GetResultOutputFileOption,
+                CommonOptions.CreateGetPropertyOption(),
+                CommonOptions.CreateGetItemOption(),
+                CommonOptions.CreateGetTargetResultOption(),
+                CommonOptions.CreateGetResultOutputFileOption(),
             ]);
             msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
             return configureVirtualCommand(msbuildArgs, Path.GetFullPath(arg));

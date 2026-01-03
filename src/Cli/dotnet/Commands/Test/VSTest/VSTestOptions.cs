@@ -137,9 +137,9 @@ internal static class VSTestOptions
         HelpName = CliCommandStrings.HangTimeoutArgumentName
     }.ForwardAsMany(o => ["-property:VSTestBlameHang=true", $"-property:VSTestBlameHangTimeout={o}"]);
 
-    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption(forwardAs: "--property:VSTestNoLogo=true", description: CliCommandStrings.TestCmdNoLogo);
+    public static readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(forwardAs: "--property:VSTestNoLogo=true", description: CliCommandStrings.TestCmdNoLogo);
 
-    public static readonly Option<string[]> VsTestTargetOption = CommonOptions.RequiredMSBuildTargetOption("VSTest");
+    public static readonly Option<string[]> VsTestTargetOption = CommonOptions.CreateRequiredMSBuildTargetOption("VSTest");
 
     private static string GetSemiColonEscapedstring(string arg)
     {

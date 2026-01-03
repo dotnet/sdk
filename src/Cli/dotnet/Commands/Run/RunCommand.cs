@@ -763,7 +763,7 @@ public class RunCommand
             nonBinLogArgs[0] = entryPointFilePath;
         }
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), RunCommandDefinition.VerbosityOption);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.CreateMSBuildTargetOption(), RunCommandDefinition.VerbosityOption);
 
         var command = new RunCommand(
             noBuild: noBuild,

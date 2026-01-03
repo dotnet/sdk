@@ -32,9 +32,9 @@ internal static class TestCommandDefinition
     public const string Name = "test";
     public static readonly string DocsLink = "https://aka.ms/dotnet-test";
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
+    public static readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
 
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
 
@@ -106,7 +106,7 @@ internal static class TestCommandDefinition
         command.Options.Add(ConfigurationOption);
         command.Options.Add(FrameworkOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.NoRestoreOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoBuildOption);
@@ -135,7 +135,7 @@ internal static class TestCommandDefinition
         command.Options.Add(VSTestOptions.AdapterOption);
         command.Options.Add(VSTestOptions.LoggerOption);
         command.Options.Add(VSTestOptions.OutputOption);
-        command.Options.Add(CommonOptions.ArtifactsPathOption);
+        command.Options.Add(CommonOptions.CreateArtifactsPathOption());
         command.Options.Add(VSTestOptions.DiagOption);
         command.Options.Add(VSTestOptions.NoBuildOption);
         command.Options.Add(VSTestOptions.ResultsOption);
@@ -150,14 +150,14 @@ internal static class TestCommandDefinition
         command.Options.Add(VSTestOptions.NoLogoOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(CommonOptions.NoRestoreOption);
-        command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
+        command.Options.Add(CommonOptions.CreateInteractiveMsBuildForwardOption());
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.PropertiesOption);
-        command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.CreateDisableBuildServersOption());
         command.Options.Add(VSTestOptions.VsTestTargetOption);
     }
 }

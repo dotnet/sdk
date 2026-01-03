@@ -241,7 +241,7 @@ public class TestCommand(
             CommonOptions.RestorePropertiesOption,
             VSTestOptions.VsTestTargetOption,
             TestCommandDefinition.VerbosityOption,
-            CommonOptions.NoLogoOption())
+            CommonOptions.CreateNoLogoOption())
             .CloneWithNoLogo(true);
 
         TestCommand testCommand = new(
