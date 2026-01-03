@@ -105,8 +105,9 @@ internal static class PackCommandDefinition
         command.Options.Add(CommonOptions.GetTargetResultOption);
         command.Options.Add(CommonOptions.GetResultOutputFileOption);
 
-        // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
-        RestoreCommandDefinition.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
+        RestoreCommandDefinition.AddImplicitRestoreOptions(command, showHelp: false, useShortOptions: false);
+
+        command.Options.Add(RestoreCommandDefinition.CreateNoDependenciesOption(showHelp: false));
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription));
 
         return command;

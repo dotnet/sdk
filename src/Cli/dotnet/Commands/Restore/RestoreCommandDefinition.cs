@@ -18,14 +18,14 @@ internal static class RestoreCommandDefinition
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<IEnumerable<string>> SourceOption = ;
-
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Restore");
     public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.minimal);
     public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
 
     private static IEnumerable<Option> FullRestoreOptions() => [
-        ..ImplicitRestoreOptions(true, true, true, true),
+        ..ImplicitRestoreOptions(showHelp: true, useShortOptions: true),
+        CreateRuntimeOption(showHelp: true, useShortOptions: true),
+        CreateNoDependenciesOption(showHelp: true),
         VerbosityOption,
         CommonOptions.InteractiveMsBuildForwardOption,
         CommonOptions.ArtifactsPathOption,
@@ -75,13 +75,14 @@ internal static class RestoreCommandDefinition
         return command;
     }
 
-    public static void AddImplicitRestoreOptions(Command command, bool showHelp = false, bool useShortOptions = false, bool includeRuntimeOption = true, bool includeNoDependenciesOption = true)
+    public static void AddImplicitRestoreOptions(Command command, bool showHelp, bool useShortOptions)
     {
-        foreach (var option in ImplicitRestoreOptions(showHelp, useShortOptions, includeRuntimeOption, includeNoDependenciesOption))
+        foreach (var option in ImplicitRestoreOptions(showHelp, useShortOptions))
         {
             command.Options.Add(option);
         }
     }
+
     private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
     private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
     public static string RestoreRuntimeArgFunc(IEnumerable<string> rids)
@@ -127,8 +128,8 @@ internal static class RestoreCommandDefinition
             Hidden = !showHelp,
             IsDynamic = true
         }.ForwardAsSingle(RestoreRuntimeArgFunc)
-                     .AllowSingleArgPerToken()
-                     .AddCompletions(CliCompletion.RunTimesFromProjectFile);
+         .AllowSingleArgPerToken()
+         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
         if (useShortOptions)
         {
@@ -138,7 +139,7 @@ internal static class RestoreCommandDefinition
         return runtimeOption;
     }
 
-    private static Option<bool> CreateNoDependenciesOption(bool showHelp)
+    public static Option<bool> CreateNoDependenciesOption(bool showHelp)
         => new Option<bool>("--no-dependencies")
         {
             Description = CliCommandStrings.CmdNoDependenciesOptionDescription,
@@ -146,7 +147,7 @@ internal static class RestoreCommandDefinition
             Hidden = !showHelp
         }.ForwardAs("-property:RestoreRecursive=false");
 
-    private static IEnumerable<Option> ImplicitRestoreOptions(bool showHelp, bool useShortOptions, bool includeRuntimeOption, bool includeNoDependenciesOption)
+    private static IEnumerable<Option> ImplicitRestoreOptions(bool showHelp, bool useShortOptions)
     {
         yield return CreateSourceOption(showHelp, useShortOptions);
 
@@ -208,11 +209,5 @@ internal static class RestoreCommandDefinition
 
         yield return CommonOptions.PropertiesOption;
         yield return CommonOptions.RestorePropertiesOption;
-
-        if (includeRuntimeOption)
-            yield return CreateRuntimeOption(showHelp, useShortOptions);
-
-        if (includeNoDependenciesOption)
-            yield return CreateNoDependenciesOption(showHelp);
     }
 }
