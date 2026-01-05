@@ -5,9 +5,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Tool.Common;
-using Microsoft.DotNet.Cli.Commands.Tool.Install;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -16,7 +13,7 @@ using CreateShellShimRepository = Microsoft.DotNet.Cli.Commands.Tool.Install.Cre
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
-internal class ToolUpdateCommand : CommandBase
+internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinition>
 {
     private readonly ToolUpdateLocalCommand _toolUpdateLocalCommand;
     private readonly ToolUpdateGlobalOrToolPathCommand _toolUpdateGlobalOrToolPathCommand;
@@ -33,8 +30,7 @@ internal class ToolUpdateCommand : CommandBase
         IToolPackageDownloader toolPackageDownloader = null,
         IToolManifestFinder toolManifestFinder = null,
         IToolManifestEditor toolManifestEditor = null,
-        ILocalToolsResolverCache localToolsResolverCache = null
-        )
+        ILocalToolsResolverCache localToolsResolverCache = null)
         : base(result)
     {
         _toolUpdateLocalCommand
@@ -47,8 +43,8 @@ internal class ToolUpdateCommand : CommandBase
                     localToolsResolverCache,
                     reporter);
 
-        _global = result.GetValue(ToolInstallCommandParser.GlobalOption);
-        _toolPath = result.GetValue(ToolInstallCommandParser.ToolPathOption);
+        _global = result.GetValue(Definition.LocationOptions.GlobalOption);
+        _toolPath = result.GetValue(Definition.LocationOptions.ToolPathOption);
         DirectoryPath? location = string.IsNullOrWhiteSpace(_toolPath) ? null : new DirectoryPath(_toolPath);
         _toolUpdateGlobalOrToolPathCommand =
             toolUpdateGlobalOrToolPathCommand
@@ -61,19 +57,19 @@ internal class ToolUpdateCommand : CommandBase
     }
 
 
-    internal static void EnsureEitherUpdateAllOrUpdateOption(
+    internal void EnsureEitherUpdateAllOrUpdateOption(
         ParseResult parseResult,
         string message)
     {
         List<string> options = [];
-        if (parseResult.HasOption(ToolAppliedOption.UpdateAllOption))
+        if (parseResult.HasOption(Definition.UpdateAllOption))
         {
-            options.Add(ToolAppliedOption.UpdateAllOption.Name);
+            options.Add(Definition.UpdateAllOption.Name);
         }
 
-        if (parseResult.GetResult(ToolUpdateCommandParser.PackageIdentityArgument) is not null)
+        if (parseResult.GetResult(Definition.PackageIdentityArgument) is not null)
         {
-            options.Add(ToolUpdateCommandParser.PackageIdentityArgument.Name);
+            options.Add(Definition.PackageIdentityArgument.Name);
         }
 
         if (options.Count != 1)
@@ -82,24 +78,50 @@ internal class ToolUpdateCommand : CommandBase
         }
     }
 
-    internal static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
+    internal void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
     {
-        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.VersionRange?.OriginalString) &&
-            !string.IsNullOrEmpty(parseResult.GetValue(ToolAppliedOption.VersionOption)))
+        if (!string.IsNullOrEmpty(parseResult.GetValue(Definition.PackageIdentityArgument)?.VersionRange?.OriginalString) &&
+            !string.IsNullOrEmpty(parseResult.GetValue(Definition.VersionOption)))
         {
             throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);
         }
     }
 
+    private void EnsureNoConflictUpdateAllVersionOption(
+        ParseResult parseResult,
+        string message)
+    {
+        List<string> options = [];
+        if (parseResult.HasOption(Definition.UpdateAllOption))
+        {
+            options.Add(Definition.UpdateAllOption.Name);
+        }
+
+        if (parseResult.HasOption(Definition.VersionOption))
+        {
+            options.Add(Definition.VersionOption.Name);
+        }
+
+        if (options.Count > 1)
+        {
+            throw new GracefulException(
+                string.Format(
+                    message,
+                    string.Join(" ", options)));
+        }
+    }
+
     public override int Execute()
     {
-        ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
+        Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
             CliCommandStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
 
-        ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
+        Definition.LocationOptions.EnsureToolManifestAndOnlyLocalFlagCombination(
+            _parseResult,
+            Definition.ToolManifestOption);
 
-        ToolAppliedOption.EnsureNoConflictUpdateAllVersionOption(
+        EnsureNoConflictUpdateAllVersionOption(
             _parseResult,
             CliCommandStrings.UpdateToolCommandInvalidAllAndVersion);
 
