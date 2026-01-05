@@ -5,32 +5,15 @@ using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.TemplateEngine.Cli.Help;
 using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal static class TestCommandDefinition
+internal abstract class TestCommandDefinition : Command
 {
-    public enum TestRunner
-    {
-        VSTest,
-        MicrosoftTestingPlatform
-    }
-
-    private sealed class GlobalJsonModel
-    {
-        [JsonPropertyName("test")]
-        public GlobalJsonTestNode Test { get; set; } = null!;
-    }
-
-    private sealed class GlobalJsonTestNode
-    {
-        [JsonPropertyName("runner")]
-        public string RunnerName { get; set; } = null!;
-    }
-
-    public const string Name = "test";
-    public static readonly string DocsLink = "https://aka.ms/dotnet-test";
+    private const string Link = "https://aka.ms/dotnet-test";
 
     public static readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
 
@@ -38,12 +21,19 @@ internal static class TestCommandDefinition
 
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
 
-    public static TestRunner GetTestRunner()
+    public TestCommandDefinition(string description)
+        : base("test", description)
+    {
+        this.DocsLink = Link;
+        TreatUnmatchedTokensAsErrors = false;
+    }
+
+    public static TestCommandDefinition Create()
     {
         string? globalJsonPath = GetGlobalJsonPath(Environment.CurrentDirectory);
         if (!File.Exists(globalJsonPath))
         {
-            return TestRunner.VSTest;
+            return new VSTest();
         }
 
         string jsonText = File.ReadAllText(globalJsonPath);
@@ -61,12 +51,12 @@ internal static class TestCommandDefinition
 
         if (name is null || name.Equals(CliConstants.VSTest, StringComparison.OrdinalIgnoreCase))
         {
-            return TestRunner.VSTest;
+            return new VSTest();
         }
 
         if (name.Equals(CliConstants.MicrosoftTestingPlatform, StringComparison.OrdinalIgnoreCase))
         {
-            return TestRunner.MicrosoftTestingPlatform;
+            return new MicrosoftTestingPlatform();
         }
 
         throw new InvalidOperationException(string.Format(CliCommandStrings.CmdUnsupportedTestRunnerDescription, name));
@@ -85,79 +75,100 @@ internal static class TestCommandDefinition
 
             directory = Path.GetDirectoryName(directory);
         }
+
         return null;
     }
 
-    public static void ConfigureMicrosoftTestingPlatformCommand(Command command)
+    private sealed class GlobalJsonModel
     {
-        command.Description = CliCommandStrings.DotnetTestCommandMTPDescription;
-        command.Options.Add(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.SolutionOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.ResultsDirectoryOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.ConfigFileOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.MaxParallelTestModulesOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption);
-        command.Options.Add(CommonOptions.ArchitectureOption);
-        command.Options.Add(CommonOptions.EnvOption);
-        command.Options.Add(CommonOptions.PropertiesOption);
-        command.Options.Add(ConfigurationOption);
-        command.Options.Add(FrameworkOption);
-        command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
-        command.Options.Add(VerbosityOption);
-        command.Options.Add(CommonOptions.NoRestoreOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.NoBuildOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.NoAnsiOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.NoProgressOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.OutputOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.ListTestsOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.NoLaunchProfileOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption);
-        command.Options.Add(MicrosoftTestingPlatformOptions.MTPTargetOption);
+        [JsonPropertyName("test")]
+        public GlobalJsonTestNode Test { get; set; } = null!;
     }
 
-    public static void ConfigureVSTestCommand(Command command)
+    private sealed class GlobalJsonTestNode
     {
-        command.Description = CliCommandStrings.DotnetTestCommandVSTestDescription;
-        command.TreatUnmatchedTokensAsErrors = false;
-        command.DocsLink = DocsLink;
+        [JsonPropertyName("runner")]
+        public string RunnerName { get; set; } = null!;
+    }
 
-        // We are on purpose not capturing the solution, project or directory here. We want to pass it to the
-        // MSBuild command so we are letting it flow.
+    public sealed class MicrosoftTestingPlatform : TestCommandDefinition, ICustomHelp
+    {
+        public ICustomHelp? CustomHelpLayoutProvider { get; set; }
 
-        command.Options.Add(VSTestOptions.SettingsOption);
-        command.Options.Add(VSTestOptions.ListTestsOption);
-        command.Options.Add(CommonOptions.TestEnvOption);
-        command.Options.Add(VSTestOptions.FilterOption);
-        command.Options.Add(VSTestOptions.AdapterOption);
-        command.Options.Add(VSTestOptions.LoggerOption);
-        command.Options.Add(VSTestOptions.OutputOption);
-        command.Options.Add(CommonOptions.CreateArtifactsPathOption());
-        command.Options.Add(VSTestOptions.DiagOption);
-        command.Options.Add(VSTestOptions.NoBuildOption);
-        command.Options.Add(VSTestOptions.ResultsOption);
-        command.Options.Add(VSTestOptions.CollectOption);
-        command.Options.Add(VSTestOptions.BlameOption);
-        command.Options.Add(VSTestOptions.BlameCrashOption);
-        command.Options.Add(VSTestOptions.BlameCrashDumpOption);
-        command.Options.Add(VSTestOptions.BlameCrashAlwaysOption);
-        command.Options.Add(VSTestOptions.BlameHangOption);
-        command.Options.Add(VSTestOptions.BlameHangDumpOption);
-        command.Options.Add(VSTestOptions.BlameHangTimeoutOption);
-        command.Options.Add(VSTestOptions.NoLogoOption);
-        command.Options.Add(ConfigurationOption);
-        command.Options.Add(FrameworkOption);
-        command.Options.Add(CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
-        command.Options.Add(CommonOptions.NoRestoreOption);
-        command.Options.Add(CommonOptions.CreateInteractiveMsBuildForwardOption());
-        command.Options.Add(VerbosityOption);
-        command.Options.Add(CommonOptions.ArchitectureOption);
-        command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.PropertiesOption);
-        command.Options.Add(CommonOptions.CreateDisableBuildServersOption());
-        command.Options.Add(VSTestOptions.VsTestTargetOption);
+        public MicrosoftTestingPlatform()
+            : base(CliCommandStrings.DotnetTestCommandMTPDescription)
+        {
+            Options.Add(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption);
+            Options.Add(MicrosoftTestingPlatformOptions.SolutionOption);
+            Options.Add(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
+            Options.Add(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption);
+            Options.Add(MicrosoftTestingPlatformOptions.ResultsDirectoryOption);
+            Options.Add(MicrosoftTestingPlatformOptions.ConfigFileOption);
+            Options.Add(MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption);
+            Options.Add(MicrosoftTestingPlatformOptions.MaxParallelTestModulesOption);
+            Options.Add(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption);
+            Options.Add(CommonOptions.ArchitectureOption);
+            Options.Add(CommonOptions.EnvOption);
+            Options.Add(CommonOptions.PropertiesOption);
+            Options.Add(ConfigurationOption);
+            Options.Add(FrameworkOption);
+            Options.Add(CommonOptions.OperatingSystemOption);
+            Options.Add(CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
+            Options.Add(VerbosityOption);
+            Options.Add(CommonOptions.NoRestoreOption);
+            Options.Add(MicrosoftTestingPlatformOptions.NoBuildOption);
+            Options.Add(MicrosoftTestingPlatformOptions.NoAnsiOption);
+            Options.Add(MicrosoftTestingPlatformOptions.NoProgressOption);
+            Options.Add(MicrosoftTestingPlatformOptions.OutputOption);
+            Options.Add(MicrosoftTestingPlatformOptions.ListTestsOption);
+            Options.Add(MicrosoftTestingPlatformOptions.NoLaunchProfileOption);
+            Options.Add(MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption);
+            Options.Add(MicrosoftTestingPlatformOptions.MTPTargetOption);
+        }
+
+        public IEnumerable<Action<HelpContext>> CustomHelpLayout()
+            => CustomHelpLayoutProvider?.CustomHelpLayout() ?? [];
+    }
+
+    public sealed class VSTest : TestCommandDefinition
+    {
+        public VSTest()
+            : base(CliCommandStrings.DotnetTestCommandVSTestDescription)
+        {
+            // We are on purpose not capturing the solution, project or directory here. We want to pass it to the
+            // MSBuild command so we are letting it flow.
+
+            Options.Add(VSTestOptions.SettingsOption);
+            Options.Add(VSTestOptions.ListTestsOption);
+            Options.Add(CommonOptions.TestEnvOption);
+            Options.Add(VSTestOptions.FilterOption);
+            Options.Add(VSTestOptions.AdapterOption);
+            Options.Add(VSTestOptions.LoggerOption);
+            Options.Add(VSTestOptions.OutputOption);
+            Options.Add(CommonOptions.CreateArtifactsPathOption());
+            Options.Add(VSTestOptions.DiagOption);
+            Options.Add(VSTestOptions.NoBuildOption);
+            Options.Add(VSTestOptions.ResultsOption);
+            Options.Add(VSTestOptions.CollectOption);
+            Options.Add(VSTestOptions.BlameOption);
+            Options.Add(VSTestOptions.BlameCrashOption);
+            Options.Add(VSTestOptions.BlameCrashDumpOption);
+            Options.Add(VSTestOptions.BlameCrashAlwaysOption);
+            Options.Add(VSTestOptions.BlameHangOption);
+            Options.Add(VSTestOptions.BlameHangDumpOption);
+            Options.Add(VSTestOptions.BlameHangTimeoutOption);
+            Options.Add(VSTestOptions.NoLogoOption);
+            Options.Add(ConfigurationOption);
+            Options.Add(FrameworkOption);
+            Options.Add(CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
+            Options.Add(CommonOptions.NoRestoreOption);
+            Options.Add(CommonOptions.CreateInteractiveMsBuildForwardOption());
+            Options.Add(VerbosityOption);
+            Options.Add(CommonOptions.ArchitectureOption);
+            Options.Add(CommonOptions.OperatingSystemOption);
+            Options.Add(CommonOptions.PropertiesOption);
+            Options.Add(CommonOptions.CreateDisableBuildServersOption());
+            Options.Add(VSTestOptions.VsTestTargetOption);
+        }
     }
 }
