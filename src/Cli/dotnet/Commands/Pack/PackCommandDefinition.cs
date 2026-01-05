@@ -9,9 +9,9 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
-internal static class PackCommandDefinition
+internal sealed class PackCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-pack";
+    private const string Link = "https://aka.ms/dotnet-pack";
 
     public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
@@ -90,39 +90,35 @@ internal static class PackCommandDefinition
             }
         }.ForwardAsSingle(o => $"--property:PackageVersion={o}");
 
-    public static Command Create()
+    public PackCommandDefinition()
+        : base("pack", CliCommandStrings.PackAppFullName)
     {
-        var command = new Command("pack", CliCommandStrings.PackAppFullName)
-        {
-            DocsLink = DocsLink
-        };
+        this.DocsLink = Link;
 
-        command.Arguments.Add(SlnOrProjectOrFileArgument);
-        command.Options.Add(OutputOption);
-        command.Options.Add(ArtifactsPathOption);
-        command.Options.Add(NoBuildOption);
-        command.Options.Add(IncludeSymbolsOption);
-        command.Options.Add(IncludeSourceOption);
-        command.Options.Add(ServiceableOption);
-        command.Options.Add(NoLogoOption);
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(NoRestoreOption);
-        command.Options.Add(VerbosityOption);
-        command.Options.Add(VersionSuffixOption);
-        command.Options.Add(VersionOption);
-        command.Options.Add(ConfigurationOption);
-        command.Options.Add(DisableBuildServersOption);
-        command.Options.Add(TargetOption);
-        command.Options.Add(GetPropertyOption);
-        command.Options.Add(GetItemOption);
-        command.Options.Add(GetTargetResultOption);
-        command.Options.Add(GetResultOutputFileOption);
+        Arguments.Add(SlnOrProjectOrFileArgument);
+        Options.Add(OutputOption);
+        Options.Add(ArtifactsPathOption);
+        Options.Add(NoBuildOption);
+        Options.Add(IncludeSymbolsOption);
+        Options.Add(IncludeSourceOption);
+        Options.Add(ServiceableOption);
+        Options.Add(NoLogoOption);
+        Options.Add(InteractiveOption);
+        Options.Add(NoRestoreOption);
+        Options.Add(VerbosityOption);
+        Options.Add(VersionSuffixOption);
+        Options.Add(VersionOption);
+        Options.Add(ConfigurationOption);
+        Options.Add(DisableBuildServersOption);
+        Options.Add(TargetOption);
+        Options.Add(GetPropertyOption);
+        Options.Add(GetItemOption);
+        Options.Add(GetTargetResultOption);
+        Options.Add(GetResultOutputFileOption);
 
-        ImplicitRestoreOptions.AddTo(command.Options);
+        ImplicitRestoreOptions.AddTo(Options);
 
-        command.Options.Add(NoDependenciesOption);
-        command.Options.Add(RuntimeOption);
-
-        return command;
+        Options.Add(NoDependenciesOption);
+        Options.Add(RuntimeOption);
     }
 }
