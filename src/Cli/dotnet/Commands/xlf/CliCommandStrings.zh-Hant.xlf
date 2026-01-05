@@ -3735,6 +3735,26 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">管理選擇性工作負載。</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadDependenciesColumn">
+        <source>Dependencies</source>
+        <target state="new">Dependencies</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadDependencyOptional">
+        <source>optional</source>
+        <target state="new">optional</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadDependencyRecommendedVersion">
+        <source>Recommended Version</source>
+        <target state="new">Recommended Version</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadDependencyVersion">
+        <source>Version</source>
+        <target state="new">Version</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadElevateCommandDescription">
         <source>Start the elevated server process to facilitate MSI based installations.</source>
         <target state="translated">啟動提升權限的伺服器處理序，以輔助 MSI 型安裝。</target>
