@@ -16,11 +16,11 @@ internal abstract class TestCommandDefinition : Command
 {
     private const string Link = "https://aka.ms/dotnet-test";
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
+    public readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
+    public readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
 
-    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
+    public readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
 
     public TestCommandDefinition(string description)
         : base("test", description)
@@ -94,29 +94,29 @@ internal abstract class TestCommandDefinition : Command
 
     public sealed class MicrosoftTestingPlatform : TestCommandDefinition, ICustomHelp
     {
-        public static readonly Option<string> ProjectOrSolutionOption = MicrosoftTestingPlatformOptions.ProjectOrSolutionOption;
-        public static readonly Option<string> SolutionOption = MicrosoftTestingPlatformOptions.SolutionOption;
-        public static readonly Option<string> TestModulesFilterOption = MicrosoftTestingPlatformOptions.TestModulesFilterOption;
-        public static readonly Option<string> TestModulesRootDirectoryOption = MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption;
-        public static readonly Option<string> ResultsDirectoryOption = MicrosoftTestingPlatformOptions.ResultsDirectoryOption;
-        public static readonly Option<string> ConfigFileOption = MicrosoftTestingPlatformOptions.ConfigFileOption;
-        public static readonly Option<string> DiagnosticOutputDirectoryOption = MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption;
-        public static readonly Option<int> MaxParallelTestModulesOption = MicrosoftTestingPlatformOptions.MaxParallelTestModulesOption;
-        public static readonly Option<int> MinimumExpectedTestsOption = MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption;
-        public static readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
-        public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CommonOptions.EnvOption;
-        public static readonly Option<ReadOnlyDictionary<string, string>?> PropertiesOption = CommonOptions.PropertiesOption;
-        public static readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
-        public static readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription);
-        public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
-        public static readonly Option<bool> NoBuildOption = MicrosoftTestingPlatformOptions.NoBuildOption;
-        public static readonly Option<bool> NoAnsiOption = MicrosoftTestingPlatformOptions.NoAnsiOption;
-        public static readonly Option<bool> NoProgressOption = MicrosoftTestingPlatformOptions.NoProgressOption;
-        public static readonly Option<OutputOptions> OutputOption = MicrosoftTestingPlatformOptions.OutputOption;
-        public static readonly Option<string> ListTestsOption = MicrosoftTestingPlatformOptions.ListTestsOption;
-        public static readonly Option<bool> NoLaunchProfileOption = MicrosoftTestingPlatformOptions.NoLaunchProfileOption;
-        public static readonly Option<bool> NoLaunchProfileArgumentsOption = MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption;
-        public static readonly Option<string[]> MTPTargetOption = MicrosoftTestingPlatformOptions.MTPTargetOption;
+        public readonly Option<string> ProjectOrSolutionOption = MicrosoftTestingPlatformOptions.ProjectOrSolutionOption;
+        public readonly Option<string> SolutionOption = MicrosoftTestingPlatformOptions.SolutionOption;
+        public readonly Option<string> TestModulesFilterOption = MicrosoftTestingPlatformOptions.TestModulesFilterOption;
+        public readonly Option<string> TestModulesRootDirectoryOption = MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption;
+        public readonly Option<string> ResultsDirectoryOption = MicrosoftTestingPlatformOptions.ResultsDirectoryOption;
+        public readonly Option<string> ConfigFileOption = MicrosoftTestingPlatformOptions.ConfigFileOption;
+        public readonly Option<string> DiagnosticOutputDirectoryOption = MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption;
+        public readonly Option<int> MaxParallelTestModulesOption = MicrosoftTestingPlatformOptions.MaxParallelTestModulesOption;
+        public readonly Option<int> MinimumExpectedTestsOption = MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption;
+        public readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
+        public readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CommonOptions.EnvOption;
+        public readonly Option<ReadOnlyDictionary<string, string>?> PropertiesOption = CommonOptions.PropertiesOption;
+        public readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
+        public readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription);
+        public readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+        public readonly Option<bool> NoBuildOption = MicrosoftTestingPlatformOptions.NoBuildOption;
+        public readonly Option<bool> NoAnsiOption = MicrosoftTestingPlatformOptions.NoAnsiOption;
+        public readonly Option<bool> NoProgressOption = MicrosoftTestingPlatformOptions.NoProgressOption;
+        public readonly Option<OutputOptions> OutputOption = MicrosoftTestingPlatformOptions.OutputOption;
+        public readonly Option<string> ListTestsOption = MicrosoftTestingPlatformOptions.ListTestsOption;
+        public readonly Option<bool> NoLaunchProfileOption = MicrosoftTestingPlatformOptions.NoLaunchProfileOption;
+        public readonly Option<bool> NoLaunchProfileArgumentsOption = MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption;
+        public readonly Option<string[]> MTPTargetOption = MicrosoftTestingPlatformOptions.MTPTargetOption;
 
         public ICustomHelp? CustomHelpLayoutProvider { get; set; }
 
@@ -157,34 +157,34 @@ internal abstract class TestCommandDefinition : Command
 
     public sealed class VSTest : TestCommandDefinition
     {
-        public static readonly Option<string> SettingsOption = VSTestOptions.SettingsOption;
-        public static readonly Option<bool> ListTestsOption = VSTestOptions.ListTestsOption;
-        public static readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CommonOptions.TestEnvOption;
-        public static readonly Option<string> FilterOption = VSTestOptions.FilterOption;
-        public static readonly Option<IEnumerable<string>> AdapterOption = VSTestOptions.AdapterOption;
-        public static readonly Option<IEnumerable<string>> LoggerOption = VSTestOptions.LoggerOption;
-        public static readonly Option<string> OutputOption = VSTestOptions.OutputOption;
-        public static readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
-        public static readonly Option<string> DiagOption = VSTestOptions.DiagOption;
-        public static readonly Option<bool> NoBuildOption = VSTestOptions.NoBuildOption;
-        public static readonly Option<string> ResultsOption = VSTestOptions.ResultsOption;
-        public static readonly Option<IEnumerable<string>> CollectOption = VSTestOptions.CollectOption;
-        public static readonly Option<bool> BlameOption = VSTestOptions.BlameOption;
-        public static readonly Option<bool> BlameCrashOption = VSTestOptions.BlameCrashOption;
-        public static readonly Option<string> BlameCrashDumpOption = VSTestOptions.BlameCrashDumpOption;
-        public static readonly Option<bool> BlameCrashAlwaysOption = VSTestOptions.BlameCrashAlwaysOption;
-        public static readonly Option<bool> BlameHangOption = VSTestOptions.BlameHangOption;
-        public static readonly Option<string> BlameHangDumpOption = VSTestOptions.BlameHangDumpOption;
-        public static readonly Option<string> BlameHangTimeoutOption = VSTestOptions.BlameHangTimeoutOption;
-        public static readonly Option<bool> NoLogoOption = VSTestOptions.NoLogoOption;
-        public static readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription);
-        public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
-        public static readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
-        public static readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
-        public static readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
-        public static readonly Option<ReadOnlyDictionary<string, string>?> PropertiesOption = CommonOptions.PropertiesOption;
-        public static readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
-        public static readonly Option<string[]> VsTestTargetOption = VSTestOptions.VsTestTargetOption;
+        public readonly Option<string> SettingsOption = VSTestOptions.SettingsOption;
+        public readonly Option<bool> ListTestsOption = VSTestOptions.ListTestsOption;
+        public readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CommonOptions.TestEnvOption;
+        public readonly Option<string> FilterOption = VSTestOptions.FilterOption;
+        public readonly Option<IEnumerable<string>> AdapterOption = VSTestOptions.AdapterOption;
+        public readonly Option<IEnumerable<string>> LoggerOption = VSTestOptions.LoggerOption;
+        public readonly Option<string> OutputOption = VSTestOptions.OutputOption;
+        public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
+        public readonly Option<string> DiagOption = VSTestOptions.DiagOption;
+        public readonly Option<bool> NoBuildOption = VSTestOptions.NoBuildOption;
+        public readonly Option<string> ResultsOption = VSTestOptions.ResultsOption;
+        public readonly Option<IEnumerable<string>> CollectOption = VSTestOptions.CollectOption;
+        public readonly Option<bool> BlameOption = VSTestOptions.BlameOption;
+        public readonly Option<bool> BlameCrashOption = VSTestOptions.BlameCrashOption;
+        public readonly Option<string> BlameCrashDumpOption = VSTestOptions.BlameCrashDumpOption;
+        public readonly Option<bool> BlameCrashAlwaysOption = VSTestOptions.BlameCrashAlwaysOption;
+        public readonly Option<bool> BlameHangOption = VSTestOptions.BlameHangOption;
+        public readonly Option<string> BlameHangDumpOption = VSTestOptions.BlameHangDumpOption;
+        public readonly Option<string> BlameHangTimeoutOption = VSTestOptions.BlameHangTimeoutOption;
+        public readonly Option<bool> NoLogoOption = VSTestOptions.NoLogoOption;
+        public readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription);
+        public readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+        public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
+        public readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
+        public readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
+        public readonly Option<ReadOnlyDictionary<string, string>?> PropertiesOption = CommonOptions.PropertiesOption;
+        public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
+        public readonly Option<string[]> VsTestTargetOption = VSTestOptions.VsTestTargetOption;
 
         public VSTest()
             : base(CliCommandStrings.DotnetTestCommandVSTestDescription)

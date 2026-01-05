@@ -189,6 +189,8 @@ public class TestCommand(
 
     private static TestCommand FromParseResult(ParseResult result, string[] settings, string testSessionCorrelationId, string[] additionalBuildProperties, string? msbuildPath = null)
     {
+        var definition = (TestCommandDefinition.VSTest)result.CommandResult.Command;
+
         result.ShowHelpOrErrorIfAppropriate();
 
         // Extra msbuild properties won't be parsed and so end up in the UnmatchedTokens list. In addition to those
@@ -200,7 +202,7 @@ public class TestCommand(
             : result.UnmatchedTokens;
 
         var parsedArgs =
-            result.OptionValuesToBeForwarded(TestCommandParser.GetCommand()) // all msbuild-recognized tokens
+            result.OptionValuesToBeForwarded(definition.Options) // all msbuild-recognized tokens
                 .Concat(unMatchedNonSettingsArgs); // all tokens that the test-parser doesn't explicitly track (minus the settings tokens)
 
         VSTestTrace.SafeWriteTrace(() => $"MSBuild args from forwarded options: {string.Join(", ", parsedArgs)}");
@@ -216,7 +218,7 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{runSettingsArg}\"");
         }
 
-        string? verbosityArg = result.ForwardedOptionValues(TestCommandParser.GetCommand(), "--verbosity")?.SingleOrDefault() ?? null;
+        string? verbosityArg = result.ForwardedOptionValues(definition, "--verbosity")?.SingleOrDefault() ?? null;
         if (verbosityArg != null)
         {
             string[] verbosity = verbosityArg.Split(':', 2);
@@ -233,14 +235,14 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestSessionCorrelationId={testSessionCorrelationId}");
         }
 
-        bool noRestore = result.GetValue(CommonOptions.NoRestoreOption) || result.GetValue(VSTestOptions.NoBuildOption);
+        bool noRestore = result.GetValue(definition.NoRestoreOption) || result.GetValue(definition.NoBuildOption);
 
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
             CommonOptions.PropertiesOption,
             CommonOptions.RestorePropertiesOption,
-            VSTestOptions.VsTestTargetOption,
-            TestCommandDefinition.VerbosityOption,
+            CommonOptions.CreateRequiredMSBuildTargetOption("VSTest"),
+            CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption())
             .CloneWithNoLogo(true);
 
@@ -250,7 +252,7 @@ public class TestCommand(
             msbuildPath);
 
         // Apply environment variables provided by the user via --environment (-e) option, if present
-        if (result.GetValue(CommonOptions.TestEnvOption) is { } environmentVariables)
+        if (result.GetValue(definition.TestEnvOption) is { } environmentVariables)
         {
             foreach (var (name, value) in environmentVariables)
             {
@@ -288,9 +290,11 @@ public class TestCommand(
 
         var artifactsPostProcessArgs = new List<string> { "--artifactsProcessingMode-postprocess", $"--testSessionCorrelationId:{testSessionCorrelationId}" };
 
-        if (parseResult.GetResult(VSTestOptions.DiagOption) is not null)
+        var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
+
+        if (parseResult.GetResult(definition.DiagOption) is not null)
         {
-            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(VSTestOptions.DiagOption)}");
+            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(definition.DiagOption)}");
         }
 
         try

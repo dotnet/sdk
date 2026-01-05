@@ -33,21 +33,27 @@ internal static class MicrosoftTestingPlatformOptions
         HelpName = CliCommandStrings.CmdRootPathName,
     };
 
-    public static readonly Option<string> ResultsDirectoryOption = new("--results-directory")
+    public const string ResultsDirectoryOptionName = "--results-directory";
+
+    public static readonly Option<string> ResultsDirectoryOption = new(ResultsDirectoryOptionName)
     {
         Description = CliCommandStrings.CmdResultsDirectoryDescription,
         HelpName = CliCommandStrings.CmdPathToResultsDirectory,
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly Option<string> ConfigFileOption = new("--config-file")
+    public const string ConfigFileOptionName = "--config-file";
+
+    public static readonly Option<string> ConfigFileOption = new(ConfigFileOptionName)
     {
         Description = CliCommandStrings.CmdConfigFileDescription,
         HelpName = CliCommandStrings.CmdConfigFilePath,
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly Option<string> DiagnosticOutputDirectoryOption = new("--diagnostic-output-directory")
+    public const string DiagnosticOutputDirectoryOptionName = "--diagnostic-output-directory";
+
+    public static readonly Option<string> DiagnosticOutputDirectoryOption = new(DiagnosticOutputDirectoryOptionName)
     {
         Description = CliCommandStrings.CmdDiagnosticOutputDirectoryDescription,
         HelpName = CliCommandStrings.CmdDiagnosticOutputDirectoryPath,
@@ -100,7 +106,9 @@ internal static class MicrosoftTestingPlatformOptions
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly Option<string> ListTestsOption = new("--list-tests")
+    public const string ListTestsOptionName = "--list-tests";
+
+    public static readonly Option<string> ListTestsOption = new(ListTestsOptionName)
     {
         Description = CliCommandStrings.CmdListTestsDescription,
         Arity = ArgumentArity.Zero

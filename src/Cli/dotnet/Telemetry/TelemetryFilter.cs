@@ -110,32 +110,27 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["build", "publish"],
-            optionsToLog: [ BuildCommandDefinition.FrameworkOption, PublishCommandDefinition.FrameworkOption,
-                BuildCommandDefinition.RuntimeOption, PublishCommandDefinition.RuntimeOption, BuildCommandDefinition.ConfigurationOption,
-                PublishCommandDefinition.ConfigurationOption ]
+            optionsToLog: [ CommonOptions.FrameworkOptionName, CommonOptions.RuntimeOptionName, CommonOptions.ConfigurationOptionName ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["run", "clean", "test"],
-            optionsToLog: [ RunCommandDefinition.FrameworkOption, CleanCommandDefinition.FrameworkOption,
-                TestCommandDefinition.FrameworkOption, RunCommandDefinition.ConfigurationOption, CleanCommandDefinition.ConfigurationOption,
-                TestCommandDefinition.ConfigurationOption ]
+            optionsToLog: [CommonOptions.FrameworkOptionName, CommonOptions.ConfigurationOptionName]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["pack"],
-            optionsToLog: [PackCommandDefinition.ConfigurationOption]
+            optionsToLog: [CommonOptions.ConfigurationOptionName]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["vstest"],
-            optionsToLog: [ CommonOptions.TestPlatformOption,
-                CommonOptions.TestFrameworkOption, CommonOptions.TestLoggerOption ]
+            optionsToLog: [CommonOptions.TestPlatformOptionName, CommonOptions.TestFrameworkOptionName, CommonOptions.TestLoggerOptionName]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["publish"],
-            optionsToLog: [PublishCommandDefinition.RuntimeOption]
+            optionsToLog: [CommonOptions.RuntimeOptionName]
         ),
         new AllowListToSendVerbSecondVerbFirstArgument(["workload", "tool", "new"]),
     ];

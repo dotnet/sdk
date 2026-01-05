@@ -168,8 +168,10 @@ internal static class CommonOptions
         .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
 
+    public const string FrameworkOptionName = "--framework";
+
     public static Option<string> CreateFrameworkOption(string description) =>
-        new Option<string>("--framework", "-f")
+        new Option<string>(FrameworkOptionName, "-f")
         {
             Description = description,
             HelpName = CliStrings.FrameworkArgumentName,
@@ -215,8 +217,10 @@ internal static class CommonOptions
             Arity = ArgumentArity.Zero
         }.ForwardAs("--property:UseCurrentRuntimeIdentifier=True");
 
+    public const string ConfigurationOptionName = "--configuration";
+
     public static Option<string?> CreateConfigurationOption(string description) =>
-        new Option<string?>("--configuration", "-c")
+        new Option<string?>(ConfigurationOptionName, "-c")
         {
             Description = description,
             HelpName = CliStrings.ConfigurationArgumentName,
@@ -387,11 +391,17 @@ internal static class CommonOptions
         return result;
     }
 
-    public static readonly Option<string> TestPlatformOption = new("--Platform");
+    public const string TestPlatformOptionName = "--Platform";
 
-    public static readonly Option<string> TestFrameworkOption = new("--Framework");
+    public static readonly Option<string> TestPlatformOption = new(TestPlatformOptionName);
 
-    public static readonly Option<string[]> TestLoggerOption = new("--logger");
+    public const string TestFrameworkOptionName = "--Framework";
+
+    public static readonly Option<string> TestFrameworkOption = new(TestFrameworkOptionName);
+
+    public const string TestLoggerOptionName = "--logger";
+
+    public static readonly Option<string[]> TestLoggerOption = new(TestLoggerOptionName);
 
     /// <summary>
     /// Creates an implementation of the <c>--no-logo</c> option.
