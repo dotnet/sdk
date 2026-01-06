@@ -17,7 +17,6 @@ jobs:
       contents: read
       issues: write
       pull-requests: write
-      reactions: write
     outputs:
       pr_number: ${{ steps.metadata.outputs.pr_number }}
       head_ref: ${{ steps.metadata.outputs.head_ref }}
@@ -215,7 +214,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      reactions: write
       issues: write
     steps:
       - name: Checkout PR branch
@@ -331,7 +329,6 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
-      reactions: write
     steps:
       - name: Download failure diagnostics
         uses: actions/download-artifact@v4
