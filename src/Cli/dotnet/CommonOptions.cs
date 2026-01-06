@@ -3,7 +3,6 @@
 
 using System.Collections.ObjectModel;
 using System.CommandLine;
-using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
@@ -189,27 +188,6 @@ internal static class CommonOptions
             HelpName = CliStrings.ArtifactsPathArgumentName
         }.ForwardAsSingle(o => $"--property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
 
-    private static readonly string RuntimeArgName = CliStrings.RuntimeIdentifierArgumentName;
-    public static IEnumerable<string> RuntimeArgFunc(string rid)
-    {
-        if (GetArchFromRid(rid) == "amd64")
-        {
-            rid = GetOsFromRid(rid) + "-x64";
-        }
-        return [$"--property:RuntimeIdentifier={rid}", "--property:_CommandLineDefinedRuntimeIdentifier=true"];
-    }
-
-    public const string RuntimeOptionName = "--runtime";
-
-    public static Option<string> CreateRuntimeOption(string description) =>
-        new Option<string>(RuntimeOptionName, "-r")
-        {
-            HelpName = RuntimeArgName,
-            Description = description,
-            IsDynamic = true
-        }.ForwardAsMany(RuntimeArgFunc!)
-        .AddCompletions(CliCompletion.RunTimesFromProjectFile);
-
     public static Option<bool> CreateUseCurrentRuntimeOption(string description) =>
         new Option<bool>("--use-current-runtime", "--ucr")
         {
@@ -294,20 +272,6 @@ internal static class CommonOptions
             Arity = ArgumentArity.Zero
         }
         .ForwardIfEnabled(["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
-
-    public static Option<string> ArchitectureOption =
-        new Option<string>("--arch", "-a")
-        {
-            Description = CliStrings.ArchitectureOptionDescription,
-            HelpName = CliStrings.ArchArgumentName
-        }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
-
-    public static Option<string> OperatingSystemOption =
-        new Option<string>("--os")
-        {
-            Description = CliStrings.OperatingSystemOptionDescription,
-            HelpName = CliStrings.OSArgumentName
-        }.SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
 
     public static Option<bool> DebugOption = new("--debug")
     {
@@ -420,71 +384,6 @@ internal static class CommonOptions
             throw new GracefulException(CliStrings.SelfContainAndNoSelfContainedConflict);
         }
     }
-
-    internal static IEnumerable<string> ResolveArchOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
-    {
-        if (parseResult.GetResult(RuntimeOptionName) is not null)
-        {
-            throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndArchOptions);
-        }
-
-        if (parseResult.BothArchAndOsOptionsSpecified())
-        {
-            // ResolveOsOptionToRuntimeIdentifier handles resolving the RID when both arch and os are specified
-            return [];
-        }
-
-        return ResolveRidShorthandOptions(null, arg);
-    }
-
-    internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
-    {
-        if (parseResult.GetResult(RuntimeOptionName) is not null)
-        {
-            throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndOsOptions);
-        }
-
-        var arch = parseResult.BothArchAndOsOptionsSpecified() ? parseResult.GetValue(ArchitectureOption) : null;
-        return ResolveRidShorthandOptions(arg, arch);
-    }
-
-    private static IEnumerable<string> ResolveRidShorthandOptions(string? os, string? arch) =>
-        [$"--property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}"];
-
-    internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string? os, string? arch)
-    {
-        var currentRid = GetCurrentRuntimeId();
-        arch = arch == "amd64" ? "x64" : arch;
-        os = string.IsNullOrEmpty(os) ? GetOsFromRid(currentRid) : os;
-        arch = string.IsNullOrEmpty(arch) ? GetArchFromRid(currentRid) : arch;
-        return $"{os}-{arch}";
-    }
-
-    public static string GetCurrentRuntimeId()
-    {
-        // Get the dotnet directory, while ignoring custom msbuild resolvers
-        string? dotnetRootPath = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
-            key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
-                ? null
-                : Environment.GetEnvironmentVariable(key));
-        var ridFileName = "NETCoreSdkRuntimeIdentifierChain.txt";
-        var sdkPath = dotnetRootPath is not null ? Path.Combine(dotnetRootPath, "sdk") : "sdk";
-
-        // When running under test the Product.Version might be empty or point to version not installed in dotnetRootPath.
-        string runtimeIdentifierChainPath = string.IsNullOrEmpty(Product.Version) || !Directory.Exists(Path.Combine(sdkPath, Product.Version)) ?
-            Path.Combine(Directory.GetDirectories(sdkPath)[0], ridFileName) :
-            Path.Combine(sdkPath, Product.Version, ridFileName);
-        string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ? [.. File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l))] : [];
-        if (currentRuntimeIdentifiers == null || !currentRuntimeIdentifiers.Any() || !currentRuntimeIdentifiers[0].Contains("-"))
-        {
-            throw new GracefulException(CliStrings.CannotResolveRuntimeIdentifier);
-        }
-        return currentRuntimeIdentifiers[0]; // First rid is the most specific (ex win-x64)
-    }
-
-    private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
-
-    private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
 }
 
 

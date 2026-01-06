@@ -13,6 +13,8 @@ internal abstract partial class TestCommandDefinition : Command
 {
     private const string Link = "https://aka.ms/dotnet-test";
 
+    public readonly TargetPlatformOptions TargetPlatformOptions = new(CliCommandStrings.TestRuntimeOptionDescription);
+
     public readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
 
     public readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);

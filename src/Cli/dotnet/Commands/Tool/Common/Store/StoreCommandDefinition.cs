@@ -68,7 +68,7 @@ internal static class StoreCommandDefinition
     }.ForwardAs("-property:CreateProfilingSymbols=false");
 
     public static readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription);
-    public static readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription);
+    public static readonly Option<string> RuntimeOption = TargetPlatformOptions.CreateRuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription);
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
     public static readonly Option<bool> UseCurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription);
     public static readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();

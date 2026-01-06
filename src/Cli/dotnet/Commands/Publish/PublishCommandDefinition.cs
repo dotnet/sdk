@@ -48,7 +48,7 @@ internal sealed class PublishCommandDefinition : Command
 
     public readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-    public readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.PublishRuntimeOptionDescription);
+    public readonly TargetPlatformOptions TargetPlatformOptions = new(CliCommandStrings.PublishRuntimeOptionDescription);
 
     public readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.PublishFrameworkOptionDescription);
 
@@ -61,8 +61,6 @@ internal sealed class PublishCommandDefinition : Command
     public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
     public readonly Option<string> VersionSuffixOption = CommonOptions.CreateVersionSuffixOption();
     public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
-    public readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
-    public readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
     public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
     public readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
     public readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
@@ -85,14 +83,12 @@ internal sealed class PublishCommandDefinition : Command
         Options.Add(NoSelfContainedOption);
         Options.Add(NoLogoOption);
         Options.Add(FrameworkOption);
-        Options.Add(RuntimeOption);
         Options.Add(ConfigurationOption);
         Options.Add(VersionSuffixOption);
         Options.Add(InteractiveOption);
         Options.Add(NoRestoreOption);
         Options.Add(VerbosityOption);
-        Options.Add(ArchitectureOption);
-        Options.Add(OperatingSystemOption);
+        TargetPlatformOptions.AddTo(Options);
         Options.Add(DisableBuildServersOption);
         Options.Add(TargetOption);
         Options.Add(GetPropertyOption);

@@ -15,7 +15,7 @@ internal sealed class RunCommandDefinition : Command
 
     public readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.RunFrameworkOptionDescription);
 
-    public readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.RunRuntimeOptionDescription);
+    public readonly TargetPlatformOptions TargetPlatformOptions = new(CliCommandStrings.RunRuntimeOptionDescription);
 
     public readonly Option<string> ProjectOption = new("--project")
     {
@@ -74,10 +74,6 @@ internal sealed class RunCommandDefinition : Command
 
     public readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
 
-    public readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
-
-    public readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
-
     public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
 
     public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
@@ -97,7 +93,6 @@ internal sealed class RunCommandDefinition : Command
 
         Options.Add(ConfigurationOption);
         Options.Add(FrameworkOption);
-        Options.Add(RuntimeOption);
         Options.Add(ProjectOption);
         Options.Add(FileOption);
         Options.Add(PropertyOption);
@@ -110,8 +105,7 @@ internal sealed class RunCommandDefinition : Command
         Options.Add(SelfContainedOption);
         Options.Add(NoSelfContainedOption);
         Options.Add(VerbosityOption);
-        Options.Add(ArchitectureOption);
-        Options.Add(OperatingSystemOption);
+        TargetPlatformOptions.AddTo(Options);
         Options.Add(DisableBuildServersOption);
         Options.Add(ArtifactsPathOption);
         Options.Add(EnvOption);

@@ -170,9 +170,6 @@ public static class ParseResultExtensions
         _ => parseResult.GetResult(Parser.DotnetSubCommand)?.GetValueOrDefault<string>()
     };
 
-    public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
-        parseResult.HasOption(CommonOptions.ArchitectureOption) && parseResult.HasOption(CommonOptions.OperatingSystemOption);
-
     public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult)
     {
         var properties = GetRunPropertyOptions(parseResult, true);

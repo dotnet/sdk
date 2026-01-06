@@ -110,7 +110,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["build", "publish"],
-            optionsToLog: [ CommonOptions.FrameworkOptionName, CommonOptions.RuntimeOptionName, CommonOptions.ConfigurationOptionName ]
+            optionsToLog: [ CommonOptions.FrameworkOptionName, TargetPlatformOptions.RuntimeOptionName, CommonOptions.ConfigurationOptionName ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
@@ -130,7 +130,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["publish"],
-            optionsToLog: [CommonOptions.RuntimeOptionName]
+            optionsToLog: [TargetPlatformOptions.RuntimeOptionName]
         ),
         new AllowListToSendVerbSecondVerbFirstArgument(["workload", "tool", "new"]),
     ];

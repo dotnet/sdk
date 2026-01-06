@@ -35,7 +35,7 @@ internal sealed class CleanCommandDefinition : Command
 
     public readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal);
 
-    public readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.CleanRuntimeOptionDescription);
+    public readonly Option<string> RuntimeOption = TargetPlatformOptions.CreateRuntimeOption(CliCommandStrings.CleanRuntimeOptionDescription);
     public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
     public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
     public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();

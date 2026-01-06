@@ -224,7 +224,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("--arch", arch,
                                              "--configuration", configuration);
 
-            string runtime = CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
+            string runtime = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
 
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
 
@@ -265,11 +265,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
-            string runtime = CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, "x64");
+            string runtime = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, "x64");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CommonOptions.RuntimeOptionName, runtime,
+                                    .Execute("--runtime", runtime,
                                              "--configuration", configuration);
 
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
@@ -285,11 +285,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
-            string runtime = CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
+            string runtime = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CommonOptions.RuntimeOptionName, runtime,
+                                    .Execute("--runtime", runtime,
                                             "--arch", arch,
                                             "--configuration", configuration);
 
@@ -303,11 +303,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
-            string runtime = CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, string.Empty);
+            string runtime = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, string.Empty);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CommonOptions.OperatingSystemOption.Name, runtime.Split('-')[0],
+                                    .Execute("--os", runtime.Split('-')[0],
                                             "--configuration", configuration);
 
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
@@ -323,11 +323,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
-            string runtime = CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
+            string runtime = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CommonOptions.OperatingSystemOption.Name, runtime.Split('-')[0],
+                                    .Execute("--os", runtime.Split('-')[0],
                                             "--arch", arch,
                                             "--configuration", configuration);
 

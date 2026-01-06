@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.CommandLine;
 using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -17,6 +18,8 @@ internal static class TestCommandParser
     private static TestCommandDefinition CreateCommand()
     {
         var command = TestCommandDefinition.Create();
+
+        command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
         switch (command)
         {

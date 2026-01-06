@@ -24,7 +24,9 @@ internal sealed class RestoreCommandDefinition : Command
     public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
 
     public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
-    public readonly Option<IEnumerable<string>> RuntimeOption = CreateRuntimeOption(showHelp: true, useShortOptions: true);
+
+    public readonly TargetPlatformOptions TargetPlatformOptions = new(CreateRuntimeOption());
+
     public readonly Option<bool> NoDependenciesOption = CreateNoDependenciesOption(showHelp: true);
     public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
     public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
@@ -53,8 +55,6 @@ internal sealed class RestoreCommandDefinition : Command
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:RestoreForceEvaluate=true");
 
-    public readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
-    public readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
     public readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
     public readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
     public readonly Option<string[]?> GetTargetResultOption = CommonOptions.CreateGetTargetResultOption();
@@ -70,7 +70,6 @@ internal sealed class RestoreCommandDefinition : Command
 
         ImplicitRestoreOptions.AddTo(Options);
 
-        Options.Add(RuntimeOption);
         Options.Add(NoDependenciesOption);
         Options.Add(VerbosityOption);
         Options.Add(InteractiveOption);
@@ -82,8 +81,8 @@ internal sealed class RestoreCommandDefinition : Command
         Options.Add(TargetOption);
         Options.Add(NoLogoOption);
 
-        Options.Add(ArchitectureOption);
-        Options.Add(OperatingSystemOption);
+        TargetPlatformOptions.AddTo(Options);
+
         Options.Add(GetPropertyOption);
         Options.Add(GetItemOption);
         Options.Add(GetTargetResultOption);
@@ -113,22 +112,16 @@ internal sealed class RestoreCommandDefinition : Command
         return $"-property:RuntimeIdentifiers={string.Join("%3B", convertedRids)}";
     }
 
-    private static Option<IEnumerable<string>> CreateRuntimeOption(bool showHelp, bool useShortOptions)
+    private static Option<IEnumerable<string>> CreateRuntimeOption()
     {
-        Option<IEnumerable<string>> runtimeOption = new Option<IEnumerable<string>>("--runtime")
+        Option<IEnumerable<string>> runtimeOption = new Option<IEnumerable<string>>("--runtime", "-r")
         {
             Description = CliCommandStrings.CmdRuntimeOptionDescription,
             HelpName = CliCommandStrings.CmdRuntimeOption,
-            Hidden = !showHelp,
             IsDynamic = true
         }.ForwardAsSingle(RestoreRuntimeArgFunc)
          .AllowSingleArgPerToken()
          .AddCompletions(CliCompletion.RunTimesFromProjectFile);
-
-        if (useShortOptions)
-        {
-            runtimeOption.Aliases.Add("-r");
-        }
 
         return runtimeOption;
     }
@@ -141,6 +134,7 @@ internal sealed class RestoreCommandDefinition : Command
             Hidden = !showHelp
         }.ForwardAs("-property:RestoreRecursive=false");
 
-    public static Option<string[]> CreateTargetOption()
-        => CommonOptions.CreateRequiredMSBuildTargetOption("Restore");
+    public static Option<string[]> CreateTargetOption() => CommonOptions.CreateRequiredMSBuildTargetOption("Restore");
+
+
 }

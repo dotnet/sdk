@@ -41,11 +41,11 @@ internal static class ValidationUtility
                 return;
             }
 
-            if (parseResult.HasOption(definition.ArchitectureOption) ||
+            if (parseResult.HasOption(definition.TargetPlatformOptions.ArchitectureOption) ||
                 parseResult.HasOption(definition.ConfigurationOption) ||
                 parseResult.HasOption(definition.FrameworkOption) ||
-                parseResult.HasOption(definition.OperatingSystemOption) ||
-                parseResult.HasOption(definition.RuntimeOption))
+                parseResult.HasOption(definition.TargetPlatformOptions.OperatingSystemOption) ||
+                parseResult.HasOption(definition.TargetPlatformOptions.RuntimeOption))
             {
                 throw new GracefulException(CliCommandStrings.CmdOptionCannotBeUsedWithTestModulesDescription);
             }

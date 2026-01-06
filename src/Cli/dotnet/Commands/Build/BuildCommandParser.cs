@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Build;
 
@@ -18,6 +19,7 @@ internal static class BuildCommandParser
     {
         var command = new BuildCommandDefinition();
         command.SetAction(BuildCommand.Run);
+        command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RunTimesFromProjectFile);
         return command;
     }
 }

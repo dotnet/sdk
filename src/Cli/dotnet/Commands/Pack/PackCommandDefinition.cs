@@ -70,7 +70,7 @@ internal sealed class PackCommandDefinition : Command
     public readonly Option<string[]?> GetTargetResultOption = CommonOptions.CreateGetTargetResultOption();
     public readonly Option<string[]?> GetResultOutputFileOption = CommonOptions.CreateGetResultOutputFileOption();
     public readonly Option<bool> NoDependenciesOption = RestoreCommandDefinition.CreateNoDependenciesOption(showHelp: false);
-    public readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription);
+    public readonly Option<string> RuntimeOption = TargetPlatformOptions.CreateRuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription);
 
     public readonly Option<NuGetVersion> VersionOption = new Option<NuGetVersion>("--version")
     {

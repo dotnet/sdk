@@ -77,15 +77,9 @@ internal abstract partial class TestCommandDefinition
             HelpName = CliCommandStrings.CmdNumberName
         };
 
-        public readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
-
         public readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CommonOptions.EnvOption;
 
         public readonly Option<ReadOnlyDictionary<string, string>?> PropertiesOption = CommonOptions.PropertiesOption;
-
-        public readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
-
-        public readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription);
 
         public readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
@@ -147,13 +141,11 @@ internal abstract partial class TestCommandDefinition
             Options.Add(DiagnosticOutputDirectoryOption);
             Options.Add(MaxParallelTestModulesOption);
             Options.Add(MinimumExpectedTestsOption);
-            Options.Add(ArchitectureOption);
             Options.Add(EnvOption);
             Options.Add(PropertiesOption);
             Options.Add(ConfigurationOption);
             Options.Add(FrameworkOption);
-            Options.Add(OperatingSystemOption);
-            Options.Add(RuntimeOption);
+            TargetPlatformOptions.AddTo(Options);
             Options.Add(VerbosityOption);
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);

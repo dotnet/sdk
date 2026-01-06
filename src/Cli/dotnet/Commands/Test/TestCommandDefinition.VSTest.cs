@@ -121,15 +121,9 @@ internal abstract partial class TestCommandDefinition
 
         public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(forwardAs: "--property:VSTestNoLogo=true", description: CliCommandStrings.TestCmdNoLogo);
 
-        public readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.TestRuntimeOptionDescription);
-
         public readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
         public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
-
-        public readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
-
-        public readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
 
         public readonly Option<ReadOnlyDictionary<string, string>?> PropertiesOption = CommonOptions.PropertiesOption;
 
@@ -189,12 +183,10 @@ internal abstract partial class TestCommandDefinition
             Options.Add(NoLogoOption);
             Options.Add(ConfigurationOption);
             Options.Add(FrameworkOption);
-            Options.Add(RuntimeOption);
             Options.Add(NoRestoreOption);
             Options.Add(InteractiveOption);
             Options.Add(VerbosityOption);
-            Options.Add(ArchitectureOption);
-            Options.Add(OperatingSystemOption);
+            TargetPlatformOptions.AddTo(Options);
             Options.Add(PropertiesOption);
             Options.Add(DisableBuildServersOption);
             Options.Add(VsTestTargetOption);
