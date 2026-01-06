@@ -8,17 +8,32 @@ permissions:
   contents: read
 
 jobs:
+      - name: Evaluate comment command
+        id: command-filter
+        uses: actions/github-script@v7
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        with:
+          script: |
+            const body = (process.env.COMMENT_BODY || '').trim().toLowerCase();
+            const shouldRun = body.startsWith('/fixcompletions') || body.startsWith('/completions');
+            core.setOutput('should_run', String(shouldRun));
+            if (!shouldRun) {
+              core.info('Comment does not invoke /fixcompletions or /completions. Skipping workflow.');
+            }
   authorize:
     name: Authorize Request
-    # Only run on PR comments that start with /fixcompletions or /completions
-    if: github.event.issue.pull_request &&
-      (startsWith(github.event.comment.body, '/fixcompletions') || startsWith(github.event.comment.body, '/completions'))
+        if: steps.command-filter.outputs.should_run == 'true'
+    # Only run on PR comments on pull requests
+    if: github.event.issue.pull_request
     runs-on: ubuntu-latest
     permissions:
       contents: read
+        if: steps.command-filter.outputs.should_run == 'true'
       issues: write
       pull-requests: write
     outputs:
+      should_run: ${{ steps.command-filter.outputs.should_run }}
       pr_number: ${{ steps.metadata.outputs.pr_number }}
       head_ref: ${{ steps.metadata.outputs.head_ref }}
 
@@ -38,6 +53,7 @@ jobs:
           reaction: eyes
 
       - name: Comment on PR - Started
+        if: steps.command-filter.outputs.should_run == 'true'
         uses: ./.github/workflow_templates/comment-on-pr.yml
         with:
           token: ${{ github.token }}
@@ -49,6 +65,7 @@ jobs:
 
       - name: Capture PR metadata
         id: metadata
+        if: steps.command-filter.outputs.should_run == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -64,6 +81,7 @@ jobs:
   generate:
     name: Generate Snapshot Updates
     needs: authorize
+    if: needs.authorize.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -122,14 +140,16 @@ jobs:
           diff_output=$(git diff --name-only -- test/dotnet.Tests/CompletionTests/snapshots/ | grep -E '\.verified\.' || true)
 
           if [ ${#received_files[@]} -gt 0 ] || [ -n "$diff_output" ]; then
-            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "changes=true" >> "$GITHUB_OUTPUT"
             echo "Changed snapshot files:"
-            printf '%s\n' "${received_files[@]}"
+            if [ ${#received_files[@]} -gt 0 ]; then
+              printf '%s\n' "${received_files[@]}"
+            fi
             if [ -n "$diff_output" ]; then
               echo "$diff_output"
             fi
           else
-            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "changes=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Update verified snapshots
@@ -161,9 +181,9 @@ jobs:
             reason="update"
           fi
 
-          echo "status=$status" >> $GITHUB_OUTPUT
+          echo "status=$status" >> "$GITHUB_OUTPUT"
           if [ -n "$reason" ]; then
-            echo "failure_reason=$reason" >> $GITHUB_OUTPUT
+            echo "failure_reason=$reason" >> "$GITHUB_OUTPUT"
           fi
         env:
           BUILD_OUTCOME: ${{ steps.build.outcome }}
@@ -219,7 +239,7 @@ jobs:
   apply:
     name: Apply Snapshot Updates
     needs: [authorize, generate]
-    if: needs.generate.result == 'success'
+    if: needs.authorize.outputs.should_run == 'true' && needs.generate.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -329,7 +349,7 @@ jobs:
   report-failure:
     name: Report Failure
     needs: [authorize, generate, apply]
-    if: needs.authorize.result == 'success' && failure()
+    if: needs.authorize.outputs.should_run == 'true' && needs.authorize.result == 'success' && failure()
     runs-on: ubuntu-latest
     permissions:
       issues: write
