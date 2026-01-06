@@ -47,7 +47,19 @@ internal class AutomaticEncodingRestorer : IDisposable
         {
             if (outputEncodingAccessible)
             {
-                Console.OutputEncoding = _originalOutputEncoding;
+                // On Windows, if UTF-8 encoding was set, don't restore the original encoding.
+                // This prevents issues with the native host (dotnet.exe) output formatting
+                // when running in administrator mode. The native host expects UTF-8 encoding
+                // to be set for proper console output.
+                // See: https://github.com/dotnet/sdk/issues/XXXXX
+                if (OperatingSystem.IsWindows() && Console.OutputEncoding.CodePage == Encoding.UTF8.CodePage)
+                {
+                    // Leave UTF-8 encoding in place
+                }
+                else
+                {
+                    Console.OutputEncoding = _originalOutputEncoding;
+                }
             }
             if (inputEncodingAccessible)
             {
