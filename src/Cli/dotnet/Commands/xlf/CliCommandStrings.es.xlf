@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="BuildCmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">No mostrar la pancarta de inicio ni el mensaje de copyright.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildConfigurationOptionDescription">
@@ -186,7 +186,7 @@ Rutas de acceso buscadas: "{1}", "{2}".</target>
       </trans-unit>
       <trans-unit id="CannotConvertDirective">
         <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">Algunas directivas no se pueden convertir. Ejecute el archivo para ver todos los errores de compilación. Especifique "--force" para convertir de todos modos.</target>
+        <target state="new">Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
         <note>{Locked="--force"}</note>
       </trans-unit>
       <trans-unit id="CannotFindCommandName">
@@ -236,7 +236,7 @@ Rutas de acceso buscadas: "{1}", "{2}".</target>
       </trans-unit>
       <trans-unit id="CleanCmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">No mostrar la pancarta de inicio ni el mensaje de copyright.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -460,12 +460,12 @@ Si no se especifica, el archivo se generará dentro del directorio predeterminad
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
         <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Define la ruta de acceso del directorio que se va a ejecutar. Si no se especifica, el valor predeterminado es el directorio actual.</target>
+        <target state="new">Defines the path of directory to run. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryPathName">
         <source>DIRECTORY_PATH</source>
-        <target state="translated">DIRECTORY_PATH</target>
+        <target state="new">DIRECTORY_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
@@ -745,12 +745,12 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdProjectDescription">
         <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">Define la ruta de acceso del archivo de proyecto que se va a ejecutar (nombre de carpeta o ruta de acceso completa). Si no se especifica, el valor predeterminado es el directorio actual.</target>
+        <target state="new">Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectPathName">
         <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+        <target state="new">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -797,7 +797,7 @@ Si no existe, se creará el directorio especificado.</target>
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Define la ruta de acceso del archivo de solución que se va a ejecutar. Si no se especifica, el valor predeterminado es el directorio actual.</target>
+        <target state="new">Defines the path of the solution file to run. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -988,7 +988,7 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">Ruta de acceso al archivo del proyecto que debe ejecutarse (si solo hay un proyecto, es el directorio actual de forma predeterminada).</target>
+        <target state="new">The path to the project file to run (defaults to the current directory if there is only one project).</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
@@ -1073,7 +1073,7 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
       </trans-unit>
       <trans-unit id="DefaultLaunchProfileDisplayName">
         <source>(Default)</source>
-        <target state="translated">(Predeterminada)</target>
+        <target state="new">(Default)</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -1108,7 +1108,7 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
         <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">Error al leer '{0}': {1}</target>
+        <target state="new">An error was encountered when reading '{0}': {1}</target>
         <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
@@ -1128,7 +1128,7 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
       </trans-unit>
       <trans-unit id="DirectiveError">
         <source>error</source>
-        <target state="translated">error</target>
+        <target state="new">error</target>
         <note>Used when reporting directive errors like "file(location): error: message".</note>
       </trans-unit>
       <trans-unit id="DirectivesRemoved">
@@ -1194,7 +1194,7 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
       </trans-unit>
       <trans-unit id="DotnetTestPipeIncompleteSize">
         <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="translated">"dotnet" recibió inesperadamente menos de 4 bytes de la canalización con nombre "dotnet test".</target>
+        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
@@ -1226,14 +1226,14 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
         <source>There are several launch profiles with case-sensitive names, which isn't permitted:
 {0}
 Make the profile names distinct.</source>
-        <target state="translated">Hay varios perfiles de inicio con nombres que distinguen mayúsculas de minúsculas, lo que no está permitido:
+        <target state="new">There are several launch profiles with case-sensitive names, which isn't permitted:
 {0}
-Defina nombres de perfiles distintos.</target>
+Make the profile names distinct.</target>
         <note />
       </trans-unit>
       <trans-unit id="DuplicateDirective">
         <source>Duplicate directives are not supported: {0}</source>
-        <target state="translated">No se admiten directivas duplicadas: {0}</target>
+        <target state="new">Duplicate directives are not supported: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
       <trans-unit id="DurationColon">
@@ -1593,7 +1593,7 @@ Defina nombres de perfiles distintos.</target>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">La directiva debe contener un nombre sin caracteres especiales y un valor opcional separado por "{1}" como "#:{0} Nombre{1}Valor".</target>
+        <target state="new">The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
@@ -1613,7 +1613,7 @@ Defina nombres de perfiles distintos.</target>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
         <source>The '#:project' directive is invalid: {0}</source>
-        <target state="translated">La directiva "#:project" no es válida: {0}</target>
+        <target state="new">The '#:project' directive is invalid: {0}</target>
         <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
@@ -1638,22 +1638,22 @@ Defina nombres de perfiles distintos.</target>
       </trans-unit>
       <trans-unit id="LaunchProfileDoesNotExist">
         <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">No existe ningún perfil de inicio con el nombre "{0}".</target>
+        <target state="new">A launch profile with the name '{0}' doesn't exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfileHandlerCannotBeLocated">
         <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">No se admite el tipo de perfil de inicio "{0}".</target>
+        <target state="new">The launch profile type '{0}' is not supported.</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfileIsNotAJsonObject">
         <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">Un perfil con el nombre especificado no es un objeto JSON válido.</target>
+        <target state="new">A profile with the specified name isn't a valid JSON object.</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
         <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">La propiedad "profiles" del documento de configuración de inicio no es un objeto JSON.</target>
+        <target state="new">The 'profiles' property of the launch settings document is not a JSON object.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
@@ -1755,7 +1755,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="MissingDirectiveName">
         <source>Missing name of '{0}'.</source>
-        <target state="translated">Falta el nombre de "{0}".</target>
+        <target state="new">Missing name of '{0}'.</target>
         <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
@@ -1979,7 +1979,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PackCmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">No mostrar la pancarta de inicio ni el mensaje de copyright.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdOutputDir">
@@ -2467,7 +2467,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory ({0}):</source>
-        <target state="translated">Especifique el directorio de salida ({0}):</target>
+        <target state="new">Specify the output directory ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2522,12 +2522,12 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PropertyDirectiveInvalidName">
         <source>Invalid property name: {0}</source>
-        <target state="translated">Nombre de propiedad no válido {0}</target>
+        <target state="new">Invalid property name: {0}</target>
         <note>{0} is an inner exception message.</note>
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="translated">La directiva de propiedad debe tener dos partes separadas por "=", como "#:property PropertyName=PropertyValue".</target>
+        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
@@ -2537,7 +2537,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PublishCmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">No mostrar la pancarta de inicio ni el mensaje de copyright.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2574,7 +2574,7 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       </trans-unit>
       <trans-unit id="QuoteInDirective">
         <source>Directives currently cannot contain double quotes (").</source>
-        <target state="translated">Las directivas no pueden contener comillas dobles ("), por ahora.</target>
+        <target state="new">Directives currently cannot contain double quotes (").</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
@@ -3083,7 +3083,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="StaticGraphRestoreNotSupported">
         <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="translated">No se admite la restauración de gráficos estáticos para aplicaciones basadas en archivos. Elimine "#:property".</target>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property'.</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
@@ -3634,7 +3634,7 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
       </trans-unit>
       <trans-unit id="UnrecognizedDirective">
         <source>Unrecognized directive '{0}'.</source>
-        <target state="translated">Directiva no reconocida "{0}".</target>
+        <target state="new">Unrecognized directive '{0}'.</target>
         <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
@@ -3714,7 +3714,7 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
       </trans-unit>
       <trans-unit id="UsableLaunchProfileCannotBeLocated">
         <source>A usable launch profile could not be located.</source>
-        <target state="translated">No se ha podido encontrar un perfil de inicio que se pueda usar.</target>
+        <target state="new">A usable launch profile could not be located.</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">
