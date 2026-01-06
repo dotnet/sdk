@@ -251,6 +251,8 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
 
     private static void PrintDependencyCategory(JsonElement category, string indent, IReporter reporter)
     {
+        const int labelWidth = 21; // Align with "Recommended Version: "
+
         foreach (var prop in category.EnumerateObject())
         {
             if (prop.Value.ValueKind == JsonValueKind.Array)
@@ -258,7 +260,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
                 // Handle any array of items (packages, drivers, etc.)
                 foreach (var item in prop.Value.EnumerateArray())
                 {
-                    PrintItemInfo(item, indent, reporter);
+                    PrintItemInfo(item, indent, labelWidth, reporter);
                 }
             }
             else
@@ -268,7 +270,8 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
                 if (!string.IsNullOrEmpty(value))
                 {
                     var displayName = GetLocalizedPropertyName(prop.Name);
-                    reporter.WriteLine($"{indent}{displayName}: {value}");
+                    var label = displayName + ":";
+                    reporter.WriteLine($"{indent}{label.PadRight(labelWidth)}{value}");
                 }
             }
         }
@@ -284,7 +287,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         };
     }
 
-    private static void PrintItemInfo(JsonElement item, string indent, IReporter reporter)
+    private static void PrintItemInfo(JsonElement item, string indent, int labelWidth, IReporter reporter)
     {
         string? displayName = null;
         string? id = null;
@@ -333,17 +336,20 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         {
             var optionalText = optional == true ? $" ({CliCommandStrings.WorkloadDependencyOptional})" : "";
             reporter.WriteLine($"{indent}- {displayName}{optionalText}");
+            var detailIndent = indent + "    ";
             if (!string.IsNullOrEmpty(id))
             {
-                reporter.WriteLine($"{indent}    {id}");
+                reporter.WriteLine($"{detailIndent}{id}");
             }
             if (!string.IsNullOrEmpty(version))
             {
-                reporter.WriteLine($"{indent}    {CliCommandStrings.WorkloadDependencyVersion}: {version}");
+                var label = CliCommandStrings.WorkloadDependencyVersion + ":";
+                reporter.WriteLine($"{detailIndent}{label.PadRight(labelWidth)}{version}");
             }
             if (!string.IsNullOrEmpty(recommendedVersion))
             {
-                reporter.WriteLine($"{indent}    {CliCommandStrings.WorkloadDependencyRecommendedVersion}: {recommendedVersion}");
+                var label = CliCommandStrings.WorkloadDependencyRecommendedVersion + ":";
+                reporter.WriteLine($"{detailIndent}{label.PadRight(labelWidth)}{recommendedVersion}");
             }
         }
     }

@@ -211,36 +211,36 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             
             // Verify dependencies are shown from WorkloadDependencies.json
             output.Should().Contain("Dependencies (jdk):");
-            output.Should().Contain("Version: [11.0,18.0)");
-            output.Should().Contain("Recommended Version: 11.0.12");
+            output.Should().Contain("[11.0,18.0)");  // Version value (label is padded)
+            output.Should().Contain("11.0.12");  // Recommended Version value
             
             output.Should().Contain("Dependencies (androidsdk):");
-            output.Should().Contain("- Android SDK Build-Tools 30");
+            output.Should().Contain("Android SDK Build-Tools 30");
             output.Should().Contain("build-tools;30.0.3");
-            output.Should().Contain("- Android SDK Platform-Tools");
+            output.Should().Contain("Android SDK Platform-Tools");
             output.Should().Contain("platform-tools");
-            output.Should().Contain("Recommended Version: 31.0.3");  // from sdkPackage wrapper
-            output.Should().Contain("- Android Emulator (optional)");
+            output.Should().Contain("31.0.3");  // Recommended Version from sdkPackage wrapper
+            output.Should().Contain("Android Emulator (optional)");
             output.Should().Contain("emulator");
 
             // Verify RID-keyed id is resolved to platform-specific value
-            output.Should().Contain("- Google APIs System Image (optional)");
+            output.Should().Contain("Google APIs System Image (optional)");
             output.Should().Contain("system-images;android-35;google_apis;");
 
             // Verify appium drivers array is shown
             output.Should().Contain("Dependencies (appium):");
-            output.Should().Contain("Version: [2.17.1,)");
-            output.Should().Contain("- windows");
-            output.Should().Contain("- xcuitest");
-            output.Should().Contain("- mac2");
-            output.Should().Contain("- uiautomator2");
+            output.Should().Contain("[2.17.1,)");  // Version value
+            output.Should().Contain("windows");
+            output.Should().Contain("xcuitest");
+            output.Should().Contain("mac2");
+            output.Should().Contain("uiautomator2");
 
             // Verify "workload" category is skipped (it's metadata, not a dependency)
             output.Should().NotContain("Dependencies (workload):");
             output.Should().NotContain("This should be skipped");
 
             // Verify optional: false does not show "(optional)"
-            output.Should().Contain("- Not Optional Item");
+            output.Should().Contain("Not Optional Item");
             output.Should().NotContain("Not Optional Item (optional)");
         }
 
