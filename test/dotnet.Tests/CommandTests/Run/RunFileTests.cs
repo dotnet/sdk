@@ -4158,7 +4158,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """;
         File.WriteAllText(programPath, code);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "version 1");
