@@ -8,6 +8,21 @@ permissions:
   contents: read
 
 jobs:
+  authorize:
+    name: Authorize Request
+    # Only run on PR comments on pull requests
+    if: github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    outputs:
+      should_run: ${{ steps.command-filter.outputs.should_run }}
+      pr_number: ${{ steps.metadata.outputs.pr_number }}
+      head_ref: ${{ steps.metadata.outputs.head_ref }}
+
+    steps:
       - name: Evaluate comment command
         id: command-filter
         uses: actions/github-script@v7
@@ -21,29 +36,15 @@ jobs:
             if (!shouldRun) {
               core.info('Comment does not invoke /fixcompletions or /completions. Skipping workflow.');
             }
-  authorize:
-    name: Authorize Request
-        if: steps.command-filter.outputs.should_run == 'true'
-    # Only run on PR comments on pull requests
-    if: github.event.issue.pull_request
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-        if: steps.command-filter.outputs.should_run == 'true'
-      issues: write
-      pull-requests: write
-    outputs:
-      should_run: ${{ steps.command-filter.outputs.should_run }}
-      pr_number: ${{ steps.metadata.outputs.pr_number }}
-      head_ref: ${{ steps.metadata.outputs.head_ref }}
 
-    steps:
       - name: Ensure commenter is trusted
+        if: steps.command-filter.outputs.should_run == 'true'
         uses: ./.github/workflow_templates/ensure-trusted-commenter.yml
         with:
           author-association: ${{ github.event.comment.author_association }}
 
       - name: React to comment
+        if: steps.command-filter.outputs.should_run == 'true'
         uses: ./.github/workflow_templates/react-to-comment.yml
         with:
           token: ${{ github.token }}
