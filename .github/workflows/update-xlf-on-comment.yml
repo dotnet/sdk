@@ -25,12 +25,12 @@ jobs:
 
     steps:
       - name: Ensure commenter is trusted
-        uses: ./.github/workflow_templates/ensure-trusted-commenter
+        uses: ./.github/workflow_templates/ensure-trusted-commenter.yml
         with:
           author-association: ${{ github.event.comment.author_association }}
 
       - name: React to comment
-        uses: ./.github/workflow_templates/react-to-comment
+        uses: ./.github/workflow_templates/react-to-comment.yml
         with:
           token: ${{ github.token }}
           owner: ${{ github.repository_owner }}
@@ -39,7 +39,7 @@ jobs:
           reaction: eyes
 
       - name: Comment on PR - Started
-        uses: ./.github/workflow_templates/comment-on-pr
+        uses: ./.github/workflow_templates/comment-on-pr.yml
         with:
           token: ${{ github.token }}
           owner: ${{ github.repository_owner }}
@@ -94,7 +94,7 @@ jobs:
         working-directory: pr
     steps:
       - name: Checkout PR head
-        uses: ./.github/workflow_templates/checkout-without-credentials
+        uses: ./.github/workflow_templates/checkout-without-credentials.yml
         with:
           token: ${{ github.token }}
           fetch-depth: 0
@@ -217,7 +217,7 @@ jobs:
       issues: write
     steps:
       - name: Checkout PR branch
-        uses: ./.github/workflow_templates/checkout-without-credentials
+        uses: ./.github/workflow_templates/checkout-without-credentials.yml
         with:
           token: ${{ github.token }}
           fetch-depth: 0
@@ -270,7 +270,7 @@ jobs:
       - name: Commit XLF changes
         id: commit
         if: needs.generate.outputs.changes == 'true'
-        uses: ./.github/workflow_templates/commit-if-allowed-extensions
+        uses: ./.github/workflow_templates/commit-if-allowed-extensions.yml
         with:
           commit-message: ${{ steps.commit-message.outputs.message }}
           allowed-patterns: |
@@ -298,7 +298,7 @@ jobs:
 
       - name: Comment on PR - Success
         if: steps.commit.outcome == 'success'
-        uses: ./.github/workflow_templates/comment-on-pr
+        uses: ./.github/workflow_templates/comment-on-pr.yml
         with:
           token: ${{ github.token }}
           owner: ${{ github.repository_owner }}
@@ -310,7 +310,7 @@ jobs:
 
       - name: Comment on PR - No changes
         if: needs.generate.outputs.changes != 'true'
-        uses: ./.github/workflow_templates/comment-on-pr
+        uses: ./.github/workflow_templates/comment-on-pr.yml
         with:
           token: ${{ github.token }}
           owner: ${{ github.repository_owner }}
@@ -365,7 +365,7 @@ jobs:
           printf 'body<<EOF\n%s\nEOF\n' "$message" >> "$GITHUB_OUTPUT"
 
       - name: Comment on PR - Failure
-        uses: ./.github/workflow_templates/comment-on-pr
+        uses: ./.github/workflow_templates/comment-on-pr.yml
         with:
           token: ${{ github.token }}
           owner: ${{ github.repository_owner }}
