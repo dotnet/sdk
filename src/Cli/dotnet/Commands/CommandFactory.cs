@@ -12,9 +12,9 @@ namespace Microsoft.DotNet.Cli.Commands;
 public static class CommandFactory
 {
     internal static CommandBase CreateVirtualOrPhysicalCommand(
-        System.CommandLine.Command command,
+        System.CommandLine.Command commandDefinition,
         Argument<string[]> catchAllUserInputArgument,
-        Func<MSBuildArgs, string, VirtualProjectBuildingCommand> configureVirtualCommand,
+        Func<MSBuildArgs, string, VirtualProjectBuildingCommand> createVirtualCommand,
         Func<MSBuildArgs, string?, CommandBase> createPhysicalCommand,
         IEnumerable<Option> optionsToUseWhenParsingMSBuildFlags,
         ParseResult parseResult,
@@ -23,7 +23,7 @@ public static class CommandFactory
     {
         var args = parseResult.GetValue(catchAllUserInputArgument) ?? [];
         LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
-        var forwardedArgs = parseResult.OptionValuesToBeForwarded(command);
+        var forwardedArgs = parseResult.OptionValuesToBeForwarded(commandDefinition);
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuilder.IsValidEntryPointPath(arg))
         {
             var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs],
@@ -35,7 +35,7 @@ public static class CommandFactory
                 CommonOptions.CreateGetResultOutputFileOption(),
             ]);
             msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
-            return configureVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
+            return createVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
         }
         else
         {

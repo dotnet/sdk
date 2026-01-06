@@ -7,15 +7,16 @@ namespace Microsoft.DotNet.Cli.Commands.Publish;
 
 internal static class PublishCommandParser
 {
-    private static readonly Command Command = SetAction(PublishCommandDefinition.Create());
+    private static readonly PublishCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetAction(Command command)
+    private static PublishCommandDefinition CreateCommand()
     {
+        var command = new PublishCommandDefinition();
         command.SetAction(PublishCommand.Run);
         return command;
     }

@@ -8,65 +8,68 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
 
-internal static class CleanCommandDefinition
+internal sealed class CleanCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-clean";
+    public new const string Name = "clean";
+    private const string Link = "https://aka.ms/dotnet-clean";
 
-    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
+    public readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
         Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
+    public readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.CleanCmdOutputDirDescription,
         HelpName = CliCommandStrings.CleanCmdOutputDir
     }.ForwardAsOutputPath("OutputPath");
 
-    public static readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
+    public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.CleanFrameworkOptionDescription);
+    public readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.CleanFrameworkOptionDescription);
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.CleanConfigurationOptionDescription);
+    public readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.CleanConfigurationOptionDescription);
 
-    public static readonly Option<string[]> TargetOption = CommonOptions.CreateRequiredMSBuildTargetOption("Clean");
+    public readonly Option<string[]> TargetOption = CreateTargetOption();
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal);
+    public readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal);
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.CleanRuntimeOptionDescription);
-    public static readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
-    public static readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
-    public static readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
-    public static readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
-    public static readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
-    public static readonly Option<string[]?> GetTargetResultOption = CommonOptions.CreateGetTargetResultOption();
-    public static readonly Option<string[]?> GetResultOutputFileOption = CommonOptions.CreateGetResultOutputFileOption();
+    public readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.CleanRuntimeOptionDescription);
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
+    public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
+    public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
+    public readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
+    public readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
+    public readonly Option<string[]?> GetTargetResultOption = CommonOptions.CreateGetTargetResultOption();
+    public readonly Option<string[]?> GetResultOutputFileOption = CommonOptions.CreateGetResultOutputFileOption();
 
-    public static Command Create()
+    public readonly Command FileBasedAppsCommand = new CleanFileBasedAppArtifactsCommandDefinition();
+
+    public CleanCommandDefinition()
+        : base(Name, CliCommandStrings.CleanAppFullName)
     {
-        Command command = new("clean", CliCommandStrings.CleanAppFullName)
-        {
-            DocsLink = DocsLink
-        };
+        this.DocsLink = Link;
 
-        command.Arguments.Add(SlnOrProjectOrFileArgument);
-        command.Options.Add(FrameworkOption);
-        command.Options.Add(RuntimeOption);
-        command.Options.Add(ConfigurationOption);
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(VerbosityOption);
-        command.Options.Add(OutputOption);
-        command.Options.Add(ArtifactsPathOption);
-        command.Options.Add(NoLogoOption);
-        command.Options.Add(DisableBuildServersOption);
-        command.Options.Add(TargetOption);
-        command.Options.Add(GetPropertyOption);
-        command.Options.Add(GetItemOption);
-        command.Options.Add(GetTargetResultOption);
-        command.Options.Add(GetResultOutputFileOption);
-        command.Subcommands.Add(CleanFileBasedAppArtifactsCommandDefinition.Create());
+        Arguments.Add(SlnOrProjectOrFileArgument);
+        Options.Add(FrameworkOption);
+        Options.Add(RuntimeOption);
+        Options.Add(ConfigurationOption);
+        Options.Add(InteractiveOption);
+        Options.Add(VerbosityOption);
+        Options.Add(OutputOption);
+        Options.Add(ArtifactsPathOption);
+        Options.Add(NoLogoOption);
+        Options.Add(DisableBuildServersOption);
+        Options.Add(TargetOption);
+        Options.Add(GetPropertyOption);
+        Options.Add(GetItemOption);
+        Options.Add(GetTargetResultOption);
+        Options.Add(GetResultOutputFileOption);
 
-        return command;
+        Subcommands.Add(FileBasedAppsCommand);
     }
+
+    public static Option<string[]> CreateTargetOption()
+        => CommonOptions.CreateRequiredMSBuildTargetOption("Clean");
 }

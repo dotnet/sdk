@@ -8,102 +8,98 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Build;
 
-internal static class BuildCommandDefinition
+internal sealed class BuildCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-build";
+    private const string Link = "https://aka.ms/dotnet-build";
 
-    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
+    public readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
         Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly ImplicitRestoreOptions ImplicitRestoreOptions = new(showHelp: false, useShortOptions: false);
+    public readonly ImplicitRestoreOptions ImplicitRestoreOptions = new(showHelp: false, useShortOptions: false);
 
-    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
+    public readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.BuildOutputOptionDescription,
         HelpName = CliCommandStrings.OutputOptionName
     }.ForwardAsOutputPath("OutputPath");
 
-    public static readonly Option<bool> NoIncrementalOption = new Option<bool>("--no-incremental")
+    public readonly Option<bool> NoIncrementalOption = new Option<bool>("--no-incremental")
     {
         Description = CliCommandStrings.NoIncrementalOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--target:Rebuild");
 
-    public static readonly Option<bool> NoDependenciesOption = new Option<bool>("--no-dependencies")
+    public readonly Option<bool> NoDependenciesOption = new Option<bool>("--no-dependencies")
     {
         Description = CliCommandStrings.NoDependenciesOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--property:BuildProjectReferences=false");
 
-    public static readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
+    public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
 
-    public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+    public readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
-    public static readonly Option<bool> SelfContainedOption = CommonOptions.SelfContainedOption;
+    public readonly Option<bool> SelfContainedOption = CommonOptions.SelfContainedOption;
 
-    public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
+    public readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription);
+    public readonly Option<string> RuntimeOption = CommonOptions.CreateRuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription);
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.BuildFrameworkOptionDescription);
+    public readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.BuildFrameworkOptionDescription);
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.BuildConfigurationOptionDescription);
+    public readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.BuildConfigurationOptionDescription);
 
     /// <summary>
     /// Build actually means 'run the default Target' generally in MSBuild
     /// </summary>
-    public static readonly Option<string[]?> TargetOption = CommonOptions.CreateMSBuildTargetOption();
+    public readonly Option<string[]?> TargetOption = CommonOptions.CreateMSBuildTargetOption();
 
-    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
+    public readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
 
-    public static readonly Option<string> VersionSuffixOption = CommonOptions.CreateVersionSuffixOption();
-    public static readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
-    public static readonly Option<bool> DebugOption = CommonOptions.DebugOption;
-    public static readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
-    public static readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
-    public static readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
-    public static readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
-    public static readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
-    public static readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
-    public static readonly Option<string[]?> GetTargetResultOption = CommonOptions.CreateGetTargetResultOption();
-    public static readonly Option<string[]?> GetResultOutputFileOption = CommonOptions.CreateGetResultOutputFileOption();
+    public readonly Option<string> VersionSuffixOption = CommonOptions.CreateVersionSuffixOption();
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
+    public readonly Option<bool> DebugOption = CommonOptions.DebugOption;
+    public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
+    public readonly Option<string> ArchitectureOption = CommonOptions.ArchitectureOption;
+    public readonly Option<string> OperatingSystemOption = CommonOptions.OperatingSystemOption;
+    public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
+    public readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
+    public readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
+    public readonly Option<string[]?> GetTargetResultOption = CommonOptions.CreateGetTargetResultOption();
+    public readonly Option<string[]?> GetResultOutputFileOption = CommonOptions.CreateGetResultOutputFileOption();
 
-    public static Command Create()
+    public BuildCommandDefinition()
+        : base("build", CliCommandStrings.BuildAppFullName)
     {
-        Command command = new("build", CliCommandStrings.BuildAppFullName)
-        {
-            DocsLink = DocsLink
-        };
+        this.DocsLink = Link;
 
-        command.Arguments.Add(SlnOrProjectOrFileArgument);
-        ImplicitRestoreOptions.AddTo(command.Options);
-        command.Options.Add(FrameworkOption);
-        command.Options.Add(ConfigurationOption);
-        command.Options.Add(RuntimeOption);
-        command.Options.Add(VersionSuffixOption);
-        command.Options.Add(NoRestoreOption);
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(VerbosityOption);
-        command.Options.Add(DebugOption);
-        command.Options.Add(OutputOption);
-        command.Options.Add(ArtifactsPathOption);
-        command.Options.Add(NoIncrementalOption);
-        command.Options.Add(NoDependenciesOption);
-        command.Options.Add(NoLogoOption);
-        command.Options.Add(SelfContainedOption);
-        command.Options.Add(NoSelfContainedOption);
-        command.Options.Add(ArchitectureOption);
-        command.Options.Add(OperatingSystemOption);
-        command.Options.Add(DisableBuildServersOption);
-        command.Options.Add(TargetOption);
-        command.Options.Add(GetPropertyOption);
-        command.Options.Add(GetItemOption);
-        command.Options.Add(GetTargetResultOption);
-        command.Options.Add(GetResultOutputFileOption);
-
-        return command;
+        Arguments.Add(SlnOrProjectOrFileArgument);
+        ImplicitRestoreOptions.AddTo(Options);
+        Options.Add(FrameworkOption);
+        Options.Add(ConfigurationOption);
+        Options.Add(RuntimeOption);
+        Options.Add(VersionSuffixOption);
+        Options.Add(NoRestoreOption);
+        Options.Add(InteractiveOption);
+        Options.Add(VerbosityOption);
+        Options.Add(DebugOption);
+        Options.Add(OutputOption);
+        Options.Add(ArtifactsPathOption);
+        Options.Add(NoIncrementalOption);
+        Options.Add(NoDependenciesOption);
+        Options.Add(NoLogoOption);
+        Options.Add(SelfContainedOption);
+        Options.Add(NoSelfContainedOption);
+        Options.Add(ArchitectureOption);
+        Options.Add(OperatingSystemOption);
+        Options.Add(DisableBuildServersOption);
+        Options.Add(TargetOption);
+        Options.Add(GetPropertyOption);
+        Options.Add(GetItemOption);
+        Options.Add(GetTargetResultOption);
+        Options.Add(GetResultOutputFileOption);
     }
 }

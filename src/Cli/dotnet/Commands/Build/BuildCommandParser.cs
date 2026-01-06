@@ -7,15 +7,16 @@ namespace Microsoft.DotNet.Cli.Commands.Build;
 
 internal static class BuildCommandParser
 {
-    private static readonly Command Command = SetAction(BuildCommandDefinition.Create());
+    private static readonly BuildCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetAction(Command command)
+    private static BuildCommandDefinition CreateCommand()
     {
+        var command = new BuildCommandDefinition();
         command.SetAction(BuildCommand.Run);
         return command;
     }
