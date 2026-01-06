@@ -34,7 +34,7 @@ internal sealed class ProjectConvertCommandDefinition
             FileArgument,
             SharedOptions.OutputOption,
             ForceOption,
-            CommonOptions.InteractiveOption(),
+            CommonOptions.CreateInteractiveOption(),
             DryRunOption,
         };
 }
