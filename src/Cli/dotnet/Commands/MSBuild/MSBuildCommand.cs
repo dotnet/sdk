@@ -16,7 +16,7 @@ public class MSBuildCommand(
         CommonOptions.PropertiesOption,
         CommonOptions.RestorePropertiesOption,
         MSBuildCommandDefinition.TargetOption,
-        CommonOptions.VerbosityOption(),
+        CommonOptions.CreateVerbosityOption(),
         // We set the no-logo option to false here to ensure that by default the logo is shown for this command.
         // This is different from other commands that default to hiding the logo - but this command is meant to mimic
         // the behavior of calling MSBuild directly, which shows the logo by default.

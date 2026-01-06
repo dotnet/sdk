@@ -1680,7 +1680,7 @@ _testhost_tool_install() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--global --local --tool-path --version --configfile --tool-manifest --add-source --source --framework --prerelease --disable-parallel --ignore-failed-sources --no-http-cache --interactive --verbosity --arch --create-manifest-if-needed --allow-downgrade --allow-roll-forward --help" 
+    opts="--global --local --tool-path --version --configfile --tool-manifest --add-source --source --framework --prerelease --disable-parallel --ignore-failed-sources --no-http-cache --interactive --verbosity --allow-downgrade --arch --create-manifest-if-needed --allow-roll-forward --help" 
     opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
@@ -1809,7 +1809,7 @@ _testhost_tool_restore() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--configfile --add-source --tool-manifest --disable-parallel --ignore-failed-sources --no-http-cache --interactive --verbosity --help" 
+    opts="--configfile --add-source --tool-manifest --verbosity --disable-parallel --ignore-failed-sources --no-http-cache --interactive --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1833,7 +1833,7 @@ _testhost_tool_execute() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--version --yes --interactive --allow-roll-forward --prerelease --configfile --source --add-source --disable-parallel --ignore-failed-sources --no-http-cache --verbosity --help" 
+    opts="--version --yes --allow-roll-forward --prerelease --configfile --source --add-source --verbosity --disable-parallel --ignore-failed-sources --no-http-cache --interactive --help" 
     opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
@@ -2006,7 +2006,7 @@ _testhost_workload_install() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--configfile --source --include-previews --skip-manifest-update --temp-dir --disable-parallel --ignore-failed-sources --no-http-cache --interactive --verbosity --version --help" 
+    opts="--temp-dir --verbosity --configfile --source --include-previews --version --disable-parallel --ignore-failed-sources --no-http-cache --interactive --skip-manifest-update --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -2014,12 +2014,12 @@ _testhost_workload_install() {
     fi
     
     case $prev in
-        --include-previews)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+        --include-previews)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
     esac
@@ -2034,7 +2034,7 @@ _testhost_workload_update() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--configfile --source --include-previews --temp-dir --from-previous-sdk --advertising-manifests-only --version --disable-parallel --ignore-failed-sources --no-http-cache --interactive --verbosity --from-history --manifests-only --help" 
+    opts="--temp-dir --verbosity --configfile --source --include-previews --version --disable-parallel --ignore-failed-sources --no-http-cache --interactive --from-previous-sdk --advertising-manifests-only --from-history --manifests-only --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -2042,16 +2042,16 @@ _testhost_workload_update() {
     fi
     
     case $prev in
+        --verbosity|-v)
+            COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
         --include-previews)
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
         --from-previous-sdk)
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
-        --verbosity|-v)
-            COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
     esac
@@ -2179,7 +2179,7 @@ _testhost_workload_restore() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--configfile --source --include-previews --skip-manifest-update --temp-dir --disable-parallel --ignore-failed-sources --no-http-cache --interactive --verbosity --version --help" 
+    opts="--temp-dir --verbosity --configfile --source --include-previews --version --disable-parallel --ignore-failed-sources --no-http-cache --interactive --skip-manifest-update --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -2187,12 +2187,12 @@ _testhost_workload_restore() {
     fi
     
     case $prev in
-        --include-previews)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+        --include-previews)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
     esac
