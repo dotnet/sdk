@@ -9,24 +9,24 @@ using Microsoft.DotNet.Cli.Commands.Package;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Add;
 
-internal static class AddCommandDefinition
+internal sealed class AddCommandDefinition : Command
 {
-    public const string Name = "add";
+    public new const string Name = "add";
+    private const string Link = "https://aka.ms/dotnet-add";
 
-    public static readonly string DocsLink = "https://aka.ms/dotnet-add";
+    public readonly AddPackageCommandDefinition PackageCommand = new();
+    public readonly AddReferenceCommandDefinition ReferenceCommand = new();
 
-    public static Command Create()
+    public readonly Argument<string> ProjectOrFileArgument = PackageCommandDefinition.CreateProjectOrFileArgument();
+
+    public AddCommandDefinition()
+        : base(Name, CliCommandStrings.NetAddCommand)
     {
-        var command = new Command(Name, CliCommandStrings.NetAddCommand)
-        {
-            Hidden = true,
-            DocsLink = DocsLink
-        };
+        Hidden = true;
+        this.DocsLink = Link;
 
-        command.Arguments.Add(PackageCommandDefinition.ProjectOrFileArgument);
-        command.Subcommands.Add(AddPackageCommandDefinition.Create());
-        command.Subcommands.Add(AddReferenceCommandDefinition.Create());
-
-        return command;
+        Arguments.Add(ProjectOrFileArgument);
+        Subcommands.Add(PackageCommand);
+        Subcommands.Add(ReferenceCommand);
     }
 }

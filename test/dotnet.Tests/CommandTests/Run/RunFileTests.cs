@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -468,17 +469,116 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void ReadFromStdin()
     {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
         new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(testInstance.Path)
             .WithStandardInput("""
                 Console.WriteLine("Hello from stdin");
                 Console.WriteLine("Read: " + (Console.ReadLine() ?? "null"));
+                Console.WriteLine("Working directory: " + Environment.CurrentDirectory);
                 """)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("""
+            .And.HaveStdOut($"""
                 Hello from stdin
                 Read: null
+                Working directory: {testInstance.Path}
                 """);
+    }
+
+    /// <summary>
+    /// <c>Directory.Build.props</c> doesn't have any effect on <c>dotnet run -</c>.
+    /// </summary>
+    [Fact]
+    public void ReadFromStdin_BuildProps()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ImplicitUsings>disable</ImplicitUsings>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithStandardInput("""
+                Console.WriteLine("Hello from stdin");
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from stdin");
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithStandardInput("""
+                #:property ImplicitUsings=disable
+                Console.WriteLine("Hello from stdin");
+                """)
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+    }
+
+    /// <summary>
+    /// <c>Directory.Build.props</c> doesn't have any effect on <c>dotnet run -</c>.
+    /// </summary>
+    [Fact]
+    public void ReadFromStdin_ProjectReference()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.cs"), """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "app");
+        Directory.CreateDirectory(appDir);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(appDir)
+            .WithStandardInput($"""
+                #:project $(MSBuildStartupDirectory)/../lib
+                Console.WriteLine(Lib.LibClass.GetMessage());
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Lib");
+
+        // Relative paths are resolved from the isolated temp directory, hence they don't work.
+
+        var errorParts = DirectiveError("app.cs", 1, FileBasedProgramsResources.InvalidProjectDirective,
+            string.Format(FileBasedProgramsResources.CouldNotFindProjectOrDirectory, "{}")).Split("{}");
+        errorParts.Should().HaveCount(2);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(appDir)
+            .WithStandardInput($"""
+                #:project ../lib
+                Console.WriteLine(Lib.LibClass.GetMessage());
+                """)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(errorParts[0])
+            .And.HaveStdErrContaining(errorParts[1]);
     }
 
     [Fact]
@@ -912,7 +1012,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance,
@@ -961,7 +1061,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var workDir = TestPathUtility.ResolveTempPrefixLink(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance,
@@ -1668,7 +1768,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // It is an error when never restored before.
@@ -1700,7 +1800,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // It is an error when never restored before.
@@ -1744,7 +1844,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, "Console.WriteLine();");
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "restore", "Program.cs")
@@ -1764,7 +1864,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "restore", "Program.cs")
@@ -1782,7 +1882,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // It is an error when never built before.
@@ -1822,7 +1922,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // It is an error when never built before.
@@ -1865,7 +1965,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             class C;
             """);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "build", "lib.cs")
@@ -1905,7 +2005,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             </Project>
             """);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "build", "lib.cs")
@@ -1940,7 +2040,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             class C;
             """);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "build", "module.cs")
@@ -1968,7 +2068,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine("Hello WinExe");
             """);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "build", "winexe.cs")
@@ -1993,7 +2093,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine("Hello Exe");
             """);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "build", "exe.cs")
@@ -2030,7 +2130,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             </Project>
             """);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "build", "exe.cs")
@@ -2061,7 +2161,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine("Hello AppContainerExe");
             """);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "build", "appcontainerexe.cs")
@@ -2086,7 +2186,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(testInstance.Path, "artifacts");
@@ -2117,7 +2217,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(testInstance.Path, "artifacts");
@@ -2152,7 +2252,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             { "MyKey": "MyValue" }
             """);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(testInstance.Path, "artifacts");
@@ -2176,7 +2276,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(testInstance.Path, "artifacts");
@@ -2201,7 +2301,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programFile = Path.Join(testInstance.Path, "MyCustomProgram.cs");
         File.WriteAllText(programFile, s_program);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(testInstance.Path, "artifacts");
@@ -2269,7 +2369,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programFile = Path.Join(subDir.FullName, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var publishDir = Path.Join(subDir.FullName, "artifacts");
@@ -2304,7 +2404,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("Hello; EntryPointFilePath set? True");
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var outputDir = Path.Join(testInstance.Path, "artifacts");
@@ -2348,7 +2448,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("Hello; EntryPointFilePath set? True");
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var outputDir = Path.Join(testInstance.Path, "custom");
@@ -2384,7 +2484,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("Hello from Program");
 
-        var artifactsDir = new DirectoryInfo(VirtualProjectBuildingCommand.GetArtifactsPath(programFile));
+        var artifactsDir = new DirectoryInfo(VirtualProjectBuilder.GetArtifactsPath(programFile));
         artifactsDir.Should().HaveFiles(["build-start.cache", "build-success.cache"]);
 
         var dllFile = artifactsDir.File("bin/debug/Program.dll");
@@ -2409,7 +2509,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "build", "Program.cs")
@@ -2511,7 +2611,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Message: ''
                 """);
 
-        // quiet runs here so that launch-profile useage messages don't impact test assertions
+        // quiet runs here so that launch-profile usage messages don't impact test assertions
         new DotnetCommand(Log, "run", "-v", "q", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
@@ -2898,7 +2998,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         if (useIdArg)
@@ -2953,7 +3053,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(entryPointPath, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(entryPointPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // Build using MSBuild.
@@ -3235,7 +3335,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         string programName = Path.GetFileNameWithoutExtension(fileName);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(entryPointPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
         var artifactsBackupDir = Path.ChangeExtension(artifactsDir, ".bak");
         if (Directory.Exists(artifactsBackupDir)) Directory.Delete(artifactsBackupDir, recursive: true);
@@ -3310,7 +3410,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "Hello v1");
@@ -3493,7 +3593,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
@@ -3533,7 +3633,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.CreateSymbolicLink(path: programPath, pathToTarget: intermediatePath);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
@@ -3588,7 +3688,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var programFileName = "App/Program.cs";
@@ -3683,7 +3783,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v1");
@@ -3801,7 +3901,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), "<Project />");
@@ -3844,7 +3944,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "run", "Program.cs", "-bl", "--no-restore")
@@ -3890,7 +3990,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v1", programFileName: programFileName);
@@ -3904,7 +4004,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.Csc, args: ["test", "args"], expectedOutput: """
@@ -3935,7 +4035,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v1", programFileName: programFileName);
@@ -3970,7 +4070,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release");
@@ -4029,7 +4129,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release", programFileName: programFileName);
@@ -4057,7 +4157,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, args: ["test", "args"], expectedOutput: """
@@ -4096,7 +4196,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All);
@@ -4130,7 +4230,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.CreateSymbolicLink(path: programPath, pathToTarget: originalPath);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
@@ -4234,7 +4334,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var programFileName = "App/Program.cs";
@@ -4286,7 +4386,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release");
@@ -4317,7 +4417,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release");
@@ -4616,7 +4716,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """");
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(filePath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(filePath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var prefix = cscOnly
