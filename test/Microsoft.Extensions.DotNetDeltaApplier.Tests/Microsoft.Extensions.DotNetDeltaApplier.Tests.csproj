@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\dotnet-watch.Tests\TestUtilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
-    <Compile Include="..\dotnet-watch.Tests\TestUtilities\TestLogger.cs" Link="Mocks\TestLogger.cs" />
+    <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
+    <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\TestLogger.cs" Link="Mocks\TestLogger.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -95,13 +95,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                  Example
                      .For<NewCommand>(commandArgs.ParseResult)
                      .WithSubcommand<InstallCommand>()
-                     .WithArgument(BaseInstallCommand.NameArgument));
+                     .WithArgument(CommandDefinition.Install.NameArgument));
                 Reporter.Output.WriteLine(LocalizableStrings.Generic_ExampleHeader);
                 Reporter.Output.WriteCommand(
                    Example
                        .For<NewCommand>(commandArgs.ParseResult)
                        .WithSubcommand<InstallCommand>()
-                       .WithArgument(BaseInstallCommand.NameArgument, packageIdToShow));
+                       .WithArgument(CommandDefinition.Install.NameArgument, packageIdToShow));
                 return NewCommandStatus.Success;
             }
             return NewCommandStatus.NotFound;
@@ -253,13 +253,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             // && !commandInput.RemainingParameters.Any())
             {
                 Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Error_NoTemplateName.Red().Bold());
-                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", BaseSearchCommand.SupportedFilters.Select(f => $"'{f.OptionFactory().Name}'")));
+                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", CommandDefinition.Search.SupportedFilterOptions.Select(static option => $"'{option.Name}'")));
                 Reporter.Error.WriteLine(LocalizableStrings.Generic_ExamplesHeader);
                 Reporter.Error.WriteCommand(
                     Example
                         .For<NewCommand>(commandArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithArgument(BaseSearchCommand.NameArgument, "web"));
+                        .WithArgument(CommandDefinition.Search.NameArgument, "web"));
 
                 Reporter.Error.WriteCommand(
                      Example
@@ -271,7 +271,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                  Example
                     .For<NewCommand>(commandArgs.ParseResult)
                     .WithSubcommand<SearchCommand>()
-                    .WithArgument(BaseSearchCommand.NameArgument, "web")
+                    .WithArgument(CommandDefinition.Search.NameArgument, "web")
                     .WithOption(SharedOptionsFactory.CreateLanguageOption(), "C#"));
 
                 return false;

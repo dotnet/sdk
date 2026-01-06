@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -30,17 +31,17 @@ public class PackCommand(
 
     public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
-        var args = parseResult.GetValue(PackCommandParser.SlnOrProjectOrFileArgument) ?? [];
+        var args = parseResult.GetValue(PackCommandDefinition.SlnOrProjectOrFileArgument) ?? [];
 
         LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
-        bool noBuild = parseResult.HasOption(PackCommandParser.NoBuildOption);
+        bool noBuild = parseResult.HasOption(PackCommandDefinition.NoBuildOption);
 
-        bool noRestore = noBuild || parseResult.HasOption(PackCommandParser.NoRestoreOption);
+        bool noRestore = noBuild || parseResult.HasOption(PackCommandDefinition.NoRestoreOption);
 
         return CommandFactory.CreateVirtualOrPhysicalCommand(
             PackCommandParser.GetCommand(),
-            PackCommandParser.SlnOrProjectOrFileArgument,
+            PackCommandDefinition.SlnOrProjectOrFileArgument,
             (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
                 msbuildArgs: msbuildArgs)
@@ -57,8 +58,9 @@ public class PackCommand(
             [
                 CommonOptions.PropertiesOption,
                 CommonOptions.RestorePropertiesOption,
-                PackCommandParser.TargetOption,
-                PackCommandParser.VerbosityOption,
+                PackCommandDefinition.TargetOption,
+                PackCommandDefinition.VerbosityOption,
+                PackCommandDefinition.NoLogoOption
             ],
             parseResult,
             msbuildPath,
@@ -67,7 +69,7 @@ public class PackCommand(
                 ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
                     new ReleasePropertyProjectLocator.DependentCommandOptions(
                             nonBinLogArgs,
-                            parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
+                            parseResult.HasOption(PackCommandDefinition.ConfigurationOption) ? parseResult.GetValue(PackCommandDefinition.ConfigurationOption) : null
                         )
                 );
                 return msbuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified());
@@ -88,7 +90,7 @@ public class PackCommand(
 
     public static int RunPackCommand(ParseResult parseResult)
     {
-        var args = parseResult.GetValue(PackCommandParser.SlnOrProjectOrFileArgument)?.ToList() ?? new List<string>();
+        var args = parseResult.GetValue(PackCommandDefinition.SlnOrProjectOrFileArgument)?.ToList() ?? new List<string>();
 
         if (args.Count != 1)
         {
@@ -102,8 +104,8 @@ public class PackCommand(
         { 
             Logger = new NuGetConsoleLogger(),
             Exclude = new List<string>(),
-            OutputDirectory = parseResult.GetValue(PackCommandParser.OutputOption),
-            LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(BuildCommandParser.VerbosityOption)),
+            OutputDirectory = parseResult.GetValue(PackCommandDefinition.OutputOption),
+            LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(BuildCommandDefinition.VerbosityOption)),
             Arguments = [nuspecPath]
         };
 
@@ -115,11 +117,11 @@ public class PackCommand(
         if (globalProperties != null)
             packArgs.Properties.AddRange(globalProperties);
 
-        var version = parseResult.GetValue(PackCommandParser.VersionOption);
+        var version = parseResult.GetValue(PackCommandDefinition.VersionOption);
         if (version != null)
             packArgs.Version = version.ToNormalizedString();
 
-        var configuration = parseResult.GetValue(PackCommandParser.ConfigurationOption) ?? "Debug";
+        var configuration = parseResult.GetValue(PackCommandDefinition.ConfigurationOption) ?? "Debug";
         packArgs.Properties["configuration"] = configuration;
 
         var packCommandRunner = new PackCommandRunner(packArgs, null);
@@ -133,7 +135,7 @@ public class PackCommand(
         parseResult.HandleDebugSwitch();
         parseResult.ShowHelpOrErrorIfAppropriate();
 
-        var args = parseResult.GetValue(PackCommandParser.SlnOrProjectOrFileArgument)?.ToList() ?? new List<string>();
+        var args = parseResult.GetValue(PackCommandDefinition.SlnOrProjectOrFileArgument)?.ToList() ?? new List<string>();
 
         if (args.Count > 0 && Path.GetExtension(args[0]).Equals(".nuspec", StringComparison.OrdinalIgnoreCase))
         {

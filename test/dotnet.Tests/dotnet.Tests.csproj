@@ -110,6 +110,6 @@
     <ItemGroup>
       <SnapshotFiles Include="$(MSBuildThisFileDirectory)CompletionTests\snapshots\**\*.received.*" />
     </ItemGroup>
-    <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles->Replace('received', 'verified'))" />
+    <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles-&gt;Replace('received', 'verified'))" />
   </Target>
 </Project>

@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -39,8 +40,8 @@ internal static class ValidationUtility
             }
 
             if (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-                parseResult.HasOption(MicrosoftTestingPlatformOptions.ConfigurationOption) ||
-                parseResult.HasOption(MicrosoftTestingPlatformOptions.FrameworkOption) ||
+                parseResult.HasOption(TestCommandDefinition.ConfigurationOption) ||
+                parseResult.HasOption(TestCommandDefinition.FrameworkOption) ||
                 parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
                 parseResult.HasOption(CommonOptions.RuntimeOptionName))
             {
