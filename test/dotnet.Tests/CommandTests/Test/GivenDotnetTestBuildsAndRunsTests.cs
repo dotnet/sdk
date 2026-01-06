@@ -444,7 +444,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(
                                         "-c", configuration,
-                                        CommonOptions.PropertiesOption.Name, "PROPERTY_TO_ENABLE_MTP=1");
+                                        "--property", "PROPERTY_TO_ENABLE_MTP=1");
 
             if (!TestContext.IsLocalized())
             {

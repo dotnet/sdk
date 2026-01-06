@@ -77,7 +77,7 @@ public class PublishCommand : RestoringCommand
                         parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null,
                         parseResult.HasOption(definition.FrameworkOption) ? parseResult.GetValue(definition.FrameworkOption) : null
                     );
-                var projectLocator = new ReleasePropertyProjectLocator(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE, options);
+                var projectLocator = new ReleasePropertyProjectLocator(parseResult.GetValue(CommonOptions.PropertiesOption), MSBuildPropertyNames.PUBLISH_RELEASE, options);
                 var releaseModeProperties = projectLocator.GetCustomDefaultConfigurationValueIfSpecified();
                 return msbuildArgs.CloneWithAdditionalProperties(releaseModeProperties);
             }

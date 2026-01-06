@@ -28,7 +28,7 @@ internal static class CommonOptions
             Arity = ArgumentArity.ZeroOrMore,
             CustomParser = ParseMSBuildTokensIntoDictionary
         }.ForwardAsMSBuildProperty()
-        .AllowSingleArgPerToken();
+         .AllowSingleArgPerToken();
 
     /// <summary>
     /// Sets MSBuild Global Property values that are only used during Restore (implicit or explicit)
@@ -223,12 +223,11 @@ internal static class CommonOptions
         return arg;
     }
 
-    public static Option<bool> NoRestoreOption = new Option<bool>("--no-restore")
+    public static Option<bool> CreateNoRestoreOption() => new Option<bool>("--no-restore")
     {
         Description = CliStrings.NoRestoreDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-restore:false");
-
 
     public static Option<bool> RestoreOption = new Option<bool>("--restore", "-restore")
     {

@@ -81,7 +81,7 @@ internal abstract partial class TestCommandDefinition
 
         public readonly Option<ReadOnlyDictionary<string, string>?> PropertiesOption = CommonOptions.PropertiesOption;
 
-        public readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+        public readonly Option<bool> NoRestoreOption = CommonOptions.CreateNoRestoreOption();
 
         public readonly Option<bool> NoBuildOption = new("--no-build")
         {

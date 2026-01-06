@@ -67,7 +67,7 @@ public class PackCommand(
             msbuildPath,
             transformer: (msbuildArgs) =>
             {
-                ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
+                ReleasePropertyProjectLocator projectLocator = new(parseResult.GetValue(CommonOptions.PropertiesOption), MSBuildPropertyNames.PACK_RELEASE,
                     new ReleasePropertyProjectLocator.DependentCommandOptions(
                             nonBinLogArgs,
                             parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null

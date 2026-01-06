@@ -121,7 +121,7 @@ internal abstract partial class TestCommandDefinition
 
         public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(forwardAs: "--property:VSTestNoLogo=true", description: CliCommandStrings.TestCmdNoLogo);
 
-        public readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+        public readonly Option<bool> NoRestoreOption = CommonOptions.CreateNoRestoreOption();
 
         public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
 

@@ -56,7 +56,7 @@ internal sealed class RunCommandDefinition : Command
         Arity = ArgumentArity.Zero
     };
 
-    public readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+    public readonly Option<bool> NoRestoreOption = CommonOptions.CreateNoRestoreOption();
 
     public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
 
