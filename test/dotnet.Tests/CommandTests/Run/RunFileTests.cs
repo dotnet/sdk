@@ -173,7 +173,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 .And.HaveStdErrContaining(string.Format(
                     CliCommandStrings.RunCommandExceptionNoProjects,
                     testInstance.Path,
-                    RunCommandDefinition.ProjectOption.Name));
+                    "--project"));
         }
     }
 
@@ -302,7 +302,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 .And.HaveStdErrContaining(string.Format(
                     CliCommandStrings.RunCommandExceptionNoProjects,
                     testInstance.Path,
-                    RunCommandDefinition.ProjectOption.Name));
+                    "--project"));
         }
     }
 
@@ -587,7 +587,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DotnetCommand(Log, "run", "-", "--no-build")
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandDefinition.NoBuildOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, "--no-build"));
     }
 
     [Fact]
@@ -596,7 +596,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DotnetCommand(Log, "run", "-", "--launch-profile=test")
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandDefinition.LaunchProfileOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, "--launch-profile"));
     }
 
     /// <summary>
@@ -612,7 +612,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithStandardInput("""Console.WriteLine("stdin code");""")
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionNoProjects, testInstance.Path, RunCommandDefinition.ProjectOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionNoProjects, testInstance.Path, "--project"));
     }
 
     /// <summary>
@@ -637,7 +637,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -656,7 +656,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -759,7 +759,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     [Fact]
@@ -797,7 +797,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -832,7 +832,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -956,7 +956,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 workDir,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -1397,7 +1397,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -3567,7 +3567,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, RunCommandDefinition.NoCacheOption.Name, RunCommandDefinition.NoBuildOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--no-cache", "--no-build"));
     }
 
     /// <summary>

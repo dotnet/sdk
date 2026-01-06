@@ -43,7 +43,20 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     var command = RunCommand.FromArgs(args);
                     command.MSBuildArgs
                         .Should()
-                        .BeEquivalentTo(MSBuildArgs.AnalyzeMSBuildArguments([.. ConstantRestoreArgs, .. expectedArgs, NuGetDisabledProperty ], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.CreateMSBuildTargetOption(), RunCommandDefinition.VerbosityOption, CommonOptions.CreateNoLogoOption()));
+                        .BeEquivalentTo(MSBuildArgs.AnalyzeMSBuildArguments(
+                        [
+                           .. ConstantRestoreArgs,
+                           .. expectedArgs,
+                           NuGetDisabledProperty
+                        ],
+                        options:
+                        [
+                            CommonOptions.PropertiesOption,
+                            CommonOptions.RestorePropertiesOption,
+                            CommonOptions.CreateMSBuildTargetOption(),
+                            CommonOptions.CreateVerbosityOption(),
+                            CommonOptions.CreateNoLogoOption()
+                        ]));
                 });
             }
             finally
