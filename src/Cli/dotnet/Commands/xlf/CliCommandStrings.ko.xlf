@@ -1051,11 +1051,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">날짜</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(기본값)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">워크로드 매니페스트 {0} 버전 {1} 제거 중...</target>
@@ -1085,11 +1080,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Description</source>
         <target state="translated">설명</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">'{0}'을 읽는 동안 오류가 발생했습니다. {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1191,15 +1181,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Downloads</source>
         <target state="translated">다운로드</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">대/소문자를 구분하는 이름을 가진 여러 시작 프로필이 있으며 이는 허용되지 않습니다.
-{0}
-고유한 프로필 이름을 사용하세요.</target>
-        <note />
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1590,26 +1571,6 @@ Make the profile names distinct.</source>
         <source>Latest Version</source>
         <target state="translated">최신 버전</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">이름이 '{0}'인 시작 프로필이 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">시작 프로필 형식 '{0}'은(는) 지원되지 않습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">지정된 이름의 프로필은 유효한 JSON 개체가 아닙니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">시작 설정 문서의 '프로필' 속성이 JSON 개체가 아닙니다.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -2657,6 +2618,11 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">.NET 실행 명령</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="new">Available target frameworks:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">빌드하는 중...</target>
@@ -2666,6 +2632,11 @@ The default is to publish a framework-dependent application.</source>
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">이 프로젝트에 대해 실행 명령을 검색하기 위해 {0} 대상을 실행하지 못했습니다. 오류 및 경고를 수정하고 다시 실행합니다.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="new">Example</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2714,10 +2685,25 @@ Your project targets multiple frameworks. Specify which framework to run using '
 프로젝트에서 여러 프레임워크를 대상으로 합니다. '{0}'을(를) 사용하여 실행할 프레임워크를 지정하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">경고 NETSDK1174: --project에 대한 약어 -p는 더 이상 사용되지 않습니다. --project를 사용하세요.</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="new">Select the target framework to run:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -3625,11 +3611,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
         <target state="translated">{0}을(를) 사용하도록 워크로드 설치 모드를 업데이트했습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">사용할 수 있는 시작 프로필을 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">

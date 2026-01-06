@@ -1051,11 +1051,6 @@ Per altre informazioni, vedere https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Data</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(Predefinita)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">Disinstallazione del manifesto del carico di lavoro {0} versione {1} in corso...</target>
@@ -1085,11 +1080,6 @@ Per altre informazioni, vedere https://aka.ms/dotnet-test/mtp.</target>
         <source>Description</source>
         <target state="translated">Descrizione</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">Si è verificato un errore durante la lettura di "{0}": {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1191,15 +1181,6 @@ Per altre informazioni, vedere https://aka.ms/dotnet-test/mtp.</target>
         <source>Downloads</source>
         <target state="translated">Download</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">Esistono diversi profili di avvio con nomi con distinzione tra maiuscole e minuscole, che non sono consentiti:
-{0}
-Rendi distinti i nomi profilo.</target>
-        <note />
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1590,26 +1571,6 @@ Rendi distinti i nomi profilo.</target>
         <source>Latest Version</source>
         <target state="translated">Ultima versione</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">Non esiste un profilo di avvio con il nome '{0}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">Il tipo '{0}' del profilo di avvio non è supportato.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">Un profilo con il nome specificato non è un oggetto JSON valido.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">La proprietà 'profiles' del documento delle impostazioni di avvio non è un oggetto JSON.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -2657,6 +2618,11 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
         <target state="translated">Comando esecuzione .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="new">Available target frameworks:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">Compilazione...</target>
@@ -2666,6 +2632,11 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">L'esecuzione della destinazione {0} per individuare i comandi di esecuzione non è riuscita per questo progetto. Correggere gli errori e gli avvisi ed eseguire di nuovo.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="new">Example</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2714,10 +2685,25 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Il progetto è destinato a più framework. Specificare il framework da eseguire con '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="new">Move up and down to reveal more frameworks</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Avviso NETSDK1174: l'abbreviazione di -p per --project è deprecata. Usare --project.</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="new">Type to search</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="new">Select the target framework to run:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -3625,11 +3611,6 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
         <target state="translated">La modalità di installazione del carico di lavoro è stata aggiornata per l'uso di {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Non è stato trovato alcun profilo di avvio utilizzabile.</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">

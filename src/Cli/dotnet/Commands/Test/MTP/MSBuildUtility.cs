@@ -35,7 +35,7 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption(), CommonOptions.NoLogoOption());
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.NoLogoOption());
         var solutionFile = SolutionFile.Parse(Path.GetFullPath(solutionFilePath));
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
 
@@ -87,7 +87,7 @@ internal static class MSBuildUtility
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption(), CommonOptions.NoLogoOption());
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.NoLogoOption());
 
         using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
@@ -153,7 +153,7 @@ internal static class MSBuildUtility
             msbuildArgs.Add($"-verbosity:quiet");
         }
 
-        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandDefinition.MTPTargetOption, TestCommandDefinition.VerbosityOption, CommonOptions.NoLogoOption());
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, MicrosoftTestingPlatformOptions.MTPTargetOption, TestCommandDefinition.VerbosityOption, CommonOptions.NoLogoOption());
 
         int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
 

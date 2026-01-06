@@ -34,7 +34,7 @@ internal sealed class FileBasedAppSourceEditor
         {
             if (field.IsDefault)
             {
-                field = FileLevelDirectiveHelpers.FindDirectives(SourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
+                field = FileLevelDirectiveHelpers.FindDirectives(SourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
                 Debug.Assert(!field.IsDefault);
             }
 
