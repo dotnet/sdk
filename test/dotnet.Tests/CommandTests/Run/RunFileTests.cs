@@ -3528,7 +3528,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         BuildLevel expectedLevel,
         ReadOnlySpan<string> args = default,
         string expectedOutput = "Hello from Program",
-        string programFileName = "Program.cs", string? workDir = null,
+        string programFileName = "Program.cs",
+        string? workDir = null,
         Func<TestCommand, TestCommand>? customizeCommand = null)
     {
         string prefix = expectedLevel switch
