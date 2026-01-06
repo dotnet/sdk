@@ -302,18 +302,6 @@ internal static class CommonOptions
             HelpName = CliStrings.ArchArgumentName
         }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
-    public static Option<string> LongFormArchitectureOption =
-        new Option<string>("--arch")
-        {
-            Description = CliStrings.ArchitectureOptionDescription,
-            HelpName = CliStrings.ArchArgumentName
-        }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
-
-    internal static string? ArchOptionValue(ParseResult parseResult) =>
-        string.IsNullOrEmpty(parseResult.GetValue(ArchitectureOption)) ?
-            parseResult.GetValue(LongFormArchitectureOption) :
-            parseResult.GetValue(ArchitectureOption);
-
     public static Option<string> OperatingSystemOption =
         new Option<string>("--os")
         {
@@ -456,7 +444,7 @@ internal static class CommonOptions
             throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndOsOptions);
         }
 
-        var arch = parseResult.BothArchAndOsOptionsSpecified() ? ArchOptionValue(parseResult) : null;
+        var arch = parseResult.BothArchAndOsOptionsSpecified() ? parseResult.GetValue(ArchitectureOption) : null;
         return ResolveRidShorthandOptions(arg, arch);
     }
 

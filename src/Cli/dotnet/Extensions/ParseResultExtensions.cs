@@ -171,9 +171,7 @@ public static class ParseResultExtensions
     };
 
     public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
-        (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-        parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) &&
-        parseResult.HasOption(CommonOptions.OperatingSystemOption);
+        parseResult.HasOption(CommonOptions.ArchitectureOption) && parseResult.HasOption(CommonOptions.OperatingSystemOption);
 
     public static bool UsingRunCommandShorthandProjectOption(this ParseResult parseResult)
     {
