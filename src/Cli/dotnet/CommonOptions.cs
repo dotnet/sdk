@@ -333,7 +333,7 @@ internal static class CommonOptions
         {
             Description = CliStrings.SelfContainedOptionDescription
         }
-        .ForwardIfEnabled([$"--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true"]);
+        .ForwardAsMany(o => [$"--property:SelfContained={o}", "--property:_CommandLineDefinedSelfContained=true"]);
 
     public static Option<bool> NoSelfContainedOption =
         new Option<bool>("--no-self-contained")
