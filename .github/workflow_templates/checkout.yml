@@ -1,0 +1,26 @@
+name: Checkout Without Credentials
+description: Wraps actions/checkout with persist-credentials disabled.
+inputs:
+  token:
+    description: Token to authenticate the checkout.
+    required: true
+  ref:
+    description: Git ref to checkout.
+    required: false
+  path:
+    description: Destination path.
+    required: false
+  fetch-depth:
+    description: Fetch depth value (default 1).
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        token: ${{ inputs.token }}
+        ref: ${{ inputs.ref }}
+        path: ${{ inputs.path }}
+        fetch-depth: ${{ inputs.fetch-depth }}
+        persist-credentials: false

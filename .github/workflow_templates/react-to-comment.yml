@@ -1,0 +1,32 @@
+name: React To Comment
+description: Adds a reaction to an issue comment.
+inputs:
+  token:
+    description: Token with permission to add reactions.
+    required: true
+  owner:
+    description: Repository owner.
+    required: true
+  repo:
+    description: Repository name.
+    required: true
+  comment-id:
+    description: Numeric ID of the comment to react to.
+    required: true
+  reaction:
+    description: Reaction content (e.g. +1, eyes).
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Add reaction
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          await github.rest.reactions.createForIssueComment({
+            owner: '${{ inputs.owner }}',
+            repo: '${{ inputs.repo }}',
+            comment_id: Number('${{ inputs.comment-id }}'),
+            content: '${{ inputs.reaction }}'
+          });

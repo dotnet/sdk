@@ -5,164 +5,379 @@ on:
     types: [created]
 
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+  contents: read
 
 jobs:
-  update-xlf:
-    # Only run on PR comments that start with /updatexlf or /xlf
+  authorize:
+    name: Authorize Request
     if: github.event.issue.pull_request &&
       (startsWith(github.event.comment.body, '/updatexlf') || startsWith(github.event.comment.body, '/xlf'))
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      reactions: write
+    outputs:
+      pr_number: ${{ steps.metadata.outputs.pr_number }}
+      head_ref: ${{ steps.metadata.outputs.head_ref }}
+      issue_number: ${{ github.event.issue.number }}
+      comment_id: ${{ steps.context.outputs.comment_id }}
 
     steps:
-      - name: React to comment
-        uses: actions/github-script@v7
+      - name: Ensure commenter is trusted
+        uses: ./.github/workflow_templates/ensure-trusted-commenter.yml
         with:
-          script: |
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: context.payload.comment.id,
-              content: 'eyes'
-            });
+          author-association: ${{ github.event.comment.author_association }}
+
+      - name: React to comment
+        uses: ./.github/workflow_templates/react-to-comment.yml
+        with:
+          token: ${{ github.token }}
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          comment-id: ${{ github.event.comment.id }}
+          reaction: eyes
 
       - name: Comment on PR - Started
+        uses: ./.github/workflow_templates/comment-on-pr.yml
+        with:
+          token: ${{ github.token }}
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            ▶️ XLF update workflow started. Track progress in [this workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+
+      - name: Capture comment context
+        id: context
+        run: |
+          echo "comment_id=${COMMENT_ID}" >> "$GITHUB_OUTPUT"
+        env:
+          COMMENT_ID: ${{ github.event.comment.id }}
+
+      - name: Capture PR metadata
+        id: metadata
         uses: actions/github-script@v7
         with:
           script: |
-            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-            await github.rest.issues.createComment({
+            const pr = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.payload.issue.number,
-              body: `▶️ XLF update workflow started. Track progress in [this workflow run](${runUrl}).`
+              pull_number: context.payload.issue.number,
             });
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
+            if (pr.data.state !== 'open') {
+              core.setFailed(`Pull request #${pr.data.number} is not open.`);
+              return;
+            }
 
-      - name: Checkout PR branch
-        run: |
-          gh pr checkout ${{ github.event.issue.number }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            if (pr.data.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`) {
+              core.setFailed('Pull request head branch is in a fork. Cannot update XLF files automatically.');
+              return;
+            }
+
+            core.setOutput('pr_number', String(pr.data.number));
+            core.setOutput('head_ref', pr.data.head.ref);
+
+  generate:
+    name: Generate XLF Updates
+    needs: authorize
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      changes: ${{ steps.check.outputs.changes }}
+      diff_summary: ${{ steps.package.outputs.diff_summary }}
+    defaults:
+      run:
+        working-directory: pr
+    steps:
+      - name: Checkout PR head
+        uses: ./.github/workflow_templates/checkout-without-credentials.yml
+        with:
+          token: ${{ github.token }}
+          fetch-depth: 0
+          ref: refs/pull/${{ needs.authorize.outputs.pr_number }}/head
+          path: pr
 
       - name: Run UpdateXlf target
         id: update
         run: |
           chmod +x ./build.sh
-          # Try the fast UpdateXlf target first
           if ./build.sh /t:UpdateXlf; then
-            echo "result=success" >> $GITHUB_OUTPUT
-          else
-            # If that fails, try a full build
-            if ./build.sh; then
-              echo "result=success" >> $GITHUB_OUTPUT
-            else
-              echo "result=failure" >> $GITHUB_OUTPUT
-              exit 1
-            fi
+            echo "mode=incremental" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+
+          if ./build.sh; then
+            echo "mode=full" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          exit 1
         continue-on-error: true
-        timeout-minutes: 15
+        timeout-minutes: 20
+        env:
+          GITHUB_TOKEN: ""
+          GH_TOKEN: ""
 
       - name: Check for XLF changes
-        id: check-changes
+        id: check
         if: steps.update.outcome == 'success'
         run: |
-          # Check if there are changes to .xlf files
-          if git diff --name-only | grep -E '\.xlf$'; then
-            echo "changes=true" >> $GITHUB_OUTPUT
-            echo "Changed XLF files:"
-            git diff --name-only | grep -E '\.xlf$'
-          else
-            echo "changes=false" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          shopt -s globstar
+
+          mapfile -t changed_files < <(git diff --name-only)
+          if [ ${#changed_files[@]} -eq 0 ]; then
+            echo "changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-      - name: Commit and push XLF changes
-        id: commit
-        if: steps.update.outcome == 'success' && steps.check-changes.outputs.changes == 'true'
+          for file in "${changed_files[@]}"; do
+            if [[ "$file" != *.xlf ]]; then
+              echo "Unexpected file changed: $file" >&2
+              exit 1
+            fi
+          done
+
+          printf '%s\n' "${changed_files[@]}" > __changed-files.txt
+          echo "changes=true" >> "$GITHUB_OUTPUT"
+
+      - name: Evaluate generation result
+        id: evaluate
+        if: always()
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          status="success"
+          reason=""
 
-          # Add all .xlf files
-          git add **/*.xlf
+          if [ "${UPDATE_OUTCOME}" != "success" ]; then
+            status="failed"
+            reason="update"
+          fi
 
-          # Create commit
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ -n "$reason" ]; then
+            echo "failure_reason=$reason" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          UPDATE_OUTCOME: ${{ steps.update.outcome }}
+
+      - name: Package XLF artifacts
+        id: package
+        if: steps.evaluate.outputs.status == 'success' && steps.check.outputs.changes == 'true'
+        run: |
+          mkdir -p __artifacts
+          mv __changed-files.txt __artifacts/changed-files.txt
+          git diff --stat -- '**/*.xlf' > __artifacts/diff-summary.txt
+          tar -czf __artifacts/xlf-files.tar.gz -T __artifacts/changed-files.txt
+          printf 'diff_summary<<EOF\n%s\nEOF\n' "$(cat __artifacts/diff-summary.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload XLF artifacts
+        if: steps.evaluate.outputs.status == 'success' && steps.check.outputs.changes == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: xlf-updates
+          path: pr/__artifacts
+          if-no-files-found: error
+
+      - name: Create failure diagnostics
+        if: steps.evaluate.outputs.status == 'failed'
+        run: |
+          mkdir -p __failure
+          if [ -n "${{ steps.evaluate.outputs.failure_reason }}" ]; then
+            echo "${{ steps.evaluate.outputs.failure_reason }}" > __failure/failure_reason.txt
+          else
+            echo "unknown" > __failure/failure_reason.txt
+          fi
+
+      - name: Upload failure diagnostics
+        if: steps.evaluate.outputs.status == 'failed'
+        uses: actions/upload-artifact@v4
+        with:
+          name: xlf-updates-failure
+          path: pr/__failure
+          if-no-files-found: ignore
+
+      - name: Fail job when update unsuccessful
+        if: steps.evaluate.outputs.status == 'failed'
+        run: |
+          echo "XLF update failed."
+          exit 1
+
+  apply:
+    name: Apply XLF Updates
+    needs: [authorize, generate]
+    if: needs.generate.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      reactions: write
+      issues: write
+    steps:
+      - name: Checkout PR branch
+        uses: ./.github/workflow_templates/checkout-without-credentials.yml
+        with:
+          token: ${{ github.token }}
+          fetch-depth: 0
+          ref: ${{ needs.authorize.outputs.head_ref }}
+
+      - name: Download XLF artifacts
+        if: needs.generate.outputs.changes == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: xlf-updates
+          path: artifact
+
+      - name: Apply XLF updates
+        if: needs.generate.outputs.changes == 'true'
+        run: |
+          tar -xzf artifact/xlf-files.tar.gz
+
+      - name: Validate and stage XLF files
+        if: needs.generate.outputs.changes == 'true'
+        run: |
+          set -euo pipefail
+          shopt -s globstar
+
+          if [ ! -f artifact/changed-files.txt ]; then
+            echo "Expected changed-files.txt is missing" >&2
+            exit 1
+          fi
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            if [[ "$file" != *.xlf ]]; then
+              echo "Disallowed file in artifact: $file" >&2
+              exit 1
+            fi
+            if [ ! -f "$file" ]; then
+              echo "File listed in artifact is missing: $file" >&2
+              exit 1
+            fi
+            git add "$file"
+          done < artifact/changed-files.txt
+
+      - name: Prepare commit message
+        id: commit-message
+        if: needs.generate.outputs.changes == 'true'
+        shell: bash
+        run: |
           COMMIT_DATE=$(date -u +"%Y-%m-%d")
-          git commit -m "Update XLF translation files - $COMMIT_DATE"
+          printf 'message=Update XLF translation files - %s\n' "$COMMIT_DATE" >> "$GITHUB_OUTPUT"
 
-          # Push to the PR branch
-          git push
-        continue-on-error: true
+      - name: Commit XLF changes
+        id: commit
+        if: needs.generate.outputs.changes == 'true'
+        uses: ./.github/workflow_templates/commit-if-allowed-extensions.yml
+        with:
+          commit-message: ${{ steps.commit-message.outputs.message }}
+          allowed-patterns: |
+            **/*.xlf
+          git-user-name: github-actions[bot]
+          git-user-email: github-actions[bot]@users.noreply.github.com
+
+      - name: Push XLF changes
+        if: steps.commit.outcome == 'success'
+        run: |
+          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ needs.authorize.outputs.head_ref }}
+
+      - name: Prepare success comment
+        id: success-comment
+        if: steps.commit.outcome == 'success'
+        shell: bash
+        env:
+          DIFF_SUMMARY: ${{ needs.generate.outputs.diff_summary }}
+        run: |
+          body="✅ XLF translation files have been updated and committed to this PR. See [workflow details](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
+          if [ -n "${DIFF_SUMMARY}" ]; then
+            body="${body}
+
+\`\`\`
+${DIFF_SUMMARY}
+\`\`\`"
+          fi
+          printf 'body<<EOF\n%s\nEOF\n' "$body" >> "$GITHUB_OUTPUT"
 
       - name: Comment on PR - Success
         if: steps.commit.outcome == 'success'
-        uses: actions/github-script@v7
+        uses: ./.github/workflow_templates/comment-on-pr.yml
         with:
-          script: |
-            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.issue.number,
-              body: `✅ XLF translation files have been updated and committed to this PR. See [workflow details](${runUrl}).`
-            });
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: context.payload.comment.id,
-              content: '+1'
-            });
+          token: ${{ github.token }}
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          issue-number: ${{ needs.authorize.outputs.issue_number }}
+          body: ${{ steps.success-comment.outputs.body }}
+          reaction-comment-id: ${{ needs.authorize.outputs.comment_id }}
+          reaction: +1
 
       - name: Comment on PR - No changes
-        if: steps.update.outcome == 'success' && steps.check-changes.outputs.changes == 'false'
-        uses: actions/github-script@v7
+        if: needs.generate.outputs.changes != 'true'
+        uses: ./.github/workflow_templates/comment-on-pr.yml
         with:
-          script: |
-            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.issue.number,
-              body: `ℹ️ No XLF files needed to be updated. Review [the workflow run](${runUrl}).`
-            });
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: context.payload.comment.id,
-              content: '+1'
-            });
+          token: ${{ github.token }}
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          issue-number: ${{ needs.authorize.outputs.issue_number }}
+          body: |
+            ℹ️ No XLF files needed to be updated. Review [the workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          reaction-comment-id: ${{ needs.authorize.outputs.comment_id }}
+          reaction: +1
+
+  report-failure:
+    name: Report Failure
+    needs: [authorize, generate, apply]
+    if: needs.authorize.result == 'success' && failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      reactions: write
+    steps:
+      - name: Download failure diagnostics
+        uses: actions/download-artifact@v4
+        with:
+          name: xlf-updates-failure
+          path: diagnostics
+        continue-on-error: true
+
+      - name: Prepare failure comment
+        id: failure-comment
+        shell: bash
+        env:
+          GENERATE_RESULT: ${{ needs.generate.result }}
+          APPLY_RESULT: ${{ needs.apply.result }}
+        run: |
+          run_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          reason=""
+          if [ -f diagnostics/failure_reason.txt ]; then
+            reason=$(tr -d '\r' < diagnostics/failure_reason.txt | tr -d '\000')
+          fi
+
+          message="❌ Failed to update XLF files."
+          if [ "${GENERATE_RESULT}" = "failure" ]; then
+            case "$reason" in
+              update)
+                message="$message The XLF update script failed."
+                ;;
+            esac
+          elif [ "${APPLY_RESULT}" = "failure" ]; then
+            message="$message Applying or pushing the XLF changes failed."
+          fi
+
+          message="$message Please check [the workflow run](${run_url}) for details."
+          printf 'body<<EOF\n%s\nEOF\n' "$message" >> "$GITHUB_OUTPUT"
 
       - name: Comment on PR - Failure
-        if: steps.update.outcome == 'failure' || (steps.check-changes.outputs.changes == 'true' && steps.commit.outcome == 'failure')
-        uses: actions/github-script@v7
+        uses: ./.github/workflow_templates/comment-on-pr.yml
         with:
-          script: |
-            let errorMsg = '❌ Failed to update XLF files.';
-            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-
-            if ('${{ steps.update.outcome }}' === 'failure') {
-              errorMsg += ' The build failed.';
-            } else if ('${{ steps.commit.outcome }}' === 'failure') {
-              errorMsg += ' Could not commit changes.';
-            }
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.issue.number,
-              body: `${errorMsg} Please check [the workflow run](${runUrl}) for details.`
-            });
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: context.payload.comment.id,
-              content: 'confused'
-            });
+          token: ${{ github.token }}
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          issue-number: ${{ needs.authorize.outputs.issue_number }}
+          body: ${{ steps.failure-comment.outputs.body }}
+          reaction-comment-id: ${{ needs.authorize.outputs.comment_id }}
+          reaction: confused

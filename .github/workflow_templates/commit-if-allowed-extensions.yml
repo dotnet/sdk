@@ -1,0 +1,69 @@
+name: Commit If Allowed Extensions
+description: Creates a commit when all staged files match allowed glob patterns.
+inputs:
+  commit-message:
+    description: Commit message to use when creating the commit.
+    required: true
+  allowed-patterns:
+    description: Newline or comma separated list of shell glob patterns that staged files must match.
+    required: true
+  git-user-name:
+    description: Git user.name to configure before committing.
+    required: false
+    default: github-actions[bot]
+  git-user-email:
+    description: Git user.email to configure before committing.
+    required: false
+    default: github-actions[bot]@users.noreply.github.com
+runs:
+  using: composite
+  steps:
+    - name: Validate staged files and commit
+      shell: bash
+      env:
+        COMMIT_MESSAGE: ${{ inputs.commit-message }}
+        ALLOWED_PATTERNS: ${{ inputs.allowed-patterns }}
+        GIT_USER_NAME: ${{ inputs.git-user-name }}
+        GIT_USER_EMAIL: ${{ inputs.git-user-email }}
+      run: |
+        set -euo pipefail
+        shopt -s globstar
+
+        git config --global user.name "${GIT_USER_NAME}"
+        git config --global user.email "${GIT_USER_EMAIL}"
+
+        mapfile -t staged_files < <(git diff --cached --name-only)
+        if [ ${#staged_files[@]} -eq 0 ]; then
+          echo "No staged files were found. Nothing to commit." >&2
+          exit 1
+        fi
+
+        if [ -z "${ALLOWED_PATTERNS//,/ }" ]; then
+          echo "No allowed patterns were provided." >&2
+          exit 1
+        fi
+
+        patterns_normalised=$(printf '%s' "${ALLOWED_PATTERNS}" | tr ',' '\n')
+        mapfile -t allowed_patterns < <(printf '%s\n' "${patterns_normalised}" | sed -e 's/^\s*//' -e 's/\s*$//' | sed -e '/^$/d')
+
+        if [ ${#allowed_patterns[@]} -eq 0 ]; then
+          echo "Allowed pattern list is empty after normalisation." >&2
+          exit 1
+        fi
+
+        for file in "${staged_files[@]}"; do
+          match=false
+          for pattern in "${allowed_patterns[@]}"; do
+            if [[ "$file" == $pattern ]]; then
+              match=true
+              break
+            fi
+          done
+
+          if [ "$match" = false ]; then
+            echo "File '$file' does not match the allowed patterns." >&2
+            exit 1
+          fi
+        done
+
+        git commit -m "${COMMIT_MESSAGE}"

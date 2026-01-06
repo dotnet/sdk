@@ -1,0 +1,53 @@
+name: Comment On Pull Request
+description: Posts a comment on a pull request or issue and optionally reacts to the triggering comment.
+inputs:
+  token:
+    description: Token with permission to post comments.
+    required: true
+  owner:
+    description: Repository owner.
+    required: true
+  repo:
+    description: Repository name.
+    required: true
+  issue-number:
+    description: Pull request number.
+    required: true
+  body:
+    description: Markdown body of the comment to post.
+    required: true
+  reaction-comment-id:
+    description: Optional comment ID to react to.
+    required: false
+  reaction:
+    description: Optional reaction content to add to the triggering comment.
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Post comment
+      id: post
+      uses: actions/github-script@v7
+      env:
+        COMMENT_BODY: ${{ inputs.body }}
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          await github.rest.issues.createComment({
+            owner: '${{ inputs.owner }}',
+            repo: '${{ inputs.repo }}',
+            issue_number: Number('${{ inputs.issue-number }}'),
+            body: process.env.COMMENT_BODY
+          });
+    - name: React to triggering comment
+      if: inputs.reaction && inputs.reaction-comment-id
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          await github.rest.reactions.createForIssueComment({
+            owner: '${{ inputs.owner }}',
+            repo: '${{ inputs.repo }}',
+            comment_id: Number('${{ inputs.reaction-comment-id }}'),
+            content: '${{ inputs.reaction }}'
+          });
