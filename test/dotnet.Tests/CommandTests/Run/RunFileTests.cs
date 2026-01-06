@@ -4274,7 +4274,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         WriteProgramContent();
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.All, expectedOutput: $"v{programVersion} CustomAssemblyName");
