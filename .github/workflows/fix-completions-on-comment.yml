@@ -272,8 +272,7 @@ jobs:
         shell: bash
         run: |
           COMMIT_DATE=$(date -u +"%Y-%m-%d")
-          printf 'message=Update CLI completion snapshots - %s
-' "$COMMIT_DATE" >> "$GITHUB_OUTPUT"
+          printf 'message=Update CLI completion snapshots - %s\n' "$COMMIT_DATE" >> "$GITHUB_OUTPUT"
 
       - name: Commit snapshot changes
         id: commit
@@ -306,10 +305,7 @@ jobs:
 ${DIFF_SUMMARY}
 \`\`\`"
           fi
-          printf 'body<<EOF
-%s
-EOF
-' "$body" >> "$GITHUB_OUTPUT"
+          printf 'body<<EOF\n%s\nEOF\n' "$body" >> "$GITHUB_OUTPUT"
 
       - name: Comment on PR - Success
         if: steps.commit.outcome == 'success'
@@ -388,10 +384,7 @@ EOF
           fi
 
           message="$message Please check [the workflow run](${run_url}) for details."
-          printf 'body<<EOF
-%s
-EOF
-' "$message" >> "$GITHUB_OUTPUT"
+          printf 'body<<EOF\n%s\nEOF\n' "$message" >> "$GITHUB_OUTPUT"
 
       - name: Comment on PR - Failure
         uses: ./.github/workflow_templates/comment-on-pr.yml

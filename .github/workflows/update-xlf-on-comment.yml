@@ -294,11 +294,7 @@ jobs:
         run: |
           body="✅ XLF translation files have been updated and committed to this PR. See [workflow details](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
           if [ -n "${DIFF_SUMMARY}" ]; then
-            body="${body}
-
-\`\`\`
-${DIFF_SUMMARY}
-\`\`\`"
+            body="${body}"$'\n\n```\n'"${DIFF_SUMMARY}"$'\n```'
           fi
           printf 'body<<EOF\n%s\nEOF\n' "$body" >> "$GITHUB_OUTPUT"
 
