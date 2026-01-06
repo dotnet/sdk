@@ -4413,7 +4413,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, code);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var packageDir = Path.Join(testInstance.Path, "packages");
@@ -4464,7 +4464,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, code);
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         var packageDir = Path.Join(testInstance.Path, "packages");
