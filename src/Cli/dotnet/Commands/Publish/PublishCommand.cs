@@ -62,22 +62,22 @@ public class PublishCommand : RestoringCommand
             ),
             optionsToUseWhenParsingMSBuildFlags:
             [
-                CommonOptions.PropertiesOption,
-                CommonOptions.RestorePropertiesOption,
+                CommonOptions.CreatePropertyOption(),
+                CommonOptions.CreateRestorePropertyOption(),
                 PublishCommandDefinition.CreateTargetOption(),
                 CommonOptions.CreateVerbosityOption(),
                 CommonOptions.CreateNoLogoOption()
             ],
             parseResult,
             msbuildPath,
-            (msbuildArgs) =>
+            transformer: (msbuildArgs) =>
             {
                 var options = new ReleasePropertyProjectLocator.DependentCommandOptions(
                         nonBinLogArgs,
                         parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null,
                         parseResult.HasOption(definition.FrameworkOption) ? parseResult.GetValue(definition.FrameworkOption) : null
                     );
-                var projectLocator = new ReleasePropertyProjectLocator(parseResult.GetValue(CommonOptions.PropertiesOption), MSBuildPropertyNames.PUBLISH_RELEASE, options);
+                var projectLocator = new ReleasePropertyProjectLocator(msbuildArgs.GlobalProperties, MSBuildPropertyNames.PUBLISH_RELEASE, options);
                 var releaseModeProperties = projectLocator.GetCustomDefaultConfigurationValueIfSpecified();
                 return msbuildArgs.CloneWithAdditionalProperties(releaseModeProperties);
             }

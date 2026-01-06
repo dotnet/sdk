@@ -44,8 +44,8 @@ public static class RestoreCommand
             },
             optionsToUseWhenParsingMSBuildFlags:
             [
-                CommonOptions.PropertiesOption,
-                CommonOptions.RestorePropertiesOption,
+                CommonOptions.CreatePropertyOption(),
+                CommonOptions.CreateRestorePropertyOption(),
                 RestoreCommandDefinition.CreateTargetOption(),
                 CommonOptions.CreateVerbosityOption(),
                 CommonOptions.CreateNoLogoOption()

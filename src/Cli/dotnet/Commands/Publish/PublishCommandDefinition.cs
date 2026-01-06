@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -44,9 +43,9 @@ internal sealed class PublishCommandDefinition : Command
 
     public readonly Option<bool> NoRestoreOption = CommonOptions.CreateNoRestoreOption();
 
-    public readonly Option<bool> SelfContainedOption = CommonOptions.SelfContainedOption;
+    public readonly Option<bool> SelfContainedOption = CommonOptions.CreateSelfContainedOption();
 
-    public readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
+    public readonly Option<bool> NoSelfContainedOption = CommonOptions.CreateNoSelfContainedOption();
 
     public readonly TargetPlatformOptions TargetPlatformOptions = new(CliCommandStrings.PublishRuntimeOptionDescription);
 

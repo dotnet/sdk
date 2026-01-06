@@ -239,8 +239,8 @@ public class TestCommand(
 
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
-            CommonOptions.PropertiesOption,
-            CommonOptions.RestorePropertiesOption,
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
             CommonOptions.CreateRequiredMSBuildTargetOption("VSTest"),
             CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption())
@@ -252,7 +252,7 @@ public class TestCommand(
             msbuildPath);
 
         // Apply environment variables provided by the user via --environment (-e) option, if present
-        if (result.GetValue(definition.TestEnvOption) is { } environmentVariables)
+        if (result.GetValue(definition.EnvOption) is { } environmentVariables)
         {
             foreach (var (name, value) in environmentVariables)
             {

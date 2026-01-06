@@ -35,7 +35,7 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
         var solutionFile = SolutionFile.Parse(Path.GetFullPath(solutionFilePath));
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
 
@@ -87,7 +87,7 @@ internal static class MSBuildUtility
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
 
         using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
@@ -157,8 +157,8 @@ internal static class MSBuildUtility
 
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
-            CommonOptions.PropertiesOption,
-            CommonOptions.RestorePropertiesOption,
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
             CommonOptions.CreateRequiredMSBuildTargetOption(CliConstants.MTPTarget),
             CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption());

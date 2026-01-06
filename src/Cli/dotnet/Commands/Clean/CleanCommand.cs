@@ -37,8 +37,8 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = 
             createPhysicalCommand: static (msbuildArgs, msbuildPath) => new CleanCommand(msbuildArgs, msbuildPath),
             optionsToUseWhenParsingMSBuildFlags:
             [
-                CommonOptions.PropertiesOption,
-                CommonOptions.RestorePropertiesOption,
+                CommonOptions.CreatePropertyOption(),
+                CommonOptions.CreateRestorePropertyOption(),
                 CleanCommandDefinition.CreateTargetOption(),
                 CommonOptions.CreateVerbosityOption(VerbosityOptions.normal),
                 CommonOptions.CreateNoLogoOption()

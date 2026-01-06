@@ -51,8 +51,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                         ],
                         options:
                         [
-                            CommonOptions.PropertiesOption,
-                            CommonOptions.RestorePropertiesOption,
+                            CommonOptions.CreatePropertyOption(),
+                            CommonOptions.CreateRestorePropertyOption(),
                             CommonOptions.CreateMSBuildTargetOption(),
                             CommonOptions.CreateVerbosityOption(),
                             CommonOptions.CreateNoLogoOption()

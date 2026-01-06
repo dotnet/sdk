@@ -49,8 +49,6 @@ public class RunCommand
     /// </summary>
     public bool ReadCodeFromStdin { get; }
 
-    public ReadOnlyDictionary<string, string>? RestoreProperties { get; }
-
     /// <summary>
     /// unparsed/arbitrary CLI tokens to be passed to the running application
     /// </summary>
@@ -102,8 +100,7 @@ public class RunCommand
         MSBuildArgs msbuildArgs,
         string[] applicationArgs,
         bool readCodeFromStdin,
-        IReadOnlyDictionary<string, string> environmentVariables,
-        ReadOnlyDictionary<string, string>? msbuildRestoreProperties)
+        IReadOnlyDictionary<string, string> environmentVariables)
     {
         Debug.Assert(projectFileFullPath is null ^ entryPointFileFullPath is null);
         Debug.Assert(!readCodeFromStdin || entryPointFileFullPath is not null);
@@ -121,7 +118,6 @@ public class RunCommand
         NoCache = noCache;
         MSBuildArgs = SetupSilentBuildArgs(msbuildArgs);
         EnvironmentVariables = environmentVariables;
-        RestoreProperties = msbuildRestoreProperties;
     }
 
     public int Execute()
@@ -767,8 +763,8 @@ public class RunCommand
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildProperties,
-            CommonOptions.PropertiesOption,
-            CommonOptions.RestorePropertiesOption,
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
             CommonOptions.CreateMSBuildTargetOption(),
             definition.VerbosityOption);
 
@@ -785,8 +781,7 @@ public class RunCommand
             msbuildArgs: msbuildArgs,
             applicationArgs: args,
             readCodeFromStdin: readCodeFromStdin,
-            environmentVariables: parseResult.GetValue(CommonOptions.EnvOption) ?? ImmutableDictionary<string, string>.Empty,
-            msbuildRestoreProperties: parseResult.GetValue(CommonOptions.RestorePropertiesOption)
+            environmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty
         );
 
         return command;

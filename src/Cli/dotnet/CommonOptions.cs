@@ -20,7 +20,7 @@ internal static class CommonOptions
         IsDynamic = true
     };
 
-    public static Option<ReadOnlyDictionary<string, string>?> PropertiesOption =
+    public static Option<ReadOnlyDictionary<string, string>?> CreatePropertyOption() =>
         // these are all of the forms that the property switch can be understood by in MSBuild
         new Option<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
         {
@@ -35,7 +35,7 @@ internal static class CommonOptions
     /// </summary>
     /// <remarks>
     /// </remarks>
-    public static Option<ReadOnlyDictionary<string, string>?> RestorePropertiesOption =
+    public static Option<ReadOnlyDictionary<string, string>?> CreateRestorePropertyOption() =>
         // these are all of the forms that the property switch can be understood by in MSBuild
         new Option<ReadOnlyDictionary<string, string>?>("--restoreProperty", "-restoreProperty", "/restoreProperty", "-rp", "--rp", "/rp")
         {
@@ -277,14 +277,14 @@ internal static class CommonOptions
         Arity = ArgumentArity.Zero,
     };
 
-    public static Option<bool> SelfContainedOption =
+    public static Option<bool> CreateSelfContainedOption() =>
         new Option<bool>("--self-contained", "--sc")
         {
             Description = CliStrings.SelfContainedOptionDescription
         }
         .ForwardIfEnabled([$"--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true"]);
 
-    public static Option<bool> NoSelfContainedOption =
+    public static Option<bool> CreateNoSelfContainedOption() =>
         new Option<bool>("--no-self-contained")
         {
             Description = CliStrings.FrameworkDependentOptionDescription,
@@ -292,18 +292,14 @@ internal static class CommonOptions
         }
         .ForwardIfEnabled([$"--property:SelfContained=false", "--property:_CommandLineDefinedSelfContained=true"]);
 
-    public static Option<IReadOnlyDictionary<string, string>> CreateEnvOption(string description) => new("--environment", "-e")
+    public static Option<IReadOnlyDictionary<string, string>> CreateEnvOption(string? description = null) => new("--environment", "-e")
     {
-        Description = description,
+        Description = description ?? CliStrings.CmdEnvironmentVariableDescription,
         HelpName = CliStrings.CmdEnvironmentVariableExpression,
         CustomParser = ParseEnvironmentVariables,
         // Can't allow multiple arguments because the separator needs to be parsed as part of the environment variable value.
         AllowMultipleArgumentsPerToken = false
     };
-
-    public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CreateEnvOption(CliStrings.CmdEnvironmentVariableDescription);
-    
-    public static readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CreateEnvOption(CliStrings.CmdTestEnvironmentVariableDescription);
 
     private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
     {

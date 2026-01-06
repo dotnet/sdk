@@ -46,8 +46,8 @@ public static class BuildCommand
             ),
             optionsToUseWhenParsingMSBuildFlags:
             [
-                CommonOptions.PropertiesOption,
-                CommonOptions.RestorePropertiesOption,
+                CommonOptions.CreatePropertyOption(),
+                CommonOptions.CreateRestorePropertyOption(),
                 CommonOptions.CreateMSBuildTargetOption(),
                 CommonOptions.CreateVerbosityOption(),
                 CommonOptions.CreateNoLogoOption()

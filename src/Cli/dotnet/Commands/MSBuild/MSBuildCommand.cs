@@ -13,8 +13,8 @@ public class MSBuildCommand(
     string? msbuildPath = null
 ) : MSBuildForwardingApp(MSBuildArgs.AnalyzeMSBuildArguments(
         [.. msbuildArgs],
-        CommonOptions.PropertiesOption,
-        CommonOptions.RestorePropertiesOption,
+        CommonOptions.CreatePropertyOption(),
+        CommonOptions.CreateRestorePropertyOption(),
         MSBuildCommandDefinition.TargetOption,
         CommonOptions.CreateVerbosityOption(),
         // We set the no-logo option to false here to ensure that by default the logo is shown for this command.

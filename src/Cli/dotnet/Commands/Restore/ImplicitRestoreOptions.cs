@@ -80,8 +80,8 @@ internal sealed class ImplicitRestoreOptions
             ForceOption.Aliases.Add("-f");
         }
 
-        PropertiesOption = CommonOptions.PropertiesOption;
-        RestorePropertiesOption = CommonOptions.RestorePropertiesOption;
+        PropertiesOption = CommonOptions.CreatePropertyOption();
+        RestorePropertiesOption = CommonOptions.CreateRestorePropertyOption();
     }
 
     private static Option<IEnumerable<string>> CreateSourceOption(bool showHelp, bool useShortOptions)

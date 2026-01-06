@@ -77,9 +77,9 @@ internal abstract partial class TestCommandDefinition
             HelpName = CliCommandStrings.CmdNumberName
         };
 
-        public readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CommonOptions.EnvOption;
+        public readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CommonOptions.CreateEnvOption();
 
-        public readonly Option<ReadOnlyDictionary<string, string>?> PropertiesOption = CommonOptions.PropertiesOption;
+        public readonly Option<ReadOnlyDictionary<string, string>?> PropertiesOption = CommonOptions.CreatePropertyOption();
 
         public readonly Option<bool> NoRestoreOption = CommonOptions.CreateNoRestoreOption();
 

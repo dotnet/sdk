@@ -29,7 +29,7 @@ internal sealed class RunCommandDefinition : Command
         HelpName = CliCommandStrings.CommandOptionFileHelpName,
     };
 
-    public readonly Option<ReadOnlyDictionary<string, string>?> PropertyOption = CommonOptions.PropertiesOption;
+    public readonly Option<ReadOnlyDictionary<string, string>?> PropertyOption = CommonOptions.CreatePropertyOption();
 
     public readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
     {
@@ -68,9 +68,9 @@ internal sealed class RunCommandDefinition : Command
         Arity = ArgumentArity.Zero,
     };
 
-    public readonly Option SelfContainedOption = CommonOptions.SelfContainedOption;
+    public readonly Option<bool> SelfContainedOption = CommonOptions.CreateSelfContainedOption();
 
-    public readonly Option NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
+    public readonly Option<bool> NoSelfContainedOption = CommonOptions.CreateNoSelfContainedOption();
 
     public readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
 
@@ -78,7 +78,7 @@ internal sealed class RunCommandDefinition : Command
 
     public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
 
-    public readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CommonOptions.EnvOption;
+    public readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CommonOptions.CreateEnvOption();
 
     public readonly Argument<string[]> ApplicationArguments = new("applicationArguments")
     {

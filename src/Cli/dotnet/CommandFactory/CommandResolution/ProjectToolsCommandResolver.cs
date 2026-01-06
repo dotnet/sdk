@@ -387,8 +387,8 @@ public class ProjectToolsCommandResolver(
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             [.. args],
-            CommonOptions.PropertiesOption,
-            CommonOptions.RestorePropertiesOption,
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
             CommonOptions.CreateMSBuildTargetOption(),
             CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption());

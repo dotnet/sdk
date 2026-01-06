@@ -57,8 +57,8 @@ public class PackCommand(
                 msbuildPath),
             optionsToUseWhenParsingMSBuildFlags:
             [
-                CommonOptions.PropertiesOption,
-                CommonOptions.RestorePropertiesOption,
+                CommonOptions.CreatePropertyOption(),
+                CommonOptions.CreateRestorePropertyOption(),
                 PackCommandDefinition.CreateTargetOption(),
                 CommonOptions.CreateVerbosityOption(),
                 CommonOptions.CreateNoLogoOption()
@@ -67,7 +67,7 @@ public class PackCommand(
             msbuildPath,
             transformer: (msbuildArgs) =>
             {
-                ReleasePropertyProjectLocator projectLocator = new(parseResult.GetValue(CommonOptions.PropertiesOption), MSBuildPropertyNames.PACK_RELEASE,
+                ReleasePropertyProjectLocator projectLocator = new(msbuildArgs.GlobalProperties, MSBuildPropertyNames.PACK_RELEASE,
                     new ReleasePropertyProjectLocator.DependentCommandOptions(
                             nonBinLogArgs,
                             parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null

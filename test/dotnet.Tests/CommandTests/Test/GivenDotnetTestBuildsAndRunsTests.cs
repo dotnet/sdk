@@ -571,7 +571,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(
                                         "-c", configuration,
-                                        CommonOptions.EnvOption.Name, "DUMMY_TEST_ENV_VAR=ENV_VAR_CMD_LINE");
+                                        "--environment", "DUMMY_TEST_ENV_VAR=ENV_VAR_CMD_LINE");
 
             if (!TestContext.IsLocalized())
             {
