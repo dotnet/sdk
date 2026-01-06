@@ -110,21 +110,21 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["build", "publish"],
-            optionsToLog: [ BuildCommandParser.FrameworkOption, PublishCommandParser.FrameworkOption,
-                BuildCommandParser.RuntimeOption, PublishCommandParser.RuntimeOption, BuildCommandParser.ConfigurationOption,
-                PublishCommandParser.ConfigurationOption ]
+            optionsToLog: [ BuildCommandDefinition.FrameworkOption, PublishCommandDefinition.FrameworkOption,
+                BuildCommandDefinition.RuntimeOption, PublishCommandDefinition.RuntimeOption, BuildCommandDefinition.ConfigurationOption,
+                PublishCommandDefinition.ConfigurationOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["run", "clean", "test"],
-            optionsToLog: [ RunCommandParser.FrameworkOption, CleanCommandParser.FrameworkOption,
-                TestCommandDefinition.FrameworkOption, RunCommandParser.ConfigurationOption, CleanCommandParser.ConfigurationOption,
+            optionsToLog: [ RunCommandDefinition.FrameworkOption, CleanCommandDefinition.FrameworkOption,
+                TestCommandDefinition.FrameworkOption, RunCommandDefinition.ConfigurationOption, CleanCommandDefinition.ConfigurationOption,
                 TestCommandDefinition.ConfigurationOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["pack"],
-            optionsToLog: [PackCommandParser.ConfigurationOption]
+            optionsToLog: [PackCommandDefinition.ConfigurationOption]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
@@ -135,7 +135,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["publish"],
-            optionsToLog: [PublishCommandParser.RuntimeOption]
+            optionsToLog: [PublishCommandDefinition.RuntimeOption]
         ),
         new AllowListToSendVerbSecondVerbFirstArgument(["workload", "tool", "new"]),
     ];

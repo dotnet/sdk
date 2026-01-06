@@ -580,6 +580,27 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
+        public void ItGivesAnErrorWhenTheLaunchProfileFileIsNotReadable()
+        {
+            var testAppName = "AppWithLaunchSettings";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+
+            // open the file to prevent reading:
+            using var _ = File.Open(launchSettingsPath, FileMode.Open, FileAccess.Read, FileShare.None);
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute("--launch-profile", "Third")
+                .Should().Pass()
+                         .And.HaveStdOutContaining("(NO MESSAGE)")
+                         .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "Third", "").Trim());
+        }
+
+        [Fact]
         public void ItGivesAnErrorWhenTheLaunchProfileCanNotBeHandled()
         {
             var testAppName = "AppWithLaunchSettings";
@@ -649,7 +670,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("(NO MESSAGE)")
-                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, CliCommandStrings.DefaultLaunchProfileDisplayName, "").Trim());
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, ProjectTools.Resources.DefaultLaunchProfileDisplayName, "").Trim());
         }
 
         [Fact]
@@ -667,7 +688,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("(NO MESSAGE)")
-                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, CliCommandStrings.DefaultLaunchProfileDisplayName, "").Trim());
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, ProjectTools.Resources.DefaultLaunchProfileDisplayName, "").Trim());
         }
 
         [Fact]
@@ -1027,6 +1048,38 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                                               
                 hasExpectedErrorMessage.Should().BeTrue($"Expected error message to clearly indicate file doesn't exist, but got: {stderr}");
             }
+        }
+
+        [Fact]
+        public void ItCanRunWithExecutableLaunchProfile()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+
+            var launchSettingsPath = Path.Combine(testInstance.Path, "Properties", "launchSettings.json");
+
+            File.WriteAllText(launchSettingsPath, """
+            {
+              "profiles": {
+                "ExecutableProfile": {
+                  "commandName": "Executable",
+                  "executablePath": "dotnet",
+                  "commandLineArgs": "--version"
+                }
+              }
+            }
+            """);
+
+            new BuildCommand(testInstance)
+                .Execute()
+                .Should().Pass();
+
+            // The ExecutableProfile runs "dotnet --version"
+            new DotnetCommand(Log, "run", "--launch-profile", "ExecutableProfile")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(TestContext.Current.ToolsetUnderTest.SdkVersion);
         }
     }
 }
