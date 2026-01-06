@@ -40,9 +40,8 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
         ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
 
-        CommonOptions.ValidateSelfContainedOptions(
-            parseResult.HasOption(MicrosoftTestingPlatformOptions.SelfContainedOption),
-            parseResult.HasOption(MicrosoftTestingPlatformOptions.NoSelfContainedOption));
+        // Note: --self-contained is now a boolean flag that accepts true/false values
+        // No validation needed as mutual exclusivity is not applicable
 
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
         var testOptions = new TestOptions(
