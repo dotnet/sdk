@@ -50,12 +50,12 @@ internal static class DotnetCommandCallbacks
         IEnumerable<string> commandArgs = new[] { "solution", solutionPath, "add" }.Concat(projectsToAdd);
         if (!string.IsNullOrWhiteSpace(solutionFolder))
         {
-            commandArgs = commandArgs.Append(SolutionAddCommandDefinition.SolutionFolderOption.Name).Append(solutionFolder);
+            commandArgs = commandArgs.Append(SolutionAddCommandDefinition.SolutionFolderOptionName).Append(solutionFolder);
         }
 
         if (inRoot is true)
         {
-            commandArgs = commandArgs.Append(SolutionAddCommandDefinition.InRootOption.Name);
+            commandArgs = commandArgs.Append(SolutionAddCommandDefinition.InRootOptionName);
         }
         var addProjectToSolutionCommand = new SolutionAddCommand(SolutionCommandParser.GetCommand().Parse([.. commandArgs]));
         return addProjectToSolutionCommand.Execute() == 0;
