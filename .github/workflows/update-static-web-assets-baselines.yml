@@ -252,13 +252,55 @@ jobs:
       - name: Commit baseline changes
         id: commit
         if: needs.generate.outputs.changes == 'true'
-        uses: ./.github/actions/commit-if-allowed-extensions
-        with:
-          commit-message: ${{ steps.commit-message.outputs.message }}
-          allowed-patterns: |
+        shell: bash
+        env:
+          COMMIT_MESSAGE: ${{ steps.commit-message.outputs.message }}
+          ALLOWED_PATTERNS: |
             test/**/*.json
-          git-user-name: github-actions[bot]
-          git-user-email: github-actions[bot]@users.noreply.github.com
+          GIT_USER_NAME: github-actions[bot]
+          GIT_USER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: |
+          set -euo pipefail
+          shopt -s globstar
+
+          git config user.name "${GIT_USER_NAME}"
+          git config user.email "${GIT_USER_EMAIL}"
+
+          mapfile -t staged_files < <(git diff --cached --name-only)
+          if [ ${#staged_files[@]} -eq 0 ]; then
+            echo "No staged files were found. Nothing to commit." >&2
+            exit 1
+          fi
+
+          if [ -z "${ALLOWED_PATTERNS//,/ }" ]; then
+            echo "No allowed patterns were provided." >&2
+            exit 1
+          fi
+
+          patterns_normalised=$(printf '%s' "${ALLOWED_PATTERNS}" | tr ',' '\n')
+          mapfile -t allowed_patterns < <(printf '%s\n' "${patterns_normalised}" | sed -e 's/^\s*//' -e 's/\s*$//' | sed -e '/^$/d')
+
+          if [ ${#allowed_patterns[@]} -eq 0 ]; then
+            echo "Allowed pattern list is empty after normalisation." >&2
+            exit 1
+          fi
+
+          for file in "${staged_files[@]}"; do
+            match=false
+            for pattern in "${allowed_patterns[@]}"; do
+              if [[ "$file" == $pattern ]]; then
+                match=true
+                break
+              fi
+            done
+
+            if [ "$match" = false ]; then
+              echo "File '$file' does not match the allowed patterns." >&2
+              exit 1
+            fi
+          done
+
+          git commit -m "${COMMIT_MESSAGE}"
 
       - name: Push baseline changes
         if: steps.commit.outcome == 'success'
