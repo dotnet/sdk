@@ -3,6 +3,11 @@ name: Update XLF files on command
 on:
   issue_comment:
     types: [created]
+
+permissions:
+  contents: read
+
+env:
   REPO_NAME: ${{ github.event.repository.name }}
   RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 jobs:

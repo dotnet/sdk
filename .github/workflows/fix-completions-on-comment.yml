@@ -483,7 +483,7 @@ jobs:
           GENERATE_RESULT: ${{ needs.generate.result }}
           APPLY_RESULT: ${{ needs.apply.result }}
         run: |
-          run_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          run_url="${RUN_URL}"
           reason=""
           if [ -f diagnostics/failure_reason.txt ]; then
             reason=$(tr -d '\r' < diagnostics/failure_reason.txt | tr -d '\000')
