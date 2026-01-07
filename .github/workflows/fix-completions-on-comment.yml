@@ -192,7 +192,7 @@ jobs:
           if [ "${BUILD_OUTCOME}" != "success" ]; then
             status="failed"
             reason="build"
-          elif [ "${TEST_OUTCOME}" = "failure" ]; then
+          elif [ "${TEST_OUTCOME}" = "failure" ] && [ "${CHANGES_DETECTED}" != "true" ]; then
             status="failed"
             reason="tests"
           elif [ "${COMPARE_OUTCOME}" != "success" ]; then
@@ -212,6 +212,7 @@ jobs:
           TEST_OUTCOME: ${{ steps.test.outcome }}
           COMPARE_OUTCOME: ${{ steps.compare.outcome }}
           UPDATE_OUTCOME: ${{ steps.update.outcome }}
+          CHANGES_DETECTED: ${{ steps.check-changes.outputs.changes }}
 
       - name: Package snapshot artifacts
         id: package
@@ -318,7 +319,7 @@ jobs:
       - name: Commit snapshot changes
         id: commit
         if: needs.generate.outputs.changes == 'true'
-        uses: ./.github/workflow_templates/commit-if-allowed-extensions.yml
+        uses: ./.github/actions/commit-if-allowed-extensions
         with:
           commit-message: ${{ steps.commit-message.outputs.message }}
           allowed-patterns: |

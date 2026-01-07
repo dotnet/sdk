@@ -252,7 +252,7 @@ jobs:
       - name: Commit baseline changes
         id: commit
         if: needs.generate.outputs.changes == 'true'
-        uses: ./.github/workflow_templates/commit-if-allowed-extensions.yml
+        uses: ./.github/actions/commit-if-allowed-extensions
         with:
           commit-message: ${{ steps.commit-message.outputs.message }}
           allowed-patterns: |
