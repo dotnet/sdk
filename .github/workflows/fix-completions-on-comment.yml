@@ -7,6 +7,10 @@ on:
 permissions:
   contents: read
 
+env:
+  REPO_NAME: ${{ github.event.repository.name }}
+  RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
 jobs:
   authorize:
     name: Authorize Request
@@ -25,7 +29,7 @@ jobs:
     steps:
       - name: Evaluate comment command
         id: command-filter
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           COMMENT_BODY: ${{ github.event.comment.body }}
         with:
@@ -55,23 +59,22 @@ jobs:
 
       - name: React to comment
         if: steps.command-filter.outputs.should_run == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           github-token: ${{ github.token }}
           script: |
             await github.rest.reactions.createForIssueComment({
               owner: '${{ github.repository_owner }}',
-              repo: '${{ github.event.repository.name }}',
+              repo: '${REPO_NAME}',
               comment_id: Number('${{ github.event.comment.id }}'),
               content: 'eyes'
             });
 
       - name: Comment on PR - Started
         if: steps.command-filter.outputs.should_run == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
-          COMMENT_BODY: |
-            ▶️ CLI completion snapshot update started. Track progress in [this workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          COMMENT_BODY: ${{ format('▶️ CLI completion snapshot update started. Track progress in [this workflow run]({0}).', env.RUN_URL) }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         with:
           github-token: ${{ github.token }}
@@ -87,7 +90,7 @@ jobs:
       - name: Capture PR metadata
         id: metadata
         if: steps.command-filter.outputs.should_run == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const pr = await github.rest.pulls.get({
@@ -113,7 +116,7 @@ jobs:
 
     steps:
       - name: Checkout PR head
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           token: ${{ github.token }}
           fetch-depth: 0
@@ -242,7 +245,7 @@ jobs:
 
       - name: Upload snapshot artifacts
         if: steps.evaluate.outputs.status == 'success' && steps.check-changes.outputs.changes == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: cli-completion-snapshots
           path: pr/__artifacts
@@ -253,15 +256,15 @@ jobs:
         working-directory: pr
         run: |
           mkdir -p __failure
-          if [ -n "${{ steps.evaluate.outputs.failure_reason }}" ]; then
-            echo "${{ steps.evaluate.outputs.failure_reason }}" > __failure/failure_reason.txt
+          if [ -n "${STEPS_EVALUATE_OUTPUTS_FAILURE_REASON}" ]; then
+            echo "${STEPS_EVALUATE_OUTPUTS_FAILURE_REASON}" > __failure/failure_reason.txt
           else
             echo "unknown" > __failure/failure_reason.txt
           fi
 
       - name: Upload failure diagnostics
         if: steps.evaluate.outputs.status == 'failed'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: cli-completion-failure
           path: pr/__failure
@@ -285,7 +288,7 @@ jobs:
 
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           token: ${{ github.token }}
           fetch-depth: 0
@@ -294,7 +297,7 @@ jobs:
 
       - name: Download snapshot artifacts
         if: needs.generate.outputs.changes == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: cli-completion-snapshots
           path: artifact
@@ -385,8 +388,11 @@ jobs:
 
       - name: Push snapshot changes
         if: steps.commit.outcome == 'success'
+        env:
+          HEAD_REF: ${{ needs.authorize.outputs.head_ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ needs.authorize.outputs.head_ref }}
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}" HEAD:"${HEAD_REF}"
 
       - name: Prepare success comment
         id: success-comment
@@ -395,7 +401,7 @@ jobs:
         env:
           DIFF_SUMMARY: ${{ needs.generate.outputs.diff_summary }}
         run: |
-          body="✅ CLI completion snapshots have been updated and committed to this PR. See [workflow details](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
+          body="✅ CLI completion snapshots have been updated and committed to this PR. See [workflow details](${RUN_URL})."
           if [ -n "${DIFF_SUMMARY}" ]; then
             body="${body}"$'\n\n```\n'"${DIFF_SUMMARY}"$'\n```'
           fi
@@ -403,7 +409,7 @@ jobs:
 
       - name: Comment on PR - Success
         if: steps.commit.outcome == 'success'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           COMMENT_BODY: ${{ steps.success-comment.outputs.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -429,10 +435,9 @@ jobs:
 
       - name: Comment on PR - No changes
         if: needs.generate.outputs.changes != 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
-          COMMENT_BODY: |
-            ℹ️ No completion snapshot files needed to be updated. Review [the workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          COMMENT_BODY: ${{ format('ℹ️ No completion snapshot files needed to be updated. Review [the workflow run]({0}).', env.RUN_URL) }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REACTION_COMMENT_ID: ${{ github.event.comment.id }}
         with:
@@ -465,7 +470,7 @@ jobs:
 
     steps:
       - name: Download failure diagnostics
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: cli-completion-failure
           path: diagnostics
@@ -508,7 +513,7 @@ jobs:
           printf 'body<<EOF\n%s\nEOF\n' "$message" >> "$GITHUB_OUTPUT"
 
       - name: Comment on PR - Failure
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           COMMENT_BODY: ${{ steps.failure-comment.outputs.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
