@@ -138,7 +138,21 @@ jobs:
         if: steps.build.outcome == 'success'
         working-directory: pr
         run: |
+          set +e
           ./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~VerifyCompletions"
+          exit_code=$?
+          set -e
+
+          if [ "$exit_code" -gt 1 ]; then
+            echo "dotnet test exited with $exit_code (unexpected)." >&2
+            exit "$exit_code"
+          fi
+
+          echo "exitcode=$exit_code" >> "$GITHUB_OUTPUT"
+
+          if [ "$exit_code" -eq 1 ]; then
+            echo "Detected expected test failures that generate updated snapshots. Continuing."
+          fi
         continue-on-error: true
         timeout-minutes: 10
 
