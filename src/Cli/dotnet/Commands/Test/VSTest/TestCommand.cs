@@ -78,6 +78,8 @@ public class TestCommand(
 
     private static int ForwardToMsbuild(ParseResult parseResult, string[] settings, string testSessionCorrelationId)
     {
+        var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
+
         // Workaround for https://github.com/Microsoft/vstest/issues/1503
         const string NodeWindowEnvironmentName = "MSBUILDENSURESTDOUTFORTASKPROCESSES";
         string? previousNodeWindowSetting = Environment.GetEnvironmentVariable(NodeWindowEnvironmentName);
@@ -126,7 +128,7 @@ public class TestCommand(
             int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties).Execute();
 
             // We run post processing also if execution is failed for possible partial successful result to post process.
-            exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Instance);
+            exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);
 
             return exitCode;
         }
@@ -148,6 +150,8 @@ public class TestCommand(
 
     private static int ForwardToVSTestConsole(ParseResult parseResult, string[] args, string[] settings, string testSessionCorrelationId)
     {
+        var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
+
         List<string> convertedArgs = new VSTestArgumentConverter().Convert(args, out List<string> ignoredArgs);
         if (ignoredArgs.Any())
         {
@@ -168,7 +172,7 @@ public class TestCommand(
         int exitCode = new VSTestForwardingApp(convertedArgs).Execute();
 
         // We run post processing also if execution is failed for possible partial successful result to post process.
-        exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Instance);
+        exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);
 
         return exitCode;
     }
@@ -252,7 +256,7 @@ public class TestCommand(
             msbuildPath);
 
         // Apply environment variables provided by the user via --environment (-e) option, if present
-        if (result.GetValue(definition.EnvOption) is { } environmentVariables)
+        if (result.GetValue(definition.TestEnvOption) is { } environmentVariables)
         {
             foreach (var (name, value) in environmentVariables)
             {
@@ -271,7 +275,7 @@ public class TestCommand(
         return testCommand;
     }
 
-    internal static int RunArtifactPostProcessingIfNeeded(string testSessionCorrelationId, ParseResult parseResult, FeatureFlag disableFeatureFlag)
+    internal static int RunArtifactPostProcessingIfNeeded(string testSessionCorrelationId, string? diag, FeatureFlag disableFeatureFlag)
     {
         if (disableFeatureFlag.IsSet(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
         {
@@ -290,11 +294,9 @@ public class TestCommand(
 
         var artifactsPostProcessArgs = new List<string> { "--artifactsProcessingMode-postprocess", $"--testSessionCorrelationId:{testSessionCorrelationId}" };
 
-        var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
-
-        if (parseResult.GetResult(definition.DiagOption) is not null)
+        if (diag != null)
         {
-            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(definition.DiagOption)}");
+            artifactsPostProcessArgs.Add($"--diag:{diag}");
         }
 
         try

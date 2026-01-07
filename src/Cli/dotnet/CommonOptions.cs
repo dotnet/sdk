@@ -338,18 +338,6 @@ internal static class CommonOptions
         return result;
     }
 
-    public const string TestPlatformOptionName = "--Platform";
-
-    public static readonly Option<string> TestPlatformOption = new(TestPlatformOptionName);
-
-    public const string TestFrameworkOptionName = "--Framework";
-
-    public static readonly Option<string> TestFrameworkOption = new(TestFrameworkOptionName);
-
-    public const string TestLoggerOptionName = "--logger";
-
-    public static readonly Option<string[]> TestLoggerOption = new(TestLoggerOptionName);
-
     /// <summary>
     /// Creates an implementation of the <c>--no-logo</c> option.
     /// This option suppresses the display of the startup banner or logos for commands or products it is applied to.

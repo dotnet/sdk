@@ -24,7 +24,7 @@ internal abstract partial class TestCommandDefinition
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestListTests=true");
 
-        public readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CommonOptions.CreateEnvOption(CliStrings.CmdTestEnvironmentVariableDescription);
+        public readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CommonOptions.CreateEnvOption(CliStrings.CmdTestEnvironmentVariableDescription);
 
         public readonly Option<string> FilterOption = new Option<string>("--filter")
         {
@@ -163,7 +163,7 @@ internal abstract partial class TestCommandDefinition
 
             Options.Add(SettingsOption);
             Options.Add(ListTestsOption);
-            Options.Add(EnvOption);
+            Options.Add(TestEnvOption);
             Options.Add(FilterOption);
             Options.Add(AdapterOption);
             Options.Add(LoggerOption);

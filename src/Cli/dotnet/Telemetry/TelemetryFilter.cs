@@ -13,6 +13,7 @@ using Microsoft.DotNet.Cli.Commands.Pack;
 using Microsoft.DotNet.Cli.Commands.Publish;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.VSTest;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -125,7 +126,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["vstest"],
-            optionsToLog: [CommonOptions.TestPlatformOptionName, CommonOptions.TestFrameworkOptionName, CommonOptions.TestLoggerOptionName]
+            optionsToLog: [VSTestCommandDefinition.TestPlatformOptionName, VSTestCommandDefinition.TestFrameworkOptionName, VSTestCommandDefinition.TestLoggerOptionName]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
