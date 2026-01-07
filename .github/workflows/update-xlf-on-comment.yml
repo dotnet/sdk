@@ -25,18 +25,31 @@ jobs:
 
     steps:
       - name: Ensure commenter is trusted
-        uses: ./.github/workflow_templates/ensure-trusted-commenter.yml
-        with:
-          author-association: ${{ github.event.comment.author_association }}
+        shell: bash
+        env:
+          AUTHOR_ASSOCIATION: ${{ github.event.comment.author_association }}
+        run: |
+          case "${AUTHOR_ASSOCIATION}" in
+            MEMBER|OWNER|COLLABORATOR)
+              exit 0
+              ;;
+            *)
+              echo "Only trusted collaborators can trigger this workflow." >&2
+              exit 1
+              ;;
+          esac
 
       - name: React to comment
-        uses: ./.github/workflow_templates/react-to-comment.yml
+        uses: actions/github-script@v7
         with:
-          token: ${{ github.token }}
-          owner: ${{ github.repository_owner }}
-          repo: ${{ github.event.repository.name }}
-          comment-id: ${{ github.event.comment.id }}
-          reaction: eyes
+          github-token: ${{ github.token }}
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: '${{ github.repository_owner }}',
+              repo: '${{ github.event.repository.name }}',
+              comment_id: Number('${{ github.event.comment.id }}'),
+              content: 'eyes'
+            });
 
       - name: Comment on PR - Started
         uses: ./.github/workflow_templates/comment-on-pr.yml
