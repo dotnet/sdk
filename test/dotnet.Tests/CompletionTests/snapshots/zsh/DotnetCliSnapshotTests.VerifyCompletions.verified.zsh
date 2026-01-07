@@ -41,8 +41,6 @@ _testhost() {
                         '-f=[The target framework to build for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '--configuration=[The configuration to use for building the project. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '-c=[The configuration to use for building the project. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
-                        '--runtime=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--version-suffix=[Set the value of the \$(VersionSuffix) property to use when building the project.]:VERSION_SUFFIX: ' \
                         '--no-restore[Do not restore the project before building.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
@@ -65,6 +63,8 @@ _testhost() {
                         '--self-contained=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--sc=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--no-self-contained[Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.]' \
+                        '--runtime=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
                         '--os=[The target operating system.]:OS: ' \
@@ -738,8 +738,6 @@ _testhost() {
                         '/nologo[Do not display the startup banner or the copyright message.]' \
                         '--framework=[The target framework to publish for. The target framework has to be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to publish for. The target framework has to be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                        '--runtime=[The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--configuration=[The configuration to publish for. The default is '\''Release'\'' for NET 8.0 projects and above, but '\''Debug'\'' for older projects.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '-c=[The configuration to publish for. The default is '\''Release'\'' for NET 8.0 projects and above, but '\''Debug'\'' for older projects.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--version-suffix=[Set the value of the \$(VersionSuffix) property to use when building the project.]:VERSION_SUFFIX: ' \
@@ -751,6 +749,8 @@ _testhost() {
                         '-verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                        '--runtime=[The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
                         '--os=[The target operating system.]:OS: ' \
@@ -850,8 +850,6 @@ _testhost() {
                         '--ignore-failed-sources[Treat package source failures as warnings.]' \
                         '--force[Force all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json.]' \
                         '-f[Force all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json.]' \
-                        '*--runtime=[The target runtime to restore packages for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '*-r=[The target runtime to restore packages for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--no-dependencies[Do not restore project-to-project references and only restore the specified project.]' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
@@ -865,6 +863,8 @@ _testhost() {
                         '--nologo[Do not display the startup banner or the copyright message.]' \
                         '-nologo[Do not display the startup banner or the copyright message.]' \
                         '/nologo[Do not display the startup banner or the copyright message.]' \
+                        '*--runtime=[The target runtime to restore packages for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '*-r=[The target runtime to restore packages for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
                         '--os=[The target operating system.]:OS: ' \
@@ -889,8 +889,6 @@ _testhost() {
                         '-c=[The configuration to run for. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--framework=[The target framework to run for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to run for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                        '--runtime=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--project=[Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.]:PROJECT_PATH: ' \
                         '--file=[The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).]:FILE_PATH: ' \
                         '--launch-profile=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
@@ -909,6 +907,8 @@ _testhost() {
                         '-verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                        '--runtime=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
                         '--os=[The target operating system.]:OS: ' \
@@ -1059,8 +1059,6 @@ _testhost() {
                         '-c=[The configuration to use for running tests. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--framework=[The target framework to run tests for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to run tests for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                        '--runtime=[The target runtime to test for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[The target runtime to test for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--no-restore[Do not restore the project before building.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
@@ -1069,6 +1067,8 @@ _testhost() {
                         '-verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                        '--runtime=[The target runtime to test for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to test for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
                         '--os=[The target operating system.]:OS: ' \
