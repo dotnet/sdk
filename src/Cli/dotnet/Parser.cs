@@ -369,9 +369,9 @@ public static class Parser
             {
                 new VSTestForwardingApp(helpArgs).Execute();
             }
-            else if (command.Name.Equals(FormatCommandDefinition.Name))
+            else if (command is FormatCommandDefinition format)
             {
-                var arguments = context.ParseResult.GetValue(FormatCommandDefinition.Arguments);
+                var arguments = context.ParseResult.GetValue(format.Arguments);
                 new FormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
             else if (command.Name.Equals(FsiCommandDefinition.Name))
@@ -385,10 +385,6 @@ public static class Parser
                 {
                     block(context);
                 }
-            }
-            else if (command.Name.Equals(FormatCommandDefinition.Name))
-            {
-                new FormatForwardingApp(helpArgs).Execute();
             }
             else if (command.Name.Equals(FsiCommandDefinition.Name))
             {
