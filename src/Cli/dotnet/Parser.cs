@@ -365,7 +365,7 @@ public static class Parser
                 context.Output.WriteLine();
                 additionalOption(context);
             }
-            else if (command.Name.Equals(VSTestCommandParser.GetCommand().Name))
+            else if (command is VSTestCommandDefinition)
             {
                 new VSTestForwardingApp(helpArgs).Execute();
             }
@@ -374,7 +374,7 @@ public static class Parser
                 var arguments = context.ParseResult.GetValue(format.Arguments);
                 new FormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
-            else if (command.Name.Equals(FsiCommandDefinition.Name))
+            else if (command is FsiCommandDefinition)
             {
                 new FsiForwardingApp(helpArgs).Execute();
             }
@@ -385,10 +385,6 @@ public static class Parser
                 {
                     block(context);
                 }
-            }
-            else if (command.Name.Equals(FsiCommandDefinition.Name))
-            {
-                new FsiForwardingApp(helpArgs).Execute();
             }
             else
             {
