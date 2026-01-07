@@ -4,24 +4,19 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.BuildServer;
 
-internal static class BuildServerCommandDefinition
+internal sealed class BuildServerCommandDefinition : Command
 {
-    public const string Name = "build-server";
-    public static readonly string DocsLink = "https://aka.ms/dotnet-build-server";
+    private const string Link = "https://aka.ms/dotnet-build-server";
 
-    public static Command Create()
+    public readonly BuildServerShutdownCommandDefinition ShutdownCommand = new();
+
+    public BuildServerCommandDefinition()
+        : base("build-server", CliCommandStrings.BuildServerCommandDescription)
     {
-        var command = new Command(Name, CliCommandStrings.BuildServerCommandDescription)
-        {
-            DocsLink = DocsLink
-        };
-
-        command.Subcommands.Add(BuildServerShutdownCommandDefinition.Create());
-
-        return command;
+        this.DocsLink = Link;
+        Subcommands.Add(ShutdownCommand);
     }
 }
