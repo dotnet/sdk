@@ -414,6 +414,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
+            // If we encountered missing manifests from workload sets during enumeration, throw the exception now
+            ThrowExceptionIfManifestsNotAvailable();
+
             //  Return manifests in a stable order. Manifests in the KnownWorkloadManifests.txt file will be first, and in the same order they appear in that file.
             //  Then the rest of the manifests (if any) will be returned in (ordinal case-insensitive) alphabetical order.
             return manifestIdsToManifests
