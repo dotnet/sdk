@@ -8,20 +8,18 @@ namespace Microsoft.DotNet.Cli.Commands.Clean;
 
 internal static class CleanCommandParser
 {
-    private static readonly Command Command = SetAction(CleanCommandDefinition.Create());
+    private static readonly CleanCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetAction(Command command)
+    private static CleanCommandDefinition CreateCommand()
     {
+        var command = new CleanCommandDefinition();
         command.SetAction(CleanCommand.Run);
-
-        command.Subcommands.Single(c => c.Name == CleanFileBasedAppArtifactsCommandDefinition.Name)
-            .SetAction(parseResult => new CleanFileBasedAppArtifactsCommand(parseResult).Execute());
-
+        command.FileBasedAppsCommand.SetAction(parseResult => new CleanFileBasedAppArtifactsCommand(parseResult).Execute());
         return command;
     }
 }
