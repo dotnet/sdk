@@ -24,7 +24,13 @@ runs:
           exit 1
         fi
 
-        mapfile -t staged_files < <(git diff --cached --name-only)
+        staged_files_output=$(git diff --cached --name-only)
+        if [ $? -ne 0 ]; then
+          echo "Failed to retrieve staged files due to a git error." >&2
+          exit 1
+        fi
+
+        mapfile -t staged_files <<< "${staged_files_output}"
         if [ ${#staged_files[@]} -eq 0 ]; then
           echo "No staged files were found. Nothing to commit." >&2
           exit 1
