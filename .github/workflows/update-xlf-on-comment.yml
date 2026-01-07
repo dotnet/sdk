@@ -28,7 +28,7 @@ jobs:
         id: command-filter
         uses: actions/github-script@v7
         env:
-          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_BODY: ${{ github.event.comment.body }} # GH Has a Character Limit which prevents overflow issues. https://github.com/dead-claudia/github-limits
           COMMENT_ID: ${{ github.event.comment.id }}
         with:
           script: |
