@@ -1,12 +1,12 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Concurrent;
-using Microsoft.TemplateEngine.Cli.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
+using Microsoft.TemplateEngine.Cli.Help;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -139,7 +139,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         return _assemblies.GetOrAdd(executionId, _ =>
         {
             IStopwatch sw = CreateStopwatch();
-            var assemblyRun = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw);
+            var assemblyRun = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw, _isDiscovery);
             int slotIndex = _terminalWithProgress.AddWorker(assemblyRun);
             assemblyRun.SlotIndex = slotIndex;
 
@@ -280,13 +280,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool colorizePassed = passed > 0 && _buildErrorsCount == 0 && failed == 0 && error == 0;
         bool colorizeSkipped = skipped > 0 && skipped == total && _buildErrorsCount == 0 && failed == 0 && error == 0;
 
-        string errorText = $"{SingleIndentation}error: {error}";
-        string totalText = $"{SingleIndentation}total: {total}";
-        string retriedText = $" (+{retried} retried)";
-        string failedText = $"{SingleIndentation}failed: {failed}";
-        string passedText = $"{SingleIndentation}succeeded: {passed}";
-        string skippedText = $"{SingleIndentation}skipped: {skipped}";
-        string durationText = $"{SingleIndentation}duration: ";
+        string errorText = $"{SingleIndentation}{CliCommandStrings.ErrorColon} {error}";
+        string totalText = $"{SingleIndentation}{CliCommandStrings.TotalColon} {total}";
+        string retriedText = $" (+{retried} {CliCommandStrings.Retried})";
+        string failedText = $"{SingleIndentation}{CliCommandStrings.FailedColon} {failed}";
+        string passedText = $"{SingleIndentation}{CliCommandStrings.SucceededColon} {passed}";
+        string skippedText = $"{SingleIndentation}{CliCommandStrings.SkippedColon} {skipped}";
+        string durationText = $"{SingleIndentation}{CliCommandStrings.DurationColon} ";
 
         if (error > 0)
         {
@@ -397,7 +397,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string displayName,
         string? informativeMessage,
         TestOutcome outcome,
-        TimeSpan duration,
+        TimeSpan? duration,
         FlatException[]? exceptions,
         string? expected,
         string? actual,
@@ -458,7 +458,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string displayName,
         string? informativeMessage,
         TestOutcome outcome,
-        TimeSpan duration,
+        TimeSpan? duration,
         FlatException[]? flatExceptions,
         string? expected,
         string? actual,
@@ -496,9 +496,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.ResetColor();
         terminal.Append(' ');
         terminal.Append(displayName);
-        terminal.SetColor(TerminalColor.DarkGray);
-        terminal.Append(' ');
-        AppendLongDuration(terminal, duration);
+
+        if (duration.HasValue)
+        {
+            terminal.Append(' ');
+            AppendLongDuration(terminal, duration.Value);
+        }
 
         if (!string.IsNullOrEmpty(informativeMessage))
         {
@@ -801,7 +804,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private static void AppendAssemblySummary(TestProgressState assemblyRun, ITerminal terminal)
     {
         terminal.ResetColor();
-        
+
         AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture);
         terminal.Append(' ');
         AppendAssemblyResult(terminal, assemblyRun);
@@ -914,15 +917,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         var assemblies = _assemblies.Select(asm => asm.Value).OrderBy(a => a.Assembly).Where(a => a is not null).ToList();
 
         int totalTests = _assemblies.Values.Sum(a => a.TotalTests);
-        bool runFailed = _wasCancelled;
+        bool runFailed = _wasCancelled || totalTests < 1;
 
         foreach (TestProgressState assembly in assemblies)
         {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.DiscoveredTestsInAssembly, assembly.DiscoveredTests.Count));
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.DiscoveredTestsInAssembly, assembly.DiscoveredTestNames.Count));
             terminal.Append(" - ");
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
             terminal.AppendLine();
-            foreach ((string? displayName, string? uid) in assembly.DiscoveredTests)
+            foreach ((string? displayName, string? uid) in assembly.DiscoveredTestNames)
             {
                 if (displayName is not null)
                 {

@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetStoreInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "--target:ComposeStore", "<project>"];
+        string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "--target:ComposeStore", "<project>"];
         static readonly string[] ArgsPrefix = ["--manifest", "<project>"];
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetStoreInvocation));
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             var msbuildPath = "<msbuildpath>";
             StoreCommand.FromArgs(args, msbuildPath)
-                .GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, $"--property:ComposeDir={Path.GetFullPath(path)}", "--property:_CommandLineDefinedOutputPath=true"]);
+                .GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, $"--property:ComposeDir={Path.GetFullPath(path)}{Path.DirectorySeparatorChar}", "--property:_CommandLineDefinedOutputPath=true"]);
         }
     }
 }
