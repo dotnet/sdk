@@ -279,6 +279,33 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
+        [Theory]
+        [InlineData("PublishReferencesSymbols=false", false)]
+        [InlineData("PublishReferencesSymbols=true", true)]
+        public void It_publishes_referenced_project_symbol(string property, bool expectReferenceSymbol)
+        {
+            var kitchenSinkAsset = _testAssetsManager
+                .CopyTestAsset("KitchenSink", identifier: $"{property.Replace("=", "")}")
+                .WithSource();
+
+            var publishCommand = new PublishCommand(kitchenSinkAsset, "TestApp");
+            var publishArgs = new string[] { $"/p:{property}" };
+            var publishResult = publishCommand.Execute(publishArgs);
+
+            publishResult.Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework);
+
+            if (expectReferenceSymbol)
+            {
+                publishDirectory.Should().HaveFile("TestLibrary.pdb");
+            }
+            else
+            {
+                publishDirectory.Should().NotHaveFile("TestLibrary.pdb");
+            }
+        }
+
         private static JObject ReadJson(string path)
         {
             using (JsonTextReader jsonReader = new(File.OpenText(path)))
