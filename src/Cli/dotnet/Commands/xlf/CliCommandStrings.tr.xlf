@@ -4065,6 +4065,11 @@ Bir değeri görüntülemek için, bir değer sağlamadan ilgili komut satırı 
         <target state="translated">İş yükleri</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadsNotInstalledRunWorkloadUpdate">
+        <source>Run "dotnet workload update" to install the workloads for this SDK.</source>
+        <target state="new">Run "dotnet workload update" to install the workloads for this SDK.</target>
+        <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
         <target state="translated">Visual Studio iş yükleri için yükleme yazma: '{0}'</target>

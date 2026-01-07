@@ -4065,6 +4065,11 @@ Pokud chcete zobrazit hodnotu, zadejte odpovídající volbu příkazového řá
         <target state="translated">Úlohy</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadsNotInstalledRunWorkloadUpdate">
+        <source>Run "dotnet workload update" to install the workloads for this SDK.</source>
+        <target state="new">Run "dotnet workload update" to install the workloads for this SDK.</target>
+        <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
         <target state="translated">Probíhá zápis záznamů o instalaci pro úlohy sady Visual Studio: {0}</target>

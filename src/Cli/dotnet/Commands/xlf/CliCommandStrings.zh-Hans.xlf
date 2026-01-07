@@ -4065,6 +4065,11 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">工作负载</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadsNotInstalledRunWorkloadUpdate">
+        <source>Run "dotnet workload update" to install the workloads for this SDK.</source>
+        <target state="new">Run "dotnet workload update" to install the workloads for this SDK.</target>
+        <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
         <target state="translated">写入 Visual Studio 工作负载的安装记录:“{0}”</target>

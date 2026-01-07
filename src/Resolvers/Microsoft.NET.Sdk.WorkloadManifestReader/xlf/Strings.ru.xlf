@@ -83,14 +83,14 @@
         <note />
       </trans-unit>
       <trans-unit id="ManifestFromInstallStateNotFound">
-        <source>Workload manifest {0}, which was specified in {1}, was not found. Running "dotnet workload repair" may resolve this.</source>
-        <target state="translated">Не найден манифест рабочей нагрузки {0}, указанный в {1}. Выполнение команды "dotnet workload repair" может устранить эту проблему.</target>
-        <note>{Locked="dotnet workload repair"}</note>
+        <source>Workload manifest {0}, which was specified in {1}, was not found. Running "dotnet workload update" may resolve this.</source>
+        <target state="needs-review-translation">Не найден манифест рабочей нагрузки {0}, указанный в {1}. Выполнение команды "dotnet workload repair" может устранить эту проблему.</target>
+        <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
       <trans-unit id="ManifestFromWorkloadSetNotFound">
-        <source>Workload manifest {0} from workload version {1} was not installed. Running "dotnet workload repair" may resolve this.</source>
-        <target state="translated">Манифест рабочей нагрузки {0} из версии рабочей нагрузки {1} не установлен. Выполнение команды "dotnet workload repair" может устранить эту проблему.</target>
-        <note>{Locked="dotnet workload repair"}</note>
+        <source>Workload manifest {0} from workload version {1} was not installed. Running "dotnet workload update" may resolve this.</source>
+        <target state="needs-review-translation">Манифест рабочей нагрузки {0} из версии рабочей нагрузки {1} не установлен. Выполнение команды "dotnet workload repair" может устранить эту проблему.</target>
+        <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
       <trans-unit id="MissingBaseWorkload">
         <source>Could not find workload '{0}' extended by workload '{1}' in manifest '{2}' [{3}]</source>

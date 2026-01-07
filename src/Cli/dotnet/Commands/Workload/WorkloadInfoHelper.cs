@@ -132,8 +132,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
     {
         reporter ??= Reporter.Output;
         
-        WorkloadVersionInfo? versionInfo = null;
-        bool manifestsNotFound = false;
+        IWorkloadManifestProvider.WorkloadVersionInfo? versionInfo = null;
         
         try
         {
@@ -142,7 +141,6 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         catch (FileNotFoundException ex)
         {
             // Manifests from workload set are missing - show warning and suggest running update
-            manifestsNotFound = true;
             reporter.WriteLine(" " + ex.Message);
             reporter.WriteLine(" " + CliCommandStrings.WorkloadsNotInstalledRunWorkloadUpdate);
             return;
@@ -156,11 +154,11 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
                 : CliCommandStrings.WorkloadManifestInstallationConfigurationLooseManifests;
             reporter.WriteLine(indent + configurationMessage);
 
-            if (!versionInfo.IsInstalled)
+            if (versionInfo.HasValue && !versionInfo.Value.IsInstalled)
             {
-                reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadSetFromGlobalJsonNotInstalled, versionInfo.Version, versionInfo.GlobalJsonPath));
+                reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadSetFromGlobalJsonNotInstalled, versionInfo.Value.Version, versionInfo.Value.GlobalJsonPath));
             }
-            else if (versionInfo.WorkloadSetsEnabledWithoutWorkloadSet)
+            else if (versionInfo.HasValue && versionInfo.Value.WorkloadSetsEnabledWithoutWorkloadSet)
             {
                 reporter.WriteLine(indent + CliCommandStrings.ShouldInstallAWorkloadSet);
             }
@@ -174,7 +172,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
             reporter.WriteLine();
         }
 
-        if (versionInfo.IsInstalled)
+        if (versionInfo.HasValue && versionInfo.Value.IsInstalled)
         {
             var installedList = InstalledSdkWorkloadIds;
             var installedWorkloads = AddInstalledVsWorkloads(installedList);

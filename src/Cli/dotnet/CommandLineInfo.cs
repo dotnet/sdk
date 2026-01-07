@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Utils;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
