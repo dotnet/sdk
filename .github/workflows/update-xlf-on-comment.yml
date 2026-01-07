@@ -65,11 +65,18 @@ jobs:
         with:
           github-token: ${{ github.token }}
           script: |
+            const { owner, repo } = context.repo;
+            const commentId = context.payload.comment?.id;
+            if (!commentId) {
+              core.warning('No comment ID found on payload; skipping reaction.');
+              return;
+            }
+
             await github.rest.reactions.createForIssueComment({
-              owner: '${{ github.repository_owner }}',
-              repo: '${REPO_NAME}',
-              comment_id: Number('${{ github.event.comment.id }}'),
-              content: 'eyes'
+              owner,
+              repo,
+              comment_id: Number(commentId),
+              content: 'eyes',
             });
 
       - name: Comment on PR - Started
