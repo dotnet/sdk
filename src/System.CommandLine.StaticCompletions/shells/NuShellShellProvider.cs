@@ -38,10 +38,9 @@ public class NushellShellProvider : IShellProvider
             # then `use` it in your config.nu or elsewhere.
 
             # For example, if ~/.config/nushell/lib is in your $env.NU_LIB_DIRS,
-            # you could place this file as `dotnet.nu` in a subdirectory named
-            # `completions` in the above directory and then put the following
-            # line in your config.nu:
-            # `use completions/dotnet.nu *`
+            # you could place this file as `dotnet-completions.nu` in the above
+            # directory and then put the following line in your config.nu:
+            # `use dotnet-completions.nu *`
 
             # Of course, the above assumes that your $env.NU_LIB_DIRS is
             # actually populated; refer to
