@@ -114,16 +114,39 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
     {
         workloadInfoHelper ??= new WorkloadInfoHelper(false);
 
-        var versionInfo = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
+        try
+        {
+            var versionInfo = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
 
-        // The explicit space here is intentional, as it's easy to miss in localization and crucial for parsing
-        return versionInfo.Version + (versionInfo.IsInstalled ? string.Empty : ' ' + CliCommandStrings.WorkloadVersionNotInstalledShort);
+            // The explicit space here is intentional, as it's easy to miss in localization and crucial for parsing
+            return versionInfo.Version + (versionInfo.IsInstalled ? string.Empty : ' ' + CliCommandStrings.WorkloadVersionNotInstalledShort);
+        }
+        catch (FileNotFoundException)
+        {
+            // When manifests are missing from a workload set, return a message indicating update is needed
+            return CliCommandStrings.WorkloadVersionNotInstalledShort;
+        }
     }
 
     internal void ShowWorkloadsInfo(IReporter? reporter = null, string? dotnetDir = null, bool showVersion = true)
     {
         reporter ??= Reporter.Output;
-        var versionInfo = ManifestProvider.GetWorkloadVersion();
+        
+        WorkloadVersionInfo? versionInfo = null;
+        bool manifestsNotFound = false;
+        
+        try
+        {
+            versionInfo = ManifestProvider.GetWorkloadVersion();
+        }
+        catch (FileNotFoundException ex)
+        {
+            // Manifests from workload set are missing - show warning and suggest running update
+            manifestsNotFound = true;
+            reporter.WriteLine(" " + ex.Message);
+            reporter.WriteLine(" " + CliCommandStrings.WorkloadsNotInstalledRunWorkloadUpdate);
+            return;
+        }
 
         void WriteUpdateModeAndAnyError(string indent = "")
         {

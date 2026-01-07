@@ -363,7 +363,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
                     if (manifestDirectory == null)
                     {
-                        throw new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
+                        // Manifest from workload set is missing. This can happen after SDK upgrades.
+                        // Store the exception to be thrown when needed, but allow workload commands to proceed
+                        // so they can install the missing manifests.
+                        if (_exceptionToThrow == null)
+                        {
+                            _exceptionToThrow = new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
+                        }
+                        continue;
                     }
                     AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
                 }
@@ -380,7 +387,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
                         if (manifestDirectory == null)
                         {
-                            throw new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
+                            // Manifest from install state is missing. This can happen after SDK upgrades.
+                            // Store the exception to be thrown when needed, but allow workload commands to proceed
+                            // so they can install the missing manifests.
+                            if (_exceptionToThrow == null)
+                            {
+                                _exceptionToThrow = new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
+                            }
+                            continue;
                         }
                         AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
                     }

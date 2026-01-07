@@ -2471,6 +2471,10 @@ To display a value, specify the corresponding command-line option without provid
     <value>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</value>
     <comment>{Locked="dotnet workload restore"}</comment>
   </data>
+  <data name="WorkloadsNotInstalledRunWorkloadUpdate" xml:space="preserve">
+    <value>Run "dotnet workload update" to install the workloads for this SDK.</value>
+    <comment>{Locked="dotnet workload update"}</comment>
+  </data>
   <data name="WorkloadSetVersionOptionDescription" xml:space="preserve">
     <value>A workload version to display or one or more workloads and their versions joined by the '@' character.</value>
   </data>
