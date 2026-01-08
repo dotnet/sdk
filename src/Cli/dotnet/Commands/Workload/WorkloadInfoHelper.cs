@@ -124,14 +124,25 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
     {
         reporter ??= Reporter.Output;
         
-        var versionInfo = ManifestProvider.GetWorkloadVersion();
-        
         // Get the error message if manifests are missing
+        // We need to call GetManifests() first to ensure _exceptionToThrow is populated
+        // if manifests from a workload set are missing
         string? manifestError = null;
         if (ManifestProvider is SdkDirectoryWorkloadManifestProvider sdkProvider)
         {
+            // Calling GetManifests().Count() forces enumeration which populates the error state
+            try
+            {
+                _ = ManifestProvider.GetManifests().Count();
+            }
+            catch
+            {
+                // Ignore errors here - we'll get the message via GetManifestErrorMessage
+            }
             manifestError = sdkProvider.GetManifestErrorMessage();
         }
+        
+        var versionInfo = ManifestProvider.GetWorkloadVersion();
 
         void WriteUpdateModeAndAnyError(string indent = "")
         {
@@ -153,9 +164,9 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
                 {
                     reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadSetFromGlobalJsonNotInstalled, versionInfo.Version, versionInfo.GlobalJsonPath));
                 }
-                else
+                else if (manifestError == null)
                 {
-                    // Workload set is installed but manifests are missing
+                    // Workload set is installed but manifests are missing - only show generic message if we don't have a specific error
                     reporter.WriteLine(indent + CliCommandStrings.WorkloadsNotInstalledRunWorkloadUpdate);
                 }
             }
