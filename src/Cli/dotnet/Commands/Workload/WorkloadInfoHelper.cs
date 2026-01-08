@@ -114,37 +114,17 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
     {
         workloadInfoHelper ??= new WorkloadInfoHelper(false);
 
-        try
-        {
-            var versionInfo = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
+        var versionInfo = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
 
-            // The explicit space here is intentional, as it's easy to miss in localization and crucial for parsing
-            return versionInfo.Version + (versionInfo.IsInstalled ? string.Empty : ' ' + CliCommandStrings.WorkloadVersionNotInstalledShort);
-        }
-        catch (FileNotFoundException)
-        {
-            // When manifests are missing from a workload set, return a message indicating update is needed
-            return CliCommandStrings.WorkloadVersionNotInstalledShort;
-        }
+        // The explicit space here is intentional, as it's easy to miss in localization and crucial for parsing
+        return versionInfo.Version + (versionInfo.IsInstalled ? string.Empty : ' ' + CliCommandStrings.WorkloadVersionNotInstalledShort);
     }
 
     internal void ShowWorkloadsInfo(IReporter? reporter = null, string? dotnetDir = null, bool showVersion = true)
     {
         reporter ??= Reporter.Output;
         
-        IWorkloadManifestProvider.WorkloadVersionInfo? versionInfo = null;
-        
-        try
-        {
-            versionInfo = ManifestProvider.GetWorkloadVersion();
-        }
-        catch (FileNotFoundException ex)
-        {
-            // Manifests from workload set are missing - show warning and suggest running update
-            reporter.WriteLine(" " + ex.Message);
-            reporter.WriteLine(" " + CliCommandStrings.WorkloadsNotInstalledRunWorkloadUpdate);
-            return;
-        }
+        var versionInfo = ManifestProvider.GetWorkloadVersion();
 
         void WriteUpdateModeAndAnyError(string indent = "")
         {
@@ -154,11 +134,19 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
                 : CliCommandStrings.WorkloadManifestInstallationConfigurationLooseManifests;
             reporter.WriteLine(indent + configurationMessage);
 
-            if (versionInfo.HasValue && !versionInfo.Value.IsInstalled)
+            if (!versionInfo.IsInstalled)
             {
-                reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadSetFromGlobalJsonNotInstalled, versionInfo.Value.Version, versionInfo.Value.GlobalJsonPath));
+                if (versionInfo.GlobalJsonPath != null)
+                {
+                    reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadSetFromGlobalJsonNotInstalled, versionInfo.Version, versionInfo.GlobalJsonPath));
+                }
+                else
+                {
+                    // Workload set is installed but manifests are missing
+                    reporter.WriteLine(indent + CliCommandStrings.WorkloadsNotInstalledRunWorkloadUpdate);
+                }
             }
-            else if (versionInfo.HasValue && versionInfo.Value.WorkloadSetsEnabledWithoutWorkloadSet)
+            else if (versionInfo.WorkloadSetsEnabledWithoutWorkloadSet)
             {
                 reporter.WriteLine(indent + CliCommandStrings.ShouldInstallAWorkloadSet);
             }
@@ -172,7 +160,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
             reporter.WriteLine();
         }
 
-        if (versionInfo.HasValue && versionInfo.Value.IsInstalled)
+        if (versionInfo.IsInstalled)
         {
             var installedList = InstalledSdkWorkloadIds;
             var installedWorkloads = AddInstalledVsWorkloads(installedList);

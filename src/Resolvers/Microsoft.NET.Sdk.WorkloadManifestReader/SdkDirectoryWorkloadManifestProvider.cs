@@ -260,11 +260,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
             }
 
-            ThrowExceptionIfManifestsNotAvailable();
-
             if (_workloadSet?.Version is not null)
             {
-                return new WorkloadVersionInfo(_workloadSet.Version, IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: false, GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
+                // Return the workload set version, but indicate if manifests are actually installed
+                // _exceptionToThrow will be set if manifests from the workload set are missing
+                return new WorkloadVersionInfo(_workloadSet.Version, IsInstalled: _exceptionToThrow == null, WorkloadSetsEnabledWithoutWorkloadSet: false, GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
             }
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
@@ -290,8 +290,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
         {
-            ThrowExceptionIfManifestsNotAvailable();
-
             //  Scan manifest directories
             var manifestIdsToManifests = new Dictionary<string, ReadableWorkloadManifest>(StringComparer.OrdinalIgnoreCase);
 
@@ -414,8 +412,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            // If we encountered missing manifests from workload sets during enumeration, throw the exception now
-            ThrowExceptionIfManifestsNotAvailable();
+            // Note: We intentionally do not throw here if manifests from workload sets are missing (_exceptionToThrow != null).
+            // This allows workload commands (install, update, restore) to proceed and install the missing manifests.
+            // Info commands will see IsInstalled: false in GetWorkloadVersion() and show appropriate warnings.
 
             //  Return manifests in a stable order. Manifests in the KnownWorkloadManifests.txt file will be first, and in the same order they appear in that file.
             //  Then the rest of the manifests (if any) will be returned in (ordinal case-insensitive) alphabetical order.

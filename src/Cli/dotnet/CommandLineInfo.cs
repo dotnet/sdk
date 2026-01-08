@@ -25,18 +25,7 @@ public class CommandLineInfo
         Reporter.Output.WriteLine($"{LocalizableStrings.DotNetSdkInfoLabel}");
         Reporter.Output.WriteLine($" Version:           {Product.Version}");
         Reporter.Output.WriteLine($" Commit:            {commitSha}");
-        
-        string workloadVersion;
-        try
-        {
-            workloadVersion = WorkloadInfoHelper.GetWorkloadsVersion();
-        }
-        catch (FileNotFoundException)
-        {
-            workloadVersion = CliCommandStrings.WorkloadVersionNotInstalledShort;
-        }
-        
-        Reporter.Output.WriteLine($" Workload version:  {workloadVersion}");
+        Reporter.Output.WriteLine($" Workload version:  {WorkloadInfoHelper.GetWorkloadsVersion()}");
         Reporter.Output.WriteLine($" MSBuild version:   {MSBuildForwardingAppWithoutLogging.MSBuildVersion}");
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotNetRuntimeInfoLabel}");
@@ -52,16 +41,7 @@ public class CommandLineInfo
     {
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotnetWorkloadInfoLabel}");
-        try
-        {
-            new WorkloadInfoHelper(isInteractive: false).ShowWorkloadsInfo(showVersion: false);
-        }
-        catch (FileNotFoundException ex)
-        {
-            // Manifests from workload set are missing - show warning and suggest running update
-            Reporter.Output.WriteLine(" " + ex.Message);
-            Reporter.Output.WriteLine(" " + CliCommandStrings.WorkloadsNotInstalledRunWorkloadUpdate);
-        }
+        new WorkloadInfoHelper(isInteractive: false).ShowWorkloadsInfo(showVersion: false);
     }
 
     private static string GetDisplayRid(DotnetVersionFile versionFile)
