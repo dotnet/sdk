@@ -43,19 +43,33 @@ jobs:
 
       - name: Ensure commenter is trusted
         if: steps.command-filter.outputs.should_run == 'true'
-        shell: bash
-        env:
-          AUTHOR_ASSOCIATION: ${{ github.event.comment.author_association }}
-        run: |
-          case "${AUTHOR_ASSOCIATION}" in
-            MEMBER|OWNER|COLLABORATOR)
-              exit 0
-              ;;
-            *)
-              echo "Only trusted collaborators can trigger this workflow." >&2
-              exit 1
-              ;;
-          esac
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const username = context.payload.comment.user.login;
+
+            if (!username) {
+              throw new Error('Unable to resolve commenter username from event payload.');
+            }
+
+            try {
+              const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner,
+                repo,
+                username,
+              });
+
+              const allowed = ['admin', 'write'];
+              if (!allowed.includes(permission.permission)) {
+                throw new Error(`@${username} has "${permission.permission}" access.`);
+              }
+
+              core.info(`Verified ${username} has ${permission.permission} access.`);
+            } catch (error) {
+              throw new Error(`Only collaborators with write access may trigger this workflow. ${error.message || error}`);
+            }
 
       - name: React to comment
         if: steps.command-filter.outputs.should_run == 'true'
