@@ -92,7 +92,7 @@ public static class Parser
         new System.CommandLine.StaticCompletions.CompletionsCommand()
     ];
 
-    public static readonly Option<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
+    public static readonly Option<bool> DiagOption = CommonOptions.CreateDiagnosticsOption(recursive: false);
 
     public static readonly Option<bool> VersionOption = new("--version")
     {
