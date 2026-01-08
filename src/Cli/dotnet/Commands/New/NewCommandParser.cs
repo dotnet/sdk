@@ -57,7 +57,7 @@ internal static class NewCommandParser
     };
 
     private static readonly Option<bool> s_diagnosticOption =
-        CommonOptionsFactory
+        CommonOptions
             .CreateDiagnosticsOption(recursive: true)
             .WithDescription(CliCommandStrings.Diagnostics_OptionDescription);
 

@@ -354,7 +354,7 @@ internal static class CommonOptions
         return new Option<bool>("--no-logo", "--nologo", "-nologo", "/nologo")
         {
             Description = description ?? Commands.CliCommandStrings.NoLogoOptionDescription,
-            DefaultValueFactory = (ar) => Env.TryGetEnvironmentVariableAsBool("DOTNET_NOLOGO", out bool value) ? value : defaultValue,
+            DefaultValueFactory = (ar) => EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable("DOTNET_NOLOGO"), defaultValue),
             CustomParser = (ar) => true,
             Arity = ArgumentArity.Zero
         }.ForwardIfEnabled(forwardAs);
@@ -367,6 +367,16 @@ internal static class CommonOptions
             throw new GracefulException(CliStrings.SelfContainAndNoSelfContainedConflict);
         }
     }
+
+    /// <summary>
+    /// Creates common diagnostics option (-d|--diagnostics).
+    /// </summary>
+    public static Option<bool> CreateDiagnosticsOption(bool recursive) => new("--diagnostics", "-d")
+    {
+        Description = CliStrings.SDKDiagnosticsCommandDefinition,
+        Recursive = recursive,
+        Arity = ArgumentArity.Zero
+    };
 }
 
 

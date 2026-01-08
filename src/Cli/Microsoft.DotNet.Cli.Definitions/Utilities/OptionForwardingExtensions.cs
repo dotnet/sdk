@@ -4,9 +4,8 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Test;
 
-namespace Microsoft.DotNet.Cli.Extensions;
+namespace Microsoft.DotNet.Cli;
 
 public static class OptionForwardingExtensions
 {
@@ -30,7 +29,7 @@ public static class OptionForwardingExtensions
             {
                 //  Not sure if this is necessary, but this is what "dotnet test" previously did and so we are
                 //  preserving the behavior here after refactoring
-                argVal = VSTestOptions.SurroundWithDoubleQuotes(argVal);
+                argVal = MSBuildPropertyParser.SurroundWithDoubleQuotes(argVal);
             }
             return [
                 $"--property:{outputPropertyName}={argVal}",
