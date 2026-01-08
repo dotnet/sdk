@@ -13,37 +13,39 @@ internal static class ValidationUtility
 {
     public static void ValidateMutuallyExclusiveOptions(ParseResult parseResult)
     {
+        var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+
         ValidatePathOptions(parseResult);
         ValidateOptionsIrrelevantToModulesFilter(parseResult);
 
-        static void ValidatePathOptions(ParseResult parseResult)
+        void ValidatePathOptions(ParseResult parseResult)
         {
             var count = 0;
-            if (parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption))
+            if (parseResult.HasOption(definition.TestModulesFilterOption))
                 count++;
 
-            if (parseResult.HasOption(MicrosoftTestingPlatformOptions.SolutionOption))
+            if (parseResult.HasOption(definition.SolutionOption))
                 count++;
 
-            if (parseResult.HasOption(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption))
+            if (parseResult.HasOption(definition.ProjectOrSolutionOption))
                 count++;
 
             if (count > 1)
                 throw new GracefulException(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
         }
 
-        static void ValidateOptionsIrrelevantToModulesFilter(ParseResult parseResult)
+        void ValidateOptionsIrrelevantToModulesFilter(ParseResult parseResult)
         {
-            if (!parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption))
+            if (!parseResult.HasOption(definition.TestModulesFilterOption))
             {
                 return;
             }
 
-            if (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-                parseResult.HasOption(TestCommandDefinition.ConfigurationOption) ||
-                parseResult.HasOption(TestCommandDefinition.FrameworkOption) ||
-                parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
-                parseResult.HasOption(CommonOptions.RuntimeOptionName))
+            if (parseResult.HasOption(definition.TargetPlatformOptions.ArchitectureOption) ||
+                parseResult.HasOption(definition.ConfigurationOption) ||
+                parseResult.HasOption(definition.FrameworkOption) ||
+                parseResult.HasOption(definition.TargetPlatformOptions.OperatingSystemOption) ||
+                parseResult.HasOption(definition.TargetPlatformOptions.RuntimeOption))
             {
                 throw new GracefulException(CliCommandStrings.CmdOptionCannotBeUsedWithTestModulesDescription);
             }
