@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.123">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.124">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>4b069640bf2c78b3bf1a818150e0739ec19312a2</Sha>
+      <Sha>c60b810b74b2e1dad8159cd33363483c07195f41</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.123-servicing.25604.5">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.124-servicing.26056.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>4b069640bf2c78b3bf1a818150e0739ec19312a2</Sha>
+      <Sha>c60b810b74b2e1dad8159cd33363483c07195f41</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.123-servicing.25604.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.124-servicing.26056.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>4b069640bf2c78b3bf1a818150e0739ec19312a2</Sha>
+      <Sha>c60b810b74b2e1dad8159cd33363483c07195f41</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.22">
@@ -55,17 +55,17 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>9e37ff5ebf5f464d80bdae6ad9d24e7a01ee11f8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.8.48">
+    <Dependency Name="Microsoft.Build" Version="17.8.49">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>5dc8af2966da388a0c426f13afde5da0d430c3d3</Sha>
+      <Sha>7806cbf7b0fd91ea6ab55c2e42d8ed973114e197</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.8.48-servicing-25612-03">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.8.49-servicing-25616-08">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>5dc8af2966da388a0c426f13afde5da0d430c3d3</Sha>
+      <Sha>7806cbf7b0fd91ea6ab55c2e42d8ed973114e197</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.8.48-servicing-25612-03">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.8.49-servicing-25616-08">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>5dc8af2966da388a0c426f13afde5da0d430c3d3</Sha>
+      <Sha>7806cbf7b0fd91ea6ab55c2e42d8ed973114e197</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.102-beta.24081.2">
@@ -327,17 +327,17 @@
       <Sha>9a1c3e1b7f0c8763d4c96e593961a61a72679a7b</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview.25074.1">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview.26055.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>de4aff542dacdc8027c1b4c4580a385dc097341f</Sha>
+      <Sha>ca32bf554d5e9a08860f92245439cbe379cfc0f3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.25074.1">
+    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.26055.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>de4aff542dacdc8027c1b4c4580a385dc097341f</Sha>
+      <Sha>ca32bf554d5e9a08860f92245439cbe379cfc0f3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.25074.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.26055.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>de4aff542dacdc8027c1b4c4580a385dc097341f</Sha>
+      <Sha>ca32bf554d5e9a08860f92245439cbe379cfc0f3</Sha>
       <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.CommandLine" Version="2.0.0-beta4.23307.1">
