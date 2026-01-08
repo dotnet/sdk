@@ -298,18 +298,18 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
     public static void ClearHotReloadEnvironmentVariables(Type startupHookType)
     {
         Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks,
-            RemoveCurrentAssembly(startupHookType, Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks)!));
+            RemoveCurrentAssembly(startupHookType, Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks)));
 
         Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName, null);
         Environment.SetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages, null);
     }
 
     // internal for testing
-    internal static string RemoveCurrentAssembly(Type startupHookType, string environment)
+    internal static string RemoveCurrentAssembly(Type startupHookType, string? environment)
     {
-        if (environment is "")
+        if (string.IsNullOrEmpty(environment))
         {
-            return environment;
+            return "";
         }
 
         var comparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
