@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.417">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.418">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2b8df8be75e04c0a40e01cb311d6e7de293960d3</Sha>
+      <Sha>13c6760d66f74bfb5c8ce8343cf4c5d8f7471584</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.417-servicing.25604.8">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.418-servicing.26055.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2b8df8be75e04c0a40e01cb311d6e7de293960d3</Sha>
+      <Sha>13c6760d66f74bfb5c8ce8343cf4c5d8f7471584</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.417-servicing.25604.8">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.418-servicing.26055.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2b8df8be75e04c0a40e01cb311d6e7de293960d3</Sha>
+      <Sha>13c6760d66f74bfb5c8ce8343cf4c5d8f7471584</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.23">
@@ -349,9 +349,9 @@
       <Sha>02fe27cd6a9b001c8feb7938e6ef4b3799745759</Sha>
       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.25202.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.26056.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>16bcad1c13be082bd52ce178896d1119a73081a9</Sha>
+      <Sha>5f4a123a49dd5480065c8d6182536cf86b4f4410</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.25615.3">
