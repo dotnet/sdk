@@ -155,4 +155,11 @@ Make the profile names distinct.</value>
   <data name="DefaultLaunchProfileDisplayName" xml:space="preserve">
     <value>(Default)</value>
   </data>
+  <data name="EmptyTempPath" xml:space="preserve">
+    <value>Unable to determine a temporary directory path. Consider configuring the TEMP environment variable on Windows or local app data folder on Unix.</value>
+  </data>
+  <data name="IncludedFileNotFound" xml:space="preserve">
+    <value>File included via #:include directive (or Compile item) not found: {0}</value>
+    <comment>{Locked="#:include"}{Locked="Compile"}. {0} is file path.</comment>
+  </data>
 </root>
