@@ -3523,7 +3523,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc);
     }
 
-    private void Build(TestDirectory testInstance, BuildLevel expectedLevel, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program", string programFileName = "Program.cs", string? workDir = null)
+    private void Build(
+        TestDirectory testInstance,
+        BuildLevel expectedLevel,
+        ReadOnlySpan<string> args = default,
+        string expectedOutput = "Hello from Program",
+        string programFileName = "Program.cs",
+        string? workDir = null,
+        Func<TestCommand, TestCommand>? customizeCommand = null)
     {
         string prefix = expectedLevel switch
         {
@@ -3533,9 +3540,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             _ => throw new ArgumentOutOfRangeException(paramName: nameof(expectedLevel)),
         };
 
-        new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
-            .WithWorkingDirectory(workDir ?? testInstance.Path)
-            .Execute()
+        var command = new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
+            .WithWorkingDirectory(workDir ?? testInstance.Path);
+
+        if (customizeCommand != null)
+        {
+            command = customizeCommand(command);
+        }
+
+        command.Execute()
             .Should().Pass()
             .And.HaveStdOut(prefix + expectedOutput);
 
@@ -4484,6 +4497,102 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Using built-in CSC args here (cannot reuse auxiliary files like csc.rsp here).
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v3 ");
+    }
+
+    /// <summary>
+    /// Testing <see cref="CscOnly"/> optimization when the NuGet cache is cleared between builds.
+    /// See <see href="https://github.com/dotnet/sdk/issues/45169"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_NuGetCacheCleared()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var code = """
+            Console.Write("v1");
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, code);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var packageDir = Path.Join(testInstance.Path, "packages");
+        TestCommand CustomizeCommand(TestCommand command) => command.WithEnvironmentVariable("NUGET_PACKAGES", packageDir);
+
+        Assert.False(Directory.Exists(packageDir));
+
+        // Ensure the packages exist first.
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1", customizeCommand: CustomizeCommand);
+
+        Assert.True(Directory.Exists(packageDir));
+
+        // Now clear the build outputs (but not packages) to verify CSC is used even from "first run".
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", customizeCommand: CustomizeCommand);
+
+        code = code.Replace("v2", "v3");
+        File.WriteAllText(programPath, code);
+
+        // Clear NuGet cache.
+        Directory.Delete(packageDir, recursive: true);
+        Assert.False(Directory.Exists(packageDir));
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v3", customizeCommand: CustomizeCommand);
+
+        Assert.True(Directory.Exists(packageDir));
+    }
+
+    /// <summary>
+    /// Combination of <see cref="CscOnly_NuGetCacheCleared"/> and <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_NuGetCacheCleared()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var code = """
+            #:property PublishAot=false
+            #:package System.CommandLine@2.0.0-beta4.22272.1
+            new System.CommandLine.RootCommand("v1");
+            Console.WriteLine("v1");
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, code);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var packageDir = Path.Join(testInstance.Path, "packages");
+        TestCommand CustomizeCommand(TestCommand command) => command.WithEnvironmentVariable("NUGET_PACKAGES", packageDir);
+
+        Assert.False(Directory.Exists(packageDir));
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1", customizeCommand: CustomizeCommand);
+
+        Assert.True(Directory.Exists(packageDir));
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", customizeCommand: CustomizeCommand);
+
+        code = code.Replace("v2", "v3");
+        File.WriteAllText(programPath, code);
+
+        // Clear NuGet cache.
+        Directory.Delete(packageDir, recursive: true);
+        Assert.False(Directory.Exists(packageDir));
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v3", customizeCommand: CustomizeCommand);
+
+        Assert.True(Directory.Exists(packageDir));
     }
 
     private static string ToJson(string s) => JsonSerializer.Serialize(s);
