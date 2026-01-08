@@ -354,7 +354,7 @@ public class NushellShellProvider : IShellProvider
             _ when underlying == typeof(decimal) => "number",
             _ when underlying == typeof(bool) => null, // flags have no type
             _ when underlying == typeof(FileInfo) => "path",
-            _ when underlying == typeof(DirectoryInfo) => "path",
+            _ when underlying == typeof(DirectoryInfo) => "directory",
             _ => "string"
         };
     }
