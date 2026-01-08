@@ -5,6 +5,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,5 +21,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\System.CommandLine.StaticCompletions\System.CommandLine.StaticCompletions.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Cli.CommandLine\Microsoft.DotNet.Cli.CommandLine.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" />
   </ItemGroup>
 </Project>

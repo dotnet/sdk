@@ -16,7 +16,7 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CliCommandStrings.CmdSettingsDescription,
             HelpName = CliCommandStrings.CmdSettingsFile
-        }.ForwardAsSingle(o => $"-property:VSTestSetting={VSTestOptions.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        }.ForwardAsSingle(o => $"-property:VSTestSetting={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
         public readonly Option<bool> ListTestsOption = new Option<bool>("--list-tests", "-t")
         {
@@ -30,13 +30,13 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CliCommandStrings.CmdTestCaseFilterDescription,
             HelpName = CliCommandStrings.CmdTestCaseFilterExpression
-        }.ForwardAsSingle(o => $"-property:VSTestTestCaseFilter={VSTestOptions.SurroundWithDoubleQuotes(o!)}");
+        }.ForwardAsSingle(o => $"-property:VSTestTestCaseFilter={MSBuildPropertyParser.SurroundWithDoubleQuotes(o!)}");
 
         public readonly Option<IEnumerable<string>> AdapterOption = new Option<IEnumerable<string>>("--test-adapter-path")
         {
             Description = CliCommandStrings.CmdTestAdapterPathDescription,
             HelpName = CliCommandStrings.CmdTestAdapterPath
-        }.ForwardAsSingle(o => $"-property:VSTestTestAdapterPath={VSTestOptions.SurroundWithDoubleQuotes(string.Join(";", o!.Select(CommandDirectoryContext.GetFullPath)))}")
+        }.ForwardAsSingle(o => $"-property:VSTestTestAdapterPath={MSBuildPropertyParser.SurroundWithDoubleQuotes(string.Join(";", o!.Select(CommandDirectoryContext.GetFullPath)))}")
         .AllowSingleArgPerToken();
 
         public readonly Option<IEnumerable<string>> LoggerOption = new Option<IEnumerable<string>>("--logger", "-l")
@@ -46,7 +46,7 @@ internal abstract partial class TestCommandDefinition
         }.ForwardAsSingle(o =>
         {
             var loggersString = string.Join(";", VSTestOptions.GetSemiColonEscapedArgs(o!));
-            return $"-property:VSTestLogger={VSTestOptions.SurroundWithDoubleQuotes(loggersString)}";
+            return $"-property:VSTestLogger={MSBuildPropertyParser.SurroundWithDoubleQuotes(loggersString)}";
         })
         .AllowSingleArgPerToken();
 
@@ -64,7 +64,7 @@ internal abstract partial class TestCommandDefinition
             Description = CliCommandStrings.CmdPathTologFileDescription,
             HelpName = CliCommandStrings.CmdPathToLogFile
         }
-        .ForwardAsSingle(o => $"-property:VSTestDiag={VSTestOptions.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        .ForwardAsSingle(o => $"-property:VSTestDiag={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
         public readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
         {
@@ -76,7 +76,7 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CliCommandStrings.CmdResultsDirectoryDescription,
             HelpName = CliCommandStrings.CmdPathToResultsDirectory
-        }.ForwardAsSingle(o => $"-property:VSTestResultsDirectory={VSTestOptions.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        }.ForwardAsSingle(o => $"-property:VSTestResultsDirectory={MSBuildPropertyParser.SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
         public readonly Option<IEnumerable<string>> CollectOption = new Option<IEnumerable<string>>("--collect")
         {
