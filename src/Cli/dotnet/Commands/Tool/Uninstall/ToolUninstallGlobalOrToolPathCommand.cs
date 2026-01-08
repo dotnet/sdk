@@ -5,8 +5,6 @@
 
 using System.CommandLine;
 using System.Transactions;
-using Microsoft.DotNet.Cli.Commands.Tool.Common;
-using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -17,22 +15,22 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
 internal delegate IShellShimRepository CreateShellShimRepository(string appHostSourceDirectory, DirectoryPath? nonGlobalLocation = null);
 internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageUninstaller) CreateToolPackageStoresAndUninstaller(DirectoryPath? nonGlobalLocation = null);
-internal class ToolUninstallGlobalOrToolPathCommand(
+
+internal sealed class ToolUninstallGlobalOrToolPathCommand(
     ParseResult result,
     CreateToolPackageStoresAndUninstaller createToolPackageStoreAndUninstaller = null,
     CreateShellShimRepository createShellShimRepository = null,
-    IReporter reporter = null) : CommandBase(result)
+    IReporter reporter = null) : CommandBase<ToolUninstallCommandDefinition>(result)
 {
     private readonly IReporter _reporter = reporter ?? Reporter.Output;
-    private readonly IReporter _errorReporter = reporter ?? Reporter.Error;
     private readonly CreateShellShimRepository _createShellShimRepository = createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
     private readonly CreateToolPackageStoresAndUninstaller _createToolPackageStoresAndUninstaller = createToolPackageStoreAndUninstaller ??
                                                 ToolPackageFactory.CreateToolPackageStoresAndUninstaller;
 
     public override int Execute()
     {
-        var global = _parseResult.GetValue(ToolUninstallCommandParser.GlobalOption);
-        var toolPath = _parseResult.GetValue(ToolUninstallCommandParser.ToolPathOption);
+        var global = _parseResult.GetValue(Definition.LocationOptions.GlobalOption);
+        var toolPath = _parseResult.GetValue(Definition.LocationOptions.ToolPathOption);
 
         DirectoryPath? toolDirectoryPath = null;
         if (!string.IsNullOrWhiteSpace(toolPath))
@@ -48,12 +46,11 @@ internal class ToolUninstallGlobalOrToolPathCommand(
             toolDirectoryPath = new DirectoryPath(toolPath);
         }
 
-        (IToolPackageStore toolPackageStore, IToolPackageStoreQuery toolPackageStoreQuery, IToolPackageUninstaller toolPackageUninstaller)
-            = _createToolPackageStoresAndUninstaller(toolDirectoryPath);
+        var (_, toolPackageStoreQuery, toolPackageUninstaller) = _createToolPackageStoresAndUninstaller(toolDirectoryPath);
         var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
         IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolDirectoryPath);
 
-        var packageId = new PackageId(_parseResult.GetValue(ToolUninstallCommandParser.PackageIdArgument));
+        var packageId = new PackageId(_parseResult.GetValue(Definition.PackageIdArgument));
         IToolPackage package = null;
         try
         {

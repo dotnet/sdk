@@ -16,7 +16,6 @@ Options:
                                                   If not specified the file will be generated inside the default 'TestResults' directory.
   --max-parallel-test-modules <NUMBER>            The max number of test modules that can run in parallel.
   --minimum-expected-tests <NUMBER>               Specifies the minimum number of tests that are expected to run.
-  -a, --arch <ARCH>                               The target architecture.
   -e, --environment <NAME="VALUE">                Sets the value of an environment variable. 
                                                   Creates the variable if it does not exist, overrides if it does. 
                                                   This argument can be specified multiple times to provide multiple variables.
@@ -28,8 +27,9 @@ Options:
                                                   -e VAR1=abc -e VAR2=def -e VAR3=ghi
   -c, --configuration <CONFIGURATION>             The configuration to use for running tests. The default for most projects is 'Debug'.
   -f, --framework <FRAMEWORK>                     The target framework to run tests for. The target framework must also be specified in the project file.
-  --os <OS>                                       The target operating system.
   -r, --runtime <RUNTIME_IDENTIFIER>              The target runtime to test for.
+  -a, --arch <ARCH>                               The target architecture.
+  --os <OS>                                       The target operating system.
   -v, -verbosity <LEVEL>                          Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
   --no-restore                                    Do not restore the project before building. [default: False]
   --no-build                                      Do not build the project before testing. Implies --no-restore. [default: False]

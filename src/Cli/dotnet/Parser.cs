@@ -165,7 +165,7 @@ public static class Parser
         rootCommand.Arguments.Add(DotnetSubCommand);
 
         // NuGet implements several commands in its own repo. Add them to the .NET SDK via the provided API.
-        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.InteractiveOption(acceptArgument: true));
+        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.CreateInteractiveOption(acceptArgument: true));
 
         rootCommand.SetAction(parseResult =>
         {
@@ -396,6 +396,9 @@ public static class Parser
             }
             else
             {
+                // TODO: avoid modifying the commands:
+                // https://github.com/dotnet/sdk/issues/52136
+
                 if (command.Name.Equals(ListReferenceCommandDefinition.Name))
                 {
                     Command listCommand = command.Parents.Single() as Command;
@@ -412,12 +415,15 @@ public static class Parser
                 else if (command.Name.Equals(AddPackageCommandDefinition.Name) || command.Name.Equals(AddCommandDefinition.Name))
                 {
                     // Don't show package completions in help
-                    PackageAddCommandDefinition.CmdPackageArgument.CompletionSources.Clear();
+                    foreach (var argument in command.Arguments)
+                    {
+                        argument.CompletionSources.Clear();
+                    }
                 }
-                else if (command.Name.Equals(WorkloadSearchCommandParser.GetCommand().Name))
+                else if (command is WorkloadSearchCommandDefinition workloadSearchCommand)
                 {
                     // Set shorter description for displaying parent command help.
-                    WorkloadSearchVersionsCommandParser.GetCommand().Description = CliStrings.ShortWorkloadSearchVersionDescription;
+                    workloadSearchCommand.VersionCommand.Description = CliStrings.ShortWorkloadSearchVersionDescription;
                 }
 
                 base.Write(context);

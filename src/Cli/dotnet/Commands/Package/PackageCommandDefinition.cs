@@ -2,69 +2,51 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package.Add;
 using Microsoft.DotNet.Cli.Commands.Package.List;
 using Microsoft.DotNet.Cli.Commands.Package.Remove;
 using Microsoft.DotNet.Cli.Commands.Package.Search;
-using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.Utils;
 using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Package;
 
-internal class PackageCommandDefinition
+internal sealed class PackageCommandDefinition : Command
 {
-    public const string Name = "package";
-    private const string DocsLink = "https://aka.ms/dotnet-package";
+    public new const string Name = "package";
+    private const string Link = "https://aka.ms/dotnet-package";
 
-    public static readonly Option<string?> ProjectOption = new("--project")
+    public static Option<string?> CreateProjectOption() => new("--project")
     {
         Recursive = true,
         Description = CliStrings.ProjectArgumentDescription
     };
 
-    public static readonly Option<string?> FileOption = new("--file")
+    public static Option<string?> CreateFileOption() => new("--file")
     {
         Recursive = true,
         Description = CliStrings.FileArgumentDescription
     };
 
     // Used by the legacy 'add/remove package' commands.
-    public static readonly Argument<string> ProjectOrFileArgument = new Argument<string>(CliStrings.ProjectOrFileArgumentName)
+    public static Argument<string> CreateProjectOrFileArgument() => new Argument<string>(CliStrings.ProjectOrFileArgumentName)
     {
         Description = CliStrings.ProjectOrFileArgumentDescription
     }.DefaultToCurrentDirectory();
 
-    public static Command Create()
+    public readonly PackageSearchCommandDefinition SearchCommand = new();
+    public readonly PackageAddCommandDefinition AddCommand = new();
+    public readonly PackageListCommandDefinition ListCommand = new();
+    public readonly PackageRemoveCommandDefinition RemoveCommand = new();
+
+    public PackageCommandDefinition()
+        : base(Name)
     {
-        Command command = new Command("package")
-        {
-            DocsLink = DocsLink
-        };
+        this.DocsLink = Link;
 
-        command.Subcommands.Add(PackageSearchCommandDefinition.Create());
-        command.Subcommands.Add(PackageAddCommandDefinition.Create());
-        command.Subcommands.Add(PackageListCommandDefinition.Create());
-        command.Subcommands.Add(PackageRemoveCommandDefinition.Create());
-
-        return command;
-    }
-
-    public static (string Path, AppKinds AllowedAppKinds) ProcessPathOptions(ParseResult parseResult)
-    {
-        bool hasFileOption = parseResult.HasOption(FileOption);
-        bool hasProjectOption = parseResult.HasOption(ProjectOption);
-
-        return (hasFileOption, hasProjectOption) switch
-        {
-            (false, false) => parseResult.GetValue(ProjectOrFileArgument) is { } projectOrFile
-                ? (projectOrFile, AppKinds.Any)
-                : (Environment.CurrentDirectory, AppKinds.ProjectBased),
-            (true, false) => (parseResult.GetValue(FileOption)!, AppKinds.FileBased),
-            (false, true) => (parseResult.GetValue(ProjectOption)!, AppKinds.ProjectBased),
-            (true, true) => throw new GracefulException(CliCommandStrings.CannotCombineOptions, FileOption.Name, ProjectOption.Name),
-        };
+        Subcommands.Add(SearchCommand);
+        Subcommands.Add(AddCommand);
+        Subcommands.Add(ListCommand);
+        Subcommands.Add(RemoveCommand);
     }
 }

@@ -725,17 +725,17 @@ This is equivalent to deleting project.assets.json.</source>
       </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
         <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">実行するプロジェクト ファイルのパスを定義します。プロジェクト ファイルへのパス、またはプロジェクト ファイルを含むディレクトリへのパスを使用します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
         <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">テストするプロジェクト ファイルまたはソリューション ファイルのパスを定義します。プロジェクト ファイルへのパス、またはプロジェクト ファイルを含むディレクトリへのパスを使用します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
         <source>PROJECT_OR_SOLUTION_PATH</source>
-        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
+        <target state="translated">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -782,7 +782,7 @@ The specified directory will be created if it does not exist.</source>
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">テストするソリューション ファイルのパスを定義します。ソリューション ファイルへのパス、またはソリューション ファイルを含むディレクトリへのパスを使用します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -2290,7 +2290,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
       3. 1 つ以上のワークロードをバージョンと共に ('@' 文字で結合して) 指定すると、指定されたバージョンに一致するワークロード バージョンが出力されます。--take オプションを指定して提供する数を指定し、--format を指定して形式を変更します。
-         例:
+         例: 
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -2373,7 +2373,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="needs-review-translation">出力ディレクトリ ({0}) を指定します:</target>
+        <target state="translated">出力ディレクトリを指定します (Enter キーを押すと既定値に設定されます: '{0}'、ディレクトリは存在してはなりません):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2620,7 +2620,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
         <source>Available target frameworks:</source>
-        <target state="new">Available target frameworks:</target>
+        <target state="translated">使用可能なターゲット フレームワーク:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -2635,7 +2635,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RunCommandExampleText">
         <source>Example</source>
-        <target state="new">Example</target>
+        <target state="translated">例</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -2653,7 +2653,7 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">起動設定ファイルが見つからないため、起動プロファイル '{0}' を使用できません。試行された場所:
+        <target state="translated">起動設定ファイルが見つからないため、起動プロファイル '{0}' を使用できません。試行された場所: 
 {1}</target>
         <note />
       </trans-unit>
@@ -2687,7 +2687,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">上下に移動して、さらに多くのフレームワークを表示</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
@@ -2697,12 +2697,12 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">入力して検索します</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">実行するターゲット フレームワークを選択してください:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">

@@ -1,16 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
-using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Search;
 
-internal class PackageSearchCommand(ParseResult parseResult) : CommandBase(parseResult)
+internal sealed class PackageSearchCommand(ParseResult parseResult)
+    : CommandBase<PackageSearchCommandDefinition>(parseResult)
 {
     public override int Execute()
     {
@@ -20,13 +18,13 @@ internal class PackageSearchCommand(ParseResult parseResult) : CommandBase(parse
             "search"
         };
 
-        var searchArgument = _parseResult.GetValue(PackageSearchCommandDefinition.SearchTermArgument);
+        var searchArgument = _parseResult.GetValue(Definition.SearchTermArgument);
         if (searchArgument != null)
         {
             args.Add(searchArgument);
         }
 
-        args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageSearchCommandDefinition.Options));
+        args.AddRange(_parseResult.OptionValuesToBeForwarded(Definition));
         return NuGetCommand.Run([.. args]);
     }
 }

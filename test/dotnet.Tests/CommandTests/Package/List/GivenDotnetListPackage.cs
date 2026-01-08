@@ -3,6 +3,9 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.Hidden.List;
+using Microsoft.DotNet.Cli.Commands.Hidden.List.Package;
+using Microsoft.DotNet.Cli.Commands.Package.List;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.List.Package.Tests
@@ -348,7 +351,10 @@ class Program
         public void ItEnforcesOptionRules(bool throws, params string[] options)
         {
             var parseResult = Parser.Parse(["dotnet", "list", "package", ..options]);
-            Action checkRules = () => Microsoft.DotNet.Cli.Commands.Package.List.PackageListCommand.EnforceOptionRules(parseResult);
+
+            var command = Assert.IsType<ListPackageCommandDefinition>(parseResult.CommandResult.Command);
+
+            Action checkRules = () => command.EnforceOptionRules(parseResult);
 
             if (throws)
             {
