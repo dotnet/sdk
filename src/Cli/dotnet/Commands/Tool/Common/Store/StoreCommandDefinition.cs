@@ -67,6 +67,13 @@ internal static class StoreCommandDefinition
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:CreateProfilingSymbols=false");
 
+    public static readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription);
+    public static readonly Option<string> RuntimeOption = TargetPlatformOptions.CreateRuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription);
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
+    public static readonly Option<bool> UseCurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription);
+    public static readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
+    public static readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(true);
+
     public static Command Create()
     {
         Command command = new("store", CliCommandStrings.StoreAppDescription)
@@ -81,12 +88,12 @@ internal static class StoreCommandDefinition
         command.Options.Add(WorkingDirOption);
         command.Options.Add(SkipOptimizationOption);
         command.Options.Add(SkipSymbolsOption);
-        command.Options.Add(CommonOptions.FrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription));
-        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription));
-        command.Options.Add(CommonOptions.CreateVerbosityOption());
-        command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
-        command.Options.Add(CommonOptions.DisableBuildServersOption);
-        command.Options.Add(CommonOptions.NoLogoOption(true));
+        command.Options.Add(FrameworkOption);
+        command.Options.Add(RuntimeOption);
+        command.Options.Add(VerbosityOption);
+        command.Options.Add(UseCurrentRuntimeOption);
+        command.Options.Add(DisableBuildServersOption);
+        command.Options.Add(NoLogoOption);
 
         return command;
     }

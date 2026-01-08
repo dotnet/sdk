@@ -3,7 +3,6 @@
 
 using System.Collections.ObjectModel;
 using System.CommandLine;
-using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
@@ -21,7 +20,7 @@ internal static class CommonOptions
         IsDynamic = true
     };
 
-    public static Option<ReadOnlyDictionary<string, string>?> PropertiesOption =
+    public static Option<ReadOnlyDictionary<string, string>?> CreatePropertyOption() =>
         // these are all of the forms that the property switch can be understood by in MSBuild
         new Option<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
         {
@@ -29,14 +28,14 @@ internal static class CommonOptions
             Arity = ArgumentArity.ZeroOrMore,
             CustomParser = ParseMSBuildTokensIntoDictionary
         }.ForwardAsMSBuildProperty()
-        .AllowSingleArgPerToken();
+         .AllowSingleArgPerToken();
 
     /// <summary>
     /// Sets MSBuild Global Property values that are only used during Restore (implicit or explicit)
     /// </summary>
     /// <remarks>
     /// </remarks>
-    public static Option<ReadOnlyDictionary<string, string>?> RestorePropertiesOption =
+    public static Option<ReadOnlyDictionary<string, string>?> CreateRestorePropertyOption() =>
         // these are all of the forms that the property switch can be understood by in MSBuild
         new Option<ReadOnlyDictionary<string, string>?>("--restoreProperty", "-restoreProperty", "/restoreProperty", "-rp", "--rp", "/rp")
         {
@@ -66,7 +65,7 @@ internal static class CommonOptions
         return new(dictionary);
     }
 
-    public static Option<string[]?> MSBuildTargetOption(string? defaultTargetName = null, (string key, string value)[]? additionalProperties = null) =>
+    public static Option<string[]?> CreateMSBuildTargetOption(string? defaultTargetName = null, (string key, string value)[]? additionalProperties = null) =>
         new Option<string[]?>("--target", "/target", "-target", "-t", "--t", "/t")
         {
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
@@ -79,7 +78,7 @@ internal static class CommonOptions
         .ForwardAsMany(targets => ForwardTargetsAndAdditionalProperties(targets, additionalProperties))
         .AllowSingleArgPerToken();
 
-    public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName, (string key, string value)[]? additionalProperties = null) =>
+    public static Option<string[]> CreateRequiredMSBuildTargetOption(string defaultTargetName, (string key, string value)[]? additionalProperties = null) =>
         new Option<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
         {
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
@@ -107,13 +106,13 @@ internal static class CommonOptions
         return argsToReturn;
     }
 
-    public static readonly Option<string[]?> GetPropertyOption = MSBuildMultiOption("getProperty");
+    public static Option<string[]?> CreateGetPropertyOption() => MSBuildMultiOption("getProperty");
 
-    public static readonly Option<string[]?> GetItemOption = MSBuildMultiOption("getItem");
+    public static Option<string[]?> CreateGetItemOption() => MSBuildMultiOption("getItem");
 
-    public static readonly Option<string[]?> GetTargetResultOption = MSBuildMultiOption("getTargetResult");
+    public static Option<string[]?> CreateGetTargetResultOption() => MSBuildMultiOption("getTargetResult");
 
-    public static readonly Option<string[]?> GetResultOutputFileOption = MSBuildMultiOption("getResultOutputFile");
+    public static Option<string[]?> CreateGetResultOutputFileOption() => MSBuildMultiOption("getResultOutputFile");
 
     private static Option<string[]?> MSBuildMultiOption(string name)
         => new Option<string[]?>($"--{name}", $"-{name}", $"/{name}")
@@ -168,8 +167,10 @@ internal static class CommonOptions
         .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
 
-    public static Option<string> FrameworkOption(string description) =>
-        new Option<string>("--framework", "-f")
+    public const string FrameworkOptionName = "--framework";
+
+    public static Option<string> CreateFrameworkOption(string description) =>
+        new Option<string>(FrameworkOptionName, "-f")
         {
             Description = description,
             HelpName = CliStrings.FrameworkArgumentName,
@@ -178,7 +179,7 @@ internal static class CommonOptions
         .ForwardAsSingle(o => $"--property:TargetFramework={o}")
         .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
-    public static Option<string> ArtifactsPathOption =
+    public static Option<string> CreateArtifactsPathOption() =>
         new Option<string>(
             //  --artifacts-path is pretty verbose, should we use --artifacts instead (or possibly support both)?
             "--artifacts-path")
@@ -187,44 +188,17 @@ internal static class CommonOptions
             HelpName = CliStrings.ArtifactsPathArgumentName
         }.ForwardAsSingle(o => $"--property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
 
-    private static readonly string RuntimeArgName = CliStrings.RuntimeIdentifierArgumentName;
-    public static IEnumerable<string> RuntimeArgFunc(string rid)
-    {
-        if (GetArchFromRid(rid) == "amd64")
-        {
-            rid = GetOsFromRid(rid) + "-x64";
-        }
-        return [$"--property:RuntimeIdentifier={rid}", "--property:_CommandLineDefinedRuntimeIdentifier=true"];
-    }
-
-    public const string RuntimeOptionName = "--runtime";
-
-    public static Option<string> RuntimeOption(string description) =>
-        new Option<string>(RuntimeOptionName, "-r")
-        {
-            HelpName = RuntimeArgName,
-            Description = description,
-            IsDynamic = true
-        }.ForwardAsMany(RuntimeArgFunc!)
-        .AddCompletions(CliCompletion.RunTimesFromProjectFile);
-
-    public static Option<string> LongFormRuntimeOption =
-        new Option<string>(RuntimeOptionName)
-        {
-            HelpName = RuntimeArgName,
-            IsDynamic = true,
-        }.ForwardAsMany(RuntimeArgFunc!)
-        .AddCompletions(CliCompletion.RunTimesFromProjectFile);
-
-    public static Option<bool> CurrentRuntimeOption(string description) =>
+    public static Option<bool> CreateUseCurrentRuntimeOption(string description) =>
         new Option<bool>("--use-current-runtime", "--ucr")
         {
             Description = description,
             Arity = ArgumentArity.Zero
         }.ForwardAs("--property:UseCurrentRuntimeIdentifier=True");
 
-    public static Option<string?> ConfigurationOption(string description) =>
-        new Option<string?>("--configuration", "-c")
+    public const string ConfigurationOptionName = "--configuration";
+
+    public static Option<string?> CreateConfigurationOption(string description) =>
+        new Option<string?>(ConfigurationOptionName, "-c")
         {
             Description = description,
             HelpName = CliStrings.ConfigurationArgumentName,
@@ -232,7 +206,7 @@ internal static class CommonOptions
         }.ForwardAsSingle(o => $"--property:Configuration={o}")
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
-    public static Option<string> VersionSuffixOption =
+    public static Option<string> CreateVersionSuffixOption() =>
         new Option<string>("--version-suffix")
         {
             Description = CliStrings.CmdVersionSuffixDescription,
@@ -249,12 +223,11 @@ internal static class CommonOptions
         return arg;
     }
 
-    public static Option<bool> NoRestoreOption = new Option<bool>("--no-restore")
+    public static Option<bool> CreateNoRestoreOption() => new Option<bool>("--no-restore")
     {
         Description = CliStrings.NoRestoreDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-restore:false");
-
 
     public static Option<bool> RestoreOption = new Option<bool>("--restore", "-restore")
     {
@@ -287,9 +260,11 @@ internal static class CommonOptions
             Hidden = hidden,
         };
 
-    public static Option<bool> InteractiveMsBuildForwardOption = CreateInteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
+    public static Option<bool> CreateInteractiveMsBuildForwardOption()
+        => CreateInteractiveOption(acceptArgument: true)
+           .ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
-    public static Option<bool> DisableBuildServersOption =
+    public static Option<bool> CreateDisableBuildServersOption() =>
         new Option<bool>("--disable-build-servers")
         {
             Description = CliStrings.DisableBuildServersOptionDescription,
@@ -297,45 +272,19 @@ internal static class CommonOptions
         }
         .ForwardIfEnabled(["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
 
-    public static Option<string> ArchitectureOption =
-        new Option<string>("--arch", "-a")
-        {
-            Description = CliStrings.ArchitectureOptionDescription,
-            HelpName = CliStrings.ArchArgumentName
-        }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
-
-    public static Option<string> LongFormArchitectureOption =
-        new Option<string>("--arch")
-        {
-            Description = CliStrings.ArchitectureOptionDescription,
-            HelpName = CliStrings.ArchArgumentName
-        }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
-
-    internal static string? ArchOptionValue(ParseResult parseResult) =>
-        string.IsNullOrEmpty(parseResult.GetValue(ArchitectureOption)) ?
-            parseResult.GetValue(LongFormArchitectureOption) :
-            parseResult.GetValue(ArchitectureOption);
-
-    public static Option<string> OperatingSystemOption =
-        new Option<string>("--os")
-        {
-            Description = CliStrings.OperatingSystemOptionDescription,
-            HelpName = CliStrings.OSArgumentName
-        }.SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
-
     public static Option<bool> DebugOption = new("--debug")
     {
         Arity = ArgumentArity.Zero,
     };
 
-    public static Option<bool> SelfContainedOption =
+    public static Option<bool> CreateSelfContainedOption() =>
         new Option<bool>("--self-contained", "--sc")
         {
             Description = CliStrings.SelfContainedOptionDescription
         }
         .ForwardIfEnabled([$"--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true"]);
 
-    public static Option<bool> NoSelfContainedOption =
+    public static Option<bool> CreateNoSelfContainedOption() =>
         new Option<bool>("--no-self-contained")
         {
             Description = CliStrings.FrameworkDependentOptionDescription,
@@ -343,18 +292,14 @@ internal static class CommonOptions
         }
         .ForwardIfEnabled([$"--property:SelfContained=false", "--property:_CommandLineDefinedSelfContained=true"]);
 
-    public static Option<IReadOnlyDictionary<string, string>> CreateEnvOption(string description) => new("--environment", "-e")
+    public static Option<IReadOnlyDictionary<string, string>> CreateEnvOption(string? description = null) => new("--environment", "-e")
     {
-        Description = description,
+        Description = description ?? CliStrings.CmdEnvironmentVariableDescription,
         HelpName = CliStrings.CmdEnvironmentVariableExpression,
         CustomParser = ParseEnvironmentVariables,
         // Can't allow multiple arguments because the separator needs to be parsed as part of the environment variable value.
         AllowMultipleArgumentsPerToken = false
     };
-
-    public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CreateEnvOption(CliStrings.CmdEnvironmentVariableDescription);
-    
-    public static readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CreateEnvOption(CliStrings.CmdTestEnvironmentVariableDescription);
 
     private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
     {
@@ -393,12 +338,6 @@ internal static class CommonOptions
         return result;
     }
 
-    public static readonly Option<string> TestPlatformOption = new("--Platform");
-
-    public static readonly Option<string> TestFrameworkOption = new("--Framework");
-
-    public static readonly Option<string[]> TestLoggerOption = new("--logger");
-
     /// <summary>
     /// Creates an implementation of the <c>--no-logo</c> option.
     /// This option suppresses the display of the startup banner or logos for commands or products it is applied to.
@@ -410,7 +349,7 @@ internal static class CommonOptions
     /// </list>
     /// Finally, if neither the option nor the environment variable is set, the option will default to the provided <paramref name="defaultValue"/>.
     /// </summary>
-    public static Option<bool> NoLogoOption(bool defaultValue = true, string forwardAs = "--nologo", string? description = null)
+    public static Option<bool> CreateNoLogoOption(bool defaultValue = true, string forwardAs = "--nologo", string? description = null)
     {
         return new Option<bool>("--no-logo", "--nologo", "-nologo", "/nologo")
         {
@@ -428,71 +367,6 @@ internal static class CommonOptions
             throw new GracefulException(CliStrings.SelfContainAndNoSelfContainedConflict);
         }
     }
-
-    internal static IEnumerable<string> ResolveArchOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
-    {
-        if (parseResult.GetResult(RuntimeOptionName) is not null)
-        {
-            throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndArchOptions);
-        }
-
-        if (parseResult.BothArchAndOsOptionsSpecified())
-        {
-            // ResolveOsOptionToRuntimeIdentifier handles resolving the RID when both arch and os are specified
-            return [];
-        }
-
-        return ResolveRidShorthandOptions(null, arg);
-    }
-
-    internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
-    {
-        if (parseResult.GetResult(RuntimeOptionName) is not null)
-        {
-            throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndOsOptions);
-        }
-
-        var arch = parseResult.BothArchAndOsOptionsSpecified() ? ArchOptionValue(parseResult) : null;
-        return ResolveRidShorthandOptions(arg, arch);
-    }
-
-    private static IEnumerable<string> ResolveRidShorthandOptions(string? os, string? arch) =>
-        [$"--property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}"];
-
-    internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string? os, string? arch)
-    {
-        var currentRid = GetCurrentRuntimeId();
-        arch = arch == "amd64" ? "x64" : arch;
-        os = string.IsNullOrEmpty(os) ? GetOsFromRid(currentRid) : os;
-        arch = string.IsNullOrEmpty(arch) ? GetArchFromRid(currentRid) : arch;
-        return $"{os}-{arch}";
-    }
-
-    public static string GetCurrentRuntimeId()
-    {
-        // Get the dotnet directory, while ignoring custom msbuild resolvers
-        string? dotnetRootPath = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
-            key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
-                ? null
-                : Environment.GetEnvironmentVariable(key));
-        var ridFileName = "NETCoreSdkRuntimeIdentifierChain.txt";
-        var sdkPath = dotnetRootPath is not null ? Path.Combine(dotnetRootPath, "sdk") : "sdk";
-
-        // When running under test the Product.Version might be empty or point to version not installed in dotnetRootPath.
-        string runtimeIdentifierChainPath = string.IsNullOrEmpty(Product.Version) || !Directory.Exists(Path.Combine(sdkPath, Product.Version)) ?
-            Path.Combine(Directory.GetDirectories(sdkPath)[0], ridFileName) :
-            Path.Combine(sdkPath, Product.Version, ridFileName);
-        string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ? [.. File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l))] : [];
-        if (currentRuntimeIdentifiers == null || !currentRuntimeIdentifiers.Any() || !currentRuntimeIdentifiers[0].Contains("-"))
-        {
-            throw new GracefulException(CliStrings.CannotResolveRuntimeIdentifier);
-        }
-        return currentRuntimeIdentifiers[0]; // First rid is the most specific (ex win-x64)
-    }
-
-    private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
-
-    private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
 }
 
 
