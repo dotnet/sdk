@@ -173,7 +173,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 .And.HaveStdErrContaining(string.Format(
                     CliCommandStrings.RunCommandExceptionNoProjects,
                     testInstance.Path,
-                    RunCommandDefinition.ProjectOption.Name));
+                    "--project"));
         }
     }
 
@@ -302,7 +302,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 .And.HaveStdErrContaining(string.Format(
                     CliCommandStrings.RunCommandExceptionNoProjects,
                     testInstance.Path,
-                    RunCommandDefinition.ProjectOption.Name));
+                    "--project"));
         }
     }
 
@@ -587,7 +587,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DotnetCommand(Log, "run", "-", "--no-build")
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandDefinition.NoBuildOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, "--no-build"));
     }
 
     [Fact]
@@ -596,7 +596,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DotnetCommand(Log, "run", "-", "--launch-profile=test")
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandDefinition.LaunchProfileOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, "--launch-profile"));
     }
 
     /// <summary>
@@ -612,7 +612,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithStandardInput("""Console.WriteLine("stdin code");""")
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionNoProjects, testInstance.Path, RunCommandDefinition.ProjectOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionNoProjects, testInstance.Path, "--project"));
     }
 
     /// <summary>
@@ -637,7 +637,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -656,7 +656,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -759,7 +759,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     [Fact]
@@ -797,7 +797,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -832,7 +832,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -956,7 +956,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 workDir,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -1397,7 +1397,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.RunCommandExceptionNoProjects,
                 testInstance.Path,
-                RunCommandDefinition.ProjectOption.Name));
+                "--project"));
     }
 
     /// <summary>
@@ -3567,7 +3567,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, RunCommandDefinition.NoCacheOption.Name, RunCommandDefinition.NoBuildOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--no-cache", "--no-build"));
     }
 
     /// <summary>
@@ -4141,6 +4141,56 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// Testing optimization <see cref="CscOnly_AfterMSBuild"/>.
+    /// When compilation fails, the obj dll should not be copied to bin directory.
+    /// This prevents spurious errors if the dll file was not even produced by roslyn due to compilation errors.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_CompilationFailure_NoCopyToBin()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        // First, create a valid program and build it successfully
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        var code = """
+            #:property PublishAot=false
+            Console.WriteLine("version 1");
+            """;
+        File.WriteAllText(programPath, code);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "version 1");
+
+        // Verify that the dlls were created
+        var objDll = Path.Join(artifactsDir, "obj", "debug", "Program.dll");
+        new FileInfo(objDll).Should().Exist();
+        var binDll = Path.Join(artifactsDir, "bin", "debug", "Program.dll");
+        new FileInfo(binDll).Should().Exist();
+
+        // Delete the dlls
+        File.Delete(objDll);
+        File.Delete(binDll);
+
+        // Write invalid code that causes compilation to fail
+        code = code + "\n#error my custom error";
+        File.WriteAllText(programPath, code);
+
+        // Try to build the invalid code
+        new DotnetCommand(Log, "run", "-bl", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc)
+            .And.HaveStdOutContaining("my custom error")
+            .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
+
+        new FileInfo(objDll).Should().NotExist();
+        new FileInfo(binDll).Should().NotExist();
+    }
+
+    /// <summary>
     /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// </summary>
     [Fact]
@@ -4239,6 +4289,57 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(originalPath, code, utf8NoBom);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// Interaction of optimization <see cref="CscOnly_AfterMSBuild"/> and <c>Directory.Build.props</c> file.
+    /// </summary>
+    [Theory, CombinatorialData]
+    public void CscOnly_AfterMSBuild_DirectoryBuildProps(bool touch1, bool touch2)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var propsPath = Path.Join(testInstance.Path, "Directory.Build.props");
+        var propsContent = """
+            <Project>
+                <PropertyGroup>
+                    <AssemblyName>CustomAssemblyName</AssemblyName>
+                </PropertyGroup>
+            </Project>
+            """;
+        File.WriteAllText(propsPath, propsContent);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        var programVersion = 0;
+        void WriteProgramContent()
+        {
+            programVersion++;
+
+            // #: directive ensures we get CscOnly_AfterMSBuild optimization instead of CscOnly.
+            File.WriteAllText(programPath, $"""
+                #:property Configuration=Debug
+                Console.WriteLine("v{programVersion} " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
+                """);
+        }
+        WriteProgramContent();
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: $"v{programVersion} CustomAssemblyName");
+
+        File.Delete(propsPath);
+
+        if (touch1) WriteProgramContent();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: $"v{programVersion} Program");
+
+        File.WriteAllText(propsPath, propsContent);
+
+        if (touch2) WriteProgramContent();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: $"v{programVersion} CustomAssemblyName");
     }
 
     /// <summary>

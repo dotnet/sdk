@@ -35,7 +35,7 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.NoLogoOption());
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
         var solutionFile = SolutionFile.Parse(Path.GetFullPath(solutionFilePath));
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
 
@@ -87,7 +87,7 @@ internal static class MSBuildUtility
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.NoLogoOption());
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
 
         using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
@@ -99,43 +99,45 @@ internal static class MSBuildUtility
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult)
     {
+        var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
             .Concat(binLogArgs);
 
-        string? resultsDirectory = parseResult.GetValue(MicrosoftTestingPlatformOptions.ResultsDirectoryOption);
+        string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
         if (resultsDirectory is not null)
         {
             resultsDirectory = Path.GetFullPath(resultsDirectory);
         }
 
-        string? configFile = parseResult.GetValue(MicrosoftTestingPlatformOptions.ConfigFileOption);
+        string? configFile = parseResult.GetValue(definition.ConfigFileOption);
         if (configFile is not null)
         {
             configFile = Path.GetFullPath(configFile);
         }
 
-        string? diagnosticOutputDirectory = parseResult.GetValue(MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption);
+        string? diagnosticOutputDirectory = parseResult.GetValue(definition.DiagnosticOutputDirectoryOption);
         if (diagnosticOutputDirectory is not null)
         {
             diagnosticOutputDirectory = Path.GetFullPath(diagnosticOutputDirectory);
         }
 
         PathOptions pathOptions = new(
-            parseResult.GetValue(MicrosoftTestingPlatformOptions.ProjectOrSolutionOption),
-            parseResult.GetValue(MicrosoftTestingPlatformOptions.SolutionOption),
+            parseResult.GetValue(definition.ProjectOrSolutionOption),
+            parseResult.GetValue(definition.SolutionOption),
             resultsDirectory,
             configFile,
             diagnosticOutputDirectory);
 
         return new BuildOptions(
             pathOptions,
-            parseResult.GetValue(CommonOptions.NoRestoreOption),
-            parseResult.GetValue(MicrosoftTestingPlatformOptions.NoBuildOption),
-            parseResult.HasOption(TestCommandDefinition.VerbosityOption) ? parseResult.GetValue(TestCommandDefinition.VerbosityOption) : null,
-            parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileOption),
-            parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption),
+            parseResult.GetValue(definition.NoRestoreOption),
+            parseResult.GetValue(definition.NoBuildOption),
+            parseResult.HasOption(definition.VerbosityOption) ? parseResult.GetValue(definition.VerbosityOption) : null,
+            parseResult.GetValue(definition.NoLaunchProfileOption),
+            parseResult.GetValue(definition.NoLaunchProfileArgumentsOption),
             otherArgs,
             msbuildArgs);
     }
@@ -153,7 +155,13 @@ internal static class MSBuildUtility
             msbuildArgs.Add($"-verbosity:quiet");
         }
 
-        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, MicrosoftTestingPlatformOptions.MTPTargetOption, TestCommandDefinition.VerbosityOption, CommonOptions.NoLogoOption());
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+            msbuildArgs,
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateRequiredMSBuildTargetOption(CliConstants.MTPTarget),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption());
 
         int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
 
