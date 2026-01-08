@@ -20,7 +20,7 @@ public class HelpCommand(string[] helpArgs)
 
         result.ShowHelpOrErrorIfAppropriate();
 
-        if (result.GetValue(HelpCommandParser.Argument) is string[] args && args is not [])
+        if (result.GetValue(HelpCommandDefinition.Argument) is string[] args && args is not [])
         {
             return new HelpCommand(args).Execute();
         }

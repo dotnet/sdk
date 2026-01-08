@@ -1,12 +1,12 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Concurrent;
-using Microsoft.TemplateEngine.Cli.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
+using Microsoft.TemplateEngine.Cli.Help;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -397,7 +397,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string displayName,
         string? informativeMessage,
         TestOutcome outcome,
-        TimeSpan duration,
+        TimeSpan? duration,
         FlatException[]? exceptions,
         string? expected,
         string? actual,
@@ -458,7 +458,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string displayName,
         string? informativeMessage,
         TestOutcome outcome,
-        TimeSpan duration,
+        TimeSpan? duration,
         FlatException[]? flatExceptions,
         string? expected,
         string? actual,
@@ -496,9 +496,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.ResetColor();
         terminal.Append(' ');
         terminal.Append(displayName);
-        terminal.SetColor(TerminalColor.DarkGray);
-        terminal.Append(' ');
-        AppendLongDuration(terminal, duration);
+
+        if (duration.HasValue)
+        {
+            terminal.Append(' ');
+            AppendLongDuration(terminal, duration.Value);
+        }
 
         if (!string.IsNullOrEmpty(informativeMessage))
         {

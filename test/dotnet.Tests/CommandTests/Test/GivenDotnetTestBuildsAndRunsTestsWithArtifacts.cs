@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute("--coverage", MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("--coverage", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
