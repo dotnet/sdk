@@ -84,6 +84,20 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             if (!_initializedManifests)
             {
                 LoadManifestsFromProvider(_manifestProvider);
+                
+                // If manifests from a workload set are missing, check if we got an error
+                // This will be shown when trying to use workloads but manifests are not available
+                if (_manifestProvider is SdkDirectoryWorkloadManifestProvider sdkProvider)
+                {
+                    var manifestError = sdkProvider.GetManifestErrorMessage();
+                    if (manifestError != null && _manifests.Count == 0)
+                    {
+                        // No manifests were loaded and there's an error - this means workloads won't work
+                        // Throw the error so users know what's wrong
+                        throw new FileNotFoundException(manifestError);
+                    }
+                }
+                
                 ComposeWorkloadManifests();
                 _initializedManifests = true;
             }

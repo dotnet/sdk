@@ -125,6 +125,13 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         reporter ??= Reporter.Output;
         
         var versionInfo = ManifestProvider.GetWorkloadVersion();
+        
+        // Get the error message if manifests are missing
+        string? manifestError = null;
+        if (ManifestProvider is SdkDirectoryWorkloadManifestProvider sdkProvider)
+        {
+            manifestError = sdkProvider.GetManifestErrorMessage();
+        }
 
         void WriteUpdateModeAndAnyError(string indent = "")
         {
@@ -133,6 +140,12 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
                 ? CliCommandStrings.WorkloadManifestInstallationConfigurationWorkloadSets
                 : CliCommandStrings.WorkloadManifestInstallationConfigurationLooseManifests;
             reporter.WriteLine(indent + configurationMessage);
+
+            // Show the specific error message if manifests are missing
+            if (!versionInfo.IsInstalled && manifestError != null)
+            {
+                reporter.WriteLine(indent + manifestError);
+            }
 
             if (!versionInfo.IsInstalled)
             {

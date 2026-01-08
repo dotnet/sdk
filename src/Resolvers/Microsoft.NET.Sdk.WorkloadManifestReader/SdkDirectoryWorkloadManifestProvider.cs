@@ -245,6 +245,15 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
+        /// <summary>
+        /// Gets the error message if manifests from a workload set are missing.
+        /// Returns null if all manifests are available.
+        /// </summary>
+        public string? GetManifestErrorMessage()
+        {
+            return _exceptionToThrow?.Message;
+        }
+
         public WorkloadVersionInfo GetWorkloadVersion()
         {
             if (_globalJsonWorkloadSetVersion != null)
