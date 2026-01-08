@@ -27,10 +27,10 @@
         <target state="translated">Yinelenen yönergeler desteklenmez: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
-      <trans-unit id="EmptyTempPath">
-        <source>Unable to determine a temporary directory path. Consider configuring the TEMP environment variable on Windows or local app data folder on Unix.</source>
-        <target state="new">Unable to determine a temporary directory path. Consider configuring the TEMP environment variable on Windows or local app data folder on Unix.</target>
-        <note />
+      <trans-unit id="IncludeOrExcludeDirectiveUnknownFileType">
+        <source>Unrecognized file extension in the '{0}' directive. Only these extensions are currently recognized: {1}</source>
+        <target state="new">Unrecognized file extension in the '{0}' directive. Only these extensions are currently recognized: {1}</target>
+        <note>{0} is the directive - '#:include' or '#:exclude'. {1} is a comma-separated list of file extensions, like: '.cs', '.resx'</note>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
