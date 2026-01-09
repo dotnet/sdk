@@ -3,11 +3,13 @@
 
 #nullable disable
 
+extern alias DotNetNativeWrapper;
+
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
-using EnvironmentProvider = Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
+using EnvironmentProvider = DotNetNativeWrapper::Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
