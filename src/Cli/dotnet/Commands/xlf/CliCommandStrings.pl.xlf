@@ -92,11 +92,6 @@
         <target state="translated">Konstruktor platformy .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="NoLogoOptionDescription">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nie wyświetlaj baneru początkowego ani komunikatu o prawach autorskich.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="BuildConfigurationOptionDescription">
         <source>The configuration to use for building the project. The default for most projects is 'Debug'.</source>
         <target state="translated">Konfiguracja do użycia na potrzeby kompilacji projektu. W przypadku większości projektów ustawienie domyślne to „Debugowanie”.</target>

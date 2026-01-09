@@ -92,11 +92,6 @@
         <target state="translated">Построитель .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="NoLogoOptionDescription">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Не отображать начальный баннер или сообщение об авторских правах.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="BuildConfigurationOptionDescription">
         <source>The configuration to use for building the project. The default for most projects is 'Debug'.</source>
         <target state="translated">Конфигурация, используемая при сборке проекта. По умолчанию для большинства проектов используется "Debug".</target>

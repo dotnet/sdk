@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -64,7 +65,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var sdkVersion = Product.Version;
         var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, sdkVersion, userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
         var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, dotnetPath, sdkVersion, userProfileDir);
-        var tempPackagesDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
+        var tempPackagesDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
         var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
                                       filePermissionSetter: null,
                                       new FirstPartyNuGetPackageSigningVerifier(),

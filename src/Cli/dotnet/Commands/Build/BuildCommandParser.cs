@@ -19,6 +19,8 @@ internal static class BuildCommandParser
     {
         var command = new BuildCommandDefinition();
         command.SetAction(BuildCommand.Run);
+        command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
+        command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
         command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RunTimesFromProjectFile);
         return command;
     }
