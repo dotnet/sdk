@@ -174,6 +174,39 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [Fact]
+        public void GetTestRunnerShouldHandleWhitespaceGlobalJson()
+        {
+            // Create a temporary directory with a whitespace-only global.json
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var globalJsonPath = Path.Combine(tempDir, "global.json");
+                File.WriteAllText(globalJsonPath, "   \n\t  ");
+
+                var originalDir = Environment.CurrentDirectory;
+                try
+                {
+                    Environment.CurrentDirectory = tempDir;
+                    // Should not throw and should default to VSTest
+                    var runner = TestCommandDefinition.GetTestRunner();
+                    runner.Should().Be(TestCommandDefinition.TestRunner.VSTest);
+                }
+                finally
+                {
+                    Environment.CurrentDirectory = originalDir;
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, true);
+                }
+            }
+        }
+
+        [Fact]
         public void GetTestRunnerShouldHandleInvalidGlobalJson()
         {
             // Create a temporary directory with an invalid global.json
