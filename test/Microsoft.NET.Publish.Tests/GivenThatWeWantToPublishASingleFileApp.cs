@@ -853,14 +853,9 @@ class C
                 testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
             }
 
-            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
-                Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{nameof(It_can_disable_cetcompat)}_{cetCompat?.ToString() ?? "null"}.binlog") :
-                "./msbuild.binlog";
-
-
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
             var publishCommand = new PublishCommand(testAsset);
-            publishCommand.Execute(PublishSingleFile, "/bl:" + binlogDestPath)
+            publishCommand.Execute(PublishSingleFile)
                 .Should()
                 .Pass();
 
