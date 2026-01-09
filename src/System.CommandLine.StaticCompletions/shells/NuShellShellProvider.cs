@@ -191,6 +191,12 @@ public class NushellShellProvider : IShellProvider
 
         var commandName = string.Join(' ', currentPath);
 
+        // Write description comment if available
+        if (!string.IsNullOrEmpty(command.Description))
+        {
+            writer.WriteLine($"# {SanitizeComment(command.Description)}");
+        }
+
         writer.WriteLine($"export extern \"{commandName}\" [");
         writer.Indent++;
 
