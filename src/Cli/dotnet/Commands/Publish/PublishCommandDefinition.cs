@@ -42,7 +42,7 @@ internal static class PublishCommandDefinition
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
-    public static readonly Option<bool> SelfContainedOption = CommonOptions.SelfContainedOption;
+    public static readonly Option<bool?> SelfContainedOption = CommonOptions.SelfContainedOption;
 
     public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 

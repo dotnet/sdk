@@ -328,12 +328,13 @@ internal static class CommonOptions
         Arity = ArgumentArity.Zero,
     };
 
-    public static Option<bool> SelfContainedOption =
-        new Option<bool>("--self-contained", "--sc")
+    public static Option<bool?> SelfContainedOption =
+        new Option<bool?>("--self-contained", "--sc")
         {
-            Description = CliStrings.SelfContainedOptionDescription
+            Description = CliStrings.SelfContainedOptionDescription,
+            Arity = ArgumentArity.ZeroOrOne
         }
-        .ForwardAsMany(o => [$"--property:SelfContained={o}", "--property:_CommandLineDefinedSelfContained=true"]);
+        .ForwardAsMany(o => o.HasValue ? [$"--property:SelfContained={o.Value}", "--property:_CommandLineDefinedSelfContained=true"] : []);
 
     public static Option<bool> NoSelfContainedOption =
         new Option<bool>("--no-self-contained")
@@ -353,7 +354,7 @@ internal static class CommonOptions
     };
 
     public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CreateEnvOption(CliStrings.CmdEnvironmentVariableDescription);
-    
+
     public static readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CreateEnvOption(CliStrings.CmdTestEnvironmentVariableDescription);
 
     private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
