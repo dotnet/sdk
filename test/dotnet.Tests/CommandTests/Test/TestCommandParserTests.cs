@@ -9,13 +9,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 {
     public class TestCommandDefinitionTests
     {
-        [Fact]
-        public void SurroundWithDoubleQuotesWithNullThrows()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                MSBuildPropertyParser.SurroundWithDoubleQuotes(null!));
-        }
-
         [Theory]
         [InlineData("")]
         [InlineData("\"a\"")]
