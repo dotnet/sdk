@@ -354,7 +354,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
                     throw new NuGetPackageNotFoundException($"Requested workload version {packageVersion} of {id} but found version {downloadedPackageVersion} instead.");
                 }
 
-                var workloadSetVersion = WorkloadSetVersion.FromWorkloadSetPackageVersion(band, downloadedPackageVersion.ToString());
+                var workloadSetVersion = band.GetWorkloadSetPackageVersion(downloadedPackageVersion.ToString());
                 File.WriteAllText(Path.Combine(adManifestPath, Constants.workloadSetVersionFileName), workloadSetVersion);
             }
 
