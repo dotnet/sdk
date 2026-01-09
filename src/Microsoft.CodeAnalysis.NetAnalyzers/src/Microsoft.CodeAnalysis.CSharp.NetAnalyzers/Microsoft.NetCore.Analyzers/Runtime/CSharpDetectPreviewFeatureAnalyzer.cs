@@ -26,6 +26,40 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return awaitableInfo.RuntimeAwaitMethod;
         }
 
+        protected override ISymbol? SymbolFromUsingOperation(IUsingOperation operation)
+        {
+            // Only handle await using, not regular using
+            var syntax = operation.Syntax;
+            if (syntax is LocalDeclarationStatementSyntax localDeclaration &&
+                localDeclaration.UsingKeyword.Kind() != SyntaxKind.None &&
+                localDeclaration.AwaitKeyword.Kind() != SyntaxKind.None)
+            {
+                var awaitableInfo = operation.SemanticModel!.GetAwaitExpressionInfo(localDeclaration);
+                return awaitableInfo.RuntimeAwaitMethod;
+            }
+            else if (syntax is UsingStatementSyntax usingStatement &&
+                     usingStatement.AwaitKeyword.Kind() != SyntaxKind.None)
+            {
+                var awaitableInfo = operation.SemanticModel!.GetAwaitExpressionInfo(usingStatement);
+                return awaitableInfo.RuntimeAwaitMethod;
+            }
+
+            return null;
+        }
+
+        protected override ISymbol? SymbolFromForEachOperation(IForEachLoopOperation operation)
+        {
+            // Only handle await foreach, not regular foreach
+            if (operation.Syntax is not CommonForEachStatementSyntax forEachSyntax ||
+                forEachSyntax is not ForEachStatementSyntax { AwaitKeyword.RawKind: not 0 })
+            {
+                return null;
+            }
+
+            var forEachInfo = operation.SemanticModel.GetForEachStatementInfo(forEachSyntax);
+            return forEachInfo.MoveNextAwaitableInfo.RuntimeAwaitMethod;
+        }
+
         protected override SyntaxNode? GetPreviewSyntaxNodeForFieldsOrEvents(ISymbol fieldOrEventSymbol, ISymbol previewSymbol)
         {
             ImmutableArray<SyntaxReference> fieldOrEventReferences = fieldOrEventSymbol.DeclaringSyntaxReferences;

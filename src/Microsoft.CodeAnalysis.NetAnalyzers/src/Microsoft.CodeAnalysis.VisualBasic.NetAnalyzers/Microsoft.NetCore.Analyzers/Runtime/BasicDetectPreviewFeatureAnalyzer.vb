@@ -21,6 +21,14 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Return Nothing
         End Function
 
+        Protected Overrides Function SymbolFromUsingOperation(operation As IUsingOperation) As ISymbol
+            Return Nothing
+        End Function
+
+        Protected Overrides Function SymbolFromForEachOperation(operation As IForEachLoopOperation) As ISymbol
+            Return Nothing
+        End Function
+
         Private Shared Function GetElementTypeForNullableAndArrayTypeNodes(parameterType As TypeSyntax) As TypeSyntax
             Dim ret As TypeSyntax = parameterType
             Dim loopVariable = TryCast(parameterType, NullableTypeSyntax)
