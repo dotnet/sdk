@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.DotNet.Cli.Utils;
-
 namespace Microsoft.DotNet.Cli.Telemetry;
 
 /// <summary>
@@ -34,7 +29,7 @@ internal class BooleanEnvironmentRule : EnvironmentDetectionRule
 
     public override bool IsMatch()
     {
-        return _variables.Any(variable => Env.GetEnvironmentVariableAsBool(variable));
+        return _variables.Any(variable => EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(variable), defaultValue: false));
     }
 }
 
