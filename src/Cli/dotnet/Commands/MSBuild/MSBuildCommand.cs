@@ -15,7 +15,7 @@ public class MSBuildCommand(
         [.. msbuildArgs],
         CommonOptions.CreatePropertyOption(),
         CommonOptions.CreateRestorePropertyOption(),
-        MSBuildCommandDefinition.TargetOption,
+        CommonOptions.CreateMSBuildTargetOption(),
         CommonOptions.CreateVerbosityOption(),
         // We set the no-logo option to false here to ensure that by default the logo is shown for this command.
         // This is different from other commands that default to hiding the logo - but this command is meant to mimic
@@ -31,14 +31,15 @@ public class MSBuildCommand(
 
     public static MSBuildCommand FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
-        var msbuildArgs = new List<string>();
-        msbuildArgs.AddRange(parseResult.GetValue(MSBuildCommandDefinition.Arguments) ?? []);
-        msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(MSBuildCommandParser.GetCommand()));
+        var definition = (MSBuildCommandDefinition)parseResult.CommandResult.Command;
 
-        MSBuildCommand command = new(
-            msbuildArgs,
+        return new MSBuildCommand(
+            msbuildArgs:
+            [
+                ..parseResult.GetValue(definition.Arguments) ?? [],
+                ..parseResult.OptionValuesToBeForwarded(definition)
+            ],
             msbuildPath: msbuildPath);
-        return command;
     }
 
     public static int Run(ParseResult parseResult)
