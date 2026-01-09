@@ -97,33 +97,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         [Theory]
         [CombinatorialData]
-        public void RunOptions_LaunchProfile_NotPassedThrough(bool beforeCommand)
-        {
-            var options = VerifyOptions(beforeCommand ? ["--launch-profile", "p", "test"] : ["test", "--launch-profile", "p"]);
-            Assert.Equal("test", options.Command);
-            AssertEx.SequenceEqual([], options.CommandArguments);
-        }
-
-        [Theory]
-        [CombinatorialData]
-        public void RunOptions_NoLaunchProfile_NotPassedThrough(bool beforeCommand)
-        {
-            var options = VerifyOptions(beforeCommand ? ["--no-launch-profile", "test"] : ["test", "--no-launch-profile"]);
-            Assert.Equal("test", options.Command);
-            AssertEx.SequenceEqual([], options.CommandArguments);
-        }
-
-        [Theory]
-        [CombinatorialData]
-        public void RunOption_Project_NotPassedThrough(bool beforeCommand)
-        {
-            var options = VerifyOptions(beforeCommand ? ["--project", "MyProject.csproj", "test"] : ["test", "--project", "MyProject.csproj"]);
-            Assert.Equal("test", options.Command);
-            AssertEx.SequenceEqual([], options.CommandArguments);
-        }
-
-        [Theory]
-        [CombinatorialData]
         public void WatchOptions_NotPassedThrough(
             [CombinatorialValues("--quiet", "--verbose", "--no-hot-reload", "--non-interactive")] string option,
             bool beforeCommand)
@@ -464,12 +437,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(new[] { "--framework", "net9.0" }, new[] { "--property:TargetFramework=net9.0", NugetInteractiveProperty })]
         [InlineData(new[] { "--runtime", "arm64" }, new[] { NugetInteractiveProperty, "--property:RuntimeIdentifier=arm64", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
         [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1", NugetInteractiveProperty })]
+        [InlineData(new[] { "--project", "x.csproj" }, new[] { NugetInteractiveProperty }, new[] { "--project", "x.csproj" })]
+        [InlineData(new[] { "--launch-profile", "x" }, new[] { NugetInteractiveProperty }, new[] { "--launch-profile", "x" })]
+        [InlineData(new[] { "--no-launch-profile" }, new[] { NugetInteractiveProperty }, new[] { "--no-launch-profile" })]
         [InlineData(new[] { "/p:b=1" }, new[] { "--property:b=1", NugetInteractiveProperty }, new[] { "/p", "b=1" })] // it's ok to split the argument into two since `dotnet run` handles `/p b=1`
         [InlineData(new[] { "--interactive" }, new[] { "--property:NuGetInteractive=true" })]
         [InlineData(new[] { "--no-restore" }, new[] { NugetInteractiveProperty, "-restore:false" })]
         [InlineData(new[] { "--sc" }, new[] { NugetInteractiveProperty, "--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true" })]
         [InlineData(new[] { "--self-contained" }, new[] { NugetInteractiveProperty, "--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true" })]
         [InlineData(new[] { "--no-self-contained" }, new[] { NugetInteractiveProperty, "--property:SelfContained=false", "--property:_CommandLineDefinedSelfContained=true" })]
+        [InlineData(new[] { "--verbose" }, new[] { NugetInteractiveProperty }, new string[0])]
         [InlineData(new[] { "--verbosity", "q" }, new[] { NugetInteractiveProperty, "--verbosity:q" })]
         [InlineData(new[] { "--arch", "arm", "--os", "win" }, new[] { NugetInteractiveProperty, "--property:RuntimeIdentifier=win-arm" })]
         [InlineData(new[] { "--disable-build-servers" }, new[] { NugetInteractiveProperty, "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
@@ -486,12 +463,19 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(commandArgs ?? args, runOptions.CommandArguments);
         }
 
+        // TODO:
+        // Test MTP: https://github.com/dotnet/sdk/issues/52383
+
         [Theory]
         [InlineData(new[] { "--property:b=1" }, new[] { "--property:b=1" })]
         [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1" })]
         [InlineData(new[] { "/p:b=1" }, new[] { "--property:b=1" })]
         [InlineData(new[] { "/bl" }, new[] { "/bl" })]
         [InlineData(new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" }, new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" })]
+        [InlineData(new[] { "--launch-profile", "x" }, new string[0])]
+        [InlineData(new[] { "--no-launch-profile" }, new string[0])]
+        [InlineData(new[] { "--project", "x.csproj" }, new string[0])]
+        [InlineData(new[] { "--verbose" }, new string[0])]
         public void ForwardedBuildOptions_Test(string[] args, string[] commandArgs)
         {
             var isProperty = args[0].Contains("-p") || args[0].Contains("/p");

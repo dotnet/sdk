@@ -43,9 +43,6 @@ internal sealed class CommandLineOptions
 
     public string Command => ExplicitCommand ?? DefaultCommand;
 
-    // this option is referenced from inner logic and so needs to be reference-able
-    public static Option<bool> NonInteractiveOption = new Option<bool>("--non-interactive") { Description = Resources.Help_NonInteractive, Arity = ArgumentArity.Zero };
-
     public static CommandLineOptions? Parse(IReadOnlyList<string> args, ILogger logger, TextWriter output, out int errorCode)
     {
         // dotnet watch specific options:
@@ -53,6 +50,7 @@ internal sealed class CommandLineOptions
         var verboseOption = new Option<bool>("--verbose") { Description = Resources.Help_Verbose, Arity = ArgumentArity.Zero };
         var listOption = new Option<bool>("--list") { Description = Resources.Help_List, Arity = ArgumentArity.Zero };
         var noHotReloadOption = new Option<bool>("--no-hot-reload") { Description = Resources.Help_NoHotReload, Arity = ArgumentArity.Zero };
+        var nonInteractiveOption = new Option<bool>("--non-interactive") { Description = Resources.Help_NonInteractive, Arity = ArgumentArity.Zero };
 
         verboseOption.Validators.Add(v =>
         {
@@ -62,7 +60,7 @@ internal sealed class CommandLineOptions
             }
         });
 
-        // Options we need to know about that are passed through to the subcommand:
+        // Options we need to know about. They are passed through to the subcommand if the subcommand supports them.
         var shortProjectOption = new Option<string>("-p") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var longProjectOption = new Option<string>("--project") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var launchProfileOption = new Option<string>("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
@@ -74,14 +72,7 @@ internal sealed class CommandLineOptions
             verboseOption,
             listOption,
             noHotReloadOption,
-            NonInteractiveOption
-        ];
-        Option[] forwardToRunOptions =
-        [
-            shortProjectOption,
-            longProjectOption,
-            launchProfileOption,
-            noLaunchProfileOption
+            nonInteractiveOption,
         ];
 
         var rootCommand = new RootCommand(Resources.Help)
@@ -166,7 +157,14 @@ internal sealed class CommandLineOptions
             }
         }
 
-        var commandArguments = GetCommandArguments(parseResult, watchOptions, forwardToRunOptions, explicitCommand, out var binLogToken, out var binLogPath);
+        var commandArguments = GetCommandArguments(
+            parseResult,
+            watchOptions,
+            nonInteractiveOption,
+            command,
+            explicitCommand,
+            out var binLogToken,
+            out var binLogPath);
 
         // We assume that forwarded options, if any, are intended for dotnet build.
         var buildArguments = buildOptions.Select(option => option.ForwardingFunction!(parseResult)).SelectMany(args => args).ToList();
@@ -191,7 +189,7 @@ internal sealed class CommandLineOptions
             {
                 LogLevel = logLevel,
                 NoHotReload = parseResult.GetValue(noHotReloadOption),
-                NonInteractive = parseResult.GetValue(NonInteractiveOption),
+                NonInteractive = parseResult.GetValue(nonInteractiveOption),
                 BinaryLogPath = ParseBinaryLogFilePath(binLogPath),
             },
 
@@ -229,7 +227,8 @@ internal sealed class CommandLineOptions
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,
         IReadOnlyList<Option> watchOptions,
-        IReadOnlyList<Option> forwardToRunOptions,
+        Option<bool> nonInteractiveOption,
+        Command command,
         Command? explicitCommand,
         out string? binLogToken,
         out string? binLogPath)
@@ -238,26 +237,24 @@ internal sealed class CommandLineOptions
         binLogToken = null;
         binLogPath = null;
 
-        bool isRunCommand = explicitCommand == null || explicitCommand?.Name == "run";
-
         foreach (var child in parseResult.CommandResult.Children)
         {
             var optionResult = (OptionResult)child;
 
-            // skip watch options:
+            // skip watch specific option:
             if (watchOptions.Contains(optionResult.Option))
             {
                 continue;
             }
             
-            // skip forwarding run options to other commands.
-            if (isRunCommand == false && forwardToRunOptions.Contains(optionResult.Option))
+            // forward forwardable option if the subcommand supports it:
+            if (!command.Options.Any(option => option.Name == optionResult.Option.Name))
             {
                 continue;
             }
 
             // skip forwarding the interactive token (which may be computed by default) when users pass --non-interactive to watch itself
-            if (optionResult.Option.Name.Equals("--interactive", StringComparison.Ordinal) && parseResult.GetValue(NonInteractiveOption))
+            if (optionResult.Option.Name.Equals("--interactive", StringComparison.Ordinal) && parseResult.GetValue(nonInteractiveOption))
             {
                 continue;
             }
