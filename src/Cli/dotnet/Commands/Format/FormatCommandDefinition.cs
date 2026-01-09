@@ -6,18 +6,16 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Format;
 
-internal static class FormatCommandDefinition
+internal sealed class FormatCommandDefinition : Command
 {
-    public const string Name = "format";
+    private const string Link = "https://aka.ms/dotnet-format";
 
-    public static readonly Argument<string[]> Arguments = new("arguments");
+    public new readonly Argument<string[]> Arguments = new("arguments");
 
-    public static readonly string DocsLink = "https://aka.ms/dotnet-format";
-
-    public static Command Create()
-        => new(Name)
-        {
-            Arguments = { Arguments },
-            DocsLink = DocsLink,
-        };
+    public FormatCommandDefinition()
+        : base("format")
+    {
+        this.DocsLink = Link;
+        base.Arguments.Add(Arguments);
+    }
 }

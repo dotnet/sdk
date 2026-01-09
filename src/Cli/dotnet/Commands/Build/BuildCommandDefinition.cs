@@ -61,7 +61,6 @@ internal sealed class BuildCommandDefinition : Command
 
     public readonly Option<string> VersionSuffixOption = CommonOptions.CreateVersionSuffixOption();
     public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
-    public readonly Option<bool> DebugOption = CommonOptions.DebugOption;
     public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
     public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
     public readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
@@ -82,7 +81,6 @@ internal sealed class BuildCommandDefinition : Command
         Options.Add(NoRestoreOption);
         Options.Add(InteractiveOption);
         Options.Add(VerbosityOption);
-        Options.Add(DebugOption);
         Options.Add(OutputOption);
         Options.Add(ArtifactsPathOption);
         Options.Add(NoIncrementalOption);
