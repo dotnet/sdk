@@ -124,7 +124,9 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CommandOptionNoLaunchProfileArgumentsDescription
         };
 
-        public readonly Option<string[]> MTPTargetOption = CommonOptions.CreateRequiredMSBuildTargetOption("_MTPBuild");
+        public const string BuildTargetName = "_MTPBuild";
+
+        public readonly Option<string[]> MTPTargetOption = CommonOptions.CreateRequiredMSBuildTargetOption(BuildTargetName);
 
         public ICustomHelp? CustomHelpLayoutProvider { get; set; }
 
