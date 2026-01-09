@@ -15,12 +15,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         public static Option<string> TagOption { get; } = SharedOptionsFactory.CreateTagOption();
         public static Option<string> PackageOption { get; } = SharedOptionsFactory.CreatePackageOption();
 
-        public static Option<FileInfo> OutputOption { get; } = new("--output", "-o")
-        {
-            Description = SymbolStrings.Option_Output,
-            Required = false,
-            Arity = new ArgumentArity(1, 1)
-        };
+        public static Option<FileInfo> OutputOption { get; } = SharedOptionsFactory.CreateOutputOption();
 
         public static Option<FileInfo> ProjectPathOption { get; } = new Option<FileInfo>("--project")
         {

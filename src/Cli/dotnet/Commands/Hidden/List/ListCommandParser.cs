@@ -10,20 +10,21 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.List;
 
 internal static class ListCommandParser
 {
-    private static readonly Command Command = SetAction(new ListCommandDefinition());
+    private static readonly ListCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetAction(ListCommandDefinition def)
+    private static ListCommandDefinition CreateCommand()
     {
-        def.SetAction(parseResult => parseResult.HandleMissingCommand());
+        var command = new ListCommandDefinition();
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-        def.PackageCommand.SetAction(parseResult => new PackageListCommand(parseResult).Execute());
-        def.ReferenceCommand.SetAction(parseResult => new ReferenceListCommand(parseResult).Execute());
+        command.PackageCommand.SetAction(parseResult => new PackageListCommand(parseResult).Execute());
+        command.ReferenceCommand.SetAction(parseResult => new ReferenceListCommand(parseResult).Execute());
 
-        return def;
+        return command;
     }
 }

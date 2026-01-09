@@ -10,15 +10,24 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
-using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
-internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBase(parseResult)
+internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandDefinition>
 {
-    private readonly string _file = parseResult.GetValue(ProjectConvertCommandDefinition.FileArgument) ?? string.Empty;
-    private readonly string? _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
-    private readonly bool _force = parseResult.GetValue(ProjectConvertCommandDefinition.ForceOption);
+    private readonly string _file;
+    private readonly string? _outputDirectory;
+    private readonly bool _force;
+    private readonly bool _dryRun;
+
+    public ProjectConvertCommand(ParseResult parseResult)
+        : base(parseResult)
+    {
+        _file = parseResult.GetValue(Definition.FileArgument) ?? string.Empty;
+        _outputDirectory = parseResult.GetValue(Definition.OutputOption)?.FullName;
+        _force = parseResult.GetValue(Definition.ForceOption);
+        _dryRun = parseResult.GetValue(Definition.DryRunOption);
+    }
 
     public override int Execute()
     {
@@ -46,14 +55,13 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
 
-        bool dryRun = _parseResult.GetValue(ProjectConvertCommandDefinition.DryRunOption);
 
         CreateDirectory(targetDirectory);
 
         var targetFile = Path.Join(targetDirectory, Path.GetFileName(file));
 
         // Process the entry point file.
-        if (dryRun)
+        if (_dryRun)
         {
             Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCopyFile, file, targetFile);
             Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldConvertFile, targetFile);
@@ -65,7 +73,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         // Create project file.
         string projectFile = Path.Join(targetDirectory, Path.GetFileNameWithoutExtension(file) + ".csproj");
-        if (dryRun)
+        if (_dryRun)
         {
             Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCreateFile, projectFile);
         }
@@ -98,7 +106,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         void CreateDirectory(string path)
         {
-            if (dryRun)
+            if (_dryRun)
             {
                 if (!Directory.Exists(path))
                 {
@@ -113,7 +121,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         void CopyFile(string source, string target)
         {
-            if (dryRun)
+            if (_dryRun)
             {
                 Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCopyFile, source, target);
             }
