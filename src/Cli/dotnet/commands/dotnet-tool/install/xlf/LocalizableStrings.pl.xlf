@@ -93,6 +93,16 @@ Jeśli chcesz utworzyć manifest, użyj flagi „--create-manifest-if-needed” 
         <target state="translated">Zezwalaj narzędziu środowiska .NET na przekazywanie do nowszych wersji środowiska uruchomieniowego .NET, jeśli docelowe środowiska uruchomieniowe nie są zainstalowane.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">Zastąp je wszystkimi źródłami pakietów NuGet, które mają być używane podczas instalacji.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">ŹRÓDŁO</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">Wersja pakietu narzędzia do zainstalowania.</target>
@@ -183,8 +193,8 @@ Więcej przyczyn, w tym wymuszanie nazw pakietów, można znaleźć na stronie h
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

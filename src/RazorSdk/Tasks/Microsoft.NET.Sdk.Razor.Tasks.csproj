@@ -4,6 +4,9 @@
     <RazorSdkRoot>$(RepoRoot)\src\RazorSdk\</RazorSdkRoot>
     <PackageId>Microsoft.NET.Sdk.Razor</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tasks</OutDirName>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

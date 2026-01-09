@@ -1,0 +1,141 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <CanRunTestAsTool>false</CanRunTestAsTool>
+
+    <!-- Use layout folder for the output folder, to support in-process tests which expect to be running
+         on a valid layout. -->
+    <OutputPath>$(ArtifactsBinDir)redist\$(Configuration)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\crossgen.Tests\**\*.cs" LinkBase="crossgen" />
+    <Compile Include="..\dotnet-add-package.Tests\**\*.cs" LinkBase="dotnet-add-package" />
+    <Compile Include="..\dotnet-add-reference.Tests\**\*.cs" LinkBase="dotnet-add-reference" />
+    <Compile Include="..\dotnet-back-compat.Tests\**\*.cs" LinkBase="dotnet-back-compat" />
+    <Compile Include="..\dotnet-build.Tests\**\*.cs" LinkBase="dotnet-build" />
+    <Compile Include="..\dotnet-clean.Tests\**\*.cs" LinkBase="dotnet-clean" />
+    <Compile Include="..\dotnet-format.Tests\*.cs" LinkBase="dotnet-format" />
+    <Compile Include="..\dotnet-fsi.Tests\**\*.cs" LinkBase="dotnet-fsi" />
+    <Compile Include="..\dotnet-help.Tests\**\*.cs" LinkBase="dotnet-help" />
+    <Compile Include="..\dotnet-install-tool.Tests\**\*.cs" LinkBase="dotnet-install-tool" />
+    <Compile Include="..\dotnet-list-package.Tests\**\*.cs" LinkBase="dotnet-list-package" />
+    <Compile Include="..\dotnet-list-reference.Tests\**\*.cs" LinkBase="dotnet-list-reference" />
+    <Compile Include="..\dotnet-nuget.UnitTests\**\*.cs" LinkBase="dotnet-nuget" />
+    <Compile Include="..\dotnet-pack.Tests\**\*.cs" LinkBase="dotnet-pack" />
+    <Compile Include="..\dotnet-publish.Tests\**\*.cs" LinkBase="dotnet-publish" />
+    <Compile Include="..\dotnet-remove-package.Tests\**\*.cs" LinkBase="dotnet-remove-package" />
+    <Compile Include="..\dotnet-remove-reference.Tests\**\*.cs" LinkBase="dotnet-remove-reference" />
+    <Compile Include="..\dotnet-restore.Tests\**\*.cs" LinkBase="dotnet-restore" />
+    <Compile Include="..\dotnet-run.Tests\**\*.cs" LinkBase="dotnet-run" />
+    <Compile Include="..\dotnet-sdk-check.Tests\**\*.cs" LinkBase="dotnet-sdk-check" />
+    <Compile Include="..\dotnet-store.Tests\**\*.cs" LinkBase="dotnet-store" />
+    <Compile Include="..\dotnet-test.Tests\**\*.cs" LinkBase="dotnet-test" />
+    <Compile Include="..\dotnet-vstest.Tests\**\*.cs" LinkBase="dotnet-vstest" />
+    <Compile Include="..\dotnet-workload-install.Tests\**\*.cs" LinkBase="dotnet-workload-install" />
+    <Compile Include="..\dotnet-workload-list.Tests\**\*.cs" LinkBase="dotnet-workload-list" />
+    <Compile Include="..\dotnet-workload-repair.Tests\**\*.cs" LinkBase="dotnet-workload-repair" />
+    <Compile Include="..\dotnet-workload-restore.Tests\**\*.cs" LinkBase="dotnet-workload-restore" />
+    <Compile Include="..\dotnet-workload-search.Tests\**\*.cs" LinkBase="dotnet-workload-search" />
+    <Compile Include="..\dotnet-workload-uninstall.Tests\**\*.cs" LinkBase="dotnet-workload-uninstall" />
+    <Compile Include="..\dotnet-workload-update.Tests\**\*.cs" LinkBase="dotnet-workload-update" />
+    <Compile Include="..\Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests\**\*.cs" LinkBase="Telemetry.PersistenceChannel" />
+    <Compile Include="..\Microsoft.DotNet.CommandFactory.Tests\**\*.cs" LinkBase="CommandFactory" />
+    <Compile Include="..\Microsoft.DotNet.Configurer.UnitTests\**\*.cs" LinkBase="Configurer" />
+    <Compile Include="..\Microsoft.DotNet.ShellShim.Tests\**\*.cs" LinkBase="ShellShim" />
+
+    <None Include="..\Microsoft.DotNet.ShellShim.Tests\WpfBinaryTestAsssets\testwpf.dll" LinkBase="WpfBinaryTestAsssets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+
+    <None Update="CollectCodeCoverage.runsettings">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+
+    <None Update="queryResultSample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MSTestVersion</_Parameter1>
+      <_Parameter2>$(MSTestVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MicrosoftNETTestSdkPackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNETTestSdkPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>XUnitVersion</_Parameter1>
+      <_Parameter2>$(XUnitVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SdkVersion</_Parameter1>
+      <_Parameter2>$(Version)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <Target Name="WriteExpectedTargetFrameworkMoniker" BeforeTargets="BeforeBuild" DependsOnTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ExpectedTargetFrameworkMonikerFileInIntermediateFolder>$(IntermediateOutputPath)ExpectedTargetFrameworkMoniker.txt</ExpectedTargetFrameworkMonikerFileInIntermediateFolder>
+      <VersionFileContent>$(TargetFrameworkMoniker)</VersionFileContent>
+      <ExistingVersionFileContent Condition=" Exists('$(ExpectedTargetFrameworkMonikerFileInIntermediateFolder)') ">
+        $([System.IO.File]::ReadAllText($(ExpectedTargetFrameworkMonikerFileInIntermediateFolder)))
+      </ExistingVersionFileContent>
+      <ShouldOverwriteVersionFile>false</ShouldOverwriteVersionFile>
+      <ShouldOverwriteVersionFile Condition=" '$(ExistingVersionFileContent.Trim())' != '$(VersionFileContent.Trim())' ">true</ShouldOverwriteVersionFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(ExpectedTargetFrameworkMonikerFileInIntermediateFolder)" Lines="$(VersionFileContent)" Condition=" '$(ShouldOverwriteVersionFile)' == 'true' " Overwrite="true" />
+    <ItemGroup>
+      <Content Include="$(ExpectedTargetFrameworkMonikerFileInIntermediateFolder)" CopyToOutputDirectory="PreserveNewest" />
+      <FileWrites Include="$(ExpectedTargetFrameworkMonikerFileInIntermediateFolder)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
+    <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Sln.Internal\Microsoft.DotNet.Cli.Sln.Internal.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+    <PackageReference Include="System.ComponentModel.TypeConverter" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" />
+    <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
+    <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
+    <!-- This package comes from dotnet/runtime-assets -->
+    <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Global usings -->
+  <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
+  <ItemGroup>
+    <!-- Aliases -->
+    <!-- Note: '%3C' is for '<' and '%3E' is for '>' -->
+    <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli
         {
             HelpName = LocalizableStrings.SolutionArgumentName,
             Description = LocalizableStrings.SolutionArgumentDescription,
-            Arity = ArgumentArity.ExactlyOne
+            Arity = ArgumentArity.ZeroOrOne
         }.DefaultToCurrentDirectory();
 
         private static readonly CliCommand Command = ConstructCommand();

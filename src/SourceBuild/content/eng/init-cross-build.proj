@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="GenerateRootFs"
+          AfterTargets="Build">
+    <PropertyGroup>
+      <ArmEnvironmentVariables Condition="'$(ArmEnvironmentVariables)' == ''">ROOTFS_DIR=$(ArtifactsObjDir)crossrootfs/arm</ArmEnvironmentVariables>
+      <ArmEnvironmentVariables Condition="'$(Platform)' == 'armel'">ROOTFS_DIR=$(ArtifactsObjDir)crossrootfs/armel</ArmEnvironmentVariables>
+    </PropertyGroup>
+
+    <Exec Command="$(RepositoryEngineeringDir)common/cross/build-rootfs.sh"
+          EnvironmentVariables="$(ArmEnvironmentVariables)"
+          Condition="'$(TargetArchitecture)' != 'armel' and '$(BuildArchitecture)' != '$(TargetArchitecture)'" />
+    <Exec Command="$(RepositoryEngineeringDir)common/cross/armel/tizen-build-rootfs.sh"
+          EnvironmentVariables="$(ArmEnvironmentVariables)"
+          Condition="'$(TargetArchitecture)' == 'armel'" />
+  </Target>
+
+</Project>
