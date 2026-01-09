@@ -105,7 +105,6 @@ internal readonly struct TargetPlatformOptions
 
     public static string GetCurrentRuntimeId()
     {
-#if TODO
         // Get the dotnet directory, while ignoring custom msbuild resolvers
         string? dotnetRootPath = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
             key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
@@ -124,8 +123,6 @@ internal readonly struct TargetPlatformOptions
             throw new GracefulException(CommandDefinitionStrings.CannotResolveRuntimeIdentifier);
         }
         return currentRuntimeIdentifiers[0]; // First rid is the most specific (ex win-x64)
-#endif
-        return "win-x64";
     }
 
     private static string GetOsFromRid(string rid)

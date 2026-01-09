@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.DotNetSdkResolver
         private VSSettings()
         {
 #if NETFRAMEWORK
-            if (!Interop.RunningOnWindows)
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return;
             }
