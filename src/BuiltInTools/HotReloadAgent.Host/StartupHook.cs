@@ -22,6 +22,10 @@ internal sealed class StartupHook
 {
     private static readonly string? s_standardOutputLogPrefix = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages);
     private static readonly string? s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
+    private static readonly bool s_supportsConsoleColor = !OperatingSystem.IsAndroid()
+                                                       && !OperatingSystem.IsIOS()
+                                                       && !OperatingSystem.IsTvOS()
+                                                       && !OperatingSystem.IsBrowser();
 
 #if NET10_0_OR_GREATER
     private static PosixSignalRegistration? s_signalRegistration;
@@ -160,9 +164,17 @@ internal sealed class StartupHook
         var prefix = s_standardOutputLogPrefix;
         if (!string.IsNullOrEmpty(prefix))
         {
-            Console.ForegroundColor = ConsoleColor.DarkGray;
+            if (s_supportsConsoleColor)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+            }
+
             Console.Error.WriteLine($"{prefix} {message}");
-            Console.ResetColor();
+
+            if (s_supportsConsoleColor)
+            {
+                Console.ResetColor();
+            }
         }
     }
 }

@@ -610,6 +610,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_NetFrameworkHostedCompilersVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</_NetFrameworkHostedCompilersVersion>
     <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
     <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
+    <BundledNETCoreAppTargetFramework>net$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFramework>
     <BundledNETCoreAppPackageVersion>$(_NETCoreAppPackageVersion)</BundledNETCoreAppPackageVersion>
     <BundledNETStandardTargetFrameworkVersion>$(_NETStandardTargetFrameworkVersion)</BundledNETStandardTargetFrameworkVersion>
     <BundledNETStandardPackageVersion>$(_NETStandardLibraryPackageVersion)</BundledNETStandardPackageVersion>
