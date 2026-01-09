@@ -43,6 +43,7 @@ using Microsoft.DotNet.Cli.Commands.VSTest;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli;
@@ -378,7 +379,7 @@ public static class Parser
             {
                 new FsiForwardingApp(helpArgs).Execute();
             }
-            else if (command is TemplateEngine.Cli.Commands.ICustomHelp helpCommand)
+            else if (command is ICustomHelp helpCommand)
             {
                 var blocks = helpCommand.CustomHelpLayout();
                 foreach (var block in blocks)
