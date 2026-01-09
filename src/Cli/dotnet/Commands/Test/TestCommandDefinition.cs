@@ -50,12 +50,21 @@ internal static class TestCommandDefinition
 
         // This code path is hit exactly once during the whole life of the dotnet process.
         // So, no concern about caching JsonSerializerOptions.
-        var globalJson = JsonSerializer.Deserialize<GlobalJsonModel>(jsonText, new JsonSerializerOptions()
+        GlobalJsonModel? globalJson;
+        try
         {
-            AllowDuplicateProperties = false,
-            AllowTrailingCommas = false,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-        });
+            globalJson = JsonSerializer.Deserialize<GlobalJsonModel>(jsonText, new JsonSerializerOptions()
+            {
+                AllowDuplicateProperties = false,
+                AllowTrailingCommas = false,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+            });
+        }
+        catch (JsonException)
+        {
+            // If global.json is empty or contains invalid JSON, default to VSTest
+            return TestRunner.VSTest;
+        }
 
         var name = globalJson?.Test?.RunnerName;
 
