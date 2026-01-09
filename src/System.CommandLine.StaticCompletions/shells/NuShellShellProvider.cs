@@ -58,6 +58,9 @@ public class NushellShellProvider : IShellProvider
             WriteDynamicCompleter(writer, binaryName);
         }
 
+        // Write static completers for items with descriptions
+        WriteStaticCompleters(writer, completers);
+
         // Write extern definitions
         WriteExternDefinitions(writer, binaryName, [], command, completers);
 
@@ -162,6 +165,12 @@ public class NushellShellProvider : IShellProvider
     }
 
     /// <summary>
+    /// Returns true if any completion items have descriptions.
+    /// </summary>
+    private static bool HasDescriptions(CompletionItem[] items) =>
+        items.Any(i => i.Documentation is not null || i.Detail is not null);
+
+    /// <summary>
     /// Writes the dynamic completer function that calls back to the binary.
     /// </summary>
     private static void WriteDynamicCompleter(IndentedTextWriter writer, string binaryName)
@@ -174,6 +183,45 @@ public class NushellShellProvider : IShellProvider
         writer.WriteLine("}");
         writer.WriteLine();
     }
+
+    /// <summary>
+    /// Writes static completer functions for completions that have descriptions.
+    /// Simple completions without descriptions are inlined directly.
+    /// </summary>
+    private static void WriteStaticCompleters(
+        IndentedTextWriter writer,
+        Dictionary<string, CompletionItem[]> completers)
+    {
+        foreach (var (name, items) in completers)
+        {
+            if (!HasDescriptions(items))
+            {
+                continue; // Simple completions are inlined
+            }
+
+            writer.WriteLine($"def \"{CompleterDefName(name)}\" [] {{");
+            writer.Indent++;
+            writer.WriteLine("[");
+            writer.Indent++;
+            foreach (var item in items)
+            {
+                var value = SanitizeValue(item.InsertText ?? item.Label);
+                var desc = FirstSentence(SanitizeDescription(item.Documentation ?? item.Detail ?? item.Label));
+                writer.WriteLine($"{{ value: \"{value}\" description: \"{desc}\" }}");
+            }
+            writer.Indent--;
+            writer.WriteLine("]");
+            writer.Indent--;
+            writer.WriteLine("}");
+            writer.WriteLine();
+        }
+    }
+
+    /// <summary>
+    /// Generates a completer function name for static completions with descriptions.
+    /// </summary>
+    private static string CompleterDefName(string completerKey) =>
+        $"nu-complete {completerKey}";
 
     /// <summary>
     /// Recursively writes extern definitions for a command and all its subcommands.
@@ -263,10 +311,17 @@ public class NushellShellProvider : IShellProvider
             }
             else
             {
-                var completerName = CompleterName(commandPath, option.Name);
-                if (completers.TryGetValue(completerName, out var items))
+                var completerKey = CompleterName(commandPath, option.Name);
+                if (completers.TryGetValue(completerKey, out var items))
                 {
-                    sb.Append($"@{GenerateInlineCompleter(items)}");
+                    if (HasDescriptions(items))
+                    {
+                        sb.Append($"@\"{CompleterDefName(completerKey)}\"");
+                    }
+                    else
+                    {
+                        sb.Append($"@{GenerateInlineCompleter(items)}");
+                    }
                 }
             }
         }
@@ -319,10 +374,17 @@ public class NushellShellProvider : IShellProvider
         }
         else
         {
-            var completerName = CompleterName(commandPath, argument.Name);
-            if (completers.TryGetValue(completerName, out var items))
+            var completerKey = CompleterName(commandPath, argument.Name);
+            if (completers.TryGetValue(completerKey, out var items))
             {
-                sb.Append($"@{GenerateInlineCompleter(items)}");
+                if (HasDescriptions(items))
+                {
+                    sb.Append($"@\"{CompleterDefName(completerKey)}\"");
+                }
+                else
+                {
+                    sb.Append($"@{GenerateInlineCompleter(items)}");
+                }
             }
         }
 
