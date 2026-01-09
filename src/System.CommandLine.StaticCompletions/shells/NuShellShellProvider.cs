@@ -488,6 +488,8 @@ public class NushellShellProvider : IShellProvider
 
     /// <summary>
     /// Returns the first sentence of a string (up to the first period, or first line if no period).
+    /// Returns empty string if the first line ends with punctuation that indicates an incomplete thought.
+    /// Strips trailing period for consistency.
     /// </summary>
     private static string FirstSentence(string s)
     {
@@ -505,9 +507,16 @@ public class NushellShellProvider : IShellProvider
         // Take whichever comes first: end of first sentence or end of first line
         if (periodIdx >= 0 && (lineEnd < 0 || periodIdx < lineEnd))
         {
-            return s[..(periodIdx + 1)];
+            return s[..periodIdx]; // Exclude the period
         }
 
-        return lineEnd < 0 ? s : s[..lineEnd];
+        // No sentence found - use first line if it doesn't end with incomplete punctuation
+        var firstLine = lineEnd < 0 ? s : s[..lineEnd];
+        if (firstLine.Length > 0 && firstLine[^1] is ':' or ',' or ';')
+        {
+            return "";
+        }
+
+        return firstLine;
     }
 }
