@@ -140,84 +140,25 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestCommand.ContainsBuiltTestSources(parseResult, settingsCount).Should().Be(expectedContainsBuiltTestSource);
         }
 
-        [Fact]
-        public void CreateShouldHandleEmptyGlobalJson()
+        [Theory]
+        [InlineData("", "empty")]
+        [InlineData("{ invalid json }", "invalid")]
+        [InlineData(@"{ ""sdk"": { ""version"": ""8.0.0"" } }", "valid without test node")]
+        public void CreateShouldDefaultToVSTestForProblematicGlobalJson(string jsonContent, string description)
         {
             var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(tempDir);
             try
             {
                 var globalJsonPath = Path.Combine(tempDir, "global.json");
-                File.WriteAllText(globalJsonPath, "");
+                File.WriteAllText(globalJsonPath, jsonContent);
 
                 var originalDir = Environment.CurrentDirectory;
                 try
                 {
                     Environment.CurrentDirectory = tempDir;
                     var command = TestCommandDefinition.Create();
-                    command.Should().BeOfType<TestCommandDefinition.VSTest>();
-                }
-                finally
-                {
-                    Environment.CurrentDirectory = originalDir;
-                }
-            }
-            finally
-            {
-                if (Directory.Exists(tempDir))
-                {
-                    Directory.Delete(tempDir, true);
-                }
-            }
-        }
-
-        [Fact]
-        public void CreateShouldHandleInvalidGlobalJson()
-        {
-            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempDir);
-            try
-            {
-                var globalJsonPath = Path.Combine(tempDir, "global.json");
-                File.WriteAllText(globalJsonPath, "{ invalid json }");
-
-                var originalDir = Environment.CurrentDirectory;
-                try
-                {
-                    Environment.CurrentDirectory = tempDir;
-                    var command = TestCommandDefinition.Create();
-                    command.Should().BeOfType<TestCommandDefinition.VSTest>();
-                }
-                finally
-                {
-                    Environment.CurrentDirectory = originalDir;
-                }
-            }
-            finally
-            {
-                if (Directory.Exists(tempDir))
-                {
-                    Directory.Delete(tempDir, true);
-                }
-            }
-        }
-
-        [Fact]
-        public void CreateShouldHandleValidGlobalJsonWithoutTestNode()
-        {
-            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempDir);
-            try
-            {
-                var globalJsonPath = Path.Combine(tempDir, "global.json");
-                File.WriteAllText(globalJsonPath, @"{ ""sdk"": { ""version"": ""8.0.0"" } }");
-
-                var originalDir = Environment.CurrentDirectory;
-                try
-                {
-                    Environment.CurrentDirectory = tempDir;
-                    var command = TestCommandDefinition.Create();
-                    command.Should().BeOfType<TestCommandDefinition.VSTest>();
+                    command.Should().BeOfType<TestCommandDefinition.VSTest>($"because global.json is {description}");
                 }
                 finally
                 {
