@@ -12,6 +12,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32.Msi;
@@ -747,7 +748,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     public async Task ExtractManifestAsync(string nupkgPath, string targetPath)
     {
         Log?.LogMessage($"ExtractManifestAsync: Extracting '{nupkgPath}' to '{targetPath}'");
-        string extractionPath = PathUtilities.CreateTempSubdirectory();
+        string extractionPath = TemporaryDirectory.CreateSubdirectory();
 
         try
         {
@@ -1125,7 +1126,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
         if (nugetPackageDownloader == null)
         {
-            DirectoryPath tempPackagesDir = new(string.IsNullOrWhiteSpace(tempDirPath) ? PathUtilities.CreateTempSubdirectory() : tempDirPath);
+            DirectoryPath tempPackagesDir = new(string.IsNullOrWhiteSpace(tempDirPath) ? TemporaryDirectory.CreateSubdirectory() : tempDirPath);
 
             nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
                 filePermissionSetter: null, new FirstPartyNuGetPackageSigningVerifier(),

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
 using Microsoft.DotNet.Cli.Utils;
 using Parser = Microsoft.DotNet.Cli.Parser;
@@ -27,7 +28,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.GetValue(command.Parent.ProjectOrFileArgument)
                 .Should()
                 .BeEquivalentTo(
-                    PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
+                    PathUtilities.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
         }
 
         [Fact]

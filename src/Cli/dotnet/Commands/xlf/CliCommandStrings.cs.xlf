@@ -92,11 +92,6 @@
         <target state="translated">.NET Builder</target>
         <note />
       </trans-unit>
-      <trans-unit id="NoLogoOptionDescription">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>
-        <note />
-      </trans-unit>
       <trans-unit id="BuildConfigurationOptionDescription">
         <source>The configuration to use for building the project. The default for most projects is 'Debug'.</source>
         <target state="translated">Konfigurace použitá k sestavení projektu. Výchozí možností pro většinu projektů je Debug.</target>
