@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Hashing;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Build.Tasks
         /// </summary>
         public bool UseHardLinks { get; set; } = false;
 
-        private string LinkTypeName => UseHardLinks ? "hard links" : "symbolic links";
+        private string LinkType => UseHardLinks ? "hard link" : "symbolic link";
 
         public override bool Execute()
         {
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 return false;
             }
 
-            Log.LogMessage(MessageImportance.High, $"Scanning for duplicate assemblies in '{LayoutDirectory}' (using {LinkTypeName})...");
+            Log.LogMessage(MessageImportance.High, $"Scanning for duplicate assemblies in '{LayoutDirectory}' (using {LinkType}s)...");
 
             // Find all eligible files - only assemblies
             var files = Directory.GetFiles(LayoutDirectory, "*", SearchOption.AllDirectories)
@@ -128,23 +128,22 @@ namespace Microsoft.DotNet.Build.Tasks
                     }
                     catch (Exception ex)
                     {
-                        Log.LogError($"Failed to create {(UseHardLinks ? "hard link" : "symbolic link")} from '{duplicate.Path}' to '{master.Path}': {ex.Message}");
+                        Log.LogError($"Failed to create {LinkType} from '{duplicate.Path}' to '{master.Path}': {ex.Message}");
                         hasErrors = true;
                     }
                 }
             }
 
             Log.LogMessage(MessageImportance.High,
-                $"Deduplication complete: {totalFilesDeduped} files replaced with {LinkTypeName}, saving {totalBytesSaved / (1024.0 * 1024.0):F2} MB.");
+                $"Deduplication complete: {totalFilesDeduped} files replaced with {LinkType}s, saving {totalBytesSaved / (1024.0 * 1024.0):F2} MB.");
 
             return !hasErrors;
         }
 
         private string ComputeFileHash(string filePath)
         {
-            using var sha256 = SHA256.Create();
-            using var stream = File.OpenRead(filePath);
-            var hashBytes = sha256.ComputeHash(stream);
+            byte[] fileBytes = File.ReadAllBytes(filePath);
+            var hashBytes = XxHash64.Hash(fileBytes);
             return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         }
 
@@ -168,7 +167,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
             if (UseHardLinks)
             {
-                // TODO: Replace P/Invoke with File.CreateHardLink() when SDK targets .NET 11+
+                // TODO: Replace P/Invoke with File.CreateHardLink(masterFilePath, duplicateFilePath); when SDK targets .NET 11+
                 // See: https://github.com/dotnet/runtime/issues/69030
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
@@ -211,7 +210,6 @@ namespace Microsoft.DotNet.Build.Tasks
             return true;
         }
 
-        // P/Invoke declarations
         [DllImport("kernel32.dll", EntryPoint = "CreateHardLinkW", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern bool CreateHardLinkWin32(
             string lpFileName,
