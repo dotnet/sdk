@@ -6,7 +6,7 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Help;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Help;
 
 public partial class HelpBuilder
 {
@@ -222,7 +222,7 @@ public partial class HelpBuilder
             var aliases = aliasSet is null
                 ? new[] { symbol.Name }
                 : new[] { symbol.Name }.Concat(aliasSet)
-                                .Select(r => r.SplitPrefix())
+                                .Select(SplitPrefix)
                                 .OrderBy(r => r.Prefix, StringComparer.OrdinalIgnoreCase)
                                 .ThenBy(r => r.Alias, StringComparer.OrdinalIgnoreCase)
                                 .GroupBy(t => t.Alias)
@@ -231,7 +231,7 @@ public partial class HelpBuilder
 
             var firstColumnText = string.Join(", ", aliases);
 
-            foreach (var argument in symbol.GetParameters())
+            foreach (var argument in GetParameters(symbol))
             {
                 if (!argument.Hidden)
                 {
@@ -251,5 +251,25 @@ public partial class HelpBuilder
 
             return firstColumnText;
         }
+
+        private static (string? Prefix, string Alias) SplitPrefix(string rawAlias)
+        {
+            if (rawAlias[0] == '/')
+            {
+                return ("/", rawAlias.Substring(1));
+            }
+            else if (rawAlias[0] == '-')
+            {
+                if (rawAlias.Length > 1 && rawAlias[1] == '-')
+                {
+                    return ("--", rawAlias.Substring(2));
+                }
+
+                return ("-", rawAlias.Substring(1));
+            }
+
+            return (null, rawAlias);
+        }
+
     }
 }
