@@ -185,7 +185,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <JoinItems Left="@(_ApplicableKnownFrameworkReference)"
                Right="@(FrameworkReference)"
                LeftMetadata="*"
-               RightMetadata="TargetingPackVersion;RuntimeFrameworkVersion;RuntimePackLabels;TargetLatestRuntimePatch"
+               RightMetadata="IsImplicitlyDefined;PrivateAssets;Pack"
                ItemSpecToUse="Left">
       <Output TaskParameter="JoinResult" ItemName="_JoinedFrameworkReference" />
     </JoinItems>
@@ -235,29 +235,28 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_CreateTargetingPackItems"
           DependsOnTargets="_SelectRuntimePacksByLabels">
     <ItemGroup>
-      <_TargetingPack Include="@(_JoinedFrameworkReference)">
-        <NuGetPackageId>%(_JoinedFrameworkReference.TargetingPackName)</NuGetPackageId>
-        <NuGetPackageVersion>%(_JoinedFrameworkReference.TargetingPackVersion)</NuGetPackageVersion>
-        <TargetingPackFormat>%(_JoinedFrameworkReference.TargetingPackFormat)</TargetingPackFormat>
-        <TargetFramework>%(_JoinedFrameworkReference.TargetFramework)</TargetFramework>
-        <RuntimeFrameworkName>%(_JoinedFrameworkReference.RuntimeFrameworkName)</RuntimeFrameworkName>
-        <Profile>%(_JoinedFrameworkReference.Profile)</Profile>
-        <!-- Check if pack exists locally in any pack root -->
-        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_JoinedFrameworkReference.TargetingPackName)\%(_JoinedFrameworkReference.TargetingPackVersion)')">$(NetCoreTargetingPackRoot)\%(_JoinedFrameworkReference.TargetingPackName)\%(_JoinedFrameworkReference.TargetingPackVersion)</PackageDirectory>
+      <_TargetingPack Include="@(_JoinedFrameworkReference)" KeepMetadata="Profile;WasReferencedDirectly;TargetFramework;TargetingPackFormat;RuntimeFrameworkName;TargetingPackName;TargetingPackVersion" />
+      <_TargetingPack>
+        <NuGetPackageId>%(_TargetingPack.TargetingPackName)</NuGetPackageId>
+        <NuGetPackageVersion>%(_TargetingPack.TargetingPackVersion)</NuGetPackageVersion>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_TargetingPack.TargetingPackName)\%(_TargetingPack.TargetingPackVersion)')">$(NetCoreTargetingPackRoot)\%(_TargetingPack.TargetingPackName)\%(_TargetingPack.TargetingPackVersion)</PackageDirectory>
       </_TargetingPack>
       <_TargetingPack>
         <Path>%(_TargetingPack.PackageDirectory)</Path>
       </_TargetingPack>
       <TargetingPack Include="@(_TargetingPack)" />
+      <_TargetingPack Remove="@(_TargetingPack)" />
     </ItemGroup>
 
     <!-- Add targeting packs to download list if not found locally and downloads enabled -->
     <ItemGroup Condition="'$(EnableTargetingPackDownload)' == 'true'">
-      <_PackageToDownload Include="@(TargetingPack->'%(TargetingPackName)')"
-        Condition="'%(TargetingPack.PackageDirectory)' == '' AND
-                   ('%(TargetingPack.WasReferencedDirectly)' == 'true' OR '$(DisableTransitiveFrameworkReferenceDownloads)' != 'true')">
-        <Version>%(TargetingPack.NuGetPackageVersion)</Version>
-      </_PackageToDownload>
+      <_TargetingPackPackage
+        Include="@(TargetingPack->'%(NuGetPackageId)')"
+        KeepDuplicates="false"
+        KeepMetadata="NuGetPackageVersion;WasReferencedDirectly"
+        Version="%(TargetingPack.NuGetPackageVersion)"
+        Condition= "'%(TargetingPack.WasReferencedDirectly)' == 'true' OR '$(DisableTransitiveFrameworkReferenceDownloads)' != 'true'"/>
+      <_PackageToDownload Include="@(_TargetingPackPackage)" KeepMetadata="Version" />
     </ItemGroup>
 
     <!-- Build PackageConflictPreferredPackages list -->
@@ -274,6 +273,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <TargetingPack>
         <PackageConflictPreferredPackages>$(_PackageConflictPreferredPackages)</PackageConflictPreferredPackages>
       </TargetingPack>
+      <_PreferredPackage Remove="@(_PreferredPackage)" />
     </ItemGroup>
   </Target>
 
@@ -305,14 +305,18 @@ Copyright (c) .NET Foundation. All rights reserved.
       </_RuntimePackWithRid>
 
       <!-- Substitute **RID** placeholder -->
-      <RuntimePack Include="@(_RuntimePackWithRid->'%(Identity)'.Replace('**RID**', '%(MatchedRid)'))">
-        <NuGetPackageId>%(RuntimePack.Identity)</NuGetPackageId>
+      <_RuntimePack Include="@(_RuntimePackWithRid->'%(Identity)'.Replace('**RID**', '%(MatchedRid)'))" KeepMetadata="FrameworkName;IsTrimmable">
+        <NuGetPackageId>%(_RuntimePack.Identity)</NuGetPackageId>
         <NuGetPackageVersion>%(_RuntimePackWithRid.LatestVersion)</NuGetPackageVersion>
-        <FrameworkName>%(_RuntimePackWithRid.FrameworkName)</FrameworkName>
         <RuntimeIdentifier>%(_RuntimePackWithRid.MatchedRid)</RuntimeIdentifier>
-        <IsTrimmable>%(_RuntimePackWithRid.IsTrimmable)</IsTrimmable>
-        <RuntimePackAlwaysCopyLocal>%(_RuntimePackWithRid.RuntimePackAlwaysCopyLocal)</RuntimePackAlwaysCopyLocal>
-      </RuntimePack>
+        <RuntimePackAlwaysCopyLocal Condition="'%(_RuntimePackWithRid.RuntimePackAlwaysCopyLocal)' == 'true'">true</RuntimePackAlwaysCopyLocal>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_RuntimePack.Identity)\%(_RuntimePackWithRid.LatestVersion)')">$(NetCoreTargetingPackRoot)\%(_RuntimePack.Identity)\%(_RuntimePackWithRid.LatestVersion)</PackageDirectory>
+      </_RuntimePack>
+      <_RuntimePack>
+        <Path>%(_RuntimePack.PackageDirectory)</Path>
+      </_RuntimePack>
+      <RuntimePack Include="@(_RuntimePack)" />
+      <_RuntimePack Remove="@(_RuntimePack)" />
     </ItemGroup>
 
     <!-- Add to download list if not found locally -->
@@ -394,11 +398,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Create Crossgen2Pack item -->
     <ItemGroup Condition="'@(_Crossgen2HostRid)' != ''">
-      <Crossgen2Pack Include="@(_ApplicableCrossgen2Pack->'%(Crossgen2PackNamePattern)'.Replace('**RID**', '%(_Crossgen2HostRid.Identity)'))">
-        <NuGetPackageId>%(Crossgen2Pack.Identity)</NuGetPackageId>
+      <_Crossgen2Pack Include="@(_ApplicableCrossgen2Pack->'%(Crossgen2PackNamePattern)'.Replace('**RID**', '%(_Crossgen2HostRid.Identity)'))">
+        <NuGetPackageId>%(_Crossgen2Pack.Identity)</NuGetPackageId>
         <NuGetPackageVersion>%(_ApplicableCrossgen2Pack.Crossgen2PackVersion)</NuGetPackageVersion>
         <RuntimeIdentifier>%(_Crossgen2HostRid.Identity)</RuntimeIdentifier>
-      </Crossgen2Pack>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_Crossgen2Pack.Identity)\%(_ApplicableCrossgen2Pack.Crossgen2PackVersion)')">$(NetCoreTargetingPackRoot)\%(_Crossgen2Pack.Identity)\%(_ApplicableCrossgen2Pack.Crossgen2PackVersion)</PackageDirectory>
+      </_Crossgen2Pack>
+      <_Crossgen2Pack>
+        <Path>%(_Crossgen2Pack.PackageDirectory)</Path>
+      </_Crossgen2Pack>
+      <Crossgen2Pack Include="@(_Crossgen2Pack)" />
+      <_Crossgen2Pack Remove="@(_Crossgen2Pack)" />
     </ItemGroup>
 
     <!-- Add to download list if needed -->
@@ -436,11 +446,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Create host ILCompiler pack -->
     <ItemGroup Condition="'@(_ILCompilerHostRid)' != ''">
-      <HostILCompilerPack Include="@(_ApplicableILCompilerPack->'%(ILCompilerPackNamePattern)'.Replace('**RID**', '%(_ILCompilerHostRid.Identity)'))">
-        <NuGetPackageId>%(HostILCompilerPack.Identity)</NuGetPackageId>
+      <_HostILCompilerPack Include="@(_ApplicableILCompilerPack->'%(ILCompilerPackNamePattern)'.Replace('**RID**', '%(_ILCompilerHostRid.Identity)'))">
+        <NuGetPackageId>%(_HostILCompilerPack.Identity)</NuGetPackageId>
         <NuGetPackageVersion>%(_ApplicableILCompilerPack.ILCompilerPackVersion)</NuGetPackageVersion>
         <RuntimeIdentifier>%(_ILCompilerHostRid.Identity)</RuntimeIdentifier>
-      </HostILCompilerPack>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_HostILCompilerPack.Identity)\%(_ApplicableILCompilerPack.ILCompilerPackVersion)')">$(NetCoreTargetingPackRoot)\%(_HostILCompilerPack.Identity)\%(_ApplicableILCompilerPack.ILCompilerPackVersion)</PackageDirectory>
+      </_HostILCompilerPack>
+      <_HostILCompilerPack>
+        <Pack>%(_HostILCompilerPack.Identity)</Pack>
+      </_HostILCompilerPack>
+      <HostILCompilerPack Include="@(_HostILCompilerPack)" />
+      <_HostILCompilerPack Remove="@(_HostILCompilerPack)" />
     </ItemGroup>
 
     <!-- Find best target RID(s) for cross-compilation -->
@@ -471,11 +487,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Create target ILCompiler packs for cross-compilation scenarios -->
     <ItemGroup Condition="'@(_DistinctILCompilerTargetRid)' != ''">
-      <TargetILCompilerPack Include="@(_ApplicableILCompilerPack->'%(ILCompilerPackNamePattern)'.Replace('**RID**', '%(_DistinctILCompilerTargetRid.Identity)'))">
-        <NuGetPackageId>%(TargetILCompilerPack.Identity)</NuGetPackageId>
+      <_TargetILCompilerPack Include="@(_ApplicableILCompilerPack->'%(ILCompilerPackNamePattern)'.Replace('**RID**', '%(_DistinctILCompilerTargetRid.Identity)'))">
+        <NuGetPackageId>%(_TargetILCompilerPack.Identity)</NuGetPackageId>
         <NuGetPackageVersion>%(_ApplicableILCompilerPack.ILCompilerPackVersion)</NuGetPackageVersion>
         <RuntimeIdentifier>%(_DistinctILCompilerTargetRid.Identity)</RuntimeIdentifier>
-      </TargetILCompilerPack>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_TargetILCompilerPack.Identity)\%(_ApplicableILCompilerPack.ILCompilerPackVersion)')">$(NetCoreTargetingPackRoot)\%(_TargetILCompilerPack.Identity)\%(_ApplicableILCompilerPack.ILCompilerPackVersion)</PackageDirectory>
+      </_TargetILCompilerPack>
+      <_TargetILCompilerPack>
+        <Pack>%(_TargetILCompilerPack.Identity)</Pack>
+      </_TargetILCompilerPack>
+      <TargetILCompilerPack Include="@(_TargetILCompilerPack)" />
+      <_TargetILCompilerPack Remove="@(_TargetILCompilerPack)" />
     </ItemGroup>
 
     <!-- Add to download list if needed -->
@@ -568,11 +590,58 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Only create RuntimeFramework items for frameworks that aren't always copy-local -->
       <RuntimeFramework Include="@(_JoinedFrameworkReference)"
         Condition="'%(_JoinedFrameworkReference.RuntimePackAlwaysCopyLocal)' != 'true' AND
-                   '%(_JoinedFrameworkReference.RuntimeFrameworkName)' != ''">
-        <Version>%(_JoinedFrameworkReference.RuntimeFrameworkVersion)</Version>
+                   '%(_JoinedFrameworkReference.RuntimeFrameworkName)' != ''"
+        KeepMetadata="Profile">
+        <Version>%(_JoinedFrameworkReference.DefaultRuntimeFrameworkVersion)</Version>
         <FrameworkName>%(_JoinedFrameworkReference.Identity)</FrameworkName>
-        <Profile>%(_JoinedFrameworkReference.Profile)</Profile>
       </RuntimeFramework>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Extract known runtime identifier platforms from Microsoft.NETCore.App runtime packs.
+    Used for validating runtime assets in .NET 8+.
+    -->
+  <Target Name="_CreateKnownRuntimeIdentifierPlatforms"
+          DependsOnTargets="_FilterApplicableFrameworkReferences">
+    <ItemGroup>
+      <!-- Get all Microsoft.NETCore.App runtime packs and framework references for this target framework -->
+      <_NetCoreAppRuntimePack Include="@(_ApplicableKnownFrameworkReference);@(_ApplicableKnownRuntimePack)"
+        Condition="'%(Identity)' == 'Microsoft.NETCore.App'" />
+
+      <!-- Split RuntimePackRuntimeIdentifiers by semicolon to create individual RID items -->
+      <_RuntimePackRid Include="%(_NetCoreAppRuntimePack.RuntimePackRuntimeIdentifiers)" />
+    </ItemGroup>
+    <!-- Remove duplicates to get unique rids -->
+    <RemoveDuplicates Inputs="@(_RuntimePackRid)">
+      <Output TaskParameter="Filtered" ItemName="_DeduplicatedRuntimePackRid" />
+    </RemoveDuplicates>
+
+    <ItemGroup>
+      <_DeduplicatedRuntimePackRid>
+        <Platform Condition="$([System.String]::Copy(%(_DeduplicatedRuntimePackRid.Identity)).LastIndexOf('-')) &gt; 0">$([System.String]::Copy(%(_DeduplicatedRuntimePackRid.Identity)).Substring(0, $([System.String]::Copy(%(_DeduplicatedRuntimePackRid.Identity)).LastIndexOf('-'))))</Platform>
+      </_DeduplicatedRuntimePackRid>
+
+      <!-- Extract platform from each RID (everything before last '-') -->
+      <!-- For RIDs like 'win-x64', extract 'win'. For 'linux-x64', extract 'linux' -->
+      <_RuntimeIdentifierPlatform
+        Include="@(_DeduplicatedRuntimePackRid->'%(Platform)')" />
+
+      <!-- For RIDs without '-', use the whole RID as platform -->
+      <_RuntimeIdentifierPlatform Include="%(_DeduplicatedRuntimePackRid.Identity)"
+        Condition="$([System.String]::Copy('%(_DeduplicatedRuntimePackRid.Identity)').LastIndexOf('-')) &lt; 0" />
+    </ItemGroup>
+
+    <!-- Remove duplicates to get unique platforms -->
+    <RemoveDuplicates Inputs="@(_RuntimeIdentifierPlatform)">
+      <Output TaskParameter="Filtered" ItemName="_KnownRuntimeIdentifierPlatformsForTargetFramework" />
+    </RemoveDuplicates>
+
+    <!-- Clean up intermediate items -->
+    <ItemGroup>
+      <_NetCoreAppRuntimePack Remove="@(_NetCoreAppRuntimePack)" />
+      <_RuntimePackRid Remove="@(_RuntimePackRid)" />
+      <_RuntimeIdentifierPlatform Remove="@(_RuntimeIdentifierPlatform)" />
     </ItemGroup>
   </Target>
 
@@ -631,7 +700,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                            _ResolveILLinkPack;
                            _ResolveWebAssemblySdkPack;
                            _ResolveAspNetCorePack;
-                           _CreateRuntimeFrameworkItems">
+                           _CreateRuntimeFrameworkItems;
+                           _CreateKnownRuntimeIdentifierPlatforms">
     <!-- All work done in dependencies -->
   </Target>
 
