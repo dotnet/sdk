@@ -318,7 +318,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var workloadResolver = WorkloadResolver.CreateForTests(workloadManifestProvider, dotnetRoot);
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
             var installationRepo = new MockInstallationRecordRepository();
-            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot));
+            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot), displayManifestUpdates: true);
 
             var offlineCacheDir = "";
             if (useOfflineCache)
@@ -347,6 +347,48 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             //  Assert
             _reporter.Lines.Should().NotContain(l => l.ToLowerInvariant().Contains("fail"));
             _reporter.Lines.Should().Contain(string.Format(CliCommandStrings.AdManifestPackageDoesNotExist, testManifestName));
+        }
+
+        [Fact]
+        public async Task ItSuppressesMessagesWhenDisplayManifestUpdatesIsFalse()
+        {
+            //  Test that advertising manifest messages are suppressed when displayManifestUpdates is false
+
+            //  Arrange
+            string sdkFeatureBand = "6.0.300";
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var dotnetRoot = Path.Combine(testDir, "dotnet");
+
+            var emptyInstalledManifestsDir = Path.Combine(dotnetRoot, "sdk-manifests", "6.0.200");
+            Directory.CreateDirectory(emptyInstalledManifestsDir);
+
+            var adManifestDir = Path.Combine(testDir, ".dotnet", "sdk-advertising", sdkFeatureBand);
+            Directory.CreateDirectory(adManifestDir);
+
+            string testManifestName = "test-manifest";
+            Directory.CreateDirectory(Path.Combine(emptyInstalledManifestsDir, testManifestName));
+            File.WriteAllText(Path.Combine(emptyInstalledManifestsDir, testManifestName, _manifestFileName), GetManifestContent(new ManifestVersion("1.0.0")));
+
+            var workloadManifestProvider = new MockManifestProvider((testManifestName, Path.Combine(emptyInstalledManifestsDir, testManifestName, _manifestFileName), "1.0.0", "6.0.200"))
+            {
+                SdkFeatureBand = new SdkFeatureBand(sdkFeatureBand)
+            };
+
+            var workloadResolver = WorkloadResolver.CreateForTests(workloadManifestProvider, dotnetRoot);
+            var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
+            var installationRepo = new MockInstallationRecordRepository();
+            // Create updater with displayManifestUpdates: false (simulating non-diagnostic verbosity)
+            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot), displayManifestUpdates: false);
+
+            nugetDownloader.PackageIdsToNotFind.Add($"{testManifestName}.Manifest-6.0.300");
+            nugetDownloader.PackageIdsToNotFind.Add($"{testManifestName}.Manifest-6.0.200");
+
+            //  Act
+            await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true);
+
+            //  Assert - messages should be suppressed
+            _reporter.Lines.Should().NotContain(l => l.ToLowerInvariant().Contains("fail"));
+            _reporter.Lines.Should().NotContain(string.Format(CliCommandStrings.AdManifestPackageDoesNotExist, testManifestName));
         }
 
         [Theory]
@@ -384,7 +426,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var workloadResolver = WorkloadResolver.CreateForTests(workloadManifestProvider, dotnetRoot);
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
             var installationRepo = new MockInstallationRecordRepository();
-            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot));
+            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot), displayManifestUpdates: true);
 
             var offlineCacheDir = "";
             if (useOfflineCache)
