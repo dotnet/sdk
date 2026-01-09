@@ -405,10 +405,26 @@ namespace EndToEnd.Tests
             string dotnetFolder = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 10)
+            if (template.StartsWith("winforms")
+               || template.StartsWith("wpf")
+               || template.StartsWith("web")
+               || template.StartsWith("razor")
+               || template.StartsWith("blazor")
+               || template.StartsWith("mvc")
+               || template.StartsWith("worker")
+               || template.StartsWith("grpc"))
             {
-                return $"net{latestMajorVersion}.0";
+                return $"net10.0";
             }
+            else
+            {
+                return $"net11.0";
+            }
+            //NET11TFM bring this back once we have an 11 runtime
+            //if (latestMajorVersion == 10)
+            //{
+            //    return $"net{latestMajorVersion}.0";
+            //}
 
             throw new Exception("Unsupported version of SDK");
         }
@@ -465,6 +481,9 @@ namespace EndToEnd.Tests
                     // Remove this (or formalize it) after https://github.com/dotnet/installer/issues/12479 is resolved.
                     .. language == "F#" ? ["/p:_NETCoreSdkIsPreview=true"] : Array.Empty<string>(),
                     .. needsEnableWindowsTargeting ? ["/p:EnableWindowsTargeting=true"] : Array.Empty<string>(),
+                    // NET11TFM Remove once we have a net11 runtime
+                    .. new string[] { "/p:NETCoreAppMaximumVersion=11.0" },
+                    .. new string[] { "/p:AllowMissingPrunePackageData=true" },
                     $"/bl:{templateName}-{(selfContained ? "selfcontained" : "fdd")}-{language}-{framework}-{{}}.binlog"
                 ];
 

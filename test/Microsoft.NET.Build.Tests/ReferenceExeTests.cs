@@ -332,7 +332,7 @@ public class ReferencedExeProgram
             var testConsoleProject = new TestProject("ConsoleApp")
             {
                 IsExe = true,
-                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                TargetFrameworks = ToolsetInfo.NextTargetFramework,
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
@@ -476,7 +476,7 @@ public class ReferencedExeProgram
             var testConsoleProject = new TestProject("ConsoleApp")
             {
                 IsExe = true,
-                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                TargetFrameworks = ToolsetInfo.NextTargetFramework,
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
