@@ -495,10 +495,21 @@ public class NushellShellProvider : IShellProvider
     {
         s = s.Trim();
 
-        var periodIdx = s.IndexOf(". ");
         var lineEnd = s.IndexOfAny(['\r', '\n']);
 
-        // If period not found, check for period at end of string
+        // Find sentence-ending period: ". " followed by uppercase letter (new sentence)
+        // This avoids matching periods in acronyms like ".NET"
+        var periodIdx = -1;
+        for (var i = 0; i < s.Length - 2; i++)
+        {
+            if (s[i] == '.' && s[i + 1] == ' ' && char.IsUpper(s[i + 2]))
+            {
+                periodIdx = i;
+                break;
+            }
+        }
+
+        // If no sentence-ending period found, check for period at end of string
         if (periodIdx < 0 && s.EndsWith('.'))
         {
             periodIdx = s.Length - 1;
@@ -511,10 +522,16 @@ public class NushellShellProvider : IShellProvider
         }
 
         // No sentence found - use first line if it doesn't end with incomplete punctuation
-        var firstLine = lineEnd < 0 ? s : s[..lineEnd];
+        var firstLine = (lineEnd < 0 ? s : s[..lineEnd]).TrimEnd();
         if (firstLine.Length > 0 && firstLine[^1] is ':' or ',' or ';')
         {
             return "";
+        }
+
+        // Strip trailing period from first line for consistency
+        if (firstLine.EndsWith('.'))
+        {
+            return firstLine[..^1];
         }
 
         return firstLine;
