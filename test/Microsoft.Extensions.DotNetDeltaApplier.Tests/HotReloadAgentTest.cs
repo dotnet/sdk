@@ -10,6 +10,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
     public class HotReloadAgentTest
     {
         [Fact]
+        public void RemoveCurrentAssembly_ReturnsEmptyString_WhenEnvironmentIsNull()
+        {
+            Assert.Equal("",
+                HotReloadAgent.RemoveCurrentAssembly(typeof(StartupHook), null));
+        }
+
+        [Fact]
+        public void RemoveCurrentAssembly_ReturnsEmptyString_WhenEnvironmentIsEmpty()
+        {
+            Assert.Equal("",
+                HotReloadAgent.RemoveCurrentAssembly(typeof(StartupHook), ""));
+        }
+
+        [Fact]
         public void ClearHotReloadEnvironmentVariables_ClearsStartupHook()
         {
             Assert.Equal("",
