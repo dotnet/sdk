@@ -28,7 +28,7 @@ public class CommandLineInfo
         Reporter.Output.WriteLine($" MSBuild version:   {MSBuildForwardingAppWithoutLogging.MSBuildVersion}");
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotNetRuntimeInfoLabel}");
-        Reporter.Output.WriteLine($" OS SolutionFolderOptionName:     {RuntimeEnvironment.OperatingSystem}");
+        Reporter.Output.WriteLine($" OS Name:     {RuntimeEnvironment.OperatingSystem}");
         Reporter.Output.WriteLine($" OS Version:  {RuntimeEnvironment.OperatingSystemVersion}");
         Reporter.Output.WriteLine($" OS Platform: {RuntimeEnvironment.OperatingSystemPlatform}");
         Reporter.Output.WriteLine($" RID:         {GetDisplayRid(versionFile)}");
