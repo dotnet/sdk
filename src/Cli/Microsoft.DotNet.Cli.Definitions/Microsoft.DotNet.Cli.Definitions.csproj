@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SdkSrcRoot)Common\WorkloadSetVersion.cs"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="dotnet" />
     <InternalsVisibleTo Include="dotnet-watch" />
     <InternalsVisibleTo Include="dotnet.Tests" />
