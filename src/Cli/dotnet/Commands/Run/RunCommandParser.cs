@@ -21,7 +21,7 @@ internal static class RunCommandParser
         command.SetAction(RunCommand.Run);
         command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
         command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
-        command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RunTimesFromProjectFile);
+        command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RuntimesFromProjectFile);
         return command;
     }
 }
