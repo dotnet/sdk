@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Cli
         public static Argument<PackageIdentityWithRange?> CreateOptionalPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
             new(PackageIdArgumentName)
             {
-                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
+                Description = string.Format(CommandDefinitionStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = argumentResult => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
                 Arity = ArgumentArity.ZeroOrOne,
                 IsDynamic = true
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli
         public static Argument<PackageIdentityWithRange> CreateRequiredPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
             new(PackageIdArgumentName)
             {
-                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
+                Description = string.Format(CommandDefinitionStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = argumentResult => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
                 Arity = ArgumentArity.ExactlyOne,
                 IsDynamic = true
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli
 
             if (string.IsNullOrEmpty(packageId))
             {
-                throw new GracefulException(CliStrings.PackageIdentityArgumentIdOrVersionIsNull);
+                throw new GracefulException(CommandDefinitionStrings.PackageIdentityArgumentIdOrVersionIsNull);
             }
 
             if (string.IsNullOrEmpty(versionString))
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli
 
             if (!VersionRange.TryParse(versionString, out var versionRange))
             {
-                throw new GracefulException(string.Format(CliStrings.InvalidVersion, versionString));
+                throw new GracefulException(string.Format(CommandDefinitionStrings.InvalidVersion, versionString));
             }
 
             return new PackageIdentityWithRange(packageId, versionRange);

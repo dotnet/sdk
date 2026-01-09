@@ -9,9 +9,9 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli.Commands.Store;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Store;
 
-public class StoreCommand : MSBuildForwardingApp
+public sealed class StoreCommand : MSBuildForwardingApp
 {
     private StoreCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null)
         : base(msbuildArgs, msbuildPath)
@@ -26,18 +26,20 @@ public class StoreCommand : MSBuildForwardingApp
 
     public static StoreCommand FromParseResult(ParseResult result, string msbuildPath = null)
     {
+        var definition = (StoreCommandDefinition)result.CommandResult.Command;
+
         List<string> msbuildArgs = ["--target:ComposeStore"];
 
         result.ShowHelpOrErrorIfAppropriate();
 
-        if (!result.HasOption(StoreCommandDefinition.ManifestOption))
+        if (!result.HasOption(definition.ManifestOption))
         {
             throw new GracefulException(CliCommandStrings.SpecifyManifests);
         }
 
-        msbuildArgs.AddRange(result.OptionValuesToBeForwarded(StoreCommandParser.GetCommand()));
+        msbuildArgs.AddRange(result.OptionValuesToBeForwarded(definition));
 
-        msbuildArgs.AddRange(result.GetValue(StoreCommandDefinition.Argument) ?? []);
+        msbuildArgs.AddRange(result.GetValue(definition.Argument) ?? []);
 
         return new StoreCommand(msbuildArgs, msbuildPath);
     }

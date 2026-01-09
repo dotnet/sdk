@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -56,7 +57,7 @@ internal class FileBasedInstaller : IInstaller
     {
         _userProfileDir = userProfileDir;
         _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
-        _tempPackagesDir = new DirectoryPath(tempDirPath ?? PathUtilities.CreateTempSubdirectory());
+        _tempPackagesDir = new DirectoryPath(tempDirPath ?? TemporaryDirectory.CreateSubdirectory());
         ILogger logger = verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
         _restoreActionConfig = restoreActionConfig;
         _nugetPackageDownloader = nugetPackageDownloader ??

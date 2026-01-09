@@ -92,11 +92,6 @@
         <target state="translated">Générateur .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="NoLogoOptionDescription">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">N'affiche pas la bannière de démarrage ni le message de copyright.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="BuildConfigurationOptionDescription">
         <source>The configuration to use for building the project. The default for most projects is 'Debug'.</source>
         <target state="translated">Configuration à utiliser pour la génération du projet. La valeur par défaut pour la plupart des projets est 'Debug'.</target>

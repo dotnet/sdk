@@ -22,4 +22,8 @@
     <ProjectReference Include="..\Microsoft.DotNet.Cli.CommandLine\Microsoft.DotNet.Cli.CommandLine.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="CommandDefinitionStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
+  </ItemGroup>
 </Project>

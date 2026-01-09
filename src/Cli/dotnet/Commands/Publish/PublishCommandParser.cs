@@ -19,6 +19,8 @@ internal static class PublishCommandParser
     {
         var command = new PublishCommandDefinition();
         command.SetAction(PublishCommand.Run);
+        command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
+        command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
         command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RunTimesFromProjectFile);
         return command;
     }

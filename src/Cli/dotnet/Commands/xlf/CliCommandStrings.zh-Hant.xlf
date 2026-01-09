@@ -92,11 +92,6 @@
         <target state="translated">.NET 產生器</target>
         <note />
       </trans-unit>
-      <trans-unit id="NoLogoOptionDescription">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">不顯示啟始資訊或著作權訊息。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="BuildConfigurationOptionDescription">
         <source>The configuration to use for building the project. The default for most projects is 'Debug'.</source>
         <target state="translated">要用於建置專案的組態。大部分的專案預設為「偵錯」。</target>
