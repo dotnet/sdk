@@ -15,11 +15,11 @@ variables:
 - name: almaLinuxContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-source-build
 - name: alpineContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-amd64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.23-amd64
 - name: centOSStreamContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 - name: fedoraContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-41
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-43-amd64
 - name: ubuntuContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04
 - name: ubuntuArmContainer
@@ -48,11 +48,11 @@ variables:
 - name: almaLinuxName
   value: AlmaLinux8
 - name: alpineName
-  value: Alpine321
+  value: Alpine323
 - name: centOSStreamName
   value: CentOSStream9
 - name: fedoraName
-  value: Fedora41
+  value: Fedora43
 - name: ubuntuName
   value: Ubuntu2404
 
@@ -65,11 +65,11 @@ variables:
 - name: linuxMuslArm64Rid
   value: linux-musl-arm64
 - name: alpineX64Rid
-  value: alpine.3.21-x64
+  value: alpine.3.23-x64
 - name: centOSStreamX64Rid
   value: centos.9-x64
 - name: fedoraX64Rid
-  value: fedora.41-x64
+  value: fedora.43-x64
 - name: ubuntux64Rid
   value: ubuntu.24.04-x64
 - name: ubuntuArm64Rid
