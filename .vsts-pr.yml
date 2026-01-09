@@ -57,7 +57,7 @@ stages:
         name: Azure Pipelines
         vmImage: macOS-latest
         os: macOS
-      helixTargetQueue: osx.13.amd64.open
+      helixTargetQueue: osx.15.amd64.open
 
   ############### SOURCE BUILD ###############
   - template: /eng/common/templates/job/source-build.yml
