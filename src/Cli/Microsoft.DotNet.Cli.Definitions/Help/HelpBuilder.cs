@@ -3,7 +3,7 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Help;
 
 /// <summary>
 /// Formats output to be shown to users to describe how to use a command line tool.
@@ -243,7 +243,7 @@ public partial class HelpBuilder
 
         string GetSymbolDefaultValue(Symbol symbol)
         {
-            var arguments = symbol.GetParameters();
+            var arguments = GetParameters(symbol);
             var defaultArguments = arguments.Where(x => !x.Hidden && (x is Argument { HasDefaultValue: true } || x is Option { HasDefaultValue: true })).ToArray();
 
             if (defaultArguments.Length == 0)
@@ -255,6 +255,27 @@ public partial class HelpBuilder
             var argumentDefaultValues = defaultArguments
                 .Select(argument => GetArgumentDefaultValue(symbol, argument, isSingleArgument, context));
             return $"[{string.Join(", ", argumentDefaultValues)}]";
+        }
+    }
+
+    private static IEnumerable<Symbol> GetParameters(Symbol symbol)
+    {
+        switch (symbol)
+        {
+            case Option option:
+                yield return option;
+                yield break;
+            case Command command:
+                foreach (var argument in command.Arguments)
+                {
+                    yield return argument;
+                }
+                yield break;
+            case Argument argument:
+                yield return argument;
+                yield break;
+            default:
+                throw new NotSupportedException();
         }
     }
 
@@ -370,9 +391,8 @@ public partial class HelpBuilder
             bool displayOptionTitle = false;
 
             IEnumerable<Command> parentCommands =
-                command
-                    .RecurseWhileNotNull(c => c.Parents.OfType<Command>().FirstOrDefault())
-                    .Reverse();
+                RecurseWhileNotNull(command, c => c.Parents.OfType<Command>().FirstOrDefault())
+                .Reverse();
 
             foreach (var parentCommand in parentCommands)
             {
@@ -411,12 +431,21 @@ public partial class HelpBuilder
     }
 
     private IEnumerable<TwoColumnHelpRow> GetCommandArgumentRows(Command command, HelpContext context) =>
-        command
-            .RecurseWhileNotNull(c => c.Parents.OfType<Command>().FirstOrDefault())
+        RecurseWhileNotNull(command, c => c.Parents.OfType<Command>().FirstOrDefault())
             .Reverse()
             .SelectMany(cmd => cmd.Arguments.Where(a => !a.Hidden))
             .Select(a => GetTwoColumnRow(a, context))
             .Distinct();
+
+    private static IEnumerable<T> RecurseWhileNotNull<T>(T? source, Func<T, T?> next) where T : class
+    {
+        while (source is not null)
+        {
+            yield return source;
+
+            source = next(source);
+        }
+    }
 
     private bool WriteSubcommands(HelpContext context)
     {

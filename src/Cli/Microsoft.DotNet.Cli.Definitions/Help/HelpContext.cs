@@ -3,7 +3,7 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Help;
 
 /// <summary>
 /// Supports formatting command line help.

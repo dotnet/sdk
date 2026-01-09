@@ -60,7 +60,7 @@ internal readonly struct ToolLocationOptions(
         {
             throw new GracefulException(
                 string.Format(
-                    CliCommandStrings.OnlyLocalOptionSupportManifestFileOption));
+                    CommandDefinitionStrings.OnlyLocalOptionSupportManifestFileOption));
         }
     }
 }
