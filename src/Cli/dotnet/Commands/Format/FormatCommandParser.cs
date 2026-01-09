@@ -7,16 +7,17 @@ namespace Microsoft.DotNet.Cli.Commands.Format;
 
 internal static class FormatCommandParser
 {
-    private static readonly Command Command = SetAction(FormatCommandDefinition.Create());
+    private static readonly FormatCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetAction(Command command)
+    private static FormatCommandDefinition CreateCommand()
     {
-        command.SetAction(parseResult => FormatCommand.Run(parseResult.GetValue(FormatCommandDefinition.Arguments)));
+        var command = new FormatCommandDefinition();
+        command.SetAction(parseResult => FormatCommand.Run(parseResult.GetValue(command.Arguments) ?? []));
         return command;
     }
 }
