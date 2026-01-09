@@ -3,7 +3,7 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Help;
 
 /// <summary>
 /// If <see cref="Command"/> implements this interface, it can create custom help

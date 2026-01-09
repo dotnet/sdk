@@ -3,6 +3,7 @@
 
 using System.Collections.ObjectModel;
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -123,7 +124,7 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CommandOptionNoLaunchProfileArgumentsDescription
         };
 
-        public readonly Option<string[]> MTPTargetOption = CommonOptions.CreateRequiredMSBuildTargetOption(CliConstants.MTPTarget);
+        public readonly Option<string[]> MTPTargetOption = CommonOptions.CreateRequiredMSBuildTargetOption("_MTPBuild");
 
         public ICustomHelp? CustomHelpLayoutProvider { get; set; }
 

@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal abstract partial class TestCommandDefinition : Command
 {
     private const string Link = "https://aka.ms/dotnet-test";
+    private const string VSTestRunnerName = "VSTest";
+    private const string MicrosoftTestingPlatformRunnerName = "Microsoft.Testing.Platform";
 
     public readonly TargetPlatformOptions TargetPlatformOptions = new(CommandDefinitionStrings.TestRuntimeOptionDescription);
 
@@ -49,12 +51,12 @@ internal abstract partial class TestCommandDefinition : Command
 
         var name = globalJson?.Test?.RunnerName;
 
-        if (name is null || name.Equals(CliConstants.VSTest, StringComparison.OrdinalIgnoreCase))
+        if (name is null || name.Equals(VSTestRunnerName, StringComparison.OrdinalIgnoreCase))
         {
             return new VSTest();
         }
 
-        if (name.Equals(CliConstants.MicrosoftTestingPlatform, StringComparison.OrdinalIgnoreCase))
+        if (name.Equals(MicrosoftTestingPlatformRunnerName, StringComparison.OrdinalIgnoreCase))
         {
             return new MicrosoftTestingPlatform();
         }

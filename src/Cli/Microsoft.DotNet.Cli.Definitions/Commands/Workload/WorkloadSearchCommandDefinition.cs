@@ -7,10 +7,10 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
 internal sealed class WorkloadSearchCommandDefinition : WorkloadCommandDefinitionBase
 {
-    public readonly Argument<string> WorkloadIdStubArgument = new(CliCommandStrings.WorkloadIdStubArgumentName)
+    public readonly Argument<string> WorkloadIdStubArgument = new(CommandDefinitionStrings.WorkloadIdStubArgumentName)
     {
         Arity = ArgumentArity.ZeroOrOne,
-        Description = CliCommandStrings.WorkloadIdStubArgumentDescription
+        Description = CommandDefinitionStrings.WorkloadIdStubArgumentDescription
     };
 
     public readonly Option<string> VersionOption = CreateSdkVersionOption();
@@ -19,7 +19,7 @@ internal sealed class WorkloadSearchCommandDefinition : WorkloadCommandDefinitio
     public readonly WorkloadSearchVersionsCommandDefinition VersionCommand = new();
 
     public WorkloadSearchCommandDefinition()
-        : base("search", CliCommandStrings.WorkloadSearchCommandDescription)
+        : base("search", CommandDefinitionStrings.WorkloadSearchCommandDescription)
     {
         Subcommands.Add(VersionCommand);
         Arguments.Add(WorkloadIdStubArgument);
