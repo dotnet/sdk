@@ -7,14 +7,13 @@ namespace Microsoft.DotNet.NativeWrapper
 {
     public static partial class Interop
     {
-        public static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 #if NETCOREAPP
         private static readonly string? HostFxrPath;
 #endif
 
         static Interop()
         {
-            if (RunningOnWindows)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 PreloadWindowsLibrary(Constants.HostFxr);
             }
