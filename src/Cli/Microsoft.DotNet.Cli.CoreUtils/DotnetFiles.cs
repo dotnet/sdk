@@ -1,11 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET
+
 using System.Reflection;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
-internal static class DotnetFiles
+public static class DotnetFiles
 {
     private static string SdkRootFolder => Path.Combine(typeof(DotnetFiles).GetTypeInfo().Assembly.Location, "..");
 
@@ -17,5 +19,7 @@ internal static class DotnetFiles
     /// </summary>
     public static string VersionFile => Path.GetFullPath(Path.Combine(SdkRootFolder, ".version"));
 
-    internal static DotnetVersionFile VersionFileObject => s_versionFileObject.Value;
+    public static DotnetVersionFile VersionFileObject => s_versionFileObject.Value;
 }
+
+#endif
