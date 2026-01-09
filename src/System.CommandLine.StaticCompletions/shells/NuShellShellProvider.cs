@@ -149,7 +149,7 @@ public class NushellShellProvider : IShellProvider
             var records = items.Select(i =>
             {
                 var value = SanitizeValue(i.InsertText ?? i.Label);
-                var desc = SanitizeDescription(i.Documentation ?? i.Detail ?? i.Label);
+                var desc = FirstSentence(SanitizeDescription(i.Documentation ?? i.Detail ?? i.Label));
                 return $"{{ value: \"{value}\" description: \"{desc}\" }}";
             });
             return $"[{string.Join(' ', records)}]";
@@ -191,10 +191,11 @@ public class NushellShellProvider : IShellProvider
 
         var commandName = string.Join(' ', currentPath);
 
-        // Write description comment if available
-        if (!string.IsNullOrEmpty(command.Description))
+        // Write description comment if available (first sentence only)
+        var description = command.Description is not null ? FirstSentence(command.Description) : null;
+        if (!string.IsNullOrEmpty(description))
         {
-            writer.WriteLine($"# {SanitizeComment(command.Description)}");
+            writer.WriteLine($"# {description}");
         }
 
         writer.WriteLine($"export extern \"{commandName}\" [");
@@ -270,10 +271,10 @@ public class NushellShellProvider : IShellProvider
             }
         }
 
-        // Add description as comment
+        // Add description as comment (first sentence only)
         if (!string.IsNullOrEmpty(option.Description))
         {
-            sb.Append($" # {SanitizeComment(option.Description)}");
+            sb.Append($" # {FirstSentence(option.Description)}");
         }
 
         return sb.ToString();
@@ -325,10 +326,10 @@ public class NushellShellProvider : IShellProvider
             }
         }
 
-        // Add description as comment
+        // Add description as comment (first sentence only)
         if (!string.IsNullOrEmpty(argument.Description))
         {
-            sb.Append($" # {SanitizeComment(argument.Description)}");
+            sb.Append($" # {FirstSentence(argument.Description)}");
         }
 
         return sb.ToString();
@@ -422,4 +423,29 @@ public class NushellShellProvider : IShellProvider
             .ReplaceLineEndings(" ")
             .Replace("\t", " ")
         ?? "";
+
+    /// <summary>
+    /// Returns the first sentence of a string (up to the first period, or first line if no period).
+    /// </summary>
+    private static string FirstSentence(string s)
+    {
+        s = s.Trim();
+
+        var periodIdx = s.IndexOf(". ");
+        var lineEnd = s.IndexOfAny(['\r', '\n']);
+
+        // If period not found, check for period at end of string
+        if (periodIdx < 0 && s.EndsWith('.'))
+        {
+            periodIdx = s.Length - 1;
+        }
+
+        // Take whichever comes first: end of first sentence or end of first line
+        if (periodIdx >= 0 && (lineEnd < 0 || periodIdx < lineEnd))
+        {
+            return s[..(periodIdx + 1)];
+        }
+
+        return lineEnd < 0 ? s : s[..lineEnd];
+    }
 }

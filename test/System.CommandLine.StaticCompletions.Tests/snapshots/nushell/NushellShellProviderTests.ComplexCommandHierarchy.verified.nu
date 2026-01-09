@@ -23,7 +23,7 @@ export extern "my-app" [
     --help(-h) # Show help and usage information
 ]
 
-# Subcommand with a second line
+# Subcommand
 export extern "my-app test" [
     --debug(-d)
     --c
