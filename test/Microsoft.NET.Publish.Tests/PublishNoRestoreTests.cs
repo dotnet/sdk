@@ -42,12 +42,6 @@ public class PublishNoRestoreTests : SdkTest
             runtimeIdentifiers.Add("win-x64");
             runtimeIdentifiers.Add("win-x86");
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            runtimeIdentifiers.Add("linux-x64");
-            runtimeIdentifiers.Add("linux-arm64");
-
-        }
         else
         {
             runtimeIdentifiers.Add(RuntimeInformation.RuntimeIdentifier);
