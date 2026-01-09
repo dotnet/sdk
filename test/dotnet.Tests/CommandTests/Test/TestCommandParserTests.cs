@@ -280,7 +280,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             try
             {
                 var globalJsonPath = Path.Combine(tempDir, "global.json");
-                File.WriteAllText(globalJsonPath, @"{""test"": {""runner"": ""microsofttestingplatform""}}");
+                File.WriteAllText(globalJsonPath, @"{""test"": {""runner"": ""Microsoft.Testing.Platform""}}");
 
                 var originalDir = Environment.CurrentDirectory;
                 try
