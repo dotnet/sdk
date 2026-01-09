@@ -29,9 +29,9 @@ public sealed class ProcessRuntimeAnalyzerVersions : Task
         foreach (var input in Inputs ?? [])
         {
             var deploymentSubpath = input.GetMetadata("DeploymentSubpath");
-            var recursiveDir = input.GetMetadata("CustomRecursiveDir");
+            var recursiveDir = input.GetMetadata("CustomRecursiveDir").Replace('/', '\\');
 
-            var slashIndex = recursiveDir.IndexOfAny('/', '\\');
+            var slashIndex = recursiveDir.IndexOf('\\');
             var version = recursiveDir.Substring(0, slashIndex);
             var rest = recursiveDir.Substring(slashIndex + 1);
 
@@ -49,7 +49,7 @@ public sealed class ProcessRuntimeAnalyzerVersions : Task
                 return false;
             }
 
-            if (!rest.EndsWith("/") && !rest.EndsWith("\\"))
+            if (!rest.EndsWith("\\"))
             {
                 rest += '\\';
             }
