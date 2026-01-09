@@ -924,7 +924,7 @@ namespace Microsoft.NET.Build.Tasks
                                 var targetRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, aotPackRuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph2);
                                 if (targetRuntimeIdentifier == null)
                                 {
-                                    if (targetRuntimeIdentifier == EffectiveRuntimeIdentifier)
+                                    if (aotPackRuntimeIdentifier == EffectiveRuntimeIdentifier)
                                     {
                                         // We can't find the right pack for AOT, return an error
                                         return ToolPackSupport.UnsupportedForTargetRuntimeIdentifier;
