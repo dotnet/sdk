@@ -35,15 +35,7 @@ public class Telemetry : ITelemetry
         }
 
         // Store the session ID in a static field so that it can be reused
-        if (!string.IsNullOrEmpty(sessionId))
-        {
-            s_currentSessionId = sessionId;
-        }
-        else
-        {
-            // Generate a new session ID if not provided
-            s_currentSessionId ??= Guid.NewGuid().ToString();
-        }
+        s_currentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
 
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(s_currentSessionId);
     }
@@ -59,29 +51,17 @@ public class Telemetry : ITelemetry
         s_disabledForTests = false;
     }
 
-    public void TrackEvent(
-        string? eventName,
-        IDictionary<string, string?>? properties,
-        IDictionary<string, double>? measurements)
+    public void TrackEvent(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
     {
-        if (!Enabled)
-        {
-            return;
-        }
-        if (eventName is null)
+        if (!Enabled || eventName is null)
         {
             return;
         }
 
         // Continue the task in different threads.
-        if (_trackEventTask == null)
-        {
-            _trackEventTask = Task.Run(() => TrackEventTask(eventName, properties, measurements));
-        }
-        else
-        {
-            _trackEventTask = _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties, measurements));
-        }
+        _trackEventTask = _trackEventTask == null
+            ? Task.Run(() => TrackEventTask(eventName, properties, measurements))
+            : _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties, measurements));
     }
 
     public void Flush()
@@ -96,14 +76,11 @@ public class Telemetry : ITelemetry
 
     public void ThreadBlockingTrackEvent(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
     {
-        if (!Enabled)
+        if (!Enabled || eventName is null)
         {
             return;
         }
-        if (eventName is null)
-        {
-            return;
-        }
+
         TrackEventTask(eventName, properties, measurements);
     }
 
@@ -111,7 +88,12 @@ public class Telemetry : ITelemetry
     {
         try
         {
-            Activity.Current?.AddEvent(CreateActivityEvent(PrependProducerNamespace(eventName), properties, measurements));
+            var eventId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
+            properties ??= new Dictionary<string, string?>();
+            properties.Add("event id", eventId);
+            measurements ??= new Dictionary<string, double>();
+            var @event = CreateActivityEvent(PrependProducerNamespace(eventName), properties, measurements);
+            Activity.Current?.AddEvent(@event);
         }
         catch (Exception e)
         {
@@ -121,45 +103,20 @@ public class Telemetry : ITelemetry
 
     private static string PrependProducerNamespace(string eventName) => $"dotnet/cli/{eventName}";
 
-    private static ActivityEvent CreateActivityEvent(
-        string eventName,
-        IDictionary<string, string?>? properties,
-        IDictionary<string, double>? measurements)
+    private static ActivityEvent CreateActivityEvent(string eventName, IDictionary<string, string?> properties, IDictionary<string, double> measurements) =>
+        new (eventName, tags: MakeTags(properties, measurements));
+
+    private static ActivityTagsCollection MakeTags(IDictionary<string, string?> eventProperties, IDictionary<string, double> eventMeasurements)
     {
-        var tags = MakeTags(properties, measurements);
-        return new ActivityEvent(eventName, tags: tags);
-    }
-
-    private static ActivityTagsCollection MakeTags(IDictionary<string, string?>? eventProperties, IDictionary<string, double>? eventMeasurements)
-    {
-        var tags = new ActivityTagsCollection
-        (
-            s_commonProperties
-        );
-        if (s_currentSessionId is not null)
+        var tags = new Dictionary<string, object?>(s_commonProperties);
+        foreach (var property in eventProperties.Where(p => p.Value is not null))
         {
-            tags.Add("sessionId", s_currentSessionId);
+            tags.TryAdd(property.Key, property.Value);
         }
-        if (eventProperties is not null)
+        foreach (var measurement in eventMeasurements)
         {
-            foreach (var property in eventProperties)
-            {
-                if (property.Value is null)
-                {
-                    continue; // Skip null properties
-                }
-                tags.TryAdd(property.Key, property.Value);
-            }
+            tags.TryAdd(measurement.Key, measurement.Value);
         }
-
-        if (eventMeasurements is not null)
-        {
-            foreach (var measurement in eventMeasurements)
-            {
-                tags.TryAdd(measurement.Key, measurement.Value);
-            }
-        }
-
-        return tags;
+        return [.. tags.OrderBy(p => p.Key)];
     }
 }

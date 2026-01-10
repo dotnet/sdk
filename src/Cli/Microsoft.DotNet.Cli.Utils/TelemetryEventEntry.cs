@@ -10,13 +10,9 @@ public static class TelemetryEventEntry
     public static event EventHandler<InstrumentationEventArgs>? EntryPosted;
     public static ITelemetryFilter TelemetryFilter { get; set; } = new BlockFilter();
 
-    public static void TrackEvent(
-        string eventName,
-        IDictionary<string, string?>? properties = null,
-        IDictionary<string, double>? measurements = null)
+    public static void TrackEvent(string eventName, IDictionary<string, string?>? properties = null, IDictionary<string, double>? measurements = null)
     {
-        EntryPosted?.Invoke(typeof(TelemetryEventEntry),
-            new InstrumentationEventArgs(eventName, properties, measurements));
+        EntryPosted?.Invoke(typeof(TelemetryEventEntry), new InstrumentationEventArgs(eventName, properties, measurements));
     }
 
     public static void SendFiltered(object? o = null)

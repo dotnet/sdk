@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
                 var jsonText = !File.Exists(logPath) ? """{"activities":[]}""" : File.ReadAllText(logPath);
                 var root = JsonNode.Parse(jsonText)!;
                 var activitiesArray = root["activities"]!.AsArray();
-                activitiesArray.AddRange(activies.Select(r => JsonNode.Parse(JsonSerializer.Serialize(r, s_jsonOptions))));
+                activitiesArray.AddRange(activies.Select(r => JsonNode.Parse(JsonSerializer.Serialize(CreateActivityJsonModel(r), s_jsonOptions))));
                 root["activities"] = activitiesArray;
                 File.AppendAllText(logPath, root.ToJsonString(s_jsonOptions));
             }
@@ -29,47 +29,21 @@ namespace Microsoft.DotNet.Cli.Telemetry
             }
         }
 
-        //private static object CreateRecord(ApplicationInsights.Channel.ITelemetry item) => item switch
-        //{
-        //    EventTelemetry e => new
-        //    {
-        //        type = "Event",
-        //        name = e.Name,
-        //        time = e.Timestamp,
-        //        properties = e.Properties,
-        //        metrics = e.Metrics,
-        //        sessionId = e.Context?.Session?.Id
-        //    },
-        //    ExceptionTelemetry ex => new
-        //    {
-        //        type = "Exception",
-        //        message = ex.Exception?.Message,
-        //        ex.Exception?.StackTrace,
-        //        time = ex.Timestamp,
-        //        properties = ex.Properties
-        //    },
-        //    TraceTelemetry t => new
-        //    {
-        //        type = "Trace",
-        //        message = t.Message,
-        //        severity = t.SeverityLevel,
-        //        time = t.Timestamp,
-        //        properties = t.Properties
-        //    },
-        //    MetricTelemetry m => new
-        //    {
-        //        type = "Metric",
-        //        name = m.Name,
-        //        value = m.Sum,
-        //        count = m.Count,
-        //        time = m.Timestamp,
-        //        properties = m.Properties
-        //    },
-        //    _ => new
-        //    {
-        //        type = item.GetType().Name,
-        //        time = item.Timestamp
-        //    }
-        //};
+        private static object CreateActivityJsonModel(Activity activity) => new
+        {
+            operationName = activity.OperationName,
+            displayName = activity.DisplayName,
+            source = activity.Source,
+            duration = activity.Duration,
+            id = activity.Id,
+            parentId = activity.ParentId,
+            rootId = activity.RootId,
+            //tags = activity.Tags,
+            tagObjects = activity.TagObjects,
+            events = activity.Events,
+            spanId = activity.SpanId.ToString(),
+            traceId =  activity.TraceId.ToString(),
+            parentSpanId = activity.ParentSpanId.ToString()
+        };
     }
 }

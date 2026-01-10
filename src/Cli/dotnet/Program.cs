@@ -1,10 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Azure.Monitor.OpenTelemetry.Exporter;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
+using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.ApplicationInsights;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -54,10 +55,7 @@ public class Program
         s_sigQuitRegistration = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, Shutdown);
         s_sigTermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, Shutdown);
         s_metricsProvider = Sdk.CreateMeterProviderBuilder()
-            .ConfigureResource(r =>
-            {
-                r.AddService("dotnet-cli", serviceVersion: Product.Version);
-            })
+            .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddMeter(Activities.Source.Name)
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
@@ -65,10 +63,7 @@ public class Program
             .Build();
 
         s_tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .ConfigureResource(r =>
-            {
-                r.AddService("dotnet-cli", serviceVersion: Product.Version);
-            })
+            .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddSource(Activities.Source.Name)
             .AddHttpClientInstrumentation()
             .AddOtlpExporter()
@@ -86,6 +81,7 @@ public class Program
         s_mainActivity = Activities.Source.CreateActivity("main", s_activityKind, s_parentActivityContext);
         s_mainActivity?.Start();
         s_mainActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
+        // TODO: Activity tags are not part of the event tags, so this may not be useful.
         s_mainActivity?.AddTag("process.pid", Process.GetCurrentProcess().Id);
         s_mainActivity?.AddTag("process.executable.name", "dotnet");
         TelemetryClient = InitializeTelemetry();
@@ -107,9 +103,11 @@ public class Program
 
         InitializeProcess();
 
+        var exitCode = 1;
         try
         {
-            var exitCode = ProcessArgs(args);
+            exitCode = ProcessArgs(args);
+            // TODO: Activity tags are not part of the event tags, so this may not be useful.
             s_mainActivity?.AddTag("process.exit.code", exitCode);
             s_mainActivity?.SetStatus(ActivityStatusCode.Ok);
             return exitCode;
@@ -124,21 +122,25 @@ public class Program
             {
                 commandParsingException.ParseResult.ShowHelp();
             }
-            s_mainActivity?.AddTag("process.exit.code", 1);
+            // TODO: Activity tags are not part of the event tags, so this may not be useful.
+            s_mainActivity?.AddTag("process.exit.code", exitCode);
             s_mainActivity?.SetStatus(ActivityStatusCode.Error);
-            return 1;
+            return exitCode;
         }
         catch (Exception e) when (!e.ShouldBeDisplayedAsError())
         {
             // If telemetry object has not been initialized yet. It cannot be collected
             TelemetryEventEntry.SendFiltered(e);
             Reporter.Error.WriteLine(e.ToString().Red().Bold());
-            s_mainActivity?.AddTag("process.exit.code", 1);
+            // TODO: Activity tags are not part of the event tags, so this may not be useful.
+            s_mainActivity?.AddTag("process.exit.code", exitCode);
             s_mainActivity?.SetStatus(ActivityStatusCode.Error);
-            return 1;
+            return exitCode;
         }
         finally
         {
+            TelemetryClient.TrackEvent("command/finish", new Dictionary<string, string?> { { "exitCode", exitCode.ToString() } }, null);
+
             Shutdown(default!);
 
             var diskLogPath = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_LOG_PATH");
@@ -207,6 +209,7 @@ public class Program
             // so just pass empty string as executable directory for resolution.
             NativeWrapper.SdkResolutionResult result = NativeWrapper.NETCoreSdkResolverNativeWrapper.ResolveSdk(string.Empty, Environment.CurrentDirectory);
             string? globalJsonState = result.GlobalJsonState;
+            // TODO: Activity tags are not part of the event tags, so this may not be useful.
             hostStartupActivity?.AddTag("dotnet.globalJson", globalJsonState);
         }
         hostStartupActivity?.SetEndTime(mainTimeStamp);
@@ -263,6 +266,7 @@ public class Program
         activity.DisplayName = name;
 
         // Set the command name as an attribute for better filtering in telemetry
+        // TODO: Activity tags are not part of the event tags, so this may not be useful.
         activity.SetTag("command.name", name);
     }
 

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using System.Globalization;
 using System.Security;
@@ -18,11 +16,11 @@ internal static class ExternalTelemetryProperties
     /// For Windows, returns the OS installation type, eg. "Nano Server", "Server Core", "Server", or "Client".
     /// For Unix, or on error, currently returns empty string.
     /// </summary>
-    internal static string GetInstallationType()
+    internal static string? GetInstallationType()
     {
         if (!OperatingSystem.IsWindows())
         {
-            return "";
+            return null;
         }
 
         const string Key = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion";
@@ -30,13 +28,13 @@ internal static class ExternalTelemetryProperties
 
         try
         {
-            return (string)Registry.GetValue(Key, ValueName, defaultValue: "");
+            return (string?)Registry.GetValue(Key, ValueName, defaultValue: null);
         }
         // Catch everything: this is for telemetry only.
         catch (Exception e)
         {
             Debug.Assert(e is ArgumentException | e is SecurityException | e is InvalidCastException);
-            return "";
+            return null;
         }
     }
 
@@ -50,11 +48,11 @@ internal static class ExternalTelemetryProperties
     /// We're not attempting to decode the value on the client side as new Windows releases may add new values.
     /// For Unix, or on error, returns an empty string.
     /// </summary>
-    internal static string GetProductType()
+    internal static string? GetProductType()
     {
         if (!OperatingSystem.IsWindows())
         {
-            return "";
+            return null;
         }
 
         try
@@ -70,7 +68,7 @@ internal static class ExternalTelemetryProperties
             Debug.Assert(false, $"Unexpected exception from GetProductInfo: ${e.GetType().Name}: ${e.Message}");
         }
 
-        return "";
+        return null;
     }
 
     [DllImport("libc", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
@@ -84,11 +82,11 @@ internal static class ExternalTelemetryProperties
     /// If the libc is musl, currently returns empty string.
     /// Otherwise returns empty string.
     /// </summary>
-    internal static string GetLibcRelease()
+    internal static string? GetLibcRelease()
     {
         if (OperatingSystem.IsWindows())
         {
-            return "";
+            return null;
         }
 
         try
@@ -99,7 +97,7 @@ internal static class ExternalTelemetryProperties
         catch (Exception e)
         {
             Debug.Assert(e is DllNotFoundException || e is EntryPointNotFoundException);
-            return "";
+            return null;
         }
     }
 
@@ -108,11 +106,11 @@ internal static class ExternalTelemetryProperties
     /// If the libc is musl, currently returns empty string. (In future could run "ldd -version".)
     /// Otherwise returns empty string.
     /// </summary>
-    internal static string GetLibcVersion()
+    internal static string? GetLibcVersion()
     {
         if (OperatingSystem.IsWindows())
         {
-            return "";
+            return null;
         }
 
         try
@@ -123,7 +121,7 @@ internal static class ExternalTelemetryProperties
         catch (Exception e)
         {
             Debug.Assert(e is DllNotFoundException || e is EntryPointNotFoundException);
-            return "";
+            return null;
         }
     }
 }
