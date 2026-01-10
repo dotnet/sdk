@@ -481,9 +481,6 @@ namespace EndToEnd.Tests
                     // Remove this (or formalize it) after https://github.com/dotnet/installer/issues/12479 is resolved.
                     .. language == "F#" ? ["/p:_NETCoreSdkIsPreview=true"] : Array.Empty<string>(),
                     .. needsEnableWindowsTargeting ? ["/p:EnableWindowsTargeting=true"] : Array.Empty<string>(),
-                    // NET11TFM Remove once we have a net11 runtime
-                    .. new string[] { "/p:NETCoreAppMaximumVersion=11.0" },
-                    .. new string[] { "/p:AllowMissingPrunePackageData=true" },
                     $"/bl:{templateName}-{(selfContained ? "selfcontained" : "fdd")}-{language}-{framework}-{{}}.binlog"
                 ];
 
