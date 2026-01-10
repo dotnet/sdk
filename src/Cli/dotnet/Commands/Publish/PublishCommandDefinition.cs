@@ -43,7 +43,7 @@ internal sealed class PublishCommandDefinition : Command
 
     public readonly Option<bool> NoRestoreOption = CommonOptions.CreateNoRestoreOption();
 
-    public readonly Option<bool> SelfContainedOption = CommonOptions.CreateSelfContainedOption();
+    public readonly Option<bool?> SelfContainedOption = CommonOptions.CreateSelfContainedOption();
 
     public readonly Option<bool> NoSelfContainedOption = CommonOptions.CreateNoSelfContainedOption();
 
