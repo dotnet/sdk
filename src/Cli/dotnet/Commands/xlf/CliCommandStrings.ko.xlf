@@ -3735,6 +3735,26 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">선택적 워크로드를 관리합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadDependenciesColumn">
+        <source>Dependencies</source>
+        <target state="new">Dependencies</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadDependencyOptional">
+        <source>optional</source>
+        <target state="new">optional</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadDependencyRecommendedVersion">
+        <source>Recommended Version</source>
+        <target state="new">Recommended Version</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadDependencyVersion">
+        <source>Version</source>
+        <target state="new">Version</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadElevateCommandDescription">
         <source>Start the elevated server process to facilitate MSI based installations.</source>
         <target state="translated">MSI 기반 설치를 용이하게 하도록 관리자 권한 서버 프로세스를 시작합니다.</target>

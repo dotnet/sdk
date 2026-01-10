@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands;
@@ -184,6 +185,78 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var workloadInfoHelper = new WorkloadInfoHelper(isInteractive: false, workloadResolver: workloadResolver);
             workloadInfoHelper.ShowWorkloadsInfo(reporter: _reporter);
             _reporter.Lines.Should().Contain("There are no installed workloads to display.");
+        }
+
+        [Fact]
+        public void GivenInstalledWorkloadsInfoOptionShowsDependencies()
+        {
+            // Test that workload --info displays dependencies from WorkloadDependencies.json
+            _reporter.Clear();
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var dotnetRoot = Path.Combine(testDirectory, "dotnet");
+            
+            // Create mock workload installation record repository that returns xamarin-android as installed
+            var mockInstallRecordRepo = new MockWorkloadInstallRecordRepository(new[] { new WorkloadId("xamarin-android") });
+            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
+
+            WorkloadInfoHelper workloadInfoHelper = new WorkloadInfoHelper(
+                isInteractive: false, 
+                workloadResolver: workloadResolver,
+                workloadRecordRepo: mockInstallRecordRepo);
+            workloadInfoHelper.ShowWorkloadsInfo(reporter: _reporter);
+            
+            // Verify workload is listed
+            var output = string.Join(Environment.NewLine, _reporter.Lines);
+            output.Should().Contain("[xamarin-android]");
+            
+            // Verify dependencies are shown from WorkloadDependencies.json
+            output.Should().Contain("Dependencies (jdk):");
+            output.Should().Contain("[11.0,18.0)");  // Version value (label is padded)
+            output.Should().Contain("11.0.12");  // Recommended Version value
+            
+            output.Should().Contain("Dependencies (androidsdk):");
+            output.Should().Contain("Android SDK Build-Tools 30");
+            output.Should().Contain("build-tools;30.0.3");
+            output.Should().Contain("Android SDK Platform-Tools");
+            output.Should().Contain("platform-tools");
+            output.Should().Contain("31.0.3");  // Recommended Version from sdkPackage wrapper
+            output.Should().Contain("Android Emulator (optional)");
+            output.Should().Contain("emulator");
+
+            // Verify RID-keyed id is resolved to platform-specific value
+            output.Should().Contain("Google APIs System Image (optional)");
+            output.Should().Contain("system-images;android-35;google_apis;");
+
+            // Verify appium drivers array is shown
+            output.Should().Contain("Dependencies (appium):");
+            output.Should().Contain("[2.17.1,)");  // Version value
+            output.Should().Contain("windows");
+            output.Should().Contain("xcuitest");
+            output.Should().Contain("mac2");
+            output.Should().Contain("uiautomator2");
+
+            // Verify "workload" category is skipped (it's metadata, not a dependency)
+            output.Should().NotContain("Dependencies (workload):");
+            output.Should().NotContain("This should be skipped");
+
+            // Verify optional: false does not show "(optional)"
+            output.Should().Contain("Not Optional Item");
+            output.Should().NotContain("Not Optional Item (optional)");
+        }
+
+        private class MockWorkloadInstallRecordRepository : IWorkloadInstallationRecordRepository
+        {
+            private readonly IEnumerable<WorkloadId> _installedWorkloads;
+
+            public MockWorkloadInstallRecordRepository(IEnumerable<WorkloadId> installedWorkloads)
+            {
+                _installedWorkloads = installedWorkloads;
+            }
+
+            public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand) => _installedWorkloads;
+            public void WriteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand) { }
+            public void DeleteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand) { }
+            public IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords() => Array.Empty<SdkFeatureBand>();
         }
 
         [Fact]
