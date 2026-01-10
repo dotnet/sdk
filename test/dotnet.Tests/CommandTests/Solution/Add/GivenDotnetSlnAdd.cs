@@ -1313,5 +1313,71 @@ Options:
                 .Path;
             return File.ReadAllText(Path.Join(templateContentDirectory, templateFileName));
         }
+
+        // SLNF TESTS
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenAddingProjectToSlnfItAddsOnlyIfInParentSolution(string solutionCommand)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-Slnf-{solutionCommand}")
+                .WithSource()
+                .Path;
+
+            var slnfFullPath = Path.Combine(projectDirectory, "App.slnf");
+            
+            // Try to add Lib project which is in parent solution
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "add", Path.Combine("src", "Lib", "Lib.csproj"));
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Contain(string.Format(CliStrings.ProjectAddedToTheSolution, Path.Combine("src", "Lib", "Lib.csproj")));
+
+            // Verify the project was added to the slnf file
+            var slnfContent = File.ReadAllText(slnfFullPath);
+            slnfContent.Should().Contain("src\\\\Lib\\\\Lib.csproj");
+        }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenRemovingProjectFromSlnfItRemovesSuccessfully(string solutionCommand)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-SlnfRemove-{solutionCommand}")
+                .WithSource()
+                .Path;
+
+            var slnfFullPath = Path.Combine(projectDirectory, "App.slnf");
+
+            // Remove the App project from the filter
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "remove", Path.Combine("src", "App", "App.csproj"));
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Contain(string.Format(CliStrings.ProjectRemovedFromTheSolution, Path.Combine("src", "App", "App.csproj")));
+
+            // Verify the project was removed from the slnf file
+            var slnfContent = File.ReadAllText(slnfFullPath);
+            slnfContent.Should().NotContain("src\\\\App\\\\App.csproj");
+        }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenAddingProjectToSlnfWithInRootOptionItErrors(string solutionCommand)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-SlnfInRoot-{solutionCommand}")
+                .WithSource()
+                .Path;
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "add", "--in-root", Path.Combine("src", "Lib", "Lib.csproj"));
+            cmd.Should().Fail();
+            cmd.StdErr.Should().Contain(CliCommandStrings.SolutionFilterDoesNotSupportFolderOptions);
+        }
     }
 }
