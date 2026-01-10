@@ -140,28 +140,13 @@ public class NushellShellProvider : IShellProvider
 
     /// <summary>
     /// Generates an inline completer array for completions.
-    /// Returns simple array like ["value1", "value2"] or array with descriptions like
-    /// [{ value: "v1", description: "desc1" }, { value: "v2", description: "desc2" }]
+    /// Returns simple array like ["value1", "value2"].
+    /// Note: Inline completers don't support descriptions in NuShell.
     /// </summary>
     private static string GenerateInlineCompleter(CompletionItem[] items)
     {
-        var hasDescriptions = items.Any(i => i.Documentation is not null || i.Detail is not null);
-
-        if (hasDescriptions)
-        {
-            var records = items.Select(i =>
-            {
-                var value = SanitizeValue(i.InsertText ?? i.Label);
-                var desc = FirstSentence(SanitizeDescription(i.Documentation ?? i.Detail ?? i.Label));
-                return $"{{ value: \"{value}\" description: \"{desc}\" }}";
-            });
-            return $"[{string.Join(' ', records)}]";
-        }
-        else
-        {
-            var values = items.Select(i => $"\"{SanitizeValue(i.InsertText ?? i.Label)}\"");
-            return $"[{string.Join(' ', values)}]";
-        }
+        var values = items.Select(i => $"\"{SanitizeValue(i.InsertText ?? i.Label)}\"");
+        return $"[{string.Join(' ', values)}]";
     }
 
     /// <summary>
