@@ -1,0 +1,231 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#if !NETFRAMEWORK
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Hashing;
+using System.Linq;
+using System.Runtime.InteropServices;
+
+namespace Microsoft.DotNet.Build.Tasks
+{
+    /// <summary>
+    /// Deduplicates assemblies (.dll and .exe files) in a directory by replacing duplicates with links (hard or symbolic).
+    /// Assemblies are grouped by content hash, and a deterministic "master" file is selected
+    /// (closest to root, alphabetically first). All other duplicates are replaced with links.
+    /// Text-based files (config, json, xml, etc.) are not deduplicated to avoid issues with configuration files.
+    /// </summary>
+    public sealed class DeduplicateAssembliesWithLinks : Task
+    {
+        /// <summary>
+        /// The root directory to scan for duplicate assemblies.
+        /// </summary>
+        [Required]
+        public string LayoutDirectory { get; set; } = null!;
+
+        /// <summary>
+        /// If true, creates hard links. If false, creates symbolic links.
+        /// </summary>
+        public bool UseHardLinks { get; set; } = false;
+
+        private string LinkType => UseHardLinks ? "hard link" : "symbolic link";
+
+        public override bool Execute()
+        {
+            if (!Directory.Exists(LayoutDirectory))
+            {
+                Log.LogError($"LayoutDirectory '{LayoutDirectory}' does not exist.");
+                return false;
+            }
+
+            Log.LogMessage(MessageImportance.High, $"Scanning for duplicate assemblies in '{LayoutDirectory}' (using {LinkType}s)...");
+
+            // Find all eligible files - only assemblies
+            var files = Directory.GetFiles(LayoutDirectory, "*", SearchOption.AllDirectories)
+                .Where(f => IsAssembly(f))
+                .ToList();
+
+            Log.LogMessage(MessageImportance.Normal, $"Found {files.Count} assemblies eligible for deduplication.");
+
+            var (filesByHash, hashingSuccess) = HashAndGroupFiles(files);
+            if (!hashingSuccess)
+            {
+                return false;
+            }
+
+            var duplicateGroups = filesByHash.Values.Where(g => g.Count > 1).ToList();
+
+            Log.LogMessage(MessageImportance.Normal, $"Found {duplicateGroups.Count} groups of duplicate assemblies.");
+
+            bool deduplicationSuccess = DeduplicateFileGroups(duplicateGroups);
+
+            return deduplicationSuccess;
+        }
+
+        private (Dictionary<string, List<FileEntry>> filesByHash, bool success) HashAndGroupFiles(List<string> files)
+        {
+            var filesByHash = new Dictionary<string, List<FileEntry>>();
+            bool hasErrors = false;
+
+            foreach (var filePath in files)
+            {
+                try
+                {
+                    var fileInfo = new FileInfo(filePath);
+                    var hash = ComputeFileHash(filePath);
+                    var entry = new FileEntry
+                    {
+                        Path = filePath,
+                        Hash = hash,
+                        Size = fileInfo.Length,
+                        Depth = GetPathDepth(filePath, LayoutDirectory)
+                    };
+
+                    if (!filesByHash.ContainsKey(hash))
+                    {
+                        filesByHash[hash] = new List<FileEntry>();
+                    }
+
+                    filesByHash[hash].Add(entry);
+                }
+                catch (Exception ex)
+                {
+                    Log.LogError($"Failed to hash file '{filePath}': {ex.Message}");
+                    hasErrors = true;
+                }
+            }
+
+            return (filesByHash, !hasErrors);
+        }
+
+        private bool DeduplicateFileGroups(List<List<FileEntry>> duplicateGroups)
+        {
+            int totalFilesDeduped = 0;
+            long totalBytesSaved = 0;
+            bool hasErrors = false;
+
+            foreach (var group in duplicateGroups)
+            {
+                // Sort deterministically: by depth (ascending), then alphabetically
+                var sorted = group.OrderBy(f => f.Depth).ThenBy(f => f.Path).ToList();
+
+                // First file is the "master"
+                var master = sorted[0];
+                var duplicates = sorted.Skip(1).ToList();
+
+                foreach (var duplicate in duplicates)
+                {
+                    try
+                    {
+                        if (CreateLink(duplicate.Path, master.Path))
+                        {
+                            totalFilesDeduped++;
+                            totalBytesSaved += duplicate.Size;
+                            Log.LogMessage(MessageImportance.Low, $"  Linked: {duplicate.Path}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.LogError($"Failed to create {LinkType} from '{duplicate.Path}' to '{master.Path}': {ex.Message}");
+                        hasErrors = true;
+                    }
+                }
+            }
+
+            Log.LogMessage(MessageImportance.High,
+                $"Deduplication complete: {totalFilesDeduped} files replaced with {LinkType}s, saving {totalBytesSaved / (1024.0 * 1024.0):F2} MB.");
+
+            return !hasErrors;
+        }
+
+        private string ComputeFileHash(string filePath)
+        {
+            byte[] fileBytes = File.ReadAllBytes(filePath);
+            var hashBytes = XxHash64.Hash(fileBytes);
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        }
+
+        private int GetPathDepth(string filePath, string rootDirectory)
+        {
+            var relativePath = Path.GetRelativePath(rootDirectory, filePath);
+            return relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Length - 1;
+        }
+
+        private bool IsAssembly(string filePath)
+        {
+            var extension = Path.GetExtension(filePath);
+            return extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
+                   extension.Equals(".exe", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool CreateLink(string duplicateFilePath, string masterFilePath)
+        {
+            // Delete the duplicate file first
+            File.Delete(duplicateFilePath);
+
+            if (UseHardLinks)
+            {
+                // TODO: Replace P/Invoke with File.CreateHardLink(masterFilePath, duplicateFilePath); when SDK targets .NET 11+
+                // See: https://github.com/dotnet/runtime/issues/69030
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return CreateHardLinkWindows(duplicateFilePath, masterFilePath);
+                }
+                else
+                {
+                    return CreateHardLinkUnix(duplicateFilePath, masterFilePath);
+                }
+            }
+            else
+            {
+                // Create relative symlink so it works when directory is moved/archived
+                var duplicateDirectory = Path.GetDirectoryName(duplicateFilePath)!;
+                var relativePath = Path.GetRelativePath(duplicateDirectory, masterFilePath);
+                File.CreateSymbolicLink(duplicateFilePath, relativePath);
+                return true;
+            }
+        }
+
+        private bool CreateHardLinkWindows(string linkPath, string targetPath)
+        {
+            bool result = CreateHardLinkWin32(linkPath, targetPath, IntPtr.Zero);
+            if (!result)
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                throw new InvalidOperationException($"CreateHardLink failed with error code {errorCode}");
+            }
+            return result;
+        }
+
+        private bool CreateHardLinkUnix(string linkPath, string targetPath)
+        {
+            int result = link(targetPath, linkPath);
+            if (result != 0)
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                throw new InvalidOperationException($"link() failed with error code {errorCode}");
+            }
+            return true;
+        }
+
+        [DllImport("kernel32.dll", EntryPoint = "CreateHardLinkW", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern bool CreateHardLinkWin32(
+            string lpFileName,
+            string lpExistingFileName,
+            IntPtr lpSecurityAttributes);
+
+        [DllImport("libc", SetLastError = true)]
+        private static extern int link(string oldpath, string newpath);
+
+        private class FileEntry
+        {
+            public required string Path { get; set; }
+            public required string Hash { get; set; }
+            public long Size { get; set; }
+            public int Depth { get; set; }
+        }
+    }
+}
+#endif

@@ -55,7 +55,11 @@
       <SdkOutputFileDestination Include="@(SdkOutputFile->'$(RedistInstallerLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(SdkOutputFile)" DestinationFiles="@(SdkOutputFileDestination)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(SdkOutputFile)"
+          DestinationFiles="@(SdkOutputFileDestination)"
+          SkipUnchangedFiles="true"
+          UseHardLinksIfPossible="true"
+          UseSymbolicLinksIfPossible="true"/>
   </Target>
 
   <Target Name="LayoutWorkloadUserLocalMarker"
