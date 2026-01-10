@@ -258,6 +258,38 @@ public class NushellShellProvider : IShellProvider
     }
 
     /// <summary>
+    /// Finds the completer key for an option by searching the completers dictionary.
+    /// For recursive options inherited from parent commands, this finds the key
+    /// registered at the original command where the option was defined.
+    /// </summary>
+    private static string? FindCompleterKey(
+        Option option,
+        string[] commandPath,
+        Dictionary<string, CompletionItem[]> completers)
+    {
+        // First try the current command path
+        var directKey = CompleterName(commandPath, option.Name);
+        if (completers.ContainsKey(directKey))
+        {
+            return directKey;
+        }
+
+        // For recursive options, search parent paths
+        // Walk up the command path looking for where this option's completer was registered
+        for (var i = commandPath.Length - 1; i >= 1; i--)
+        {
+            var parentPath = commandPath[..i];
+            var parentKey = CompleterName(parentPath, option.Name);
+            if (completers.ContainsKey(parentKey))
+            {
+                return parentKey;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Generates a NuShell parameter definition for an option.
     /// </summary>
     private static string GenerateOptionParameter(
@@ -296,8 +328,8 @@ public class NushellShellProvider : IShellProvider
             }
             else
             {
-                var completerKey = CompleterName(commandPath, option.Name);
-                if (completers.TryGetValue(completerKey, out var items))
+                var completerKey = FindCompleterKey(option, commandPath, completers);
+                if (completerKey is not null && completers.TryGetValue(completerKey, out var items))
                 {
                     if (HasDescriptions(items))
                     {

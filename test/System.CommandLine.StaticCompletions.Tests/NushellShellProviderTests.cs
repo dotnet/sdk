@@ -95,6 +95,26 @@ public class NushellShellProviderTests(ITestOutputHelper log)
     }
 
     [Fact]
+    public async Task RecursiveOptionsWithCompletions()
+    {
+        var verbosityOption = new Option<string>("--verbosity", "-v")
+        {
+            Recursive = true
+        };
+        verbosityOption.AcceptOnlyFromAmong("quiet", "minimal", "normal", "detailed", "diagnostic");
+
+        await _provider.Verify(new("mycommand")
+        {
+            verbosityOption,
+            new Command("subcommand")
+            {
+                new Option<string>("--name"),
+                new Command("nested")
+            }
+        }, log);
+    }
+
+    [Fact]
     public async Task DynamicCompletionsGeneration()
     {
         var dynamicOption = new Option<string>("--project")
