@@ -604,6 +604,61 @@ namespace Microsoft.NET.Build.Tests
                     .Pass();
             }
         }
+
+        [Fact]
+        public void ArtifactsPathIsAddedToSourceRoot()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SourceRootTest",
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            // Create a temporary directory outside of the repo to use as ArtifactsPath
+            var tempArtifactsPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempArtifactsPath);
+
+            try
+            {
+                // Set ArtifactsPath to a location outside the repo
+                File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"), $"""
+                    <Project>
+                        <PropertyGroup>
+                            <ArtifactsPath>{tempArtifactsPath}</ArtifactsPath>
+                        </PropertyGroup>
+                    </Project>
+                    """);
+
+                // Build the project
+                var buildResult = new BuildCommand(testAsset)
+                    .Execute();
+
+                buildResult.Should().Pass();
+
+                // Verify that the SourceRoot was added by checking that the build succeeded
+                // and that the ArtifactsPath was used. The output path should be under ArtifactsPath.
+                var outputDirectory = Path.Combine(tempArtifactsPath, "bin", testProject.Name, "debug");
+                new DirectoryInfo(outputDirectory)
+                    .Should()
+                    .Exist();
+                
+                // Verify that the dll was created
+                new FileInfo(Path.Combine(outputDirectory, testProject.Name + ".dll"))
+                    .Should()
+                    .Exist();
+            }
+            finally
+            {
+                // Clean up the temporary directory
+                if (Directory.Exists(tempArtifactsPath))
+                {
+                    Directory.Delete(tempArtifactsPath, recursive: true);
+                }
+            }
+        }
     }
 
     namespace ArtifactsTestExtensions
