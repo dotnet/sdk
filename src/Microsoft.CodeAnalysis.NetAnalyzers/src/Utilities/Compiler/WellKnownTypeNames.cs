@@ -372,9 +372,11 @@ namespace Analyzer.Utilities
         public const string SystemRuntimeIntrinsicsX86Avx512DQVL = "System.Runtime.Intrinsics.X86.Avx512DQ+VL";
         public const string SystemRuntimeIntrinsicsX86Avx512F = "System.Runtime.Intrinsics.X86.Avx512F";
         public const string SystemRuntimeIntrinsicsX86Avx512FVL = "System.Runtime.Intrinsics.X86.Avx512F+VL";
+        public const string SystemRuntimeIntrinsicsX86Fma = "System.Runtime.Intrinsics.X86.Fma";
         public const string SystemRuntimeIntrinsicsX86Sse = "System.Runtime.Intrinsics.X86.Sse";
         public const string SystemRuntimeIntrinsicsX86Sse2 = "System.Runtime.Intrinsics.X86.Sse2";
         public const string SystemRuntimeIntrinsicsX86Sse41 = "System.Runtime.Intrinsics.X86.Sse41";
+        public const string SystemRuntimeIntrinsicsX86Ssse3 = "System.Runtime.Intrinsics.X86.Ssse3";
         public const string SystemRuntimeSerializationDataContractAttribute = "System.Runtime.Serialization.DataContractAttribute";
         public const string SystemRuntimeSerializationDataContractSerializer = "System.Runtime.Serialization.DataContractSerializer";
         public const string SystemRuntimeSerializationDataMemberAttribute = "System.Runtime.Serialization.DataMemberAttribute";
