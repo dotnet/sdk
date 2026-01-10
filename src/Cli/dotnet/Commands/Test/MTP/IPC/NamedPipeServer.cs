@@ -236,7 +236,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 // If the loop task is null at this point we have race condition, means that the task didn't start yet and we already dispose.
                 // This is unexpected and we throw an exception.
 
-                // To close gracefully we need to ensure that the client closed the stream line 103.
+                // To close gracefully we need to ensure that the client closed the stream and the InternalLoopAsync method has exited (indicated by the `// The client has disconnected` comment).
                 if (!_loopTask!.Wait(TimeSpan.FromSeconds(90)))
                 {
                     throw new InvalidOperationException(CliCommandStrings.InternalLoopAsyncDidNotExitSuccessfullyErrorMessage);
