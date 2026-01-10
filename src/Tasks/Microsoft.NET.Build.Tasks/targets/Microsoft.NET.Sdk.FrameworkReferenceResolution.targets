@@ -217,10 +217,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Select runtime packs by labels from _SelectRuntimePacksByLabels -->
+     <!-- TODO: this is broken - no _candidateruntimepack items are created. -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
-      <!-- For each joined framework reference, find matching runtime packs -->
+      <!-- For each runtime pack, check if it matches any framework reference's RuntimeFrameworkName -->
       <_CandidateRuntimePack Include="@(_ApplicableKnownRuntimePack)"
-        Condition="'%(_ApplicableKnownRuntimePack.Identity)' == '%(_JoinedFrameworkReference.RuntimeFrameworkName)'"
+        Condition="@(_JoinedFrameworkReference->AnyHaveMetadataValue('RuntimeFrameworkName', '%(_ApplicableKnownRuntimePack.Identity)'))"
         KeepMetadata="RuntimePackNamePatterns;RuntimePackRuntimeIdentifiers;RuntimePackExcludedRuntimeIdentifiers;LatestRuntimeFrameworkVersion;RuntimePackLabels;IsTrimmable;RuntimePackAlwaysCopyLocal">
         <FrameworkReferenceName>%(_JoinedFrameworkReference.Identity)</FrameworkReferenceName>
         <RequiredRuntimePackLabels>%(_JoinedFrameworkReference.RuntimePackLabels)</RequiredRuntimePackLabels>
