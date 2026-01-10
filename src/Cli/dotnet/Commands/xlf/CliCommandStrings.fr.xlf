@@ -4065,6 +4065,11 @@ Pour afficher une valeur, spécifiez l’option de ligne de commande corresponda
         <target state="translated">Charges de travail</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadsNotInstalledRunWorkloadUpdate">
+        <source>Run "dotnet workload update" to install the workloads for this SDK.</source>
+        <target state="new">Run "dotnet workload update" to install the workloads for this SDK.</target>
+        <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
         <target state="translated">Écriture des enregistrements d'installation pour les charges de travail Visual Studio : « {0} »</target>

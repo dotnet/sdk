@@ -123,6 +123,25 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
     internal void ShowWorkloadsInfo(IReporter? reporter = null, string? dotnetDir = null, bool showVersion = true)
     {
         reporter ??= Reporter.Output;
+        
+        // Get the error message if manifests are missing
+        // We need to call GetManifests() first to ensure _exceptionToThrow is populated
+        // if manifests from a workload set are missing
+        string? manifestError = null;
+        if (ManifestProvider is SdkDirectoryWorkloadManifestProvider sdkProvider)
+        {
+            // Calling GetManifests().Count() forces enumeration which populates the error state
+            try
+            {
+                _ = ManifestProvider.GetManifests().Count();
+            }
+            catch
+            {
+                // Ignore errors here - we'll get the message via GetManifestErrorMessage
+            }
+            manifestError = sdkProvider.GetManifestErrorMessage();
+        }
+        
         var versionInfo = ManifestProvider.GetWorkloadVersion();
 
         void WriteUpdateModeAndAnyError(string indent = "")
@@ -133,9 +152,23 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
                 : CliCommandStrings.WorkloadManifestInstallationConfigurationLooseManifests;
             reporter.WriteLine(indent + configurationMessage);
 
+            // Show the specific error message if manifests are missing
+            if (!versionInfo.IsInstalled && manifestError != null)
+            {
+                reporter.WriteLine(indent + manifestError);
+            }
+
             if (!versionInfo.IsInstalled)
             {
-                reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadSetFromGlobalJsonNotInstalled, versionInfo.Version, versionInfo.GlobalJsonPath));
+                if (versionInfo.GlobalJsonPath != null)
+                {
+                    reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadSetFromGlobalJsonNotInstalled, versionInfo.Version, versionInfo.GlobalJsonPath));
+                }
+                else if (manifestError == null)
+                {
+                    // Workload set is installed but manifests are missing - only show generic message if we don't have a specific error
+                    reporter.WriteLine(indent + CliCommandStrings.WorkloadsNotInstalledRunWorkloadUpdate);
+                }
             }
             else if (versionInfo.WorkloadSetsEnabledWithoutWorkloadSet)
             {

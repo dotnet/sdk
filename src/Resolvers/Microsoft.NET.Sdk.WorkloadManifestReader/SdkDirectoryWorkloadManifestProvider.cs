@@ -245,6 +245,15 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
+        /// <summary>
+        /// Gets the error message if manifests from a workload set are missing.
+        /// Returns null if all manifests are available.
+        /// </summary>
+        public string? GetManifestErrorMessage()
+        {
+            return _exceptionToThrow?.Message;
+        }
+
         public WorkloadVersionInfo GetWorkloadVersion()
         {
             if (_globalJsonWorkloadSetVersion != null)
@@ -260,11 +269,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
             }
 
-            ThrowExceptionIfManifestsNotAvailable();
-
             if (_workloadSet?.Version is not null)
             {
-                return new WorkloadVersionInfo(_workloadSet.Version, IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: false, GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
+                // Return the workload set version, but indicate if manifests are actually installed
+                // _exceptionToThrow will be set if manifests from the workload set are missing
+                return new WorkloadVersionInfo(_workloadSet.Version, IsInstalled: _exceptionToThrow == null, WorkloadSetsEnabledWithoutWorkloadSet: false, GlobalJsonSpecifiesWorkloadSets: _globalJsonSpecifiedWorkloadSets);
             }
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
@@ -290,8 +299,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
         {
-            ThrowExceptionIfManifestsNotAvailable();
-
             //  Scan manifest directories
             var manifestIdsToManifests = new Dictionary<string, ReadableWorkloadManifest>(StringComparer.OrdinalIgnoreCase);
 
@@ -363,7 +370,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
                     if (manifestDirectory == null)
                     {
-                        throw new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
+                        // Manifest from workload set is missing. This can happen after SDK upgrades.
+                        // Store the exception to be thrown when needed, but allow workload commands to proceed
+                        // so they can install the missing manifests.
+                        if (_exceptionToThrow == null)
+                        {
+                            _exceptionToThrow = new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
+                        }
+                        continue;
                     }
                     AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
                 }
@@ -380,7 +394,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
                         if (manifestDirectory == null)
                         {
-                            throw new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
+                            // Manifest from install state is missing. This can happen after SDK upgrades.
+                            // Store the exception to be thrown when needed, but allow workload commands to proceed
+                            // so they can install the missing manifests.
+                            if (_exceptionToThrow == null)
+                            {
+                                _exceptionToThrow = new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
+                            }
+                            continue;
                         }
                         AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
                     }
@@ -399,6 +420,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     }
                 }
             }
+
+            // Note: We intentionally do not throw here if manifests from workload sets are missing (_exceptionToThrow != null).
+            // This allows workload commands (install, update, restore) to proceed and install the missing manifests.
+            // Info commands will see IsInstalled: false in GetWorkloadVersion() and show appropriate warnings.
 
             //  Return manifests in a stable order. Manifests in the KnownWorkloadManifests.txt file will be first, and in the same order they appear in that file.
             //  Then the rest of the manifests (if any) will be returned in (ordinal case-insensitive) alphabetical order.

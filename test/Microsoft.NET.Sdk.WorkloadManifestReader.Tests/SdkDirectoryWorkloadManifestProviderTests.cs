@@ -420,7 +420,7 @@ namespace ManifestReaderTests
         }
 
         [Fact]
-        public void ItThrowsIfManifestFromWorkloadSetIsNotFound()
+        public void ItReturnsIsInstalledFalseIfManifestFromWorkloadSetIsNotFound()
         {
             Initialize("8.0.200");
 
@@ -436,7 +436,16 @@ namespace ManifestReaderTests
             var sdkDirectoryWorkloadManifestProvider
                 = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null);
 
-            Assert.Throws<FileNotFoundException>(() => GetManifestContents(sdkDirectoryWorkloadManifestProvider).ToList());
+            // GetManifests should not throw, and will scan directories to find available manifests
+            // Since the workload set specifies ios 12.0.2 which doesn't exist, but 12.0.1 is available on disk,
+            // it will return 12.0.1 (from directory scan) since workload set manifests override but missing ones don't prevent scanning
+            var manifests = GetManifestContents(sdkDirectoryWorkloadManifestProvider).ToList();
+            manifests.Should().Contain(m => m.Contains("ios: 12.0.1"));
+
+            // GetWorkloadVersion should indicate manifests are not installed (because 12.0.2 is missing)
+            var versionInfo = sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion();
+            versionInfo.Version.Should().Be("8.0.200");
+            versionInfo.IsInstalled.Should().BeFalse();
         }
 
         [Fact]
@@ -556,7 +565,7 @@ namespace ManifestReaderTests
         }
 
         [Fact]
-        public void ItFailsIfWorkloadSetFromGlobalJsonIsNotInstalled()
+        public void ItReturnsIsInstalledFalseIfWorkloadSetFromGlobalJsonIsNotInstalled()
         {
             Initialize("8.0.200");
 
@@ -582,8 +591,15 @@ namespace ManifestReaderTests
 """);
 
             var manifestProvider = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: globalJsonPath);
-            var ex = Assert.Throws<FileNotFoundException>(() => manifestProvider.GetManifests());
-            ex.Message.Should().Be(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, "8.0.201", globalJsonPath));
+            
+            // GetManifests should not throw
+            var manifests = manifestProvider.GetManifests().ToList();
+            
+            // GetWorkloadVersion should indicate the workload set from global.json is not installed
+            var versionInfo = manifestProvider.GetWorkloadVersion();
+            versionInfo.Version.Should().Be("8.0.201");
+            versionInfo.IsInstalled.Should().BeFalse();
+            versionInfo.GlobalJsonPath.Should().Be(globalJsonPath);
         }
 
         [Fact]
@@ -683,7 +699,7 @@ namespace ManifestReaderTests
         }
 
         [Fact]
-        public void ItFailsIfManifestFromWorkloadSetFromInstallStateIsNotInstalled()
+        public void ItReturnsIsInstalledFalseIfManifestFromWorkloadSetFromInstallStateIsNotInstalled()
         {
             Initialize("8.0.200");
 
@@ -710,9 +726,17 @@ namespace ManifestReaderTests
             var sdkDirectoryWorkloadManifestProvider
                 = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null);
 
-            var ex = Assert.Throws<FileNotFoundException>(() => sdkDirectoryWorkloadManifestProvider.GetManifests().ToList());
+            // GetManifests should not throw, and will scan directories to find available manifests
+            // Since workload set 8.0.201 specifies ios 11.0.2/8.0.100 which doesn't exist, 
+            // but 12.0.1 is available on disk, it will return 12.0.1 from directory scan
+            var manifests = sdkDirectoryWorkloadManifestProvider.GetManifests().ToList();
+            manifests.Should().ContainSingle();
+            manifests.Single().ManifestVersion.Should().Be("12.0.1");
 
-            ex.Message.Should().Be(string.Format(Strings.ManifestFromWorkloadSetNotFound, "ios: 11.0.2/8.0.100", "8.0.201"));
+            // GetWorkloadVersion should indicate manifests are not installed (because workload set manifest is missing)
+            var versionInfo = sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion();
+            versionInfo.Version.Should().Be("8.0.201");
+            versionInfo.IsInstalled.Should().BeFalse();
         }
 
         [Fact]
@@ -755,7 +779,7 @@ namespace ManifestReaderTests
         }
 
         [Fact]
-        public void ItFailsIfManifestFromInstallStateIsNotInstalled()
+        public void ItReturnsIsInstalledFalseIfManifestFromInstallStateIsNotInstalled()
         {
             Initialize("8.0.200");
 
@@ -787,9 +811,11 @@ namespace ManifestReaderTests
             var sdkDirectoryWorkloadManifestProvider
                 = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null);
 
-            var ex = Assert.Throws<FileNotFoundException>(() => sdkDirectoryWorkloadManifestProvider.GetManifests().ToList());
-
-            ex.Message.Should().Be(string.Format(Strings.ManifestFromInstallStateNotFound, "ios: 12.0.2/8.0.200", installStatePath));
+            // GetManifests should not throw, and will scan directories to find available manifests
+            // Since ios 12.0.2 doesn't exist, it will scan and find ios 12.0.1
+            var manifests = GetManifestContents(sdkDirectoryWorkloadManifestProvider).ToList();
+            manifests.Should().ContainSingle();
+            manifests.Single().Should().Contain("ios: 12.0.1");
         }
 
         [Fact]

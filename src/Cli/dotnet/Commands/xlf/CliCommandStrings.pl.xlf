@@ -4065,6 +4065,11 @@ Aby wyświetlić wartość, należy podać odpowiednią opcję wiersza poleceń 
         <target state="translated">Obciążenia</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadsNotInstalledRunWorkloadUpdate">
+        <source>Run "dotnet workload update" to install the workloads for this SDK.</source>
+        <target state="new">Run "dotnet workload update" to install the workloads for this SDK.</target>
+        <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
         <target state="translated">Pisanie rekordów instalacji dla obciążeń w usłudze Visual Studio: „{0}”</target>
