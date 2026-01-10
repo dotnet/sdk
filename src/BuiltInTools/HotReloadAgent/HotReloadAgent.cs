@@ -311,10 +311,7 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
     // internal for testing
     internal static string RemoveCurrentAssembly(Type startupHookType, string environment)
     {
-        if (environment is "")
-        {
-            return environment;
-        }
+        Debug.Assert(!string.IsNullOrEmpty(environment), $"{nameof(environment)} must be set");
 
         var comparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
