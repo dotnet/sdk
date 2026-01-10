@@ -241,7 +241,9 @@ public class NushellShellProvider : IShellProvider
         }
 
         // Write options (including inherited recursive options)
-        foreach (var option in command.HierarchicalOptions())
+        // Skip HelpOption - users can use `help <command>` for NuShell-formatted help
+        // or --help/-? for native help
+        foreach (var option in command.HierarchicalOptions().Where(o => o is not Help.HelpOption))
         {
             writer.WriteLine(GenerateOptionParameter(option, binaryName, currentPath, completers));
         }
