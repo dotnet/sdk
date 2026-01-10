@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Watch
                 return rootProjectNodes;
             }
 
-            logger.LogError("Project '{ProjectPath}' not found in the project graph.", projectPath);
+            logger.LogError("Project '{PhysicalPath}' not found in the project graph.", projectPath);
             return [];
         }
 
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Watch
             {
                 if (projectNodes.Count > 1)
                 {
-                    logger.LogError("Project '{ProjectPath}' targets multiple frameworks. Specify which framework to run using '--framework'.", projectPath);
+                    logger.LogError("Project '{PhysicalPath}' targets multiple frameworks. Specify which framework to run using '--framework'.", projectPath);
                     return null;
                 }
 
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Watch
                     if (candidate != null)
                     {
                         // shouldn't be possible:
-                        logger.LogWarning("Project '{ProjectPath}' has multiple instances targeting {TargetFramework}.", projectPath, targetFramework);
+                        logger.LogWarning("Project '{PhysicalPath}' has multiple instances targeting {TargetFramework}.", projectPath, targetFramework);
                         return candidate;
                     }
 
@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Watch
 
             if (candidate == null)
             {
-                logger.LogError("Project '{ProjectPath}' doesn't have a target for {TargetFramework}.", projectPath, targetFramework);
+                logger.LogError("Project '{PhysicalPath}' doesn't have a target for {TargetFramework}.", projectPath, targetFramework);
             }
 
             return candidate;

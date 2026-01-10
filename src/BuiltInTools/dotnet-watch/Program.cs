@@ -5,7 +5,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.Loader;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Locator;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
@@ -96,52 +100,116 @@ namespace Microsoft.DotNet.Watch
                 logger.LogDebug("Test flags: {Flags}", environmentOptions.TestFlags);
             }
 
-            if (!TryFindProject(workingDirectory, options, logger, out var projectPath))
+            ProjectRepresentation project;
+
+            if (options.FilePath != null)
             {
+                try
+                {
+                    project = new ProjectRepresentation(projectPath: null, entryPointFilePath: Path.GetFullPath(Path.Combine(workingDirectory, options.FilePath)));
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(Resources.The_specified_path_0_is_invalid_1, options.FilePath, e.Message);
+                    errorCode = 1;
+                    return null;
+                }
+            }
+            else if (TryFindProject(workingDirectory, options, logger, out var projectPath))
+            {
+                project = new ProjectRepresentation(projectPath, entryPointFilePath: null);
+            }
+            else if (TryFindFileEntryPoint(workingDirectory, options, logger, out var entryPointFilePath))
+            {
+                project = new ProjectRepresentation(projectPath: null, entryPointFilePath);
+            }
+            else
+            {
+                logger.LogError(Resources.Error_NoProjectsFound, projectPath);
+
                 errorCode = 1;
                 return null;
             }
 
-            var rootProjectOptions = options.GetProjectOptions(projectPath, workingDirectory);
+            var rootProjectOptions = options.GetProjectOptions(project, workingDirectory);
             errorCode = 0;
             return new Program(console, loggerFactory, logger, processOutputReporter, rootProjectOptions, options, environmentOptions);
         }
 
+        private static bool TryFindFileEntryPoint(string workingDirectory, CommandLineOptions options, ILogger logger, [NotNullWhen(true)] out string? entryPointPath)
+        {
+            if (options.CommandArguments is not [var firstArg, ..])
+            {
+                entryPointPath = null;
+                return false;
+            }
+
+            try
+            {
+                entryPointPath = Path.GetFullPath(Path.Combine(workingDirectory, firstArg));
+            }
+            catch
+            {
+                entryPointPath = null;
+                return false;
+            }
+
+            return VirtualProjectBuildingCommand.IsValidEntryPointPath(entryPointPath);
+        }
+
         /// <summary>
         /// Finds a compatible MSBuild project.
-        /// <param name="searchBase">The base directory to search</param>
+        /// <param name="workingDirectory">The base directory to search</param>
         /// <param name="project">The filename of the project. Can be null.</param>
         /// </summary>
-        private static bool TryFindProject(string searchBase, CommandLineOptions options, ILogger logger, [NotNullWhen(true)] out string? projectPath)
+        private static bool TryFindProject(string workingDirectory, CommandLineOptions options, ILogger logger, [NotNullWhen(true)] out string? projectPath)
         {
-            projectPath = options.ProjectPath ?? searchBase;
+            projectPath = options.ProjectPath ?? workingDirectory;
 
-            if (!Path.IsPathRooted(projectPath))
+            try
             {
-                projectPath = Path.Combine(searchBase, projectPath);
+                projectPath = Path.GetFullPath(Path.Combine(workingDirectory, projectPath));
+            }
+            catch (Exception e)
+            {
+                logger.LogError(Resources.The_specified_path_0_is_invalid_1, projectPath, e.Message);
+                return false;
             }
 
             if (Directory.Exists(projectPath))
             {
-                var projects = Directory.EnumerateFileSystemEntries(projectPath, "*.*proj", SearchOption.TopDirectoryOnly)
-                    .Where(f => !".xproj".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                string[] projects;
+                try
+                {
+                    projects = Directory.GetFiles(projectPath, "*.*proj");
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(Resources.The_specified_path_0_is_invalid_1, projectPath, e.Message);
+                    return false;
+                }
 
-                if (projects.Count > 1)
+                if (projects.Length > 1)
                 {
                     logger.LogError(Resources.Error_MultipleProjectsFound, projectPath);
                     return false;
                 }
 
-                if (projects.Count == 0)
+                if (projects.Length == 0)
                 {
-                    logger.LogError(Resources.Error_NoProjectsFound, projectPath);
+                    if (options.ProjectPath != null)
+                    {
+                        logger.LogError(Resources.Error_NoProjectsFound, projectPath);
+                    }
+
                     return false;
                 }
 
                 projectPath = projects[0];
                 return true;
             }
+
+            Debug.Assert(options.ProjectPath != null);
 
             if (!File.Exists(projectPath))
             {
@@ -169,6 +237,12 @@ namespace Microsoft.DotNet.Watch
 
                 if (options.List)
                 {
+                    if (rootProjectOptions.Representation.EntryPointFilePath != null)
+                    {
+                        logger.LogError("--list does not support file-based programs");
+                        return 1;
+                    }
+
                     return await ListFilesAsync(processRunner, shutdownHandler.CancellationToken);
                 }
 
@@ -183,6 +257,11 @@ namespace Microsoft.DotNet.Watch
                 {
                     var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
                     await watcher.WatchAsync(shutdownHandler.CancellationToken);
+                }
+                else if (rootProjectOptions.Representation.EntryPointFilePath != null)
+                {
+                    logger.LogError("File-based programs are only supported when Hot Reload is enabled");
+                    return 1;
                 }
                 else
                 {
@@ -243,10 +322,13 @@ namespace Microsoft.DotNet.Watch
 
         private async Task<int> ListFilesAsync(ProcessRunner processRunner, CancellationToken cancellationToken)
         {
+            // file-based programs are not supported with --list
+            Debug.Assert(rootProjectOptions.Representation.PhysicalPath != null);
+
             var buildLogger = loggerFactory.CreateLogger(DotNetWatchContext.BuildLogComponentName);
 
             var fileSetFactory = new MSBuildFileSetFactory(
-                rootProjectOptions.ProjectPath,
+                rootProjectOptions.Representation.PhysicalPath,
                 rootProjectOptions.BuildArguments,
                 processRunner,
                 new BuildReporter(buildLogger, options.GlobalOptions, environmentOptions));

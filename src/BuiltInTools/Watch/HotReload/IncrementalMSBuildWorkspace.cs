@@ -34,7 +34,7 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
         _logger = logger;
     }
 
-    public async Task UpdateProjectConeAsync(string rootProjectPath, CancellationToken cancellationToken)
+    public async Task UpdateProjectConeAsync(ProjectRepresentation rootProject, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Loading projects ...");
 
@@ -47,7 +47,7 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
         ImmutableArray<ProjectInfo> projectInfos;
         try
         {
-            projectInfos = await loader.LoadProjectInfoAsync(rootProjectPath, projectMap, progress: null, msbuildLogger: null, cancellationToken).ConfigureAwait(false);
+            projectInfos = await loader.LoadProjectInfoAsync(rootProject.ProjectOrEntryPointFilePath, projectMap, progress: null, msbuildLogger: null, cancellationToken).ConfigureAwait(false);
         }
         catch (InvalidOperationException)
         {

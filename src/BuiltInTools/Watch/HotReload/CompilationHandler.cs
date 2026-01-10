@@ -232,7 +232,7 @@ namespace Microsoft.DotNet.Watch
             catch (OperationCanceledException) when (processExitedSource.IsCancellationRequested)
             {
                 // Process exited during initialization. This should not happen since we control the process during this time.
-                _logger.LogError("Failed to launch '{ProjectPath}'. Process {PID} exited during initialization.", projectPath, launchResult.ProcessId);
+                _logger.LogError("Failed to launch '{PhysicalPath}'. Process {PID} exited during initialization.", projectPath, launchResult.ProcessId);
                 return null;
             }
         }
