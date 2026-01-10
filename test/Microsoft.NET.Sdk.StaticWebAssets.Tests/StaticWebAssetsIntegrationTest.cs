@@ -617,6 +617,153 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             AssertManifest(manifest1, expectedManifest);
             AssertBuildAssets(manifest1, outputPath, intermediateOutputPath);
         }
+
+        [Fact]
+        public void Build_AdditionalStaticWebAssetsBasePath_IncludesExternalContentRoots()
+        {
+            var testAsset = "RazorComponentApp";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            // Create an additional folder outside wwwroot to serve as additional content root
+            var additionalContentRoot = Path.Combine(ProjectDirectory.Path, "AdditionalAssets");
+            Directory.CreateDirectory(additionalContentRoot);
+            File.WriteAllText(Path.Combine(additionalContentRoot, "extra.js"), "console.log('extra');");
+            File.WriteAllText(Path.Combine(additionalContentRoot, "extra.css"), ".extra { color: red; }");
+
+            // Create a subdirectory with more assets
+            var subDir = Path.Combine(additionalContentRoot, "sub");
+            Directory.CreateDirectory(subDir);
+            File.WriteAllText(Path.Combine(subDir, "nested.txt"), "nested content");
+
+            var build = CreateBuildCommand(ProjectDirectory);
+
+            // Pass the AdditionalStaticWebAssetsBasePath property with format: content-root,base-path
+            // Quote the entire value to prevent MSBuild from interpreting the comma as a separator
+            var additionalAssetsProperty = $"\"{additionalContentRoot},_content/AdditionalAssets\"";
+            ExecuteCommand(build, $"/p:AdditionalStaticWebAssetsBasePath={additionalAssetsProperty}").Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // Verify the manifest file exists
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+
+            // Verify the additional assets are in the manifest (only count Primary assets, not compressed alternatives)
+            var additionalAssets = manifest.Assets.Where(a =>
+                a.AssetRole == "Primary" &&
+                (a.RelativePath.Contains("extra.js") ||
+                a.RelativePath.Contains("extra.css") ||
+                a.RelativePath.Contains("nested.txt"))).ToArray();
+
+            additionalAssets.Should().HaveCount(3, "All additional assets should be included in the manifest");
+
+            // Verify the base path is correct
+            foreach (var asset in additionalAssets)
+            {
+                asset.BasePath.Should().Be("_content/AdditionalAssets");
+            }
+
+            // Verify discovery patterns include the additional content root
+            var discoveryPattern = manifest.DiscoveryPatterns.FirstOrDefault(p =>
+                p.BasePath == "_content/AdditionalAssets");
+            discoveryPattern.Should().NotBeNull("Discovery pattern for additional content root should exist");
+        }
+
+        [Fact]
+        public void Build_AdditionalStaticWebAssetsBasePath_MultipleContentRoots()
+        {
+            var testAsset = "RazorComponentApp";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            // Create first additional folder
+            var additionalContentRoot1 = Path.Combine(ProjectDirectory.Path, "AdditionalAssets1");
+            Directory.CreateDirectory(additionalContentRoot1);
+            File.WriteAllText(Path.Combine(additionalContentRoot1, "file1.js"), "console.log('file1');");
+
+            // Create second additional folder
+            var additionalContentRoot2 = Path.Combine(ProjectDirectory.Path, "AdditionalAssets2");
+            Directory.CreateDirectory(additionalContentRoot2);
+            File.WriteAllText(Path.Combine(additionalContentRoot2, "file2.js"), "console.log('file2');");
+
+            var build = CreateBuildCommand(ProjectDirectory);
+
+            // Pass multiple content roots separated by semicolons
+            // Quote the entire value to prevent MSBuild from interpreting commas/semicolons as separators
+            var additionalAssetsProperty = $"\"{additionalContentRoot1},_content/Assets1;{additionalContentRoot2},_content/Assets2\"";
+            ExecuteCommand(build, $"/p:AdditionalStaticWebAssetsBasePath={additionalAssetsProperty}").Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+
+            // Verify assets from both content roots are in the manifest (only count Primary assets)
+            var asset1 = manifest.Assets.FirstOrDefault(a => a.AssetRole == "Primary" && a.RelativePath.Contains("file1.js"));
+            var asset2 = manifest.Assets.FirstOrDefault(a => a.AssetRole == "Primary" && a.RelativePath.Contains("file2.js"));
+
+            asset1.Should().NotBeNull("Asset from first additional content root should exist");
+            asset1!.BasePath.Should().Be("_content/Assets1");
+
+            asset2.Should().NotBeNull("Asset from second additional content root should exist");
+            asset2!.BasePath.Should().Be("_content/Assets2");
+
+            // Verify discovery patterns for both content roots
+            manifest.DiscoveryPatterns.Should().Contain(p => p.BasePath == "_content/Assets1");
+            manifest.DiscoveryPatterns.Should().Contain(p => p.BasePath == "_content/Assets2");
+        }
+
+        [Fact]
+        public void Publish_AdditionalStaticWebAssetsBasePath_IncludesExternalContentRoots()
+        {
+            var testAsset = "RazorComponentApp";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            // Create an additional folder outside wwwroot to serve as additional content root
+            var additionalContentRoot = Path.Combine(ProjectDirectory.Path, "AdditionalAssets");
+            Directory.CreateDirectory(additionalContentRoot);
+            File.WriteAllText(Path.Combine(additionalContentRoot, "publish-extra.js"), "console.log('publish-extra');");
+
+            var publish = CreatePublishCommand(ProjectDirectory);
+
+            // Pass the AdditionalStaticWebAssetsBasePath property
+            // Quote the entire value to prevent MSBuild from interpreting the comma as a separator
+            var additionalAssetsProperty = $"\"{additionalContentRoot},_content/AdditionalAssets\"";
+            ExecuteCommand(publish, $"/p:AdditionalStaticWebAssetsBasePath={additionalAssetsProperty}").Should().Pass();
+
+            var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // Verify the build manifest file exists and includes the additional assets
+            var buildPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(buildPath).Should().Exist();
+
+            var buildManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(buildPath));
+
+            // Verify the additional asset is in the build manifest (only count Primary assets)
+            var additionalAsset = buildManifest.Assets.FirstOrDefault(a =>
+                a.AssetRole == "Primary" && a.RelativePath.Contains("publish-extra.js"));
+
+            additionalAsset.Should().NotBeNull("Additional asset should be included in the build manifest");
+            additionalAsset!.BasePath.Should().Be("_content/AdditionalAssets");
+
+            // Verify the publish manifest file exists
+            var publishManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
+            new FileInfo(publishManifestPath).Should().Exist();
+
+            var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(publishManifestPath));
+
+            // Verify the additional asset is in the publish manifest
+            var publishAsset = publishManifest.Assets.FirstOrDefault(a =>
+                a.AssetRole == "Primary" && a.RelativePath.Contains("publish-extra.js"));
+
+            publishAsset.Should().NotBeNull("Additional asset should be included in the publish manifest");
+            publishAsset!.BasePath.Should().Be("_content/AdditionalAssets");
+        }
     }
 
     public class StaticWebAssetsAppWithPackagesIntegrationTest(ITestOutputHelper log)
