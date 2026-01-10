@@ -186,14 +186,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_JoinedFrameworkReference>
         <WasReferencedDirectly>true</WasReferencedDirectly>
       </_JoinedFrameworkReference>
-
-      <!-- Filter _ApplicableKnownFrameworkReference to only those with matching FrameworkReference -->
-      <_FilteredApplicableKnownFrameworkReference Include="@(_ApplicableKnownFrameworkReference)"
-        Condition="'%(_ApplicableKnownFrameworkReference.Identity)' == '%(_JoinedFrameworkReference.Identity)'" />
-
-      <!-- Replace _ApplicableKnownFrameworkReference with filtered version -->
-      <_ApplicableKnownFrameworkReference Remove="@(_ApplicableKnownFrameworkReference)" />
-      <_ApplicableKnownFrameworkReference Include="@(_FilteredApplicableKnownFrameworkReference)" />
     </ItemGroup>
 
     <!-- Validate Windows-only frameworks from _ValidateWindowsOnlyFrameworks -->
@@ -217,20 +209,36 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Select runtime packs by labels from _SelectRuntimePacksByLabels -->
-     <!-- TODO: this is broken - no _candidateruntimepack items are created. -->
+    <!-- Build up candidate runtime packs incrementally, one framework reference at a time -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
-      <!-- For each runtime pack, check if it matches any framework reference's RuntimeFrameworkName -->
+      <!-- For each framework reference, find runtime packs matching its RuntimeFrameworkName -->
       <_CandidateRuntimePack Include="@(_ApplicableKnownRuntimePack)"
-        Condition="@(_JoinedFrameworkReference->AnyHaveMetadataValue('RuntimeFrameworkName', '%(_ApplicableKnownRuntimePack.Identity)'))"
+        Condition="'%(_ApplicableKnownRuntimePack.Identity)' == '%(_JoinedFrameworkReference.RuntimeFrameworkName)'"
         KeepMetadata="RuntimePackNamePatterns;RuntimePackRuntimeIdentifiers;RuntimePackExcludedRuntimeIdentifiers;LatestRuntimeFrameworkVersion;RuntimePackLabels;IsTrimmable;RuntimePackAlwaysCopyLocal">
         <FrameworkReferenceName>%(_JoinedFrameworkReference.Identity)</FrameworkReferenceName>
         <RequiredRuntimePackLabels>%(_JoinedFrameworkReference.RuntimePackLabels)</RequiredRuntimePackLabels>
       </_CandidateRuntimePack>
+    </ItemGroup>
 
-      <!-- Filter to runtime packs where labels match exactly (or both are empty) -->
+    <!-- Filter to runtime packs where labels match (set-based equality) -->
+    <!-- Add normalized sorted labels for comparison -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_CandidateRuntimePack>
+        <NormalizedRuntimePackLabels Condition="'%(_CandidateRuntimePack.RuntimePackLabels)' != ''">$([MSBuild]::ValueOrDefault('%(_CandidateRuntimePack.RuntimePackLabels)', '').Replace(';', '|').Split('|').OrderBy().Aggregate((x,y) => x + ';' + y))</NormalizedRuntimePackLabels>
+        <NormalizedRequiredLabels Condition="'%(_CandidateRuntimePack.RequiredRuntimePackLabels)' != ''">$([MSBuild]::ValueOrDefault('%(_CandidateRuntimePack.RequiredRuntimePackLabels)', '').Replace(';', '|').Split('|').OrderBy().Aggregate((x,y) => x + ';' + y))</NormalizedRequiredLabels>
+      </_CandidateRuntimePack>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <!-- Case 1: Both have no labels (empty strings) -->
       <_MatchedRuntimePack Include="@(_CandidateRuntimePack)"
-        Condition="'%(_CandidateRuntimePack.RuntimePackLabels)' == '%(_CandidateRuntimePack.RequiredRuntimePackLabels)' OR
-                   ('%(_CandidateRuntimePack.RuntimePackLabels)' == '' AND '%(_CandidateRuntimePack.RequiredRuntimePackLabels)' == '')" />
+        Condition="'%(_CandidateRuntimePack.RuntimePackLabels)' == '' AND '%(_CandidateRuntimePack.RequiredRuntimePackLabels)' == ''" />
+
+      <!-- Case 2: Both have labels - compare normalized sorted strings -->
+      <_MatchedRuntimePack Include="@(_CandidateRuntimePack)"
+        Condition="'%(_CandidateRuntimePack.RuntimePackLabels)' != '' AND
+                   '%(_CandidateRuntimePack.RequiredRuntimePackLabels)' != '' AND
+                   '%(_CandidateRuntimePack.NormalizedRuntimePackLabels)' == '%(_CandidateRuntimePack.NormalizedRequiredLabels)'" />
     </ItemGroup>
 
     <!-- Resolve runtime packs for primary RID from _ResolveRuntimePacksForPrimaryRID -->
