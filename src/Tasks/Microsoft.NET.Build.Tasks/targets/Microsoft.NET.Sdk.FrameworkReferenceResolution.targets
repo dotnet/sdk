@@ -209,14 +209,37 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Select runtime packs by labels from _SelectRuntimePacksByLabels -->
-    <!-- Build up candidate runtime packs incrementally, one framework reference at a time -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
-      <!-- For each framework reference, find runtime packs matching its RuntimeFrameworkName -->
-      <_CandidateRuntimePack Include="@(_ApplicableKnownRuntimePack)"
-        Condition="'%(_ApplicableKnownRuntimePack.Identity)' == '%(_JoinedFrameworkReference.RuntimeFrameworkName)'"
-        KeepMetadata="RuntimePackNamePatterns;RuntimePackRuntimeIdentifiers;RuntimePackExcludedRuntimeIdentifiers;LatestRuntimeFrameworkVersion;RuntimePackLabels;IsTrimmable;RuntimePackAlwaysCopyLocal">
+      <!-- Add base runtime pack from framework reference itself (for unlabeled variants) -->
+      <_CandidateRuntimePack Include="@(_JoinedFrameworkReference)" KeepMetadata="RuntimePackNamePatterns;RuntimePackRuntimeIdentifiers;RuntimePackExcludedRuntimeIdentifiers;LatestRuntimeFrameworkVersion;RuntimePackLabels;IsTrimmable;RuntimePackAlwaysCopyLocal">
         <FrameworkReferenceName>%(_JoinedFrameworkReference.Identity)</FrameworkReferenceName>
         <RequiredRuntimePackLabels>%(_JoinedFrameworkReference.RuntimePackLabels)</RequiredRuntimePackLabels>
+      </_CandidateRuntimePack>
+    </ItemGroup>
+
+    <!-- Add labeled runtime pack variants from KnownRuntimePack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_JoinedFrameworkReference>
+        <FrameworkReferenceIdentity>%(_JoinedFrameworkReference.Identity)</FrameworkReferenceIdentity>
+        <FrameworkReferenceRuntimePackLabels>%(_JoinedFrameworkReference.RuntimePackLabels)</FrameworkReferenceRuntimePackLabels>
+      </_JoinedFrameworkReference>
+    </ItemGroup>
+
+    <JoinItems Left="@(_ApplicableKnownRuntimePack)"
+               Right="@(_JoinedFrameworkReference)"
+               LeftKey="Identity"
+               RightKey="RuntimeFrameworkName"
+               LeftMetadata="*"
+               RightMetadata="FrameworkReferenceIdentity;FrameworkReferenceRuntimePackLabels"
+               ItemSpecToUse="Left"
+               Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <Output TaskParameter="JoinResult" ItemName="_CandidateRuntimePackRaw" />
+    </JoinItems>
+
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_CandidateRuntimePack Include="@(_CandidateRuntimePackRaw)" KeepMetadata="RuntimePackNamePatterns;RuntimePackRuntimeIdentifiers;RuntimePackExcludedRuntimeIdentifiers;LatestRuntimeFrameworkVersion;RuntimePackLabels;IsTrimmable;RuntimePackAlwaysCopyLocal">
+        <FrameworkReferenceName>%(_CandidateRuntimePackRaw.FrameworkReferenceIdentity)</FrameworkReferenceName>
+        <RequiredRuntimePackLabels>%(_CandidateRuntimePackRaw.FrameworkReferenceRuntimePackLabels)</RequiredRuntimePackLabels>
       </_CandidateRuntimePack>
     </ItemGroup>
 
