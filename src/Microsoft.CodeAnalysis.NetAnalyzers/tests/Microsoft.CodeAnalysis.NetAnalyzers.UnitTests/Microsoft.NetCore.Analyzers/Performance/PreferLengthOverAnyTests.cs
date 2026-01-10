@@ -320,5 +320,39 @@ public class MyCollection {
 
             return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
+
+        [Fact]
+        public Task TestDerivedTypeWithLengthPropertyAsync()
+        {
+            var code = """
+                using System.Collections;
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public class SomeCollection<T> : IEnumerable<T>
+                {
+                    private List<T> list;
+
+                    public int Length { get; }
+
+                    public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
+                
+                    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+                }
+
+                public class DerivedCollection<T> : SomeCollection<T> { }
+
+                public class Test
+                {
+                    public void M()
+                    {
+                        var collection = new DerivedCollection<int>();
+                        _ = {|#0:collection.Any()|};
+                    }
+                }
+                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code, ExpectedDiagnostic);
+        }
     }
 }
