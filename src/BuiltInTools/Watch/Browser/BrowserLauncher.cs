@@ -39,7 +39,7 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
         WebServerProcessStateObserver.Observe(projectNode, processSpec, url =>
         {
             if (projectOptions.IsRootProject &&
-                ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, key) => set.Add(key), projectNode.GetProjectInstanceId()))
+                ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, key) => set.Add(key), projectNode.ProjectInstance.GetId()))
             {
                 // first build iteration of a root project:
                 var launchUrl = GetLaunchUrl(launchProfile.LaunchUrl, url);

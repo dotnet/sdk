@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.Watch
                             {
                                 FilePath = filePath,
                                 ContainingProjectPaths = [projectPath],
-                                StaticWebAssetPath = staticWebAssetPath,
+                                StaticWebAssetRelativeUrl = staticWebAssetPath,
                             });
                         }
                         else if (!existingFile.ContainingProjectPaths.Contains(projectPath))
