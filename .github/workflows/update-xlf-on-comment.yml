@@ -21,10 +21,7 @@ jobs:
       pull-requests: write
     outputs:
       should_run: ${{ steps.command-filter.outputs.should_run }}
-      pr_number: ${{ steps.metadata.outputs.pr_number }}
       head_ref: ${{ steps.metadata.outputs.head_ref }}
-      issue_number: ${{ github.event.issue.number }}
-      comment_id: ${{ steps.command-filter.outputs.comment_id }}
 
     steps:
       - name: Evaluate comment command
@@ -32,13 +29,11 @@ jobs:
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           COMMENT_BODY: ${{ github.event.comment.body }} # GH Has a Character Limit which prevents overflow issues. https://github.com/dead-claudia/github-limits
-          COMMENT_ID: ${{ github.event.comment.id }}
         with:
           script: |
             const body = (process.env.COMMENT_BODY || '').trim().toLowerCase();
             const shouldRun = body.startsWith('/updatexlf') || body.startsWith('/xlf');
             core.setOutput('should_run', String(shouldRun));
-            core.setOutput('comment_id', process.env.COMMENT_ID || '');
             if (!shouldRun) {
               core.info('Comment does not invoke /updatexlf or /xlf. Skipping workflow.');
             }
@@ -98,7 +93,6 @@ jobs:
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           COMMENT_BODY: ${{ format('▶️ XLF update workflow started. Track progress in [this workflow run]({0}).', env.RUN_URL) }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
         with:
           github-token: ${{ github.token }}
           script: |
@@ -106,7 +100,7 @@ jobs:
             await github.rest.issues.createComment({
               owner,
               repo,
-              issue_number: Number(process.env.ISSUE_NUMBER),
+              issue_number: Number(context.payload.issue.number),
               body: process.env.COMMENT_BODY,
             });
 
@@ -132,7 +126,6 @@ jobs:
               return;
             }
 
-            core.setOutput('pr_number', String(pr.data.number));
             core.setOutput('head_ref', pr.data.head.ref);
 
   generate:
@@ -155,7 +148,7 @@ jobs:
         with:
           token: ${{ github.token }}
           fetch-depth: 0
-          ref: refs/pull/${{ needs.authorize.outputs.pr_number }}/head
+          ref: refs/pull/${{ github.event.issue.number }}/head
           path: pr
           persist-credentials: false
 
@@ -407,23 +400,22 @@ jobs:
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           COMMENT_BODY: ${{ steps.success-comment.outputs.body }}
-          ISSUE_NUMBER: ${{ needs.authorize.outputs.issue_number }}
-          REACTION_COMMENT_ID: ${{ needs.authorize.outputs.comment_id }}
         with:
           github-token: ${{ github.token }}
           script: |
             const { owner, repo } = context.repo;
+            const reactionCommentId = context.payload.comment.id;
             await github.rest.issues.createComment({
               owner,
               repo,
-              issue_number: Number(process.env.ISSUE_NUMBER),
+              issue_number: Number(context.payload.issue.number),
               body: process.env.COMMENT_BODY,
             });
-            if (process.env.REACTION_COMMENT_ID) {
+            if (reactionCommentId) {
               await github.rest.reactions.createForIssueComment({
                 owner,
                 repo,
-                comment_id: Number(process.env.REACTION_COMMENT_ID),
+                comment_id: Number(reactionCommentId),
                 content: '+1',
               });
             }
@@ -433,23 +425,22 @@ jobs:
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           COMMENT_BODY: ${{ format('ℹ️ No XLF files needed to be updated. Review [the workflow run]({0}).', env.RUN_URL) }}
-          ISSUE_NUMBER: ${{ needs.authorize.outputs.issue_number }}
-          REACTION_COMMENT_ID: ${{ needs.authorize.outputs.comment_id }}
         with:
           github-token: ${{ github.token }}
           script: |
             const { owner, repo } = context.repo;
+            const reactionCommentId = context.payload.comment.id;
             await github.rest.issues.createComment({
               owner,
               repo,
-              issue_number: Number(process.env.ISSUE_NUMBER),
+              issue_number: Number(context.payload.issue.number),
               body: process.env.COMMENT_BODY,
             });
-            if (process.env.REACTION_COMMENT_ID) {
+            if (reactionCommentId) {
               await github.rest.reactions.createForIssueComment({
                 owner,
                 repo,
-                comment_id: Number(process.env.REACTION_COMMENT_ID),
+                comment_id: Number(reactionCommentId),
                 content: '+1',
               });
             }
@@ -501,23 +492,22 @@ jobs:
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           COMMENT_BODY: ${{ steps.failure-comment.outputs.body }}
-          ISSUE_NUMBER: ${{ needs.authorize.outputs.issue_number }}
-          REACTION_COMMENT_ID: ${{ needs.authorize.outputs.comment_id }}
         with:
           github-token: ${{ github.token }}
           script: |
             const { owner, repo } = context.repo;
+            const reactionCommentId = context.payload.comment.id;
             await github.rest.issues.createComment({
               owner,
               repo,
-              issue_number: Number(process.env.ISSUE_NUMBER),
+              issue_number: Number(context.payload.issue.number),
               body: process.env.COMMENT_BODY,
             });
-            if (process.env.REACTION_COMMENT_ID) {
+            if (reactionCommentId) {
               await github.rest.reactions.createForIssueComment({
                 owner,
                 repo,
-                comment_id: Number(process.env.REACTION_COMMENT_ID),
+                comment_id: Number(reactionCommentId),
                 content: 'confused',
               });
             }
