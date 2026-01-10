@@ -404,7 +404,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? standardOutput,
         string? errorOutput)
     {
-        TestProgressState asm = _assemblies[executionId];
+        if (!_assemblies.TryGetValue(executionId, out TestProgressState? asm))
+        {
+            // This should not happen in normal scenarios, but handle gracefully
+            return;
+        }
         var attempt = asm.TryCount;
 
         if (_options.ShowActiveTests)
@@ -731,7 +735,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // In single process run, like with testing platform .exe we report these via messages, and run exit.
         int exitCode, string? outputData, string? errorData)
     {
-        TestProgressState assemblyRun = _assemblies[executionId];
+        // The executionId may not exist in the dictionary if the host type is not "TestHost"
+        // (e.g., TestHostController), since AssemblyRunStarted is only called for TestHost.
+        if (!_assemblies.TryGetValue(executionId, out TestProgressState? assemblyRun))
+        {
+            // No assembly run state to update, but still report on non-zero exit codes
+            if (exitCode != 0)
+            {
+                _terminalWithProgress.WriteToTerminal(terminal =>
+                {
+                    AppendExecutableSummary(terminal, exitCode, outputData, errorData);
+                });
+            }
+            return;
+        }
+
         assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
@@ -903,7 +921,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        TestProgressState asm = _assemblies[executionId];
+        if (!_assemblies.TryGetValue(executionId, out TestProgressState? asm))
+        {
+            // This should not happen in normal scenarios, but handle gracefully
+            return;
+        }
 
         // TODO: add mode for discovered tests to the progress bar - jajares
         asm.DiscoverTest(displayName, uid);
@@ -989,7 +1011,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string displayName,
         string executionId)
     {
-        TestProgressState asm = _assemblies[executionId];
+        if (!_assemblies.TryGetValue(executionId, out TestProgressState? asm))
+        {
+            // This should not happen in normal scenarios, but handle gracefully
+            return;
+        }
 
         if (_options.ShowActiveTests)
         {
