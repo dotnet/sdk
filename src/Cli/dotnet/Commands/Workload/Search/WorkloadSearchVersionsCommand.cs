@@ -165,7 +165,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
 
         return [.. packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
             .GetAwaiter().GetResult()
-            .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))];
+            .Select(version => featureBand.GetWorkloadSetPackageVersion(version.ToString()))];
     }
 
     private IEnumerable<string> FindBestWorkloadSetsFromComponents()

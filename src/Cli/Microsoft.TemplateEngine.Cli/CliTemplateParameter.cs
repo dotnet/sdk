@@ -5,9 +5,9 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.DotNet.Cli.Help;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.TemplateEngine.Cli
 {

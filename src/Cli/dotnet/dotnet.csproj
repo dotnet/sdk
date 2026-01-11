@@ -38,12 +38,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.DotNet.InternalAbstractions\Microsoft.DotNet.InternalAbstractions.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" GlobalPropertiesToRemove="PublishDir" />
     <!-- override the Microsoft.TemplateEngine.Cli's dependency with the latest Microsoft.DotNet.TemplateLocator -->
     <ProjectReference Include="..\..\Microsoft.DotNet.TemplateLocator\Microsoft.DotNet.TemplateLocator.csproj" GlobalPropertiesToRemove="PublishDir" />
-    <ProjectReference Include="..\..\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <!-- Extern alias help resolving ambiguities of types linked to multiple referenced projects -->
+    <ProjectReference Include="..\..\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" GlobalPropertiesToRemove="PublishDir" Aliases="DotNetNativeWrapper,global" />
     <ProjectReference Include="..\..\Microsoft.Win32.Msi\Microsoft.Win32.Msi.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\..\System.CommandLine.StaticCompletions\System.CommandLine.StaticCompletions.csproj" GlobalPropertiesToRemove="PublishDir" />

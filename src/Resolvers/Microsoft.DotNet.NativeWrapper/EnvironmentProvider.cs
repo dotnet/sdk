@@ -70,11 +70,11 @@ namespace Microsoft.DotNet.NativeWrapper
             {
                 string? dotnetExeFromPath = GetCommandPath(Constants.DotNet);
 
-                if (dotnetExeFromPath != null && !Interop.RunningOnWindows)
+                if (dotnetExeFromPath != null && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     // e.g. on Linux the 'dotnet' command from PATH is a symlink so we need to
                     // resolve it to get the actual path to the binary
-                    dotnetExeFromPath = Interop.Unix.realpath(dotnetExeFromPath) ?? dotnetExeFromPath;
+                    dotnetExeFromPath = realpath(dotnetExeFromPath) ?? dotnetExeFromPath;
                 }
 
                 if (!string.IsNullOrWhiteSpace(dotnetExeFromPath))
@@ -101,6 +101,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
             return dotnetDirectory;
         }
+
 
         public static string? GetDotnetExeDirectory(Func<string, string?>? getEnvironmentVariable = null, Action<FormattableString>? log = null)
         {
@@ -129,6 +130,20 @@ namespace Microsoft.DotNet.NativeWrapper
             currentProcessPath = Process.GetCurrentProcess().MainModule.FileName;
 #endif
             return currentProcessPath;
+        }
+
+        [DllImport("libc", CharSet = CharSet.Ansi, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr realpath(string path, IntPtr buffer);
+
+        [DllImport("libc", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
+        private static extern void free(IntPtr ptr);
+
+        private static string? realpath(string path)
+        {
+            var ptr = realpath(path, IntPtr.Zero);
+            var result = Marshal.PtrToStringAnsi(ptr);
+            free(ptr);
+            return result;
         }
     }
 }

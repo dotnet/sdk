@@ -142,7 +142,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         //  Moves workload set packages for a given version from C:\SdkTesting\WorkloadSets to C:\SdkTesting\DisabledWorkloadSets
         protected void RemoveWorkloadSetFromLocalSource(string workloadSetVersion)
         {
-            var packageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var sdkFeatureBand);
+            var sdkFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(workloadSetVersion, out var packageVersion);
 
             VM.CreateActionGroup($"Disable {workloadSetVersion}",
                 VM.CreateRunCommand("cmd", "/c", "mkdir", @"c:\SdkTesting\DisabledWorkloadSets"),
