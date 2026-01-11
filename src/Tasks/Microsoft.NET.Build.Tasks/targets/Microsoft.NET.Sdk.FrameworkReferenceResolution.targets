@@ -577,7 +577,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Build PackageConflictPreferredPackages property -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
       <_PreferredPackage Include="%(_TargetingPack.NuGetPackageId)" />
-      <_PreferredPackage Include="@(_MatchedRuntimePack->'%(RuntimePackNamePatterns)')" />
+      <!-- Expand runtime pack patterns for all supported RIDs -->
+      <_RuntimePackPatternWithRid Include="%(_MatchedRuntimePack.RuntimePackRuntimeIdentifiers)">
+        <Pattern>%(_MatchedRuntimePack.RuntimePackNamePatterns)</Pattern>
+      </_RuntimePackPatternWithRid>
+    </ItemGroup>
+
+    <!-- Substitute RID in each pattern -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_PreferredPackage Include="$([System.String]::Copy('%(_RuntimePackPatternWithRid.Pattern)').Replace('**RID**', '%(_RuntimePackPatternWithRid.Identity)'))" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
