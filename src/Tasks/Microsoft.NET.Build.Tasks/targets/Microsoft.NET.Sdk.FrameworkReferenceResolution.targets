@@ -354,29 +354,49 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="$([MSBuild]::VersionEquals($([MSBuild]::GetTargetFrameworkVersion('%(_KnownCrossgen2PackMatchingTFI.TargetFramework)', 2)), '$(_TargetFrameworkVersionWithoutV)'))" />
     </ItemGroup>
 
-    <PickBestRid RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
-                 TargetRid="$(NETCoreSdkRuntimeIdentifier)"
-                 SupportedRids="%(_ApplicableCrossgen2Pack.Crossgen2RuntimeIdentifiers)"
-                 Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
-                           '$(PublishReadyToRun)' == 'true' AND
-                           '$(PublishReadyToRunUseCrossgen2)' == 'true' AND
-                           '@(_ApplicableCrossgen2Pack)' != ''">
-      <Output TaskParameter="MatchingRid" ItemName="_Crossgen2HostRid" />
-    </PickBestRid>
-
-    <!-- Prepare Crossgen2 pack intermediate data -->
+    <!-- Create candidate items with RuntimeIdentifier metadata for each supported RID -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                           '$(PublishReadyToRun)' == 'true' AND
                           '$(PublishReadyToRunUseCrossgen2)' == 'true' AND
-                          '@(_Crossgen2HostRid)' != ''">
-      <_Crossgen2Pack Include="@(_ApplicableCrossgen2Pack->'%(Crossgen2PackNamePattern)'.Replace('**RID**', '%(_Crossgen2HostRid.Identity)'))">
-        <NuGetPackageId>%(_Crossgen2Pack.Identity)</NuGetPackageId>
-        <NuGetPackageVersion>%(_ApplicableCrossgen2Pack.Crossgen2PackVersion)</NuGetPackageVersion>
-        <RuntimeIdentifier>%(_Crossgen2HostRid.Identity)</RuntimeIdentifier>
-        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_Crossgen2Pack.Identity)\%(_ApplicableCrossgen2Pack.Crossgen2PackVersion)')">$(NetCoreTargetingPackRoot)\%(_Crossgen2Pack.Identity)\%(_ApplicableCrossgen2Pack.Crossgen2PackVersion)</PackageDirectory>
+                          '@(_ApplicableCrossgen2Pack)' != ''">
+      <_Crossgen2Candidate Include="%(_ApplicableCrossgen2Pack.Crossgen2RuntimeIdentifiers)">
+        <Crossgen2PackNamePattern>%(_ApplicableCrossgen2Pack.Crossgen2PackNamePattern)</Crossgen2PackNamePattern>
+        <Crossgen2PackVersion>%(_ApplicableCrossgen2Pack.Crossgen2PackVersion)</Crossgen2PackVersion>
+      </_Crossgen2Candidate>
+    </ItemGroup>
+
+    <!-- Select compatible Crossgen2 pack -->
+    <SelectRuntimeIdentifierSpecificItems RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                                          TargetRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
+                                          Items="@(_Crossgen2Candidate)"
+                                          RuntimeIdentifierItemMetadata="Identity"
+                                          Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                                                    '$(PublishReadyToRun)' == 'true' AND
+                                                    '$(PublishReadyToRunUseCrossgen2)' == 'true' AND
+                                                    '@(_Crossgen2Candidate)' != ''">
+      <Output TaskParameter="SelectedItems" ItemName="_SelectedCrossgen2Candidate" />
+    </SelectRuntimeIdentifierSpecificItems>
+
+    <!-- Prepare Crossgen2 pack intermediate data -->
+    <!-- First create the items with substituted RID -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishReadyToRun)' == 'true' AND
+                          '$(PublishReadyToRunUseCrossgen2)' == 'true' AND
+                          '@(_SelectedCrossgen2Candidate)' != ''">
+      <_Crossgen2Pack Include="$([System.String]::Copy('%(_SelectedCrossgen2Candidate.Crossgen2PackNamePattern)').Replace('**RID**', '%(_SelectedCrossgen2Candidate.Identity)'))">
+        <NuGetPackageVersion>%(_SelectedCrossgen2Candidate.Crossgen2PackVersion)</NuGetPackageVersion>
+        <RuntimeIdentifier>%(_SelectedCrossgen2Candidate.Identity)</RuntimeIdentifier>
       </_Crossgen2Pack>
+    </ItemGroup>
+
+    <!-- Then add metadata that depends on Identity -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishReadyToRun)' == 'true' AND
+                          '$(PublishReadyToRunUseCrossgen2)' == 'true' AND
+                          '@(_Crossgen2Pack)' != ''">
       <_Crossgen2Pack>
-        <Path>%(_Crossgen2Pack.PackageDirectory)</Path>
+        <NuGetPackageId>%(_Crossgen2Pack.Identity)</NuGetPackageId>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_Crossgen2Pack.Identity)\%(_Crossgen2Pack.NuGetPackageVersion)')">$(NetCoreTargetingPackRoot)\%(_Crossgen2Pack.Identity)\%(_Crossgen2Pack.NuGetPackageVersion)</PackageDirectory>
       </_Crossgen2Pack>
     </ItemGroup>
 
