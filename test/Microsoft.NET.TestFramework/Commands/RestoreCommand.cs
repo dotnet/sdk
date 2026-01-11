@@ -12,13 +12,13 @@ namespace Microsoft.NET.TestFramework.Commands
         public RestoreCommand(ITestOutputHelper log, string projectPath, string? relativePathToProject = null)
             : base(log, "Restore", projectPath, relativePathToProject)
         {
+            ShouldRestore = false;
         }
 
         public RestoreCommand(TestAsset testAsset, string? relativePathToProject = null)
             : base(testAsset, "Restore", relativePathToProject)
         {
+            ShouldRestore = false;
         }
-
-        protected override bool ExecuteWithRestoreByDefault => false;
     }
 }
