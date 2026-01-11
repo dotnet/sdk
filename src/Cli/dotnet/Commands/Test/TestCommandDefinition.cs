@@ -41,14 +41,9 @@ internal abstract partial class TestCommandDefinition : Command
         {
             jsonText = File.ReadAllText(globalJsonPath);
         }
-        catch (IOException)
+        catch (Exception)
         {
-            // If global.json is unreadable (permissions, I/O errors, etc.), default to VSTest
-            return new VSTest();
-        }
-        catch (UnauthorizedAccessException)
-        {
-            // If global.json has permission issues, default to VSTest
+            // If global.json is unreadable (I/O errors, permissions, etc.), default to VSTest
             return new VSTest();
         }
 
