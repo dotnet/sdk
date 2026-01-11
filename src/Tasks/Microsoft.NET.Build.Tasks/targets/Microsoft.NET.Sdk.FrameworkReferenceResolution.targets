@@ -258,37 +258,42 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Resolve runtime packs for primary RID from _ResolveRuntimePacksForPrimaryRID -->
-    <!-- Create scenario items for PickBestRid batching: one per runtime pack -->
+    <!-- Create candidate items where Identity is the RID -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                           '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
-                          '$(_EffectiveRuntimeIdentifier)' != ''">
-      <_PrimaryRidScenario Include="@(_MatchedRuntimePack)" KeepMetadata="RuntimePackNamePatterns;RuntimePackRuntimeIdentifiers;FrameworkReferenceName;LatestRuntimeFrameworkVersion;IsTrimmable;RuntimePackAlwaysCopyLocal">
-        <TargetRid>$(_EffectiveRuntimeIdentifier)</TargetRid>
-        <SupportedRids>%(_MatchedRuntimePack.RuntimePackRuntimeIdentifiers)</SupportedRids>
-      </_PrimaryRidScenario>
+                          '$(_EffectiveRuntimeIdentifier)' != '' AND
+                          '@(_MatchedRuntimePack)' != ''">
+      <_PrimaryRuntimePackCandidate Include="%(_MatchedRuntimePack.RuntimePackRuntimeIdentifiers)">
+        <RuntimePackNamePatterns>%(_MatchedRuntimePack.RuntimePackNamePatterns)</RuntimePackNamePatterns>
+        <FrameworkReferenceName>%(_MatchedRuntimePack.FrameworkReferenceName)</FrameworkReferenceName>
+        <LatestRuntimeFrameworkVersion>%(_MatchedRuntimePack.LatestRuntimeFrameworkVersion)</LatestRuntimeFrameworkVersion>
+        <IsTrimmable>%(_MatchedRuntimePack.IsTrimmable)</IsTrimmable>
+        <RuntimePackAlwaysCopyLocal>%(_MatchedRuntimePack.RuntimePackAlwaysCopyLocal)</RuntimePackAlwaysCopyLocal>
+      </_PrimaryRuntimePackCandidate>
     </ItemGroup>
 
-    <!-- Batch PickBestRid across each runtime pack scenario - metadata is preserved from batched items -->
-    <PickBestRid RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
-                 TargetRid="%(_PrimaryRidScenario.TargetRid)"
-                 SupportedRids="%(_PrimaryRidScenario.SupportedRids)"
-                 Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
-                           '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
-                           '$(_EffectiveRuntimeIdentifier)' != '' AND
-                           '@(_PrimaryRidScenario)' != ''">
-      <Output TaskParameter="MatchingRid" ItemName="_PrimaryMatchedRid" />
-    </PickBestRid>
+    <!-- Select compatible runtime pack for primary RID -->
+    <SelectRuntimeIdentifierSpecificItems RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                                          TargetRuntimeIdentifier="$(_EffectiveRuntimeIdentifier)"
+                                          Items="@(_PrimaryRuntimePackCandidate)"
+                                          RuntimeIdentifierItemMetadata="Identity"
+                                          Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                                                    '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
+                                                    '$(_EffectiveRuntimeIdentifier)' != '' AND
+                                                    '@(_PrimaryRuntimePackCandidate)' != ''">
+      <Output TaskParameter="SelectedItems" ItemName="_PrimaryMatchedRuntimePackCandidate" />
+    </SelectRuntimeIdentifierSpecificItems>
 
     <!-- Prepare intermediate runtime pack data -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                           '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
                           '$(_EffectiveRuntimeIdentifier)' != ''">
-      <_RuntimePackWithRid Include="@(_PrimaryMatchedRid->'%(RuntimePackNamePatterns)')">
-        <MatchedRid>%(_PrimaryMatchedRid.Identity)</MatchedRid>
-        <FrameworkName>%(_PrimaryMatchedRid.FrameworkReferenceName)</FrameworkName>
-        <LatestVersion>%(_PrimaryMatchedRid.LatestRuntimeFrameworkVersion)</LatestVersion>
-        <IsTrimmable>%(_PrimaryMatchedRid.IsTrimmable)</IsTrimmable>
-        <RuntimePackAlwaysCopyLocal>%(_PrimaryMatchedRid.RuntimePackAlwaysCopyLocal)</RuntimePackAlwaysCopyLocal>
+      <_RuntimePackWithRid Include="@(_PrimaryMatchedRuntimePackCandidate->'%(RuntimePackNamePatterns)')">
+        <MatchedRid>%(_PrimaryMatchedRuntimePackCandidate.Identity)</MatchedRid>
+        <FrameworkName>%(_PrimaryMatchedRuntimePackCandidate.FrameworkReferenceName)</FrameworkName>
+        <LatestVersion>%(_PrimaryMatchedRuntimePackCandidate.LatestRuntimeFrameworkVersion)</LatestVersion>
+        <IsTrimmable>%(_PrimaryMatchedRuntimePackCandidate.IsTrimmable)</IsTrimmable>
+        <RuntimePackAlwaysCopyLocal>%(_PrimaryMatchedRuntimePackCandidate.RuntimePackAlwaysCopyLocal)</RuntimePackAlwaysCopyLocal>
       </_RuntimePackWithRid>
     </ItemGroup>
 
@@ -586,18 +591,25 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Prepare runtime pack intermediate data with complete metadata -->
+    <!-- First create items with substituted RID -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                           '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
                           '$(_EffectiveRuntimeIdentifier)' != ''">
-      <!-- Substitute **RID** placeholder -->
-      <_RuntimePack Include="@(_RuntimePackWithRid->'%(Identity)'.Replace('**RID**', '%(MatchedRid)'))" KeepMetadata="FrameworkName;IsTrimmable">
-        <NuGetPackageId>%(_RuntimePack.Identity)</NuGetPackageId>
+      <_RuntimePack Include="$([System.String]::Copy('%(_RuntimePackWithRid.Identity)').Replace('**RID**', '%(_RuntimePackWithRid.MatchedRid)'))" KeepMetadata="FrameworkName;IsTrimmable">
         <NuGetPackageVersion>%(_RuntimePackWithRid.LatestVersion)</NuGetPackageVersion>
         <RuntimeIdentifier>%(_RuntimePackWithRid.MatchedRid)</RuntimeIdentifier>
         <RuntimePackAlwaysCopyLocal Condition="'%(_RuntimePackWithRid.RuntimePackAlwaysCopyLocal)' == 'true'">true</RuntimePackAlwaysCopyLocal>
-        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_RuntimePack.Identity)\%(_RuntimePackWithRid.LatestVersion)')">$(NetCoreTargetingPackRoot)\%(_RuntimePack.Identity)\%(_RuntimePackWithRid.LatestVersion)</PackageDirectory>
       </_RuntimePack>
+    </ItemGroup>
+
+    <!-- Then add metadata that depends on Identity -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
+                          '$(_EffectiveRuntimeIdentifier)' != '' AND
+                          '@(_RuntimePack)' != ''">
       <_RuntimePack>
+        <NuGetPackageId>%(_RuntimePack.Identity)</NuGetPackageId>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_RuntimePack.Identity)\%(_RuntimePack.NuGetPackageVersion)')">$(NetCoreTargetingPackRoot)\%(_RuntimePack.Identity)\%(_RuntimePack.NuGetPackageVersion)</PackageDirectory>
         <Path>%(_RuntimePack.PackageDirectory)</Path>
       </_RuntimePack>
     </ItemGroup>
