@@ -36,7 +36,16 @@ internal abstract partial class TestCommandDefinition : Command
             return new VSTest();
         }
 
-        string jsonText = File.ReadAllText(globalJsonPath);
+        string jsonText;
+        try
+        {
+            jsonText = File.ReadAllText(globalJsonPath);
+        }
+        catch (Exception)
+        {
+            // If global.json is unreadable (permissions, I/O errors, etc.), default to VSTest
+            return new VSTest();
+        }
 
         GlobalJsonModel? globalJson;
         try
