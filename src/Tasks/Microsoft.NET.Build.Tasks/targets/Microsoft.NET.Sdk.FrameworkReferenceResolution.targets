@@ -390,27 +390,36 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="$([MSBuild]::VersionEquals($([MSBuild]::GetTargetFrameworkVersion('%(_KnownILCompilerPackMatchingTFI.TargetFramework)', 2)), '$(_TargetFrameworkVersionWithoutV)'))" />
     </ItemGroup>
 
-    <PickBestRid RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
-                 TargetRid="$(NETCoreSdkRuntimeIdentifier)"
-                 SupportedRids="%(_ApplicableILCompilerPack.ILCompilerRuntimeIdentifiers)"
-                 Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
-                           '$(PublishAot)' == 'true' AND
-                           '@(_ApplicableILCompilerPack)' != ''">
-      <Output TaskParameter="MatchingRid" ItemName="_ILCompilerHostRid" />
-    </PickBestRid>
+    <!-- Create candidate items with RuntimeIdentifier metadata for each supported RID -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishAot)' == 'true' AND
+                          '@(_ApplicableILCompilerPack)' != ''">
+      <_ILCompilerCandidate Include="%(_ApplicableILCompilerPack.ILCompilerRuntimeIdentifiers)">
+        <ILCompilerPackNamePattern>%(_ApplicableILCompilerPack.ILCompilerPackNamePattern)</ILCompilerPackNamePattern>
+        <ILCompilerPackVersion>%(_ApplicableILCompilerPack.ILCompilerPackVersion)</ILCompilerPackVersion>
+      </_ILCompilerCandidate>
+    </ItemGroup>
+
+    <!-- Select compatible host ILCompiler pack -->
+    <SelectRuntimeIdentifierSpecificItems RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                                          TargetRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
+                                          Items="@(_ILCompilerCandidate)"
+                                          RuntimeIdentifierItemMetadata="Identity"
+                                          Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                                                    '$(PublishAot)' == 'true' AND
+                                                    '@(_ILCompilerCandidate)' != ''">
+      <Output TaskParameter="SelectedItems" ItemName="_SelectedILCompilerHostCandidate" />
+    </SelectRuntimeIdentifierSpecificItems>
 
     <!-- Prepare host ILCompiler pack intermediate data -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                           '$(PublishAot)' == 'true' AND
-                          '@(_ILCompilerHostRid)' != ''">
-      <_HostILCompilerPack Include="@(_ApplicableILCompilerPack->'%(ILCompilerPackNamePattern)'.Replace('**RID**', '%(_ILCompilerHostRid.Identity)'))">
+                          '@(_SelectedILCompilerHostCandidate)' != ''">
+      <_HostILCompilerPack Include="$([System.String]::Copy('%(_SelectedILCompilerHostCandidate.ILCompilerPackNamePattern)').Replace('**RID**', '%(_SelectedILCompilerHostCandidate.Identity)'))">
         <NuGetPackageId>%(_HostILCompilerPack.Identity)</NuGetPackageId>
-        <NuGetPackageVersion>%(_ApplicableILCompilerPack.ILCompilerPackVersion)</NuGetPackageVersion>
-        <RuntimeIdentifier>%(_ILCompilerHostRid.Identity)</RuntimeIdentifier>
-        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_HostILCompilerPack.Identity)\%(_ApplicableILCompilerPack.ILCompilerPackVersion)')">$(NetCoreTargetingPackRoot)\%(_HostILCompilerPack.Identity)\%(_ApplicableILCompilerPack.ILCompilerPackVersion)</PackageDirectory>
-      </_HostILCompilerPack>
-      <_HostILCompilerPack>
-        <Pack>%(_HostILCompilerPack.Identity)</Pack>
+        <NuGetPackageVersion>%(_SelectedILCompilerHostCandidate.ILCompilerPackVersion)</NuGetPackageVersion>
+        <RuntimeIdentifier>%(_SelectedILCompilerHostCandidate.Identity)</RuntimeIdentifier>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_HostILCompilerPack.Identity)\%(_SelectedILCompilerHostCandidate.ILCompilerPackVersion)')">$(NetCoreTargetingPackRoot)\%(_HostILCompilerPack.Identity)\%(_SelectedILCompilerHostCandidate.ILCompilerPackVersion)</PackageDirectory>
       </_HostILCompilerPack>
     </ItemGroup>
 
@@ -418,44 +427,47 @@ Copyright (c) .NET Foundation. All rights reserved.
                           '$(PublishAot)' == 'true'">
       <_ILCompilerTargetRidToResolve Include="$(_EffectiveRuntimeIdentifier)" Condition="'$(_EffectiveRuntimeIdentifier)' != ''" />
       <_ILCompilerTargetRidToResolve Include="$(RuntimeIdentifiers)" />
+      <_ILCompilerTargetRidToResolve Remove="$(NETCoreSdkRuntimeIdentifier)" /> <!-- just resolved this for the 'host', don't want duplicates -->
       <_ILCompilerTargetRidToResolve Remove="any" />
     </ItemGroup>
 
-    <PickBestRid RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
-                 TargetRid="%(_ILCompilerTargetRidToResolve.Identity)"
-                 SupportedRids="%(_ApplicableILCompilerPack.ILCompilerRuntimeIdentifiers)"
-                 Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
-                           '$(PublishAot)' == 'true' AND
-                           '@(_ILCompilerTargetRidToResolve)' != '' AND
-                           '@(_ApplicableILCompilerPack)' != ''">
-      <Output TaskParameter="MatchingRid" ItemName="_ILCompilerTargetRid" />
-    </PickBestRid>
+    <!-- Create candidate items (reuse _ILCompilerHostCandidate if already created) -->
 
-    <RemoveDuplicates Inputs="@(_ILCompilerTargetRid)"
+    <!-- Select compatible target ILCompiler packs for each target RID -->
+    <SelectRuntimeIdentifierSpecificItems RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                                          TargetRuntimeIdentifier="%(_ILCompilerTargetRidToResolve.Identity)"
+                                          Items="@(_ILCompilerCandidate)"
+                                          RuntimeIdentifierItemMetadata="Identity"
+                                          Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                                                    '$(PublishAot)' == 'true' AND
+                                                    '@(_ILCompilerTargetRidToResolve)' != '' AND
+                                                    '@(_ILCompilerCandidate)' != ''">
+      <Output TaskParameter="SelectedItems" ItemName="_SelectedILCompilerTargetCandidate" />
+    </SelectRuntimeIdentifierSpecificItems>
+
+    <!-- Remove duplicates and exclude host RID -->
+    <RemoveDuplicates Inputs="@(_SelectedILCompilerTargetCandidate)"
                       Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                                 '$(PublishAot)' == 'true' AND
-                                '@(_ILCompilerTargetRid)' != ''">
-      <Output TaskParameter="Filtered" ItemName="_UniqueILCompilerTargetRid" />
+                                '@(_SelectedILCompilerTargetCandidate)' != ''">
+      <Output TaskParameter="Filtered" ItemName="_UniqueILCompilerTargetCandidate" />
     </RemoveDuplicates>
 
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                           '$(PublishAot)' == 'true'">
-      <_DistinctILCompilerTargetRid Include="@(_UniqueILCompilerTargetRid)"
-        Condition="'%(_UniqueILCompilerTargetRid.Identity)' != '%(_ILCompilerHostRid.Identity)'" />
+      <_DistinctILCompilerTargetCandidate Include="@(_UniqueILCompilerTargetCandidate)"
+        Condition="'%(_UniqueILCompilerTargetCandidate.Identity)' != '%(_SelectedILCompilerHostCandidate.Identity)'" />
     </ItemGroup>
 
     <!-- Prepare target ILCompiler pack intermediate data -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                           '$(PublishAot)' == 'true' AND
-                          '@(_DistinctILCompilerTargetRid)' != ''">
-      <_TargetILCompilerPack Include="@(_ApplicableILCompilerPack->'%(ILCompilerPackNamePattern)'.Replace('**RID**', '%(_DistinctILCompilerTargetRid.Identity)'))">
+                          '@(_DistinctILCompilerTargetCandidate)' != ''">
+      <_TargetILCompilerPack Include="$([System.String]::Copy('%(_DistinctILCompilerTargetCandidate.ILCompilerPackNamePattern)').Replace('**RID**', '%(_DistinctILCompilerTargetCandidate.Identity)'))">
         <NuGetPackageId>%(_TargetILCompilerPack.Identity)</NuGetPackageId>
-        <NuGetPackageVersion>%(_ApplicableILCompilerPack.ILCompilerPackVersion)</NuGetPackageVersion>
-        <RuntimeIdentifier>%(_DistinctILCompilerTargetRid.Identity)</RuntimeIdentifier>
-        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_TargetILCompilerPack.Identity)\%(_ApplicableILCompilerPack.ILCompilerPackVersion)')">$(NetCoreTargetingPackRoot)\%(_TargetILCompilerPack.Identity)\%(_ApplicableILCompilerPack.ILCompilerPackVersion)</PackageDirectory>
-      </_TargetILCompilerPack>
-      <_TargetILCompilerPack>
-        <Pack>%(_TargetILCompilerPack.Identity)</Pack>
+        <NuGetPackageVersion>%(_DistinctILCompilerTargetCandidate.ILCompilerPackVersion)</NuGetPackageVersion>
+        <RuntimeIdentifier>%(_DistinctILCompilerTargetCandidate.Identity)</RuntimeIdentifier>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_TargetILCompilerPack.Identity)\%(_DistinctILCompilerTargetCandidate.ILCompilerPackVersion)')">$(NetCoreTargetingPackRoot)\%(_TargetILCompilerPack.Identity)\%(_DistinctILCompilerTargetCandidate.ILCompilerPackVersion)</PackageDirectory>
       </_TargetILCompilerPack>
     </ItemGroup>
 
