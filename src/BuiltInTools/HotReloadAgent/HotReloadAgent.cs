@@ -297,8 +297,12 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
     /// </summary>
     public static void ClearHotReloadEnvironmentVariables(Type startupHookType)
     {
-        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks,
-            RemoveCurrentAssembly(startupHookType, Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks)!));
+        var startupHooks = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks);
+        if (!string.IsNullOrEmpty(startupHooks))
+        {
+            Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks,
+                RemoveCurrentAssembly(startupHookType, startupHooks));
+        }
 
         Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName, null);
         Environment.SetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages, null);
@@ -307,10 +311,7 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
     // internal for testing
     internal static string RemoveCurrentAssembly(Type startupHookType, string environment)
     {
-        if (environment is "")
-        {
-            return environment;
-        }
+        Debug.Assert(!string.IsNullOrEmpty(environment), $"{nameof(environment)} must be set");
 
         var comparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
