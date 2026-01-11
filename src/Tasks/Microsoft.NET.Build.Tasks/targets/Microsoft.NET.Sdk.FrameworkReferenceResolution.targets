@@ -258,13 +258,24 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Resolve runtime packs for primary RID from _ResolveRuntimePacksForPrimaryRID -->
+    <!-- Create scenario items for PickBestRid batching: one per runtime pack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
+                          '$(_EffectiveRuntimeIdentifier)' != ''">
+      <_PrimaryRidScenario Include="@(_MatchedRuntimePack)" KeepMetadata="RuntimePackNamePatterns;RuntimePackRuntimeIdentifiers;FrameworkReferenceName;LatestRuntimeFrameworkVersion;IsTrimmable;RuntimePackAlwaysCopyLocal">
+        <TargetRid>$(_EffectiveRuntimeIdentifier)</TargetRid>
+        <SupportedRids>%(_MatchedRuntimePack.RuntimePackRuntimeIdentifiers)</SupportedRids>
+      </_PrimaryRidScenario>
+    </ItemGroup>
+
+    <!-- Batch PickBestRid across each runtime pack scenario - metadata is preserved from batched items -->
     <PickBestRid RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
-                 TargetRid="$(_EffectiveRuntimeIdentifier)"
-                 SupportedRids="%(_MatchedRuntimePack.RuntimePackRuntimeIdentifiers)"
+                 TargetRid="%(_PrimaryRidScenario.TargetRid)"
+                 SupportedRids="%(_PrimaryRidScenario.SupportedRids)"
                  Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                            '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
                            '$(_EffectiveRuntimeIdentifier)' != '' AND
-                           '@(_MatchedRuntimePack)' != ''">
+                           '@(_PrimaryRidScenario)' != ''">
       <Output TaskParameter="MatchingRid" ItemName="_PrimaryMatchedRid" />
     </PickBestRid>
 
@@ -272,12 +283,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                           '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
                           '$(_EffectiveRuntimeIdentifier)' != ''">
-      <_RuntimePackWithRid Include="@(_MatchedRuntimePack->'%(RuntimePackNamePatterns)')">
+      <_RuntimePackWithRid Include="@(_PrimaryMatchedRid->'%(RuntimePackNamePatterns)')">
         <MatchedRid>%(_PrimaryMatchedRid.Identity)</MatchedRid>
-        <FrameworkName>%(_MatchedRuntimePack.FrameworkReferenceName)</FrameworkName>
-        <LatestVersion>%(_MatchedRuntimePack.LatestRuntimeFrameworkVersion)</LatestVersion>
-        <IsTrimmable>%(_MatchedRuntimePack.IsTrimmable)</IsTrimmable>
-        <RuntimePackAlwaysCopyLocal>%(_MatchedRuntimePack.RuntimePackAlwaysCopyLocal)</RuntimePackAlwaysCopyLocal>
+        <FrameworkName>%(_PrimaryMatchedRid.FrameworkReferenceName)</FrameworkName>
+        <LatestVersion>%(_PrimaryMatchedRid.LatestRuntimeFrameworkVersion)</LatestVersion>
+        <IsTrimmable>%(_PrimaryMatchedRid.IsTrimmable)</IsTrimmable>
+        <RuntimePackAlwaysCopyLocal>%(_PrimaryMatchedRid.RuntimePackAlwaysCopyLocal)</RuntimePackAlwaysCopyLocal>
       </_RuntimePackWithRid>
     </ItemGroup>
 
@@ -291,37 +302,45 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_AdditionalRuntimeIdentifier Remove="any" />
     </ItemGroup>
 
-    <PickBestRid RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
-                 TargetRid="%(_AdditionalRuntimeIdentifier.Identity)"
-                 SupportedRids="%(_MatchedRuntimePack.RuntimePackRuntimeIdentifiers)"
-                 Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
-                           '$(EnableRuntimePackDownload)' == 'true' AND
-                           '@(_AdditionalRuntimeIdentifier)' != '' AND
-                           '@(_MatchedRuntimePack)' != ''">
-      <Output TaskParameter="MatchingRid" ItemName="_AdditionalMatchedRid" />
-    </PickBestRid>
-
-    <!-- Deduplicate matched RIDs -->
-    <RemoveDuplicates Inputs="@(_AdditionalMatchedRid)"
-                      Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
-                                '$(EnableRuntimePackDownload)' == 'true' AND
-                                '@(_AdditionalMatchedRid)' != ''">
-      <Output TaskParameter="Filtered" ItemName="_UniqueAdditionalMatchedRid" />
-    </RemoveDuplicates>
-
-    <!-- Create download items for additional RIDs -->
+    <!-- Create candidate items with RuntimeIdentifier metadata for each supported RID -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                           '$(EnableRuntimePackDownload)' == 'true' AND
-                          '@(_UniqueAdditionalMatchedRid)' != ''">
-      <_AdditionalRuntimePackWithRid Include="@(_MatchedRuntimePack->'%(RuntimePackNamePatterns)')">
-        <MatchedRid>%(_UniqueAdditionalMatchedRid.Identity)</MatchedRid>
-        <LatestVersion>%(_MatchedRuntimePack.LatestRuntimeFrameworkVersion)</LatestVersion>
-      </_AdditionalRuntimePackWithRid>
+                          '@(_AdditionalRuntimeIdentifier)' != '' AND
+                          '@(_MatchedRuntimePack)' != ''">
+      <!-- For each runtime pack, create items for each of its supported RIDs -->
+      <_RuntimePackCandidate Include="%(_MatchedRuntimePack.RuntimePackRuntimeIdentifiers)">
+        <RuntimePackNamePatterns>%(_MatchedRuntimePack.RuntimePackNamePatterns)</RuntimePackNamePatterns>
+        <LatestRuntimeFrameworkVersion>%(_MatchedRuntimePack.LatestRuntimeFrameworkVersion)</LatestRuntimeFrameworkVersion>
+      </_RuntimePackCandidate>
+    </ItemGroup>
 
-      <!-- Substitute **RID** and add to download list -->
-      <_PackageToDownload Include="@(_AdditionalRuntimePackWithRid->'%(Identity)'.Replace('**RID**', '%(MatchedRid)'))">
-        <Version>%(_AdditionalRuntimePackWithRid.LatestVersion)</Version>
-      </_PackageToDownload>
+    <!-- For each additional RID, select compatible runtime pack candidates -->
+    <SelectRuntimeIdentifierSpecificItems RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                                          TargetRuntimeIdentifier="%(_AdditionalRuntimeIdentifier.Identity)"
+                                          Items="@(_RuntimePackCandidate)"
+                                          RuntimeIdentifierItemMetadata="Identity"
+                                          Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                                                    '$(EnableRuntimePackDownload)' == 'true' AND
+                                                    '@(_AdditionalRuntimeIdentifier)' != '' AND
+                                                    '@(_RuntimePackCandidate)' != ''">
+      <Output TaskParameter="SelectedItems" ItemName="_AdditionalMatchedRuntimePackCandidate" />
+    </SelectRuntimeIdentifierSpecificItems>
+
+    <!-- Create download items for additional RIDs -->
+    <!-- First, create intermediate items with RID substituted -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(EnableRuntimePackDownload)' == 'true' AND
+                          '@(_AdditionalMatchedRuntimePackCandidate)' != ''">
+      <_AdditionalRuntimePackWithRidSubstituted Include="$([System.String]::Copy('%(RuntimePackNamePatterns)').Replace('**RID**', '%(Identity)'))">
+        <Version>%(_AdditionalMatchedRuntimePackCandidate.LatestRuntimeFrameworkVersion)</Version>
+      </_AdditionalRuntimePackWithRidSubstituted>
+    </ItemGroup>
+
+    <!-- Add to download list -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(EnableRuntimePackDownload)' == 'true' AND
+                          '@(_AdditionalRuntimePackWithRidSubstituted)' != ''">
+      <_PackageToDownload Include="@(_AdditionalRuntimePackWithRidSubstituted)" />
     </ItemGroup>
 
     <!-- Resolve Crossgen2 packs from _ResolveCrossgen2Packs -->
