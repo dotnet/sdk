@@ -595,7 +595,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
                           '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
                           '$(_EffectiveRuntimeIdentifier)' != ''">
-      <_RuntimePack Include="$([System.String]::Copy('%(_RuntimePackWithRid.Identity)').Replace('**RID**', '%(_RuntimePackWithRid.MatchedRid)'))" KeepMetadata="FrameworkName;IsTrimmable">
+      <_RuntimePack Include="$([System.String]::Copy('%(_RuntimePackWithRid.Identity)').Replace('**RID**', '%(_RuntimePackWithRid.MatchedRid)'))">
+        <FrameworkName>%(_RuntimePackWithRid.FrameworkName)</FrameworkName>
+        <IsTrimmable>%(_RuntimePackWithRid.IsTrimmable)</IsTrimmable>
         <NuGetPackageVersion>%(_RuntimePackWithRid.LatestVersion)</NuGetPackageVersion>
         <RuntimeIdentifier>%(_RuntimePackWithRid.MatchedRid)</RuntimeIdentifier>
         <RuntimePackAlwaysCopyLocal Condition="'%(_RuntimePackWithRid.RuntimePackAlwaysCopyLocal)' == 'true'">true</RuntimePackAlwaysCopyLocal>
