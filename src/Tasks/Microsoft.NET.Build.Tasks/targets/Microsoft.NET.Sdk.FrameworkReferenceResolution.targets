@@ -244,24 +244,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Filter to runtime packs where labels match (set-based equality) -->
-    <!-- Add normalized sorted labels for comparison -->
     <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
-      <_CandidateRuntimePack>
-        <NormalizedRuntimePackLabels Condition="'%(_CandidateRuntimePack.RuntimePackLabels)' != ''">$([MSBuild]::ValueOrDefault('%(_CandidateRuntimePack.RuntimePackLabels)', '').Replace(';', '|').Split('|').OrderBy().Aggregate((x,y) => x + ';' + y))</NormalizedRuntimePackLabels>
-        <NormalizedRequiredLabels Condition="'%(_CandidateRuntimePack.RequiredRuntimePackLabels)' != ''">$([MSBuild]::ValueOrDefault('%(_CandidateRuntimePack.RequiredRuntimePackLabels)', '').Replace(';', '|').Split('|').OrderBy().Aggregate((x,y) => x + ';' + y))</NormalizedRequiredLabels>
-      </_CandidateRuntimePack>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
-      <!-- Case 1: Both have no labels (empty strings) -->
+      <!-- Both have no labels (empty strings) - these match -->
       <_MatchedRuntimePack Include="@(_CandidateRuntimePack)"
         Condition="'%(_CandidateRuntimePack.RuntimePackLabels)' == '' AND '%(_CandidateRuntimePack.RequiredRuntimePackLabels)' == ''" />
 
-      <!-- Case 2: Both have labels - compare normalized sorted strings -->
+      <!-- Both have labels - TODO: implement proper set equality (order-independent comparison) -->
+      <!-- For now, use simple string equality (assumes labels are in same order in SDK data) -->
       <_MatchedRuntimePack Include="@(_CandidateRuntimePack)"
         Condition="'%(_CandidateRuntimePack.RuntimePackLabels)' != '' AND
                    '%(_CandidateRuntimePack.RequiredRuntimePackLabels)' != '' AND
-                   '%(_CandidateRuntimePack.NormalizedRuntimePackLabels)' == '%(_CandidateRuntimePack.NormalizedRequiredLabels)'" />
+                   '%(_CandidateRuntimePack.RuntimePackLabels)' == '%(_CandidateRuntimePack.RequiredRuntimePackLabels)'" />
     </ItemGroup>
 
     <!-- Resolve runtime packs for primary RID from _ResolveRuntimePacksForPrimaryRID -->
