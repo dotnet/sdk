@@ -200,7 +200,7 @@
     <Exec Command="find $(RedistInstallerLayoutPath) -type f -exec chmod 644 {} \;" Condition="'$(OSName)' != 'win'" />
     
     <!-- Mark actual executable binaries as executable -->
-    <Exec Command="chmod 755 $(InstallerOutputDirectory)Roslyn/bincore/%(_RoslynAppHost.Filename)" Condition="'$(OSName)' != 'win'" />
+    <Exec Command="chmod 755 $(RedistInstallerLayoutPath)sdk/$(Version)/Roslyn/bincore/%(_RoslynAppHost.Filename)" Condition="'$(OSName)' != 'win'" />
     <Exec Command="chmod 755 $(RedistInstallerLayoutPath)dotnet" Condition="'$(OSName)' != 'win'" />
     <Exec Command="chmod 755 $(RedistInstallerLayoutPath)dnx" Condition="'$(OSName)' != 'win'" />
     <Exec Command="find $(RedistInstallerLayoutPath) -type f -name 'createdump' -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
