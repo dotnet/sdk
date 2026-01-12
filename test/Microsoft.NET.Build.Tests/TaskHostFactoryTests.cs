@@ -26,11 +26,36 @@ public class TaskHostFactoryTests(ITestOutputHelper log) : SdkTest(log)
         var testAsset = CreateTestAssetWithTaskHostFactoryAndRuntime("NET", targetFramework);
 
         var buildCommand = new BuildCommand(testAsset);
-        buildCommand.Execute("/t:Build;TestTaskHostFactoryWithRuntime", "/v:n")
+        buildCommand.Execute("/t:Build;TestTaskHostFactoryWithRuntime", "/v:verbose")
             .Should()
             .Pass()
             .And
             .HaveStdOutContaining("TaskHostFactory with Runtime=NET executed successfully");
+    }
+
+    /// <summary>
+    /// Verifies that TaskHostFactory with Runtime="CLR4" attribute executes successfully
+    /// when running from Full MSBuild (Visual Studio). The CLR4 runtime specifies that
+    /// the task should run on .NET Framework 4.x CLR.
+    /// </summary>
+    /// <remarks>
+    /// This test validates the VS/Full MSBuild scenario where tasks need to run in the
+    /// .NET Framework task host. This is the primary scenario for Visual Studio builds.
+    /// </remarks>
+    [FullMSBuildOnlyTheory]
+    [InlineData("net8.0")]
+    [InlineData("net9.0")]
+    [InlineData(ToolsetInfo.CurrentTargetFramework)]
+    public void TaskWithTaskHostFactory_RuntimeCLR4_ExecutesSuccessfully(string targetFramework)
+    {
+        var testAsset = CreateTestAssetWithTaskHostFactoryAndRuntime("CLR4", targetFramework);
+
+        var buildCommand = new BuildCommand(testAsset);
+        buildCommand.Execute("/t:Build;TestTaskHostFactoryWithRuntime", "/v:n")
+            .Should()
+            .Pass()
+            .And
+            .HaveStdOutContaining("TaskHostFactory with Runtime=CLR4 executed successfully");
     }
 
     /// <summary>
