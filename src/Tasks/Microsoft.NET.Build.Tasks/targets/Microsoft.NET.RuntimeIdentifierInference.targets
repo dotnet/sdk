@@ -135,7 +135,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               '$(PublishReadyToRun)' == 'true' or
                               '$(PublishTrimmed)' == 'true' or
                               '$(PublishSingleFile)' == 'true' or
-                              '$(PublishAot)' == 'true'                                
+                              '$(PublishAot)' == 'true'
                             ) And
                             !('$(PackAsTool)' == 'true' And '$(_IsPacking)' == 'true')">
     <PublishRuntimeIdentifier>$(NETCoreSdkPortableRuntimeIdentifier)</PublishRuntimeIdentifier>
