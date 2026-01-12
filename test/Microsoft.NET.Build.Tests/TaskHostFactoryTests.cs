@@ -67,7 +67,6 @@ public class TaskHostFactoryTests(ITestOutputHelper log) : SdkTest(log)
     private TestAsset CreateTestAssetWithTaskHostFactoryAndRuntime(string runtime, string? targetFramework = null)
     {
         targetFramework ??= ToolsetInfo.CurrentTargetFramework;
-        
         var testProject = new TestProject()
         {
             Name = "TaskHostFactoryRuntimeTest",
