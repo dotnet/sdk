@@ -195,7 +195,10 @@
     <Move SourceFiles="@(PdbsToMove)"
           DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(Version)/%(RecursiveDir)%(Filename)%(Extension)')" />
 
-    <!-- Fix file permissions for the entire installer layout -->
+    <!-- Fix file permissions for the entire installer layout.
+         Files copied from NuGet packages retain their package permissions (typically 744),
+         so we reset all file permissions to 644 (non-executable) and then selectively
+         mark only the actual executable binaries as 755. -->
     <Exec Command="find $(RedistInstallerLayoutPath) -type d -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
     <Exec Command="find $(RedistInstallerLayoutPath) -type f -exec chmod 644 {} \;" Condition="'$(OSName)' != 'win'" />
     
