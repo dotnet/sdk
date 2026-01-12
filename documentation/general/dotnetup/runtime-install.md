@@ -45,5 +45,5 @@ Consider performance (folder check vs muxer invocation) vs accuracy (folder faki
 
 ## Optional Defaults
 
-The [.NET Install Script](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script) installs the .NET Runtime when you install the ASP NET Runtime.
+The [.NET Install Script](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script) installs the .NET Runtime when you install the ASP.NET Core Runtime.
 We will not do this as to allow more granular installations.
