@@ -7,7 +7,7 @@ It differs in a few ways, which we explore below.
 ## `global.json` handling
 
 The `sdk` paths feature in [`global.json`](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json) is not meant to inform runtime installation.
-Therefore, the lookup path and priority list for where dotnet up installs the runtime will be slightly different.
+Therefore, the lookup path and priority list for where `dotnetup` installs the runtime will be slightly different.
 
 Essentially, we just remove `global.json` lookup from the chain of consideration.
 
