@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -153,9 +155,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
             _testRoot = helloWorldAsset.TestRoot;
 
-            var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
-
-            packCommand.Execute().Should().Pass();
+            new PackCommand(Log, helloWorldAsset.TestRoot).Execute().Should().Pass();
 
             string windowShimPath = Path.Combine(shimoutputPath, $"shims/{targetFramework}/win-x64/{_customToolCommandName}.exe");
             File.Exists(windowShimPath).Should().BeTrue($"Shim {windowShimPath} should exist");
@@ -258,12 +258,15 @@ namespace Microsoft.NET.ToolPack.Tests
         {
             var testAsset = CreateTestAsset(multiTarget, nameof(It_contains_shim_with_no_build) + multiTarget + targetFramework, targetFramework);
 
-            var buildCommand = new BuildCommand(testAsset);
+            var buildCommand = new BuildCommand(testAsset).WithWorkingDirectory(testAsset.Path);
             buildCommand.Execute().Should().Pass();
 
-            var packCommand = new PackCommand(testAsset);
+            var packCommand = new PackCommand(testAsset).WithWorkingDirectory(testAsset.Path) as PackCommand;
+            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot ?
+                Path.Combine(ciOutputRoot, "binlog", $"{nameof(It_contains_shim_with_no_build)}_{multiTarget}_{targetFramework}.binlog") :
+                "./msbuild.binlog";
 
-            packCommand.Execute("/p:NoBuild=true").Should().Pass();
+            packCommand.Execute($"/p:NoBuild=true", $"/bl:{binlogDestPath}").Should().Pass();
             var nugetPackage = packCommand.GetNuGetPackage();
 
             using (var nupkgReader = new PackageArchiveReader(nugetPackage))
@@ -283,8 +286,6 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
         [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_produces_valid_shims(bool multiTarget, string targetFramework)
@@ -300,8 +301,6 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
         [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_produces_valid_shims_when_the_first_build_is_wrong(bool multiTarget, string targetFramework)
@@ -335,8 +334,6 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
         [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
         public void When_version_and_packageVersion_is_different_It_produces_valid_shims(bool multiTarget, string targetFramework)
@@ -359,8 +356,6 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
         [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
         public void When_version_and_packageVersion_is_different_It_produces_valid_shims2(bool multiTarget, string targetFramework)

@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class StaticFileHandler(IReporter reporter, ProjectNodeMap projectMap, BrowserConnector browserConnector)
+    internal sealed class StaticFileHandler(ILogger logger, ProjectNodeMap projectMap, BrowserRefreshServerFactory browserConnector)
     {
         public async ValueTask<bool> HandleFileChangesAsync(IReadOnlyList<ChangedFile> files, CancellationToken cancellationToken)
         {
@@ -23,14 +25,14 @@ namespace Microsoft.DotNet.Watch
                     continue;
                 }
 
-                reporter.Verbose($"Handling file change event for static content {file.FilePath}.");
+                logger.LogDebug("Handling file change event for static content {FilePath}.", file.FilePath);
 
                 foreach (var containingProjectPath in file.ContainingProjectPaths)
                 {
                     if (!projectMap.Map.TryGetValue(containingProjectPath, out var projectNodes))
                     {
                         // Shouldn't happen.
-                        reporter.Warn($"Project '{containingProjectPath}' not found in the project graph.");
+                        logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);
                         return allFilesHandled;
                     }
 
@@ -40,7 +42,7 @@ namespace Microsoft.DotNet.Watch
                         {
                             if (!refreshRequests.TryGetValue(refreshServer, out var filesPerServer))
                             {
-                                reporter.Verbose($"[{projectNode.GetDisplayName()}] Refreshing browser.");
+                                logger.LogDebug("[{ProjectName}] Refreshing browser.", projectNode.GetDisplayName());
                                 refreshRequests.Add(refreshServer, filesPerServer = []);
                             }
 
@@ -48,7 +50,7 @@ namespace Microsoft.DotNet.Watch
                         }
                         else if (projectsWithoutRefreshServer.Add(projectNode))
                         {
-                            reporter.Verbose($"[{projectNode.GetDisplayName()}] No refresh server.");
+                            logger.LogDebug("[{ProjectName}] No refresh server.", projectNode.GetDisplayName());
                         }
                     }
                 }
@@ -63,7 +65,7 @@ namespace Microsoft.DotNet.Watch
 
             await Task.WhenAll(tasks).WaitAsync(cancellationToken);
 
-            reporter.Output("Hot reload of static files succeeded.", emoji: "🔥");
+            logger.Log(MessageDescriptor.HotReloadOfStaticAssetsSucceeded);
 
             return allFilesHandled;
         }

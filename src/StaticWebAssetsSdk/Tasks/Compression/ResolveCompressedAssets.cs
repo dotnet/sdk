@@ -1,7 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Cryptography;
+#nullable disable
+
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -52,8 +54,8 @@ public class ResolveCompressedAssets : Task
             return true;
         }
 
-        var candidates = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray();
-        var explicitAssets = ExplicitAssets?.Select(StaticWebAsset.FromTaskItem).ToArray() ?? [];
+        var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets).ToArray();
+        var explicitAssets = ExplicitAssets == null ? [] : StaticWebAsset.FromTaskItemGroup(ExplicitAssets);
         var existingCompressionFormatsByAssetItemSpec = CollectCompressedAssets(candidates);
 
         var includePatterns = SplitPattern(IncludePatterns);
@@ -64,7 +66,7 @@ public class ResolveCompressedAssets : Task
             .AddExcludePatterns(excludePatterns)
             .Build();
 
-        var matchingCandidateAssets = new List<StaticWebAsset>();
+        var matchingCandidateAssets = new List<StaticWebAsset>(CandidateAssets.Length);
 
         var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
 
@@ -113,16 +115,22 @@ public class ResolveCompressedAssets : Task
         // Process the final set of candidate assets, deduplicating assets to be compressed in the same format multiple times and
         // generating new a static web asset definition for each compressed item.
         var formats = SplitPattern(Formats);
-        var assetsToCompress = new List<ITaskItem>();
+        var assetsToCompress = new ITaskItem[matchingCandidateAssets.Count * formats.Length];
         var outputPath = Path.GetFullPath(OutputPath);
-        foreach (var format in formats)
+        var assetCounter = 0;
+        foreach (var asset in matchingCandidateAssets)
         {
-            foreach (var asset in matchingCandidateAssets)
+            // Reset common properties
+            StaticWebAsset previousAsset = null;
+            string pathTemplate = null;
+            string relativePath = null;
+
+            foreach (var format in formats)
             {
                 var itemSpec = asset.Identity;
                 if (!existingCompressionFormatsByAssetItemSpec.TryGetValue(itemSpec, out var existingFormats))
                 {
-                    existingFormats = [];
+                    existingFormats = new HashSet<string>(2);
                     existingCompressionFormatsByAssetItemSpec.Add(itemSpec, existingFormats);
                 }
 
@@ -135,14 +143,27 @@ public class ResolveCompressedAssets : Task
                     continue;
                 }
 
-                if (TryCreateCompressedAsset(asset, outputPath, format, out var compressedAsset))
+                pathTemplate ??= CreatePathTemplate(asset, outputPath);
+                relativePath ??= asset.EmbedTokens(asset.RelativePath);
+
+                if (TryCreateCompressedAsset(
+                    asset,
+                    outputPath,
+                    format,
+                    pathTemplate,
+                    relativePath,
+                    ref previousAsset,
+                    out var compressedAsset))
                 {
-                    assetsToCompress.Add(compressedAsset);
+                    var result = compressedAsset.ToTaskItem();
+                    result.SetMetadata("RelatedAssetOriginalItemSpec", asset.OriginalItemSpec);
+
+                    assetsToCompress[assetCounter++] = result;
                     existingFormats.Add(format);
 
                     Log.LogMessage(
                         "Accepted compressed asset '{0}' for '{1}'.",
-                        compressedAsset.ItemSpec,
+                        result.ItemSpec,
                         itemSpec);
                 }
                 else
@@ -156,12 +177,19 @@ public class ResolveCompressedAssets : Task
 
         Log.LogMessage(
             "Resolved {0} compressed assets for {1} candidate assets.",
-            assetsToCompress.Count,
+            assetCounter,
             matchingCandidateAssets.Count);
 
-        AssetsToCompress = assetsToCompress.ToArray();
+        AssetsToCompress = assetsToCompress;
 
         return !Log.HasLoggedErrors;
+    }
+
+    private static string CreatePathTemplate(StaticWebAsset asset, string outputPath)
+    {
+        var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
+        var pathHash = FileHasher.HashString(asset.SourceId + asset.BasePath + asset.AssetKind + relativePath);
+        return Path.Combine(outputPath, $"{pathHash}-{{0}}-{asset.Fingerprint}");
     }
 
     private Dictionary<string, HashSet<string>> CollectCompressedAssets(StaticWebAsset[] candidates)
@@ -234,7 +262,14 @@ public class ResolveCompressedAssets : Task
             .Select(s => s.Trim())
             .ToArray();
 
-    private bool TryCreateCompressedAsset(StaticWebAsset asset, string outputPath, string format, out ITaskItem result)
+    private bool TryCreateCompressedAsset(
+        StaticWebAsset asset,
+        string outputPath,
+        string format,
+        string pathTemplate,
+        string relativePath,
+        ref StaticWebAsset previousAsset,
+        out StaticWebAsset result)
     {
         result = null;
 
@@ -260,34 +295,41 @@ public class ResolveCompressedAssets : Task
             return false;
         }
 
-        var originalItemSpec = asset.OriginalItemSpec;
-        var relativePath = asset.EmbedTokens(asset.RelativePath);
-
         // Make the hash name more unique by including source id, base path, asset kind and relative path.
         // This combination must be unique across all assets, so this will avoid collisions when two files on
         // the same project have the same contents, when it happens across different projects or between Build/Publish
         // assets.
-        var pathHash = FileHasher.HashString(asset.SourceId + asset.BasePath + asset.AssetKind + asset.RelativePath);
-        var fileName = $"{pathHash}-{asset.Fingerprint}{fileExtension}";
+        var fileName = $"{pathTemplate}-{asset.Fingerprint}{fileExtension}";
         var itemSpec = Path.GetFullPath(Path.Combine(OutputPath, fileName));
 
-        var res = new StaticWebAsset(asset)
+        if (previousAsset != null)
         {
-            Identity = itemSpec,
-            RelativePath = $"{relativePath}{fileExtension}",
-            OriginalItemSpec = asset.Identity,
-            RelatedAsset = asset.Identity,
-            AssetRole = "Alternative",
-            AssetTraitName = "Content-Encoding",
-            AssetTraitValue = assetTraitValue,
-            ContentRoot = outputPath,
-            // Set integrity and fingerprint to null so that they get recalculated for the compressed asset.
-            Fingerprint = null,
-            Integrity = null,
-        };
+            result = new StaticWebAsset(previousAsset)
+            {
+                Identity = itemSpec,
+                RelativePath = $"{relativePath}{fileExtension}",
+                AssetTraitValue = assetTraitValue,
+            };
+        }
+        else
+        {
+            result = new StaticWebAsset(asset)
+            {
+                Identity = itemSpec,
+                RelativePath = $"{relativePath}{fileExtension}",
+                OriginalItemSpec = asset.Identity,
+                RelatedAsset = asset.Identity,
+                AssetRole = "Alternative",
+                AssetTraitName = "Content-Encoding",
+                AssetTraitValue = assetTraitValue,
+                ContentRoot = outputPath,
+                // Set integrity and fingerprint to null so that they get recalculated for the compressed asset.
+                Fingerprint = null,
+                Integrity = null,
+            };
 
-        result = res.ToTaskItem();
-        result.SetMetadata("RelatedAssetOriginalItemSpec", originalItemSpec);
+            previousAsset = result;
+        }
 
         return true;
     }
