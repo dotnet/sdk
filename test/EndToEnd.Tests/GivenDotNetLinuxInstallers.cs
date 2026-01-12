@@ -6,7 +6,18 @@ namespace EndToEnd.Tests
     public class GivenDotNetLinuxInstallers(ITestOutputHelper log) : SdkTest(log)
     {
         [Fact]
-        public void ItHasExpectedDependencies()
+        public void ItHasExpectedDependencies() =>
+            ValidatePackage(
+                debValidation: DebianPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime,
+                rpmValidation: RpmPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime);
+
+        [Fact]
+        public void ItPreservesSymbolicLinksInPackage() =>
+            ValidatePackage(
+                debValidation: DebianPackageHasRelativeSymbolicLinks,
+                rpmValidation: RpmPackageHasRelativeSymbolicLinks);
+
+        private void ValidatePackage(Action<string> debValidation, Action<string> rpmValidation)
         {
             var installerFile = Environment.GetEnvironmentVariable("SDK_INSTALLER_FILE");
             if (string.IsNullOrEmpty(installerFile))
@@ -18,10 +29,10 @@ namespace EndToEnd.Tests
             switch (ext)
             {
                 case ".deb":
-                    DebianPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(installerFile);
+                    debValidation(installerFile);
                     return;
                 case ".rpm":
-                    RpmPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(installerFile);
+                    rpmValidation(installerFile);
                     return;
             }
         }
@@ -70,5 +81,50 @@ namespace EndToEnd.Tests
                 .Should().Pass()
                     .And.HaveStdOutMatching(@"dotnet-runtime-\d+(\.\d+){2} >= \d+(\.\d+){2}")
                     .And.HaveStdOutMatching(@"aspnetcore-store-\d+(\.\d+){2} >= \d+(\.\d+){2}");
+
+        private void DebianPackageHasRelativeSymbolicLinks(string installerFile) =>
+            VerifyPackageSymlinks(installerFile, "deb", tempDir =>
+            {
+                // Extract .deb archive (contains data.tar.gz)
+                new RunExeCommand(Log, "ar")
+                    .WithWorkingDirectory(tempDir)
+                    .Execute("x", installerFile)
+                    .Should().Pass();
+
+                // Extract data.tar.gz to get the actual files
+                new RunExeCommand(Log, "tar")
+                    .WithWorkingDirectory(tempDir)
+                    .Execute("-xzf", "data.tar.gz")
+                    .Should().Pass();
+            });
+
+        private void RpmPackageHasRelativeSymbolicLinks(string installerFile) =>
+            VerifyPackageSymlinks(installerFile, "rpm", tempDir =>
+            {
+                // Extract RPM contents using rpm2cpio | cpio
+                new RunExeCommand(Log, "sh")
+                    .WithWorkingDirectory(tempDir)
+                    .Execute("-c", $"rpm2cpio '{installerFile}' | cpio -idv --quiet 2>&1")
+                    .Should().Pass();
+            });
+
+        private void VerifyPackageSymlinks(string installerFile, string packageType, Action<string> extractPackage)
+        {
+            var tempDir = Path.Combine(Path.GetTempPath(), $"{packageType}-test-{Guid.NewGuid()}");
+            Directory.CreateDirectory(tempDir);
+
+            try
+            {
+                extractPackage(tempDir);
+                SymbolicLinkHelpers.VerifyDirectoryHasRelativeSymlinks(tempDir, Log, $"{packageType} package");
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, recursive: true);
+                }
+            }
+        }
     }
 }
