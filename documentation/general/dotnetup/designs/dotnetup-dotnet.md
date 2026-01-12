@@ -35,7 +35,7 @@ On Unix, it is rare to have a 'shell' that's running as admin - instead, users d
 
 For Windows,
 
-The standard approach for this on windows is surprisingly to have explorer.exe launch the process, because explorer.exe is unelevated.
+The standard approach for this on Windows is surprisingly to have explorer.exe launch the process, because explorer.exe is unelevated.
 This implementation can serve as reference for doing so, which we would do if and only if `dotnetup` is currently running under `elevation` (using the workloads check `Microsoft.DotNet.Cli.Installer.Windows.WindowsUtils.IsAdministrator()`): https://github.com/microsoft/nodejstools/blob/main/Nodejs/Product/Nodejs/SharedProject/SystemUtilities.cs#L18
 
 We could provide `dotnetup -a dotnet` as a way to allow running the `dotnet` command with the admin rights, assuming it is needed (e.g. working in a protected folder.)
