@@ -6,7 +6,7 @@ Manipulating the `PATH` environment variable can be tricky when Visual Studio an
 
 To provide an experience during the prototype of `dotnetup` before any official product is changed to work well with `dotnetup`, we propose 'aliasing' or 'shadowing' dotnet commands via `dotnetup` as one option.
 
-One downside to this is that IDE components which processes calling `dotnet` would still be broken by a change to the `PATH`. However, this prevents user interactions with terminals and scripts from being broken.
+One downside to this is that IDE components whose processes call `dotnet` would still be broken by a change to the `PATH`. However, this prevents user interactions with terminals and scripts from being broken.
 
 Another downside is that this requires scripts to be updated to call `dotnetup dotnet` instead of `dotnet`. For many individuals, this is a no-go.
 This also adds the overhead of an additional process call.
