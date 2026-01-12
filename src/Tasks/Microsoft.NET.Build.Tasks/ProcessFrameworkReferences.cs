@@ -857,7 +857,6 @@ namespace Microsoft.NET.Build.Tasks
                 string? supportedPortableTargetRid = NuGetUtils.GetBestMatchingRid(runtimeGraph, runtimeIdentifier, packSupportedPortableRuntimeIdentifiers, out _);
 
                 bool usePortable = !string.IsNullOrEmpty(NETCoreSdkPortableRuntimeIdentifier)
-                                    && supportedTargetRid is not null && supportedPortableTargetRid is not null
                                     && supportedTargetRid == supportedPortableTargetRid;
 
                 // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
