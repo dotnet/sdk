@@ -85,7 +85,13 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         actionQueue.EnqueueCompleted();
         // Don't inline exitCode variable. We want to always call WaitAllActions first.
         var exitCode = actionQueue.WaitAllActions();
-        exitCode = _output.HasHandshakeFailure && exitCode == ExitCode.Success ? ExitCode.GenericFailure : exitCode;
+
+        // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.
+        if (exitCode == ExitCode.Success && _output.HasHandshakeFailure)
+        {
+            exitCode = ExitCode.GenericFailure;
+        }
+
         if (exitCode == ExitCode.Success &&
             parseResult.HasOption(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption) &&
             parseResult.GetValue(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption) is { } minimumExpectedTests &&
