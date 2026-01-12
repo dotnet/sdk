@@ -12,13 +12,9 @@ using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 namespace Microsoft.DotNet.Cli;
 
 [EventSource(Name = "Microsoft-Dotnet-CLI-Performance", Guid = "cbd57d06-3b9f-5374-ed53-cfbcc23cf44f")]
-internal sealed class PerformanceLogEventSource : EventSource
+internal sealed partial class PerformanceLogEventSource : EventSource
 {
     internal static PerformanceLogEventSource Log = new();
-
-    private PerformanceLogEventSource()
-    {
-    }
 
     [NonEvent]
     internal void LogStartUpInformation(PerformanceLogStartupInformation startupInfo)
