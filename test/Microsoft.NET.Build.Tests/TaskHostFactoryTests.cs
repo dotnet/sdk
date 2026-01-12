@@ -9,8 +9,6 @@ namespace Microsoft.NET.Build.Tests;
 /// Tests to ensure MSBuild tasks declared with TaskHostFactory work correctly.
 /// TaskHostFactory enables tasks to run out-of-process, which is important for
 /// cross-runtime scenarios (e.g., .NET Core tasks from .NET Framework MSBuild).
-/// 
-/// This guards against regression of https://github.com/dotnet/sdk/issues/12751.
 /// </summary>
 public class TaskHostFactoryTests(ITestOutputHelper log) : SdkTest(log)
 {
