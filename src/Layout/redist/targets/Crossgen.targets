@@ -195,9 +195,17 @@
     <Move SourceFiles="@(PdbsToMove)"
           DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(Version)/%(RecursiveDir)%(Filename)%(Extension)')" />
 
-    <Exec Command="find $(InstallerOutputDirectory) -type d -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
-    <Exec Command="find $(InstallerOutputDirectory) -type f -exec chmod 644 {} \;" Condition="'$(OSName)' != 'win'" />
+    <!-- Fix file permissions for the entire installer layout -->
+    <Exec Command="find $(RedistInstallerLayoutPath) -type d -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
+    <Exec Command="find $(RedistInstallerLayoutPath) -type f -exec chmod 644 {} \;" Condition="'$(OSName)' != 'win'" />
+    
+    <!-- Mark actual executable binaries as executable -->
     <Exec Command="chmod 755 $(InstallerOutputDirectory)Roslyn/bincore/%(_RoslynAppHost.Filename)" Condition="'$(OSName)' != 'win'" />
+    <Exec Command="chmod 755 $(RedistInstallerLayoutPath)dotnet" Condition="'$(OSName)' != 'win'" />
+    <Exec Command="chmod 755 $(RedistInstallerLayoutPath)dnx" Condition="'$(OSName)' != 'win'" />
+    <Exec Command="find $(RedistInstallerLayoutPath) -type f -name 'createdump' -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
+    <Exec Command="find $(RedistInstallerLayoutPath) -type f -name 'apphost' -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
+    <Exec Command="find $(RedistInstallerLayoutPath) -type f -name 'singlefilehost' -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
   </Target>
 
 </Project>
