@@ -37,7 +37,7 @@ To reduce boilerplate code we will go with the option of one command.
 
 The .NET SDK install may include the .NET Runtime.
 We could decide to include the runtime install in the [`dotnetup` manifest](../../../src/Installer/dotnetup/DotnetupSharedManifest.cs) as a separate install item.
-However, to maintain parity with the actions the user has taken, we will avoid doing so.
+However, to maintain parity with the actions the user has taken, we will avoid doing so. This means uninstalling the SDK will uninstall the runtime, but if the runtime was requested to be installed, it will be ref counted in the manifest as a separate item, so we wouldn't remove it.
 
 What we will do is check `shared/{runtime-type}/{runtime-version}` and `host/fxr/{runtime-version}` in the hive location. We could also query the muxer itself (via [`HostFxrWrapper`](../../../src/Installer/Microsoft.Dotnet.Installation/Internal/HostFxrWrapper.cs)) for a more concrete answer as to if the install exists on disk.
 
