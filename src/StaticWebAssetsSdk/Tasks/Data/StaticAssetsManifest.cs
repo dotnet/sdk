@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public static StaticWebAssetsManifest FromJsonBytes(byte[] jsonBytes)
         {
-            var manifest = JsonSerializer.Deserialize<StaticWebAssetsManifest>(jsonBytes);
+            var manifest = JsonSerializer.Deserialize(jsonBytes, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetsManifest);
             if (manifest.Version != 1)
             {
                 throw new InvalidOperationException($"Invalid manifest version. Expected manifest version '1' and found version '{manifest.Version}'.");
