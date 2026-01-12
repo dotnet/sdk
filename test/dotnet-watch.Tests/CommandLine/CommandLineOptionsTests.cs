@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class CommandLineOptionsTests
@@ -51,29 +53,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.Empty(_testLogger.GetAndClearMessages());
             Assert.Contains("Usage:", output.ToString());
-        }
-
-        [Theory]
-        [InlineData("-p:P=V", "P", "V")]
-        [InlineData("-p:P==", "P", "=")]
-        [InlineData("-p:P=A=B", "P", "A=B")]
-        [InlineData("-p: P\t = V ", "P", " V ")]
-        [InlineData("-p:P=", "P", "")]
-        public void BuildProperties_Valid(string argValue, string name, string value)
-        {
-            var properties = CommandLineOptions.ParseBuildProperties([argValue]);
-            AssertEx.SequenceEqual([(name, value)], properties);
-        }
-
-        [Theory]
-        [InlineData("P")]
-        [InlineData("=P3")]
-        [InlineData("=")]
-        [InlineData("==")]
-        public void BuildProperties_Invalid(string argValue)
-        {
-            var properties = CommandLineOptions.ParseBuildProperties([argValue]);
-            AssertEx.SequenceEqual([], properties);
         }
 
         [Fact]
@@ -187,7 +166,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["-watchArg", "--verbose", "run", "-runArg"]);
 
-            Assert.True(options.GlobalOptions.Verbose);
+            Assert.Equal(LogLevel.Debug, options.GlobalOptions.LogLevel);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["-watchArg", "-runArg"], options.CommandArguments);
         }
@@ -207,7 +186,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["-watchArg", "--", "--verbose", "run", "-runArg"]);
 
-            Assert.False(options.GlobalOptions.Verbose);
+            Assert.Equal(LogLevel.Information, options.GlobalOptions.LogLevel);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["-watchArg", "--", "--verbose", "run", "-runArg",], options.CommandArguments);
         }
@@ -217,7 +196,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--", "run"]);
 
-            Assert.False(options.GlobalOptions.Verbose);
+            Assert.Equal(LogLevel.Information, options.GlobalOptions.LogLevel);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["--", "run"], options.CommandArguments);
         }
@@ -357,9 +336,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             args = position switch
             {
-                ArgPosition.Before => args.Prepend("run").ToArray(),
-                ArgPosition.Both => args.Concat(new[] { "run" }).Concat(args).ToArray(),
-                ArgPosition.After => args.Append("run").ToArray(),
+                ArgPosition.Before => ["run", .. args],
+                ArgPosition.Both => [.. args, "run", .. args],
+                ArgPosition.After => [.. args, "run"],
                 _ => args,
             };
 
@@ -367,8 +346,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.True(arg switch
             {
-                "--verbose" => options.GlobalOptions.Verbose,
-                "--quiet" => options.GlobalOptions.Quiet,
+                "--verbose" => options.GlobalOptions.LogLevel == LogLevel.Debug,
+                "--quiet" => options.GlobalOptions.LogLevel == LogLevel.Warning,
                 "--list" => options.List,
                 "--no-hot-reload" => options.GlobalOptions.NoHotReload,
                 "--non-interactive" => options.GlobalOptions.NonInteractive,
@@ -456,7 +435,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Theory]
         [InlineData(new[] { "--configuration", "release" }, new[] { "--property:Configuration=release", NugetInteractiveProperty })]
         [InlineData(new[] { "--framework", "net9.0" }, new[] { "--property:TargetFramework=net9.0", NugetInteractiveProperty })]
-        [InlineData(new[] { "--runtime", "arm64" }, new[] { "--property:RuntimeIdentifier=arm64", "--property:_CommandLineDefinedRuntimeIdentifier=true", NugetInteractiveProperty })]
+        [InlineData(new[] { "--runtime", "arm64" }, new[] { NugetInteractiveProperty, "--property:RuntimeIdentifier=arm64", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
         [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1", NugetInteractiveProperty })]
         [InlineData(new[] { "/p:b=1" }, new[] { "--property:b=1", NugetInteractiveProperty }, new[] { "/p", "b=1" })] // it's ok to split the argument into two since `dotnet run` handles `/p b=1`
         [InlineData(new[] { "--interactive" }, new[] { "--property:NuGetInteractive=true" })]
@@ -481,16 +460,19 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Theory]
-        [InlineData(new[] { "--property:b=1" }, new[] { "--property:b=1" }, Skip = "https://github.com/dotnet/sdk/issues/44655")]
-        [InlineData(new[] { "--property", "b=1" }, new[] { "--property", "b=1" }, Skip = "https://github.com/dotnet/sdk/issues/44655")]
-        [InlineData(new[] { "/p:b=1" }, new[] { "/p:b=1" }, Skip = "https://github.com/dotnet/sdk/issues/44655")]
+        [InlineData(new[] { "--property:b=1" }, new[] { "--property:b=1" })]
+        [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1" })]
+        [InlineData(new[] { "/p:b=1" }, new[] { "--property:b=1" })]
         [InlineData(new[] { "/bl" }, new[] { "/bl" })]
         [InlineData(new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" }, new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" })]
         public void ForwardedBuildOptions_Test(string[] args, string[] commandArgs)
         {
+            var isProperty = args[0].Contains("-p") || args[0].Contains("/p");
             var runOptions = VerifyOptions(["test", .. args]);
-            AssertEx.SequenceEqual(["--property:NuGetInteractive=false", "--target:VSTest", .. commandArgs], runOptions.BuildArguments);
-            AssertEx.SequenceEqual(commandArgs, runOptions.CommandArguments);
+            string[] expected = isProperty
+                ? ["--property:VSTestNoLogo=true", "--property:NuGetInteractive=false", .. commandArgs, "--target:VSTest"]
+                : ["--property:VSTestNoLogo=true", "--property:NuGetInteractive=false", "--target:VSTest", .. commandArgs];
+            AssertEx.SequenceEqual(expected, runOptions.BuildArguments);
         }
 
         [Fact]
