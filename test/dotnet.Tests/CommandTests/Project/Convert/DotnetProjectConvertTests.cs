@@ -20,7 +20,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <c>dotnet project convert</c> should result in the same project file text as <c>dotnet new console</c>.
     /// If this test fails, <c>dotnet project convert</c> command implementation should be updated.
     /// </summary>
-    [Fact]
+    [Fact(Skip ="NET11TFM remove once we have a net11 runtime")]
     public void SameAsTemplate()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();

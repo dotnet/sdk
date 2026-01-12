@@ -608,7 +608,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PrunePackageDataRoot Condition="'%24(PrunePackageDataRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(MSBuildThisFileDirectory)'))PrunePackageData</PrunePackageDataRoot>
 
     <_NetFrameworkHostedCompilersVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</_NetFrameworkHostedCompilersVersion>
-    <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
+    <!-- NET11TFM remove both of these once we have a net11 runtime -->
+    <NETCoreAppMaximumVersion>11.0</NETCoreAppMaximumVersion>
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
     <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
     <BundledNETCoreAppTargetFramework>net$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFramework>
     <BundledNETCoreAppPackageVersion>$(_NETCoreAppPackageVersion)</BundledNETCoreAppPackageVersion>
