@@ -80,7 +80,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         actionQueue.EnqueueCompleted();
         // Don't inline exitCode variable. We want to always call WaitAllActions first.
         var exitCode = actionQueue.WaitAllActions();
-        exitCode = _output.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
+        exitCode = _output.HasHandshakeFailure && exitCode == ExitCode.Success ? ExitCode.GenericFailure : exitCode;
         if (exitCode == ExitCode.Success &&
             parseResult.HasOption(definition.MinimumExpectedTestsOption) &&
             parseResult.GetValue(definition.MinimumExpectedTestsOption) is { } minimumExpectedTests &&
