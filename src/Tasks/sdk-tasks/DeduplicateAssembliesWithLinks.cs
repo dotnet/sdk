@@ -13,9 +13,8 @@ namespace Microsoft.DotNet.Build.Tasks
 {
     /// <summary>
     /// Deduplicates assemblies (.dll and .exe files) in a directory by replacing duplicates with links (hard or symbolic).
-    /// Assemblies are grouped by content hash, and a deterministic "master" file is selected
-    /// (closest to root, alphabetically first). All other duplicates are replaced with links.
-    /// Text-based files (config, json, xml, etc.) are not deduplicated to avoid issues with configuration files.
+    /// Assemblies are grouped by content hash, and a deterministic "master" file is selected (closest to root, alphabetically
+    /// first) which duplicates are linked to. Text-based files (config, json, xml, etc.) are not deduplicated.
     /// </summary>
     public sealed class DeduplicateAssembliesWithLinks : Task
     {
@@ -56,12 +55,8 @@ namespace Microsoft.DotNet.Build.Tasks
             }
 
             var duplicateGroups = filesByHash.Values.Where(g => g.Count > 1).ToList();
-
             Log.LogMessage(MessageImportance.Normal, $"Found {duplicateGroups.Count} groups of duplicate assemblies.");
-
-            bool deduplicationSuccess = DeduplicateFileGroups(duplicateGroups);
-
-            return deduplicationSuccess;
+            return DeduplicateFileGroups(duplicateGroups);
         }
 
         private (Dictionary<string, List<FileEntry>> filesByHash, bool success) HashAndGroupFiles(List<string> files)
@@ -75,13 +70,11 @@ namespace Microsoft.DotNet.Build.Tasks
                 {
                     var fileInfo = new FileInfo(filePath);
                     var hash = ComputeFileHash(filePath);
-                    var entry = new FileEntry
-                    {
-                        Path = filePath,
-                        Hash = hash,
-                        Size = fileInfo.Length,
-                        Depth = GetPathDepth(filePath, LayoutDirectory)
-                    };
+                    var entry = new FileEntry(
+                        filePath,
+                        hash,
+                        fileInfo.Length,
+                        GetPathDepth(filePath, LayoutDirectory));
 
                     if (!filesByHash.ContainsKey(hash))
                     {
@@ -119,12 +112,10 @@ namespace Microsoft.DotNet.Build.Tasks
                 {
                     try
                     {
-                        if (CreateLink(duplicate.Path, master.Path))
-                        {
-                            totalFilesDeduped++;
-                            totalBytesSaved += duplicate.Size;
-                            Log.LogMessage(MessageImportance.Low, $"  Linked: {duplicate.Path}");
-                        }
+                        CreateLink(duplicate.Path, master.Path);
+                        totalFilesDeduped++;
+                        totalBytesSaved += duplicate.Size;
+                        Log.LogMessage(MessageImportance.Low, $"  Linked: {duplicate.Path} -> {master.Path}");
                     }
                     catch (Exception ex)
                     {
@@ -140,43 +131,17 @@ namespace Microsoft.DotNet.Build.Tasks
             return !hasErrors;
         }
 
-        private string ComputeFileHash(string filePath)
-        {
-            byte[] fileBytes = File.ReadAllBytes(filePath);
-            var hashBytes = XxHash64.Hash(fileBytes);
-            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-        }
-
-        private int GetPathDepth(string filePath, string rootDirectory)
-        {
-            var relativePath = Path.GetRelativePath(rootDirectory, filePath);
-            return relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Length - 1;
-        }
-
-        private bool IsAssembly(string filePath)
-        {
-            var extension = Path.GetExtension(filePath);
-            return extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
-                   extension.Equals(".exe", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private bool CreateLink(string duplicateFilePath, string masterFilePath)
+        private void CreateLink(string duplicateFilePath, string masterFilePath)
         {
             // Delete the duplicate file first
             File.Delete(duplicateFilePath);
 
             if (UseHardLinks)
             {
-                // TODO: Replace P/Invoke with File.CreateHardLink(masterFilePath, duplicateFilePath); when SDK targets .NET 11+
+                // TODO: Replace P/Invoke with File.CreateHardLink(duplicateFilePath, masterFilePath); when SDK targets .NET 11+
                 // See: https://github.com/dotnet/runtime/issues/69030
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    return CreateHardLinkWindows(duplicateFilePath, masterFilePath);
-                }
-                else
-                {
-                    return CreateHardLinkUnix(duplicateFilePath, masterFilePath);
-                }
+                // We only use hard links on Windows currently, so this is acceptable.
+                CreateHardLinkWindows(duplicateFilePath, masterFilePath);
             }
             else
             {
@@ -184,11 +149,30 @@ namespace Microsoft.DotNet.Build.Tasks
                 var duplicateDirectory = Path.GetDirectoryName(duplicateFilePath)!;
                 var relativePath = Path.GetRelativePath(duplicateDirectory, masterFilePath);
                 File.CreateSymbolicLink(duplicateFilePath, relativePath);
-                return true;
             }
         }
 
-        private bool CreateHardLinkWindows(string linkPath, string targetPath)
+        private static string ComputeFileHash(string filePath)
+        {
+            byte[] fileBytes = File.ReadAllBytes(filePath);
+            var hashBytes = XxHash64.Hash(fileBytes);
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        }
+
+        private static int GetPathDepth(string filePath, string rootDirectory)
+        {
+            var relativePath = Path.GetRelativePath(rootDirectory, filePath);
+            return relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Length - 1;
+        }
+
+        private static bool IsAssembly(string filePath)
+        {
+            var extension = Path.GetExtension(filePath);
+            return extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
+                   extension.Equals(".exe", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void CreateHardLinkWindows(string linkPath, string targetPath)
         {
             bool result = CreateHardLinkWin32(linkPath, targetPath, IntPtr.Zero);
             if (!result)
@@ -196,18 +180,6 @@ namespace Microsoft.DotNet.Build.Tasks
                 int errorCode = Marshal.GetLastWin32Error();
                 throw new InvalidOperationException($"CreateHardLink failed with error code {errorCode}");
             }
-            return result;
-        }
-
-        private bool CreateHardLinkUnix(string linkPath, string targetPath)
-        {
-            int result = link(targetPath, linkPath);
-            if (result != 0)
-            {
-                int errorCode = Marshal.GetLastWin32Error();
-                throw new InvalidOperationException($"link() failed with error code {errorCode}");
-            }
-            return true;
         }
 
         [DllImport("kernel32.dll", EntryPoint = "CreateHardLinkW", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -216,16 +188,7 @@ namespace Microsoft.DotNet.Build.Tasks
             string lpExistingFileName,
             IntPtr lpSecurityAttributes);
 
-        [DllImport("libc", SetLastError = true)]
-        private static extern int link(string oldpath, string newpath);
-
-        private class FileEntry
-        {
-            public required string Path { get; set; }
-            public required string Hash { get; set; }
-            public long Size { get; set; }
-            public int Depth { get; set; }
-        }
+        private record FileEntry(string Path, string Hash, long Size, int Depth);
     }
 }
 #endif
