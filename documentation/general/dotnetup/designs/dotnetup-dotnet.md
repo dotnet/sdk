@@ -2,7 +2,7 @@
 
 # Motivation
 
-Manipulating the `PATH` environment variable can be tricky when Visual Studio and other installers. These applications are automatically run with updates. They override the system level path on a regular basis which blocks `dotnetup` installs from being used.
+Manipulating the `PATH` environment variable can be tricky when Visual Studio and other installers are involved. These applications are automatically run with updates. They override the system level path on a regular basis which blocks `dotnetup` installs from being used.
 
 To provide an experience during the prototype of `dotnetup` before any official product is changed to work well with `dotnetup`, we propose 'aliasing' or 'shadowing' dotnet commands via `dotnetup` as one option.
 
