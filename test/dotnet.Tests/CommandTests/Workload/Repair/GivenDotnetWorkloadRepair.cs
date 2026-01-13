@@ -158,60 +158,8 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         [InlineData(false)]
         public void GivenMissingManifestsInWorkloadSetModeRepairReinstallsManifests(bool userLocal)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
-            var dotnetRoot = Path.Combine(testDirectory, "dotnet");
-            var userProfileDir = Path.Combine(testDirectory, "user-profile");
-            var sdkFeatureVersion = "6.0.100";
-            var workloadSetVersion = "6.0.100";
-
-            // Create workload set contents
-            var workloadSetContents = new Dictionary<string, string>
-            {
-                [workloadSetVersion] = """
-{
-  "xamarin-android-build": "8.4.7/6.0.100",
-  "xamarin-ios-sdk": "10.0.1/6.0.100"
-}
-"""
-            };
-
-            // Set up mock installer with workload set support
-            var mockInstaller = new MockPackWorkloadInstaller(
-                dotnetDir: dotnetRoot,
-                installedWorkloads: new List<WorkloadId> { new WorkloadId("xamarin-android") },
-                workloadSetContents: workloadSetContents);
-
-            // Create the manifest provider and resolver
-            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
-            mockInstaller.WorkloadResolver = workloadResolver;
-
-            string installRoot = userLocal ? userProfileDir : dotnetRoot;
-            if (userLocal)
-            {
-                WorkloadFileBasedInstall.SetUserLocal(dotnetRoot, sdkFeatureVersion);
-            }
-
-            // Create install state with workload set version
-            var installStateDir = Path.Combine(installRoot, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), sdkFeatureVersion, "InstallState");
-            Directory.CreateDirectory(installStateDir);
-            var installStatePath = Path.Combine(installStateDir, "default.json");
-            var installState = new InstallStateContents
-            {
-                UseWorkloadSets = true,
-                WorkloadVersion = workloadSetVersion
-            };
-            File.WriteAllText(installStatePath, installState.ToString());
-
-            // Create mock manifest directories but delete the manifest files to simulate ruined install
-            var manifestRoot = Path.Combine(dotnetRoot, "sdk-manifests", sdkFeatureVersion);
-            var androidManifestDir = Path.Combine(manifestRoot, "xamarin-android-build", "8.4.7");
-            var iosManifestDir = Path.Combine(manifestRoot, "xamarin-ios-sdk", "10.0.1");
-            Directory.CreateDirectory(androidManifestDir);
-            Directory.CreateDirectory(iosManifestDir);
-
-            // Verify manifests don't exist (simulating the ruined install)
-            File.Exists(Path.Combine(androidManifestDir, "WorkloadManifest.json")).Should().BeFalse();
-            File.Exists(Path.Combine(iosManifestDir, "WorkloadManifest.json")).Should().BeFalse();
+            var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver) = 
+                CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(_testAssetsManager, _manifestPath, userLocal, out string sdkFeatureVersion);
 
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
 

@@ -654,5 +654,31 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             return (dotnetRoot, installManager, installer, workloadResolver, manifestUpdater, nugetDownloader, workloadResolverFactory);
         }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GivenMissingManifestsInWorkloadSetModeUpdateReinstallsManifests(bool userLocal)
+        {
+            var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver) = 
+                CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(_testAssetsManager, _manifestPath, userLocal, out string sdkFeatureVersion);
+
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
+
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update" });
+
+            // Run update command
+            var updateCommand = new WorkloadUpdateCommand(parseResult, reporter: _reporter, workloadResolverFactory,
+                workloadInstaller: mockInstaller);
+            updateCommand.Execute();
+
+            // Verify that manifests were reinstalled
+            mockInstaller.InstalledManifests.Should().HaveCount(2);
+            mockInstaller.InstalledManifests.Should().Contain(m => m.manifestUpdate.ManifestId.ToString() == "xamarin-android-build");
+            mockInstaller.InstalledManifests.Should().Contain(m => m.manifestUpdate.ManifestId.ToString() == "xamarin-ios-sdk");
+
+            // Verify command succeeded
+            _reporter.Lines.Should().NotContain(line => line.Contains("failed", StringComparison.OrdinalIgnoreCase));
+        }
     }
 }
