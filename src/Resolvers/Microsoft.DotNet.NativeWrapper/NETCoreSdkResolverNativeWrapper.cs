@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.NativeWrapper
             var result = new SdkResolutionResult();
             var flags = disallowPrerelease ? Interop.hostfxr_resolve_sdk2_flags_t.disallow_prerelease : 0;
 
-            int errorCode = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            int errorCode = Interop.RunningOnWindows
                 ? Interop.Windows.hostfxr_resolve_sdk2(dotnetExeDirectory, globalJsonStartDirectory, flags, result.Initialize)
                 : Interop.Unix.hostfxr_resolve_sdk2(dotnetExeDirectory, globalJsonStartDirectory, flags, result.Initialize);
 
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.NativeWrapper
         {
             var list = new SdkList();
 
-            int errorCode = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            int errorCode = Interop.RunningOnWindows
                 ? Interop.Windows.hostfxr_get_available_sdks(dotnetExeDirectory, list.Initialize)
                 : Interop.Unix.hostfxr_get_available_sdks(dotnetExeDirectory, list.Initialize);
 
