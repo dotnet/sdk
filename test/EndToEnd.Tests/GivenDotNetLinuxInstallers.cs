@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using EndToEnd.Tests.Utilities;
+
 namespace EndToEnd.Tests
 {
     public class GivenDotNetLinuxInstallers(ITestOutputHelper log) : SdkTest(log)
@@ -92,16 +94,14 @@ namespace EndToEnd.Tests
                     .Should().Pass();
 
                 // Extract data.tar.gz to get the actual files
-                new RunExeCommand(Log, "tar")
-                    .WithWorkingDirectory(tempDir)
-                    .Execute("-xzf", "data.tar.gz")
-                    .Should().Pass();
+                var dataTarGz = Path.Combine(tempDir, "data.tar.gz");
+                SymbolicLinkHelpers.ExtractTarGz(dataTarGz, tempDir, Log);
             });
 
         private void RpmPackageHasRelativeSymbolicLinks(string installerFile) =>
             VerifyPackageSymlinks(installerFile, "rpm", tempDir =>
             {
-                // Extract RPM contents using rpm2cpio | cpio
+                // Extract RPM contents using rpm2cpio | cpio (available on Azure Linux)
                 new RunExeCommand(Log, "sh")
                     .WithWorkingDirectory(tempDir)
                     .Execute("-c", $"rpm2cpio '{installerFile}' | cpio -idv --quiet 2>&1")

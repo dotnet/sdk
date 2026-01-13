@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using EndToEnd.Tests.Utilities;
 using Microsoft.Win32.SafeHandles;
 
 namespace EndToEnd.Tests
@@ -29,7 +30,6 @@ namespace EndToEnd.Tests
 
         private string FindSdkArchive()
         {
-            // Get repo root from test context
             string? repoRoot = TestContext.Current.ToolsetUnderTest?.RepoRoot;
             if (string.IsNullOrEmpty(repoRoot))
             {
@@ -37,7 +37,6 @@ namespace EndToEnd.Tests
                     "RepoRoot not available in TestContext. Cannot locate SDK archive.");
             }
 
-            // Archive location: {repoRoot}/artifacts/packages/{Configuration}/Shipping/
             string shippingDir = Path.Combine(repoRoot, "artifacts", "packages", GetConfiguration(), "Shipping");
 
             if (!Directory.Exists(shippingDir))
@@ -47,7 +46,6 @@ namespace EndToEnd.Tests
                     "Build the SDK first with: dotnet build /p:GenerateArchives=true");
             }
 
-            // Find all SDK archives (.tar.gz)
             var archives = Directory.GetFiles(shippingDir, "dotnet-sdk-*.tar.gz");
 
             if (archives.Length == 0)
@@ -66,31 +64,25 @@ namespace EndToEnd.Tests
 
         private string ExtractArchive(string archivePath)
         {
-            // Create isolated test directory
             var testDir = _testAssetsManager.CreateTestDirectory();
             string extractPath = Path.Combine(testDir.Path, "sdk-extracted");
             Directory.CreateDirectory(extractPath);
 
             Log.WriteLine($"Extracting archive to: {extractPath}");
 
-            // Use system tar command for better compatibility with symbolic links
-            var result = new RunExeCommand(Log, "tar")
-                .Execute("-xzf", archivePath, "-C", extractPath)
-                .Should().Pass();
+            SymbolicLinkHelpers.ExtractTarGz(archivePath, extractPath, Log);
 
             return extractPath;
         }
 
         private void VerifyWindowsHardLinks(string extractedPath)
         {
-            // Find all assemblies (.dll and .exe files)
             var assemblies = Directory.GetFiles(extractedPath, "*", SearchOption.AllDirectories)
                 .Where(f => IsAssembly(f))
                 .ToList();
 
             Log.WriteLine($"Found {assemblies.Count} total assemblies in archive");
 
-            // Count assemblies that are hard linked (NumberOfLinks > 1)
             int hardLinkCount = 0;
             foreach (var assembly in assemblies)
             {
@@ -109,7 +101,6 @@ namespace EndToEnd.Tests
 
             Log.WriteLine($"Found {hardLinkCount} hard linked assemblies");
 
-            // Verify deduplication worked: expect > 100 hard links
             Assert.True(hardLinkCount > 100,
                 $"Expected more than 100 hard linked assemblies, but found only {hardLinkCount}. " +
                 "This suggests deduplication did not run correctly.");
