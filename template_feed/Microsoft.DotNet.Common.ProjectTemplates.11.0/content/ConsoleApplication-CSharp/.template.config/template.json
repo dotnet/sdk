@@ -9,8 +9,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project for creating an empty command-line application that can run on .NET on Windows, Linux and macOS",
   "groupIdentity": "Microsoft.Common.Console",
-  "precedence": "12000",
-  "identity": "Microsoft.Common.Console.CSharp.10.0",
+  "precedence": "13000",
+  "identity": "Microsoft.Common.Console.CSharp.11.0",
   "shortName": "console",
   "tags": {
     "language": "C#",
@@ -35,7 +35,7 @@
         {
           "choice": "net11.0",
           "description": "Target net11.0",
-          "displayName": ".NET 10.0"
+          "displayName": ".NET 11.0"
         }
       ],
       "replaces": "net11.0",

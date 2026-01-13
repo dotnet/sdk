@@ -9,8 +9,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project for creating a class library that targets .NET or .NET Standard",
   "groupIdentity": "Microsoft.Common.Library",
-  "precedence": "12000",
-  "identity": "Microsoft.Common.Library.VisualBasic.10.0",
+  "precedence": "13000",
+  "identity": "Microsoft.Common.Library.VisualBasic.11.0",
   "shortName": "classlib",
   "tags": {
     "language": "VB",
@@ -49,7 +49,7 @@
         {
           "choice": "net11.0",
           "description": "Target net11.0",
-          "displayName": ".NET 10.0"
+          "displayName": ".NET 11.0"
         },
         {
           "choice": "netstandard2.1",
