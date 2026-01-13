@@ -18,7 +18,6 @@
          preview version components or anything else. E.g. 8.0.100, 9.0.300, etc. -->
     <SdkFeatureBand>$(VersionMajor).$(VersionMinor).$(VersionSDKMinor)00</SdkFeatureBand>
     <BuiltinWorkloadFeatureBand>$(VersionMajor).$(VersionMinor).100</BuiltinWorkloadFeatureBand>
-    <PreviousVersionPrefix>10.0.100</PreviousVersionPrefix>
     <MajorMinorVersion>$(VersionMajor).$(VersionMinor)</MajorMinorVersion>
     <CliProductBandVersion>$(MajorMinorVersion).$(VersionSDKMinor)</CliProductBandVersion>
     <!-- In source-build the version of the compiler must be same or newer than the version of the
@@ -144,7 +143,8 @@
     <MoqPackageVersion>4.18.4</MoqPackageVersion>
     <XunitCombinatorialVersion>1.3.2</XunitCombinatorialVersion>
     <MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>8.0.0-beta.23607.1</MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>
-    <BenchmarkDotNetPackageVersion>0.14.0</BenchmarkDotNetPackageVersion>
+    <BenchmarkDotNetPackageVersion>0.15.6</BenchmarkDotNetPackageVersion>
+    <BenchmarkDotNetDiagnosticsWindowsPackageVersion>0.14.0</BenchmarkDotNetDiagnosticsWindowsPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Workload manifest package versions">

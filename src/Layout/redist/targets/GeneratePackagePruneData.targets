@@ -42,6 +42,12 @@
     <ItemGroup>
       <TargetingPackToDownloadForPruneData Include="@(TargetingPackForPruneData)"
                                Condition="!Exists('%(RepoSourcePath)')" />
+    </ItemGroup>			       
+    <!-- TODO: Version metadata overwrite Workaround until a newer bootstrap SDK
+               is picked up with the CollatePackageDowload "[]" trimming fix. -->
+    <ItemGroup>
+      <_ExistingPackageDownload Include="@(PackageDownload)" Version="$([System.String]::Copy('%(Version)').Trim('[]'))" />
+      <PackageDownload Remove="@(PackageDownload)" />
     </ItemGroup>
     <!-- TODO: Version metadata overwrite Workaround until a newer bootstrap SDK
                is picked up with the CollatePackageDowload "[]" trimming fix. -->

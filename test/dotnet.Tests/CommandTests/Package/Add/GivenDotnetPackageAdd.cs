@@ -671,24 +671,26 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Theory, CombinatorialData]
         public void FileBasedApp_CentralPackageManagement_NoVersionSpecified_KeepExisting(bool legacyForm, bool fileOption, bool noRestore)
         {
-            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore) is not { } args) return;
+            var packageName = "MSBuild.StructuredLogger";
+
+            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore, packageName: packageName) is not { } args) return;
 
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
-            var source = """
-                #:package Humanizer
+            var source = $"""
+                #:package {packageName}
                 Console.WriteLine();
                 """;
             File.WriteAllText(file, source);
 
             var directoryPackagesProps = Path.Join(testInstance.Path, "Directory.Packages.props");
-            var directoryPackagesPropsSource = """
+            var directoryPackagesPropsSource = $"""
                 <Project>
                   <PropertyGroup>
                     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageVersion Include="Humanizer" Version="2.9.9" />
+                    <PackageVersion Include="{packageName}" Version="2.3.71" />
                   </ItemGroup>
                 </Project>
                 """;

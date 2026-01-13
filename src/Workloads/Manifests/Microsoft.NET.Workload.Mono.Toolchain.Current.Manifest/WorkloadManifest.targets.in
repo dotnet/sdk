@@ -62,7 +62,6 @@
         '$(RunAOTCompilation)' == 'true' or
         '$(WasmBuildNative)' == 'true' or
         '$(WasmGenerateAppBundle)' == 'true' or
-        '$(_UsingBlazorOrWasmSdk)' != 'true' or
         '$(EmccInitialHeapSize)' != '' or
         '$(EmccMaximumHeapSize)' != '' " >true</_WasmNativeWorkloadNeeded>
 

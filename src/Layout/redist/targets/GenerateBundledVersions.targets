@@ -84,7 +84,6 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <!-- TODO: Once .NET 10.0.X has released, update these version numbers to 10.0.$(VersionFeature100) -->
       <_NET100RuntimePackVersion>10.0.$(VersionFeature100)</_NET100RuntimePackVersion>
       <_NET100TargetingPackVersion>10.0.$(VersionFeature100)</_NET100TargetingPackVersion>
       <_WindowsDesktop100RuntimePackVersion>10.0.$(VersionFeature100)</_WindowsDesktop100RuntimePackVersion>
@@ -271,6 +270,8 @@
         tvossimulator-x64;
         maccatalyst-x64;
         maccatalyst-arm64;
+        haiku-x64;
+        browser-wasm;
         " />
 
       <NetCoreAppHostRids Include="@(Net110AppHostRids)" />
@@ -643,6 +644,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                          ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
                          ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
                          ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         ILCompilerPortableRuntimeIdentifiers="@(ILCompilerSupportedPortableRids, '%3B')"
                          ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
                          />
 
@@ -750,13 +752,16 @@ Copyright (c) .NET Foundation. All rights reserved.
                         TargetFramework="net10.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(_NET100RuntimePackVersion)"
+                        Crossgen2PortableRuntimeIdentifiers="@(Net100Crossgen2SupportedRids, '%3B')"
                         Crossgen2RuntimeIdentifiers="@(Net100Crossgen2SupportedRids, '%3B')"
                         />
 
     <KnownILCompilerPack Include="Microsoft.DotNet.ILCompiler"
                          TargetFramework="net10.0"
                          ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
+                         ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
                          ILCompilerPackVersion="$(_NET100RuntimePackVersion)"
+                         ILCompilerPortableRuntimeIdentifiers="@(Net100ILCompilerSupportedRids, '%3B')"
                          ILCompilerRuntimeIdentifiers="@(Net100ILCompilerSupportedRids, '%3B')"
                          />
 
