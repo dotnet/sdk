@@ -19,7 +19,7 @@ This functionality leverages the `dotnet run` extensibility infrastructure (spec
 
 ## Authors
 
-- . NET MAUI Team
+- .NET MAUI Team
 - Microsoft Testing Platform Team
 
 ## Related Documents
@@ -277,7 +277,7 @@ Enable MTP mode via `global.json`:
   <ItemGroup>
     <!-- MTP-based runners -->
     <PackageReference Include="MSTest" Version="*" />
-    <PackageReference Include="MSTest. Sdk" Version="*" />
+    <PackageReference Include="MSTest.Sdk" Version="*" />
     
     <!-- TRX reporting extension -->
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="*" />
