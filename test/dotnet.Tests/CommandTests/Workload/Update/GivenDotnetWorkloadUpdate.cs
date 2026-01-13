@@ -660,7 +660,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [InlineData(false)]
         public void GivenMissingManifestsInWorkloadSetModeUpdateReinstallsManifests(bool userLocal)
         {
-            var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver) =
+            var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver) = 
                 CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(_testAssetsManager, _manifestPath, userLocal, out string sdkFeatureVersion);
 
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
