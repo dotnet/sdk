@@ -89,7 +89,7 @@ steps:
               ConnectedPMEServiceName: 248d384a-b39b-46e3-8ad5-c2c210d5e7ca
         microbuildEnv:
           TeamName: $(_TeamName)
-          MicroBuildOutputFolderOverride: $(Agent.TempDirectory)/MicroBuild
+          MicroBuildOutputFolderOverride: ${{ parameters.microBuildOutputFolder }}
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
         continueOnError: ${{ parameters.continueOnError }}
         condition: and(succeeded(), eq(variables['Agent.Os'], 'Windows_NT'), in(variables['_SignType'], 'real', 'test'))
@@ -112,7 +112,7 @@ steps:
                 ConnectedPMEServiceName: c24de2a5-cc7a-493d-95e4-8e5ff5cad2bc
           microbuildEnv:
             TeamName: $(_TeamName)
-            MicroBuildOutputFolderOverride: $(Agent.TempDirectory)/MicroBuild
+            MicroBuildOutputFolderOverride: ${{ parameters.microBuildOutputFolder }}
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           continueOnError: ${{ parameters.continueOnError }}
           condition: and(succeeded(), ne(variables['Agent.Os'], 'Windows_NT'),  eq(variables['_SignType'], 'real'))

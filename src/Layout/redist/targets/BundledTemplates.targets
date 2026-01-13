@@ -1,23 +1,19 @@
 <Project>
 
-  <!-- Set TemplateFrameworkVersion to a different value than '$(MajorMinorVersion)' during rebranding. -->
-  <PropertyGroup>
-    <TemplateFrameworkVersion>$(MajorMinorVersion)</TemplateFrameworkVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <BundledTemplate Include="Microsoft.DotNet.Web.ItemTemplates.11.0" PackageVersion="$(MicrosoftDotNetWebItemTemplates110PackageVersion)" />
-    <BundledTemplate Include="Microsoft.DotNet.Web.ProjectTemplates.11.0" PackageVersion="$(MicrosoftDotNetWebProjectTemplates110PackageVersion)" UseVersionForTemplateInstallPath="true" />
-    <BundledTemplate Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)" />
-    <BundledTemplate Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplatesPackageVersion)" />
+  <ItemGroup Label="Live templates">
+    <Bundled100Templates Include="Microsoft.DotNet.Web.ItemTemplates.11.0" PackageVersion="$(MicrosoftDotNetWebItemTemplates110PackageVersion)" />
+    <Bundled100Templates Include="Microsoft.DotNet.Web.ProjectTemplates.11.0" PackageVersion="$(MicrosoftDotNetWebProjectTemplates110PackageVersion)" UseVersionForTemplateInstallPath="true" />
+    <Bundled100Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)" />
+    <Bundled100Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplatesPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
-    <BundledTemplate Update="@(BundledTemplate)"
-      TemplateFrameworkVersion="$(TemplateFrameworkVersion)"
-      NupkgPathRelativeToPackageRoot="%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg" />
-    <BundledTemplate Update="@(BundledTemplate)"
-      RestoredNupkgPath="$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLowerInvariant())" />
+    <CurrentVersionBundledTemplates Include="@(Bundled100Templates)" TemplateFrameworkVersion="$(MajorMinorVersion)" />
+    <BundledTemplates Include="@(CurrentVersionBundledTemplates)" />
+    <BundledTemplates Update="@(BundledTemplates)">
+      <NupkgPathRelativeToPackageRoot>%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg</NupkgPathRelativeToPackageRoot>
+      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLowerInvariant())</RestoredNupkgPath>
+    </BundledTemplates>
   </ItemGroup>
 
   <!-- Restore bundled templates -->
@@ -33,7 +29,7 @@
     </PropertyGroup>
 
     <CalculateTemplateVersions
-      BundledTemplates="@(BundledTemplate)"
+      BundledTemplates="@(BundledTemplates)"
       FullNugetVersion="$(FullNugetVersion)"
       ProductMonikerRid="$(ProductMonikerRid)"
       InstallerExtension="$(InstallerExtension)"
@@ -79,7 +75,7 @@
     <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
     <PropertyGroup>
       <CurrentTemplateInstallPath>%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
-      <CurrentTemplateFrameworkVersion>%(BundledTemplate.TemplateFrameworkVersion)</CurrentTemplateFrameworkVersion>
+      <CurrentTemplateFrameworkVersion>%(CurrentVersionBundledTemplates.TemplateFrameworkVersion)</CurrentTemplateFrameworkVersion>
     </PropertyGroup>
     <Copy SourceFiles="@(RepoTemplate)"
           DestinationFiles="$(IntermediateOutputPath)templates-$(CurrentTemplateFrameworkVersion)\templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />

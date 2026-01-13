@@ -149,7 +149,7 @@
 
   <PropertyGroup Label="Workload manifest package versions">
     <MauiFeatureBand>10.0.100</MauiFeatureBand>
-    
+
     <!--
       Updates to any of these versions will require the updating of that package version in the
       source-build-reference-packages repo as a text-only package.

@@ -636,6 +636,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                         TargetFramework="net11.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                        Crossgen2PortableRuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
                         Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
                         />
 
