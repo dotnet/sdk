@@ -717,7 +717,7 @@ public class VisualStudioWorkloadsTests
             _id = id;
         }
 
-        // Used while getting VS version info and patcking
+        // Used while getting VS version info and packages.
         // Packages starting with "Microsoft.NetCore.Toolset." are trimmed and included. All others are matched against
         // the workload resolver's available workloads.
         public string GetId() => _id;

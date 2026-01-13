@@ -100,7 +100,7 @@ internal static class VisualStudioWorkloads
     /// If <see langword="null"/>, then workloads from all feature bands in VS will be returned.
     /// </param>
     /// <param name="setupConfiguration">
-    ///  The Visual Studio setup interface. If null the default object will be used.
+    /// The Visual Studio setup interface. If <see langword="null"/> the default object will be used.
     /// </param>
     internal static void GetInstalledWorkloads(
         IWorkloadResolver workloadResolver,
