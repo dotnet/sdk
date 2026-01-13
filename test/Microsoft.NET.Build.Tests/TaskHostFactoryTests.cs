@@ -26,7 +26,7 @@ public class TaskHostFactoryTests(ITestOutputHelper log) : SdkTest(log)
         var testAsset = CreateTestAssetWithTaskHostFactoryAndRuntime("NET", targetFramework);
 
         var buildCommand = new BuildCommand(testAsset);
-        buildCommand.Execute("/t:Build;TestTaskHostFactoryWithRuntime", "/v:verbose")
+        buildCommand.Execute("/t:Build;TestTaskHostFactoryWithRuntime", "/v:v")
             .Should()
             .Pass()
             .And
