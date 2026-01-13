@@ -120,7 +120,7 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
     /// referenced in the workload set exist on disk.
     /// </summary>
     /// <returns>The corrupt WorkloadSet if any manifests are missing; null otherwise.</returns>
-    private WorkloadSet? GetCorruptWorkloadSetIfAny(SdkFeatureBand sdkFeatureBand)
+    private WorkloadSet GetCorruptWorkloadSetIfAny(SdkFeatureBand sdkFeatureBand)
     {
         var installState = GetInstallState(sdkFeatureBand);
 
@@ -225,8 +225,8 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
             _workloadInstaller.GetWorkloadInstallationRecordRepository(),
             _workloadInstaller,
             _packageSourceLocation,
-            displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
+            displayManifestUpdates: Verbosity >= VerbosityOptions.detailed);
 
         return manifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
     }
-
+}

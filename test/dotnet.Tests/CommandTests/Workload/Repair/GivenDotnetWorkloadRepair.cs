@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.Text.Json;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Repair;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -150,6 +151,82 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             // All expected packs are still present
             Directory.GetDirectories(Path.Combine(installRoot, "packs")).Length.Should().Be(7);
             Directory.GetDirectories(Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1")).Length.Should().Be(8);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GivenMissingManifestsInWorkloadSetModeRepairReinstallsManifests(bool userLocal)
+        {
+            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var dotnetRoot = Path.Combine(testDirectory, "dotnet");
+            var userProfileDir = Path.Combine(testDirectory, "user-profile");
+            var sdkFeatureVersion = "6.0.100";
+            var workloadSetVersion = "6.0.100";
+
+            // Create workload set contents
+            var workloadSetContents = new Dictionary<string, string>
+            {
+                [workloadSetVersion] = """
+{
+  "xamarin-android-build": "8.4.7/6.0.100",
+  "xamarin-ios-sdk": "10.0.1/6.0.100"
+}
+"""
+            };
+
+            // Set up mock installer with workload set support
+            var mockInstaller = new MockPackWorkloadInstaller(
+                dotnetDir: dotnetRoot,
+                installedWorkloads: new List<WorkloadId> { new WorkloadId("xamarin-android") },
+                workloadSetContents: workloadSetContents);
+
+            // Create the manifest provider and resolver
+            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
+            mockInstaller.WorkloadResolver = workloadResolver;
+
+            string installRoot = userLocal ? userProfileDir : dotnetRoot;
+            if (userLocal)
+            {
+                WorkloadFileBasedInstall.SetUserLocal(dotnetRoot, sdkFeatureVersion);
+            }
+
+            // Create install state with workload set version
+            var installStateDir = Path.Combine(installRoot, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), sdkFeatureVersion, "InstallState");
+            Directory.CreateDirectory(installStateDir);
+            var installStatePath = Path.Combine(installStateDir, "default.json");
+            var installState = new InstallStateContents
+            {
+                UseWorkloadSets = true,
+                WorkloadVersion = workloadSetVersion
+            };
+            File.WriteAllText(installStatePath, installState.ToString());
+
+            // Create mock manifest directories but delete the manifest files to simulate ruined install
+            var manifestRoot = Path.Combine(dotnetRoot, "sdk-manifests", sdkFeatureVersion);
+            var androidManifestDir = Path.Combine(manifestRoot, "xamarin-android-build", "8.4.7");
+            var iosManifestDir = Path.Combine(manifestRoot, "xamarin-ios-sdk", "10.0.1");
+            Directory.CreateDirectory(androidManifestDir);
+            Directory.CreateDirectory(iosManifestDir);
+
+            // Verify manifests don't exist (simulating the ruined install)
+            File.Exists(Path.Combine(androidManifestDir, "WorkloadManifest.json")).Should().BeFalse();
+            File.Exists(Path.Combine(iosManifestDir, "WorkloadManifest.json")).Should().BeFalse();
+
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
+
+            // Run repair command
+            var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolverFactory,
+                workloadInstaller: mockInstaller);
+            repairCommand.Execute();
+
+            // Verify that manifests were reinstalled
+            mockInstaller.InstalledManifests.Should().HaveCount(2);
+            mockInstaller.InstalledManifests.Should().Contain(m => m.manifestUpdate.ManifestId.ToString() == "xamarin-android-build");
+            mockInstaller.InstalledManifests.Should().Contain(m => m.manifestUpdate.ManifestId.ToString() == "xamarin-ios-sdk");
+
+            // Verify success message was shown
+            _reporter.Lines.Should().Contain(line => line.Contains("Successfully repaired"));
         }
     }
 }
