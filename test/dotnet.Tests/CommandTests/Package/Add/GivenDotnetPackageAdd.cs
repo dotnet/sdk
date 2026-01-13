@@ -694,6 +694,27 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 """;
             File.WriteAllText(directoryPackagesProps, directoryPackagesPropsSource);
 
+            // Create a local NuGet.config with package source mapping to avoid NU1507 warnings
+            var nugetConfig = Path.Join(testInstance.Path, "NuGet.config");
+            File.WriteAllText(nugetConfig, """
+                <?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                  <packageSources>
+                    <clear />
+                    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+                    <add key="darc-pub-dotnet-dotnet" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-dotnet-4ef9fba1/nuget/v3/index.json" />
+                  </packageSources>
+                  <packageSourceMapping>
+                    <packageSource key="nuget.org">
+                      <package pattern="Humanizer*" />
+                    </packageSource>
+                    <packageSource key="darc-pub-dotnet-dotnet">
+                      <package pattern="*" />
+                    </packageSource>
+                  </packageSourceMapping>
+                </configuration>
+                """);
+
             new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
