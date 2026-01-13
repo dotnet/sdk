@@ -14,5 +14,7 @@ internal record BuildOptions(
     Utils.VerbosityOptions? Verbosity,
     bool NoLaunchProfile,
     bool NoLaunchProfileArguments,
+    string? Device,
+    bool ListDevices,
     List<string> UnmatchedTokens,
     IEnumerable<string> MSBuildArgs);

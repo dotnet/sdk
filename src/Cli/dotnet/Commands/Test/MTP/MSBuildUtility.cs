@@ -136,6 +136,8 @@ internal static class MSBuildUtility
             parseResult.HasOption(TestCommandDefinition.VerbosityOption) ? parseResult.GetValue(TestCommandDefinition.VerbosityOption) : null,
             parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileOption),
             parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption),
+            parseResult.GetValue(MicrosoftTestingPlatformOptions.DeviceOption),
+            parseResult.HasOption(MicrosoftTestingPlatformOptions.ListDevicesOption),
             otherArgs,
             msbuildArgs);
     }
