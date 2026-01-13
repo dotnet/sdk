@@ -139,7 +139,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return HistoryRecords;
         }
 
-        public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null) => throw new NotImplementedException();
+        public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
+        {
+            // Repair is essentially a reinstall of existing workloads
+            CliTransaction.RunNew(context => InstallWorkloads(workloadIds, sdkFeatureBand, context, offlineCache));
+        }
 
         public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
         {

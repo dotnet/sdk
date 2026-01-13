@@ -201,12 +201,16 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
     }
 
     /// <summary>
-    /// Reads the install state for the current SDK feature band.
+    /// Reads the workload install state from disk for the given feature band.
     /// </summary>
     private InstallStateContents GetInstallState(SdkFeatureBand sdkFeatureBand)
     {
-        string manifestRoot = Path.Combine(_dotnetPath, "sdk-manifests");
-        string installStateFolder = WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, Path.GetDirectoryName(manifestRoot));
+        // Determine install root - use user profile dir if user-local install, otherwise dotnet dir
+        string installRoot = WorkloadFileBasedInstall.IsUserLocal(_dotnetPath, sdkFeatureBand.ToString())
+            ? _userProfileDir
+            : _dotnetPath;
+
+        string installStateFolder = WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, installRoot);
         string installStatePath = Path.Combine(installStateFolder, "default.json");
 
         return InstallStateContents.FromPath(installStatePath);
