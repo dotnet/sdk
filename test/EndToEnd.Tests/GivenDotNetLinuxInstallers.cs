@@ -85,7 +85,7 @@ namespace EndToEnd.Tests
                     .And.HaveStdOutMatching(@"aspnetcore-store-\d+(\.\d+){2} >= \d+(\.\d+){2}");
 
         private void DebianPackageHasRelativeSymbolicLinks(string installerFile) =>
-            VerifyPackageSymlinks(installerFile, "deb", tempDir =>
+            SymbolicLinkHelpers.VerifyPackageSymlinks(installerFile, "deb", tempDir =>
             {
                 // Extract .deb archive (contains data.tar.gz)
                 new RunExeCommand(Log, "ar")
@@ -96,35 +96,16 @@ namespace EndToEnd.Tests
                 // Extract data.tar.gz to get the actual files
                 var dataTarGz = Path.Combine(tempDir, "data.tar.gz");
                 SymbolicLinkHelpers.ExtractTarGz(dataTarGz, tempDir, Log);
-            });
+            }, Log);
 
         private void RpmPackageHasRelativeSymbolicLinks(string installerFile) =>
-            VerifyPackageSymlinks(installerFile, "rpm", tempDir =>
+            SymbolicLinkHelpers.VerifyPackageSymlinks(installerFile, "rpm", tempDir =>
             {
                 // Extract RPM contents using rpm2cpio | cpio (available on Azure Linux)
                 new RunExeCommand(Log, "sh")
                     .WithWorkingDirectory(tempDir)
                     .Execute("-c", $"rpm2cpio '{installerFile}' | cpio -idv --quiet 2>&1")
                     .Should().Pass();
-            });
-
-        private void VerifyPackageSymlinks(string installerFile, string packageType, Action<string> extractPackage)
-        {
-            var tempDir = Path.Combine(Path.GetTempPath(), $"{packageType}-test-{Guid.NewGuid()}");
-            Directory.CreateDirectory(tempDir);
-
-            try
-            {
-                extractPackage(tempDir);
-                SymbolicLinkHelpers.VerifyDirectoryHasRelativeSymlinks(tempDir, Log, $"{packageType} package");
-            }
-            finally
-            {
-                if (Directory.Exists(tempDir))
-                {
-                    Directory.Delete(tempDir, recursive: true);
-                }
-            }
-        }
+            }, Log);
     }
 }
