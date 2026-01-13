@@ -44,14 +44,13 @@
     <!-- Default to all packages generating a corresponding symbol package -->
     <IncludeSymbols>true</IncludeSymbols>
     <IsShippingPackage>false</IsShippingPackage>
-    <SdkTargetFramework>net10.0</SdkTargetFramework>
-    <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
-    <NetCurrent>net10.0</NetCurrent>
+    <!-- remove this once arcade current is net11 -->
+    <NetCurrent>net11.0</NetCurrent>
+    <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
     <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
     <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
-    <VisualStudioTargetFramework>net472</VisualStudioTargetFramework>
-
+    <VisualStudioTargetFramework>$(NetFrameworkToolCurrent)</VisualStudioTargetFramework>
     <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
     <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
 
