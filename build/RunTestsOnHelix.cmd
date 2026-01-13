@@ -7,8 +7,9 @@ set NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
 set MicrosoftNETBuildExtensionsTargets=%HELIX_CORRELATION_PAYLOAD%\ex\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets
 set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
-set DOTNET_MULTILEVEL_LOOKUP=0
 set TestFullMSBuild=%1
+REM remove once the 11 runtime is in the SDK
+set NETCoreAppMaximumVersion=11.0
 
 REM Ensure Visual Studio instances allow preview SDKs
 PowerShell -ExecutionPolicy ByPass -NoProfile -File "%HELIX_CORRELATION_PAYLOAD%\t\eng\enable-preview-sdks.ps1"

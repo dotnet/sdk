@@ -220,8 +220,7 @@
   <Target Name="PublishTestCli">
     <PropertyGroup>
       <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' != 'true'" >net9.0</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' == 'true'" >$(NetCurrent)</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' != 'true'" >net9.0</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">net10.0</TestCliNuGetDirectoryTargetFramework>
       <TestCliNuGetDirectory>$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
     </PropertyGroup>
 
