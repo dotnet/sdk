@@ -116,6 +116,8 @@ internal static class TestCommandDefinition
         command.Options.Add(MicrosoftTestingPlatformOptions.ListTestsOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoLaunchProfileOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.DeviceOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.ListDevicesOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.MTPTargetOption);
     }
 

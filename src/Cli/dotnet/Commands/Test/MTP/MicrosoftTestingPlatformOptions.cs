@@ -107,6 +107,18 @@ internal static class MicrosoftTestingPlatformOptions
     };
 
     public static readonly Option<string[]> MTPTargetOption = CommonOptions.RequiredMSBuildTargetOption(CliConstants.MTPTarget);
+
+    public static readonly Option<string> DeviceOption = new("--device")
+    {
+        Description = CliCommandStrings.CommandOptionDeviceDescription,
+        HelpName = CliCommandStrings.CommandOptionDeviceHelpName
+    };
+
+    public static readonly Option<bool> ListDevicesOption = new("--list-devices")
+    {
+        Description = CliCommandStrings.CommandOptionListDevicesDescription,
+        Arity = ArgumentArity.Zero
+    };
 }
 
 internal enum OutputOptions
