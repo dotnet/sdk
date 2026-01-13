@@ -139,6 +139,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
       `{tfm}`: {
         `targetAlias`: `{tfm}`
       }
+    },
+    `restore`: {
+        `frameworks`: {
+          `{tfm}`: {
+            `targetAlias`: `{tfm}`
+          }
+        }
     }
   }
 }".Replace("`", "\"").Replace("{tfm}", tfm).Replace("{locale}", locale);
