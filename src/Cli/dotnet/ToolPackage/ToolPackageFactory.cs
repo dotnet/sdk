@@ -36,10 +36,10 @@ namespace Microsoft.DotNet.ToolPackage
             IToolPackageDownloader,
             IToolPackageUninstaller)
             CreateToolPackageStoresAndDownloaderAndUninstaller(
-                DirectoryPath? nonGlobalLocation = null, IEnumerable<string> additionalRestoreArguments = null)
+                DirectoryPath? nonGlobalLocation = null, IEnumerable<string> additionalRestoreArguments = null, string currentWorkingDirectory = null)
         {
             ToolPackageStoreAndQuery toolPackageStore = CreateConcreteToolPackageStore(nonGlobalLocation);
-            var toolPackageDownloader = new ToolPackageDownloader(toolPackageStore);
+            var toolPackageDownloader = new ToolPackageDownloader(toolPackageStore, currentWorkingDirectory: currentWorkingDirectory);
             var toolPackageUninstaller = new ToolPackageUninstaller(
                 toolPackageStore);
 
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.ToolPackage
         }
 
 
-        public static IToolPackageStoreQuery CreateToolPackageStoreQuery(
+        public static ToolPackageStoreAndQuery CreateToolPackageStoreQuery(
             DirectoryPath? nonGlobalLocation = null)
         {
             return CreateConcreteToolPackageStore(nonGlobalLocation);
