@@ -24,8 +24,6 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             launchProfile: null,
             noLaunchProfile: false,
             noLaunchProfileArguments,
-            device: null,
-            listDevices: false,
             noRestore: false,
             noCache: false,
             interactive: false,

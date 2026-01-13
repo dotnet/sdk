@@ -110,8 +110,6 @@ public class RunCommand
         string? launchProfile,
         bool noLaunchProfile,
         bool noLaunchProfileArguments,
-        string? device,
-        bool listDevices,
         bool noRestore,
         bool noCache,
         bool interactive,
@@ -130,8 +128,6 @@ public class RunCommand
         LaunchProfile = launchProfile;
         NoLaunchProfile = noLaunchProfile;
         NoLaunchProfileArguments = noLaunchProfileArguments;
-        Device = device;
-        ListDevices = listDevices;
         ApplicationArgs = applicationArgs;
         Interactive = interactive;
         NoRestore = noRestore;

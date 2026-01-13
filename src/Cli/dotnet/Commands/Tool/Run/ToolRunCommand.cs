@@ -11,13 +11,13 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
 internal sealed class ToolRunCommand : CommandBase<ToolRunCommandDefinition>
 {
-    private readonly string _toolCommandName;
-    private readonly IEnumerable<string> _forwardArgument;
+    private readonly string? _toolCommandName;
+    private readonly IEnumerable<string>? _forwardArgument;
 
     private readonly LocalToolsCommandResolver _localToolsCommandResolver;
     public bool _allowRollForward;
 
-    public ToolRunCommand(ParseResult result, LocalToolsCommandResolver localToolsCommandResolver = null, ToolManifestFinder toolManifest = null)
+    public ToolRunCommand(ParseResult result, LocalToolsCommandResolver? localToolsCommandResolver = null, ToolManifestFinder? toolManifest = null)
         : base(result)
     {
         _toolCommandName = result.GetValue(Definition.CommandNameArgument);
