@@ -158,7 +158,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         [InlineData(false)]
         public void GivenMissingManifestsInWorkloadSetModeRepairReinstallsManifests(bool userLocal)
         {
-            var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver) = 
+            var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver) =
                 CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(_testAssetsManager, _manifestPath, userLocal, out string sdkFeatureVersion);
 
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);

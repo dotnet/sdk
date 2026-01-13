@@ -208,6 +208,13 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
 
     private void InstallWorkloads(WorkloadHistoryRecorder recorder, IReadOnlyCollection<string> filteredWorkloadIds)
     {
+        // Check for corrupt workload set before attempting to get manifests
+        var corruptWorkloadSet = GetCorruptWorkloadSetIfAny();
+        if (corruptWorkloadSet != null)
+        {
+            CliTransaction.RunNew(context => RepairCorruptWorkloadSet(context, corruptWorkloadSet));
+        }
+
         //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
         //  set version specified, and we might install that workload version, then we don't do that check here, because we might not have the right
         //  workload set installed yet, and trying to list the available workloads would throw an error

@@ -13,16 +13,9 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
 
-internal class WorkloadRepairCommand : WorkloadCommandBase
+internal class WorkloadRepairCommand : InstallingWorkloadCommand
 {
-    private readonly PackageSourceLocation _packageSourceLocation;
-    private readonly IInstaller _workloadInstaller;
-    protected readonly IWorkloadResolverFactory _workloadResolverFactory;
-    private readonly IWorkloadResolver _workloadResolver;
-    private readonly ReleaseVersion _sdkVersion;
-    private readonly string _dotnetPath;
-    private readonly string _userProfileDir;
-    private readonly WorkloadHistoryRecorder _recorder;
+    private WorkloadHistoryRecorder _recorder;
 
     public WorkloadRepairCommand(
         ParseResult parseResult,
@@ -30,55 +23,50 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
         IWorkloadResolverFactory workloadResolverFactory = null,
         IInstaller workloadInstaller = null,
         INuGetPackageDownloader nugetPackageDownloader = null)
-        : base(parseResult, verbosityOptions: WorkloadRepairCommandParser.VerbosityOption, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
+        : base(parseResult, reporter, workloadResolverFactory, workloadInstaller, nugetPackageDownloader, null, null, WorkloadRepairCommandParser.VerbosityOption)
     {
-        var configOption = parseResult.GetValue(WorkloadRepairCommandParser.ConfigOption);
-        var sourceOption = parseResult.GetValue(WorkloadRepairCommandParser.SourceOption);
-        _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
-            new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
+        // Initialize _workloadInstaller from the base class field or create a new one
+        _workloadInstaller = _workloadInstallerFromConstructor ?? WorkloadInstallerFactory.GetWorkloadInstaller(
+            Reporter,
+            _sdkFeatureBand,
+            _workloadResolver,
+            Verbosity,
+            _userProfileDir,
+            VerifySignatures,
+            PackageDownloader,
+            _dotnetPath,
+            TempDirectoryPath,
+            packageSourceLocation: _packageSourceLocation,
+            RestoreActionConfiguration);
+    }
 
-        _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
-
-        if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadRepairCommandParser.VersionOption)))
+    private void EnsureRecorderInitialized()
+    {
+        if (_recorder == null)
         {
-            throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
+            _recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
+            _recorder.HistoryRecord.CommandName = "repair";
         }
-
-        var creationResult = _workloadResolverFactory.Create();
-
-        _dotnetPath = creationResult.DotnetPath;
-        _sdkVersion = creationResult.SdkVersion;
-        _userProfileDir = creationResult.UserProfileDir;
-        var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
-        _workloadResolver = creationResult.WorkloadResolver;
-
-        _workloadInstaller = workloadInstaller ??
-                             WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand,
-                                 _workloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, _dotnetPath, TempDirectoryPath,
-                                 _packageSourceLocation, _parseResult.ToRestoreActionConfig());
-
-        _recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
-        _recorder.HistoryRecord.CommandName = "repair";
     }
 
     public override int Execute()
     {
+        EnsureRecorderInitialized();
+
         try
         {
             _recorder.Run(() =>
             {
                 Reporter.WriteLine();
 
-                var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
-
                 // Repair missing manifests first if workload set is corrupt
-                var corruptWorkloadSet = GetCorruptWorkloadSetIfAny(sdkFeatureBand);
+                var corruptWorkloadSet = GetCorruptWorkloadSetIfAny();
                 if (corruptWorkloadSet != null)
                 {
-                    CliTransaction.RunNew(context => RepairCorruptWorkloadSet(context, sdkFeatureBand, corruptWorkloadSet));
+                    CliTransaction.RunNew(context => RepairCorruptWorkloadSet(context, corruptWorkloadSet));
                 }
 
-                var workloadIds = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(sdkFeatureBand);
+                var workloadIds = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
 
                 if (!workloadIds.Any())
                 {
@@ -88,7 +76,7 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
 
                 Reporter.WriteLine(string.Format(CliCommandStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
 
-                ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, sdkFeatureBand);
+                ReinstallWorkloadsBasedOnCurrentManifests(workloadIds);
 
                 WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
 
@@ -110,127 +98,8 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
         return _workloadInstaller.ExitCode;
     }
 
-    private void ReinstallWorkloadsBasedOnCurrentManifests(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand)
+    private void ReinstallWorkloadsBasedOnCurrentManifests(IEnumerable<WorkloadId> workloadIds)
     {
-        _workloadInstaller.RepairWorkloads(workloadIds, sdkFeatureBand);
-    }
-
-    /// <summary>
-    /// Checks if the workload set installation is corrupt by verifying that all manifests
-    /// referenced in the workload set exist on disk.
-    /// </summary>
-    /// <returns>The corrupt WorkloadSet if any manifests are missing; null otherwise.</returns>
-    private WorkloadSet GetCorruptWorkloadSetIfAny(SdkFeatureBand sdkFeatureBand)
-    {
-        var installState = GetInstallState(sdkFeatureBand);
-
-        // Only check for corruption if using workload sets mode
-        if (!installState.ShouldUseWorkloadSets())
-        {
-            return null;
-        }
-
-        // Must have a workload set version specified to check for corruption
-        if (string.IsNullOrEmpty(installState.WorkloadVersion))
-        {
-            return null;
-        }
-
-        try
-        {
-            var workloadSet = _workloadInstaller.GetWorkloadSetContents(installState.WorkloadVersion);
-            return HasMissingManifests(workloadSet) ? workloadSet : null;
-        }
-        catch
-        {
-            // If we can't read the workload set, consider it not corrupt
-            // (it might not be installed at all)
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Checks if any manifests referenced by the workload set are missing from disk.
-    /// </summary>
-    private bool HasMissingManifests(WorkloadSet workloadSet)
-    {
-        string manifestRoot = Path.Combine(_dotnetPath, "sdk-manifests");
-
-        foreach (var manifestEntry in workloadSet.ManifestVersions)
-        {
-            string manifestId = manifestEntry.Key.ToString();
-            string manifestVersion = manifestEntry.Value.Version.ToString();
-            string manifestFeatureBand = manifestEntry.Value.FeatureBand.ToString();
-
-            // Check if manifest directory exists
-            string manifestDirectory = Path.Combine(manifestRoot, manifestFeatureBand, manifestId, manifestVersion);
-            if (!Directory.Exists(manifestDirectory))
-            {
-                return true;
-            }
-
-            // Check if WorkloadManifest.json file exists
-            string manifestFile = Path.Combine(manifestDirectory, "WorkloadManifest.json");
-            if (!File.Exists(manifestFile))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Repairs a corrupt workload set by reinstalling all manifests referenced in the workload set.
-    /// </summary>
-    private void RepairCorruptWorkloadSet(ITransactionContext context, SdkFeatureBand sdkFeatureBand, WorkloadSet workloadSet)
-    {
-        var installState = GetInstallState(sdkFeatureBand);
-
-        Reporter.WriteLine($"Repairing workload set {installState.WorkloadVersion}...");
-
-        var manifestUpdates = CreateManifestUpdatesFromWorkloadSet(workloadSet);
-
-        foreach (var manifestUpdate in manifestUpdates)
-        {
-            _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context);
-        }
-
-        // Refresh resolver to pick up newly installed manifests
-        _workloadResolver.RefreshWorkloadManifests();
-    }
-
-    /// <summary>
-    /// Reads the workload install state from disk for the given feature band.
-    /// </summary>
-    private InstallStateContents GetInstallState(SdkFeatureBand sdkFeatureBand)
-    {
-        // Determine install root - use user profile dir if user-local install, otherwise dotnet dir
-        string installRoot = WorkloadFileBasedInstall.IsUserLocal(_dotnetPath, sdkFeatureBand.ToString())
-            ? _userProfileDir
-            : _dotnetPath;
-
-        string installStateFolder = WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, installRoot);
-        string installStatePath = Path.Combine(installStateFolder, "default.json");
-
-        return InstallStateContents.FromPath(installStatePath);
-    }
-
-    /// <summary>
-    /// Creates ManifestVersionUpdate objects from a workload set for installation.
-    /// </summary>
-    private IEnumerable<ManifestVersionUpdate> CreateManifestUpdatesFromWorkloadSet(WorkloadSet workloadSet)
-    {
-        var manifestUpdater = new WorkloadManifestUpdater(
-            Reporter,
-            _workloadResolver,
-            PackageDownloader,
-            _userProfileDir,
-            _workloadInstaller.GetWorkloadInstallationRecordRepository(),
-            _workloadInstaller,
-            _packageSourceLocation,
-            displayManifestUpdates: Verbosity >= VerbosityOptions.detailed);
-
-        return manifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
+        _workloadInstaller.RepairWorkloads(workloadIds, _sdkFeatureBand);
     }
 }

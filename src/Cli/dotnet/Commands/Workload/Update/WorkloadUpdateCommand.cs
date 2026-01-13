@@ -146,6 +146,13 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
 
     private void UpdateWorkloads()
     {
+        // Check for corrupt workload set before attempting to get manifests
+        var corruptWorkloadSet = GetCorruptWorkloadSetIfAny();
+        if (corruptWorkloadSet != null)
+        {
+            CliTransaction.RunNew(context => RepairCorruptWorkloadSet(context, corruptWorkloadSet));
+        }
+
         DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
         var workloadIds = Enumerable.Empty<WorkloadId>();
         RunInNewTransaction(context =>
