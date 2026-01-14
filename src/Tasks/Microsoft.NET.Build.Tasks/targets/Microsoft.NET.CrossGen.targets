@@ -649,7 +649,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="_FindMachOToolchain"
     Inputs="@(_ReadyToRunNativeObjectOutputs->'%(NativeLinkerInputPath)')"
     Outputs="%(_ReadyToRunNativeObjectOutputs.Identity)"
-    Condition="'$(PublishReadyToRunContainerFormat)' == 'macho'">
+    Condition="'$(PublishReadyToRunContainerFormat)' == 'macho' And '$(PublishReadyToRunCreateSharedLibrary)' != 'false'">
 
     <PropertyGroup>
       <SharedLibraryInstallName Condition="'$(SharedLibraryInstallName)' == ''">@rpath/%(_ReadyToRunNativeObjectOutputs.Filename)%(_ReadyToRunNativeObjectOutputs.Extension)</SharedLibraryInstallName>
