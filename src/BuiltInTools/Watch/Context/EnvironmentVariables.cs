@@ -16,6 +16,8 @@ internal static class EnvironmentVariables
         public const string DotnetHostPath = "DOTNET_HOST_PATH";
 
         public const string DotNetWatchHotReloadNamedPipeName = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName;
+        public const string DotNetWatchHotReloadHttpEndpoint = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadHttpEndpoint;
+        public const string DotNetWatchHotReloadHttpPort = "DOTNET_WATCH_HOTRELOAD_HTTP_PORT";
         public const string DotNetStartupHooks = HotReload.AgentEnvironmentVariables.DotNetStartupHooks;
         public const string DotNetModifiableAssemblies = HotReload.AgentEnvironmentVariables.DotNetModifiableAssemblies;
         public const string HotReloadDeltaClientLogMessages = HotReload.AgentEnvironmentVariables.HotReloadDeltaClientLogMessages;
@@ -59,6 +61,12 @@ internal static class EnvironmentVariables
     public static string? AutoReloadWSHostName => Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
     public static int? AutoReloadWSPort => ReadInt("DOTNET_WATCH_AUTO_RELOAD_WS_PORT");
     public static string? BrowserPath => Environment.GetEnvironmentVariable("DOTNET_WATCH_BROWSER_PATH");
+
+    /// <summary>
+    /// Port for HTTP hot reload communication. Used for mobile platforms (Android, iOS, MacCatalyst).
+    /// Defaults to 9000 if not specified.
+    /// </summary>
+    public static int HotReloadHttpPort => ReadInt(Names.DotNetWatchHotReloadHttpPort) ?? 9000;
 
     private static bool ReadBool(string variableName)
         => ParseBool(Environment.GetEnvironmentVariable(variableName));

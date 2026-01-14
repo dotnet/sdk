@@ -966,8 +966,15 @@ namespace Microsoft.DotNet.Watch
                     }
                     : null,
 
-                // pass user-specified build arguments last to override defaults:
-                Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. buildArguments]
+                // pass hot reload properties and user-specified build arguments last to override defaults:
+                Arguments = [
+                    "build",
+                    projectPath,
+                    "-consoleLoggerParameters:NoSummary;Verbosity=minimal",
+                    $"-p:{PropertyNames.DotNetWatchBuild}=true",
+                    $"-p:{PropertyNames.DotNetWatchHotReloadHttpPort}={_context.EnvironmentOptions.HotReloadHttpPort}",
+                    .. buildArguments
+                ]
             };
 
             _context.BuildLogger.Log(MessageDescriptor.Building, projectPath);
