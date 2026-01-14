@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "Test", "MSTest" ],
+  "name": "MSTest Test Class",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "Creates a new MSTest test class",
+  "groupIdentity": "Microsoft.Test.MSTest.TestClass",
+  "precedence": "11000",
+  "identity": "Microsoft.Test.MSTest.TestClass.CSharp.9.0",
+  "shortName": "mstest-class",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "sourceName": "Test1",
+  "preferDefaultName": true,
+  "defaultName": "Test1",
+  "primaryOutputs": [
+    { "path": "Test1.cs" }
+  ],
+  "symbols": {
+    "DefaultNamespace": {
+      "type": "bind",
+      "binding": "msbuild:RootNamespace",
+      "replaces": "Company.TestProject1"
+    },
+    "ImplicitUsings": {
+      "type": "bind",
+      "binding": "msbuild:ImplicitUsings",
+      "datatype": "string",
+      "defaultValue": "disable"
+    },
+    "evaluatedLangVersion": {
+      "type": "bind",
+      "binding": "msbuild:LangVersion",
+      "dataType": "string"
+    },
+    "latestLangVersion": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "latest"
+      }
+    },
+    "langVersion": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "evaluatedLangVersion",
+        "fallbackVariableName": "latestLangVersion"
+      }
+    },
+    "csharp9orOlder": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^(ISO-1|ISO-2|[1-7]|[8-9]|[8-9]\\.0|7\\.[0-3])$",
+        "source": "langVersion"
+      }
+    },
+    "csharp10orLater": {
+      "type": "computed",
+      "value": "!csharp9orOlder"
+    },
+    "csharpFeature_FileScopedNamespaces": {
+      "type": "computed",
+      "value": "csharp10orLater == \"true\""
+    },
+    "Fixture": {
+      "type": "parameter",
+      "datatype": "choice",
+      "description": "Select the fixture kinds to include in the project.",
+      "displayName": "Fixture",
+      "allowMultipleValues": true,
+      "enableQuotelessLiterals": true,
+      "defaultValue": "None",
+      "choices": [
+        {
+          "choice": "None",
+          "description": "No fixture methods",
+          "displayName": "None"
+        },
+        {
+          "choice": "AssemblyInitialize",
+          "description": "AssemblyInitialize fixture method"
+        },
+        {
+          "choice": "AssemblyCleanup",
+          "description": "AssemblyCleanup fixture method"
+        },
+        {
+          "choice": "ClassInitialize",
+          "description": "ClassInitialize fixture method"
+        },
+        {
+          "choice": "ClassCleanup",
+          "description": "ClassCleanup fixture method"
+        },
+        {
+          "choice": "TestInitialize",
+          "description": "TestInitialize fixture method"
+        },
+        {
+          "choice": "TestCleanup",
+          "description": "TestCleanup fixture method"
+        }
+      ]
+    }
+  },
+  "constraints": {
+    "csharp-only": {
+      "type": "project-capability",
+      "args": "CSharp"
+    }
+  },
+  "postActions": [
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens Test1.cs in the editor.",
+      "manualInstructions": [ ],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "id": "openInEditor",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ]
+}

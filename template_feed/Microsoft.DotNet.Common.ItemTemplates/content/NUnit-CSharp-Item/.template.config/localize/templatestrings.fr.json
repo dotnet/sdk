@@ -1,0 +1,6 @@
+﻿{
+  "author": "Aleksei Kharlov alias halex2005 (codeofclimber.ru)",
+  "name": "Élément de test NUnit 3",
+  "description": "Crée une classe de test NUnit.",
+  "postActions/openInEditor/description": "Ouvre la classe de fixture de test créée dans l’éditeur"
+}

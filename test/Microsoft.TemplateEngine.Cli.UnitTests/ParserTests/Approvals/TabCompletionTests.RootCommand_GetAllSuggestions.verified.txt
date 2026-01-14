@@ -49,11 +49,53 @@
     Documentation: A file for selecting the .NET SDK version.
   },
   {
+    Label: mstest,
+    Kind: Value,
+    SortText: mstest,
+    InsertText: mstest,
+    Documentation: A project that contains MSTest tests that can run on .NET on Windows, Linux and MacOS.
+  },
+  {
+    Label: mstest-class,
+    Kind: Value,
+    SortText: mstest-class,
+    InsertText: mstest-class,
+    Documentation: Creates a new MSTest test class
+  },
+  {
+    Label: mstest-playwright,
+    Kind: Value,
+    SortText: mstest-playwright,
+    InsertText: mstest-playwright,
+    Documentation: A project that contains Playwright tests using MSTest test framework, that can run on .NET on Windows, Linux and MacOS.
+  },
+  {
     Label: nugetconfig,
     Kind: Value,
     SortText: nugetconfig,
     InsertText: nugetconfig,
     Documentation: A file for configuring the locations NuGet will search for packages
+  },
+  {
+    Label: nunit,
+    Kind: Value,
+    SortText: nunit,
+    InsertText: nunit,
+    Documentation: A project that contains NUnit tests that can run on .NET on Windows, Linux and macOS
+  },
+  {
+    Label: nunit-playwright,
+    Kind: Value,
+    SortText: nunit-playwright,
+    InsertText: nunit-playwright,
+    Documentation: A project that contains Playwright tests using NUnit test framework, that can run on .NET on Windows, Linux and MacOS.
+  },
+  {
+    Label: nunit-test,
+    Kind: Value,
+    SortText: nunit-test,
+    InsertText: nunit-test,
+    Documentation: Creates a new NUnit test class
   },
   {
     Label: packagesprops,
@@ -82,6 +124,13 @@
     SortText: webconfig,
     InsertText: webconfig,
     Documentation: A file used to configure Web Application settings
+  },
+  {
+    Label: xunit,
+    Kind: Value,
+    SortText: xunit,
+    InsertText: xunit,
+    Documentation: A project that contains xUnit.net tests that can run on .NET on Windows, Linux and macOS
   },
   {
     Label: --dry-run,
