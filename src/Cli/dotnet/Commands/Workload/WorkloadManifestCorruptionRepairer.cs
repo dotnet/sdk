@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.Sdk.Localization;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
@@ -93,7 +92,7 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
 
         if (failureMode == ManifestCorruptionFailureMode.Throw)
         {
-            throw new InvalidOperationException(string.Format(Strings.WorkloadSetHasMissingManifests, installState.WorkloadVersion));
+            throw new InvalidOperationException(string.Format(CliCommandStrings.WorkloadSetHasMissingManifests, installState.WorkloadVersion));
         }
 
         _reporter.WriteLine($"Repairing workload set {installState.WorkloadVersion}...");
