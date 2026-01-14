@@ -671,26 +671,31 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Theory, CombinatorialData]
         public void FileBasedApp_CentralPackageManagement_NoVersionSpecified_KeepExisting(bool legacyForm, bool fileOption, bool noRestore)
         {
-            var packageName = "MSBuild.StructuredLogger";
-
-            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore, packageName: packageName) is not { } args) return;
+            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore, packageName: "A") is not { } args) return;
 
             var testInstance = _testAssetsManager.CreateTestDirectory();
+
+            string[] versions = ["0.0.5", "0.9.0", "1.0.0-preview.3"];
+            var packages = versions.Select(e => GetPackagePath(ToolsetInfo.CurrentTargetFramework, "A", e, identifier: e + versions.GetHashCode().ToString())).ToArray();
+
+            var restoreSources = string.Join(";", packages.Select(package => Path.GetDirectoryName(package)));
+
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = $"""
-                #:package {packageName}
+                #:property RestoreSources=$(RestoreSources);{restoreSources}
+                #:package A
                 Console.WriteLine();
                 """;
             File.WriteAllText(file, source);
 
             var directoryPackagesProps = Path.Join(testInstance.Path, "Directory.Packages.props");
-            var directoryPackagesPropsSource = $"""
+            var directoryPackagesPropsSource = """
                 <Project>
                   <PropertyGroup>
                     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageVersion Include="{packageName}" Version="2.3.71" />
+                    <PackageVersion Include="A" Version="0.0.5" />
                   </ItemGroup>
                 </Project>
                 """;
