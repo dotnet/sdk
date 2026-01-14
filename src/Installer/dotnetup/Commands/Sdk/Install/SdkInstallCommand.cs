@@ -24,7 +24,8 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
-    private readonly InstallRootManager _installRootManager = new InstallRootManager();
+    private InstallRootManager? _installRootManager;
+    private InstallRootManager InstallRootManager => _installRootManager ??= new InstallRootManager(_dotnetInstaller);
 
     public override int Execute()
     {
@@ -137,7 +138,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 // Check if user install root is already configured using InstallRootManager
                 if (OperatingSystem.IsWindows())
                 {
-                    userInstallRootChanges = _installRootManager.GetUserInstallRootChanges();
+                    userInstallRootChanges = InstallRootManager.GetUserInstallRootChanges();
                     
                     // If the user install root is already set up and matches the resolved install path, skip the prompt
                     if (!userInstallRootChanges.NeedsChange() && DotnetupUtilities.PathsEqual(resolvedInstallPath, userInstallRootChanges.UserDotnetPath))
@@ -300,10 +301,10 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 // Use InstallRootManager to apply the user install root configuration
                 if (userInstallRootChanges == null)
                 {
-                    userInstallRootChanges = _installRootManager.GetUserInstallRootChanges();
+                    userInstallRootChanges = InstallRootManager.GetUserInstallRootChanges();
                 }
                 
-                bool succeeded = _installRootManager.ApplyUserInstallRoot(
+                bool succeeded = InstallRootManager.ApplyUserInstallRoot(
                     userInstallRootChanges,
                     msg => SpectreAnsiConsole.WriteLine(msg),
                     msg => SpectreAnsiConsole.MarkupLine($"[red]{msg}[/]"));
