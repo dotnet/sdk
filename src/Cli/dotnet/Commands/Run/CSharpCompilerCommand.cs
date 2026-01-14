@@ -46,7 +46,7 @@ internal sealed partial class CSharpCompilerCommand
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
     internal static string RuntimeVersion => field ??= ComputeRuntimeVersion();
     private static string DefaultRuntimeVersion => field ??= ComputeDefaultRuntimeVersion();
-    private static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
+    internal static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
 
     public required string EntryPointFileFullPath { get; init; }
     public required string ArtifactsPath { get; init; }
