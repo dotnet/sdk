@@ -2,8 +2,8 @@
   "profiles": {
     "dotnet-watch": {
       "commandName": "Project",
-      "commandLineArgs": "-bl",
-      "workingDirectory": "$(RepoRoot)src\\Assets\\TestProjects\\BlazorWasmWithLibrary\\blazorwasm",
+      "commandLineArgs": "-bl -f net10.0-windows10.0.19041.0",
+      "workingDirectory": "C:\\temp\\MauiBlazor4\\App",
       "environmentVariables": {
         "DOTNET_WATCH_DEBUG_SDK_DIRECTORY": "$(RepoRoot)artifacts\\bin\\redist\\$(Configuration)\\dotnet\\sdk\\$(Version)",
         "DCP_IDE_REQUEST_TIMEOUT_SECONDS": "100000",
