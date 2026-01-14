@@ -323,8 +323,10 @@ internal sealed class WindowsPathHelper : IDisposable
             if (hasDotnetBefore)
             {
                 // Move the path to the front
+                // Save the unexpanded entry before removing it
+                string unexpandedEntry = unexpandedEntries[existingIndex];
                 unexpandedEntries.RemoveAt(existingIndex);
-                unexpandedEntries.Insert(0, unexpandedEntries.Count > existingIndex ? unexpandedEntries[existingIndex] : pathToAdd);
+                unexpandedEntries.Insert(0, unexpandedEntry);
                 return string.Join(';', unexpandedEntries);
             }
 
