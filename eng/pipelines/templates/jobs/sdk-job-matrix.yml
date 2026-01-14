@@ -15,6 +15,8 @@ parameters:
   - categoryName: TemplateEngine
     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
     publishXunitResults: true
+    # Reneable once the aspnet templates are fixed https://github.com/dotnet/sdk/issues/52442
+    disableJob: true
   - categoryName: AoT
     runAoTTests: true
   ### LINUX ###
@@ -37,6 +39,8 @@ parameters:
     osProperties: $(linuxOsglibcProperties)
     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
     publishXunitResults: true
+    # Reneable once the aspnet templates are fixed https://github.com/dotnet/sdk/issues/52442
+    disableJob: true
   ### MACOS ###
   macOSJobParameterSets:
   - categoryName: TestBuild
@@ -45,6 +49,8 @@ parameters:
     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
     publishXunitResults: true
     runtimeIdentifier: osx-x64
+    # Reneable once the aspnet templates are fixed https://github.com/dotnet/sdk/issues/52442
+    disableJob: true
   - categoryName: AoT
     runAoTTests: true
     runtimeIdentifier: osx-x64
