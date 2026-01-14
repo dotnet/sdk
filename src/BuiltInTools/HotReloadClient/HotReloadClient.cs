@@ -72,13 +72,13 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     /// Applies managed code updates to the target process.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public abstract Task<ApplyStatus> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken);
+    public abstract Task<Task<bool>> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken);
 
     /// <summary>
     /// Applies static asset updates to the target process.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public abstract Task<ApplyStatus> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken);
+    public abstract Task<Task<bool>> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken);
 
     /// <summary>
     /// Notifies the agent that the initial set of updates has been applied and the user code in the process can start executing.
@@ -133,13 +133,13 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
         return applicableUpdates;
     }
 
-    protected async ValueTask<TResult> SendAndReceiveUpdateAsync<TResult>(
-        Func<int, CancellationToken, ValueTask<TResult>> send,
-        bool isProcessSuspended,
-        TResult suspendedResult,
-        CancellationToken cancellationToken)
-        where TResult : struct
+    /// <summary>
+    /// Queues a batch of updates to be applied in the target process.
+    /// </summary>
+    protected Task<bool> QueueUpdateBatch(Func<int, TaskCompletionSource<bool>, ValueTask> sendAndReceive, CancellationToken applyOperationCancellationToken)
     {
+        var completionSource = new TaskCompletionSource<bool>();
+
         var batchId = _updateBatchId++;
 
         Task previous;
@@ -147,19 +147,34 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
         {
             previous = _pendingUpdates;
 
-            if (isProcessSuspended)
+            _pendingUpdates = Task.Run(async () =>
             {
-                _pendingUpdates = Task.Run(async () =>
-                {
-                    await previous;
-                    _ = await send(batchId, cancellationToken);
-                }, cancellationToken);
+                await previous;
 
-                return suspendedResult;
-            }
+                try
+                {
+                    Logger.Log(LogEvents.SendingUpdateBatch, batchId);
+                    await sendAndReceive(batchId, completionSource);
+                }
+                catch (Exception e)
+                {
+                    // Don't report an error when cancelled. The process has terminated or the host is shutting down in that case.
+                    // Best effort: There is an inherent race condition due to time between the process exiting and the cancellation token triggering.
+                    if (e is OperationCanceledException)
+                    {
+                        Logger.Log(LogEvents.UpdateBatchCanceled, batchId);
+                        completionSource.SetCanceled();
+                    }
+                    else
+                    {
+                        Logger.Log(LogEvents.UpdateBatchFailedWithError, batchId, e.Message);
+                        Logger.Log(LogEvents.UpdateBatchExceptionStackTrace, batchId, e.StackTrace ?? "");
+                        completionSource.SetResult(false);
+                    }
+                }
+            }, applyOperationCancellationToken);
         }
 
-        await previous;
-        return await send(batchId, cancellationToken);
+        return completionSource.Task;
     }
 }
