@@ -1,8 +1,5 @@
 <Project DefaultTargets="Build">
   <Import Project="Version.Details.props" Condition="Exists('Version.Details.props')" />
-  <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-  </PropertyGroup>
   <PropertyGroup Label="Repo version information">
     <VersionMajor>11</VersionMajor>
     <VersionMinor>0</VersionMinor>
