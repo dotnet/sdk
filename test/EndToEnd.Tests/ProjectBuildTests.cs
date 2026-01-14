@@ -405,31 +405,10 @@ namespace EndToEnd.Tests
             string dotnetFolder = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (template.StartsWith("winforms")
-               || template.StartsWith("wpf")
-               || template.StartsWith("web")
-               || template.StartsWith("razor")
-               || template.StartsWith("blazor")
-               || template.StartsWith("mvc")
-               || template.StartsWith("worker")
-               || template.StartsWith("grpc")
-               || template.StartsWith("nunit")
-               || template.StartsWith("xunit")
-               || template.StartsWith("mstest")
-               || template.StartsWith("console")
-               || template.StartsWith("class"))
+            if (latestMajorVersion == 10)
             {
-                return $"net10.0";
+                return $"net{latestMajorVersion}.0";
             }
-            else
-            {
-                return $"net11.0";
-            }
-            //NET11TFM bring this back once we have an 11 runtime
-            //if (latestMajorVersion == 10)
-            //{
-            //    return $"net{latestMajorVersion}.0";
-            //}
 
             throw new Exception("Unsupported version of SDK");
         }
