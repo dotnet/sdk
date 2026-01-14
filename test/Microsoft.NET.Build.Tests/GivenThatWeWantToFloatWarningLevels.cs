@@ -281,6 +281,10 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("10.0", "", "true", "")]
         [InlineData("10", "default", "false", "Security")]
         [InlineData("10.0", "", "true", "Usage")]
+        [InlineData("11", "default", "false", "")]
+        [InlineData("11.0", "", "true", "")]
+        [InlineData("11", "default", "false", "Security")]
+        [InlineData("11.0", "", "true", "Usage")]
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_maps_analysis_properties_to_globalconfig(string analysisLevel, string analysisMode, string codeAnalysisTreatWarningsAsErrors, string category)
         {
