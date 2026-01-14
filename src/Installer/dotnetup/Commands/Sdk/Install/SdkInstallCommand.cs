@@ -151,11 +151,9 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                             // Default install is already set up correctly, no need to prompt
                             resolvedSetDefaultInstall = false;
                         }
-                        else
-                        {
-                            // Not fully configured but on the path - prompt to fully configure it
-                            //  No need to prompt here, the default install is already set up.
-                        }
+                        //  If not fully configured, we leave resolvedSetDefaultInstall as null (no prompt)
+                        //  since the install path is already on PATH. The user can run "dotnetup defaultinstall"
+                        //  if they want to fully configure it.
                     }
                     else
                     {
