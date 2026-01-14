@@ -124,28 +124,49 @@ Notice the 33% increase in duplicate file size in 10.0 compared to 9.0.
 
 ## Proposed Approach
 
-The proposed approach leverages hard links to eliminate duplicate files within the SDK layout, reducing both disk footprint and archive size without requiring changes to component assembly loading logic or directory structures.
+The proposed approach leverages file links to eliminate duplicate files within the SDK layout, reducing both disk footprint and archive size without requiring changes to component assembly loading logic or directory structures.
 
-### Hard Link Deduplication
+### Platform-Specific Link Strategy
 
-Hard links provide a filesystem-level solution to file deduplication by allowing multiple directory entries to reference the same physical file on disk.
-When files with identical content exist in multiple locations within the SDK layout, we can replace duplicates with hard links to a single physical copy.
+Due to platform-specific constraints, the implementation uses different link types on different operating systems:
+
+**Windows: Hard Links**
+
+On Windows, hard links must be used because symbolic links require the `SeCreateSymbolicLinkPrivilege` privilege, which by default only Administrators have.
+Regular users cannot create symbolic links without either having this privilege explicitly granted or [enabling Developer Mode](https://blogs.windows.com/windowsdeveloper/2016/12/02/symlinks-windows-10/).
+Hard links do not require elevated privileges and work for all users.
+
+**Linux and macOS: Symbolic Links**
+
+On Linux, hard links cause problems with RPM packages.
+This has been verified across Azure Linux, Fedora and CentOS Stream.
+While we could use hard links on Linux as the default and symbolic links specifically for RPM packages, this would create problems for distribution maintainers who consume archives to produce RPMs.
+To maintain consistency and avoid these issues, symbolic links will be used on Linux.
+
+For macOS, symbolic links will also be used to maintain consistency across Unix-like platforms, simplifying implementation and testing.
+
+**Future Considerations**
+
+Hard links are generally preferred because they [offer performance advantages since no extra steps are needed to resolve the file path](https://www.linuxbash.sh/post/symbolic-links-ln-s-vs-hard-links), providing slightly better access time compared to symbolic links which require path resolution.
+If the RPM limitations are resolved in future Linux distributions, we may revisit this decision and switch Linux to hard links for optimal performance.
+
+For now, having platform consistency in approach (one link type per platform) is valued over using hard links universally.
 
 **Key Benefits:**
-- **No runtime changes required** — Components continue to reference files using their existing paths. Hard links are transparent to applications.
-- **Immediate disk savings** — Multiple directory entries pointing to the same inode reduce disk usage by the size of duplicate files.
-- **Tarball compatibility** — Tar format natively supports hard links, preserving space savings in compressed archives.
+- **No runtime changes required** — Components continue to reference files using their existing paths. Both hard links and symbolic links are transparent to applications.
+- **Immediate disk savings** — Links reduce disk usage by the size of duplicate files.
+- **Tarball compatibility** — Tar format natively supports both hard links and symbolic links, preserving space savings in compressed archives.
 - **Simple implementation** — Identification and replacement can be implemented entirely during the layout generation phase.
 
 ### Implementation Strategy
 
-Files will be identified as duplicates by comparing SHA256 hashes of their content.
-When multiple files within the SDK layout share identical hashes, all copies except one will be replaced with hard links pointing to a single retained instance.
+Files will be identified as duplicates by comparing hashes of their content.
+When multiple files within the SDK layout share identical hashes, all copies except one will be replaced with links (hard links on Windows, symbolic links on Linux and macOS) pointing to a single retained instance.
 
-Creating hard links is trivial now that the .NET runtime has added native support for creating hard links across all supported platforms in .NET 11.
-The SDK build infrastructure can leverage `File.CreateHardLink` APIs during layout generation to replace duplicate files with hard links.
+Creating links is straightforward now that the .NET runtime has added native support for creating both hard links and symbolic links across all supported platforms in .NET 11.
+The SDK build infrastructure can leverage `File.CreateHardLink` and `File.CreateSymbolicLink` APIs during layout generation to replace duplicate files with the appropriate link type for each platform.
 
-Archive formats like tar.gz natively support hard links, preserving the space savings when the SDK is distributed in compressed form.
+Archive formats like tar.gz natively support both hard links and symbolic links, preserving the space savings when the SDK is distributed in compressed form.
 
 ### Windows Archive Format Considerations
 
@@ -200,16 +221,17 @@ This data will allow us to make an informed decision if the zip archives should 
 
 ### Installer Considerations
 
-Although installers are not the primary audience for this deduplication work, they should ideally benefit from hard link support to preserve disk space savings.
+Although installers are not the primary audience for this deduplication work, they should ideally benefit from link support to preserve disk space savings.
 
 **Linux Packages (deb, rpm):**
 
-Linux package formats support hard links natively.
-Package managers like `dpkg` and `rpm` preserve hard links during installation, maintaining the disk space benefits when installing from packages.
+Linux package formats support symbolic links natively.
+Package managers like `dpkg` and `rpm` preserve symbolic links during installation, maintaining the disk space benefits when installing from packages.
+As noted in the [Platform-Specific Link Strategy](#platform-specific-link-strategy) section, symbolic links avoid the problems that hard links cause with RPM packages, making them the appropriate choice for Linux distributions.
 
 **macOS Installer (pkg):**
 
-The macOS pkg installer format supports hard links and will preserve them during installation, maintaining disk space savings on macOS systems.
+The macOS pkg installer format supports symbolic links and will preserve them during installation, maintaining disk space savings on macOS systems.
 
 **Windows Installer (MSI):**
 
@@ -223,26 +245,28 @@ The Windows installers at least have historically had a more 'maximal' approach 
 
 Tests will be created to ensure:
 
-- **Layout validation:** Verify that duplicate files outside of hardlinks do not exist
-- **Archive Extraction testing:** Verify that tarball extraction preserves hardlinks on all supported platforms
-- **Installer testing:** Verify the non-windows installers preserver hardlinks
+- **Layout validation:** Verify that duplicate files outside of links do not exist, with correct link types per platform (hard links on Windows, symbolic links on Linux/macOS)
+- **Archive Extraction testing:** Verify that tarball extraction preserves links on all supported platforms
+- **Installer testing:** Verify that non-Windows installers preserve symbolic links
 
 ## Proof of Concept Results
 
-A proof of concept for hard link deduplication was implemented, demonstrating the viability and effectiveness of the approach:
+A proof of concept for link-based deduplication was implemented, demonstrating the viability and effectiveness of the approach:
 
 **Implementation Details:**
-- A new MSBuild task `DeduplicateFilesWithHardLinks` was created to identify and replace duplicate files with hard links during SDK layout generation
-- Files are hashed using SHA256 to identify duplicates
+- A new MSBuild task `DeduplicateFilesWithHardLinks` was created to identify and replace duplicate files with links during SDK layout generation
+- Files are hashed to identify duplicates
+- The POC initially used hard links; the production implementation will use platform-specific link types (hard links on Windows, symbolic links on Linux/macOS)
 
 **Space Savings:**
 
-In a Linux x64 development build of .NET 11.0 SDK, the hard link approach achieved:
+In a Linux x64 development build of .NET 11.0 SDK, the link-based approach achieved:
 - 131 MB reduction in disk size
 - 61 MB reduction in archive size
 
 **Note:** Development build measurements differ from production builds due to signing, optimization, and release packaging differences.
 Production measurements will be captured during full implementation.
+Both hard links and symbolic links provide equivalent space savings, as both eliminate duplicate file content on disk and in archives.
 
 ## Other Concerns
 
