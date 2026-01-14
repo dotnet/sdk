@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Repair;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
@@ -158,23 +159,36 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         [InlineData(false)]
         public void GivenMissingManifestsInWorkloadSetModeRepairReinstallsManifests(bool userLocal)
         {
-            var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver) = 
-                CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(_testAssetsManager, _manifestPath, userLocal, out string sdkFeatureVersion);
+            var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver, manifestProvider) =
+                CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(_testAssetsManager, userLocal, out string sdkFeatureVersion);
 
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
+
+            // Attach the corruption repairer to the manifest provider
+            var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot, manifestDownload: true);
+            manifestProvider.CorruptionRepairer = new WorkloadManifestCorruptionRepairer(
+                _reporter,
+                mockInstaller,
+                workloadResolver,
+                new SdkFeatureBand(sdkFeatureVersion),
+                dotnetRoot,
+                userProfileDir,
+                nugetDownloader,
+                packageSourceLocation: null,
+                VerbosityOptions.detailed);
 
             // Run repair command
             var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolverFactory,
                 workloadInstaller: mockInstaller);
             repairCommand.Execute();
 
-            // Verify that manifests were reinstalled
+            // Verify that manifests were reinstalled by the corruption repairer
             mockInstaller.InstalledManifests.Should().HaveCount(2);
             mockInstaller.InstalledManifests.Should().Contain(m => m.manifestUpdate.ManifestId.ToString() == "xamarin-android-build");
             mockInstaller.InstalledManifests.Should().Contain(m => m.manifestUpdate.ManifestId.ToString() == "xamarin-ios-sdk");
 
-            // Verify success message was shown
-            _reporter.Lines.Should().Contain(line => line.Contains("Successfully repaired"));
+            // Verify the repair process was triggered (the corruption repairer shows this message)
+            _reporter.Lines.Should().Contain(line => line.Contains("Repairing workload set"));
         }
     }
 }

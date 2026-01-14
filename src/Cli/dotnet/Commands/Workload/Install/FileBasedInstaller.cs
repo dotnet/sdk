@@ -5,6 +5,7 @@
 
 using System.Collections.Concurrent;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Extensions;
@@ -72,6 +73,23 @@ internal class FileBasedInstaller : IInstaller
         _workloadResolver = workloadResolver;
         _installationRecordRepository = new FileBasedInstallationRecordRepository(_workloadMetadataDir);
         _packageSourceLocation = packageSourceLocation;
+
+        // Attach corruption repairer to recover from corrupt workload sets
+        if (_nugetPackageDownloader is not null &&
+            _workloadResolver?.GetWorkloadManifestProvider() is SdkDirectoryWorkloadManifestProvider sdkProvider &&
+            sdkProvider.CorruptionRepairer is null)
+        {
+            sdkProvider.CorruptionRepairer = new WorkloadManifestCorruptionRepairer(
+                _reporter,
+                this,
+                _workloadResolver,
+                _sdkFeatureBand,
+                _dotnetDir,
+                _userProfileDir,
+                _nugetPackageDownloader,
+                _packageSourceLocation,
+                verbosity);
+        }
     }
 
     public IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository()
@@ -642,7 +660,7 @@ internal class FileBasedInstaller : IInstaller
     public void Shutdown()
     {
         // Perform any additional cleanup here that's intended to run at the end of the command, regardless
-        // of success or failure. For file based installs, there shouldn't be any additional work to 
+        // of success or failure. For file based installs, there shouldn't be any additional work to
         // perform.
     }
 

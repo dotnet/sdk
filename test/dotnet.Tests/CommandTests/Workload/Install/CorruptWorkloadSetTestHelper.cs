@@ -6,6 +6,8 @@
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
@@ -18,11 +20,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         /// <summary>
         /// Sets up a corrupt workload set scenario where manifests are missing but workload set is configured.
         /// This simulates package managers deleting manifests during SDK updates.
+        /// Returns a real SdkDirectoryWorkloadManifestProvider so the corruption repairer can be attached.
         /// </summary>
-        public static (string dotnetRoot, string userProfileDir, MockPackWorkloadInstaller mockInstaller, IWorkloadResolver workloadResolver)
+        public static (string dotnetRoot, string userProfileDir, MockPackWorkloadInstaller mockInstaller, IWorkloadResolver workloadResolver, SdkDirectoryWorkloadManifestProvider manifestProvider)
             SetupCorruptWorkloadSet(
                 TestAssetsManager testAssetsManager,
-                string manifestPath,
                 bool userLocal,
                 out string sdkFeatureVersion)
         {
@@ -32,26 +34,26 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             sdkFeatureVersion = "6.0.100";
             var workloadSetVersion = "6.0.100";
 
-            // Create workload set contents
-            var workloadSetContents = new Dictionary<string, string>
-            {
-                [workloadSetVersion] = """
+            // Create workload set contents JSON
+            var workloadSetJson = """
 {
   "xamarin-android-build": "8.4.7/6.0.100",
   "xamarin-ios-sdk": "10.0.1/6.0.100"
 }
-"""
+""";
+
+            // Create workload set contents for the mock installer
+            var workloadSetContents = new Dictionary<string, string>
+            {
+                [workloadSetVersion] = workloadSetJson
             };
 
             // Set up mock installer with workload set support
+            // Note: Don't pre-populate installedWorkloads - the test focuses on manifest repair, not workload installation
             var mockInstaller = new MockPackWorkloadInstaller(
                 dotnetDir: dotnetRoot,
-                installedWorkloads: new List<WorkloadId> { new WorkloadId("xamarin-android") },
+                installedWorkloads: new List<WorkloadId>(),
                 workloadSetContents: workloadSetContents);
-
-            // Create the manifest provider and resolver
-            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { manifestPath }), dotnetRoot, userLocal, userProfileDir);
-            mockInstaller.WorkloadResolver = workloadResolver;
 
             string installRoot = userLocal ? userProfileDir : dotnetRoot;
             if (userLocal)
@@ -70,7 +72,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             };
             File.WriteAllText(installStatePath, installState.ToString());
 
-            // Create mock manifest directories but delete the manifest files to simulate ruined install
+            // Create workload set folder so the real provider can find it
+            var workloadSetsRoot = Path.Combine(dotnetRoot, "sdk-manifests", sdkFeatureVersion, "workloadsets", workloadSetVersion);
+            Directory.CreateDirectory(workloadSetsRoot);
+            File.WriteAllText(Path.Combine(workloadSetsRoot, "workloadset.workloadset.json"), workloadSetJson);
+
+            // Create mock manifest directories but WITHOUT manifest files to simulate ruined install
             var manifestRoot = Path.Combine(dotnetRoot, "sdk-manifests", sdkFeatureVersion);
             var androidManifestDir = Path.Combine(manifestRoot, "xamarin-android-build", "8.4.7");
             var iosManifestDir = Path.Combine(manifestRoot, "xamarin-ios-sdk", "10.0.1");
@@ -84,7 +91,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 throw new InvalidOperationException("Test setup failed: manifest files should not exist");
             }
 
-            return (dotnetRoot, userProfileDir, mockInstaller, workloadResolver);
+            // Create a real SdkDirectoryWorkloadManifestProvider
+            var manifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetRoot, sdkFeatureVersion, userProfileDir, globalJsonPath: null);
+            var workloadResolver = WorkloadResolver.Create(manifestProvider, dotnetRoot, sdkFeatureVersion, userProfileDir);
+            mockInstaller.WorkloadResolver = workloadResolver;
+
+            return (dotnetRoot, userProfileDir, mockInstaller, workloadResolver, manifestProvider);
         }
     }
 }

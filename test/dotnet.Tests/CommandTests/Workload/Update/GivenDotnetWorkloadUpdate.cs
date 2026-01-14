@@ -660,10 +660,23 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [InlineData(false)]
         public void GivenMissingManifestsInWorkloadSetModeUpdateReinstallsManifests(bool userLocal)
         {
-            var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver) = 
-                CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(_testAssetsManager, _manifestPath, userLocal, out string sdkFeatureVersion);
+            var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver, manifestProvider) =
+                CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(_testAssetsManager, userLocal, out string sdkFeatureVersion);
 
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
+
+            // Attach the corruption repairer to the manifest provider
+            var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot, manifestDownload: true);
+            manifestProvider.CorruptionRepairer = new WorkloadManifestCorruptionRepairer(
+                _reporter,
+                mockInstaller,
+                workloadResolver,
+                new SdkFeatureBand(sdkFeatureVersion),
+                dotnetRoot,
+                userProfileDir,
+                nugetDownloader,
+                packageSourceLocation: null,
+                VerbosityOptions.detailed);
 
             var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update" });
 

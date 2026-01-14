@@ -164,6 +164,28 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
             InstalledManifests.Add((manifestUpdate, offlineCache));
+
+            // Also create the actual manifest file on disk so that SdkDirectoryWorkloadManifestProvider can find it
+            if (_dotnetDir != null)
+            {
+                var manifestDir = Path.Combine(_dotnetDir, "sdk-manifests", manifestUpdate.NewFeatureBand,
+                    manifestUpdate.ManifestId.ToString(), manifestUpdate.NewVersion.ToString());
+                Directory.CreateDirectory(manifestDir);
+
+                var manifestPath = Path.Combine(manifestDir, "WorkloadManifest.json");
+                if (!File.Exists(manifestPath))
+                {
+                    // Write a minimal manifest file
+                    string manifestContents = $$"""
+{
+  "version": "{{manifestUpdate.NewVersion}}",
+  "workloads": {},
+  "packs": {}
+}
+""";
+                    File.WriteAllText(manifestPath, manifestContents);
+                }
+            }
         }
 
         public IEnumerable<WorkloadDownload> GetDownloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, bool includeInstalledItems)

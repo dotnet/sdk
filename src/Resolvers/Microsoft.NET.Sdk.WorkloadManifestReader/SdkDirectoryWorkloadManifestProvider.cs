@@ -31,6 +31,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private bool _useManifestsFromInstallState = true;
         private bool? _globalJsonSpecifiedWorkloadSets = null;
 
+        /// <summary>
+        /// Optional hook that allows the CLI to ensure workload manifests are available (and repaired if necessary)
+        /// before this provider attempts to enumerate them.
+        /// </summary>
+        public IWorkloadManifestCorruptionRepairer? CorruptionRepairer { get; set; }
+
         //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
         //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
         //  we can successfully construct a resolver and install that workload set
@@ -247,6 +253,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public WorkloadVersionInfo GetWorkloadVersion()
         {
+            CorruptionRepairer?.EnsureManifestsHealthy();
+
             if (_globalJsonWorkloadSetVersion != null)
             {
                 // _exceptionToThrow is set to null here if and only if the workload set is not installed.
@@ -290,6 +298,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
         {
+            CorruptionRepairer?.EnsureManifestsHealthy();
             ThrowExceptionIfManifestsNotAvailable();
 
             //  Scan manifest directories
@@ -538,7 +547,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
                 else
                 {
-                    //  Get workload sets for all feature bands 
+                    //  Get workload sets for all feature bands
                     foreach (var featureBandDirectory in Directory.GetDirectories(manifestRoot))
                     {
                         AddWorkloadSetsForFeatureBand(availableWorkloadSets, featureBandDirectory);
