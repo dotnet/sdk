@@ -181,7 +181,10 @@ namespace Microsoft.DotNet.Watch
                     var updatesToApply = _previousUpdates.Skip(appliedUpdateCount).ToImmutableArray();
                     if (updatesToApply.Any())
                     {
-                        await clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updatesToApply), isProcessSuspended: false, isInitial: true, processCommunicationCancellationToken);
+                        await await clients.ApplyManagedCodeUpdatesAsync(
+                            ToManagedCodeUpdates(updatesToApply),
+                            applyOperationCancellationToken: processExitedSource.Token,
+                            cancellationToken: processCommunicationCancellationToken);
                     }
 
                     appliedUpdateCount += updatesToApply.Length;
@@ -366,7 +369,7 @@ namespace Microsoft.DotNet.Watch
             return (updates.ProjectUpdates, projectsToRebuild, projectsToRedeploy, projectsToRestart);
         }
 
-        public async ValueTask ApplyUpdatesAsync(ImmutableArray<HotReloadService.Update> updates, CancellationToken cancellationToken)
+        public async ValueTask ApplyUpdatesAsync(ImmutableArray<HotReloadService.Update> updates, Stopwatch stopwatch, CancellationToken cancellationToken)
         {
             Debug.Assert(!updates.IsEmpty);
 
@@ -383,18 +386,43 @@ namespace Microsoft.DotNet.Watch
             // Apply changes to all running projects, even if they do not have a static project dependency on any project that changed.
             // The process may load any of the binaries using MEF or some other runtime dependency loader.
 
-            await ForEachProjectAsync(projectsToUpdate, async (runningProject, cancellationToken) =>
+            var applyTasks = new List<Task>();
+
+            foreach (var (_, projects) in projectsToUpdate)
             {
-                try
+                foreach (var runningProject in projects)
                 {
-                    using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedCancellationToken, cancellationToken);
-                    await runningProject.Clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updates), isProcessSuspended: false, isInitial: false, processCommunicationCancellationSource.Token);
+                    // Only cancel applying updates when the process exits. Canceling disables further updates since the state of the runtime becomes unknown.
+                    var applyTask = await runningProject.Clients.ApplyManagedCodeUpdatesAsync(
+                        ToManagedCodeUpdates(updates),
+                        applyOperationCancellationToken: runningProject.ProcessExitedCancellationToken,
+                        cancellationToken);
+
+                    applyTasks.Add(runningProject.CompleteApplyOperationAsync(applyTask));
                 }
-                catch (OperationCanceledException) when (runningProject.ProcessExitedCancellationToken.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+            }
+
+            // fire and forget:
+            _ = CompleteApplyOperationAsync(applyTasks, stopwatch, MessageDescriptor.ManagedCodeChangesApplied);
+        }
+
+        private async Task CompleteApplyOperationAsync(IEnumerable<Task> applyTasks, Stopwatch stopwatch, MessageDescriptor message)
+        {
+            try
+            {
+                await Task.WhenAll(applyTasks);
+
+                _context.Logger.Log(message, stopwatch.ElapsedMilliseconds);
+            }
+            catch (Exception e)
+            {
+                // Handle all exceptions since this is a fire-and-forget task.
+
+                if (e is not OperationCanceledException)
                 {
-                    runningProject.Clients.ClientLogger.Log(MessageDescriptor.HotReloadCanceledProcessExited);
+                    _context.Logger.LogError("Failed to apply updates: {Exception}", e.ToString());
                 }
-            }, cancellationToken);
+            }
         }
 
         private static RunningProject? GetCorrespondingRunningProject(Project project, ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects)
@@ -562,6 +590,7 @@ namespace Microsoft.DotNet.Watch
             IReadOnlyList<ChangedFile> files,
             ProjectNodeMap projectMap,
             IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> manifests,
+            Stopwatch stopwatch,
             CancellationToken cancellationToken)
         {
             var assets = new Dictionary<ProjectInstance, Dictionary<string, StaticWebAsset>>();
@@ -697,30 +726,36 @@ namespace Microsoft.DotNet.Watch
                 }
             }
 
-            var tasks = assets.Select(async entry =>
-            {
-                var (applicationProjectInstance, instanceAssets) = entry;
+            // Creating apply tasks involves reading static assets from disk. Parallelize this IO.
+            var applyTaskProducers = new List<Task<Task>>();
 
+            foreach (var (applicationProjectInstance, instanceAssets) in assets)
+            {
                 if (failedApplicationProjectInstances?.Contains(applicationProjectInstance) == true)
                 {
-                    return;
+                    continue;
                 }
 
                 if (!TryGetRunningProject(applicationProjectInstance.FullPath, out var runningProjects))
                 {
-                    return;
+                    continue;
                 }
 
                 foreach (var runningProject in runningProjects)
                 {
-                    using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedCancellationToken, cancellationToken);
-                    await runningProject.Clients.ApplyStaticAssetUpdatesAsync(instanceAssets.Values, processCommunicationCancellationSource.Token);
+                    // Only cancel applying updates when the process exits. Canceling in-progress static asset update might be ok,
+                    // but for consistency with managed code updates we only cancel when the process exits.
+                    applyTaskProducers.Add(runningProject.Clients.ApplyStaticAssetUpdatesAsync(
+                        instanceAssets.Values,
+                        applyOperationCancellationToken: runningProject.ProcessExitedCancellationToken,
+                        cancellationToken));
                 }
-            });
+            }
 
-            await Task.WhenAll(tasks).WaitAsync(cancellationToken);
+            var applyTasks = await Task.WhenAll(applyTaskProducers);
 
-            Logger.Log(MessageDescriptor.StaticAssetsReloaded);
+            // fire and forget:
+            _ = CompleteApplyOperationAsync(applyTasks, stopwatch, MessageDescriptor.StaticAssetsChangesApplied);
         }
 
         /// <summary>
