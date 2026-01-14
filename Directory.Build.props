@@ -44,8 +44,8 @@
     <!-- Default to all packages generating a corresponding symbol package -->
     <IncludeSymbols>true</IncludeSymbols>
     <IsShippingPackage>false</IsShippingPackage>
-    <!-- remove this once arcade current is net11 -->
-    <NetCurrent>net11.0</NetCurrent>
+
+    <!-- TFMs -->
     <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
     <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>

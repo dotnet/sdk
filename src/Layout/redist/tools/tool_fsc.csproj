@@ -35,8 +35,7 @@
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='prerelease'">PreRelease</FSharpCorePath>
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='release'">Release</FSharpCorePath>
       <FSharpTfm>net10.0</FSharpTfm>
-      <!-- Temporary work-around for Source Build since VMR is still producing F# targeting .NET 10 -->
-      <FSharpTfm Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' == 'true'">net10.0</FSharpTfm>
+      <FSharpTfm Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</FSharpTfm>
     </PropertyGroup>
 
     <ItemGroup>

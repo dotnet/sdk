@@ -343,10 +343,6 @@
 
       <Net100MonoRuntimePackRids Include="
         @(Net90MonoRuntimePackRids);
-        linux-riscv64;
-        linux-musl-riscv64;
-        linux-loongarch64;
-        linux-musl-loongarch64;
         " />
 
       <MonoRuntimePackRids Include="@(Net100MonoRuntimePackRids)" />
@@ -402,6 +398,8 @@
 
       <Crossgen2SupportedRids Include="@(Net100Crossgen2SupportedRids);" />
 
+      <Net100Crossgen2SupportedPortableRids Include="@(Net100Crossgen2SupportedRids)" />
+
       <Crossgen2SupportedPortableRids Include="@(Crossgen2SupportedRids)" />
 
       <Crossgen2SupportedRids
@@ -445,6 +443,8 @@
       <ILCompilerSupportedRids Include="
         @(Net100ILCompilerSupportedRids);
         " />
+
+      <Net100ILCompilerSupportedPortableRids Include="@(Net100ILCompilerSupportedRids)" />
 
       <ILCompilerSupportedPortableRids Include="@(ILCompilerSupportedRids)" />
 
@@ -636,7 +636,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                         TargetFramework="net11.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
-                        Crossgen2PortableRuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
+                        Crossgen2PortableRuntimeIdentifiers="@(Crossgen2SupportedPortableRids, '%3B')"
                         Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
                         />
 
@@ -753,7 +753,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                         TargetFramework="net10.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(_NET100RuntimePackVersion)"
-                        Crossgen2PortableRuntimeIdentifiers="@(Net100Crossgen2SupportedRids, '%3B')"
+                        Crossgen2PortableRuntimeIdentifiers="@(Net100Crossgen2SupportedPortableRids, '%3B')"
                         Crossgen2RuntimeIdentifiers="@(Net100Crossgen2SupportedRids, '%3B')"
                         />
 
@@ -762,7 +762,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                          ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
                          ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
                          ILCompilerPackVersion="$(_NET100RuntimePackVersion)"
-                         ILCompilerPortableRuntimeIdentifiers="@(Net100ILCompilerSupportedRids, '%3B')"
+                         ILCompilerPortableRuntimeIdentifiers="@(Net100ILCompilerSupportedPortableRids, '%3B')"
                          ILCompilerRuntimeIdentifiers="@(Net100ILCompilerSupportedRids, '%3B')"
                          />
 
@@ -782,6 +782,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net10.0"
                              WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+
+    <KnownAspNetCorePack Include="Microsoft.AspNetCore.App.Internal.Assets"
+                             TargetFramework="net10.0"
+                             AspNetCorePackVersion="$(_AspNet100RuntimePackVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net10.0"
