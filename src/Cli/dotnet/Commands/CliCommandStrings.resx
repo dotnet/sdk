@@ -1003,6 +1003,9 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   <data name="InvalidToolConfiguration" xml:space="preserve">
     <value>The settings file in the tool's NuGet package is invalid: {0}</value>
   </data>
+  <data name="InvalidVersionForWorkload" xml:space="preserve">
+    <value>Error parsing version '{1}' for workload manifest ID '{0}'</value>
+  </data>
 
   <data name="LatestVersion" xml:space="preserve">
     <value>Latest Version</value>
@@ -1676,6 +1679,10 @@ The default is to publish a framework-dependent application.</value>
   </data>
   <data name="RunCommandExceptionCouldNotApplyLaunchSettings" xml:space="preserve">
     <value>The launch profile "{0}" could not be applied.
+{1}</value>
+  </data>
+  <data name="RunCommandExceptionCouldNotLocateALaunchSettingsFile" xml:space="preserve">
+    <value>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</value>
   </data>
 
