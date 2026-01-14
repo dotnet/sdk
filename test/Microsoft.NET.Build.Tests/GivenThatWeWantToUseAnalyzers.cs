@@ -110,7 +110,7 @@ namespace Microsoft.NET.Build.Tests
             var command = new GetValuesCommand(
                 Log,
                 asset.Path,
-                ToolsetInfo.CurrentTargetFramework,
+                targetFramework: null,
                 "Analyzer",
                 GetValuesCommand.ValueType.Item);
 
@@ -138,7 +138,7 @@ namespace Microsoft.NET.Build.Tests
             var command = new GetValuesCommand(
                 Log,
                 asset.Path,
-                ToolsetInfo.CurrentTargetFramework,
+                targetFramework: null,
                 "InterceptorsPreviewNamespaces",
                 GetValuesCommand.ValueType.Property);
 
