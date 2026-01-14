@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Completions;
 using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.Commands.Package.Add;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -12,19 +10,20 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.Add;
 
 internal static class AddCommandParser
 {
-    private static readonly Command Command = SetActionAndCompletions(new AddCommandDefinition());
+    private static readonly AddCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetActionAndCompletions(AddCommandDefinition def)
+    private static AddCommandDefinition CreateCommand()
     {
-        def.SetAction(parseResult => parseResult.HandleMissingCommand());
+        var command = new AddCommandDefinition();
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-        PackageCommandParser.ConfigureAddCommand(def.PackageCommand);
-        def.ReferenceCommand.SetAction(parseResult => new ReferenceAddCommand(parseResult).Execute());
-        return def;
+        PackageCommandParser.ConfigureAddCommand(command.PackageCommand);
+        command.ReferenceCommand.SetAction(parseResult => new ReferenceAddCommand(parseResult).Execute());
+        return command;
     }
 }

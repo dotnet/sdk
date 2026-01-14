@@ -165,7 +165,7 @@ public static class Parser
         rootCommand.Arguments.Add(DotnetSubCommand);
 
         // NuGet implements several commands in its own repo. Add them to the .NET SDK via the provided API.
-        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.InteractiveOption(acceptArgument: true));
+        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.CreateInteractiveOption(acceptArgument: true));
 
         rootCommand.SetAction(parseResult =>
         {
@@ -365,16 +365,16 @@ public static class Parser
                 context.Output.WriteLine();
                 additionalOption(context);
             }
-            else if (command.Name.Equals(VSTestCommandParser.GetCommand().Name))
+            else if (command is VSTestCommandDefinition)
             {
                 new VSTestForwardingApp(helpArgs).Execute();
             }
-            else if (command.Name.Equals(FormatCommandDefinition.Name))
+            else if (command is FormatCommandDefinition format)
             {
-                var arguments = context.ParseResult.GetValue(FormatCommandDefinition.Arguments);
+                var arguments = context.ParseResult.GetValue(format.Arguments);
                 new FormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
-            else if (command.Name.Equals(FsiCommandDefinition.Name))
+            else if (command is FsiCommandDefinition)
             {
                 new FsiForwardingApp(helpArgs).Execute();
             }
@@ -385,14 +385,6 @@ public static class Parser
                 {
                     block(context);
                 }
-            }
-            else if (command.Name.Equals(FormatCommandDefinition.Name))
-            {
-                new FormatForwardingApp(helpArgs).Execute();
-            }
-            else if (command.Name.Equals(FsiCommandDefinition.Name))
-            {
-                new FsiForwardingApp(helpArgs).Execute();
             }
             else
             {
@@ -420,10 +412,10 @@ public static class Parser
                         argument.CompletionSources.Clear();
                     }
                 }
-                else if (command.Name.Equals(WorkloadSearchCommandParser.GetCommand().Name))
+                else if (command is WorkloadSearchCommandDefinition workloadSearchCommand)
                 {
                     // Set shorter description for displaying parent command help.
-                    WorkloadSearchVersionsCommandParser.GetCommand().Description = CliStrings.ShortWorkloadSearchVersionDescription;
+                    workloadSearchCommand.VersionCommand.Description = CliStrings.ShortWorkloadSearchVersionDescription;
                 }
 
                 base.Write(context);

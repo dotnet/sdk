@@ -580,7 +580,7 @@ internal class FileBasedInstaller : IInstaller
     {
         UpdateInstallState(sdkFeatureBand, contents => contents.UseWorkloadSets = newMode);
 
-        var newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
+        var newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandDefinition.UpdateMode_WorkloadSet : WorkloadConfigCommandDefinition.UpdateMode_Manifests;
         _reporter.WriteLine(string.Format(CliCommandStrings.UpdatedWorkloadMode, newModeString));
     }
 

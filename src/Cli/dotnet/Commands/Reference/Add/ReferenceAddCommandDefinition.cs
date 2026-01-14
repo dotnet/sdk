@@ -41,7 +41,7 @@ internal abstract class ReferenceAddCommandDefinitionBase : Command
 
     public readonly Argument<IEnumerable<string>> ProjectPathArgument = CreateProjectPathArgument();
     public readonly Option<string> FrameworkOption = CreateFrameworkOption();
-    public readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption();
 
     public ReferenceAddCommandDefinitionBase(string name)
         : base(name, CliCommandStrings.ReferenceAddAppFullName)
