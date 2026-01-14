@@ -162,7 +162,7 @@ namespace Microsoft.NET.Build.Tests
         // Fixing this test requires bumping _LatestAnalysisLevel and _PreviewAnalysisLevel
         // Bumping will cause It_maps_analysis_properties_to_globalconfig to fail which requires changes in dotnet/roslyn-analyzers repo.
         // See instructions in the comment in It_maps_analysis_properties_to_globalconfig
-        [RequiresMSBuildVersionTheory("16.8", Skip = "https://github.com/dotnet/sdk/issues/45299")]
+        [RequiresMSBuildVersionTheory("16.8")]
         public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM, string nextTFMVersionNumber)
         {
             var testProject = new TestProject
@@ -277,6 +277,10 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("9.0", "", "true", "")]
         [InlineData("9", "default", "false", "Security")]
         [InlineData("9.0", "", "true", "Usage")]
+        [InlineData("10", "default", "false", "")]
+        [InlineData("10.0", "", "true", "")]
+        [InlineData("10", "default", "false", "Security")]
+        [InlineData("10.0", "", "true", "Usage")]
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_maps_analysis_properties_to_globalconfig(string analysisLevel, string analysisMode, string codeAnalysisTreatWarningsAsErrors, string category)
         {
