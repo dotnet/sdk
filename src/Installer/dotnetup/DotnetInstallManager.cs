@@ -22,7 +22,6 @@ public class DotnetInstallManager : IDotnetInstallManager
 
     public DotnetInstallRootConfiguration? GetConfiguredInstallType()
     {
-
         string? foundDotnet = _environmentProvider.GetCommandPath("dotnet");
         if (string.IsNullOrEmpty(foundDotnet))
         {
@@ -30,19 +29,55 @@ public class DotnetInstallManager : IDotnetInstallManager
         }
 
         string installDir = Path.GetDirectoryName(foundDotnet)!;
-
-
-        string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-        string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-        bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
-                              installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase); // TODO: This should be improved to not be windows-specific https://github.com/dotnet/sdk/issues/51601
-
         var installRoot = new DotnetInstallRoot(installDir, InstallerUtilities.GetDefaultInstallArchitecture());
 
-        bool isSetAsDotnetRoot = DotnetupUtilities.PathsEqual(dotnetRoot, installDir);
+        // Use InstallRootManager to determine if the install is fully configured
+        if (OperatingSystem.IsWindows())
+        {
+            var installRootManager = new InstallRootManager(this);
+            
+            // Check if user install root is fully configured
+            var userChanges = installRootManager.GetUserInstallRootChanges();
+            if (!userChanges.NeedsChange() && DotnetupUtilities.PathsEqual(installDir, userChanges.UserDotnetPath))
+            {
+                return new(installRoot, InstallType.User, IsFullyConfigured: true);
+            }
 
-        return new(installRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsOnPath: true, isSetAsDotnetRoot);
+            // Check if admin install root is fully configured
+            var adminChanges = installRootManager.GetAdminInstallRootChanges();
+            if (!adminChanges.NeedsChange())
+            {
+                string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+                bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
+                                      installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
+                if (isAdminInstall)
+                {
+                    return new(installRoot, InstallType.Admin, IsFullyConfigured: true);
+                }
+            }
+
+            // Not fully configured, but PATH resolves to dotnet
+            // Determine type based on location
+            string programFilesPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            string programFilesX86Path = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            bool isAdminPath = installDir.StartsWith(Path.Combine(programFilesPath, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
+                               installDir.StartsWith(Path.Combine(programFilesX86Path, "dotnet"), StringComparison.OrdinalIgnoreCase);
+            
+            return new(installRoot, isAdminPath ? InstallType.Admin : InstallType.User, IsFullyConfigured: false);
+        }
+        else
+        {
+            // For non-Windows platforms, determine based on path location
+            // TODO: This should be improved to not be windows-specific https://github.com/dotnet/sdk/issues/51601
+            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
+                                  installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
+
+            // For now, we consider it fully configured if it's on PATH
+            return new(installRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsFullyConfigured: true);
+        }
     }
 
     public string GetDefaultDotnetInstallPath()

@@ -135,77 +135,43 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             //  If global.json specified an install path, we don't prompt for setting the default install path (since you probably don't want to do that for a repo-local path)
             if (_interactive && installPathFromGlobalJson == null)
             {
-                // Check if user install root is already configured using InstallRootManager
-                if (OperatingSystem.IsWindows())
+                if (currentDotnetInstallRoot == null)
                 {
-                    userInstallRootChanges = InstallRootManager.GetUserInstallRootChanges();
-                    
-                    // If the user install root is already set up and matches the resolved install path, skip the prompt
-                    if (!userInstallRootChanges.NeedsChange() && DotnetupUtilities.PathsEqual(resolvedInstallPath, userInstallRootChanges.UserDotnetPath))
+                    resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
+                        $"Do you want to set the install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
+                        defaultValue: true);
+                }
+                else if (currentDotnetInstallRoot.InstallType == InstallType.User)
+                {
+                    if (DotnetupUtilities.PathsEqual(resolvedInstallPath, currentDotnetInstallRoot.Path))
                     {
-                        // Default install is already set up correctly, no need to prompt
-                        resolvedSetDefaultInstall = false;
-                    }
-                    else if (currentDotnetInstallRoot == null)
-                    {
-                        resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                            $"Do you want to set the install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
-                            defaultValue: true);
-                    }
-                    else if (currentDotnetInstallRoot.InstallType == InstallType.User)
-                    {
-                        if (DotnetupUtilities.PathsEqual(resolvedInstallPath, currentDotnetInstallRoot.Path))
+                        //  If the current install is fully configured and matches the resolved path, skip the prompt
+                        if (currentDotnetInstallRoot.IsFullyConfigured)
                         {
-                            //  No need to prompt here, the default install is already set up.
+                            // Default install is already set up correctly, no need to prompt
+                            resolvedSetDefaultInstall = false;
                         }
                         else
                         {
-                            resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                                $"The default dotnet install is currently set to {currentDotnetInstallRoot.Path}.  Do you want to change it to {resolvedInstallPath}?",
-                                defaultValue: false);
+                            // Not fully configured but on the path - prompt to fully configure it
+                            //  No need to prompt here, the default install is already set up.
                         }
                     }
-                    else if (currentDotnetInstallRoot.InstallType == InstallType.Admin)
+                    else
                     {
-                        SpectreAnsiConsole.WriteLine($"You have an existing admin install of .NET in {currentDotnetInstallRoot.Path}. We can configure your system to use the new install of .NET " +
-                            $"in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
-                        SpectreAnsiConsole.WriteLine("You can change this later with the \"dotnetup defaultinstall\" command.");
                         resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                            $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
-                            defaultValue: true);
+                            $"The default dotnet install is currently set to {currentDotnetInstallRoot.Path}.  Do you want to change it to {resolvedInstallPath}?",
+                            defaultValue: false);
                     }
                 }
-                else
+                else if (currentDotnetInstallRoot.InstallType == InstallType.Admin)
                 {
-                    // Non-Windows platforms: use the existing logic
-                    if (currentDotnetInstallRoot == null)
-                    {
-                        resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                            $"Do you want to set the install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
-                            defaultValue: true);
-                    }
-                    else if (currentDotnetInstallRoot.InstallType == InstallType.User)
-                    {
-                        if (DotnetupUtilities.PathsEqual(resolvedInstallPath, currentDotnetInstallRoot.Path))
-                        {
-                            //  No need to prompt here, the default install is already set up.
-                        }
-                        else
-                        {
-                            resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                                $"The default dotnet install is currently set to {currentDotnetInstallRoot.Path}.  Do you want to change it to {resolvedInstallPath}?",
-                                defaultValue: false);
-                        }
-                    }
-                    else if (currentDotnetInstallRoot.InstallType == InstallType.Admin)
-                    {
-                        SpectreAnsiConsole.WriteLine($"You have an existing admin install of .NET in {currentDotnetInstallRoot.Path}. We can configure your system to use the new install of .NET " +
-                            $"in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
-                        SpectreAnsiConsole.WriteLine("You can change this later with the \"dotnetup defaultinstall\" command.");
-                        resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                            $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
-                            defaultValue: true);
-                    }
+                    SpectreAnsiConsole.WriteLine($"You have an existing admin install of .NET in {currentDotnetInstallRoot.Path}. We can configure your system to use the new install of .NET " +
+                        $"in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
+                    SpectreAnsiConsole.WriteLine("You can change this later with the \"dotnetup defaultinstall\" command.");
+                    resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
+                        $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
+                        defaultValue: true);
                 }
 
                 //  TODO: Add checks for whether PATH and DOTNET_ROOT need to be updated, or if the install is in an inconsistent state
