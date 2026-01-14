@@ -66,11 +66,11 @@ internal class InstallRootManager
 
         // Get the user dotnet installation path
         string userDotnetPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
-        
+
         // Read both expanded and unexpanded user PATH from registry to preserve environment variables
         string unexpandedUserPath = WindowsPathHelper.ReadUserPath(expand: false);
         string expandedUserPath = WindowsPathHelper.ReadUserPath(expand: true);
-        
+
         // Use the helper method to remove the path while preserving unexpanded variables
         string newUserPath = WindowsPathHelper.RemovePathEntries(unexpandedUserPath, expandedUserPath, [userDotnetPath]);
         bool needToModifyUserPath = newUserPath != unexpandedUserPath;

@@ -282,6 +282,7 @@ internal sealed class WindowsPathHelper : IDisposable
     /// <summary>
     /// Adds a path entry to the given PATH strings if it's not already present.
     /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve environment variables.
+    /// If the path is already present but there are other dotnet paths before it, moves it to the front.
     /// </summary>
     /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
     /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
@@ -290,21 +291,52 @@ internal sealed class WindowsPathHelper : IDisposable
     public static string AddPathEntry(string unexpandedPath, string expandedPath, string pathToAdd)
     {
         var expandedEntries = SplitPath(expandedPath);
-        
+        var unexpandedEntries = SplitPath(unexpandedPath);
+
         // Check if path is already in the expanded PATH
         var normalizedPathToAdd = Path.TrimEndingDirectorySeparator(pathToAdd);
-        bool alreadyExists = expandedEntries.Any(entry =>
-            Path.TrimEndingDirectorySeparator(entry).Equals(normalizedPathToAdd, StringComparison.OrdinalIgnoreCase));
+        int existingIndex = -1;
+        for (int i = 0; i < expandedEntries.Count; i++)
+        {
+            if (Path.TrimEndingDirectorySeparator(expandedEntries[i]).Equals(normalizedPathToAdd, StringComparison.OrdinalIgnoreCase))
+            {
+                existingIndex = i;
+                break;
+            }
+        }
 
-        if (!alreadyExists)
+        if (existingIndex >= 0)
+        {
+            // Path already exists - check if there's another dotnet before it
+            bool hasDotnetBefore = false;
+            for (int i = 0; i < existingIndex; i++)
+            {
+                string dotnetExePath = Path.Combine(expandedEntries[i], "dotnet.exe");
+                string dotnetPath = Path.Combine(expandedEntries[i], "dotnet");
+                if (File.Exists(dotnetExePath) || File.Exists(dotnetPath))
+                {
+                    hasDotnetBefore = true;
+                    break;
+                }
+            }
+
+            if (hasDotnetBefore)
+            {
+                // Move the path to the front
+                unexpandedEntries.RemoveAt(existingIndex);
+                unexpandedEntries.Insert(0, unexpandedEntries.Count > existingIndex ? unexpandedEntries[existingIndex] : pathToAdd);
+                return string.Join(';', unexpandedEntries);
+            }
+
+            // Already at the front or no dotnet before it
+            return unexpandedPath;
+        }
+        else
         {
             // Add to the beginning of the unexpanded PATH
-            var unexpandedEntries = SplitPath(unexpandedPath);
             unexpandedEntries.Insert(0, pathToAdd);
             return string.Join(';', unexpandedEntries);
         }
-
-        return unexpandedPath;
     }
 
     /// <summary>
@@ -318,7 +350,7 @@ internal sealed class WindowsPathHelper : IDisposable
     public static string RemovePathEntries(string unexpandedPath, string expandedPath, List<string> pathsToRemove)
     {
         var expandedEntries = SplitPath(expandedPath);
-        
+
         // Find indices to remove using the expanded path
         var indicesToRemove = FindPathIndices(expandedEntries, pathsToRemove);
 
@@ -349,7 +381,7 @@ internal sealed class WindowsPathHelper : IDisposable
 
         foundDotnetPaths = new List<string>();
         var indices = FindPathIndices(pathEntries, programFilesDotnetPaths);
-        
+
         foreach (var index in indices)
         {
             foundDotnetPaths.Add(pathEntries[index]);
@@ -368,7 +400,7 @@ internal sealed class WindowsPathHelper : IDisposable
         try
         {
             LogMessage("Starting RemoveDotnetFromAdminPath operation");
-            
+
             string oldPath = ReadAdminPath(expand: false);
             LogMessage($"Old PATH (unexpanded): {oldPath}");
 
@@ -409,7 +441,7 @@ internal sealed class WindowsPathHelper : IDisposable
         try
         {
             LogMessage("Starting AddDotnetToAdminPath operation");
-            
+
             string unexpandedPath = ReadAdminPath(expand: false);
             string expandedPath = ReadAdminPath(expand: true);
             LogMessage($"Old PATH (unexpanded): {unexpandedPath}");
