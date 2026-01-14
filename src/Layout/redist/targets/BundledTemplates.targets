@@ -18,7 +18,7 @@
 
   <!-- Restore bundled templates -->
   <ItemGroup>
-    <PackageDownload Include="@(BundledTemplate)" Version="[%(PackageVersion)]" />
+    <PackageDownload Include="@(BundledTemplates)" Version="[%(PackageVersion)]" />
   </ItemGroup>
 
   <Target Name="CalculateTemplatesVersions" DependsOnTargets="GetAssemblyVersion">
