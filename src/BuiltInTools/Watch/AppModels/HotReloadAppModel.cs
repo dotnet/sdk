@@ -43,6 +43,6 @@ internal abstract partial class HotReloadAppModel()
         }
 
         context.Logger.Log(MessageDescriptor.ApplicationKind_Default);
-        return new DefaultAppModel(projectNode);
+        return new DefaultAppModel(projectNode, context.EnvironmentOptions.HotReloadHttpPort);
     }
 }

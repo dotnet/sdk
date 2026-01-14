@@ -42,6 +42,8 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             .SetItem(PropertyNames.DesignTimeBuild, "true")
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
             .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
+            // HTTP port for hot reload on mobile platforms (Android, iOS, MacCatalyst):
+            .SetItem(PropertyNames.DotNetWatchHotReloadHttpPort, environmentOptions.HotReloadHttpPort.ToString())
             // F# targets depend on host path variable:
             .SetItem("DOTNET_HOST_PATH", environmentOptions.MuxerPath);
     }
