@@ -266,7 +266,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             else if (_workloadSet != null && CorruptionFailureMode != ManifestCorruptionFailureMode.Ignore)
             {
                 // No repairer attached - check for missing manifests and throw a helpful error
-                if (WorkloadManifestCorruptionRepairer.HasMissingManifests(_workloadSet, _sdkRootPath!))
+                if (HasMissingManifests(_workloadSet))
                 {
                     throw new InvalidOperationException(string.Format(Strings.WorkloadSetHasMissingManifests, _workloadSet.Version));
                 }
@@ -322,7 +322,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             else if (_workloadSet != null && CorruptionFailureMode != ManifestCorruptionFailureMode.Ignore)
             {
                 // No repairer attached - check for missing manifests and throw a helpful error
-                if (WorkloadManifestCorruptionRepairer.HasMissingManifests(_workloadSet, _sdkRootPath!))
+                if (HasMissingManifests(_workloadSet))
                 {
                     throw new InvalidOperationException(string.Format(Strings.WorkloadSetHasMissingManifests, _workloadSet.Version));
                 }
@@ -553,6 +553,22 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Checks if the workload set has any manifests that are missing from disk.
+        /// </summary>
+        private bool HasMissingManifests(WorkloadSet workloadSet)
+        {
+            foreach (var manifestEntry in workloadSet.ManifestVersions)
+            {
+                var manifestSpecifier = new ManifestSpecifier(manifestEntry.Key, manifestEntry.Value.Version, manifestEntry.Value.FeatureBand);
+                if (GetManifestDirectoryFromSpecifier(manifestSpecifier) == null)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
