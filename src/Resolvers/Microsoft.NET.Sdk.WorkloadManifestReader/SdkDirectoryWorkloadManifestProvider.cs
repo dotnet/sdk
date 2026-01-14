@@ -37,6 +37,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// </summary>
         public IWorkloadManifestCorruptionRepairer? CorruptionRepairer { get; set; }
 
+        /// <summary>
+        /// Specifies how this provider should handle corrupt or missing workload manifests.
+        /// Default is <see cref="ManifestCorruptionFailureMode.Repair"/>.
+        /// </summary>
+        public ManifestCorruptionFailureMode CorruptionFailureMode { get; set; } = ManifestCorruptionFailureMode.Repair;
+
         //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
         //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
         //  we can successfully construct a resolver and install that workload set
@@ -253,7 +259,18 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public WorkloadVersionInfo GetWorkloadVersion()
         {
-            CorruptionRepairer?.EnsureManifestsHealthy();
+            if (CorruptionRepairer != null)
+            {
+                CorruptionRepairer.EnsureManifestsHealthy(CorruptionFailureMode);
+            }
+            else if (_workloadSet != null && CorruptionFailureMode != ManifestCorruptionFailureMode.Ignore)
+            {
+                // No repairer attached - check for missing manifests and throw a helpful error
+                if (WorkloadManifestCorruptionRepairer.HasMissingManifests(_workloadSet, _sdkRootPath!))
+                {
+                    throw new InvalidOperationException(string.Format(Strings.WorkloadSetHasMissingManifests, _workloadSet.Version));
+                }
+            }
 
             if (_globalJsonWorkloadSetVersion != null)
             {
@@ -298,7 +315,18 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
         {
-            CorruptionRepairer?.EnsureManifestsHealthy();
+            if (CorruptionRepairer != null)
+            {
+                CorruptionRepairer.EnsureManifestsHealthy(CorruptionFailureMode);
+            }
+            else if (_workloadSet != null && CorruptionFailureMode != ManifestCorruptionFailureMode.Ignore)
+            {
+                // No repairer attached - check for missing manifests and throw a helpful error
+                if (WorkloadManifestCorruptionRepairer.HasMissingManifests(_workloadSet, _sdkRootPath!))
+                {
+                    throw new InvalidOperationException(string.Format(Strings.WorkloadSetHasMissingManifests, _workloadSet.Version));
+                }
+            }
             ThrowExceptionIfManifestsNotAvailable();
 
             //  Scan manifest directories
@@ -372,6 +400,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
                     if (manifestDirectory == null)
                     {
+                        if (CorruptionFailureMode == ManifestCorruptionFailureMode.Ignore)
+                        {
+                            continue;
+                        }
                         throw new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
                     }
                     AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
@@ -389,6 +421,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
                         if (manifestDirectory == null)
                         {
+                            if (CorruptionFailureMode == ManifestCorruptionFailureMode.Ignore)
+                            {
+                                continue;
+                            }
                             throw new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
                         }
                         AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());

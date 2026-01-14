@@ -10,9 +10,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     public interface IWorkloadManifestCorruptionRepairer
     {
         /// <summary>
-        /// Ensures that the manifests required by the current resolver are present and healthy. Implementations
-        /// may perform best-effort repair, and should throw meaningful exceptions if repair fails.
+        /// Ensures that the manifests required by the current resolver are present and healthy.
         /// </summary>
-        void EnsureManifestsHealthy();
+        /// <param name="failureMode">How to handle corruption if detected.</param>
+        void EnsureManifestsHealthy(ManifestCorruptionFailureMode failureMode);
     }
 }

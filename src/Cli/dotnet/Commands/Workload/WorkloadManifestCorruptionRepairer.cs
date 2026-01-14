@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.Sdk.Localization;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
@@ -46,7 +47,7 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
         _verbosity = verbosity;
     }
 
-    public void EnsureManifestsHealthy()
+    public void EnsureManifestsHealthy(ManifestCorruptionFailureMode failureMode)
     {
         if (_checked)
         {
@@ -54,11 +55,12 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
         }
 
         _checked = true;
-        ValidateAndRepairIfNeeded();
-    }
 
-    private void ValidateAndRepairIfNeeded()
-    {
+        if (failureMode == ManifestCorruptionFailureMode.Ignore)
+        {
+            return;
+        }
+
         InstallStateContents installState;
         try
         {
@@ -66,7 +68,6 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
         }
         catch (FileNotFoundException)
         {
-            // No install state yet, nothing to validate.
             return;
         }
 
@@ -82,13 +83,17 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
         }
         catch
         {
-            // If we can't read the workload set, treat as not corrupt (e.g., workload set not installed).
             return;
         }
 
-        if (!HasMissingManifests(workloadSet))
+        if (!HasMissingManifests(workloadSet, _dotnetPath))
         {
             return;
+        }
+
+        if (failureMode == ManifestCorruptionFailureMode.Throw)
+        {
+            throw new InvalidOperationException(string.Format(Strings.WorkloadSetHasMissingManifests, installState.WorkloadVersion));
         }
 
         _reporter.WriteLine($"Repairing workload set {installState.WorkloadVersion}...");
@@ -107,9 +112,9 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
         return InstallStateContents.FromPath(installStatePath);
     }
 
-    private bool HasMissingManifests(WorkloadSet workloadSet)
+    public static bool HasMissingManifests(WorkloadSet workloadSet, string dotnetPath)
     {
-        string manifestRoot = Path.Combine(_dotnetPath, "sdk-manifests");
+        string manifestRoot = Path.Combine(dotnetPath, "sdk-manifests");
 
         foreach (var manifestEntry in workloadSet.ManifestVersions)
         {
