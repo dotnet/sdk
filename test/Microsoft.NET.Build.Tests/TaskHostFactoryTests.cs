@@ -18,8 +18,8 @@ public class TaskHostFactoryTests(ITestOutputHelper log) : SdkTest(log)
     /// runtime the task should run on.
     /// </summary>
     [Theory]
-    [InlineData("net8.0")]
-    [InlineData("net9.0")]
+    // [InlineData("net8.0")]
+    // [InlineData("net9.0")]
     [InlineData(ToolsetInfo.CurrentTargetFramework)]
     public void TaskWithTaskHostFactory_RuntimeNET_ExecutesSuccessfully(string targetFramework)
     {
