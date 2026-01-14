@@ -36,4 +36,8 @@
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Utilities" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" />
+  </ItemGroup>
+
 </Project>

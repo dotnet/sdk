@@ -79,6 +79,7 @@
   <ItemGroup>
     <PackageReference Include="Basic.CompilerLog.Util" />
     <PackageReference Include="Moq" />
+    <PackageReference Include="MSBuild.StructuredLogger" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
@@ -110,6 +111,6 @@
     <ItemGroup>
       <SnapshotFiles Include="$(MSBuildThisFileDirectory)CompletionTests\snapshots\**\*.received.*" />
     </ItemGroup>
-    <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles->Replace('received', 'verified'))" />
+    <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles-&gt;Replace('received', 'verified'))" />
   </Target>
 </Project>

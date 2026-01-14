@@ -750,9 +750,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   <data name="Date" xml:space="preserve">
     <value>Date</value>
   </data>
-  <data name="DefaultLaunchProfileDisplayName" xml:space="preserve">
-    <value>(Default)</value>
-  </data>
   <data name="DeletingWorkloadManifest" xml:space="preserve">
     <value>Uninstalling workload manifest {0} version {1}...</value>
   </data>
@@ -771,10 +768,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   </data>
   <data name="DescriptionColumnName" xml:space="preserve">
     <value>Description</value>
-  </data>
-  <data name="DeserializationExceptionMessage" xml:space="preserve">
-    <value>An error was encountered when reading '{0}': {1}</value>
-    <comment>{0} is file path. {1} is exception message.</comment>
   </data>
   <data name="DetailDescription" xml:space="preserve">
     <value>Show detail result of the query.</value>
@@ -817,11 +810,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   </data>
   <data name="DownloadToCacheOptionDescription" xml:space="preserve">
     <value>Download packages needed to install a workload to a folder that can be used for offline installation.</value>
-  </data>
-  <data name="DuplicateCaseInsensitiveLaunchProfileNames" xml:space="preserve">
-    <value>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</value>
   </data>
   <data name="ExactMatchDescription" xml:space="preserve">
     <value>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</value>
@@ -1038,18 +1026,6 @@ Make the profile names distinct.</value>
   <data name="LatestVersion" xml:space="preserve">
     <value>Latest Version</value>
     <comment>Table lable</comment>
-  </data>
-  <data name="LaunchProfileDoesNotExist" xml:space="preserve">
-    <value>A launch profile with the name '{0}' doesn't exist.</value>
-  </data>
-  <data name="LaunchProfileHandlerCannotBeLocated" xml:space="preserve">
-    <value>The launch profile type '{0}' is not supported.</value>
-  </data>
-  <data name="LaunchProfileIsNotAJsonObject" xml:space="preserve">
-    <value>A profile with the specified name isn't a valid JSON object.</value>
-  </data>
-  <data name="LaunchProfilesCollectionIsNotAJsonObject" xml:space="preserve">
-    <value>The 'profiles' property of the launch settings document is not a JSON object.</value>
   </data>
   <data name="ListAppFullName" xml:space="preserve">
     <value>List all projects in a solution file.</value>
@@ -1689,6 +1665,9 @@ The default is to publish a framework-dependent application.</value>
   <data name="RestoreSuccessful" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') was restored. Available commands: {2}</value>
   </data>
+  <data name="RestoreNewVersionAvailable" xml:space="preserve">
+    <value>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</value>
+  </data>
   <data name="RollbackDefinitionContainsExtraneousManifestIds" xml:space="preserve">
     <value>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</value>
   </data>
@@ -1716,6 +1695,9 @@ The default is to publish a framework-dependent application.</value>
   </data>
   <data name="RunCommandException" xml:space="preserve">
     <value>The build failed. Fix the build errors and run again.</value>
+  </data>
+  <data name="RunCommandDeployFailed" xml:space="preserve">
+    <value>Deployment to device failed. Fix any deployment errors and run again.</value>
   </data>
   <data name="RunCommandExceptionCouldNotApplyLaunchSettings" xml:space="preserve">
     <value>The launch profile "{0}" could not be applied.
@@ -1785,6 +1767,30 @@ Your project targets multiple frameworks. Specify which framework to run using '
   </data>
   <data name="RunRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to run for.</value>
+  </data>
+  <data name="CommandOptionDeviceDescription" xml:space="preserve">
+    <value>The device identifier to use for running the application.</value>
+  </data>
+  <data name="CommandOptionDeviceHelpName" xml:space="preserve">
+    <value>DEVICE</value>
+  </data>
+  <data name="CommandOptionListDevicesDescription" xml:space="preserve">
+    <value>List available devices for running the application.</value>
+  </data>
+  <data name="RunCommandAvailableDevices" xml:space="preserve">
+    <value>Available devices:</value>
+  </data>
+  <data name="RunCommandNoDevicesAvailable" xml:space="preserve">
+    <value>No devices are available for this project.</value>
+  </data>
+  <data name="RunCommandSelectDevicePrompt" xml:space="preserve">
+    <value>Select a device to run on:</value>
+  </data>
+  <data name="RunCommandMoreDevicesText" xml:space="preserve">
+    <value>Move up and down to reveal more devices</value>
+  </data>
+  <data name="RunCommandExceptionUnableToRunSpecifyDevice" xml:space="preserve">
+    <value>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</value>
   </data>
   <data name="RuntimeConfigDefinition" xml:space="preserve">
     <value>Path to &lt;application&gt;.runtimeconfig.json file.</value>
@@ -2272,9 +2278,6 @@ and the corresponding package Ids for installed tools using the command
   </data>
   <data name="UpdateToolFailed" xml:space="preserve">
     <value>Tool '{0}' failed to update due to the following:</value>
-  </data>
-  <data name="UsableLaunchProfileCannotBeLocated" xml:space="preserve">
-    <value>A usable launch profile could not be located.</value>
   </data>
   <data name="Usage" xml:space="preserve">
     <value>Usage</value>
