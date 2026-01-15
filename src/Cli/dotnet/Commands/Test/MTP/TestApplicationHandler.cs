@@ -265,7 +265,7 @@ internal sealed class TestApplicationHandler
 
     internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
     {
-        if (_handshakeInfo.HasValue)
+        if (_receivedTestHostHandshake)
         {
             // If we received a handshake from TestHostController but not from TestHost,
             // call HandshakeFailure instead of AssemblyRunCompleted
