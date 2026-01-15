@@ -7,10 +7,9 @@ using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class GlobalArgs<TDefinition> : ICommandArgs
-        where TDefinition : Command
+    internal class GlobalArgs : ICommandArgs
     {
-        public GlobalArgs(BaseCommand<TDefinition> command, ParseResult parseResult)
+        public GlobalArgs(ParseResult parseResult)
         {
             RootCommand = GetNewCommandFromParseResult(parseResult);
 
@@ -23,22 +22,17 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             DebugRebuildCache = parseResult.GetValue(definition.DebugRebuildCacheOption);
             DebugShowConfig = parseResult.GetValue(definition.DebugShowConfigOption);
             ParseResult = parseResult;
-            Command = command;
             HasHelpOption = parseResult.CommandResult.Children.Any(child => child is OptionResult optionResult && optionResult.Option is HelpOption);
         }
 
-        protected GlobalArgs(GlobalArgs<NewCommandDefinition> args)
-            : this(args.Command, args.ParseResult)
+        protected GlobalArgs(GlobalArgs args)
+            : this(args.ParseResult)
         {
         }
 
         public NewCommand RootCommand { get; }
 
-        public BaseCommand<TDefinition> Command { get; }
-
         public ParseResult ParseResult { get; }
-
-        Command ICommandArgs.Command => Command;
 
         internal bool DebugAttach { get; private set; }
 

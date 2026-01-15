@@ -5,9 +5,10 @@ using System.CommandLine;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class ListCommandArgs : BaseFilterableArgs, ITabularOutputArgs
+    internal sealed class ListCommandArgs : BaseFilterableArgs<ListCommandDefinition>, ITabularOutputArgs
     {
-        internal ListCommandArgs(BaseListCommand command, ParseResult parseResult) : base(command, parseResult)
+        internal ListCommandArgs(BaseListCommand command, ParseResult parseResult)
+            : base(command, parseResult)
         {
             string? nameCriteria = parseResult.GetValue(ListCommandDefinition.NameArgument);
             if (!string.IsNullOrWhiteSpace(nameCriteria))

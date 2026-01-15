@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseSearchCommand : BaseCommand<SearchCommandArgs>, IFilterableCommand, ITabularOutputCommand
+    internal abstract class BaseSearchCommand : BaseCommand<SearchCommandArgs, SearchCommandDefinition>, IFilterableCommand, ITabularOutputCommand
     {
         private readonly SearchCommandDefinition _definition;
 

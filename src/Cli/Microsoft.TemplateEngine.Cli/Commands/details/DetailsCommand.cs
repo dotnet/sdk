@@ -9,7 +9,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal sealed class DetailsCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-        : BaseCommand<DetailsCommandArgs>(hostBuilder, new DetailsCommandDefinition())
+        : BaseCommand<DetailsCommandArgs, DetailsCommandDefinition>(hostBuilder, definition: new())
     {
         protected override async Task<NewCommandStatus> ExecuteAsync(
             DetailsCommandArgs args,

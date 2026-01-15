@@ -7,7 +7,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseListCommand : BaseCommand<ListCommandArgs>, IFilterableCommand, ITabularOutputCommand
+    internal abstract class BaseListCommand : BaseCommand<ListCommandArgs, ListCommandDefinition>, IFilterableCommand, ITabularOutputCommand
     {
         private readonly ListCommandDefinition _definition;
 

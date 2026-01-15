@@ -7,7 +7,7 @@ using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed class NewCommandArgs : GlobalArgs<NewCommandDefinition>
+    internal sealed class NewCommandArgs : GlobalArgs
     {
         public NewCommandArgs(NewCommand command, ParseResult parseResult)
             : base(command, parseResult)

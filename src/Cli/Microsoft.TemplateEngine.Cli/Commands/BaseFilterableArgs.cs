@@ -6,7 +6,7 @@ using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseFilterableArgs<TDefinition> : GlobalArgs<TDefinition>
+    internal abstract class BaseFilterableArgs<TDefinition> : GlobalArgs
         where TDefinition : Command
     {
         private readonly IReadOnlyDictionary<FilterOptionDefinition, OptionResult> _filters;

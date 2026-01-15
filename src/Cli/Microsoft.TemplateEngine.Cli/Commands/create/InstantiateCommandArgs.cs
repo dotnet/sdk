@@ -6,10 +6,16 @@ using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed class InstantiateCommandArgs : GlobalArgs<InstantiateCommandDefinition>
+    internal sealed class InstantiateCommandArgs : GlobalArgs
     {
+        internal string? ShortName { get; }
+
+        internal string[] RemainingArguments { get; }
+
+        internal string[] TokensToInvoke { get; }
+
         public InstantiateCommandArgs(InstantiateCommand command, ParseResult parseResult)
-            : base(command, parseResult)
+            : base(parseResult)
         {
             RemainingArguments = parseResult.GetValue(command.Definition.RemainingArguments) ?? Array.Empty<string>();
             ShortName = parseResult.GetValue(command.Definition.ShortNameArgument);
@@ -35,7 +41,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             TokensToInvoke = tokens.ToArray();
         }
 
-        private InstantiateCommandArgs(string? shortName, IEnumerable<string> remainingArgs, GlobalArgs<NewCommandDefinition> args)
+        private InstantiateCommandArgs(string? shortName, IEnumerable<string> remainingArgs, GlobalArgs args)
             : base(args)
         {
             ShortName = shortName;
@@ -49,11 +55,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             TokensToInvoke = tokens.ToArray();
         }
 
-        internal string? ShortName { get; }
-
-        internal string[] RemainingArguments { get; }
-
-        internal string[] TokensToInvoke { get; }
+        public InstantiateCommand Command => (InstantiateCommand)ParseResult.CommandResult.Command;
 
         internal static InstantiateCommandArgs FromNewCommandArgs(NewCommandArgs newCommandArgs)
         {

@@ -5,9 +5,10 @@ using System.CommandLine;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed class SearchCommandArgs : BaseFilterableArgs, ITabularOutputArgs
+    internal sealed class SearchCommandArgs : BaseFilterableArgs<SearchCommandDefinition>, ITabularOutputArgs
     {
-        internal SearchCommandArgs(BaseSearchCommand command, ParseResult parseResult) : base(command, parseResult)
+        internal SearchCommandArgs(BaseSearchCommand command, ParseResult parseResult)
+            : base(command, parseResult)
         {
             string? nameCriteria = parseResult.GetValue(SearchCommandDefinition.NameArgument);
             if (!string.IsNullOrWhiteSpace(nameCriteria))

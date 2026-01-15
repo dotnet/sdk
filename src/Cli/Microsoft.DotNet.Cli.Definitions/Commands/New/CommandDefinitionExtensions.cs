@@ -9,10 +9,10 @@ namespace Microsoft.TemplateEngine.Cli;
 
 internal static class CommandDefinitionExtensions
 {
-    public static TDefinition AddShortNameArgumentValidator<TDefinition>(this TDefinition command, Argument nameArgument)
+    public static TDefinition AddShortNameArgumentValidator<TDefinition>(this TDefinition definition, Argument nameArgument)
         where TDefinition : Command
     {
-        command.Validators.Add(commandResult =>
+        definition.Validators.Add(commandResult =>
         {
             var nameArgumentResult = commandResult.Children.FirstOrDefault(symbol => symbol is ArgumentResult argumentResult && argumentResult.Argument == nameArgument);
             if (nameArgumentResult == null)
@@ -20,10 +20,10 @@ internal static class CommandDefinitionExtensions
                 return;
             }
 
-            ValidateArgumentUsage(commandResult, NewCommandDefinition.ShortNameArgument);
+            ValidateArgumentUsage(commandResult, ShortNameArgument);
         });
 
-        return command;
+        return definition;
     }
 
     public static TDefinition AddNoLegacyUsageValidators<TDefinition>(this TDefinition command, params IEnumerable<Symbol> except)

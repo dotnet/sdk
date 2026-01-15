@@ -6,6 +6,6 @@ using System.CommandLine;
 namespace Microsoft.TemplateEngine.Cli.Commands;
 
 internal sealed class AliasShowCommandArgs(BaseAliasShowCommand command, ParseResult parseResult)
-    : GlobalArgs<ShowCommandDefinition>(command, parseResult)
+    : GlobalArgs(command, parseResult)
 {
 }

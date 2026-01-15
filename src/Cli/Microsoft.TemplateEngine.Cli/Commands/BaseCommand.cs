@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 #pragma warning restore SA1100 // Do not prefix calls with base unless local implementation exists
         }
 
-        protected IEngineEnvironmentSettings CreateEnvironmentSettings(GlobalArgs<TDefinition> args, ParseResult parseResult)
+        protected IEngineEnvironmentSettings CreateEnvironmentSettings(GlobalArgs args, ParseResult parseResult)
         {
             ITemplateEngineHost host = hostBuilder(parseResult);
             IEnvironment environment = new CliEnvironment();
@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
     internal abstract class BaseCommand<TArgs, TDefinition> : BaseCommand<TDefinition>
         where TDefinition : Command
-        where TArgs : GlobalArgs<TDefinition>
+        where TArgs : GlobalArgs
     {
         internal BaseCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, TDefinition definition)
             : base(hostBuilder, definition)
@@ -96,7 +96,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 return base.GetCompletions(context);
             }
-            var args = new GlobalArgs<TDefinition>(this, context.ParseResult);
+            var args = new GlobalArgs(this, context.ParseResult);
             using IEngineEnvironmentSettings environmentSettings = CreateEnvironmentSettings(args, context.ParseResult);
             using TemplatePackageManager templatePackageManager = new(environmentSettings);
             return GetCompletions(context, environmentSettings, templatePackageManager).ToList();

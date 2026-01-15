@@ -14,13 +14,13 @@ using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class TemplateCommand : Command
+    internal sealed class TemplateCommand : Command
     {
         private static readonly TimeSpan ConstraintEvaluationTimeout = TimeSpan.FromMilliseconds(1000);
         private static readonly string[] _helpAliases = new[] { "-h", "/h", "--help", "-?", "/?" };
         private readonly TemplatePackageManager _templatePackageManager;
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly BaseCommand _instantiateCommand;
+        private readonly BaseCommand<InstantiateCommandDefinition> _instantiateCommand;
         private readonly TemplateGroup _templateGroup;
         private readonly CliTemplateInfo _template;
         private Dictionary<string, TemplateOption> _templateSpecificOptions = new();
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         /// </summary>
         /// <exception cref="InvalidTemplateParametersException">when <paramref name="template"/> has invalid template parameters.</exception>
         public TemplateCommand(
-            BaseCommand instantiateCommand,
+            BaseCommand<InstantiateCommandDefinition> instantiateCommand,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
             TemplateGroup templateGroup,
