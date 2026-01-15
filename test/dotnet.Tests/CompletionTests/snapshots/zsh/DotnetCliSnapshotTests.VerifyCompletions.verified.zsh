@@ -679,6 +679,7 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--project=[Path to a project or solution file, or a directory.]: : ' \
                                             '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
+                                            '--vulnerable=[Upgrade packages with known vulnerabilities.]: :((False\:"False" True\:"True" ))' \
                                             '--verbosity=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--help[Show command line help.]' \
@@ -690,7 +691,6 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--allow-insecure-connections[Allows downloading from HTTP (non-HTTPS) package sources.]' \
                                             '--configfile=[The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https\://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior.]: : ' \
-                                            '--vulnerable=[Upgrade packages with known vulnerabilities.]: :((False\:"False" True\:"True" ))' \
                                             '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                                             '--output=[Directory where the package will be placed. Defaults to the current working directory.]: : ' \
                                             '-o=[Directory where the package will be placed. Defaults to the current working directory.]: : ' \
