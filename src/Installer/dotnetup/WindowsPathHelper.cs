@@ -276,29 +276,48 @@ internal sealed class WindowsPathHelper : IDisposable
             return unexpandedPath;
         }
 
-        return AddPathEntry(unexpandedPath, expandedPath, primaryDotnetPath);
+        return AddPathEntry(unexpandedPath, expandedPath, primaryDotnetPath, "dotnet");
     }
 
     /// <summary>
     /// Adds a path entry to the given PATH strings if it's not already present.
     /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve environment variables.
-    /// If the path is already present but there are other dotnet paths before it, moves it to the front.
+    /// If the command already resolves to the pathToAdd, no changes are made.
+    /// If the path is already present but the command doesn't resolve to it, moves it to the front.
     /// </summary>
     /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
     /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
     /// <param name="pathToAdd">The path to add.</param>
+    /// <param name="commandName">The command name that should resolve from pathToAdd (e.g., "dotnet").</param>
     /// <returns>The modified unexpanded PATH string.</returns>
-    public static string AddPathEntry(string unexpandedPath, string expandedPath, string pathToAdd)
+    public static string AddPathEntry(string unexpandedPath, string expandedPath, string pathToAdd, string commandName)
     {
         var expandedEntries = SplitPath(expandedPath);
         var unexpandedEntries = SplitPath(unexpandedPath);
 
-        // Check if path is already in the expanded PATH
-        var normalizedPathToAdd = Path.TrimEndingDirectorySeparator(pathToAdd);
+        // Check if the command already resolves to the pathToAdd using EnvironmentProvider
+        var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider(searchPathsOverride: expandedEntries);
+        var resolvedCommandPath = envProvider.GetCommandPath(commandName, expandedEntries);
+
+        if (resolvedCommandPath != null)
+        {
+            var resolvedDir = Path.GetDirectoryName(resolvedCommandPath);
+            var normalizedPathToAdd = Path.TrimEndingDirectorySeparator(pathToAdd);
+            var normalizedResolvedDir = Path.TrimEndingDirectorySeparator(resolvedDir ?? string.Empty);
+
+            if (normalizedResolvedDir.Equals(normalizedPathToAdd, StringComparison.OrdinalIgnoreCase))
+            {
+                // Command already resolves to the pathToAdd, no changes needed
+                return unexpandedPath;
+            }
+        }
+
+        // Check if pathToAdd is already in the expanded PATH
+        var normalizedPathToAddFinal = Path.TrimEndingDirectorySeparator(pathToAdd);
         int existingIndex = -1;
         for (int i = 0; i < expandedEntries.Count; i++)
         {
-            if (Path.TrimEndingDirectorySeparator(expandedEntries[i]).Equals(normalizedPathToAdd, StringComparison.OrdinalIgnoreCase))
+            if (Path.TrimEndingDirectorySeparator(expandedEntries[i]).Equals(normalizedPathToAddFinal, StringComparison.OrdinalIgnoreCase))
             {
                 existingIndex = i;
                 break;
@@ -307,31 +326,11 @@ internal sealed class WindowsPathHelper : IDisposable
 
         if (existingIndex >= 0)
         {
-            // Path already exists - check if there's another dotnet before it
-            bool hasDotnetBefore = false;
-            for (int i = 0; i < existingIndex; i++)
-            {
-                string dotnetExePath = Path.Combine(expandedEntries[i], "dotnet.exe");
-                string dotnetPath = Path.Combine(expandedEntries[i], "dotnet");
-                if (File.Exists(dotnetExePath) || File.Exists(dotnetPath))
-                {
-                    hasDotnetBefore = true;
-                    break;
-                }
-            }
-
-            if (hasDotnetBefore)
-            {
-                // Move the path to the front
-                // Save the unexpanded entry before removing it
-                string unexpandedEntry = unexpandedEntries[existingIndex];
-                unexpandedEntries.RemoveAt(existingIndex);
-                unexpandedEntries.Insert(0, unexpandedEntry);
-                return string.Join(';', unexpandedEntries);
-            }
-
-            // Already at the front or no dotnet before it
-            return unexpandedPath;
+            // Path already exists - move it to the front
+            string unexpandedEntry = unexpandedEntries[existingIndex];
+            unexpandedEntries.RemoveAt(existingIndex);
+            unexpandedEntries.Insert(0, unexpandedEntry);
+            return string.Join(';', unexpandedEntries);
         }
         else
         {

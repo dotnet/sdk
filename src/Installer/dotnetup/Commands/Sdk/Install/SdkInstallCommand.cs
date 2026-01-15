@@ -128,7 +128,6 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         }
 
         bool? resolvedSetDefaultInstall = _setDefaultInstall;
-        UserInstallRootChanges? userInstallRootChanges = null;
 
         if (resolvedSetDefaultInstall == null)
         {
@@ -156,7 +155,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                             // Not fully configured - display what needs to be configured and prompt
                             if (OperatingSystem.IsWindows())
                             {
-                                userInstallRootChanges = InstallRootManager.GetUserInstallRootChanges();
+                                UserInstallRootChanges userInstallRootChanges = InstallRootManager.GetUserInstallRootChanges();
 
                                 SpectreAnsiConsole.WriteLine($"The .NET installation at {resolvedInstallPath} is not fully configured.");
                                 SpectreAnsiConsole.WriteLine("The following changes are needed:");

@@ -84,6 +84,28 @@ public class EnvironmentProvider(
         return commandPath;
     }
 
+    public string? GetCommandPath(string commandName, IEnumerable<string> searchPaths, params string[] extensions)
+    {
+        if (!extensions.Any())
+        {
+            extensions = [.. ExecutableExtensions];
+        }
+
+        // Process search paths like SearchPaths does
+        var processedSearchPaths = searchPaths
+            .Select(p => p.Trim(s_quote))
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => ExpandTildeSlash(p));
+
+        var commandPath = processedSearchPaths.Join(
+            extensions,
+                p => true, s => true,
+                (p, s) => Path.Combine(p, commandName + s))
+            .FirstOrDefault(File.Exists);
+
+        return commandPath;
+    }
+
     public string? GetCommandPathFromRootPath(string rootPath, string commandName, params string[] extensions)
     {
         if (!extensions.Any())
