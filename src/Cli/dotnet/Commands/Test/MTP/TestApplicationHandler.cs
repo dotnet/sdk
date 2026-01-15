@@ -269,14 +269,7 @@ internal sealed class TestApplicationHandler
         {
             // If we received a handshake from TestHostController but not from TestHost,
             // call HandshakeFailure instead of AssemblyRunCompleted
-            if (!_receivedTestHostHandshake)
-            {
-                _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputData, errorData);
-            }
-            else
-            {
-                _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
-            }
+            _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
         }
         else
         {
