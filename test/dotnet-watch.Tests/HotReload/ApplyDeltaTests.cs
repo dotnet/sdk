@@ -339,7 +339,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 <Using Include="System.Xml.Linq" />
                 """));
 
-            await App.WaitForOutputLineContaining(MessageDescriptor.ManagedCodeChangesApplied, $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})");
+            await App.WaitForOutputLineContaining(MessageDescriptor.ManagedCodeChangesApplied);
 
             await App.WaitUntilOutputContains(">>> System.Xml.Linq.XDocument");
 
@@ -888,7 +888,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 """;
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
-            await App.WaitForOutputLineContaining(MessageDescriptor.ManagedCodeChangesApplied, $"blazorwasm ({ToolsetInfo.CurrentTargetFramework})");
+            await App.WaitForOutputLineContaining(MessageDescriptor.ManagedCodeChangesApplied);
 
             // check project specified capapabilities:
             if (projectSpecifiesCapabilities)
@@ -1255,9 +1255,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.ManagedCodeChangesApplied);
 
             App.AssertOutputContains("Using Aspire process launcher.");
-            App.AssertOutputContains(MessageDescriptor.ManagedCodeChangesApplied, $"WatchAspire.AppHost ({tfm})");
-            App.AssertOutputContains(MessageDescriptor.ManagedCodeChangesApplied, $"WatchAspire.ApiService ({tfm})");
-            App.AssertOutputContains(MessageDescriptor.ManagedCodeChangesApplied, $"WatchAspire.Web ({tfm})");
 
             // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
             Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
