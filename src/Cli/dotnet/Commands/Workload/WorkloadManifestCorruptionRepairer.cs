@@ -60,28 +60,14 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
             return;
         }
 
-        InstallStateContents installState;
-        try
-        {
-            installState = GetInstallState();
-        }
-        catch (FileNotFoundException)
-        {
-            return;
-        }
+        // Get the workload set directly from the provider - it was already resolved during construction
+        // and doesn't require reading the install state file again
+        var provider = _workloadResolver.GetWorkloadManifestProvider() as SdkDirectoryWorkloadManifestProvider;
+        var workloadSet = provider?.ResolvedWorkloadSet;
 
-        if (!installState.ShouldUseWorkloadSets() || string.IsNullOrEmpty(installState.WorkloadVersion))
+        if (workloadSet is null)
         {
-            return;
-        }
-
-        WorkloadSet workloadSet;
-        try
-        {
-            workloadSet = _workloadInstaller.GetWorkloadSetContents(installState.WorkloadVersion);
-        }
-        catch
-        {
+            // No workload set is being used
             return;
         }
 
@@ -92,23 +78,11 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
 
         if (failureMode == ManifestCorruptionFailureMode.Throw)
         {
-            throw new InvalidOperationException(string.Format(CliCommandStrings.WorkloadSetHasMissingManifests, installState.WorkloadVersion));
+            throw new InvalidOperationException(string.Format(CliCommandStrings.WorkloadSetHasMissingManifests, workloadSet.Version));
         }
 
-        _reporter.WriteLine($"Repairing workload set {installState.WorkloadVersion}...");
+        _reporter.WriteLine($"Repairing workload set {workloadSet.Version}...");
         CliTransaction.RunNew(context => RepairCorruptWorkloadSet(context, workloadSet));
-    }
-
-    private InstallStateContents GetInstallState()
-    {
-        string installRoot = WorkloadFileBasedInstall.IsUserLocal(_dotnetPath, _sdkFeatureBand.ToString())
-            ? _userProfileDir
-            : _dotnetPath;
-
-        string installStateFolder = WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, installRoot);
-        string installStatePath = Path.Combine(installStateFolder, "default.json");
-
-        return InstallStateContents.FromPath(installStatePath);
     }
 
     public static bool HasMissingManifests(WorkloadSet workloadSet, string dotnetPath)
@@ -145,7 +119,13 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
         {
             _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context);
         }
-        _workloadResolver.RefreshWorkloadManifests();
+
+        // NOTE: Do NOT call _workloadResolver.RefreshWorkloadManifests() here.
+        // This method is called from GetManifests() during manifest enumeration.
+        // Calling refresh would cause a nested re-initialization that adds duplicates
+        // since the outer enumeration continues after we return.
+        // The newly installed manifests will be picked up when GetManifests() continues
+        // scanning the manifest directories.
     }
 
     [MemberNotNull(nameof(_packageDownloader))]

@@ -43,6 +43,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// </summary>
         public ManifestCorruptionFailureMode CorruptionFailureMode { get; set; } = ManifestCorruptionFailureMode.Repair;
 
+        /// <summary>
+        /// Gets the resolved workload set, if any. This is populated during construction/refresh
+        /// and does not trigger corruption checking.
+        /// </summary>
+        public WorkloadSet? ResolvedWorkloadSet => _workloadSet;
+
         //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
         //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
         //  we can successfully construct a resolver and install that workload set
