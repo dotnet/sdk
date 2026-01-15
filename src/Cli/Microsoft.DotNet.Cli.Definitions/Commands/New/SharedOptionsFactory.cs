@@ -3,7 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using Microsoft.TemplateEngine.Cli.TabularOutput;
+using Microsoft.DotNet.Cli;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
@@ -33,93 +33,93 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return o;
         }
 
-        internal static Option<bool> CreateInteractiveOption()
+        public static Option<bool> CreateInteractiveOption()
         {
             return new Option<bool>("--interactive")
             {
                 Arity = new ArgumentArity(0, 1),
-                Description = SymbolStrings.Option_Interactive
+                Description = CommandDefinitionStrings.Option_Interactive
             };
         }
 
-        internal static Option<string[]> CreateAddSourceOption()
+        public static Option<string[]> CreateAddSourceOption()
         {
             return new("--add-source", "--nuget-source")
             {
                 Arity = new ArgumentArity(1, 99),
-                Description = SymbolStrings.Option_AddSource,
+                Description = CommandDefinitionStrings.Option_AddSource,
                 AllowMultipleArgumentsPerToken = true,
                 HelpName = "nuget-source"
             };
         }
 
-        internal static Option<bool> CreateForceOption()
+        public static Option<bool> CreateForceOption()
         {
             return new("--force")
             {
                 Arity = new ArgumentArity(0, 1),
-                Description = SymbolStrings.TemplateCommand_Option_Force,
+                Description = CommandDefinitionStrings.TemplateCommand_Option_Force,
             };
         }
 
-        internal static Option<string> CreateAuthorOption()
+        public static Option<string> CreateAuthorOption()
         {
             return new("--author")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_AuthorFilter
+                Description = CommandDefinitionStrings.Option_AuthorFilter
             };
         }
 
-        internal static Option<string> CreateBaselineOption()
+        public static Option<string> CreateBaselineOption()
         {
             return new("--baseline")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_BaselineFilter,
+                Description = CommandDefinitionStrings.Option_BaselineFilter,
                 Hidden = true
             };
         }
 
-        internal static Option<string> CreateLanguageOption()
+        public static Option<string> CreateLanguageOption()
         {
             return new("--language", "-lang")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_LanguageFilter
+                Description = CommandDefinitionStrings.Option_LanguageFilter
             };
         }
 
-        internal static Option<string> CreateTypeOption()
+        public static Option<string> CreateTypeOption()
         {
             return new("--type")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_TypeFilter
+                Description = CommandDefinitionStrings.Option_TypeFilter
             };
         }
 
-        internal static Option<string> CreateTagOption()
+        public static Option<string> CreateTagOption()
         {
             return new("--tag")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_TagFilter
+                Description = CommandDefinitionStrings.Option_TagFilter
             };
         }
 
-        internal static Option<string> CreatePackageOption()
+        public static Option<string> CreatePackageOption()
         {
             return new("--package")
             {
                 Arity = new ArgumentArity(1, 1),
-                Description = SymbolStrings.Option_PackageFilter
+                Description = CommandDefinitionStrings.Option_PackageFilter
             };
         }
 
         public static Option<FileInfo> CreateOutputOption() => new("--output", "-o")
         {
-            Description = SymbolStrings.Option_Output,
+            Description = CommandDefinitionStrings.Option_Output,
             Required = false,
             Arity = new ArgumentArity(1, 1)
         };
@@ -129,24 +129,24 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return new("--columns-all")
             {
                 Arity = ArgumentArity.Zero,
-                Description = SymbolStrings.Option_ColumnsAll
+                Description = CommandDefinitionStrings.Option_ColumnsAll
             };
         }
 
-        internal static Option<string[]> CreateColumnsOption()
+        public static Option<string[]> CreateColumnsOption()
         {
             Option<string[]> option = new("--columns")
             {
                 Arity = new ArgumentArity(1, 4),
-                Description = SymbolStrings.Option_Columns,
+                Description = CommandDefinitionStrings.Option_Columns,
                 AllowMultipleArgumentsPerToken = true,
                 CustomParser = ParseCommaSeparatedValues
             };
             option.AcceptOnlyFromAmong(
-                TabularOutputSettings.ColumnNames.Author,
-                TabularOutputSettings.ColumnNames.Language,
-                TabularOutputSettings.ColumnNames.Type,
-                TabularOutputSettings.ColumnNames.Tags);
+                TabularOutputSettingsColumnNames.Author,
+                TabularOutputSettingsColumnNames.Language,
+                TabularOutputSettingsColumnNames.Type,
+                TabularOutputSettingsColumnNames.Tags);
             return option;
         }
 

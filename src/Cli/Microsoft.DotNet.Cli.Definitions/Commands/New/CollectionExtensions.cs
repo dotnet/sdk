@@ -3,7 +3,7 @@
 
 namespace Microsoft.TemplateEngine.Cli;
 
-internal static class CollectionExtensions
+public static class CollectionExtensions
 {
     public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> items)
     {

@@ -1,69 +1,68 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CA1810 // Initialize reference type static fields inline
-
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.TemplateEngine.Cli;
 
-internal class CommandDefinition(string name, string description) : Command(name, description)
+public class CommandDefinition(string name, string description) : Command(name, description)
 {
     public static class New
     {
         public static readonly Option<string?> DebugCustomSettingsLocationOption = new("--debug:custom-hive")
         {
-            Description = SymbolStrings.Option_Debug_CustomSettings,
+            Description = CommandDefinitionStrings.Option_Debug_CustomSettings,
             Hidden = true,
             Recursive = true
         };
 
         public static readonly Option<bool> DebugVirtualizeSettingsOption = new("--debug:ephemeral-hive", "--debug:virtual-hive")
         {
-            Description = SymbolStrings.Option_Debug_VirtualSettings,
+            Description = CommandDefinitionStrings.Option_Debug_VirtualSettings,
             Hidden = true,
             Recursive = true
         };
 
         public static readonly Option<bool> DebugAttachOption = new("--debug:attach")
         {
-            Description = SymbolStrings.Option_Debug_Attach,
+            Description = CommandDefinitionStrings.Option_Debug_Attach,
             Hidden = true,
             Recursive = true
         };
 
         public static readonly Option<bool> DebugReinitOption = new("--debug:reinit")
         {
-            Description = SymbolStrings.Option_Debug_Reinit,
+            Description = CommandDefinitionStrings.Option_Debug_Reinit,
             Hidden = true,
             Recursive = true
         };
 
         public static readonly Option<bool> DebugRebuildCacheOption = new("--debug:rebuild-cache", "--debug:rebuildcache")
         {
-            Description = SymbolStrings.Option_Debug_RebuildCache,
+            Description = CommandDefinitionStrings.Option_Debug_RebuildCache,
             Hidden = true,
             Recursive = true
         };
 
         public static readonly Option<bool> DebugShowConfigOption = new("--debug:show-config", "--debug:showconfig")
         {
-            Description = SymbolStrings.Option_Debug_ShowConfig,
+            Description = CommandDefinitionStrings.Option_Debug_ShowConfig,
             Hidden = true,
             Recursive = true
         };
 
         public static readonly Argument<string> ShortNameArgument = new("template-short-name")
         {
-            Description = SymbolStrings.Command_Instantiate_Argument_ShortName,
+            Description = CommandDefinitionStrings.Command_Instantiate_Argument_ShortName,
             Arity = new ArgumentArity(0, 1),
             Hidden = true
         };
 
         public static readonly Argument<string[]> RemainingArguments = new("template-args")
         {
-            Description = SymbolStrings.Command_Instantiate_Argument_TemplateOptions,
+            Description = CommandDefinitionStrings.Command_Instantiate_Argument_TemplateOptions,
             Arity = new ArgumentArity(0, 999),
             Hidden = true
         };
@@ -84,7 +83,7 @@ internal class CommandDefinition(string name, string description) : Command(name
             SharedOptions.NoUpdateCheckOption
         ];
 
-        internal static readonly IEnumerable<Option> LegacyOptions;
+        public static readonly IEnumerable<Option> LegacyOptions;
         internal static readonly IEnumerable<Option> LegacyFilterOptions;
 
         private static readonly Lazy<CommandDefinition> s_lazyCommand = new(Create);
@@ -115,7 +114,7 @@ internal class CommandDefinition(string name, string description) : Command(name
 
         private static CommandDefinition Create()
         {
-            var command = new CommandDefinition("new", SymbolStrings.Command_New_Description)
+            var command = new CommandDefinition("new", CommandDefinitionStrings.Command_New_Description)
             {
                 TreatUnmatchedTokensAsErrors = true,
                 Options =
@@ -168,7 +167,7 @@ internal class CommandDefinition(string name, string description) : Command(name
 
     public static class Alias
     {
-        public static readonly CommandDefinition Command = new("alias", SymbolStrings.Command_Alias_Description)
+        public static readonly CommandDefinition Command = new("alias", CommandDefinitionStrings.Command_Alias_Description)
         {
             Hidden = true,
             Subcommands =
@@ -180,12 +179,12 @@ internal class CommandDefinition(string name, string description) : Command(name
 
         public static class Add
         {
-            public static readonly CommandDefinition Command = new("add", SymbolStrings.Command_AliasAdd_Description)
+            public static readonly CommandDefinition Command = new("add", CommandDefinitionStrings.Command_AliasAdd_Description)
             {
                 Hidden = true,
             };
 
-            public static readonly CommandDefinition LegacyCommand = new("--alias", SymbolStrings.Command_AliasAdd_Description)
+            public static readonly CommandDefinition LegacyCommand = new("--alias", CommandDefinitionStrings.Command_AliasAdd_Description)
             {
                 Hidden = true,
                 Aliases = { "-a" }
@@ -194,12 +193,12 @@ internal class CommandDefinition(string name, string description) : Command(name
 
         public static class Show
         {
-            public static readonly CommandDefinition Command = new("show", SymbolStrings.Command_AliasShow_Description)
+            public static readonly CommandDefinition Command = new("show", CommandDefinitionStrings.Command_AliasShow_Description)
             {
                 Hidden = true,
             };
 
-            public static readonly CommandDefinition LegacyCommand = new("--show-alias", SymbolStrings.Command_AliasShow_Description)
+            public static readonly CommandDefinition LegacyCommand = new("--show-alias", CommandDefinitionStrings.Command_AliasShow_Description)
             {
                 Hidden = true,
             };
@@ -210,17 +209,17 @@ internal class CommandDefinition(string name, string description) : Command(name
     {
         public static readonly Argument<string> ShortNameArgument = new("template-short-name")
         {
-            Description = SymbolStrings.Command_Instantiate_Argument_ShortName,
+            Description = CommandDefinitionStrings.Command_Instantiate_Argument_ShortName,
             Arity = new ArgumentArity(0, 1)
         };
 
         public static readonly Argument<string[]> RemainingArguments = new("template-args")
         {
-            Description = SymbolStrings.Command_Instantiate_Argument_TemplateOptions,
+            Description = CommandDefinitionStrings.Command_Instantiate_Argument_TemplateOptions,
             Arity = new ArgumentArity(0, 999)
         };
 
-        public static readonly CommandDefinition Command = new CommandDefinition("create", SymbolStrings.Command_Instantiate_Description)
+        public static readonly CommandDefinition Command = new CommandDefinition("create", CommandDefinitionStrings.Command_Instantiate_Description)
         {
             Arguments =
             {
@@ -253,20 +252,20 @@ internal class CommandDefinition(string name, string description) : Command(name
         // Option disabled until https://github.com/dotnet/templating/issues/6811 is solved
         //internal static Option<string> VersionOption = new("-version", "--version")
         //{
-        //    Description = LocalizableStrings.DetailsCommand_Option_Version,
+        //    Description = CommandDefinitionStrings.DetailsCommand_Option_Version,
         //    Arity = new ArgumentArity(1, 1)
         //};
 
         public static readonly Argument<string> NameArgument = new("package-identifier")
         {
-            Description = LocalizableStrings.DetailsCommand_Argument_PackageIdentifier,
+            Description = CommandDefinitionStrings.DetailsCommand_Argument_PackageIdentifier,
             Arity = new ArgumentArity(1, 1)
         };
 
         public static readonly Option<bool> InteractiveOption = SharedOptions.InteractiveOption;
         public static readonly Option<string[]> AddSourceOption = SharedOptions.AddSourceOption;
 
-        public static readonly CommandDefinition Command = new("details", SymbolStrings.Command_Details_Description)
+        public static readonly CommandDefinition Command = new("details", CommandDefinitionStrings.Command_Details_Description)
         {
             Arguments =
             {
@@ -284,12 +283,12 @@ internal class CommandDefinition(string name, string description) : Command(name
     {
         public static readonly Argument<string[]> NameArgument = new("package")
         {
-            Description = SymbolStrings.Command_Install_Argument_Package,
+            Description = CommandDefinitionStrings.Command_Install_Argument_Package,
             Arity = new ArgumentArity(1, 99)
         };
 
         public static readonly Option<bool> ForceOption =
-            SharedOptionsFactory.CreateForceOption().WithDescription(SymbolStrings.Option_Install_Force);
+            SharedOptionsFactory.CreateForceOption().WithDescription(CommandDefinitionStrings.Option_Install_Force);
 
         public static readonly Install Command = new("install", isLegacy: false);
 
@@ -302,7 +301,7 @@ internal class CommandDefinition(string name, string description) : Command(name
         public Option<string[]> AddSourceOption { get; }
 
         public Install(string name, bool isLegacy)
-            : base(name, SymbolStrings.Command_Install_Description)
+            : base(name, CommandDefinitionStrings.Command_Install_Description)
         {
             Hidden = isLegacy;
 
@@ -322,7 +321,7 @@ internal class CommandDefinition(string name, string description) : Command(name
     {
         public static readonly Argument<string[]> NameArgument = new("package")
         {
-            Description = SymbolStrings.Command_Uninstall_Argument_Package,
+            Description = CommandDefinitionStrings.Command_Uninstall_Argument_Package,
             Arity = new ArgumentArity(0, 99)
         };
 
@@ -334,7 +333,7 @@ internal class CommandDefinition(string name, string description) : Command(name
         };
 
         public Uninstall(string name, bool isLegacy)
-            : base(name, SymbolStrings.Command_Uninstall_Description)
+            : base(name, CommandDefinitionStrings.Command_Uninstall_Description)
         {
             Hidden = isLegacy;
             Arguments.Add(NameArgument);
@@ -355,13 +354,13 @@ internal class CommandDefinition(string name, string description) : Command(name
 
         public static readonly Argument<string> NameArgument = new("template-name")
         {
-            Description = SymbolStrings.Command_List_Argument_Name,
+            Description = CommandDefinitionStrings.Command_List_Argument_Name,
             Arity = new ArgumentArity(0, 1)
         };
 
         public static readonly Option<bool> IgnoreConstraintsOption = new("--ignore-constraints")
         {
-            Description = SymbolStrings.ListCommand_Option_IgnoreConstraints,
+            Description = CommandDefinitionStrings.ListCommand_Option_IgnoreConstraints,
             Arity = ArgumentArity.Zero
         };
 
@@ -378,7 +377,7 @@ internal class CommandDefinition(string name, string description) : Command(name
         public IEnumerable<Option> FilterOptions { get; }
 
         public List(string name, bool isLegacy)
-            : base(name, SymbolStrings.Command_List_Description)
+            : base(name, CommandDefinitionStrings.Command_List_Description)
         {
             Hidden = isLegacy;
             ColumnsAllOption = isLegacy ? New.ColumnsAllOption : SharedOptions.ColumnsAllOption;
@@ -416,13 +415,13 @@ internal class CommandDefinition(string name, string description) : Command(name
 
         public static readonly Argument<string> NameArgument = new("template-name")
         {
-            Description = SymbolStrings.Command_Search_Argument_Name,
+            Description = CommandDefinitionStrings.Command_Search_Argument_Name,
             Arity = new ArgumentArity(0, 1)
         };
 
         public static readonly Option<bool> IgnoreConstraintsOption = new("--ignore-constraints")
         {
-            Description = SymbolStrings.ListCommand_Option_IgnoreConstraints,
+            Description = CommandDefinitionStrings.ListCommand_Option_IgnoreConstraints,
             Arity = ArgumentArity.Zero
         };
 
@@ -435,7 +434,7 @@ internal class CommandDefinition(string name, string description) : Command(name
         public IEnumerable<Option> FilterOptions { get; }
 
         public Search(string name, bool isLegacy)
-            : base(name, SymbolStrings.Command_Search_Description)
+            : base(name, CommandDefinitionStrings.Command_Search_Description)
         {
             Hidden = isLegacy;
             ColumnsAllOption = isLegacy ? New.ColumnsAllOption : SharedOptions.ColumnsAllOption;
@@ -460,7 +459,7 @@ internal class CommandDefinition(string name, string description) : Command(name
     {
         public static readonly Option<bool> CheckOnlyOption = new("--check-only", "--dry-run")
         {
-            Description = SymbolStrings.Command_Update_Option_CheckOnly,
+            Description = CommandDefinitionStrings.Command_Update_Option_CheckOnly,
             Arity = ArgumentArity.Zero
         };
 
@@ -478,7 +477,7 @@ internal class CommandDefinition(string name, string description) : Command(name
             this.AddNoLegacyUsageValidators(isLegacy ? [InteractiveOption, AddSourceOption] : []);
         }
 
-        public static readonly Update Command = new("update", SymbolStrings.Command_Update_Description, isLegacy: false)
+        public static readonly Update Command = new("update", CommandDefinitionStrings.Command_Update_Description, isLegacy: false)
         {
             Options =
             {
@@ -486,7 +485,7 @@ internal class CommandDefinition(string name, string description) : Command(name
             }
         };
 
-        public static readonly Update LegacyApplyCommand = new("--update-apply", SymbolStrings.Command_Update_Description, isLegacy: true);
-        public static readonly Update LegacyCheckCommand = new("--update-check", SymbolStrings.Command_Legacy_Update_Check_Description, isLegacy: true);
+        public static readonly Update LegacyApplyCommand = new("--update-apply", CommandDefinitionStrings.Command_Update_Description, isLegacy: true);
+        public static readonly Update LegacyCheckCommand = new("--update-check", CommandDefinitionStrings.Command_Legacy_Update_Check_Description, isLegacy: true);
     }
 }
