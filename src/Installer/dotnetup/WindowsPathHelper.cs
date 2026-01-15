@@ -163,10 +163,12 @@ internal sealed class WindowsPathHelper : IDisposable
 
     /// <summary>
     /// Splits a PATH string into entries.
+    /// Uses EnvironmentProvider's SplitPaths for proper processing.
     /// </summary>
     public static List<string> SplitPath(string path)
     {
-        return path.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+        var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider();
+        return envProvider.SplitPaths(path).ToList();
     }
 
     /// <summary>

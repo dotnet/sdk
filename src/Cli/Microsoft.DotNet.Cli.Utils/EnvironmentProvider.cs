@@ -41,18 +41,27 @@ public class EnvironmentProvider(
             {
                 var searchPaths = new List<string> { AppContext.BaseDirectory };
 
-                searchPaths.AddRange(Environment
-                    .GetEnvironmentVariable("PATH")?
-                    .Split(s_pathSeparator)
-                    .Select(p => p.Trim(s_quote))
-                    .Where(p => !string.IsNullOrWhiteSpace(p))
-                    .Select(p => ExpandTildeSlash(p)) ?? []);
+                var pathVariable = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+                searchPaths.AddRange(SplitPaths(pathVariable));
 
                 _searchPaths = searchPaths;
             }
 
             return _searchPaths;
         }
+    }
+
+    /// <summary>
+    /// Splits a PATH string into individual entries and processes them.
+    /// Trims quotes, removes empty entries, and expands tilde-slash notation.
+    /// </summary>
+    public IEnumerable<string> SplitPaths(string pathString)
+    {
+        return pathString
+            .Split(s_pathSeparator)
+            .Select(p => p.Trim(s_quote))
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => ExpandTildeSlash(p));
     }
 
     private string ExpandTildeSlash(string path)
@@ -76,28 +85,6 @@ public class EnvironmentProvider(
         }
 
         var commandPath = SearchPaths.Join(
-            extensions,
-                p => true, s => true,
-                (p, s) => Path.Combine(p, commandName + s))
-            .FirstOrDefault(File.Exists);
-
-        return commandPath;
-    }
-
-    public string? GetCommandPath(string commandName, IEnumerable<string> searchPaths, params string[] extensions)
-    {
-        if (!extensions.Any())
-        {
-            extensions = [.. ExecutableExtensions];
-        }
-
-        // Process search paths like SearchPaths does
-        var processedSearchPaths = searchPaths
-            .Select(p => p.Trim(s_quote))
-            .Where(p => !string.IsNullOrWhiteSpace(p))
-            .Select(p => ExpandTildeSlash(p));
-
-        var commandPath = processedSearchPaths.Join(
             extensions,
                 p => true, s => true,
                 (p, s) => Path.Combine(p, commandName + s))

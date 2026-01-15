@@ -12,11 +12,11 @@ public interface IEnvironmentProvider
 
     string? GetCommandPath(string commandName, params string[] extensions);
 
-    string? GetCommandPath(string commandName, IEnumerable<string> searchPaths, params string[] extensions);
-
     string? GetCommandPathFromRootPath(string rootPath, string commandName, params string[] extensions);
 
     string? GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions);
+
+    IEnumerable<string> SplitPaths(string pathString);
 
     bool GetEnvironmentVariableAsBool(string name, bool defaultValue);
 
