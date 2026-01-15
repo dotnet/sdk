@@ -1418,9 +1418,9 @@ namespace Microsoft.NET.Publish.Tests
             var linkedPdbSize = new FileInfo(linkedPdb).Length;
             var publishPdbSize = new FileInfo(publishedPdb).Length;
 
-            if (targetFramework != "net10.0")
+            if (!Net10Plus.Any(tfm => (string)tfm[0] == targetFramework))
             {
-                // Check disabled for net10.0 due to https://github.com/dotnet/sdk/issues/48633
+                // Check disabled for net10.0+ due to https://github.com/dotnet/sdk/issues/48633
                 linkedPdbSize.Should().BeLessThanOrEqualTo(intermediatePdbSize);
             }
             publishPdbSize.Should().Be(linkedPdbSize);
@@ -1523,9 +1523,9 @@ namespace Microsoft.NET.Publish.Tests
             var linkedPdbSize = new FileInfo(linkedPdb).Length;
             var publishPdbSize = new FileInfo(publishedPdb).Length;
 
-            if (targetFramework != "net10.0")
+            if (!Net10Plus.Any(tfm => (string)tfm[0] == targetFramework))
             {
-                // Check disabled for net10.0 due to https://github.com/dotnet/sdk/issues/48633
+                // Check disabled for net10.0+ due to https://github.com/dotnet/sdk/issues/48633
                 linkedPdbSize.Should().BeLessThanOrEqualTo(intermediatePdbSize);
             }
             publishPdbSize.Should().Be(linkedPdbSize);
