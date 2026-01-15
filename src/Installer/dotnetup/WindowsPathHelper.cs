@@ -297,7 +297,7 @@ internal sealed class WindowsPathHelper : IDisposable
 
         // Check if the command already resolves to the pathToAdd using EnvironmentProvider
         var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider(searchPathsOverride: expandedEntries);
-        var resolvedCommandPath = envProvider.GetCommandPath(commandName, expandedEntries);
+        var resolvedCommandPath = envProvider.GetCommandPath(commandName);
 
         if (resolvedCommandPath != null)
         {
@@ -326,7 +326,8 @@ internal sealed class WindowsPathHelper : IDisposable
 
         if (existingIndex >= 0)
         {
-            // Path already exists - move it to the front
+            // Path already exists - only move it to the front if the command doesn't already resolve to it
+            // (we know it doesn't resolve to pathToAdd from the check above, so move it to front)
             string unexpandedEntry = unexpandedEntries[existingIndex];
             unexpandedEntries.RemoveAt(existingIndex);
             unexpandedEntries.Insert(0, unexpandedEntry);
