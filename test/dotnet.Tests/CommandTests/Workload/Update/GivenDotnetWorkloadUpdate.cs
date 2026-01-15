@@ -67,13 +67,15 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             IEnumerable<WorkloadManifestInfo> installedManifests = new List<WorkloadManifestInfo>() {
                                                 new WorkloadManifestInfo("microsoft.net.sdk.android", "34.0.0-rc.1", "androidDirectory", "8.0.100-rc.1"),
                                                 new WorkloadManifestInfo("microsoft.net.sdk.ios", "16.4.8825", "iosDirectory", "8.0.100-rc.1") };
+            var manifestProvider = new MockManifestProvider(Array.Empty<string>()) { SdkFeatureBand = new SdkFeatureBand("8.0.100-rc.1") };
 
             var workloadResolver = new MockWorkloadResolver(
                                         new string[] { "maui-android", "maui-ios" }.Select(s => new WorkloadInfo(new WorkloadId(s), null)),
                                         installedManifests,
                                         id => new List<WorkloadPackId>() { new WorkloadPackId(id.ToString() + "-pack") },
                                         id => id.ToString().Contains("android") ? mauiAndroidPack :
-                                              id.ToString().Contains("ios") ? mauiIosPack : null);
+                                              id.ToString().Contains("ios") ? mauiIosPack : null,
+                                        manifestProvider: manifestProvider);
 
             IWorkloadResolverFactory mockResolverFactory = new MockWorkloadResolverFactory(
                     Path.Combine(Path.GetTempPath(), "dotnetTestPath"),
@@ -304,7 +306,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 }
 ";
             var nugetPackageDownloader = new MockNuGetPackageDownloader();
-            var workloadResolver = new MockWorkloadResolver([new WorkloadInfo(new WorkloadId("android"), string.Empty)], getPacks: id => [], installedManifests: []);
+            var manifestProvider = new MockManifestProvider(Array.Empty<string>()) { SdkFeatureBand = new SdkFeatureBand(sdkVersion) };
+            var workloadResolver = new MockWorkloadResolver([new WorkloadInfo(new WorkloadId("android"), string.Empty)], getPacks: id => [], installedManifests: [], manifestProvider: manifestProvider);
             var workloadInstaller = new MockPackWorkloadInstaller(
                 dotnetDir,
                 installedWorkloads: [new WorkloadId("android")],
@@ -375,13 +378,16 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             WorkloadManifest iosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.iOS");
             WorkloadManifest macosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.macOS");
             WorkloadManifest mauiManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Maui");
+            var manifestProvider = new MockManifestProvider(Array.Empty<string>()) { SdkFeatureBand = new SdkFeatureBand("9.0.100") };
+
             MockWorkloadResolver resolver = new([new WorkloadInfo(new WorkloadId("ios"), ""), new WorkloadInfo(new WorkloadId("macos"), ""), new WorkloadInfo(new WorkloadId("maui"), "")],
                 installedManifests: [
                     new WorkloadManifestInfo("Microsoft.NET.Sdk.iOS", "17.4.3", Path.Combine(testDirectory, "iosManifest"), "9.0.100"),
                     new WorkloadManifestInfo("Microsoft.NET.Sdk.macOS", "14.4.3", Path.Combine(testDirectory, "macosManifest"), "9.0.100"),
                     new WorkloadManifestInfo("Microsoft.NET.Sdk.Maui", "14.4.3", Path.Combine(testDirectory, "mauiManifest"), "9.0.100")
                     ],
-                getManifest: id => id.ToString().Equals("ios") ? iosManifest : id.ToString().Equals("macos") ? macosManifest : mauiManifest);
+                getManifest: id => id.ToString().Equals("ios") ? iosManifest : id.ToString().Equals("macos") ? macosManifest : mauiManifest,
+                manifestProvider: manifestProvider);
             MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.103.0"), new NuGetVersion("9.102.0"), new NuGetVersion("9.101.0"), new NuGetVersion("9.100.0")]);
             WorkloadUpdateCommand command = new(
                 parseResult,
