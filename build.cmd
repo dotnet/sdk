@@ -10,5 +10,6 @@ if %errorlevel%==0 (
     set skipFlags="/p:SkipUsingCrossgen=true /p:SkipBuildingInstallers=true"
 )
 set DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=true
+set DOTNET_CLI_USE_MSBUILD_SERVER=1
 powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -command "& """%~dp0eng\common\build.ps1""" -restore -build -msbuildEngine dotnet %skipFlags% /tlp:summary %*"
 exit /b %ErrorLevel%
