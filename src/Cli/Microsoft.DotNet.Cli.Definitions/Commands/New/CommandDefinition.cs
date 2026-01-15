@@ -3,252 +3,277 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
 
-namespace Microsoft.TemplateEngine.Cli;
-
-public class CommandDefinition(string name, string description) : Command(name, description)
+namespace Microsoft.TemplateEngine.Cli
 {
-    public static class New
+    public sealed class NewCommandDefinition : Command
     {
-        public static readonly Option<string?> DebugCustomSettingsLocationOption = new("--debug:custom-hive")
+        public new const string Name = "new";
+        public const VerbosityOptions DefaultVerbosity = VerbosityOptions.normal;
+
+        private const string Link = "https://aka.ms/dotnet-new";
+
+        public readonly Option<bool> DisableSdkTemplatesOption = new Option<bool>("--debug:disable-sdk-templates")
+        {
+            DefaultValueFactory = static _ => false,
+            Description = CommandDefinitionStrings.DisableSdkTemplates_OptionDescription,
+            Recursive = true
+        }.Hide();
+
+        public readonly Option<bool> DisableProjectContextEvaluationOption = new Option<bool>(
+            "--debug:disable-project-context")
+        {
+            DefaultValueFactory = static _ => false,
+            Description = CommandDefinitionStrings.DisableProjectContextEval_OptionDescription,
+            Recursive = true
+        }.Hide();
+
+        public readonly Option<VerbosityOptions> VerbosityOption = new("--verbosity", "-v")
+        {
+            DefaultValueFactory = _ => DefaultVerbosity,
+            Description = CommandDefinitionStrings.Verbosity_OptionDescription,
+            HelpName = CommandDefinitionStrings.LevelArgumentName,
+            Recursive = true
+        };
+
+        public readonly Option<bool> DiagnosticOption =
+            CommonOptions
+                .CreateDiagnosticsOption(recursive: true)
+                .WithDescription(CommandDefinitionStrings.Diagnostics_OptionDescription);
+
+        public readonly Option<string?> DebugCustomSettingsLocationOption = new("--debug:custom-hive")
         {
             Description = CommandDefinitionStrings.Option_Debug_CustomSettings,
             Hidden = true,
             Recursive = true
         };
 
-        public static readonly Option<bool> DebugVirtualizeSettingsOption = new("--debug:ephemeral-hive", "--debug:virtual-hive")
+        public readonly Option<bool> DebugVirtualizeSettingsOption = new("--debug:ephemeral-hive", "--debug:virtual-hive")
         {
             Description = CommandDefinitionStrings.Option_Debug_VirtualSettings,
             Hidden = true,
             Recursive = true
         };
 
-        public static readonly Option<bool> DebugAttachOption = new("--debug:attach")
+        public readonly Option<bool> DebugAttachOption = new("--debug:attach")
         {
             Description = CommandDefinitionStrings.Option_Debug_Attach,
             Hidden = true,
             Recursive = true
         };
 
-        public static readonly Option<bool> DebugReinitOption = new("--debug:reinit")
+        public readonly Option<bool> DebugReinitOption = new("--debug:reinit")
         {
             Description = CommandDefinitionStrings.Option_Debug_Reinit,
             Hidden = true,
             Recursive = true
         };
 
-        public static readonly Option<bool> DebugRebuildCacheOption = new("--debug:rebuild-cache", "--debug:rebuildcache")
-        {
-            Description = CommandDefinitionStrings.Option_Debug_RebuildCache,
-            Hidden = true,
-            Recursive = true
-        };
+        public readonly Option<bool> DebugRebuildCacheOption = CreateDebugRebuildCacheOption();
 
-        public static readonly Option<bool> DebugShowConfigOption = new("--debug:show-config", "--debug:showconfig")
+        public readonly Option<bool> DebugShowConfigOption = new("--debug:show-config", "--debug:showconfig")
         {
             Description = CommandDefinitionStrings.Option_Debug_ShowConfig,
             Hidden = true,
             Recursive = true
         };
 
-        public static readonly Argument<string> ShortNameArgument = new("template-short-name")
-        {
-            Description = CommandDefinitionStrings.Command_Instantiate_Argument_ShortName,
-            Arity = new ArgumentArity(0, 1),
-            Hidden = true
-        };
+        public const string ShortNameArgumentName = "template-short-name";
 
-        public static readonly Argument<string[]> RemainingArguments = new("template-args")
+        public readonly Argument<string> ShortNameArgument = CreateShortNameArgument();
+
+        public const string RemainingArgumentsName = "template-args";
+
+        public readonly Argument<string[]> RemainingArguments = new(RemainingArgumentsName)
         {
             Description = CommandDefinitionStrings.Command_Instantiate_Argument_TemplateOptions,
             Arity = new ArgumentArity(0, 999),
             Hidden = true
         };
 
-        public static readonly Option<bool> InteractiveOption = SharedOptionsFactory.CreateInteractiveOption().AsHidden();
+        public readonly InstantiateOptions InstantiateOptions = new();
 
-        public static readonly Option<string[]> AddSourceOption = SharedOptionsFactory.CreateAddSourceOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
+        public readonly LegacyOptions LegacyOptions = new();
 
-        public static readonly Option<bool> ColumnsAllOption = SharedOptionsFactory.CreateColumnsAllOption().AsHidden();
+        public readonly InstantiateCommandDefinition InstantiateCommand = new();
+        public readonly InstallCommandDefinition InstallCommand;
+        public readonly UninstallCommandDefinition UninstallCommand = new(isLegacy: false);
+        public readonly UpdateCommandDefinition UpdateCommand;
+        public readonly SearchCommandDefinition SearchCommand;
+        public readonly ListCommandDefinition ListCommand;
+        public readonly AliasCommandDefinition AliasCommand = new();
+        public readonly DetailsCommandDefinition DetailsCommand = new();
+        public readonly InstallCommandDefinition LegacyInstallCommand;
+        public readonly UninstallCommandDefinition LegacyUninstallCommand = new(isLegacy: true);
+        public readonly LegacyUpdateApplyCommandDefinition LegacyUpdateApplyCommand;
+        public readonly LegacyUpdateCheckCommandDefinition LegacyUpdateCheckCommand;
+        public readonly SearchCommandDefinition LegacySearchCommand;
+        public readonly ListCommandDefinition LegacyListCommand;
+        public readonly AliasAddCommandDefinition LegacyAddAliasCommand = new(isLegacy: true);
+        public readonly AliasShowCommandDefinition LegacyShowAliasCommand = new(isLegacy: true);
 
-        public static readonly Option<string[]> ColumnsOption = SharedOptionsFactory.CreateColumnsOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
-
-        public static IReadOnlyList<Option> PassByOptions { get; } =
-        [
-            SharedOptions.ForceOption,
-            SharedOptions.NameOption,
-            SharedOptions.DryRunOption,
-            SharedOptions.NoUpdateCheckOption
-        ];
-
-        public static readonly IEnumerable<Option> LegacyOptions;
-        internal static readonly IEnumerable<Option> LegacyFilterOptions;
-
-        private static readonly Lazy<CommandDefinition> s_lazyCommand = new(Create);
-
-        static New()
+        public NewCommandDefinition()
+            : base(Name, CommandDefinitionStrings.Command_New_Description)
         {
-            LegacyFilterOptions =
-            [
-                SharedOptionsFactory.CreateAuthorOption().AsHidden(),
-                SharedOptionsFactory.CreateBaselineOption().AsHidden(),
-                SharedOptionsFactory.CreateLanguageOption().AsHidden(),
-                SharedOptionsFactory.CreateTypeOption().AsHidden(),
-                SharedOptionsFactory.CreateTagOption().AsHidden(),
-                SharedOptionsFactory.CreatePackageOption().AsHidden()
-            ];
+            this.DocsLink = Link;
+            TreatUnmatchedTokensAsErrors = true;
 
-            LegacyOptions =
-            [
-                InteractiveOption,
-                AddSourceOption,
-                ColumnsAllOption,
-                ColumnsOption,
-                .. LegacyFilterOptions
-            ];
+            Options.Add(DebugCustomSettingsLocationOption);
+            Options.Add(DebugVirtualizeSettingsOption);
+            Options.Add(DebugAttachOption);
+            Options.Add(DebugReinitOption);
+            Options.Add(DebugRebuildCacheOption);
+            Options.Add(DebugShowConfigOption);
+
+            Options.AddRange(InstantiateOptions.AllOptions);
+            Options.AddRange(LegacyOptions.AllOptions);
+
+            Options.Add(DisableSdkTemplatesOption);
+            Options.Add(DisableProjectContextEvaluationOption);
+            Options.Add(VerbosityOption);
+            Options.Add(DiagnosticOption);
+
+            Arguments.Add(ShortNameArgument);
+            Arguments.Add(RemainingArguments);
+
+            InstallCommand = new(this, isLegacy: false);
+            UpdateCommand = new(this);
+            SearchCommand = new(this, isLegacy: false);
+            ListCommand = new(this, isLegacy: false);
+
+            LegacyUpdateApplyCommand = new(this);
+            LegacyUpdateCheckCommand = new(this);
+            LegacyInstallCommand = new(this, isLegacy: true);
+            LegacyListCommand = new(this, isLegacy: true);
+            LegacySearchCommand = new(this, isLegacy: true);
+
+            Subcommands.Add(InstantiateCommand);
+            Subcommands.Add(InstallCommand);
+            Subcommands.Add(UninstallCommand);
+            Subcommands.Add(UpdateCommand);
+            Subcommands.Add(SearchCommand);
+            Subcommands.Add(ListCommand);
+            Subcommands.Add(AliasCommand);
+            Subcommands.Add(DetailsCommand);
+            Subcommands.Add(LegacyInstallCommand);
+            Subcommands.Add(LegacyUninstallCommand);
+            Subcommands.Add(LegacyUpdateApplyCommand);
+            Subcommands.Add(LegacyUpdateCheckCommand);
+            Subcommands.Add(LegacySearchCommand);
+            Subcommands.Add(LegacyListCommand);
+            Subcommands.Add(LegacyAddAliasCommand);
+            Subcommands.Add(LegacyShowAliasCommand);
         }
 
-        public static CommandDefinition Command => s_lazyCommand.Value;
-
-        private static CommandDefinition Create()
+        public static Option<bool> CreateDebugRebuildCacheOption() => new("--debug:rebuild-cache", "--debug:rebuildcache")
         {
-            var command = new CommandDefinition("new", CommandDefinitionStrings.Command_New_Description)
-            {
-                TreatUnmatchedTokensAsErrors = true,
-                Options =
-                {
-                    DebugCustomSettingsLocationOption,
-                    DebugVirtualizeSettingsOption,
-                    DebugAttachOption,
-                    DebugReinitOption,
-                    DebugRebuildCacheOption,
-                    DebugShowConfigOption,
-
-                    SharedOptions.OutputOption,
-                    SharedOptions.NameOption,
-                    SharedOptions.DryRunOption,
-                    SharedOptions.ForceOption,
-                    SharedOptions.NoUpdateCheckOption,
-                    SharedOptions.ProjectPathOption,
-                },
-                Arguments =
-                {
-                    ShortNameArgument,
-                    RemainingArguments,
-                },
-                Subcommands =
-                {
-                    Instantiate.Command,
-                    Install.Command,
-                    Uninstall.Command,
-                    Update.Command,
-                    Search.Command,
-                    List.Command,
-                    Alias.Command,
-                    Details.Command,
-
-                    Install.LegacyCommand,
-                    Uninstall.LegacyCommand,
-                    Update.LegacyCheckCommand,
-                    Update.LegacyApplyCommand,
-                    Search.LegacyCommand,
-                    List.LegacyCommand,
-                    Alias.Add.LegacyCommand,
-                    Alias.Show.LegacyCommand,
-                }
-            };
-
-            command.Options.AddRange(LegacyOptions);
-            return command;
-        }
-    }
-
-    public static class Alias
-    {
-        public static readonly CommandDefinition Command = new("alias", CommandDefinitionStrings.Command_Alias_Description)
-        {
+            Description = CommandDefinitionStrings.Option_Debug_RebuildCache,
             Hidden = true,
-            Subcommands =
-            {
-                Add.Command,
-                Show.Command,
-            }
+            Recursive = true
         };
 
-        public static class Add
-        {
-            public static readonly CommandDefinition Command = new("add", CommandDefinitionStrings.Command_AliasAdd_Description)
-            {
-                Hidden = true,
-            };
-
-            public static readonly CommandDefinition LegacyCommand = new("--alias", CommandDefinitionStrings.Command_AliasAdd_Description)
-            {
-                Hidden = true,
-                Aliases = { "-a" }
-            };
-        }
-
-        public static class Show
-        {
-            public static readonly CommandDefinition Command = new("show", CommandDefinitionStrings.Command_AliasShow_Description)
-            {
-                Hidden = true,
-            };
-
-            public static readonly CommandDefinition LegacyCommand = new("--show-alias", CommandDefinitionStrings.Command_AliasShow_Description)
-            {
-                Hidden = true,
-            };
-        }
-    }
-
-    public static class Instantiate
-    {
-        public static readonly Argument<string> ShortNameArgument = new("template-short-name")
+        public static Argument<string> CreateShortNameArgument() => new(ShortNameArgumentName)
         {
             Description = CommandDefinitionStrings.Command_Instantiate_Argument_ShortName,
-            Arity = new ArgumentArity(0, 1)
+            Arity = new ArgumentArity(0, 1),
+            Hidden = true
         };
+    }
 
-        public static readonly Argument<string[]> RemainingArguments = new("template-args")
+    public abstract class AliasCommandDefinitionBase(string name, string description)
+        : Command(name, description)
+    {
+    }
+
+    public sealed class AliasCommandDefinition : AliasCommandDefinitionBase
+    {
+        public new const string Name = "alias";
+
+        public readonly AliasAddCommandDefinition AddCommand = new(isLegacy: false);
+        public readonly AliasShowCommandDefinition ShowCommand = new(isLegacy: false);
+
+        public AliasCommandDefinition()
+            : base(Name, CommandDefinitionStrings.Command_Alias_Description)
+        {
+            Hidden = true;
+            Subcommands.Add(AddCommand);
+            Subcommands.Add(ShowCommand);
+        }
+    }
+
+    public sealed class AliasAddCommandDefinition : AliasCommandDefinitionBase
+    {
+        public new const string Name = "add";
+        public const string LegacyName = "--alias";
+
+        public AliasAddCommandDefinition(bool isLegacy)
+            : base(isLegacy ? LegacyName : Name, CommandDefinitionStrings.Command_AliasAdd_Description)
+        {
+            Hidden = true;
+
+            if (isLegacy)
+            {
+                Aliases.Add("-a");
+            }
+        }
+    }
+
+    public sealed class AliasShowCommandDefinition : AliasCommandDefinitionBase
+    {
+        public new const string Name = "show";
+        public const string LegacyName = "--show-alias";
+
+        public AliasShowCommandDefinition(bool isLegacy)
+            : base(isLegacy ? LegacyName : Name, CommandDefinitionStrings.Command_AliasShow_Description)
+        {
+            Hidden = true;
+        }
+    }
+
+    public sealed class InstantiateCommandDefinition : Command
+    {
+        public new const string Name = "create";
+
+        public readonly Argument<string> ShortNameArgument = CreateShortNameArgument();
+
+        public readonly Argument<string[]> RemainingArguments = new("template-args")
         {
             Description = CommandDefinitionStrings.Command_Instantiate_Argument_TemplateOptions,
             Arity = new ArgumentArity(0, 999)
         };
 
-        public static readonly CommandDefinition Command = new CommandDefinition("create", CommandDefinitionStrings.Command_Instantiate_Description)
+        public readonly InstantiateOptions InstantiateOptions = new();
+
+        public InstantiateCommandDefinition()
+            : base(Name, CommandDefinitionStrings.Command_Instantiate_Description)
         {
-            Arguments =
+            Arguments.Add(ShortNameArgument);
+            Arguments.Add(RemainingArguments);
+
+            Options.AddRange(InstantiateOptions.AllOptions);
+
+            foreach (var option in InstantiateOptions.AllOptions)
             {
-                ShortNameArgument,
-                RemainingArguments
-            },
-            Options =
-            {
-                SharedOptions.OutputOption,
-                SharedOptions.NameOption,
-                SharedOptions.DryRunOption,
-                SharedOptions.ForceOption,
-                SharedOptions.NoUpdateCheckOption,
-                SharedOptions.ProjectPathOption,
-            },
-            Validators =
-            {
-                symbolResult => symbolResult.ValidateOptionUsage(SharedOptions.OutputOption),
-                symbolResult => symbolResult.ValidateOptionUsage(SharedOptions.NameOption),
-                symbolResult => symbolResult.ValidateOptionUsage(SharedOptions.DryRunOption),
-                symbolResult => symbolResult.ValidateOptionUsage(SharedOptions.ForceOption),
-                symbolResult => symbolResult.ValidateOptionUsage(SharedOptions.NoUpdateCheckOption),
-                symbolResult => symbolResult.ValidateOptionUsage(SharedOptions.ProjectPathOption),
+                Validators.Add(symbolResult => symbolResult.ValidateOptionUsage(option.Name));
             }
-        }.AddNoLegacyUsageValidators();
+
+            this.AddNoLegacyUsageValidators();
+        }
+
+        public static Argument<string> CreateShortNameArgument() => new("template-short-name")
+        {
+            Description = CommandDefinitionStrings.Command_Instantiate_Argument_ShortName,
+            Arity = new ArgumentArity(0, 1)
+        };
     }
 
-    public static class Details
+    public sealed class DetailsCommandDefinition : Command
     {
+        public new const string Name = "details";
+
         // Option disabled until https://github.com/dotnet/templating/issues/6811 is solved
         //internal static Option<string> VersionOption = new("-version", "--version")
         //{
@@ -256,236 +281,298 @@ public class CommandDefinition(string name, string description) : Command(name, 
         //    Arity = new ArgumentArity(1, 1)
         //};
 
-        public static readonly Argument<string> NameArgument = new("package-identifier")
+        public readonly Argument<string> NameArgument = new("package-identifier")
         {
             Description = CommandDefinitionStrings.DetailsCommand_Argument_PackageIdentifier,
             Arity = new ArgumentArity(1, 1)
         };
 
-        public static readonly Option<bool> InteractiveOption = SharedOptions.InteractiveOption;
-        public static readonly Option<string[]> AddSourceOption = SharedOptions.AddSourceOption;
+        public readonly Option<bool> InteractiveOption = SharedOptionsFactory.CreateInteractiveOption();
+        public readonly Option<string[]> AddSourceOption = SharedOptionsFactory.CreateAddSourceOption();
 
-        public static readonly CommandDefinition Command = new("details", CommandDefinitionStrings.Command_Details_Description)
+        public DetailsCommandDefinition()
+            : base(Name, CommandDefinitionStrings.Command_Details_Description)
         {
-            Arguments =
-            {
-                NameArgument
-            },
-            Options =
-            {
-                InteractiveOption,
-                AddSourceOption,
-            }
-        };
+            Arguments.Add(NameArgument);
+            Options.Add(InteractiveOption);
+            Options.Add(AddSourceOption);
+        }
     }
 
-    public sealed class Install : CommandDefinition
+    public sealed class InstallCommandDefinition : Command
     {
-        public static readonly Argument<string[]> NameArgument = new("package")
-        {
-            Description = CommandDefinitionStrings.Command_Install_Argument_Package,
-            Arity = new ArgumentArity(1, 99)
-        };
+        public new const string Name = "install";
+        public const string LegacyName = "--install";
 
-        public static readonly Option<bool> ForceOption =
-            SharedOptionsFactory.CreateForceOption().WithDescription(CommandDefinitionStrings.Option_Install_Force);
+        public readonly Argument<string[]> NameArgument = CreateNameArgument();
 
-        public static readonly Install Command = new("install", isLegacy: false);
+        public readonly Option<bool> ForceOption = CreateForceOption();
+        public readonly Option<bool> InteractiveOption;
+        public readonly Option<string[]> AddSourceOption;
 
-        public static readonly Install LegacyCommand = new("--install", isLegacy: true)
-        {
-            Aliases = { "-i" },
-        };
-
-        public Option<bool> InteractiveOption { get; }
-        public Option<string[]> AddSourceOption { get; }
-
-        public Install(string name, bool isLegacy)
-            : base(name, CommandDefinitionStrings.Command_Install_Description)
+        public InstallCommandDefinition(NewCommandDefinition parent, bool isLegacy)
+            : base(isLegacy ? LegacyName : Name, CommandDefinitionStrings.Command_Install_Description)
         {
             Hidden = isLegacy;
 
-            InteractiveOption = isLegacy ? New.InteractiveOption : SharedOptions.InteractiveOption;
-            AddSourceOption = isLegacy ? New.AddSourceOption : SharedOptions.AddSourceOption;
+            if (isLegacy)
+            {
+                Aliases.Add("-i");
+
+                InteractiveOption = parent.LegacyOptions.InteractiveOption;
+                AddSourceOption = parent.LegacyOptions.AddSourceOption;
+            }
+            else
+            {
+                InteractiveOption = SharedOptionsFactory.CreateInteractiveOption();
+                AddSourceOption = SharedOptionsFactory.CreateAddSourceOption();
+            }
 
             Arguments.Add(NameArgument);
             Options.Add(InteractiveOption);
             Options.Add(AddSourceOption);
             Options.Add(ForceOption);
 
-            this.AddNoLegacyUsageValidators(isLegacy ? [InteractiveOption, AddSourceOption] : []);
+            this.AddNoLegacyUsageValidators(isLegacy ? [InteractiveOption.Name, AddSourceOption.Name] : []);
         }
+
+        public static Argument<string[]> CreateNameArgument() => new("package")
+        {
+            Description = CommandDefinitionStrings.Command_Install_Argument_Package,
+            Arity = new ArgumentArity(1, 99)
+        };
+
+        public static Option<bool> CreateForceOption()
+            => SharedOptionsFactory.CreateForceOption().WithDescription(CommandDefinitionStrings.Option_Install_Force);
     }
 
-    public sealed class Uninstall : CommandDefinition
+    public sealed class UninstallCommandDefinition : Command
     {
-        public static readonly Argument<string[]> NameArgument = new("package")
+        public new const string Name = "uninstall";
+        public const string LegacyName = "--uninstall";
+
+        public readonly Argument<string[]> NameArgument = CreateNameArgument();
+
+        public UninstallCommandDefinition(bool isLegacy)
+            : base(isLegacy ? LegacyName : Name, CommandDefinitionStrings.Command_Uninstall_Description)
+        {
+            Hidden = isLegacy;
+
+            if (isLegacy)
+            {
+                Aliases.Add("-u");
+            }
+
+            Arguments.Add(NameArgument);
+            this.AddNoLegacyUsageValidators();
+        }
+
+        public static Argument<string[]> CreateNameArgument() => new("package")
         {
             Description = CommandDefinitionStrings.Command_Uninstall_Argument_Package,
             Arity = new ArgumentArity(0, 99)
         };
-
-        public static readonly Uninstall Command = new("uninstall", isLegacy: false);
-
-        public static readonly Uninstall LegacyCommand = new("--uninstall", isLegacy: true)
-        {
-            Aliases = { "-u" },
-        };
-
-        public Uninstall(string name, bool isLegacy)
-            : base(name, CommandDefinitionStrings.Command_Uninstall_Description)
-        {
-            Hidden = isLegacy;
-            Arguments.Add(NameArgument);
-            this.AddNoLegacyUsageValidators();
-        }
     }
 
-    public sealed class List : CommandDefinition
+    public sealed class ListCommandDefinition : Command
     {
-        public static readonly IEnumerable<Option> SupportedFilterOptions =
-        [
-            SharedOptions.AuthorOption,
-            SharedOptions.BaselineOption,
-            SharedOptions.LanguageOption,
-            SharedOptions.TypeOption,
-            SharedOptions.TagOption,
-        ];
+        public new const string Name = "list";
+        public const string LegacyName = "--list";
 
-        public static readonly Argument<string> NameArgument = new("template-name")
+        public const bool HasSupportedPackageFilterOption = false;
+
+        public const string IgnoreConstraintsOptionName = "--ignore-constraints";
+
+        public readonly Argument<string> NameArgument = CreateNameArgument();
+
+        public readonly Option<bool> IgnoreConstraintsOption = new(IgnoreConstraintsOptionName)
+        {
+            Description = CommandDefinitionStrings.ListCommand_Option_IgnoreConstraints,
+            Arity = ArgumentArity.Zero
+        };
+
+        public readonly Option<FileInfo> OutputOption = SharedOptionsFactory.CreateOutputOption();
+        public readonly Option<FileInfo> ProjectOption = SharedOptionsFactory.CreateProjectOption();
+
+        public readonly Option<bool> ColumnsAllOption;
+        public readonly Option<string[]> ColumnsOption;
+        public readonly FilterOptions FilterOptions;
+
+        public ListCommandDefinition(NewCommandDefinition parent, bool isLegacy)
+            : base(isLegacy ? LegacyName : Name, CommandDefinitionStrings.Command_List_Description)
+        {
+            Hidden = isLegacy;
+
+            if (isLegacy)
+            {
+                Aliases.Add("-l");
+
+                ColumnsAllOption = parent.LegacyOptions.ColumnsAllOption;
+                ColumnsOption = parent.LegacyOptions.ColumnsOption;
+                FilterOptions = parent.LegacyOptions.FilterOptions;
+            }
+            else
+            {
+                ColumnsAllOption = SharedOptionsFactory.CreateColumnsAllOption();
+                ColumnsOption = SharedOptionsFactory.CreateColumnsOption();
+                FilterOptions = FilterOptions.CreateSupported(HasSupportedPackageFilterOption);
+            }
+
+            Arguments.Add(NameArgument);
+
+            Options.AddRange(FilterOptions.AllOptions);
+
+            Options.Add(IgnoreConstraintsOption);
+            Options.Add(OutputOption);
+            Options.Add(ProjectOption);
+            Options.Add(ColumnsAllOption);
+            Options.Add(ColumnsOption);
+
+            this.AddNoLegacyUsageValidators(isLegacy ? [.. FilterOptions.AllNames, ColumnsAllOption.Name, ColumnsOption.Name, NewCommandDefinition.ShortNameArgumentName] : []);
+
+            if (isLegacy)
+            {
+                this.AddShortNameArgumentValidator(NameArgument);
+            }
+        }
+
+        public static Argument<string> CreateNameArgument() => new("template-name")
         {
             Description = CommandDefinitionStrings.Command_List_Argument_Name,
             Arity = new ArgumentArity(0, 1)
         };
+    }
 
-        public static readonly Option<bool> IgnoreConstraintsOption = new("--ignore-constraints")
+    public sealed class SearchCommandDefinition : Command
+    {
+        public new const string Name = "search";
+        public const string LegacyName = "--search";
+
+        public const bool HasSupportedPackageFilterOption = true;
+
+        public readonly Argument<string> NameArgument = CreateNameArgument();
+
+        public readonly Option<bool> IgnoreConstraintsOption = new("--ignore-constraints")
         {
             Description = CommandDefinitionStrings.ListCommand_Option_IgnoreConstraints,
             Arity = ArgumentArity.Zero
         };
 
-        public static readonly List Command = new("list", isLegacy: false);
+        public readonly Option<bool> ColumnsAllOption;
+        public readonly Option<string[]> ColumnsOption;
+        public readonly FilterOptions FilterOptions;
 
-        public static readonly List LegacyCommand = new List("--list", isLegacy: true)
-        {
-            Aliases = { "-l" },
-        }.AddShortNameArgumentValidator(NameArgument);
-
-        public Option<bool> ColumnsAllOption { get; }
-        public Option<string[]> ColumnsOption { get; }
-
-        public IEnumerable<Option> FilterOptions { get; }
-
-        public List(string name, bool isLegacy)
-            : base(name, CommandDefinitionStrings.Command_List_Description)
+        public SearchCommandDefinition(NewCommandDefinition parent, bool isLegacy)
+            : base(isLegacy ? LegacyName : Name, CommandDefinitionStrings.Command_Search_Description)
         {
             Hidden = isLegacy;
-            ColumnsAllOption = isLegacy ? New.ColumnsAllOption : SharedOptions.ColumnsAllOption;
-            ColumnsOption = isLegacy ? New.ColumnsOption : SharedOptions.ColumnsOption;
-            FilterOptions = isLegacy ? New.LegacyFilterOptions : SupportedFilterOptions;
+
+            if (isLegacy)
+            {
+                ColumnsAllOption = parent.LegacyOptions.ColumnsAllOption;
+                ColumnsOption = parent.LegacyOptions.ColumnsOption;
+                FilterOptions = parent.LegacyOptions.FilterOptions;
+            }
+            else
+            {
+                ColumnsAllOption = SharedOptionsFactory.CreateColumnsAllOption();
+                ColumnsOption = SharedOptionsFactory.CreateColumnsOption();
+                FilterOptions = FilterOptions.CreateSupported(HasSupportedPackageFilterOption);
+            }
 
             Arguments.Add(NameArgument);
 
-            Options.AddRange(FilterOptions);
+            Options.AddRange(FilterOptions.AllOptions);
 
             Options.AddRange(
             [
-                IgnoreConstraintsOption,
-                SharedOptions.OutputOption,
-                SharedOptions.ProjectPathOption,
                 ColumnsAllOption,
                 ColumnsOption,
             ]);
 
-            this.AddNoLegacyUsageValidators(isLegacy ? [.. FilterOptions, ColumnsAllOption, ColumnsOption, New.ShortNameArgument] : []);
+            this.AddNoLegacyUsageValidators(isLegacy ? [.. FilterOptions.AllNames, ColumnsAllOption.Name, ColumnsOption.Name, NewCommandDefinition.ShortNameArgumentName] : []);
+
+            if (isLegacy)
+            {
+                this.AddShortNameArgumentValidator(NameArgument);
+            }
         }
-    }
 
-    public sealed class Search : CommandDefinition
-    {
-        public static readonly IEnumerable<Option> SupportedFilterOptions =
-        [
-            SharedOptions.AuthorOption,
-            SharedOptions.BaselineOption,
-            SharedOptions.LanguageOption,
-            SharedOptions.TypeOption,
-            SharedOptions.TagOption,
-            SharedOptions.PackageOption
-        ];
-
-        public static readonly Argument<string> NameArgument = new("template-name")
+        public static Argument<string> CreateNameArgument() => new("template-name")
         {
             Description = CommandDefinitionStrings.Command_Search_Argument_Name,
             Arity = new ArgumentArity(0, 1)
         };
-
-        public static readonly Option<bool> IgnoreConstraintsOption = new("--ignore-constraints")
-        {
-            Description = CommandDefinitionStrings.ListCommand_Option_IgnoreConstraints,
-            Arity = ArgumentArity.Zero
-        };
-
-        public static readonly Search Command = new("search", isLegacy: false);
-        public static readonly Search LegacyCommand = new Search("--search", isLegacy: true).AddShortNameArgumentValidator(NameArgument);
-
-        public Option<bool> ColumnsAllOption { get; }
-        public Option<string[]> ColumnsOption { get; }
-
-        public IEnumerable<Option> FilterOptions { get; }
-
-        public Search(string name, bool isLegacy)
-            : base(name, CommandDefinitionStrings.Command_Search_Description)
-        {
-            Hidden = isLegacy;
-            ColumnsAllOption = isLegacy ? New.ColumnsAllOption : SharedOptions.ColumnsAllOption;
-            ColumnsOption = isLegacy ? New.ColumnsOption : SharedOptions.ColumnsOption;
-            FilterOptions = isLegacy ? New.LegacyFilterOptions : SupportedFilterOptions;
-
-            Arguments.Add(NameArgument);
-
-            Options.AddRange(FilterOptions);
-
-            Options.AddRange(
-            [
-                ColumnsAllOption,
-                ColumnsOption,
-            ]);
-
-            this.AddNoLegacyUsageValidators(isLegacy ? [.. FilterOptions, ColumnsAllOption, ColumnsOption, New.ShortNameArgument] : []);
-        }
     }
 
-    public sealed class Update : CommandDefinition
+    public abstract class UpdateCommandDefinitionBase : Command
     {
-        public static readonly Option<bool> CheckOnlyOption = new("--check-only", "--dry-run")
-        {
-            Description = CommandDefinitionStrings.Command_Update_Option_CheckOnly,
-            Arity = ArgumentArity.Zero
-        };
+        public readonly Option<bool> InteractiveOption;
+        public readonly Option<string[]> AddSourceOption;
 
-        public Option<bool> InteractiveOption { get; }
-        public Option<string[]> AddSourceOption { get; }
-
-        public Update(string name, string description, bool isLegacy)
+        protected UpdateCommandDefinitionBase(NewCommandDefinition parent, string name, string description, bool isLegacy)
             : base(name, description)
         {
             Hidden = isLegacy;
 
-            Options.Add(InteractiveOption = isLegacy ? New.InteractiveOption : SharedOptions.InteractiveOption);
-            Options.Add(AddSourceOption = isLegacy ? New.AddSourceOption : SharedOptions.AddSourceOption);
+            if (isLegacy)
+            {
+                InteractiveOption = parent.LegacyOptions.InteractiveOption;
+                AddSourceOption = parent.LegacyOptions.AddSourceOption;
+            }
+            else
+            {
+                InteractiveOption = SharedOptionsFactory.CreateInteractiveOption();
+                AddSourceOption = SharedOptionsFactory.CreateAddSourceOption();
+            }
 
-            this.AddNoLegacyUsageValidators(isLegacy ? [InteractiveOption, AddSourceOption] : []);
+            Options.Add(InteractiveOption);
+            Options.Add(AddSourceOption);
+
+            this.AddNoLegacyUsageValidators(isLegacy ? [InteractiveOption.Name, AddSourceOption.Name] : []);
         }
 
-        public static readonly Update Command = new("update", CommandDefinitionStrings.Command_Update_Description, isLegacy: false)
-        {
-            Options =
-            {
-                CheckOnlyOption,
-            }
-        };
+        public abstract bool GetCheckOnlyValue(ParseResult result);
 
-        public static readonly Update LegacyApplyCommand = new("--update-apply", CommandDefinitionStrings.Command_Update_Description, isLegacy: true);
-        public static readonly Update LegacyCheckCommand = new("--update-check", CommandDefinitionStrings.Command_Legacy_Update_Check_Description, isLegacy: true);
+        public static Option<bool> CreateCheckOnlyOption()
+            => new("--check-only", "--dry-run")
+            {
+                Description = CommandDefinitionStrings.Command_Update_Option_CheckOnly,
+                Arity = ArgumentArity.Zero
+            };
+    }
+
+    public sealed class UpdateCommandDefinition : UpdateCommandDefinitionBase
+    {
+        public new const string Name = "update";
+
+        public readonly Option<bool> CheckOnlyOption = CreateCheckOnlyOption();
+
+        public UpdateCommandDefinition(NewCommandDefinition parent)
+            : base(parent, Name, CommandDefinitionStrings.Command_Update_Description, isLegacy: false)
+        {
+            Options.Add(CheckOnlyOption);
+        }
+
+        public override bool GetCheckOnlyValue(ParseResult result)
+            => result.GetValue(CheckOnlyOption);
+    }
+
+    public sealed class LegacyUpdateApplyCommandDefinition(NewCommandDefinition parent)
+        : UpdateCommandDefinitionBase(parent, Name, CommandDefinitionStrings.Command_Update_Description, isLegacy: true)
+    {
+        public new const string Name = "--update-apply";
+
+        public override bool GetCheckOnlyValue(ParseResult result)
+            => false;
+    }
+
+    public sealed class LegacyUpdateCheckCommandDefinition(NewCommandDefinition parent)
+        : UpdateCommandDefinitionBase(parent, Name, CommandDefinitionStrings.Command_Legacy_Update_Check_Description, isLegacy: true)
+    {
+        public new const string Name = "--update-check";
+
+        public override bool GetCheckOnlyValue(ParseResult result)
+            => true;
     }
 }

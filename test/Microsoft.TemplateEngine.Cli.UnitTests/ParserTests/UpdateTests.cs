@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse($"new update {optionName} my-custom-source");
-            UpdateCommandArgs args = new((UpdateCommand)parseResult.CommandResult.Command, parseResult);
+            UpdateCommandArgs args = new(parseResult);
 
             Assert.NotNull(args.AdditionalSources);
             Assert.Single(args.AdditionalSources);
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             ParseResult parseResult = myCommand.Parse(testCase);
-            UpdateCommandArgs args = new((UpdateCommand)parseResult.CommandResult.Command, parseResult);
+            UpdateCommandArgs args = new(parseResult);
 
             Assert.NotNull(args.AdditionalSources);
             Assert.Equal(2, args.AdditionalSources.Count);
@@ -63,12 +63,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse($"new update --interactive");
-            UpdateCommandArgs args = new((UpdateCommand)parseResult.CommandResult.Command, parseResult);
+            UpdateCommandArgs args = new(parseResult);
 
             Assert.True(args.Interactive);
 
             parseResult = myCommand.Parse($"new update");
-            args = new UpdateCommandArgs((UpdateCommand)parseResult.CommandResult.Command, parseResult);
+            args = new UpdateCommandArgs(parseResult);
 
             Assert.False(args.Interactive);
         }
@@ -82,12 +82,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse($"new update {optionAlias}");
-            UpdateCommandArgs args = new((UpdateCommand)parseResult.CommandResult.Command, parseResult);
+            UpdateCommandArgs args = new(parseResult);
 
             Assert.True(args.CheckOnly);
 
             parseResult = myCommand.Parse($"new update");
-            args = new UpdateCommandArgs((UpdateCommand)parseResult.CommandResult.Command, parseResult);
+            args = new UpdateCommandArgs(parseResult);
 
             Assert.False(args.CheckOnly);
         }
@@ -99,12 +99,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse($"new --update-check");
-            UpdateCommandArgs args = new((LegacyUpdateCheckCommand)parseResult.CommandResult.Command, parseResult);
+            UpdateCommandArgs args = new(parseResult);
 
             Assert.True(args.CheckOnly);
 
             parseResult = myCommand.Parse($"new --update-apply");
-            args = new UpdateCommandArgs((LegacyUpdateApplyCommand)parseResult.CommandResult.Command, parseResult);
+            args = new UpdateCommandArgs(parseResult);
 
             Assert.False(args.CheckOnly);
         }
@@ -119,7 +119,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse(testCase);
-            UpdateCommandArgs args = new((BaseUpdateCommand)parseResult.CommandResult.Command, parseResult);
+            UpdateCommandArgs args = new(parseResult);
 
             Assert.NotNull(args.AdditionalSources);
             Assert.Single(args.AdditionalSources);
@@ -135,7 +135,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
 
             ParseResult parseResult = myCommand.Parse(testCase);
-            UpdateCommandArgs args = new((BaseUpdateCommand)parseResult.CommandResult.Command, parseResult);
+            UpdateCommandArgs args = new(parseResult);
 
             Assert.True(args.Interactive);
         }
@@ -149,7 +149,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             ParseResult parseResult = myCommand.Parse(testCase);
-            UpdateCommandArgs args = new((BaseUpdateCommand)parseResult.CommandResult.Command, parseResult);
+            UpdateCommandArgs args = new(parseResult);
 
             Assert.NotNull(args.AdditionalSources);
             Assert.Equal(2, args.AdditionalSources.Count);

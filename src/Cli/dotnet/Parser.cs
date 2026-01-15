@@ -69,7 +69,7 @@ public static class Parser
         FsiCommandParser.GetCommand(),
         ListCommandParser.GetCommand(),
         MSBuildCommandParser.GetCommand(),
-        NewCommandParser.GetCommand(),
+        NewCommandParser.CreateCommand(),
         NuGetCommandParser.GetCommand(),
         PackCommandParser.GetCommand(),
         PackageCommandParser.GetCommand(),
@@ -401,7 +401,7 @@ public static class Parser
                         if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
                         {
                             // Name is immutable now, so we create a new Argument with the right name..
-                            listCommand.Arguments[i] = ListCommandDefinition.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
+                            listCommand.Arguments[i] = Commands.Hidden.List.ListCommandDefinition.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
                         }
                     }
                 }

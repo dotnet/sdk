@@ -1421,9 +1421,24 @@ If command is specified without the argument, it lists all the template packages
         <target state="new">Failed to load NuGet sources configured for the folder {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="Diagnostics_OptionDescription">
+        <source>Enables diagnostic output.</source>
+        <target state="new">Enables diagnostic output.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DisableBuildServersOptionDescription">
         <source>Force the command to ignore any persistent build servers.</source>
         <target state="new">Force the command to ignore any persistent build servers.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisableProjectContextEval_OptionDescription">
+        <source>Disables evaluating project context using MSBuild.</source>
+        <target state="new">Disables evaluating project context using MSBuild.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisableSdkTemplates_OptionDescription">
+        <source>If present, prevents templates bundled in the SDK from being presented.</source>
+        <target state="new">If present, prevents templates bundled in the SDK from being presented.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisplaysHelp">
@@ -3419,6 +3434,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="VerbosityOptionDescription">
         <source>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</source>
         <target state="new">Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Verbosity_OptionDescription">
+        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
+        <target state="new">Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</target>
         <note />
       </trans-unit>
       <trans-unit id="Version">

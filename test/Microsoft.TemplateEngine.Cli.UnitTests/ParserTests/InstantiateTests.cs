@@ -740,7 +740,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = rootCommand.Parse(command);
             InstantiateCommandArgs args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
             TemplateCommand templateCommand = new(
-                instantiateCommand: myCommand,
+                newOrInstantiateCommand: myCommand,
                 environmentSettings: settings,
                 templatePackageManager: packageManager,
                 templateGroup: templateGroup,

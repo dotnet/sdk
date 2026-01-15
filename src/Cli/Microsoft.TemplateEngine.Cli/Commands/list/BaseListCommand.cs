@@ -7,19 +7,19 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseListCommand : BaseCommand<ListCommandArgs>, IFilterableCommand, ITabularOutputCommand
+    internal abstract class BaseListCommand : BaseCommand<ListCommandArgs, ListCommandDefinition>, IFilterableCommand, ITabularOutputCommand
     {
-        private readonly CommandDefinition.List _definition;
+        private readonly ListCommandDefinition _definition;
 
         internal BaseListCommand(
             Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            CommandDefinition.List definition)
+            ListCommandDefinition definition)
             : base(hostBuilder, definition)
         {
             _definition = definition;
         }
 
-        public IEnumerable<Option> FilterOptions => _definition.FilterOptions;
+        public IEnumerable<Option> FilterOptions => _definition.FilterOptions.AllOptions;
 
         public Option<bool> ColumnsAllOption => _definition.ColumnsAllOption;
 

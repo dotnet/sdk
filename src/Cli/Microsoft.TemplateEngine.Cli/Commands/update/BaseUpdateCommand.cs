@@ -7,10 +7,16 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseUpdateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, CommandDefinition.Update definition)
-        : BaseCommand<UpdateCommandArgs>(hostBuilder, definition)
+    internal interface IUpdateCommand
     {
-        public CommandDefinition.Update Definition => definition;
+        UpdateCommandDefinitionBase Definition { get; }
+    }
+
+    internal abstract class BaseUpdateCommand<TDefinition>(Func<ParseResult, ITemplateEngineHost> hostBuilder, TDefinition definition)
+        : BaseCommand<UpdateCommandArgs, TDefinition>(hostBuilder, definition), IUpdateCommand
+        where TDefinition : UpdateCommandDefinitionBase
+    {
+        UpdateCommandDefinitionBase IUpdateCommand.Definition => Definition;
 
         protected override Task<NewCommandStatus> ExecuteAsync(
             UpdateCommandArgs args,
@@ -24,6 +30,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return templatePackageCoordinator.EnterUpdateFlowAsync(args, cancellationToken);
         }
 
-        protected override UpdateCommandArgs ParseContext(ParseResult parseResult) => new(this, parseResult);
+        protected override UpdateCommandArgs ParseContext(ParseResult parseResult) => new(parseResult);
     }
 }
