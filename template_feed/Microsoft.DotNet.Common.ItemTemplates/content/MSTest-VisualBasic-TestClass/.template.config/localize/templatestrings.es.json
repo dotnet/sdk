@@ -1,0 +1,16 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Clase de prueba de MSTest",
+  "description": "Cree una nueva clase de prueba de MSTest",
+  "symbols/Fixture/description": "Seleccione los tipos de accesorio que desea incluir en el proyecto.",
+  "symbols/Fixture/displayName": "Accesorio",
+  "symbols/Fixture/choices/None/description": "No hay métodos de accesorio",
+  "symbols/Fixture/choices/None/displayName": "Ninguno",
+  "symbols/Fixture/choices/AssemblyInitialize/description": "Método de accesorio AssemblyInitialize",
+  "symbols/Fixture/choices/AssemblyCleanup/description": "Método de accesorio AssemblyCleanup",
+  "symbols/Fixture/choices/ClassInitialize/description": "Método de accesorio ClassInitialize",
+  "symbols/Fixture/choices/ClassCleanup/description": "Método de accesorio ClassCleanup",
+  "symbols/Fixture/choices/TestInitialize/description": "Método de accesorio TestInitialize",
+  "symbols/Fixture/choices/TestCleanup/description": "Método de accesorio TestCleanup",
+  "postActions/openInEditor/description": "Abrir Test1.vb en el editor."
+}

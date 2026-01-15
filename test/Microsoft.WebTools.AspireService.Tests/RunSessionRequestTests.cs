@@ -3,9 +3,7 @@
 
 #nullable disable
 
-using Microsoft.WebTools.AspireServer.Models;
-
-namespace Microsoft.WebTools.AspireServer.UnitTests;
+namespace Aspire.Tools.Service.UnitTests;
 
 public class RunSessionRequestTests
 {
