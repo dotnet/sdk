@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         internal ListCommandArgs(BaseListCommand command, ParseResult parseResult) : base(command, parseResult)
         {
-            string? nameCriteria = parseResult.GetValue(CommandDefinition.List.NameArgument);
+            string? nameCriteria = parseResult.GetValue(ListCommandDefinition.NameArgument);
             if (!string.IsNullOrWhiteSpace(nameCriteria))
             {
                 ListNameCriteria = nameCriteria;
@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             // for legacy case new command argument is also accepted
             else if (command is LegacyListCommand)
             {
-                string? newCommandArgument = parseResult.GetValue(CommandDefinition.New.ShortNameArgument);
+                string? newCommandArgument = parseResult.GetValue(NewCommandDefinition.ShortNameArgument);
                 if (!string.IsNullOrWhiteSpace(newCommandArgument))
                 {
                     ListNameCriteria = newCommandArgument;
@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 Language = GetFilterValue(FilterOptionDefinition.LanguageFilter);
             }
-            IgnoreConstraints = parseResult.GetValue(CommandDefinition.List.IgnoreConstraintsOption);
+            IgnoreConstraints = parseResult.GetValue(ListCommandDefinition.IgnoreConstraintsOption);
         }
 
         public bool DisplayAllColumns { get; }

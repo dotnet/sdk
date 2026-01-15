@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal sealed class LegacyUpdateApplyCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-        : BaseUpdateCommand(hostBuilder, CommandDefinition.Update.LegacyApplyCommand)
+        : BaseUpdateCommand(hostBuilder, new LegacyUpdateApplyCommandDefinition())
     {
         protected override Task<NewCommandStatus> ExecuteAsync(UpdateCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken)
         {

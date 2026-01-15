@@ -17,29 +17,29 @@ using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, CommandDefinition definition)
+    internal abstract class BaseCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, Command definition)
         : Command(definition.Name, definition.Description)
     {
-        protected static readonly Dictionary<CommandDefinition, Func<Func<ParseResult, ITemplateEngineHost>, BaseCommand>> SubcommandFactories = new()
+        protected static readonly Dictionary<string, Func<Func<ParseResult, ITemplateEngineHost>, BaseCommand>> SubcommandFactories = new()
         {
-            { CommandDefinition.Alias.Command, hostBuilder => new AliasCommand(hostBuilder) },
-            { CommandDefinition.Alias.Add.Command, hostBuilder => new AliasAddCommand(hostBuilder) },
-            { CommandDefinition.Alias.Add.LegacyCommand, hostBuilder => new LegacyAliasAddCommand(hostBuilder) },
-            { CommandDefinition.Alias.Show.Command, hostBuilder => new AliasShowCommand(hostBuilder) },
-            { CommandDefinition.Alias.Show.LegacyCommand, hostBuilder => new LegacyAliasShowCommand(hostBuilder) },
-            { CommandDefinition.Instantiate.Command, hostBuilder => new InstantiateCommand(hostBuilder) },
-            { CommandDefinition.Details.Command, hostBuilder => new DetailsCommand(hostBuilder) },
-            { CommandDefinition.Install.Command, hostBuilder => new InstallCommand(hostBuilder) },
-            { CommandDefinition.Install.LegacyCommand, hostBuilder => new LegacyInstallCommand(hostBuilder) },
-            { CommandDefinition.Uninstall.Command, hostBuilder => new UninstallCommand(hostBuilder) },
-            { CommandDefinition.Uninstall.LegacyCommand, hostBuilder => new LegacyUninstallCommand(hostBuilder) },
-            { CommandDefinition.List.Command, hostBuilder => new ListCommand(hostBuilder) },
-            { CommandDefinition.List.LegacyCommand, hostBuilder => new LegacyListCommand(hostBuilder) },
-            { CommandDefinition.Search.Command, hostBuilder => new SearchCommand(hostBuilder) },
-            { CommandDefinition.Search.LegacyCommand, hostBuilder => new LegacySearchCommand(hostBuilder) },
-            { CommandDefinition.Update.Command, hostBuilder => new UpdateCommand(hostBuilder) },
-            { CommandDefinition.Update.LegacyApplyCommand, hostBuilder => new LegacyUpdateApplyCommand(hostBuilder) },
-            { CommandDefinition.Update.LegacyCheckCommand, hostBuilder => new LegacyUpdateCheckCommand(hostBuilder) },
+            { AliasCommandDefinition.Name, hostBuilder => new AliasCommand(hostBuilder) },
+            { AddCommandDefinition.Name, hostBuilder => new AliasAddCommand(hostBuilder) },
+            { AddCommandDefinition.LegacyName, hostBuilder => new LegacyAliasAddCommand(hostBuilder) },
+            { ShowCommandDefinition.Name, hostBuilder => new AliasShowCommand(hostBuilder) },
+            { ShowCommandDefinition.LegacyName, hostBuilder => new LegacyAliasShowCommand(hostBuilder) },
+            { InstantiateCommandDefinition.Name, hostBuilder => new InstantiateCommand(hostBuilder) },
+            { DetailsCommandDefinition.Name, hostBuilder => new DetailsCommand(hostBuilder) },
+            { InstallCommandDefinition.Name, hostBuilder => new InstallCommand(hostBuilder) },
+            { InstallCommandDefinition.LegacyName, hostBuilder => new LegacyInstallCommand(hostBuilder) },
+            { UninstallCommandDefinition.Name, hostBuilder => new UninstallCommand(hostBuilder) },
+            { UninstallCommandDefinition.LegacyName, hostBuilder => new LegacyUninstallCommand(hostBuilder) },
+            { ListCommandDefinition.Name, hostBuilder => new ListCommand(hostBuilder) },
+            { ListCommandDefinition.LegacyName, hostBuilder => new LegacyListCommand(hostBuilder) },
+            { SearchCommandDefinition.Name, hostBuilder => new SearchCommand(hostBuilder) },
+            { SearchCommandDefinition.LegacyName, hostBuilder => new LegacySearchCommand(hostBuilder) },
+            { UpdateCommandDefinition.Name, hostBuilder => new UpdateCommand(hostBuilder) },
+            { LegacyUpdateApplyCommandDefinition.Name, hostBuilder => new LegacyUpdateApplyCommand(hostBuilder) },
+            { LegacyUpdateCheckCommandDefinition.Name, hostBuilder => new LegacyUpdateCheckCommand(hostBuilder) },
         };
 
         protected internal virtual IEnumerable<CompletionItem> GetCompletions(CompletionContext context, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager)
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         internal BaseCommand(
             Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            CommandDefinition definition)
+            Command definition)
             : base(hostBuilder, definition)
         {
             Hidden = definition.Hidden;
@@ -77,9 +77,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Arguments.AddRange(definition.Arguments);
             Validators.AddRange(definition.Validators);
 
-            foreach (CommandDefinition subcommandDef in definition.Subcommands)
+            foreach (var subcommandDef in definition.Subcommands)
             {
-                Add(SubcommandFactories[subcommandDef](hostBuilder));
+                Add(SubcommandFactories[subcommandDef.Name](hostBuilder));
             }
 
             Action = new CommandAction(this);
@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
 
             Reporter.Output.WriteLine(LocalizableStrings.Commands_TemplateShortNameCommandConflict_Info, usedCommandAlias);
-            Reporter.Output.WriteCommand(Example.For<InstantiateCommand>(args.ParseResult).WithArgument(CommandDefinition.Instantiate.ShortNameArgument, usedCommandAlias));
+            Reporter.Output.WriteCommand(Example.For<InstantiateCommand>(args.ParseResult).WithArgument(InstantiateCommandDefinition.ShortNameArgument, usedCommandAlias));
             Reporter.Output.WriteLine();
         }
 

@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal sealed class InstallCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-        : BaseInstallCommand(hostBuilder, CommandDefinition.Install.Command)
+        : BaseInstallCommand(hostBuilder, new InstallCommandDefinition(isLegacy: false))
     {
         protected override async Task<NewCommandStatus> ExecuteAsync(
             InstallCommandArgs args,

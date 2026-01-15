@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     internal partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs>, ICustomHelp
     {
         internal InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, CommandDefinition.Instantiate.Command)
+            : base(hostBuilder, new InstantiateCommandDefinition())
         {
         }
 
@@ -436,8 +436,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 foreach (string possibleMatch in possibleTemplateMatches)
                 {
                     Example example = useInstantiateCommand
-                        ? Example.For<InstantiateCommand>(instantiateArgs.ParseResult).WithArgument(CommandDefinition.New.ShortNameArgument, possibleMatch)
-                        : Example.For<NewCommand>(instantiateArgs.ParseResult).WithArgument(CommandDefinition.New.ShortNameArgument, possibleMatch);
+                        ? Example.For<InstantiateCommand>(instantiateArgs.ParseResult).WithArgument(NewCommandDefinition.ShortNameArgument, possibleMatch)
+                        : Example.For<NewCommand>(instantiateArgs.ParseResult).WithArgument(NewCommandDefinition.ShortNameArgument, possibleMatch);
                     if (helpOption)
                     {
                         example = example.WithHelpOption();
@@ -482,7 +482,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                   Example
                       .For<NewCommand>(instantiateArgs.ParseResult)
                       .WithSubcommand<ListCommand>()
-                      .WithArgument(CommandDefinition.List.NameArgument, instantiateArgs.ShortName));
+                      .WithArgument(ListCommandDefinition.NameArgument, instantiateArgs.ShortName));
             }
             else
             {
@@ -503,7 +503,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     Example
                         .For<NewCommand>(instantiateArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithArgument(CommandDefinition.Search.NameArgument, instantiateArgs.ShortName));
+                        .WithArgument(SearchCommandDefinition.NameArgument, instantiateArgs.ShortName));
             }
         }
     }

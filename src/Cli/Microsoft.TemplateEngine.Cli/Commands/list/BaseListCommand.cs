@@ -9,11 +9,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal abstract class BaseListCommand : BaseCommand<ListCommandArgs>, IFilterableCommand, ITabularOutputCommand
     {
-        private readonly CommandDefinition.List _definition;
+        private readonly ListCommandDefinition _definition;
 
         internal BaseListCommand(
             Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            CommandDefinition.List definition)
+            ListCommandDefinition definition)
             : base(hostBuilder, definition)
         {
             _definition = definition;

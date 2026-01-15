@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Cli;
 internal static class CommandDefinitionExtensions
 {
     public static TDefinition AddShortNameArgumentValidator<TDefinition>(this TDefinition command, Argument nameArgument)
-        where TDefinition : CommandDefinition
+        where TDefinition : Command
     {
         command.Validators.Add(commandResult =>
         {
@@ -20,16 +20,16 @@ internal static class CommandDefinitionExtensions
                 return;
             }
 
-            ValidateArgumentUsage(commandResult, CommandDefinition.New.ShortNameArgument);
+            ValidateArgumentUsage(commandResult, NewCommandDefinition.ShortNameArgument);
         });
 
         return command;
     }
 
     public static TDefinition AddNoLegacyUsageValidators<TDefinition>(this TDefinition command, params IEnumerable<Symbol> except)
-        where TDefinition : CommandDefinition
+        where TDefinition : Command
     {
-        foreach (var option in CommandDefinition.New.LegacyOptions)
+        foreach (var option in NewCommandDefinition.LegacyOptions)
         {
             if (!except.Contains(option))
             {
@@ -37,7 +37,7 @@ internal static class CommandDefinitionExtensions
             }
         }
 
-        foreach (var argument in new Argument[] { CommandDefinition.New.ShortNameArgument, CommandDefinition.New.RemainingArguments })
+        foreach (var argument in new Argument[] { NewCommandDefinition.ShortNameArgument, NewCommandDefinition.RemainingArguments })
         {
             if (!except.Contains(argument))
             {
@@ -49,7 +49,7 @@ internal static class CommandDefinitionExtensions
     }
 
     public static TDefinition AddOptions<TDefinition>(this TDefinition command, IEnumerable<Option> options)
-        where TDefinition : CommandDefinition
+        where TDefinition : Command
     {
         command.Options.AddRange(options);
         return command;

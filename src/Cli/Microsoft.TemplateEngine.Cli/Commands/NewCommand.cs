@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     internal partial class NewCommand : BaseCommand<NewCommandArgs>, ICustomHelp
     {
         internal NewCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, CommandDefinition.New.Command)
+            : base(hostBuilder, new NewCommandDefinition())
         {
             this.DocsLink = "https://aka.ms/dotnet-new";
         }

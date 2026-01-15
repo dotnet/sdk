@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal class LegacyListCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-        : BaseListCommand(hostBuilder, CommandDefinition.List.LegacyCommand)
+        : BaseListCommand(hostBuilder, new ListCommandDefinition(isLegacy: true))
     {
         protected override Task<NewCommandStatus> ExecuteAsync(ListCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken)
         {

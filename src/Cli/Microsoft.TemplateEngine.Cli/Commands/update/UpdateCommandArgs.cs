@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             if (command is UpdateCommand)
             {
-                CheckOnly = parseResult.GetValue(CommandDefinition.Update.CheckOnlyOption);
+                CheckOnly = parseResult.GetValue(UpdateCommandDefinition.CheckOnlyOption);
             }
             else if (command is LegacyUpdateCheckCommand)
             {

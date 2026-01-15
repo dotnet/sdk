@@ -7,6 +7,6 @@ using Microsoft.TemplateEngine.Abstractions;
 namespace Microsoft.TemplateEngine.Cli.Commands;
 
 internal sealed class AliasAddCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-    : BaseAliasAddCommand(hostBuilder, CommandDefinition.Alias.Add.Command)
+    : BaseAliasAddCommand(hostBuilder, new AliasCommandDefinition())
 {
 }

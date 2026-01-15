@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         internal SearchCommandArgs(BaseSearchCommand command, ParseResult parseResult) : base(command, parseResult)
         {
-            string? nameCriteria = parseResult.GetValue(CommandDefinition.Search.NameArgument);
+            string? nameCriteria = parseResult.GetValue(SearchCommandDefinition.NameArgument);
             if (!string.IsNullOrWhiteSpace(nameCriteria))
             {
                 SearchNameCriteria = nameCriteria;
@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             // for legacy case new command argument is also accepted
             else if (command is LegacySearchCommand legacySearchCommand)
             {
-                string? newCommandArgument = parseResult.GetValue(CommandDefinition.New.ShortNameArgument);
+                string? newCommandArgument = parseResult.GetValue(NewCommandDefinition.ShortNameArgument);
                 if (!string.IsNullOrWhiteSpace(newCommandArgument))
                 {
                     SearchNameCriteria = newCommandArgument;

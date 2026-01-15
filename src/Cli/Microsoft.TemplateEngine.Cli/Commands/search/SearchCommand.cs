@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal sealed class SearchCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-        : BaseSearchCommand(hostBuilder, CommandDefinition.Search.Command)
+        : BaseSearchCommand(hostBuilder, new SearchCommandDefinition(isLegacy: false))
     {
         protected override async Task<NewCommandStatus> ExecuteAsync(
             SearchCommandArgs args,

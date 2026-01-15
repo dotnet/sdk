@@ -10,9 +10,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal abstract class BaseSearchCommand : BaseCommand<SearchCommandArgs>, IFilterableCommand, ITabularOutputCommand
     {
-        private readonly CommandDefinition.Search _definition;
+        private readonly SearchCommandDefinition _definition;
 
-        internal BaseSearchCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, CommandDefinition.Search definition)
+        internal BaseSearchCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, SearchCommandDefinition definition)
             : base(hostBuilder, definition)
         {
             _definition = definition;
