@@ -208,7 +208,6 @@ partial class CSharpCompilerCommand
             $"/analyzer:{SdkPath}/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll",
             $"/analyzer:{NuGetCachePath}/microsoft.net.illink.tasks/{RuntimeVersion}/analyzers/dotnet/cs/ILLink.CodeFixProvider.dll",
             $"/analyzer:{NuGetCachePath}/microsoft.net.illink.tasks/{RuntimeVersion}/analyzers/dotnet/cs/ILLink.RoslynAnalyzer.dll",
-            $"/analyzer:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/analyzers/dotnet/EventSourceGenerator.dll",
             $"/analyzer:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/analyzers/dotnet/cs/Microsoft.Interop.ComInterfaceGenerator.dll",
             $"/analyzer:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/analyzers/dotnet/cs/Microsoft.Interop.JavaScript.JSImportGenerator.dll",
             $"/analyzer:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/analyzers/dotnet/cs/Microsoft.Interop.LibraryImportGenerator.dll",
