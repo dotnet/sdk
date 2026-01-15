@@ -120,12 +120,6 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
             _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context);
         }
 
-        // NOTE: Do NOT call _workloadResolver.RefreshWorkloadManifests() here.
-        // This method is called from GetManifests() during manifest enumeration.
-        // Calling refresh would cause a nested re-initialization that adds duplicates
-        // since the outer enumeration continues after we return.
-        // The newly installed manifests will be picked up when GetManifests() continues
-        // scanning the manifest directories.
     }
 
     [MemberNotNull(nameof(_packageDownloader))]
