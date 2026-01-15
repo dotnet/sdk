@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), newSrc);
 
             await App.AssertOutputLineStartsWith("Changed!");
-            await App.WaitUntilOutputContains($"dotnet watch 🔥 [App.WithDeps ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
+            await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
         }
 
         [Theory]
@@ -190,7 +190,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 directoryBuildProps,
                 src => src.Replace("BUILD_CONST_IN_PROPS", ""));
 
-            await App.WaitUntilOutputContains($"dotnet watch 🔥 [App.WithDeps ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
+            await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
             await App.WaitUntilOutputContains("BUILD_CONST not set");
 
             App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
