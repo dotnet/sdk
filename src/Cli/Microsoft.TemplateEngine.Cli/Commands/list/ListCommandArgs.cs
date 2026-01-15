@@ -5,11 +5,12 @@ using System.CommandLine;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class ListCommandArgs : BaseFilterableArgs, ITabularOutputArgs
+    internal sealed class ListCommandArgs : BaseFilterableArgs<ListCommandDefinition>, ITabularOutputArgs
     {
-        internal ListCommandArgs(BaseListCommand command, ParseResult parseResult) : base(command, parseResult)
+        internal ListCommandArgs(BaseListCommand command, ParseResult parseResult)
+            : base(parseResult)
         {
-            string? nameCriteria = parseResult.GetValue(CommandDefinition.List.NameArgument);
+            string? nameCriteria = parseResult.GetValue(command.Definition.NameArgument);
             if (!string.IsNullOrWhiteSpace(nameCriteria))
             {
                 ListNameCriteria = nameCriteria;
@@ -17,7 +18,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             // for legacy case new command argument is also accepted
             else if (command is LegacyListCommand)
             {
-                string? newCommandArgument = parseResult.GetValue(CommandDefinition.New.ShortNameArgument);
+                var newCommand = (NewCommand)command.Parents.Single();
+
+                string? newCommandArgument = parseResult.GetValue(newCommand.Definition.ShortNameArgument);
                 if (!string.IsNullOrWhiteSpace(newCommandArgument))
                 {
                     ListNameCriteria = newCommandArgument;
@@ -29,7 +32,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 Language = GetFilterValue(FilterOptionDefinition.LanguageFilter);
             }
-            IgnoreConstraints = parseResult.GetValue(CommandDefinition.List.IgnoreConstraintsOption);
+            IgnoreConstraints = parseResult.GetValue(command.Definition.IgnoreConstraintsOption);
         }
 
         public bool DisplayAllColumns { get; }

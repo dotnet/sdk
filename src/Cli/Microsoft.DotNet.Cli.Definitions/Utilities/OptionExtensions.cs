@@ -7,8 +7,27 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli;
 
-public static class OptionForwardingExtensions
+public static class OptionExtensions
 {
+    public static Option<T> AsHidden<T>(this Option<T> o)
+    {
+        o.Hidden = true;
+        return o;
+    }
+
+    public static Option<T> WithDescription<T>(this Option<T> o, string description)
+    {
+        o.Description = description;
+        return o;
+    }
+
+    public static Option<T> DisableAllowMultipleArgumentsPerToken<T>(this Option<T> o)
+    {
+        o.AllowMultipleArgumentsPerToken = false;
+        return o;
+    }
+
+
     /// <summary>
     /// Set up an option to be forwarded as an output path to MSBuild
     /// </summary>

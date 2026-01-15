@@ -2317,4 +2317,16 @@ The header is followed by the list of parameters and their errors (might be seve
 {0}</value>
     <comment>{0} is the JSON that is being parsed.</comment>
   </data>
+  <data name="DisableSdkTemplates_OptionDescription" xml:space="preserve">
+    <value>If present, prevents templates bundled in the SDK from being presented.</value>
+  </data>
+  <data name="DisableProjectContextEval_OptionDescription" xml:space="preserve">
+    <value>Disables evaluating project context using MSBuild.</value>
+  </data>
+  <data name="Verbosity_OptionDescription" xml:space="preserve">
+    <value>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</value>
+  </data>
+  <data name="Diagnostics_OptionDescription" xml:space="preserve">
+    <value>Enables diagnostic output.</value>
+  </data>
 </root>

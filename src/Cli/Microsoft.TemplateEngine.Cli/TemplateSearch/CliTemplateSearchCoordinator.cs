@@ -95,13 +95,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                  Example
                      .For<NewCommand>(commandArgs.ParseResult)
                      .WithSubcommand<InstallCommand>()
-                     .WithArgument(CommandDefinition.Install.NameArgument));
+                     .WithArgument(c => c.Definition.NameArgument));
                 Reporter.Output.WriteLine(LocalizableStrings.Generic_ExampleHeader);
                 Reporter.Output.WriteCommand(
                    Example
                        .For<NewCommand>(commandArgs.ParseResult)
                        .WithSubcommand<InstallCommand>()
-                       .WithArgument(CommandDefinition.Install.NameArgument, packageIdToShow));
+                       .WithArguments(packageIdToShow));
                 return NewCommandStatus.Success;
             }
             return NewCommandStatus.NotFound;
@@ -253,26 +253,26 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             // && !commandInput.RemainingParameters.Any())
             {
                 Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Error_NoTemplateName.Red().Bold());
-                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", CommandDefinition.Search.SupportedFilterOptions.Select(static option => $"'{option.Name}'")));
+                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", FilterOptions.GetAllNames(SearchCommandDefinition.HasSupportedPackageFilterOption).Select(static optionName => $"'{optionName}'")));
                 Reporter.Error.WriteLine(LocalizableStrings.Generic_ExamplesHeader);
                 Reporter.Error.WriteCommand(
                     Example
                         .For<NewCommand>(commandArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithArgument(CommandDefinition.Search.NameArgument, "web"));
+                        .WithArguments("web"));
 
                 Reporter.Error.WriteCommand(
                      Example
                         .For<NewCommand>(commandArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithOption(SharedOptionsFactory.CreateAuthorOption(), "Microsoft"));
+                        .WithOption(c => c.Definition.FilterOptions.AuthorOption, "Microsoft"));
 
                 Reporter.Error.WriteCommand(
                  Example
                     .For<NewCommand>(commandArgs.ParseResult)
                     .WithSubcommand<SearchCommand>()
-                    .WithArgument(CommandDefinition.Search.NameArgument, "web")
-                    .WithOption(SharedOptionsFactory.CreateLanguageOption(), "C#"));
+                    .WithArguments("web")
+                    .WithOption(c => c.Definition.FilterOptions.LanguageOption, "C#"));
 
                 return false;
             }

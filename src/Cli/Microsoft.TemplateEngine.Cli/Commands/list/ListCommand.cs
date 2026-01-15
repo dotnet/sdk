@@ -7,8 +7,8 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed class ListCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-        : BaseListCommand(hostBuilder, CommandDefinition.List.Command)
+    internal sealed class ListCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, ListCommandDefinition definition)
+        : BaseListCommand(hostBuilder, definition)
     {
         protected override async Task<NewCommandStatus> ExecuteAsync(
             ListCommandArgs args,

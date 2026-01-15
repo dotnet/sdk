@@ -7,8 +7,8 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseUninstallCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, CommandDefinition definition)
-        : BaseCommand<UninstallCommandArgs>(hostBuilder, definition)
+    internal abstract class BaseUninstallCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, UninstallCommandDefinition definition)
+        : BaseCommand<UninstallCommandArgs, UninstallCommandDefinition>(hostBuilder, definition)
     {
         protected override Task<NewCommandStatus> ExecuteAsync(
             UninstallCommandArgs args,

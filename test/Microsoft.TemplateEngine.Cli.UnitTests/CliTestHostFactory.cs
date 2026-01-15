@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
+using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Utils;
 using TestLoggerFactory = Microsoft.TemplateEngine.TestHelper.TestLoggerFactory;
@@ -13,6 +14,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
     internal static class CliTestHostFactory
     {
+        public static NewCommand CreateNewCommand(ICliTemplateEngineHost host)
+            => (NewCommand)NewCommandFactory.Create(_ => host, new NewCommandDefinition());
+
         public static ICliTemplateEngineHost GetVirtualHost(
                 [CallerMemberName] string hostIdentifier = "",
                 IEnvironment? environment = null,
