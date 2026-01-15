@@ -103,11 +103,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
       }
     },
     `restore`: {
-        `frameworks`: {
-          `net5.0`: {
-            `targetAlias`: `net5.0`
-          }
+      `frameworks`: {
+        `net5.0`: {
+          `targetAlias`: `net5.0`
         }
+      }
     }
   }
 }".Replace('`', '"');
