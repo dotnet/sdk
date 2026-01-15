@@ -225,7 +225,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 templates,
                 new TabularOutputSettings(
                     environmentSettings.Environment,
-                    columnsToDisplay: new[] { TabularOutputSettings.ColumnNames.Type }),
+                    columnsToDisplay: new[] { TabularOutputSettingsColumnNames.Type }),
                 reporter);
             reporter.WriteLine(HelpStrings.Hint_AmbiguousType);
             return NewCommandStatus.NotFound;
