@@ -10,7 +10,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs>
+    internal partial class InstantiateCommand
     {
         private static readonly TimeSpan ConstraintEvaluationTimeout = TimeSpan.FromMilliseconds(1000);
 

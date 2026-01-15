@@ -3,12 +3,9 @@
 
 using System.CommandLine;
 
-namespace Microsoft.TemplateEngine.Cli.Commands
+namespace Microsoft.TemplateEngine.Cli.Commands;
+
+internal sealed class AliasShowCommandArgs(BaseAliasShowCommand command, ParseResult parseResult)
+    : GlobalArgs<ShowCommandDefinition>(command, parseResult)
 {
-    internal class AliasShowCommandArgs : GlobalArgs
-    {
-        public AliasShowCommandArgs(BaseAliasShowCommand command, ParseResult parseResult) : base(command, parseResult)
-        {
-        }
-    }
 }

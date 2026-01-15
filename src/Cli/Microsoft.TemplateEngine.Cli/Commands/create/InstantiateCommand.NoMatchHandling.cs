@@ -10,7 +10,7 @@ using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs>
+    internal partial class InstantiateCommand
     {
         internal static List<InvalidTemplateOptionResult> GetInvalidOptions(IEnumerable<TemplateResult> templates)
         {

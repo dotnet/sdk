@@ -7,27 +7,34 @@ using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class GlobalArgs : ICommandArgs
+    internal class GlobalArgs<TDefinition> : ICommandArgs
+        where TDefinition : Command
     {
-        public GlobalArgs(BaseCommand command, ParseResult parseResult)
+        public GlobalArgs(BaseCommand<TDefinition> command, ParseResult parseResult)
         {
-            DebugCustomSettingsLocation = parseResult.GetValue(NewCommandDefinition.DebugCustomSettingsLocationOption);
-            DebugVirtualizeSettings = parseResult.GetValue(NewCommandDefinition.DebugVirtualizeSettingsOption);
-            DebugAttach = parseResult.GetValue(NewCommandDefinition.DebugAttachOption);
-            DebugReinit = parseResult.GetValue(NewCommandDefinition.DebugReinitOption);
-            DebugRebuildCache = parseResult.GetValue(NewCommandDefinition.DebugRebuildCacheOption);
-            DebugShowConfig = parseResult.GetValue(NewCommandDefinition.DebugShowConfigOption);
+            RootCommand = GetNewCommandFromParseResult(parseResult);
+
+            var definition = RootCommand.Definition;
+
+            DebugCustomSettingsLocation = parseResult.GetValue(definition.DebugCustomSettingsLocationOption);
+            DebugVirtualizeSettings = parseResult.GetValue(definition.DebugVirtualizeSettingsOption);
+            DebugAttach = parseResult.GetValue(definition.DebugAttachOption);
+            DebugReinit = parseResult.GetValue(definition.DebugReinitOption);
+            DebugRebuildCache = parseResult.GetValue(definition.DebugRebuildCacheOption);
+            DebugShowConfig = parseResult.GetValue(definition.DebugShowConfigOption);
             ParseResult = parseResult;
             Command = command;
-            RootCommand = GetNewCommandFromParseResult(parseResult);
             HasHelpOption = parseResult.CommandResult.Children.Any(child => child is OptionResult optionResult && optionResult.Option is HelpOption);
         }
 
-        protected GlobalArgs(GlobalArgs args) : this(args.Command, args.ParseResult) { }
+        protected GlobalArgs(GlobalArgs<NewCommandDefinition> args)
+            : this(args.Command, args.ParseResult)
+        {
+        }
 
         public NewCommand RootCommand { get; }
 
-        public BaseCommand Command { get; }
+        public BaseCommand<TDefinition> Command { get; }
 
         public ParseResult ParseResult { get; }
 

@@ -6,11 +6,13 @@ using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class BaseFilterableArgs : GlobalArgs
+    internal abstract class BaseFilterableArgs<TDefinition> : GlobalArgs<TDefinition>
+        where TDefinition : Command
     {
-        private IReadOnlyDictionary<FilterOptionDefinition, OptionResult> _filters;
+        private readonly IReadOnlyDictionary<FilterOptionDefinition, OptionResult> _filters;
 
-        internal BaseFilterableArgs(BaseCommand command, ParseResult parseResult) : base(command, parseResult)
+        internal BaseFilterableArgs(BaseCommand<TDefinition> command, ParseResult parseResult)
+            : base(command, parseResult)
         {
             if (command is not IFilterableCommand filterableCommand)
             {

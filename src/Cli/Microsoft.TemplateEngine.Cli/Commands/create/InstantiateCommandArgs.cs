@@ -6,12 +6,13 @@ using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class InstantiateCommandArgs : GlobalArgs
+    internal sealed class InstantiateCommandArgs : GlobalArgs<InstantiateCommandDefinition>
     {
-        public InstantiateCommandArgs(InstantiateCommand command, ParseResult parseResult) : base(command, parseResult)
+        public InstantiateCommandArgs(InstantiateCommand command, ParseResult parseResult)
+            : base(command, parseResult)
         {
-            RemainingArguments = parseResult.GetValue(InstantiateCommandDefinition.RemainingArguments) ?? Array.Empty<string>();
-            ShortName = parseResult.GetValue(InstantiateCommandDefinition.ShortNameArgument);
+            RemainingArguments = parseResult.GetValue(command.Definition.RemainingArguments) ?? Array.Empty<string>();
+            ShortName = parseResult.GetValue(command.Definition.ShortNameArgument);
 
             var tokens = new List<string>();
             if (!string.IsNullOrWhiteSpace(ShortName))
@@ -34,7 +35,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             TokensToInvoke = tokens.ToArray();
         }
 
-        private InstantiateCommandArgs(string? shortName, IEnumerable<string> remainingArgs, GlobalArgs args) : base(args)
+        private InstantiateCommandArgs(string? shortName, IEnumerable<string> remainingArgs, GlobalArgs<NewCommandDefinition> args)
+            : base(args)
         {
             ShortName = shortName;
             RemainingArguments = remainingArgs.ToArray();
@@ -57,7 +59,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             if (!newCommandArgs.Tokens.Any())
             {
-                return new InstantiateCommandArgs(null, Array.Empty<string>(), newCommandArgs);
+                return new InstantiateCommandArgs(shortName: null, remainingArgs: [], newCommandArgs);
             }
             return new InstantiateCommandArgs(newCommandArgs.Tokens[0], newCommandArgs.Tokens.Skip(1), newCommandArgs);
         }

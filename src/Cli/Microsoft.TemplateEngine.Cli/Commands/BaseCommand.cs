@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Invocation;
 using System.Reflection;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
@@ -17,10 +18,13 @@ using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, Command definition)
+    internal abstract class BaseCommand<TDefinition>(Func<ParseResult, ITemplateEngineHost> hostBuilder, TDefinition definition)
         : Command(definition.Name, definition.Description)
+        where TDefinition : Command
     {
-        protected static readonly Dictionary<string, Func<Func<ParseResult, ITemplateEngineHost>, BaseCommand>> SubcommandFactories = new()
+        public readonly TDefinition Definition = definition;
+
+        protected static readonly Dictionary<string, Func<Func<ParseResult, ITemplateEngineHost>, Command>> SubcommandFactories = new()
         {
             { AliasCommandDefinition.Name, hostBuilder => new AliasCommand(hostBuilder) },
             { AddCommandDefinition.Name, hostBuilder => new AliasAddCommand(hostBuilder) },
@@ -49,7 +53,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 #pragma warning restore SA1100 // Do not prefix calls with base unless local implementation exists
         }
 
-        protected IEngineEnvironmentSettings CreateEnvironmentSettings(GlobalArgs args, ParseResult parseResult)
+        protected IEngineEnvironmentSettings CreateEnvironmentSettings(GlobalArgs<TDefinition> args, ParseResult parseResult)
         {
             ITemplateEngineHost host = hostBuilder(parseResult);
             IEnvironment environment = new CliEnvironment();
@@ -62,13 +66,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         }
     }
 
-    internal abstract class BaseCommand<TArgs> : BaseCommand where TArgs : GlobalArgs
+    internal abstract class BaseCommand<TArgs, TDefinition> : BaseCommand<TDefinition>
+        where TDefinition : Command
+        where TArgs : GlobalArgs<TDefinition>
     {
-        internal BaseCommand(
-            Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            Command definition)
+        internal BaseCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, TDefinition definition)
             : base(hostBuilder, definition)
         {
+            this.DocsLink = definition.DocsLink;
             Hidden = definition.Hidden;
             TreatUnmatchedTokensAsErrors = definition.TreatUnmatchedTokensAsErrors;
 
@@ -91,7 +96,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 return base.GetCompletions(context);
             }
-            GlobalArgs args = new(this, context.ParseResult);
+            var args = new GlobalArgs<TDefinition>(this, context.ParseResult);
             using IEngineEnvironmentSettings environmentSettings = CreateEnvironmentSettings(args, context.ParseResult);
             using TemplatePackageManager templatePackageManager = new(environmentSettings);
             return GetCompletions(context, environmentSettings, templatePackageManager).ToList();
@@ -222,9 +227,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private sealed class CommandAction : AsynchronousCommandLineAction
         {
-            private readonly BaseCommand<TArgs> _command;
+            private readonly BaseCommand<TArgs, TDefinition> _command;
 
-            public CommandAction(BaseCommand<TArgs> command) => _command = command;
+            public CommandAction(BaseCommand<TArgs, TDefinition> command) => _command = command;
 
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {

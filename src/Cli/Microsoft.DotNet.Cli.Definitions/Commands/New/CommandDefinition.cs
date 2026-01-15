@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.TemplateEngine.Cli
@@ -10,70 +11,71 @@ namespace Microsoft.TemplateEngine.Cli
     public sealed class NewCommandDefinition : Command
     {
         public new const string Name = "new";
+        private const string Link = "https://aka.ms/dotnet-new";
 
-        public static readonly Option<string?> DebugCustomSettingsLocationOption = new("--debug:custom-hive")
+        public readonly Option<string?> DebugCustomSettingsLocationOption = new("--debug:custom-hive")
         {
             Description = CommandDefinitionStrings.Option_Debug_CustomSettings,
             Hidden = true,
             Recursive = true
         };
 
-        public static readonly Option<bool> DebugVirtualizeSettingsOption = new("--debug:ephemeral-hive", "--debug:virtual-hive")
+        public readonly Option<bool> DebugVirtualizeSettingsOption = new("--debug:ephemeral-hive", "--debug:virtual-hive")
         {
             Description = CommandDefinitionStrings.Option_Debug_VirtualSettings,
             Hidden = true,
             Recursive = true
         };
 
-        public static readonly Option<bool> DebugAttachOption = new("--debug:attach")
+        public readonly Option<bool> DebugAttachOption = new("--debug:attach")
         {
             Description = CommandDefinitionStrings.Option_Debug_Attach,
             Hidden = true,
             Recursive = true
         };
 
-        public static readonly Option<bool> DebugReinitOption = new("--debug:reinit")
+        public readonly Option<bool> DebugReinitOption = new("--debug:reinit")
         {
             Description = CommandDefinitionStrings.Option_Debug_Reinit,
             Hidden = true,
             Recursive = true
         };
 
-        public static readonly Option<bool> DebugRebuildCacheOption = new("--debug:rebuild-cache", "--debug:rebuildcache")
+        public readonly Option<bool> DebugRebuildCacheOption = new("--debug:rebuild-cache", "--debug:rebuildcache")
         {
             Description = CommandDefinitionStrings.Option_Debug_RebuildCache,
             Hidden = true,
             Recursive = true
         };
 
-        public static readonly Option<bool> DebugShowConfigOption = new("--debug:show-config", "--debug:showconfig")
+        public readonly Option<bool> DebugShowConfigOption = new("--debug:show-config", "--debug:showconfig")
         {
             Description = CommandDefinitionStrings.Option_Debug_ShowConfig,
             Hidden = true,
             Recursive = true
         };
 
-        public static readonly Argument<string> ShortNameArgument = new("template-short-name")
+        public readonly Argument<string> ShortNameArgument = new("template-short-name")
         {
             Description = CommandDefinitionStrings.Command_Instantiate_Argument_ShortName,
             Arity = new ArgumentArity(0, 1),
             Hidden = true
         };
 
-        public static readonly Argument<string[]> RemainingArguments = new("template-args")
+        public readonly Argument<string[]> RemainingArguments = new("template-args")
         {
             Description = CommandDefinitionStrings.Command_Instantiate_Argument_TemplateOptions,
             Arity = new ArgumentArity(0, 999),
             Hidden = true
         };
 
-        public static readonly Option<bool> InteractiveOption = SharedOptionsFactory.CreateInteractiveOption().AsHidden();
+        public readonly Option<bool> InteractiveOption = SharedOptionsFactory.CreateInteractiveOption().AsHidden();
 
-        public static readonly Option<string[]> AddSourceOption = SharedOptionsFactory.CreateAddSourceOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
+        public readonly Option<string[]> AddSourceOption = SharedOptionsFactory.CreateAddSourceOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
 
-        public static readonly Option<bool> ColumnsAllOption = SharedOptionsFactory.CreateColumnsAllOption().AsHidden();
+        public readonly Option<bool> ColumnsAllOption = SharedOptionsFactory.CreateColumnsAllOption().AsHidden();
 
-        public static readonly Option<string[]> ColumnsOption = SharedOptionsFactory.CreateColumnsOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
+        public readonly Option<string[]> ColumnsOption = SharedOptionsFactory.CreateColumnsOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
 
         public static IReadOnlyList<Option> PassByOptions { get; } =
         [
@@ -128,6 +130,7 @@ namespace Microsoft.TemplateEngine.Cli
         public NewCommandDefinition()
             : base(Name, CommandDefinitionStrings.Command_New_Description)
         {
+            this.DocsLink = Link;
             TreatUnmatchedTokensAsErrors = true;
 
             Options.Add(DebugCustomSettingsLocationOption);
@@ -222,13 +225,13 @@ namespace Microsoft.TemplateEngine.Cli
     {
         public new const string Name = "create";
 
-        public static readonly Argument<string> ShortNameArgument = new("template-short-name")
+        public readonly Argument<string> ShortNameArgument = new("template-short-name")
         {
             Description = CommandDefinitionStrings.Command_Instantiate_Argument_ShortName,
             Arity = new ArgumentArity(0, 1)
         };
 
-        public static readonly Argument<string[]> RemainingArguments = new("template-args")
+        public readonly Argument<string[]> RemainingArguments = new("template-args")
         {
             Description = CommandDefinitionStrings.Command_Instantiate_Argument_TemplateOptions,
             Arity = new ArgumentArity(0, 999)

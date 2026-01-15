@@ -14,10 +14,10 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs>, ICustomHelp
+    internal sealed partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs, InstantiateCommandDefinition>, ICustomHelp
     {
         internal InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, new InstantiateCommandDefinition())
+            : base(hostBuilder, definition: new())
         {
         }
 

@@ -7,9 +7,10 @@ using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class NewCommandArgs : GlobalArgs
+    internal sealed class NewCommandArgs : GlobalArgs<NewCommandDefinition>
     {
-        public NewCommandArgs(NewCommand command, ParseResult parseResult) : base(command, parseResult)
+        public NewCommandArgs(NewCommand command, ParseResult parseResult)
+            : base(command, parseResult)
         {
             List<Token> tokensToEvaluate = new();
             foreach (var childrenResult in parseResult.CommandResult.Children)
