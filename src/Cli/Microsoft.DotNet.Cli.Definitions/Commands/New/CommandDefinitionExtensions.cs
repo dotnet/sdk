@@ -1,14 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable SA1202 // Elements should be ordered by access
-#pragma warning disable SA1308 // Variable names should not be prefixed
-#pragma warning disable SA1311 // Static readonly fields should begin with upper-case letter
-#pragma warning disable CA1810 // Initialize reference type static fields inline
-#pragma warning disable SA1010 // Opening square brackets should be spaced correctly
-
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli;
 
 namespace Microsoft.TemplateEngine.Cli;
 
@@ -86,7 +81,7 @@ internal static class CommandDefinitionExtensions
         if (wrongTokens.Any())
         {
             //Unrecognized command or argument(s): {0}
-            commandResult.AddError(string.Format(LocalizableStrings.Commands_Validator_WrongTokens, string.Join(",", wrongTokens)));
+            commandResult.AddError(string.Format(CommandDefinitionStrings.Commands_Validator_WrongTokens, string.Join(",", wrongTokens)));
         }
     }
 
@@ -113,7 +108,7 @@ internal static class CommandDefinitionExtensions
                 }
             }
             //Unrecognized command or argument(s): {0}
-            commandResult.AddError(string.Format(LocalizableStrings.Commands_Validator_WrongTokens, string.Join(",", wrongTokens)));
+            commandResult.AddError(string.Format(CommandDefinitionStrings.Commands_Validator_WrongTokens, string.Join(",", wrongTokens)));
         }
     }
 }

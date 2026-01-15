@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
@@ -19,7 +20,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public static Option<FileInfo> ProjectPathOption { get; } = new Option<FileInfo>("--project")
         {
-            Description = SymbolStrings.Option_ProjectPath
+            Description = CommandDefinitionStrings.Option_ProjectPath
         }.AcceptExistingOnly();
 
         public static Option<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption();
@@ -30,23 +31,23 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public static Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption();
 
-        internal static Option<bool> ForceOption { get; } = SharedOptionsFactory.CreateForceOption();
+        public static Option<bool> ForceOption { get; } = SharedOptionsFactory.CreateForceOption();
 
-        internal static Option<string> NameOption { get; } = new("--name", "-n")
+        public static Option<string> NameOption { get; } = new("--name", "-n")
         {
-            Description = SymbolStrings.TemplateCommand_Option_Name,
+            Description = CommandDefinitionStrings.TemplateCommand_Option_Name,
             Arity = new ArgumentArity(1, 1)
         };
 
-        internal static Option<bool> DryRunOption { get; } = new("--dry-run")
+        public static Option<bool> DryRunOption { get; } = new("--dry-run")
         {
-            Description = SymbolStrings.TemplateCommand_Option_DryRun,
+            Description = CommandDefinitionStrings.TemplateCommand_Option_DryRun,
             Arity = new ArgumentArity(0, 1)
         };
 
-        internal static Option<bool> NoUpdateCheckOption { get; } = new("--no-update-check")
+        public static Option<bool> NoUpdateCheckOption { get; } = new("--no-update-check")
         {
-            Description = SymbolStrings.TemplateCommand_Option_NoUpdateCheck,
+            Description = CommandDefinitionStrings.TemplateCommand_Option_NoUpdateCheck,
             Arity = new ArgumentArity(0, 1)
         };
     }
