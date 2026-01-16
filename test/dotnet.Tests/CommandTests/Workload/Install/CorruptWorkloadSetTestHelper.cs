@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             sdkFeatureVersion = "6.0.100";
             var workloadSetVersion = "6.0.100";
 
-            // Create workload set contents JSON
+            // Create workload set contents JSON for the current (corrupt) version
             var workloadSetJson = """
 {
   "xamarin-android-build": "8.4.7/6.0.100",
@@ -42,10 +42,19 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 }
 """;
 
+            // Create workload set contents for the updated version
+            var workloadSetJsonUpdated = """
+{
+  "xamarin-android-build": "8.4.8/6.0.100",
+  "xamarin-ios-sdk": "10.0.2/6.0.100"
+}
+""";
+
             // Create workload set contents for the mock installer
             var workloadSetContents = new Dictionary<string, string>
             {
-                [workloadSetVersion] = workloadSetJson
+                [workloadSetVersion] = workloadSetJson,
+                ["6.0.101"] = workloadSetJsonUpdated
             };
 
             // Set up mock installer with workload set support
@@ -68,7 +77,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installState = new InstallStateContents
             {
                 UseWorkloadSets = true,
-                WorkloadVersion = workloadSetVersion
+                WorkloadVersion = workloadSetVersion,
+                Manifests = new Dictionary<string, string>
+                {
+                    ["xamarin-android-build"] = "8.4.7",
+                    ["xamarin-ios-sdk"] = "10.0.1"
+                }
             };
             File.WriteAllText(installStatePath, installState.ToString());
 

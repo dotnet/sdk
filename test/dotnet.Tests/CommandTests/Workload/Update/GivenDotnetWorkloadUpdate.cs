@@ -669,6 +669,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var (dotnetRoot, userProfileDir, mockInstaller, workloadResolver, manifestProvider) =
                 CorruptWorkloadSetTestHelper.SetupCorruptWorkloadSet(_testAssetsManager, userLocal, out string sdkFeatureVersion);
 
+            mockInstaller.InstalledManifests.Should().HaveCount(0);
+
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
 
             // Attach the corruption repairer to the manifest provider
@@ -684,11 +686,20 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 packageSourceLocation: null,
                 VerbosityOptions.detailed);
 
+            // Advertise a NEWER workload set version than what's currently installed (6.0.100)
+            // so that the update command proceeds with manifest installation
+            var workloadManifestUpdater = new MockWorkloadManifestUpdater(
+                manifestUpdates: [
+                    new ManifestUpdateWithWorkloads(new ManifestVersionUpdate(new ManifestId("xamarin-android-build"), new ManifestVersion("8.4.8"), "6.0.100"), Enumerable.Empty<KeyValuePair<WorkloadId, WorkloadDefinition>>().ToDictionary()),
+                    new ManifestUpdateWithWorkloads(new ManifestVersionUpdate(new ManifestId("xamarin-ios-sdk"), new ManifestVersion("10.0.2"), "6.0.100"), Enumerable.Empty<KeyValuePair<WorkloadId, WorkloadDefinition>>().ToDictionary())
+                ],
+                fromWorkloadSet: true, workloadSetVersion: "6.0.101");
+
             var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update" });
 
             // Run update command
             var updateCommand = new WorkloadUpdateCommand(parseResult, reporter: _reporter, workloadResolverFactory,
-                workloadInstaller: mockInstaller);
+                workloadInstaller: mockInstaller, workloadManifestUpdater: workloadManifestUpdater);
             updateCommand.Execute();
 
             // Verify that manifests were reinstalled
