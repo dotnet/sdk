@@ -68,7 +68,7 @@ internal sealed class RunCommandDefinition : Command
         Arity = ArgumentArity.Zero,
     };
 
-    public readonly Option<bool> SelfContainedOption = CommonOptions.CreateSelfContainedOption();
+    public readonly Option<bool?> SelfContainedOption = CommonOptions.CreateSelfContainedOption();
 
     public readonly Option<bool> NoSelfContainedOption = CommonOptions.CreateNoSelfContainedOption();
 
