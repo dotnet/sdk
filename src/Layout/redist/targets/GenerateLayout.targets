@@ -537,9 +537,8 @@
 
     <RemoveDir Directories="$(OutputPath)/15.0" />
   </Target>
-
-  <!-- Anything that goes into the sdk/$(Version) directory. -->
-  <Target Name="GenerateSdkLayout"
+  <!-- Core layout generation - ‌anything·‌that·‌goes·‌into·‌the·‌sdk/$(Version)·‌directory. -->
+  <Target Name="GenerateSdkLayoutCore"
           DependsOnTargets="PublishRuntimeIdentifierGraphFiles;
                             GenerateSdkRuntimeIdentifierChain;
                             PublishVersionFile;
@@ -563,7 +562,19 @@
                             DeleteSymbolsFromPublishDir;
                             RetargetTools;
                             RemoveResourcesFromDotnetDeps;
-                            ChmodPublishDir"
-          AfterTargets="AfterBuild" />
+                            ChmodPublishDir" />
+
+  <!-- Generates the complete SDK layout - everything in sdk/$(Version) -->
+  <Target Name="GenerateSdkLayout"
+          DependsOnTargets="GenerateSdkLayoutCore"
+          AfterTargets="AfterBuild">
+    <PropertyGroup>
+      <!-- Use hard links on Windows, symbolic links on non-Windows -->
+      <_UseHardLinks Condition="'$(OSName)' == 'win'">true</_UseHardLinks>
+      <_UseHardLinks Condition="'$(OSName)' != 'win'">false</_UseHardLinks>
+    </PropertyGroup>
+    <!-- Deduplicate assemblies after all layout work is complete -->
+    <DeduplicateAssembliesWithLinks LayoutDirectory="$(OutputPath)" UseHardLinks="$(_UseHardLinks)" />
+  </Target>
 
 </Project>
