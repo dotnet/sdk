@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
@@ -61,6 +62,13 @@ internal sealed class ProjectLauncher(
             return null;
         }
 
+        // WinExe apps (WinForms, WPF, MAUI) on Windows need special handling because they don't respond to Ctrl+C.
+        // dotnet-watch launches `dotnet run --no-build` which in turn launches the actual WinExe app.
+        // When terminating, dotnet-watch sends Ctrl+C to `dotnet run`, and `dotnet run` calls CloseMainWindow() 
+        // on the WinExe app. This chain can take 10-20+ seconds to complete.
+        // See https://github.com/dotnet/sdk/issues/52473
+        var isWindowsExecutable = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && projectNode.IsWindowsExecutable();
+
         var processSpec = new ProcessSpec
         {
             Executable = EnvironmentOptions.MuxerPath,
@@ -68,6 +76,8 @@ internal sealed class ProjectLauncher(
             WorkingDirectory = projectOptions.WorkingDirectory,
             OnOutput = onOutput,
             OnExit = onExit,
+            // Give `dotnet run` enough time to gracefully close the WinExe app via CloseMainWindow
+            CleanupTimeout = isWindowsExecutable ? TimeSpan.FromSeconds(30) : null,
         };
 
         // Stream output lines to the process output reporter.

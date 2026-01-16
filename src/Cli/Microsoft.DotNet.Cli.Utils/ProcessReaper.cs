@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.DotNet.Cli.Utils;
@@ -33,6 +34,16 @@ internal class ProcessReaper : IDisposable
         // where the child writes output the test expects before the intermediate dotnet process
         // has registered the event handlers to handle the signals the tests will generate.
         Console.CancelKeyPress += HandleCancelKeyPress;
+        
+        // Enable Ctrl+C handling on Windows if we were created with CREATE_NEW_PROCESS_GROUP.
+        // By default, processes in a new process group have Ctrl+C handling disabled.
+        // This is needed for dotnet-watch to be able to send Ctrl+C to dotnet run.
+        // See https://docs.microsoft.com/en-us/windows/console/setconsolectrlhandler
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            SetConsoleCtrlHandler(IntPtr.Zero, false);
+        }
+
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             _shutdownMutex = new Mutex();
@@ -93,10 +104,23 @@ internal class ProcessReaper : IDisposable
         Console.CancelKeyPress -= HandleCancelKeyPress;
     }
 
-    private static void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    private void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
         // Ignore SIGINT/SIGQUIT so that the process can handle the signal
         e.Cancel = true;
+
+        // For WinExe apps on Windows, use CloseMainWindow() since they don't respond to Ctrl+C
+        if (CloseMainWindow && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            try
+            {
+                _process.CloseMainWindow();
+            }
+            catch
+            {
+                // Ignore errors - the process may have already exited
+            }
+        }
     }
 
     private static SafeWaitHandle? AssignProcessToJobObject(IntPtr process)
@@ -189,4 +213,13 @@ internal class ProcessReaper : IDisposable
     private Process _process;
     private SafeWaitHandle? _job;
     private Mutex? _shutdownMutex;
+
+    /// <summary>
+    /// If true, uses CloseMainWindow() to terminate the process on Windows instead of letting it handle Ctrl+C.
+    /// This is needed for WinExe apps (WinForms, WPF, MAUI) that don't respond to Ctrl+C.
+    /// </summary>
+    public bool CloseMainWindow { get; set; }
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool SetConsoleCtrlHandler(IntPtr handlerRoutine, bool add);
 }

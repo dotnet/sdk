@@ -243,7 +243,7 @@ namespace Microsoft.DotNet.Watch
         {
             var forceOnly = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !processSpec.IsUserApplication;
 
-            TerminateProcess(process, state, logger, forceOnly);
+            TerminateProcess(process, processSpec, state, logger, forceOnly);
 
             if (forceOnly)
             {
@@ -252,11 +252,13 @@ namespace Microsoft.DotNet.Watch
             }
 
             // Ctlr+C/SIGTERM has been sent, wait for the process to exit gracefully.
-            if (processCleanupTimeout.TotalMilliseconds == 0 ||
-                !await WaitForExitAsync(process, state, processCleanupTimeout, logger, cancellationToken))
+            // Use per-process timeout if specified, otherwise use the default.
+            var timeout = processSpec.CleanupTimeout ?? processCleanupTimeout;
+            if (timeout.TotalMilliseconds == 0 ||
+                !await WaitForExitAsync(process, state, timeout, logger, cancellationToken))
             {
                 // Force termination if the process is still running after the timeout.
-                TerminateProcess(process, state, logger, force: true);
+                TerminateProcess(process, processSpec, state, logger, force: true);
 
                 _ = await WaitForExitAsync(process, state, timeout: null, logger, cancellationToken);
             }
@@ -321,7 +323,7 @@ namespace Microsoft.DotNet.Watch
             return true;
         }
 
-        private static void TerminateProcess(Process process, ProcessState state, ILogger logger, bool force)
+        private static void TerminateProcess(Process process, ProcessSpec processSpec, ProcessState state, ILogger logger, bool force)
         {
             try
             {
@@ -329,7 +331,7 @@ namespace Microsoft.DotNet.Watch
                 {
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        TerminateWindowsProcess(process, state, logger, force);
+                        TerminateWindowsProcess(process, processSpec, state, logger, force);
                     }
                     else
                     {
@@ -343,9 +345,9 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private static void TerminateWindowsProcess(Process process, ProcessState state, ILogger logger, bool force)
+        private static void TerminateWindowsProcess(Process process, ProcessSpec processSpec, ProcessState state, ILogger logger, bool force)
         {
-            var signalName = force ? "Kill" : "Ctrl+C";
+            var signalName = force ? "Kill" : processSpec.CloseMainWindow ? "CloseMainWindow" : "Ctrl+C";
             logger.Log(MessageDescriptor.TerminatingProcess, state.ProcessId, signalName);
 
             if (force)
@@ -353,6 +355,20 @@ namespace Microsoft.DotNet.Watch
                 try
                 {
                     process.Kill();
+                }
+                catch (Exception e)
+                {
+                    logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, e.Message);
+                }
+            }
+            else if (processSpec.CloseMainWindow)
+            {
+                try
+                {
+                    if (!process.CloseMainWindow())
+                    {
+                        logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, "CloseMainWindow returned false");
+                    }
                 }
                 catch (Exception e)
                 {

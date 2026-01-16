@@ -17,6 +17,73 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         {
         }
 
+        [WindowsOnlyFact]
+        public void ItTerminatesWinExeAppWithCloseMainWindow()
+        {
+            var asset = _testAssetsManager.CopyTestAsset("WatchWinExeApp")
+                .WithSource();
+
+            var command = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(asset.Path);
+
+            bool signaled = false;
+            Process child = null;
+            Process testProcess = null;
+            command.ProcessStartedHandler = p => { testProcess = p; };
+
+            command.CommandOutputHandler = line =>
+            {
+                if (signaled)
+                {
+                    return;
+                }
+
+                if (line.StartsWith("\x1b]"))
+                {
+                    line = line.StripTerminalLoggerProgressIndicators();
+                }
+
+                if (int.TryParse(line, out int pid))
+                {
+                    try
+                    {
+                        child = Process.GetProcessById(pid);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error while getting child process Id: {e}");
+                        Assert.Fail($"Failed to get to child process Id: {line}");
+                    }
+                }
+                else if (line == "Started" && child != null)
+                {
+                    // Window is now visible, send Ctrl+C to dotnet run process
+                    // dotnet run should detect it's a WinExe app and call CloseMainWindow() on the child
+                    Log.WriteLine($"Sending Ctrl+C to dotnet run process {testProcess.Id}");
+                    bool sent = NativeMethods.Windows.GenerateConsoleCtrlEvent(NativeMethods.Windows.CTRL_C_EVENT, (uint)testProcess.Id);
+                    Log.WriteLine($"GenerateConsoleCtrlEvent returned: {sent}");
+                    signaled = true;
+                }
+                else
+                {
+                    Log.WriteLine($"Got line {line} but was unable to interpret it as a process id - skipping");
+                }
+            };
+
+            var result = command.Execute();
+            signaled.Should().BeTrue("Ctrl+C should have been sent to dotnet run");
+
+            // The app should exit with code 0 when closed gracefully via CloseMainWindow
+            result.ExitCode.Should().Be(0, "WinExe app should exit gracefully when dotnet run receives Ctrl+C and calls CloseMainWindow");
+
+            Assert.NotNull(child);
+            if (!child.WaitForExit(WaitTimeout))
+            {
+                child.Kill();
+                throw new XunitException("child process failed to terminate.");
+            }
+        }
+
         // This test is Unix only for the same reason that CoreFX does not test Console.CancelKeyPress on Windows
         // See https://github.com/dotnet/corefx/blob/a10890f4ffe0fadf090c922578ba0e606ebdd16c/src/System.Console/tests/CancelKeyPress.Unix.cs#L63-L67
         [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]

@@ -54,6 +54,12 @@ internal static class ProjectGraphUtilities
     public static string GetAssemblyName(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetName);
 
+    public static string GetOutputType(this ProjectGraphNode projectNode)
+        => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.OutputType);
+
+    public static bool IsWindowsExecutable(this ProjectGraphNode projectNode)
+        => string.Equals(projectNode.GetOutputType(), "WinExe", StringComparison.OrdinalIgnoreCase);
+
     public static string? GetIntermediateOutputDirectory(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.IntermediateOutputPath) is { Length: >0 } path ? Path.Combine(projectNode.ProjectInstance.Directory, path) : null;
 

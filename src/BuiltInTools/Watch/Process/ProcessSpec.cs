@@ -21,6 +21,18 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         public bool IsUserApplication { get; set; }
 
+        /// <summary>
+        /// True to use <see cref="System.Diagnostics.Process.CloseMainWindow"/> to terminate the process on Windows 
+        /// (for WinExe apps that don't respond to Ctrl+C), false to use Ctrl+C (existing behavior).
+        /// </summary>
+        public bool CloseMainWindow { get; set; }
+
+        /// <summary>
+        /// Optional per-process cleanup timeout. If set, overrides the default timeout when waiting for 
+        /// the process to exit gracefully after sending termination signal.
+        /// </summary>
+        public TimeSpan? CleanupTimeout { get; set; }
+
         public string? ShortDisplayName()
             => Path.GetFileNameWithoutExtension(Executable);
 

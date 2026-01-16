@@ -13,12 +13,18 @@ internal sealed record RunProperties(
     string? WorkingDirectory,
     string RuntimeIdentifier,
     string DefaultAppHostRuntimeIdentifier,
-    string TargetFrameworkVersion)
+    string TargetFrameworkVersion,
+    string OutputType)
 {
     internal RunProperties(string command, string? arguments, string? workingDirectory)
-        : this(command, arguments, workingDirectory, string.Empty, string.Empty, string.Empty)
+        : this(command, arguments, workingDirectory, string.Empty, string.Empty, string.Empty, string.Empty)
     {
     }
+
+    /// <summary>
+    /// Returns true if the output type is a Windows executable (WinExe) which doesn't respond to Ctrl+C.
+    /// </summary>
+    internal bool IsWindowsExecutable => string.Equals(OutputType, "WinExe", StringComparison.OrdinalIgnoreCase);
 
     internal static bool TryFromProject(ProjectInstance project, [NotNullWhen(returnValue: true)] out RunProperties? result)
     {
@@ -28,7 +34,8 @@ internal sealed record RunProperties(
             WorkingDirectory: project.GetPropertyValue("RunWorkingDirectory"),
             RuntimeIdentifier: project.GetPropertyValue("RuntimeIdentifier"),
             DefaultAppHostRuntimeIdentifier: project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
-            TargetFrameworkVersion: project.GetPropertyValue("TargetFrameworkVersion"));
+            TargetFrameworkVersion: project.GetPropertyValue("TargetFrameworkVersion"),
+            OutputType: project.GetPropertyValue("OutputType"));
 
         if (string.IsNullOrEmpty(result.Command))
         {

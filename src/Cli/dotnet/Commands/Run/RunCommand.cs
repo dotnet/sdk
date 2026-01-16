@@ -519,6 +519,13 @@ public class RunCommand
             var command = CommandFactoryUsingResolver.Create(commandSpec)
                 .WorkingDirectory(runProperties.WorkingDirectory);
 
+            // For WinExe apps (WinForms, WPF, MAUI), use CloseMainWindow() to terminate
+            // since they don't respond to Ctrl+C.
+            if (runProperties.IsWindowsExecutable && command is Cli.Utils.Command cmd)
+            {
+                cmd.CloseMainWindow = true;
+            }
+
             SetRootVariableName(
                 command,
                 runtimeIdentifier: runProperties.RuntimeIdentifier,
