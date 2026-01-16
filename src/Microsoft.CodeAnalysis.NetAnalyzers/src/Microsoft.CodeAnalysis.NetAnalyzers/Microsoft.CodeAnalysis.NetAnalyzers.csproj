@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace />
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AnalysisMode>minimum</AnalysisMode>
   </PropertyGroup>
 
   <ItemGroup>
