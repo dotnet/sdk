@@ -236,7 +236,7 @@ namespace Microsoft.TemplateEngine.Cli
                     Reporter.Error.WriteLine(LocalizableStrings.TemplateCreator_Error_TemplateNotFound.Bold().Red());
                     Reporter.Error.WriteLine();
                     Reporter.Output.WriteLine(LocalizableStrings.TemplateCreator_Hint_RebuildCache);
-                    Reporter.Output.WriteCommand(Example.For<NewCommand>(templateArgs.ParseResult).WithOption(NewCommandDefinition.DebugRebuildCacheOption));
+                    Reporter.Output.WriteCommand(Example.For<NewCommand>(templateArgs.ParseResult).WithOption(NewCommandDefinition.CreateDebugRebuildCacheOption()));
                     Reporter.Output.WriteLine();
                     IManagedTemplatePackage? templatePackage = null;
                     try
@@ -252,10 +252,10 @@ namespace Microsoft.TemplateEngine.Cli
                     if (templatePackage != null)
                     {
                         Reporter.Output.WriteLine(LocalizableStrings.TemplateCreator_Hint_Uninstall);
-                        Reporter.Output.WriteCommand(Example.For<UninstallCommand>(templateArgs.ParseResult).WithArgument(UninstallCommandDefinition.NameArgument, templatePackage.DisplayName));
+                        Reporter.Output.WriteCommand(Example.For<UninstallCommand>(templateArgs.ParseResult).WithArgument(UninstallCommandDefinition.CreateNameArgument(), templatePackage.DisplayName));
                         Reporter.Output.WriteLine();
                         Reporter.Output.WriteLine(LocalizableStrings.TemplateCreator_Hint_Install);
-                        Reporter.Output.WriteCommand(Example.For<InstallCommand>(templateArgs.ParseResult).WithArgument(InstallCommandDefinition.NameArgument, templatePackage.DisplayName));
+                        Reporter.Output.WriteCommand(Example.For<InstallCommand>(templateArgs.ParseResult).WithArgument(InstallCommandDefinition.CreateNameArgument(), templatePackage.DisplayName));
                         Reporter.Output.WriteLine();
                     }
                     return NewCommandStatus.NotFound;
@@ -267,7 +267,7 @@ namespace Microsoft.TemplateEngine.Cli
                     Reporter.Error.WriteCommand(
                         Example
                             .For<NewCommand>(templateArgs.ParseResult)
-                            .WithArgument(NewCommandDefinition.ShortNameArgument, templateArgs.Template.ShortNameList[0])
+                            .WithArgument(NewCommandDefinition.CreateShortNameArgument(), templateArgs.Template.ShortNameList[0])
                             .WithHelpOption());
                     return NewCommandStatus.InvalidOption;
                 case CreationResultStatus.DestructiveChangesDetected:
@@ -286,9 +286,9 @@ namespace Microsoft.TemplateEngine.Cli
                     }
                     Reporter.Error.WriteLine(
                         string.Format(
-                            LocalizableStrings.RerunCommandAndPassForceToCreateAnyway, SharedOptions.ForceOption.Name).Bold().Red()
+                            LocalizableStrings.RerunCommandAndPassForceToCreateAnyway, SharedOptionsFactory.ForceOptionName).Bold().Red()
                         );
-                    Reporter.Error.WriteCommand(Example.FromExistingTokens(templateArgs.ParseResult).WithOption(SharedOptions.ForceOption));
+                    Reporter.Error.WriteCommand(Example.FromExistingTokens<Command>(templateArgs.ParseResult).WithOption(SharedOptionsFactory.CreateForceOption()));
                     return NewCommandStatus.CannotCreateOutputFile;
                 case CreationResultStatus.TemplateIssueDetected:
                     if (!string.IsNullOrEmpty(instantiateResult.ErrorMessage))

@@ -9,8 +9,16 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal sealed class NewCommandArgs : GlobalArgs
     {
+        private IEnumerable<string> s_passByOptionNames =
+        [
+            SharedOptionsFactory.ForceOptionName,
+            SharedOptionsFactory.NameOptionName,
+            SharedOptionsFactory.DryRunOptionName,
+            SharedOptionsFactory.NoUpdateCheckOptionName
+        ];
+
         public NewCommandArgs(NewCommand command, ParseResult parseResult)
-            : base(command, parseResult)
+            : base(parseResult)
         {
             List<Token> tokensToEvaluate = new();
             foreach (var childrenResult in parseResult.CommandResult.Children)
@@ -21,7 +29,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     {
                         continue;
                     }
-                    if (!NewCommandDefinition.LegacyOptions.Contains(o.Option) && !NewCommandDefinition.PassByOptions.Contains(o.Option))
+
+                    if (!LegacyOptions.AllNames.Contains(o.Option.Name) && !s_passByOptionNames.Contains(o.Option.Name))
                     {
                         continue;
                     }

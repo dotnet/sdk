@@ -3,37 +3,11 @@
 
 using System.CommandLine;
 
-namespace Microsoft.TemplateEngine.Cli.Commands
+namespace Microsoft.TemplateEngine.Cli.Commands;
+
+internal sealed class UpdateCommandArgs(BaseUpdateCommand command, ParseResult parseResult) : GlobalArgs(parseResult)
 {
-    internal class UpdateCommandArgs : GlobalArgs
-    {
-        public UpdateCommandArgs(BaseUpdateCommand command, ParseResult parseResult) : base(command, parseResult)
-        {
-            if (command is UpdateCommand)
-            {
-                CheckOnly = parseResult.GetValue(UpdateCommandDefinition.CheckOnlyOption);
-            }
-            else if (command is LegacyUpdateCheckCommand)
-            {
-                CheckOnly = true;
-            }
-            else if (command is LegacyUpdateApplyCommand)
-            {
-                CheckOnly = false;
-            }
-            else
-            {
-                throw new ArgumentException($"Unsupported type {command.GetType().FullName}", nameof(command));
-            }
-
-            Interactive = parseResult.GetValue(command.Definition.InteractiveOption);
-            AdditionalSources = parseResult.GetValue(command.Definition.AddSourceOption);
-        }
-
-        public bool CheckOnly { get; }
-
-        public bool Interactive { get; }
-
-        public IReadOnlyList<string>? AdditionalSources { get; }
-    }
+    public bool CheckOnly { get; } = command.Definition.GetCheckOnlyValue(parseResult);
+    public bool Interactive { get; } = parseResult.GetValue(command.Definition.InteractiveOption);
+    public IReadOnlyList<string>? AdditionalSources { get; } = parseResult.GetValue(command.Definition.AddSourceOption);
 }

@@ -1,57 +1,73 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
 using System.CommandLine;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.TemplateEngine.Cli;
 
-public sealed class LegacyFilterOptions
+public sealed class FilterOptions
 {
-    public readonly Option<string> AuthorOption = SharedOptionsFactory.CreateAuthorOption().AsHidden();
-    public readonly Option<string> BaselineOption = SharedOptionsFactory.CreateBaselineOption().AsHidden();
-    public readonly Option<string> LanguageOption = SharedOptionsFactory.CreateLanguageOption().AsHidden();
-    public readonly Option<string> TypeOption = SharedOptionsFactory.CreateTypeOption().AsHidden();
-    public readonly Option<string> TagOption = SharedOptionsFactory.CreateTagOption().AsHidden();
+    public required Option<string> AuthorOption { get; init; }
+    public required Option<string> BaselineOption { get; init; }
+    public required Option<string> LanguageOption { get; init; }
+    public required Option<string> TypeOption { get; init; }
+    public required Option<string> TagOption { get; init; }
+    public required Option<string>? PackageOption { get; init; }
 
-    public readonly Option<string> PackageOption = SharedOptionsFactory.CreatePackageOption().AsHidden();
-
-    public IEnumerable<Option> GetAllOptions()
+    public IEnumerable<Option> AllOptions
     {
-        yield return AuthorOption;
-        yield return BaselineOption;
-        yield return LanguageOption;
-        yield return TypeOption;
-        yield return TagOption;
-        yield return PackageOption;
-    }
-}
+        get
+        {
+            yield return AuthorOption;
+            yield return BaselineOption;
+            yield return LanguageOption;
+            yield return TypeOption;
+            yield return TagOption;
 
-public sealed class LegacyOptions
-{
-    public readonly Option<bool> ColumnsAllOption = CreateColumnsAllOption();
-    public readonly Option<string[]> ColumnsOption = CreateColumnsOption();
-    public readonly Option<bool> InteractiveOption = CreateInteractiveOption();
-    public readonly Option<string[]> AddSourceOption = CreateAddSourceOption();
-
-    public IEnumerable<Option> GetAllOptions()
-    {
-        yield return ColumnsAllOption;
-        yield return ColumnsOption;
-        yield return InteractiveOption;
-        yield return AddSourceOption;
+            if (PackageOption != null)
+            {
+                yield return PackageOption;
+            }
+        }
     }
 
-    public static Option<bool> CreateInteractiveOption()
-        => SharedOptionsFactory.CreateInteractiveOption().AsHidden();
+    public IEnumerable<string> AllNames
+        => GetAllNames(hasPackageOption: PackageOption != null);
 
-    public static Option<string[]> CreateAddSourceOption()
-        => SharedOptionsFactory.CreateAddSourceOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
+    public static IEnumerable<string> GetAllNames(bool hasPackageOption)
+    {
+        yield return SharedOptionsFactory.AuthorOptionName;
+        yield return SharedOptionsFactory.BaselineOptionName;
+        yield return SharedOptionsFactory.LanguageOptionName;
+        yield return SharedOptionsFactory.TypeOptionName;
+        yield return SharedOptionsFactory.TagOptionName;
 
-    public static Option<bool> CreateColumnsAllOption()
-        => SharedOptionsFactory.CreateColumnsAllOption().AsHidden();
+        if (hasPackageOption)
+        {
+            yield return SharedOptionsFactory.PackageOptionName;
+        }
+    }
 
-    public static Option<string[]> CreateColumnsOption()
-        => SharedOptionsFactory.CreateColumnsOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
+    public static FilterOptions CreateLegacy()
+        => new()
+        {
+            AuthorOption = SharedOptionsFactory.CreateAuthorOption().AsHidden(),
+            BaselineOption = SharedOptionsFactory.CreateBaselineOption().AsHidden(),
+            LanguageOption = SharedOptionsFactory.CreateLanguageOption().AsHidden(),
+            TypeOption = SharedOptionsFactory.CreateTypeOption().AsHidden(),
+            TagOption = SharedOptionsFactory.CreateTagOption().AsHidden(),
+            PackageOption = SharedOptionsFactory.CreatePackageOption().AsHidden(),
+        };
+
+    public static FilterOptions CreateSupported(bool hasPackageOption)
+        => new()
+        {
+            AuthorOption = SharedOptionsFactory.CreateAuthorOption(),
+            BaselineOption = SharedOptionsFactory.CreateBaselineOption(),
+            LanguageOption = SharedOptionsFactory.CreateLanguageOption(),
+            TypeOption = SharedOptionsFactory.CreateTypeOption(),
+            TagOption = SharedOptionsFactory.CreateTagOption(),
+            PackageOption = hasPackageOption ? SharedOptionsFactory.CreatePackageOption() : null,
+        };
 }

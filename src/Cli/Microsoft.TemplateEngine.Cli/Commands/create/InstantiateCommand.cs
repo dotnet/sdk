@@ -14,21 +14,9 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs, InstantiateCommandDefinition>, ICustomHelp
+    internal sealed partial class InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, InstantiateCommandDefinition definition)
+        : BaseCommand<InstantiateCommandArgs, InstantiateCommandDefinition>(hostBuilder, definition), ICustomHelp
     {
-        internal InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, definition: new())
-        {
-        }
-
-        internal IReadOnlyList<Option> PassByOptions { get; } = new Option[]
-        {
-            SharedOptions.ForceOption,
-            SharedOptions.NameOption,
-            SharedOptions.DryRunOption,
-            SharedOptions.NoUpdateCheckOption
-        };
-
         internal static Task<NewCommandStatus> ExecuteAsync(
             NewCommandArgs newCommandArgs,
             IEngineEnvironmentSettings environmentSettings,
@@ -436,8 +424,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 foreach (string possibleMatch in possibleTemplateMatches)
                 {
                     Example example = useInstantiateCommand
-                        ? Example.For<InstantiateCommand>(instantiateArgs.ParseResult).WithArgument(NewCommandDefinition.ShortNameArgument, possibleMatch)
-                        : Example.For<NewCommand>(instantiateArgs.ParseResult).WithArgument(NewCommandDefinition.ShortNameArgument, possibleMatch);
+                        ? Example.For<InstantiateCommand>(instantiateArgs.ParseResult).WithArguments(possibleMatch)
+                        : Example.For<NewCommand>(instantiateArgs.ParseResult).WithArguments(possibleMatch);
                     if (helpOption)
                     {
                         example = example.WithHelpOption();
@@ -482,7 +470,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                   Example
                       .For<NewCommand>(instantiateArgs.ParseResult)
                       .WithSubcommand<ListCommand>()
-                      .WithArgument(ListCommandDefinition.NameArgument, instantiateArgs.ShortName));
+                      .WithArguments(instantiateArgs.ShortName));
             }
             else
             {
@@ -503,7 +491,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     Example
                         .For<NewCommand>(instantiateArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithArgument(SearchCommandDefinition.NameArgument, instantiateArgs.ShortName));
+                        .WithArguments(instantiateArgs.ShortName));
             }
         }
     }

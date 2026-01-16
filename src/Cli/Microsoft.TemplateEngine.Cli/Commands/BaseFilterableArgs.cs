@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         private readonly IReadOnlyDictionary<FilterOptionDefinition, OptionResult> _filters;
 
         internal BaseFilterableArgs(BaseCommand<TDefinition> command, ParseResult parseResult)
-            : base(command, parseResult)
+            : base(parseResult)
         {
             if (command is not IFilterableCommand filterableCommand)
             {

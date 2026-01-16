@@ -5,7 +5,4 @@ using System.CommandLine;
 
 namespace Microsoft.TemplateEngine.Cli.Commands;
 
-internal sealed class AliasShowCommandArgs(BaseAliasShowCommand command, ParseResult parseResult)
-    : GlobalArgs(command, parseResult)
-{
-}
+internal sealed class AliasShowCommandArgs(ParseResult parseResult) : GlobalArgs(parseResult);

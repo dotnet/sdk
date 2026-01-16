@@ -10,15 +10,16 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         internal SearchCommandArgs(BaseSearchCommand command, ParseResult parseResult)
             : base(command, parseResult)
         {
-            string? nameCriteria = parseResult.GetValue(SearchCommandDefinition.NameArgument);
+            string? nameCriteria = parseResult.GetValue(command.Definition.NameArgument);
             if (!string.IsNullOrWhiteSpace(nameCriteria))
             {
                 SearchNameCriteria = nameCriteria;
             }
             // for legacy case new command argument is also accepted
-            else if (command is LegacySearchCommand legacySearchCommand)
+            else if (command is LegacySearchCommand)
             {
-                string? newCommandArgument = parseResult.GetValue(NewCommandDefinition.ShortNameArgument);
+                var newCommand = (NewCommand)command.Parents.Single();
+                string? newCommandArgument = parseResult.GetValue(newCommand.Definition.ShortNameArgument);
                 if (!string.IsNullOrWhiteSpace(newCommandArgument))
                 {
                     SearchNameCriteria = newCommandArgument;

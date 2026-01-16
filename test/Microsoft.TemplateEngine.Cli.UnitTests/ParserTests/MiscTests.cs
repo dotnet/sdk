@@ -182,7 +182,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             rootCommand.Add(myCommand);
 
             ParseResult parseResult = rootCommand.Parse(command);
-            Assert.Equal(expected, parseResult.GetValue(SharedOptions.OutputOption)?.Name);
+
+            Assert.Equal(expected, parseResult.GetValue(myCommand.Definition.InstantiateOptions.OutputOption)?.Name);
         }
 
         [Theory]
@@ -205,7 +206,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             expected = expected?.Replace("$filePath", Path.GetFileName(existingFilePath));
 
             ParseResult parseResult = rootCommand.Parse(command);
-            Assert.Equal(expected, parseResult.GetValue(SharedOptions.ProjectPathOption)?.Name);
+            Assert.Equal(expected, parseResult.GetValue(myCommand.Definition.InstantiateOptions.ProjectPathOption)?.Name);
         }
     }
 }

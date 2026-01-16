@@ -3,10 +3,20 @@
 
 using System.CommandLine;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Edge.Settings;
 
-namespace Microsoft.TemplateEngine.Cli.Commands;
-
-internal sealed class AliasAddCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-    : BaseAliasAddCommand(hostBuilder, new AliasCommandDefinition())
+namespace Microsoft.TemplateEngine.Cli.Commands
 {
+    internal sealed class AliasAddCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, AliasCommandDefinitionBase definition)
+        : BaseCommand<AliasAddCommandArgs, AliasCommandDefinitionBase>(hostBuilder, definition)
+    {
+        protected override Task<NewCommandStatus> ExecuteAsync(
+            AliasAddCommandArgs args,
+            IEngineEnvironmentSettings environmentSettings,
+            TemplatePackageManager templatePackageManager,
+            ParseResult parseResult,
+            CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        protected override AliasAddCommandArgs ParseContext(ParseResult parseResult) => new(parseResult);
+    }
 }

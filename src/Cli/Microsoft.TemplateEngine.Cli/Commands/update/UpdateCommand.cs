@@ -7,8 +7,8 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed class UpdateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-        : BaseUpdateCommand(hostBuilder, new UpdateCommandDefinition())
+    internal sealed class UpdateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, UpdateCommandDefinition definition)
+        : BaseUpdateCommand(hostBuilder, definition)
     {
         protected override async Task<NewCommandStatus> ExecuteAsync(
             UpdateCommandArgs args,

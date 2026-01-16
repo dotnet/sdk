@@ -216,9 +216,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             writer.WriteLine(
                 Example
                     .For<NewCommand>(args.ParseResult)
-                    .WithArgument(NewCommandDefinition.ShortNameArgument, templateGroup.ShortNames[0])
+                    .WithArguments(templateGroup.ShortNames[0])
                     .WithHelpOption()
-                    .WithOption(SharedOptionsFactory.CreateLanguageOption(), supportedLanguages.First())
+                    .WithOption(c => c.Definition.LegacyFilterOptions.LanguageOption, supportedLanguages.First())
                     .ToString().Indent());
             writer.WriteLine();
 
@@ -251,9 +251,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             writer.WriteLine(HelpStrings.Hint_HelpForOtherTypes, string.Join(", ", supportedTypes));
             writer.WriteLine(Example
                 .For<NewCommand>(args.ParseResult)
-                .WithArgument(NewCommandDefinition.ShortNameArgument, templateGroup.ShortNames[0])
+                .WithArguments(templateGroup.ShortNames[0])
                 .WithHelpOption()
-                .WithOption(SharedOptionsFactory.CreateTypeOption(), supportedTypes.First())
+                .WithOption(c => c.Definition.LegacyFilterOptions.TypeOption, supportedTypes.First())
                 .ToString().Indent());
             writer.WriteLine();
         }
@@ -287,12 +287,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             List<Option> optionsToShow = new()
             {
-                SharedOptions.NameOption,
-                SharedOptions.OutputOption,
-                SharedOptions.DryRunOption,
-                SharedOptions.ForceOption,
-                SharedOptions.NoUpdateCheckOption,
-                SharedOptions.ProjectPathOption
+                SharedOptionsFactory.CreateNameOption(),
+                SharedOptionsFactory.CreateOutputOption(),
+                SharedOptionsFactory.CreateDryRunOption(),
+                SharedOptionsFactory.CreateForceOption(),
+                SharedOptionsFactory.CreateNoUpdateCheckOption(),
+                SharedOptionsFactory.CreateProjectPathOption()
             };
 
             foreach (TemplateCommand template in templatesToShow)

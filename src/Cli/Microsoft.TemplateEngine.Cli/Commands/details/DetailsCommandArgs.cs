@@ -7,15 +7,16 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal class DetailsCommandArgs : GlobalArgs
     {
-        internal DetailsCommandArgs(DetailsCommand detailsCommand, ParseResult parseResult) : base(detailsCommand, parseResult)
+        internal DetailsCommandArgs(DetailsCommand detailsCommand, ParseResult parseResult)
+            : base(parseResult)
         {
-            string nameCriteria = parseResult.GetValue(DetailsCommandDefinition.NameArgument)
-                ?? throw new ArgumentException($"{nameof(parseResult)} should contain one argument for {DetailsCommandDefinition.NameArgument.Name}", nameof(parseResult));
+            string nameCriteria = parseResult.GetValue(detailsCommand.Definition.NameArgument)
+                ?? throw new ArgumentException($"{nameof(parseResult)} should contain one argument for {detailsCommand.Definition.NameArgument.Name}", nameof(parseResult));
 
             NameCriteria = nameCriteria;
             VersionCriteria = null;
-            Interactive = parseResult.GetValue(DetailsCommandDefinition.InteractiveOption);
-            AdditionalSources = parseResult.GetValue(DetailsCommandDefinition.AddSourceOption);
+            Interactive = parseResult.GetValue(detailsCommand.Definition.InteractiveOption);
+            AdditionalSources = parseResult.GetValue(detailsCommand.Definition.AddSourceOption);
         }
 
         internal bool Interactive { get; }

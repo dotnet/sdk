@@ -7,8 +7,8 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed class LegacySearchCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-        : BaseSearchCommand(hostBuilder, new SearchCommandDefinition(isLegacy: true))
+    internal sealed class LegacySearchCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, SearchCommandDefinition definition)
+        : BaseSearchCommand(hostBuilder, definition)
     {
         protected override Task<NewCommandStatus> ExecuteAsync(SearchCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken)
         {

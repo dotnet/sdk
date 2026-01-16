@@ -11,17 +11,17 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         private readonly TemplateCommand _command;
         private Dictionary<string, OptionResult> _templateOptions = new();
 
-        public TemplateCommandArgs(TemplateCommand command, NewCommand parentCommand, ParseResult parseResult)
+        public TemplateCommandArgs(TemplateCommand command, Command parentCommand, ParseResult parseResult)
         {
-            ParseResult = parseResult ?? throw new ArgumentNullException(nameof(parseResult));
-            _command = command ?? throw new ArgumentNullException(nameof(command));
-            ParentCommand = parentCommand ?? throw new ArgumentNullException(nameof(parentCommand));
-            RootCommand = parentCommand;
+            ParseResult = parseResult;
+            _command = command;
+            ParentCommand = parentCommand;
+            RootCommand = GetRootCommand(parentCommand);
 
-            Name = parseResult.GetValueForOptionOrNull(SharedOptions.NameOption);
-            IsForceFlagSpecified = parseResult.GetValue(SharedOptions.ForceOption);
-            IsDryRun = parseResult.GetValue(SharedOptions.DryRunOption);
-            NoUpdateCheck = parseResult.GetValue(SharedOptions.NoUpdateCheckOption);
+            Name = parseResult.GetValueForOptionOrNull(command.NameOption);
+            IsForceFlagSpecified = parseResult.GetValue(command.ForceOption);
+            IsDryRun = parseResult.GetValue(command.DryRunOption);
+            NoUpdateCheck = parseResult.GetValue(command.NoUpdateCheckOption);
 
             if (command.LanguageOption != null)
             {
@@ -121,6 +121,20 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 return $"0x{intValue.ToString("X")}";
             }
             return optionValue.ToString();
+        }
+
+        private NewCommand GetRootCommand(Command command)
+        {
+            if (command is NewCommand newCommand)
+            {
+                return newCommand;
+            }
+            Command? currentCommand = command;
+            while (currentCommand != null && currentCommand is not NewCommand)
+            {
+                currentCommand = currentCommand.Parents.OfType<Command>().SingleOrDefault();
+            }
+            return currentCommand as NewCommand ?? throw new Exception($"Command structure is not correct: {nameof(NewCommand)} is not found.");
         }
     }
 }

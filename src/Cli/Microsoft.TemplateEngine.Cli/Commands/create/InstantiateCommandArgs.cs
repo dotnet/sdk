@@ -8,6 +8,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal sealed class InstantiateCommandArgs : GlobalArgs
     {
+        private readonly IEnumerable<string> s_passByOptionNames =
+        [
+            SharedOptionsFactory.ForceOptionName,
+            SharedOptionsFactory.NameOptionName,
+            SharedOptionsFactory.DryRunOptionName,
+            SharedOptionsFactory.NoUpdateCheckOptionName,
+        ];
+
         internal string? ShortName { get; }
 
         internal string[] RemainingArguments { get; }
@@ -29,7 +37,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             foreach (OptionResult optionResult in parseResult.CommandResult.Children.OfType<OptionResult>())
             {
-                if (command.PassByOptions.Contains(optionResult.Option))
+                if (s_passByOptionNames.Contains(optionResult.Option.Name))
                 {
                     if (optionResult.IdentifierToken is { } token)
                     {

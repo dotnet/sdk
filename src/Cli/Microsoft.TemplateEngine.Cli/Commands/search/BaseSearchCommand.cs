@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             _definition = definition;
         }
 
-        public IEnumerable<Option> FilterOptions => _definition.FilterOptions;
+        public IEnumerable<Option> FilterOptions => _definition.FilterOptions.AllOptions;
 
         public Option<bool> ColumnsAllOption => _definition.ColumnsAllOption;
 
