@@ -16,8 +16,6 @@ public interface IEnvironmentProvider
 
     string? GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions);
 
-    IEnumerable<string> SplitPaths(string pathString);
-
     bool GetEnvironmentVariableAsBool(string name, bool defaultValue);
 
     int? GetEnvironmentVariableAsNullableInt(string name);

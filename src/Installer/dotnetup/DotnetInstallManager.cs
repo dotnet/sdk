@@ -28,8 +28,7 @@ public class DotnetInstallManager : IDotnetInstallManager
             return null;
         }
 
-        string installDir = Path.GetDirectoryName(foundDotnet)!;
-        var installRoot = new DotnetInstallRoot(installDir, InstallerUtilities.GetDefaultInstallArchitecture());
+        var currentInstallRoot = new DotnetInstallRoot(Path.GetDirectoryName(foundDotnet)!, InstallerUtilities.GetDefaultInstallArchitecture());
 
         // Use InstallRootManager to determine if the install is fully configured
         if (OperatingSystem.IsWindows())
@@ -38,26 +37,26 @@ public class DotnetInstallManager : IDotnetInstallManager
 
             // Check if user install root is fully configured
             var userChanges = installRootManager.GetUserInstallRootChanges();
-            if (!userChanges.NeedsChange() && DotnetupUtilities.PathsEqual(installDir, userChanges.UserDotnetPath))
+            if (!userChanges.NeedsChange() && DotnetupUtilities.PathsEqual(currentInstallRoot.Path, userChanges.UserDotnetPath))
             {
-                return new(installRoot, InstallType.User, IsFullyConfigured: true);
+                return new(currentInstallRoot, InstallType.User, IsFullyConfigured: true);
             }
 
             // Check if admin install root is fully configured
             var adminChanges = installRootManager.GetAdminInstallRootChanges();
             if (!adminChanges.NeedsChange())
             {
-                return new(installRoot, InstallType.Admin, IsFullyConfigured: true);
+                return new(currentInstallRoot, InstallType.Admin, IsFullyConfigured: true);
             }
 
             // Not fully configured, but PATH resolves to dotnet
             // Determine type based on location
             string programFilesPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
             string programFilesX86Path = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-            bool isAdminPath = installDir.StartsWith(Path.Combine(programFilesPath, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
-                               installDir.StartsWith(Path.Combine(programFilesX86Path, "dotnet"), StringComparison.OrdinalIgnoreCase);
+            bool isAdminPath = currentInstallRoot.Path.StartsWith(Path.Combine(programFilesPath, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
+                               currentInstallRoot.Path.StartsWith(Path.Combine(programFilesX86Path, "dotnet"), StringComparison.OrdinalIgnoreCase);
 
-            return new(installRoot, isAdminPath ? InstallType.Admin : InstallType.User, IsFullyConfigured: false);
+            return new(currentInstallRoot, isAdminPath ? InstallType.Admin : InstallType.User, IsFullyConfigured: false);
         }
         else
         {
@@ -65,11 +64,11 @@ public class DotnetInstallManager : IDotnetInstallManager
             // TODO: This should be improved to not be windows-specific https://github.com/dotnet/sdk/issues/51601
             string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
             string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-            bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
-                                  installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
+            bool isAdminInstall = currentInstallRoot.Path.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
+                                  currentInstallRoot.Path.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
 
             // For now, we consider it fully configured if it's on PATH
-            return new(installRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsFullyConfigured: true);
+            return new(currentInstallRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsFullyConfigured: true);
         }
     }
 

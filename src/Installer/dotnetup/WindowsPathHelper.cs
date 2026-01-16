@@ -301,10 +301,11 @@ internal sealed class WindowsPathHelper : IDisposable
         var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider(searchPathsOverride: expandedEntries);
         var resolvedCommandPath = envProvider.GetCommandPath(commandName);
 
+        var normalizedPathToAdd = Path.TrimEndingDirectorySeparator(pathToAdd);
+
         if (resolvedCommandPath != null)
         {
             var resolvedDir = Path.GetDirectoryName(resolvedCommandPath);
-            var normalizedPathToAdd = Path.TrimEndingDirectorySeparator(pathToAdd);
             var normalizedResolvedDir = Path.TrimEndingDirectorySeparator(resolvedDir ?? string.Empty);
 
             if (normalizedResolvedDir.Equals(normalizedPathToAdd, StringComparison.OrdinalIgnoreCase))
@@ -315,16 +316,8 @@ internal sealed class WindowsPathHelper : IDisposable
         }
 
         // Check if pathToAdd is already in the expanded PATH
-        var normalizedPathToAddFinal = Path.TrimEndingDirectorySeparator(pathToAdd);
-        int existingIndex = -1;
-        for (int i = 0; i < expandedEntries.Count; i++)
-        {
-            if (Path.TrimEndingDirectorySeparator(expandedEntries[i]).Equals(normalizedPathToAddFinal, StringComparison.OrdinalIgnoreCase))
-            {
-                existingIndex = i;
-                break;
-            }
-        }
+        int existingIndex = expandedEntries.FindIndex(expandedEntry =>
+            Path.TrimEndingDirectorySeparator(expandedEntry).Equals(normalizedPathToAdd, StringComparison.OrdinalIgnoreCase));
 
         if (existingIndex >= 0)
         {
