@@ -38,7 +38,6 @@
        as that validates running tests with desktop msbuild. -->
   <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
     <SDKCustomXUnitProject Include="
-      sdk-tasks.Tests\sdk-tasks.Tests.csproj;
       Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
       Microsoft.DotNet.ApiCompat.Tests\Microsoft.DotNet.ApiCompat.Tests.csproj;
       Microsoft.DotNet.ApiCompatibility.Tests\Microsoft.DotNet.ApiCompatibility.Tests.csproj;

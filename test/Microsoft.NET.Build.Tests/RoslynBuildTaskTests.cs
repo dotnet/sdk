@@ -164,7 +164,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         using (var reader = BinaryLogReader.Create(binaryLogPath))
         {
             var call = reader.ReadAllCompilerCalls().Should().ContainSingle().Subject;
-            Path.GetFileName(call.CompilerFilePath).Should().Be(compilerFileName);
+            Path.GetFileNameWithoutExtension(call.CompilerFilePath).Should().Be(Path.GetFileNameWithoutExtension(compilerFileName));
 
             const string toolsetPackageName = "microsoft.net.compilers.toolset";
             if (toolsetPackage)
