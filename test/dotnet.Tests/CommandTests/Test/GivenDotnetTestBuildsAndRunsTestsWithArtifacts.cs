@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -47,7 +47,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        // Linux and macOS are being skipped. See: https://github.com/dotnet/sdk/issues/52029
+        [WindowsOnlyTheory]
         public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
@@ -60,7 +61,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute("--coverage", MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("--coverage", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {

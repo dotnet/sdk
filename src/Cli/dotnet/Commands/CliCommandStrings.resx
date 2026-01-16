@@ -744,9 +744,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   <data name="Date" xml:space="preserve">
     <value>Date</value>
   </data>
-  <data name="DefaultLaunchProfileDisplayName" xml:space="preserve">
-    <value>(Default)</value>
-  </data>
   <data name="DeletingWorkloadManifest" xml:space="preserve">
     <value>Uninstalling workload manifest {0} version {1}...</value>
   </data>
@@ -765,10 +762,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   </data>
   <data name="DescriptionColumnName" xml:space="preserve">
     <value>Description</value>
-  </data>
-  <data name="DeserializationExceptionMessage" xml:space="preserve">
-    <value>An error was encountered when reading '{0}': {1}</value>
-    <comment>{0} is file path. {1} is exception message.</comment>
   </data>
   <data name="DetailDescription" xml:space="preserve">
     <value>Show detail result of the query.</value>
@@ -811,11 +804,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   </data>
   <data name="DownloadToCacheOptionDescription" xml:space="preserve">
     <value>Download packages needed to install a workload to a folder that can be used for offline installation.</value>
-  </data>
-  <data name="DuplicateCaseInsensitiveLaunchProfileNames" xml:space="preserve">
-    <value>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</value>
   </data>
   <data name="ExactMatchDescription" xml:space="preserve">
     <value>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</value>
@@ -1032,18 +1020,6 @@ Make the profile names distinct.</value>
   <data name="LatestVersion" xml:space="preserve">
     <value>Latest Version</value>
     <comment>Table lable</comment>
-  </data>
-  <data name="LaunchProfileDoesNotExist" xml:space="preserve">
-    <value>A launch profile with the name '{0}' doesn't exist.</value>
-  </data>
-  <data name="LaunchProfileHandlerCannotBeLocated" xml:space="preserve">
-    <value>The launch profile type '{0}' is not supported.</value>
-  </data>
-  <data name="LaunchProfileIsNotAJsonObject" xml:space="preserve">
-    <value>A profile with the specified name isn't a valid JSON object.</value>
-  </data>
-  <data name="LaunchProfilesCollectionIsNotAJsonObject" xml:space="preserve">
-    <value>The 'profiles' property of the launch settings document is not a JSON object.</value>
   </data>
   <data name="ListAppFullName" xml:space="preserve">
     <value>List all projects in a solution file.</value>
@@ -1739,6 +1715,21 @@ The current OutputType is '{2}'.</value>
     <value>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</value>
   </data>
+  <data name="RunCommandSelectTargetFrameworkPrompt" xml:space="preserve">
+    <value>Select the target framework to run:</value>
+  </data>
+  <data name="RunCommandMoreFrameworksText" xml:space="preserve">
+    <value>Move up and down to reveal more frameworks</value>
+  </data>
+  <data name="RunCommandSearchPlaceholderText" xml:space="preserve">
+    <value>Type to search</value>
+  </data>
+  <data name="RunCommandAvailableTargetFrameworks" xml:space="preserve">
+    <value>Available target frameworks:</value>
+  </data>
+  <data name="RunCommandExampleText" xml:space="preserve">
+    <value>Example</value>
+  </data>
   <data name="RunCommandProjectAbbreviationDeprecated" xml:space="preserve">
     <value>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</value>
     <comment>{Locked="--project"}</comment>
@@ -2250,9 +2241,6 @@ and the corresponding package Ids for installed tools using the command
   </data>
   <data name="UpdateToolFailed" xml:space="preserve">
     <value>Tool '{0}' failed to update due to the following:</value>
-  </data>
-  <data name="UsableLaunchProfileCannotBeLocated" xml:space="preserve">
-    <value>A usable launch profile could not be located.</value>
   </data>
   <data name="Usage" xml:space="preserve">
     <value>Usage</value>

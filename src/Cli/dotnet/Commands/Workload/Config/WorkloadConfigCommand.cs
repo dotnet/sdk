@@ -12,36 +12,32 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Config;
 
-internal class WorkloadConfigCommand : WorkloadCommandBase
+internal sealed class WorkloadConfigCommand : WorkloadCommandBase<WorkloadConfigCommandDefinition>
 {
     private readonly bool _hasUpdateMode;
     private readonly string? _updateMode;
     private readonly IWorkloadResolverFactory _workloadResolverFactory;
 
     private readonly string _dotnetPath;
-    private readonly string _userProfileDir;
-    private readonly IWorkloadResolver _workloadResolver;
     private readonly ReleaseVersion _sdkVersion;
     private readonly SdkFeatureBand _sdkFeatureBand;
 
-    readonly IInstaller _workloadInstaller;
+    private readonly IInstaller _workloadInstaller;
 
     public WorkloadConfigCommand(
         ParseResult parseResult,
         IReporter? reporter = null,
         IWorkloadResolverFactory? workloadResolverFactory = null
-    ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter)
+    ) : base(parseResult, reporter)
     {
-        _hasUpdateMode = parseResult.HasOption(WorkloadConfigCommandParser.UpdateMode);
-        _updateMode = parseResult.GetValue(WorkloadConfigCommandParser.UpdateMode);
+        _hasUpdateMode = parseResult.HasOption(Definition.UpdateMode);
+        _updateMode = parseResult.GetValue(Definition.UpdateMode);
 
         _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
         var creationResult = _workloadResolverFactory.Create();
 
         _dotnetPath = creationResult.DotnetPath;
-        _userProfileDir = creationResult.UserProfileDir;
-        _workloadResolver = creationResult.WorkloadResolver;
         _sdkVersion = creationResult.SdkVersion;
 
         _sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
@@ -57,22 +53,22 @@ internal class WorkloadConfigCommand : WorkloadCommandBase
             string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
             var globalJsonVersion = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath, out bool? shouldUseWorkloadSets);
             shouldUseWorkloadSets ??= string.IsNullOrWhiteSpace(globalJsonVersion) ? null : true;
-            if (WorkloadConfigCommandParser.UpdateMode_WorkloadSet.Equals(_updateMode, StringComparison.InvariantCultureIgnoreCase))
+            if (WorkloadConfigCommandDefinition.UpdateMode_WorkloadSet.Equals(_updateMode, StringComparison.InvariantCultureIgnoreCase))
             {
                 if (shouldUseWorkloadSets == false)
                 {
-                    Reporter.WriteLine(string.Format(CliCommandStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_WorkloadSet, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_Manifests).Yellow());
+                    Reporter.WriteLine(string.Format(CliCommandStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandDefinition.UpdateMode_WorkloadSet, globalJsonPath, WorkloadConfigCommandDefinition.UpdateMode_Manifests).Yellow());
                 }
                 else
                 {
                     _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
                 }
             }
-            else if (WorkloadConfigCommandParser.UpdateMode_Manifests.Equals(_updateMode, StringComparison.InvariantCultureIgnoreCase))
+            else if (WorkloadConfigCommandDefinition.UpdateMode_Manifests.Equals(_updateMode, StringComparison.InvariantCultureIgnoreCase))
             {
                 if (shouldUseWorkloadSets == true)
                 {
-                    Reporter.WriteLine(string.Format(CliCommandStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_Manifests, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_WorkloadSet).Yellow());
+                    Reporter.WriteLine(string.Format(CliCommandStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandDefinition.UpdateMode_Manifests, globalJsonPath, WorkloadConfigCommandDefinition.UpdateMode_WorkloadSet).Yellow());
                 }
                 else
                 {
@@ -81,13 +77,13 @@ internal class WorkloadConfigCommand : WorkloadCommandBase
             }
             else if (string.IsNullOrEmpty(_updateMode))
             {
-                if (shouldUseWorkloadSets ?? InstallingWorkloadCommand.ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
+                if (shouldUseWorkloadSets ?? WorkloadManifestUpdater.ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
                 {
-                    Reporter.WriteLine(WorkloadConfigCommandParser.UpdateMode_WorkloadSet);
+                    Reporter.WriteLine(WorkloadConfigCommandDefinition.UpdateMode_WorkloadSet);
                 }
                 else
                 {
-                    Reporter.WriteLine(WorkloadConfigCommandParser.UpdateMode_Manifests);
+                    Reporter.WriteLine(WorkloadConfigCommandDefinition.UpdateMode_Manifests);
                 }
             }
             else

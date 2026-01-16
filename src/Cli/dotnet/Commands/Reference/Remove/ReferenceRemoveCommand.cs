@@ -5,24 +5,20 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
-internal class ReferenceRemoveCommand : CommandBase
+internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveCommandDefinitionBase>
 {
     private readonly string _fileOrDirectory;
     private readonly IReadOnlyCollection<string> _arguments;
 
-    public ReferenceRemoveCommand(
-        ParseResult parseResult) : base(parseResult)
+    public ReferenceRemoveCommand(ParseResult parseResult)
+        : base(parseResult)
     {
-        _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
-            parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument);
-        _arguments = parseResult.GetValue(ReferenceRemoveCommandParser.ProjectPathArgument).ToList().AsReadOnly();
+        _fileOrDirectory = Definition.GetFileOrDirectory(parseResult);
+        _arguments = parseResult.GetValue(Definition.ProjectPathArgument).ToList().AsReadOnly();
 
         if (_arguments.Count == 0)
         {
@@ -43,12 +39,12 @@ internal class ReferenceRemoveCommand : CommandBase
 
             return Path.GetRelativePath(
                 msbuildProj.ProjectRootElement.FullPath,
-                MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName
+                MsbuildProject.GetProjectFileFromDirectory(fullPath)
             );
         });
 
         int numberOfRemovedReferences = msbuildProj.RemoveProjectToProjectReferences(
-            _parseResult.GetValue(ReferenceRemoveCommandParser.FrameworkOption),
+            _parseResult.GetValue(Definition.FrameworkOption),
             references);
 
         if (numberOfRemovedReferences != 0)

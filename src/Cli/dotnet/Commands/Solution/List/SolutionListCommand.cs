@@ -9,11 +9,17 @@ using Microsoft.VisualStudio.SolutionPersistence.Model;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 
-internal class SolutionListCommand(
-    ParseResult parseResult) : CommandBase(parseResult)
+internal sealed class SolutionListCommand : CommandBase<SolutionListCommandDefinition>
 {
-    private readonly string _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
-    private readonly bool _displaySolutionFolders = parseResult.GetValue(SolutionListCommandParser.SolutionFolderOption);
+    private readonly string _fileOrDirectory;
+    private readonly bool _displaySolutionFolders;
+
+    public SolutionListCommand(ParseResult parseResult)
+        : base(parseResult)
+    {
+        _fileOrDirectory = parseResult.GetValue(Definition.Parent.SlnArgument);
+        _displaySolutionFolders = parseResult.GetValue(Definition.SolutionFolderOption);
+    }
 
     public override int Execute()
     {

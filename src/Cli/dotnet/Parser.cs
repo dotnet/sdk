@@ -165,7 +165,7 @@ public static class Parser
         rootCommand.Arguments.Add(DotnetSubCommand);
 
         // NuGet implements several commands in its own repo. Add them to the .NET SDK via the provided API.
-        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.InteractiveOption(acceptArgument: true));
+        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.CreateInteractiveOption(acceptArgument: true));
 
         rootCommand.SetAction(parseResult =>
         {
@@ -365,16 +365,16 @@ public static class Parser
                 context.Output.WriteLine();
                 additionalOption(context);
             }
-            else if (command.Name.Equals(VSTestCommandParser.GetCommand().Name))
+            else if (command is VSTestCommandDefinition)
             {
                 new VSTestForwardingApp(helpArgs).Execute();
             }
-            else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
+            else if (command is FormatCommandDefinition format)
             {
-                var arguments = context.ParseResult.GetValue(FormatCommandParser.Arguments);
+                var arguments = context.ParseResult.GetValue(format.Arguments);
                 new FormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
-            else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
+            else if (command is FsiCommandDefinition)
             {
                 new FsiForwardingApp(helpArgs).Execute();
             }
@@ -386,17 +386,12 @@ public static class Parser
                     block(context);
                 }
             }
-            else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
-            {
-                new FormatForwardingApp(helpArgs).Execute();
-            }
-            else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
-            {
-                new FsiForwardingApp(helpArgs).Execute();
-            }
             else
             {
-                if (command.Name.Equals(ListReferenceCommandParser.GetCommand().Name))
+                // TODO: avoid modifying the commands:
+                // https://github.com/dotnet/sdk/issues/52136
+
+                if (command.Name.Equals(ListReferenceCommandDefinition.Name))
                 {
                     Command listCommand = command.Parents.Single() as Command;
 
@@ -405,19 +400,22 @@ public static class Parser
                         if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
                         {
                             // Name is immutable now, so we create a new Argument with the right name..
-                            listCommand.Arguments[i] = ListCommandParser.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
+                            listCommand.Arguments[i] = ListCommandDefinition.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
                         }
                     }
                 }
-                else if (command.Name.Equals(AddPackageCommandParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
+                else if (command.Name.Equals(AddPackageCommandDefinition.Name) || command.Name.Equals(AddCommandDefinition.Name))
                 {
                     // Don't show package completions in help
-                    PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
+                    foreach (var argument in command.Arguments)
+                    {
+                        argument.CompletionSources.Clear();
+                    }
                 }
-                else if (command.Name.Equals(WorkloadSearchCommandParser.GetCommand().Name))
+                else if (command is WorkloadSearchCommandDefinition workloadSearchCommand)
                 {
                     // Set shorter description for displaying parent command help.
-                    WorkloadSearchVersionsCommandParser.GetCommand().Description = CliStrings.ShortWorkloadSearchVersionDescription;
+                    workloadSearchCommand.VersionCommand.Description = CliStrings.ShortWorkloadSearchVersionDescription;
                 }
 
                 base.Write(context);

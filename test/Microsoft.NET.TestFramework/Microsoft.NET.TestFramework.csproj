@@ -83,5 +83,8 @@
   <Import Project="BuildTestPackages.targets" Condition="'$(BuildTestPackages)' != 'false'" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <ItemGroup>
+    <ProjectCapability Remove="TestContainer" />
+  </ItemGroup>
 
 </Project>

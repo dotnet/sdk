@@ -48,11 +48,31 @@ And metadata at `metadata.json`:
 
 ```json
 {
-  "AspNetCoreAnalyzers": "9.0.0-preview.5.24306.11",
-  "NetCoreAnalyzers": "9.0.0-preview.5.24306.7",
-  "WindowsDesktopAnalyzers": "9.0.0-preview.5.24306.8",
-  "SDKAnalyzers": "9.0.100-dev",
-  "WebSDKAnalyzers": "9.0.100-dev",
+  "AspNetCoreAnalyzers":
+  {
+    "Version": "9.0.0-preview.5.24306.11",
+    "Files": ["analyzers\\dotnet\\cs\\Microsoft.AspNetCore.App.Analyzers.dll"]
+  },
+  "NetCoreAnalyzers":
+  {
+    "Version": "9.0.0-preview.5.24306.7",
+    "Files": ["analyzers\\dotnet\\cs\\System.Text.RegularExpressions.Generator.dll"]
+  },
+  "WindowsDesktopAnalyzers":
+  {
+    "Version": "9.0.0-preview.5.24306.8",
+    "Files": ["analyzers\\dotnet\\System.Windows.Forms.Analyzers.dll"]
+  },
+  "SDKAnalyzers":
+  {
+    "Version": "9.0.100-dev",
+    "Files": ["Sdks\\Microsoft.NET.Sdk\\analyzers\\Microsoft.CodeAnalysis.NetAnalyzers.dll"]
+  },
+  "WebSDKAnalyzers":
+  {
+    "Version": "9.0.100-dev",
+    "Files": ["Sdks\\Microsoft.NET.Sdk.Web\\analyzers\\cs\\Microsoft.AspNetCore.Analyzers.dll"]
+  },
 }
 ```
 
@@ -73,7 +93,7 @@ will be redirected to
 {InstallDir}\SDKAnalyzers\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
 ```
 
-where `metadata.json` has `"SDKAnalyzers": "9.0.100-dev"`, because
+where `metadata.json` has `"SDKAnalyzers": { "Version": "9.0.100-dev" }`, because
 1. the suffix `Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll` matches, and
 2. the version `9.0.100-preview.5.24307.3` has the same major and minor component (`9.0`) as the version `9.0.100-dev`
    (both versions are read from the paths, not DLL metadata).

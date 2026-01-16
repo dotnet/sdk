@@ -29,6 +29,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public Dictionary<string, string> EnvironmentVariables { get; } = [];
 
+        public void SuppressVerboseLogging()
+        {
+            // remove default --verbose and -bl args
+            DotnetWatchArgs.Clear();
+
+            // override the default used for testing ("trace"):
+            EnvironmentVariables.Add("DOTNET_CLI_CONTEXT_VERBOSE", "");
+        }
+
         public void AssertOutputContains(string message)
             => AssertEx.ContainsSubstring(message, Process.Output);
 
@@ -173,6 +182,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
+            commandSpec.WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "trace");
 
             // suppress all timeouts:
             commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");

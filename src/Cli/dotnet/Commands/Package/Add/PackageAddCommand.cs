@@ -6,26 +6,32 @@ using System.Diagnostics;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 using NuGet.ProjectModel;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
-internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseResult)
+internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitionBase>
 {
-    private readonly PackageIdentityWithRange _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument)!;
+    private readonly PackageIdentityWithRange _packageId;
+
+    public PackageAddCommand(ParseResult parseResult)
+        : base(parseResult)
+    {
+        _packageId = parseResult.GetValue(Definition.PackageIdArgument);
+    }
 
     public override int Execute()
     {
-        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_parseResult);
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(Definition.FileOption, Definition.ProjectOption, Definition.GetProjectOrFileArgument(), _parseResult);
 
-        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuildingCommand.IsValidEntryPointPath(fileOrDirectory))
+        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
         {
             return ExecuteForFileBasedApp(fileOrDirectory);
         }
@@ -35,7 +41,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         string projectFilePath;
         if (!File.Exists(fileOrDirectory))
         {
-            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory).FullName;
+            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory);
         }
         else
         {
@@ -44,7 +50,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
 
         var tempDgFilePath = string.Empty;
 
-        if (!_parseResult.GetValue(PackageAddCommandParser.NoRestoreOption))
+        if (!_parseResult.GetValue(Definition.NoRestoreOption))
         {
 
             try
@@ -134,7 +140,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             .OptionValuesToBeForwarded()
             .SelectMany(a => a.Split(' ', 2)));
 
-        if (_parseResult.GetValue(PackageAddCommandParser.NoRestoreOption))
+        if (_parseResult.GetValue(Definition.NoRestoreOption))
         {
             args.Add("--no-restore");
         }
@@ -153,9 +159,9 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         // Check disallowed options.
         ReadOnlySpan<Option> disallowedOptions =
         [
-            PackageAddCommandParser.FrameworkOption,
-            PackageAddCommandParser.SourceOption,
-            PackageAddCommandParser.PackageDirOption,
+            Definition.FrameworkOption,
+            Definition.SourceOption,
+            Definition.PackageDirOption,
         ];
         foreach (var option in disallowedOptions)
         {
@@ -167,8 +173,8 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
 
         string? specifiedVersion = _packageId.HasVersion
             ? _packageId.VersionRange?.OriginalString ?? string.Empty
-            : _parseResult.GetValue(PackageAddCommandParser.VersionOption);
-        bool prerelease = _parseResult.GetValue(PackageAddCommandParser.PrereleaseOption);
+            : _parseResult.GetValue(Definition.VersionOption);
+        bool prerelease = _parseResult.GetValue(Definition.PrereleaseOption);
 
         if (specifiedVersion != null && prerelease)
         {
@@ -178,7 +184,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         var fullPath = Path.GetFullPath(path);
 
         // Create restore command, used also for obtaining MSBuild properties.
-        bool interactive = _parseResult.GetValue(PackageAddCommandParser.InteractiveOption);
+        bool interactive = _parseResult.GetValue(Definition.InteractiveOption);
         var command = new VirtualProjectBuildingCommand(
             entryPointFileFullPath: fullPath,
             msbuildArgs: MSBuildArgs.FromProperties(new Dictionary<string, string>(2)
@@ -192,6 +198,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             NoCache = true,
             NoBuild = true,
         };
+
         var projectCollection = new ProjectCollection();
         var projectInstance = command.CreateProjectInstance(projectCollection);
 
@@ -202,7 +209,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         var central = SetCentralVersion(version);
         var local = SetLocalVersion(central != null ? null : version);
 
-        if (!_parseResult.GetValue(PackageAddCommandParser.NoRestoreOption))
+        if (!_parseResult.GetValue(Definition.NoRestoreOption))
         {
             // Restore.
             int exitCode = command.Execute();

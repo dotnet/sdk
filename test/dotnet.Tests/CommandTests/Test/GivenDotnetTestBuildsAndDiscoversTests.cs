@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -157,8 +157,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name,
-                                             MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                    .Execute("--list-tests",
+                                             "-c", configuration,
                                              "-p:RunArguments=--hello world \"\" world2",
                                              "Another arg with spaces",
                                              "My other arg with spaces",

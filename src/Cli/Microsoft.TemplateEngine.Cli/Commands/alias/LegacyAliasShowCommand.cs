@@ -4,15 +4,9 @@
 using System.CommandLine;
 using Microsoft.TemplateEngine.Abstractions;
 
-namespace Microsoft.TemplateEngine.Cli.Commands
+namespace Microsoft.TemplateEngine.Cli.Commands;
+
+internal sealed class LegacyAliasShowCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
+    : BaseAliasShowCommand(hostBuilder, CommandDefinition.Alias.Show.LegacyCommand)
 {
-    internal class LegacyAliasShowCommand : BaseAliasShowCommand
-    {
-        internal LegacyAliasShowCommand(
-            Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, "--show-alias")
-        {
-            Hidden = true;
-        }
-    }
 }

@@ -521,7 +521,7 @@ namespace Microsoft.DotNet.Watch
                 {
                     errorsToDisplayInApp.Add(MessageDescriptor.RestartingApplicationToApplyChanges.GetMessage());
                 }
-                else if (descriptor.Severity != MessageSeverity.None)
+                else if (descriptor.Level != LogLevel.None)
                 {
                     errorsToDisplayInApp.Add(descriptor.GetMessage(args));
                 }
