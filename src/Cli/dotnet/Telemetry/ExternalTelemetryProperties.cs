@@ -20,7 +20,7 @@ internal static class ExternalTelemetryProperties
     {
         if (!OperatingSystem.IsWindows())
         {
-            return null;
+            return "";
         }
 
         const string Key = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion";
@@ -28,13 +28,13 @@ internal static class ExternalTelemetryProperties
 
         try
         {
-            return (string?)Registry.GetValue(Key, ValueName, defaultValue: null);
+            return (string?)Registry.GetValue(Key, ValueName, defaultValue: "");
         }
         // Catch everything: this is for telemetry only.
         catch (Exception e)
         {
             Debug.Assert(e is ArgumentException | e is SecurityException | e is InvalidCastException);
-            return null;
+            return "";
         }
     }
 
@@ -52,7 +52,7 @@ internal static class ExternalTelemetryProperties
     {
         if (!OperatingSystem.IsWindows())
         {
-            return null;
+            return "";
         }
 
         try
@@ -68,7 +68,7 @@ internal static class ExternalTelemetryProperties
             Debug.Assert(false, $"Unexpected exception from GetProductInfo: ${e.GetType().Name}: ${e.Message}");
         }
 
-        return null;
+        return "";
     }
 
     [DllImport("libc", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
@@ -86,7 +86,7 @@ internal static class ExternalTelemetryProperties
     {
         if (OperatingSystem.IsWindows())
         {
-            return null;
+            return "";
         }
 
         try
@@ -97,7 +97,7 @@ internal static class ExternalTelemetryProperties
         catch (Exception e)
         {
             Debug.Assert(e is DllNotFoundException || e is EntryPointNotFoundException);
-            return null;
+            return "";
         }
     }
 
@@ -110,7 +110,7 @@ internal static class ExternalTelemetryProperties
     {
         if (OperatingSystem.IsWindows())
         {
-            return null;
+            return "";
         }
 
         try
@@ -121,7 +121,7 @@ internal static class ExternalTelemetryProperties
         catch (Exception e)
         {
             Debug.Assert(e is DllNotFoundException || e is EntryPointNotFoundException);
-            return null;
+            return "";
         }
     }
 }

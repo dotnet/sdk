@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
                 var activitiesArray = root["activities"]!.AsArray();
                 activitiesArray.AddRange(activies.Select(r => JsonNode.Parse(JsonSerializer.Serialize(CreateActivityJsonModel(r), s_jsonOptions))));
                 root["activities"] = activitiesArray;
-                File.AppendAllText(logPath, root.ToJsonString(s_jsonOptions));
+                File.WriteAllText(logPath, root.ToJsonString(s_jsonOptions));
             }
             catch
             {
@@ -33,17 +33,31 @@ namespace Microsoft.DotNet.Cli.Telemetry
         {
             operationName = activity.OperationName,
             displayName = activity.DisplayName,
-            source = activity.Source,
             duration = activity.Duration,
-            id = activity.Id,
-            parentId = activity.ParentId,
-            rootId = activity.RootId,
-            //tags = activity.Tags,
-            tagObjects = activity.TagObjects,
-            events = activity.Events,
-            spanId = activity.SpanId.ToString(),
-            traceId =  activity.TraceId.ToString(),
-            parentSpanId = activity.ParentSpanId.ToString()
+            identifiers = new
+            {
+                id = activity.Id,
+                traceId = activity.TraceId.ToString(),
+                spanId = activity.SpanId.ToString(),
+                parentSpanId = activity.ParentSpanId.ToString(),
+                parentId = activity.ParentId,
+                rootId = activity.RootId
+            },
+            source = new
+            {
+                name = activity.Source.Name,
+                version = activity.Source.Version,
+                tags = activity.Source.Tags?.ToDictionary()
+            },
+            // TODO: Determine which is better to use, tags or tagObjects
+            //tags = activity.Tags.ToDictionary(),
+            tagObjects = activity.TagObjects.ToDictionary(),
+            events = activity.Events.Select(e => new
+            {
+                name = e.Name,
+                timestamp = e.Timestamp,
+                tags = e.Tags.ToDictionary()
+            }),
         };
     }
 }
