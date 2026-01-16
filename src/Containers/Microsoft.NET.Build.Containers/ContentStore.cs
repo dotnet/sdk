@@ -43,10 +43,13 @@ internal static class ContentStore
 
         string extension = descriptor.MediaType switch
         {
-            "application/vnd.docker.image.rootfs.diff.tar.gzip"
-            or "application/vnd.oci.image.layer.v1.tar+gzip"
+            SchemaTypes.DockerLayerGzip
+            or SchemaTypes.OciLayerGzipV1
             or "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip"
                 => ".tar.gz",
+            SchemaTypes.DockerLayerZstd
+            or SchemaTypes.OciLayerZstdV1
+                => ".tar.zst",
             "application/vnd.docker.image.rootfs.diff.tar"
             or "application/vnd.oci.image.layer.v1.tar"
                 => ".tar",
