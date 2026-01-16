@@ -693,11 +693,6 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="translated">PACKAGE_NAME</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdPackageDescription">
-        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
-        <target state="translated">要添加的包引用。这可以采用仅使用包标识符的形式，例如 'Newtonsoft.Json'，也可以采用以 ‘@’ 分隔的包标识符和版本形式，例如 'Newtonsoft.Json@13.0.3'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdPackageDirectory">
         <source>PACKAGE_DIR</source>
         <target state="translated">PACKAGE_DIR</target>
@@ -1031,16 +1026,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">控制台已处于批处理模式。</target>
         <note>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</note>
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">无法将属性“{0}”的值转换为布尔值。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">无法将属性“{0}”的值转换为字符串。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAProject">
         <source>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</source>
         <target state="translated">找不到项目。请确保 {0} 中存在项目，或使用 {1} 传递项目路径。</target>
@@ -1302,16 +1287,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">失败并出现 {0} 个错误</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedWithErrorsAndWarnings">
-        <source>failed with {0} error(s) and {1} warning(s)</source>
-        <target state="translated">失败，出现 {0} 错误和 {1} 警告</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedWithWarnings">
-        <source>failed with {0} warning(s)</source>
-        <target state="translated">失败，出现 {0} 警告</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ForTest">
         <source>For test</source>
         <target state="translated">用于测试</target>
@@ -1566,11 +1541,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">当还使用 ‘-’ 从标准输入中读取文件时，无法指定选项 ‘{0}’。</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidSemVerVersionString">
-        <source>Failed to parse "{0}" as a semantic version.</source>
-        <target state="translated">无法将 ‘{0}’ 分析为语义版本。</target>
-        <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
       </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
         <source>The settings file in the tool's NuGet package is invalid: {0}</source>
@@ -2415,16 +2385,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Dry run: would create file: {0}</source>
         <target state="translated">试运行: 将创建文件: {0}</target>
         <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldDeleteFile">
-        <source>Dry run: would delete file: {0}</source>
-        <target state="translated">试运行: 将删除文件: {0}</target>
-        <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldMoveFile">
-        <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="translated">试运行: 会将文件“{0}”移动到“{1}”。</target>
-        <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>
@@ -3286,16 +3246,6 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">NuGet 配置文件“{0}”不存在。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to install.</source>
-        <target state="translated">要安装的工具的 NuGet 包 ID。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
         <target state="new">A package ID was not specified for tool installation.</target>
@@ -3528,16 +3478,6 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">更新全局或本地工具。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to update.</source>
-        <target state="translated">要更新的工具的 NuGet 包 ID。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolUpdateToolHasMultipleVersionsInstalled">
         <source>Tool '{0}' has multiple versions installed and cannot be updated.</source>
         <target state="translated">工具“{0}”已安装多个版本，无法更新。</target>
@@ -3707,21 +3647,6 @@ and the corresponding package Ids for installed tools using the command
         <source>Cannot specify --version when the package argument already contains a version.</source>
         <target state="translated">当包参数已包含版本时，无法指定 --version。</target>
         <note>{Locked="--version"}</note>
-      </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">如果指定，则属性“{0}”必须是一个对象。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbRun">
-        <source>run</source>
-        <target state="new">run</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbTest">
-        <source>test</source>
-        <target state="new">test</target>
-        <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>

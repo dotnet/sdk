@@ -693,11 +693,6 @@ Cela équivaut à supprimer project.assets.json.</target>
         <target state="translated">PACKAGE_NAME</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdPackageDescription">
-        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
-        <target state="translated">Référence du package à ajouter. Il peut s’agir uniquement de l’identificateur de package, par exemple « Newtonsoft.Json », ou d’un identificateur de package et d’une version séparés par « @ », par exemple « Newtonsoft.Json@13.0.3 »</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdPackageDirectory">
         <source>PACKAGE_DIR</source>
         <target state="translated">PACKAGE_DIR</target>
@@ -1031,16 +1026,6 @@ Pour découvrir plus d’informations, consultez https://aka.ms/dotnet-test/mtp.
         <target state="translated">La console est déjà en mode de traitement par lot.</target>
         <note>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</note>
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">Impossible de convertir la valeur de la propriété '{0}' en valeur booléenne.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">Impossible de convertir la valeur de la propriété '{0}' en chaîne.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAProject">
         <source>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</source>
         <target state="translated">Il n'existe aucun projet. Vérifiez qu'il existe un projet dans {0} ou passez le chemin au projet via {1}.</target>
@@ -1302,16 +1287,6 @@ Pour découvrir plus d’informations, consultez https://aka.ms/dotnet-test/mtp.
         <target state="translated">a échoué avec {0} erreur(s)</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedWithErrorsAndWarnings">
-        <source>failed with {0} error(s) and {1} warning(s)</source>
-        <target state="translated">a échoué avec {0} erreur(s) et {1} avertissement(s)</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedWithWarnings">
-        <source>failed with {0} warning(s)</source>
-        <target state="translated">a échoué avec {0} avertissement(s)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ForTest">
         <source>For test</source>
         <target state="translated">Pour le test</target>
@@ -1566,11 +1541,6 @@ Pour découvrir plus d’informations, consultez https://aka.ms/dotnet-test/mtp.
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Impossible de spécifier l’option « {0} » lorsque vous utilisez également '-' pour lire le fichier à partir de l’entrée standard.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidSemVerVersionString">
-        <source>Failed to parse "{0}" as a semantic version.</source>
-        <target state="translated">Échec de l’analyse de « {0} » en tant que version sémantique.</target>
-        <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
       </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
         <source>The settings file in the tool's NuGet package is invalid: {0}</source>
@@ -2415,16 +2385,6 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
         <source>Dry run: would create file: {0}</source>
         <target state="translated">Test à blanc : création du fichier : {0}</target>
         <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldDeleteFile">
-        <source>Dry run: would delete file: {0}</source>
-        <target state="translated">Test à blanc : supprimerait le fichier : {0}</target>
-        <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldMoveFile">
-        <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="translated">Test à blanc : déplacerait le fichier « {0} » vers « {1} ».</target>
-        <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>
@@ -3286,16 +3246,6 @@ L'outil '{1}' (version '{2}') a été installé correctement.</target>
         <target state="translated">Le fichier config NuGet '{0}' n'existe pas.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to install.</source>
-        <target state="translated">ID de package NuGet de l'outil à installer.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
         <target state="new">A package ID was not specified for tool installation.</target>
@@ -3528,16 +3478,6 @@ et les ID de package correspondants aux outils installés, utilisez la commande
         <target state="translated">Met à jour un outil global ou local.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to update.</source>
-        <target state="translated">ID de package NuGet de l'outil à mettre à jour.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolUpdateToolHasMultipleVersionsInstalled">
         <source>Tool '{0}' has multiple versions installed and cannot be updated.</source>
         <target state="translated">Dans la mesure où plusieurs versions de l'outil '{0}' sont installées, il ne peut pas être mis à jour.</target>
@@ -3707,21 +3647,6 @@ et les ID de package correspondants aux outils installés, utilisez la commande
         <source>Cannot specify --version when the package argument already contains a version.</source>
         <target state="translated">Impossible de spécifier --version lorsque l’argument de package contient déjà une version.</target>
         <note>{Locked="--version"}</note>
-      </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">La propriété '{0}' doit être un objet, si elle est spécifiée.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbRun">
-        <source>run</source>
-        <target state="new">run</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbTest">
-        <source>test</source>
-        <target state="new">test</target>
-        <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
