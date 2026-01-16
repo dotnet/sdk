@@ -853,6 +853,33 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("exited with exit code 0.");
         }
 
+        [PlatformSpecificFact(TestPlatforms.Windows)]
+        public async Task GracefulTermination_WinExe()
+        {
+            // Test that WinExe apps (WinForms, WPF, MAUI) are terminated gracefully when dotnet-watch
+            // sends Ctrl+C. The `dotnet run` process receives Ctrl+C and calls CloseMainWindow() on the
+            // WinForms app. See https://github.com/dotnet/sdk/issues/52473
+
+            var testAsset = TestAssets.CopyTestAsset("WatchWinExeApp")
+               .WithSource();
+
+            App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+
+            // Wait for the WinForms app to start and show its window
+            await App.WaitUntilOutputContains("Started");
+
+            App.SendControlC();
+
+            // The app should close gracefully via CloseMainWindow (reports TaskManagerClosing reason)
+            await App.WaitForOutputLineContaining("Closing gracefully: True");
+
+            // The dotnet run process should exit with code 0 (not -1 from being killed)
+            await App.WaitUntilOutputContains("exited with exit code 0.");
+            App.AssertOutputDoesNotContain("Exited with error code -1");
+        }
+
         [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)

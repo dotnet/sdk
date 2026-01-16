@@ -23,6 +23,12 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
 
     private bool _trimTrailingNewlines = trimTrailingNewlines;
 
+    /// <summary>
+    /// If true, uses <see cref="Process.CloseMainWindow"/> to terminate the process on Windows instead of Ctrl+C.
+    /// This is needed for WinExe apps (WinForms, WPF, MAUI) that don't respond to Ctrl+C.
+    /// </summary>
+    public bool CloseMainWindow { get; set; }
+
     public CommandResult Execute()
     {
         return Execute(null);
@@ -48,7 +54,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             Reporter.Verbose.WriteLine($"> {Command.FormatProcessInfo(_process.StartInfo)}".White());
         }
 
-        using (var reaper = new ProcessReaper(_process))
+        using (var reaper = new ProcessReaper(_process) { CloseMainWindow = CloseMainWindow })
         {
             _process.Start();
             processStarted?.Invoke(_process);
