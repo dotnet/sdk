@@ -163,10 +163,12 @@ internal sealed class WindowsPathHelper : IDisposable
 
     /// <summary>
     /// Splits a PATH string into entries.
+    /// Uses EnvironmentProvider's SplitPaths for proper processing.
     /// </summary>
     public static List<string> SplitPath(string path)
     {
-        return path.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+        var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider();
+        return envProvider.SplitPaths(path).ToList();
     }
 
     /// <summary>
@@ -276,35 +278,62 @@ internal sealed class WindowsPathHelper : IDisposable
             return unexpandedPath;
         }
 
-        return AddPathEntry(unexpandedPath, expandedPath, primaryDotnetPath);
+        return AddPathEntry(unexpandedPath, expandedPath, primaryDotnetPath, "dotnet");
     }
 
     /// <summary>
     /// Adds a path entry to the given PATH strings if it's not already present.
     /// Uses the expanded PATH for detection but modifies the unexpanded PATH to preserve environment variables.
+    /// If the command already resolves to the pathToAdd, no changes are made.
+    /// If the path is already present but the command doesn't resolve to it, moves it to the front.
     /// </summary>
     /// <param name="unexpandedPath">The unexpanded PATH string to modify.</param>
     /// <param name="expandedPath">The expanded PATH string to use for detection.</param>
     /// <param name="pathToAdd">The path to add.</param>
+    /// <param name="commandName">The command name that should resolve from pathToAdd (e.g., "dotnet").</param>
     /// <returns>The modified unexpanded PATH string.</returns>
-    public static string AddPathEntry(string unexpandedPath, string expandedPath, string pathToAdd)
+    public static string AddPathEntry(string unexpandedPath, string expandedPath, string pathToAdd, string commandName)
     {
         var expandedEntries = SplitPath(expandedPath);
-        
-        // Check if path is already in the expanded PATH
-        var normalizedPathToAdd = Path.TrimEndingDirectorySeparator(pathToAdd);
-        bool alreadyExists = expandedEntries.Any(entry =>
-            Path.TrimEndingDirectorySeparator(entry).Equals(normalizedPathToAdd, StringComparison.OrdinalIgnoreCase));
+        var unexpandedEntries = SplitPath(unexpandedPath);
 
-        if (!alreadyExists)
+        // Check if the command already resolves to the pathToAdd using EnvironmentProvider
+        var envProvider = new Microsoft.DotNet.Cli.Utils.EnvironmentProvider(searchPathsOverride: expandedEntries);
+        var resolvedCommandPath = envProvider.GetCommandPath(commandName);
+
+        var normalizedPathToAdd = Path.TrimEndingDirectorySeparator(pathToAdd);
+
+        if (resolvedCommandPath != null)
+        {
+            var resolvedDir = Path.GetDirectoryName(resolvedCommandPath);
+            var normalizedResolvedDir = Path.TrimEndingDirectorySeparator(resolvedDir ?? string.Empty);
+
+            if (normalizedResolvedDir.Equals(normalizedPathToAdd, StringComparison.OrdinalIgnoreCase))
+            {
+                // Command already resolves to the pathToAdd, no changes needed
+                return unexpandedPath;
+            }
+        }
+
+        // Check if pathToAdd is already in the expanded PATH
+        int existingIndex = expandedEntries.FindIndex(expandedEntry =>
+            Path.TrimEndingDirectorySeparator(expandedEntry).Equals(normalizedPathToAdd, StringComparison.OrdinalIgnoreCase));
+
+        if (existingIndex >= 0)
+        {
+            // Path already exists - only move it to the front if the command doesn't already resolve to it
+            // (we know it doesn't resolve to pathToAdd from the check above, so move it to front)
+            string unexpandedEntry = unexpandedEntries[existingIndex];
+            unexpandedEntries.RemoveAt(existingIndex);
+            unexpandedEntries.Insert(0, unexpandedEntry);
+            return string.Join(';', unexpandedEntries);
+        }
+        else
         {
             // Add to the beginning of the unexpanded PATH
-            var unexpandedEntries = SplitPath(unexpandedPath);
             unexpandedEntries.Insert(0, pathToAdd);
             return string.Join(';', unexpandedEntries);
         }
-
-        return unexpandedPath;
     }
 
     /// <summary>
@@ -318,7 +347,7 @@ internal sealed class WindowsPathHelper : IDisposable
     public static string RemovePathEntries(string unexpandedPath, string expandedPath, List<string> pathsToRemove)
     {
         var expandedEntries = SplitPath(expandedPath);
-        
+
         // Find indices to remove using the expanded path
         var indicesToRemove = FindPathIndices(expandedEntries, pathsToRemove);
 
@@ -349,7 +378,7 @@ internal sealed class WindowsPathHelper : IDisposable
 
         foundDotnetPaths = new List<string>();
         var indices = FindPathIndices(pathEntries, programFilesDotnetPaths);
-        
+
         foreach (var index in indices)
         {
             foundDotnetPaths.Add(pathEntries[index]);
@@ -368,7 +397,7 @@ internal sealed class WindowsPathHelper : IDisposable
         try
         {
             LogMessage("Starting RemoveDotnetFromAdminPath operation");
-            
+
             string oldPath = ReadAdminPath(expand: false);
             LogMessage($"Old PATH (unexpanded): {oldPath}");
 
@@ -409,7 +438,7 @@ internal sealed class WindowsPathHelper : IDisposable
         try
         {
             LogMessage("Starting AddDotnetToAdminPath operation");
-            
+
             string unexpandedPath = ReadAdminPath(expand: false);
             string expandedPath = ReadAdminPath(expand: true);
             LogMessage($"Old PATH (unexpanded): {unexpandedPath}");

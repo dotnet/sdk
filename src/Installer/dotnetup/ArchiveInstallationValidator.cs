@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Dotnet.Installation.Internal;
 using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;

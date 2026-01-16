@@ -56,9 +56,7 @@ public class GlobalJsonInfo
 public record DotnetInstallRootConfiguration(
     DotnetInstallRoot InstallRoot,
     InstallType InstallType,
-    bool IsOnPath,
-    //  We may also need additional information to handle the case of whether DOTNET_ROOT is not set or whether it's set to a different path
-    bool IsSetAsDotnetRoot)
+    bool IsFullyConfigured)
 {
     public string Path => InstallRoot.Path;
 }
