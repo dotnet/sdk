@@ -2724,4 +2724,8 @@ Proceed?</value>
   <data name="DurationColon" xml:space="preserve">
     <value>duration:</value>
   </data>
+  <data name="WorkloadSetHasMissingManifests" xml:space="preserve">
+    <value>Workload version {0} has missing manifests. Run "dotnet workload repair" to fix this, or run "dotnet workload update" to update to the latest workload version.</value>
+    <comment>{0} is the workload set version. {Locked="dotnet workload repair"}{Locked="dotnet workload update"}</comment>
+  </data>
 </root>
