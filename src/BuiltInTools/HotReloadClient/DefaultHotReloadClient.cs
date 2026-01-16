@@ -99,12 +99,12 @@ namespace Microsoft.DotNet.HotReload
         {
             // Don't report a warning when cancelled or the pipe has been disposed. The process has terminated or the host is shutting down in that case.
             // Best effort: There is an inherent race condition due to time between the process exiting and the cancellation token triggering.
-            if (e is ObjectDisposedException or EndOfStreamException || cancellationToken.IsCancellationRequested)
+            if (e is ObjectDisposedException or EndOfStreamException or OperationCanceledException || cancellationToken.IsCancellationRequested)
             {
                 return;
             }
 
-            Logger.LogError("Failed to read {ResponseType} from the pipe: {Message}", responseType, e.Message);
+            Logger.LogError("Failed to read {ResponseType} from the pipe: {Exception}", responseType, e.ToString());
         }
 
         private async Task ListenForResponsesAsync(CancellationToken cancellationToken)
