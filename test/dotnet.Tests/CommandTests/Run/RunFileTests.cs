@@ -3064,7 +3064,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut($"Hello from {programName}");
 
         // Find the csc args used by the build.
-        var msbuildCall = FindCompilerCall(Path.Join(testInstance.Path, "msbuild.binlog"));
+        var binaryLogPath = Path.Join(testInstance.Path, "msbuild.binlog");
+        var msbuildCall = FindCompilerCall(binaryLogPath);
         var msbuildCallArgs = msbuildCall.GetArguments();
         var msbuildCallArgsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(msbuildCallArgs);
 
@@ -3075,6 +3076,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         string artifactsDirNormalized = NormalizePath(artifactsDir);
         string objPath = $"{artifactsDirNormalized}/obj/debug";
         string entryPointPathNormalized = NormalizePath(entryPointPath);
+        string runtimeVersion = FindRuntimeVersion(binaryLogPath);
         var msbuildArgsToVerify = new List<string>();
         var nuGetPackageFilePaths = new List<string>();
         var code = new StringBuilder();
@@ -3185,9 +3187,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             }
 
             // Use variable runtime version.
-            if (rewritten.Contains(CSharpCompilerCommand.RuntimeVersion, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(runtimeVersion, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(CSharpCompilerCommand.RuntimeVersion, "{" + nameof(CSharpCompilerCommand.RuntimeVersion) + "}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(runtimeVersion, "{" + nameof(CSharpCompilerCommand.RuntimeVersion) + "}", StringComparison.OrdinalIgnoreCase);
+                needsInterpolation = true;
+            }
+
+            // Use variable target framework version.
+            if (rewritten.Contains(CSharpCompilerCommand.TargetFrameworkVersion, StringComparison.OrdinalIgnoreCase))
+            {
+                rewritten = rewritten.Replace(CSharpCompilerCommand.TargetFrameworkVersion, "{" + nameof(CSharpCompilerCommand.TargetFrameworkVersion) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
@@ -3296,6 +3305,28 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         {
             using var reader = BinaryLogReader.Create(binaryLogPath);
             return reader.ReadAllCompilerCalls().Should().ContainSingle().Subject;
+        }
+
+        static string FindRuntimeVersion(string binaryLogPath)
+        {
+            var records = BinaryLog.ReadRecords(binaryLogPath).ToList();
+            foreach (var r in records)
+            {
+                if (r.Args is ProjectEvaluationFinishedEventArgs args)
+                {
+                    Assert.NotNull(args.Properties);
+                    foreach (KeyValuePair<string, string> entry in args.Properties)
+                    {
+                        if (entry.Key == "PkgMicrosoft_NET_ILLink_Tasks")
+                        {
+                            return Path.GetFileName(entry.Value);
+                        }
+                    }
+                }
+            }
+
+            Assert.Fail();
+            return null;
         }
 
         static string NormalizePathArg(string arg)

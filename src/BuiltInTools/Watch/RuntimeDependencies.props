@@ -19,8 +19,8 @@
       <OutputItemType>None</OutputItemType>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
-      <TargetPath>hotreload\net10.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
+      <SetTargetFramework>TargetFramework=$(NetCurrent)</SetTargetFramework>
+      <TargetPath>hotreload\$(NetCurrent)\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Pack>false</Pack>
     </ProjectReference>
