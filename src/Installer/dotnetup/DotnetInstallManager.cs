@@ -155,8 +155,8 @@ public class DotnetInstallManager : IDotnetInstallManager
                     var userChanges = installRootManager.GetUserInstallRootChanges();
                     bool succeeded = installRootManager.ApplyUserInstallRoot(
                         userChanges,
-                        msg => Console.WriteLine(msg),
-                        msg => Console.Error.WriteLine(msg));
+                        msg => AnsiConsole.WriteLine(msg),
+                        msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));
 
                     if (!succeeded)
                     {
@@ -168,8 +168,8 @@ public class DotnetInstallManager : IDotnetInstallManager
                     var adminChanges = installRootManager.GetAdminInstallRootChanges();
                     bool adminSucceeded = installRootManager.ApplyAdminInstallRoot(
                         adminChanges,
-                        msg => Console.WriteLine(msg),
-                        msg => Console.Error.WriteLine(msg));
+                        msg => AnsiConsole.WriteLine(msg),
+                        msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));
 
                     if (!adminSucceeded)
                     {
