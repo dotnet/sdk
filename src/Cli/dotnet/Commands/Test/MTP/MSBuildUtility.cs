@@ -166,6 +166,7 @@ internal static class MSBuildUtility
         {
             var token = otherArgs[i];
             if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnf", StringComparison.OrdinalIgnoreCase) ||
                 token.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
             {
                 if (i == 0)
