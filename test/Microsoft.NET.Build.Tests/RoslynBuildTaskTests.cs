@@ -90,7 +90,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// SDK side test for <see href="https://github.com/dotnet/roslyn/pull/80993"/>.
     /// </summary>
-    [Fact]
+    [FullMSBuildOnlyFact]
     public void UsingCscManually()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
