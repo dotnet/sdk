@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Cli
                         Example
                             .For<NewCommand>(args.ParseResult)
                             .WithSubcommand<InstallCommand>()
-                            .WithArgument(InstallCommandDefinition.CreateNameArgument(), $"{versionCheckResult.TemplatePackage?.Identifier}@{versionCheckResult.LatestVersion}"));
+                            .WithArguments($"{versionCheckResult.TemplatePackage?.Identifier}@{versionCheckResult.LatestVersion}"));
                     _reporterOutput.WriteLine();
                 }
             }
@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Cli
                 Example
                  .For<NewCommand>(args.ParseResult)
                  .WithSubcommand<UninstallCommand>()
-                 .WithArgument(UninstallCommandDefinition.CreateNameArgument(), packageId));
+                 .WithArguments(packageId));
         }
 
         internal async Task DisplayInstallResultAsync(
@@ -157,7 +157,7 @@ namespace Microsoft.TemplateEngine.Cli
                                   LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled,
                                   packageToInstall).Bold().Red());
                         _reporterError.WriteLine(LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled_Hint, SharedOptionsFactory.ForceOptionName);
-                        _reporterError.WriteCommand(Example.For<InstallCommand>(parseResult).WithArgument(InstallCommandDefinition.CreateNameArgument(), packageToInstall).WithOption(InstallCommandDefinition.CreateForceOption()));
+                        _reporterError.WriteCommand(Example.For<InstallCommand>(parseResult).WithArguments(packageToInstall).WithOption(c => c.Definition.ForceOption));
 
                         break;
                     case InstallerErrorCode.UpdateUninstallFailed:
@@ -186,7 +186,7 @@ namespace Microsoft.TemplateEngine.Cli
                                        LocalizableStrings.TemplatePackageCoordinator_Install_Error_VulnerablePackageTip,
                                        packageToInstall,
                                        SharedOptionsFactory.ForceOptionName).Bold());
-                                    _reporterError.WriteCommand(Example.For<InstallCommand>(parseResult).WithArgument(InstallCommandDefinition.CreateNameArgument(), packageToInstall).WithOption(InstallCommandDefinition.CreateForceOption()));
+                                    _reporterError.WriteCommand(Example.For<InstallCommand>(parseResult).WithArguments(packageToInstall).WithOption(c => c.Definition.ForceOption));
                                     break;
 
                                 case UpdateResult updateRequest when updateRequest.Vulnerabilities.Any():
@@ -198,8 +198,8 @@ namespace Microsoft.TemplateEngine.Cli
                                         LocalizableStrings.TemplatePackageCoordinator_Update_Error_VulnerablePackageTip,
                                         packageToInstall,
                                         SharedOptionsFactory.ForceOptionName).Bold());
-                                    _reporterError.WriteCommand(Example.For<UninstallCommand>(parseResult).WithArgument(UninstallCommandDefinition.CreateNameArgument(), packageToInstall));
-                                    _reporterError.WriteCommand(Example.For<InstallCommand>(parseResult).WithArgument(InstallCommandDefinition.CreateNameArgument(), packageToInstall).WithOption(InstallCommandDefinition.CreateForceOption()));
+                                    _reporterError.WriteCommand(Example.For<UninstallCommand>(parseResult).WithArguments(packageToInstall));
+                                    _reporterError.WriteCommand(Example.For<InstallCommand>(parseResult).WithArguments(packageToInstall).WithOption(c => c.Definition.ForceOption));
                                     break;
 
                                 default:
@@ -267,7 +267,7 @@ namespace Microsoft.TemplateEngine.Cli
                     Example
                         .For<NewCommand>(args.ParseResult)
                         .WithSubcommand<UninstallCommand>()
-                        .WithArgument(UninstallCommandDefinition.CreateNameArgument(), managedSource.Identifier),
+                        .WithArguments(managedSource.Identifier),
                     indentLevel: 2);
 
                 Reporter.Output.WriteLine();
@@ -303,12 +303,12 @@ namespace Microsoft.TemplateEngine.Cli
                     Example
                         .For<NewCommand>(args.ParseResult)
                         .WithSubcommand<InstallCommand>()
-                        .WithArgument(InstallCommandDefinition.CreateNameArgument(), $"<package>@<version>"));
+                        .WithArguments($"<package>@<version>"));
                 Reporter.Output.WriteCommand(
                       Example
                           .For<NewCommand>(args.ParseResult)
                           .WithSubcommand<InstallCommand>()
-                          .WithArgument(InstallCommandDefinition.CreateNameArgument(), $"{displayableResults.First().Identifier}@{displayableResults.First().LatestVersion}"));
+                          .WithArguments($"{displayableResults.First().Identifier}@{displayableResults.First().LatestVersion}"));
                 Reporter.Output.WriteLine();
                 Reporter.Output.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Update_Info_UpdateAllCommandHeader);
                 Reporter.Output.WriteCommand(

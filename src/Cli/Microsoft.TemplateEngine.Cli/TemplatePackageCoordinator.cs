@@ -149,7 +149,7 @@ namespace Microsoft.TemplateEngine.Cli
                         Example
                             .For<NewCommand>(args.ParseResult)
                             .WithSubcommand<InstallCommand>()
-                            .WithArgument(InstallCommandDefinition.CreateNameArgument(), $"{versionCheckResult.TemplatePackage?.Identifier}@{versionCheckResult.LatestVersion}"));
+                            .WithArguments($"{versionCheckResult.TemplatePackage?.Identifier}@{versionCheckResult.LatestVersion}"));
                     Reporter.Output.WriteLine();
                 }
             }
@@ -168,7 +168,7 @@ namespace Microsoft.TemplateEngine.Cli
                 Example
                  .For<NewCommand>(args.ParseResult)
                  .WithSubcommand<UninstallCommand>()
-                 .WithArgument(UninstallCommandDefinition.CreateNameArgument(), packageId));
+                 .WithArguments(packageId));
         }
 
         /// <summary>
@@ -639,8 +639,8 @@ namespace Microsoft.TemplateEngine.Cli
                     reporter.WriteCommand(
                         Example
                             .For<InstallCommand>(args.ParseResult)
-                            .WithArgument(InstallCommandDefinition.CreateNameArgument(), installRequests.Select(ir => ir.DisplayName).ToArray())
-                            .WithOption(SharedOptionsFactory.CreateForceOption()));
+                            .WithArguments(installRequests.Select(ir => ir.DisplayName))
+                            .WithOption(c => c.Definition.ForceOption));
                     return false;
                 }
             }
@@ -740,7 +740,7 @@ namespace Microsoft.TemplateEngine.Cli
                                  Example
                                     .For<NewCommand>(commandArgs.ParseResult)
                                     .WithSubcommand<UninstallCommand>()
-                                    .WithArgument(UninstallCommandDefinition.CreateNameArgument()));
+                                    .WithArgument(c => c.Definition.NameArgument));
                         }
                         else
                         {
@@ -748,7 +748,7 @@ namespace Microsoft.TemplateEngine.Cli
                                  Example
                                     .For<NewCommand>(commandArgs.ParseResult)
                                     .WithSubcommand<UninstallCommand>()
-                                    .WithArgument(UninstallCommandDefinition.CreateNameArgument(), managedPackages.First().Identifier));
+                                    .WithArguments(managedPackages.First().Identifier));
                         }
                     }
                     else

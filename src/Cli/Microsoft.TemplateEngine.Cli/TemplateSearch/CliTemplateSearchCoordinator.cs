@@ -95,13 +95,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                  Example
                      .For<NewCommand>(commandArgs.ParseResult)
                      .WithSubcommand<InstallCommand>()
-                     .WithArgument(InstallCommandDefinition.CreateNameArgument()));
+                     .WithArgument(c => c.Definition.NameArgument));
                 Reporter.Output.WriteLine(LocalizableStrings.Generic_ExampleHeader);
                 Reporter.Output.WriteCommand(
                    Example
                        .For<NewCommand>(commandArgs.ParseResult)
                        .WithSubcommand<InstallCommand>()
-                       .WithArgument(InstallCommandDefinition.CreateNameArgument(), packageIdToShow));
+                       .WithArguments(packageIdToShow));
                 return NewCommandStatus.Success;
             }
             return NewCommandStatus.NotFound;
@@ -259,20 +259,20 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                     Example
                         .For<NewCommand>(commandArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithArgument(SearchCommandDefinition.CreateNameArgument(), "web"));
+                        .WithArguments("web"));
 
                 Reporter.Error.WriteCommand(
                      Example
                         .For<NewCommand>(commandArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithOption(SharedOptionsFactory.CreateAuthorOption(), "Microsoft"));
+                        .WithOption(c => c.Definition.FilterOptions.AuthorOption, "Microsoft"));
 
                 Reporter.Error.WriteCommand(
                  Example
                     .For<NewCommand>(commandArgs.ParseResult)
                     .WithSubcommand<SearchCommand>()
-                    .WithArgument(SearchCommandDefinition.CreateNameArgument(), "web")
-                    .WithOption(SharedOptionsFactory.CreateLanguageOption(), "C#"));
+                    .WithArguments("web")
+                    .WithOption(c => c.Definition.FilterOptions.LanguageOption, "C#"));
 
                 return false;
             }

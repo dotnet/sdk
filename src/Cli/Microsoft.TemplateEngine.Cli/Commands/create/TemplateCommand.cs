@@ -245,7 +245,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             if (!templateArgs.IsForceFlagSpecified)
             {
                 reporter.WriteLine(LocalizableStrings.TemplateCommand_DisplayConstraintResults_Hint, SharedOptionsFactory.ForceOptionName);
-                reporter.WriteCommand(Example.FromExistingTokens<Command>(templateArgs.ParseResult).WithOption(SharedOptionsFactory.CreateForceOption()));
+                reporter.WriteCommand(Example.FromExistingTokens<TemplateCommand>(templateArgs.ParseResult).WithOption(c => c.ForceOption));
             }
             else
             {

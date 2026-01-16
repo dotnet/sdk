@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.Cli
                        Example
                            .For<NewCommand>(args.ParseResult)
                            .WithSubcommand<SearchCommand>()
-                           .WithArgument(SearchCommandDefinition.CreateNameArgument()));
+                           .WithArgument(c => c.Definition.NameArgument));
                     Reporter.Output.WriteLine();
                     return NewCommandStatus.Success;
                 }
@@ -123,7 +123,7 @@ namespace Microsoft.TemplateEngine.Cli
                              Example
                                  .For<NewCommand>(args.ParseResult)
                                  .WithSubcommand<SearchCommand>()
-                                 .WithArgument(SearchCommandDefinition.CreateNameArgument()));
+                                 .WithArgument(c => c.Definition.NameArgument));
                 }
                 else
                 {
@@ -131,7 +131,7 @@ namespace Microsoft.TemplateEngine.Cli
                              Example
                                  .For<NewCommand>(args.ParseResult)
                                  .WithSubcommand<SearchCommand>()
-                                 .WithArgument(SearchCommandDefinition.CreateNameArgument(), args.ListNameCriteria));
+                                 .WithArguments(args.ListNameCriteria));
                 }
                 Reporter.Error.WriteLine();
                 return NewCommandStatus.NotFound;
@@ -165,7 +165,7 @@ namespace Microsoft.TemplateEngine.Cli
             Reporter.Output.WriteCommand(
                Example
                    .For<NewCommand>(args.ParseResult)
-                   .WithArgument(NewCommandDefinition.CreateShortNameArgument(), "console"));
+                   .WithArguments("console"));
 
             Reporter.Output.WriteLine();
 
@@ -173,7 +173,7 @@ namespace Microsoft.TemplateEngine.Cli
             Reporter.Output.WriteCommand(
               Example
                   .For<NewCommand>(args.ParseResult)
-                  .WithArgument(NewCommandDefinition.CreateShortNameArgument(), "console")
+                  .WithArguments("console")
                   .WithHelpOption());
 
             Reporter.Output.WriteLine(LocalizableStrings.TemplateInformationCoordinator_DotnetNew_ListTemplatesHint);
@@ -188,7 +188,7 @@ namespace Microsoft.TemplateEngine.Cli
                      Example
                          .For<NewCommand>(args.ParseResult)
                          .WithSubcommand<SearchCommand>()
-                         .WithArgument(SearchCommandDefinition.CreateNameArgument(), "web"));
+                         .WithArguments("web"));
 
             Reporter.Output.WriteLine();
 

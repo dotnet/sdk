@@ -116,7 +116,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         public new Example<T> WithHelpOption()
             => new(currentCommand, commandParts.Add(Constants.KnownHelpAliases.First()));
 
-        public Example<T> WithArguments(params string[] args)
+        public Example<T> WithArguments(params IEnumerable<string> args)
             => new(currentCommand, commandParts.AddRange(args.Select(a => a.Any(char.IsWhiteSpace) ? $"'{a}'" : a)));
 
         public Example<T> WithArgument(Func<T, Argument> argumentSelector)
@@ -134,7 +134,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             var subcommand = (TSubcommand?)currentCommand.Subcommands.FirstOrDefault(c => c is TSubcommand)
                 ?? throw new ArgumentException($"Command {currentCommand.Name} does not have subcommand {typeof(TSubcommand).Name}");
 
-            return new(subcommand, commandParts.Add(currentCommand.Name));
+            return new(subcommand, commandParts.Add(subcommand.Name));
         }
 
         internal Example<Command> WithSubcommand(string token)

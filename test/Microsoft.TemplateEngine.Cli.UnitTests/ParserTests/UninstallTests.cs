@@ -96,7 +96,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
             ParseResult parseResult = rootCommand.Parse("dotnet new uninstall source");
-            Assert.Equal("dotnet new uninstall my-source", Example.For<NewCommand>(parseResult).WithSubcommand<UninstallCommand>().WithArgument(UninstallCommandDefinition.CreateNameArgument(), "my-source"));
+            Assert.Equal("dotnet new uninstall my-source", Example.For<NewCommand>(parseResult).WithSubcommand<UninstallCommand>().WithArguments("my-source"));
         }
     }
 }
