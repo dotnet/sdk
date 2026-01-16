@@ -17,9 +17,11 @@ internal static class DotnetCommandCallbacks
     {
         PathUtility.EnsureAllPathsExist([projectPath], CliStrings.CommonFileNotFound, allowDirectories: false);
         IEnumerable<string> commandArgs = ["add", projectPath, "package", packageName];
+
+        var packageAddCommandDef = new PackageAddCommandDefinition();
         if (!string.IsNullOrWhiteSpace(version))
         {
-            commandArgs = commandArgs.Append(PackageAddCommandParser.VersionOption.Name).Append(version);
+            commandArgs = commandArgs.Append(packageAddCommandDef.VersionOption.Name).Append(version);
         }
         var addPackageReferenceCommand = new PackageAddCommand(AddCommandParser.GetCommand().Parse([.. commandArgs]));
         return addPackageReferenceCommand.Execute() == 0;
@@ -38,7 +40,7 @@ internal static class DotnetCommandCallbacks
     {
         PathUtility.EnsureAllPathsExist([pathToRestore], CliStrings.CommonFileNotFound, allowDirectories: true);
         // for the implicit restore we do not want the terminal logger to emit any output unless there are errors
-        return RestoreCommand.Run([pathToRestore, "-tlp:verbosity=quiet"]) == 0;
+        return RestoreCommand.Run([pathToRestore, "-tlp:verbosity=quiet", "--no-logo"]) == 0;
     }
 
     internal static bool AddProjectsToSolution(string solutionPath, IReadOnlyList<string> projectsToAdd, string? solutionFolder, bool? inRoot)
@@ -48,12 +50,12 @@ internal static class DotnetCommandCallbacks
         IEnumerable<string> commandArgs = new[] { "solution", solutionPath, "add" }.Concat(projectsToAdd);
         if (!string.IsNullOrWhiteSpace(solutionFolder))
         {
-            commandArgs = commandArgs.Append(SolutionAddCommandParser.SolutionFolderOption.Name).Append(solutionFolder);
+            commandArgs = commandArgs.Append(SolutionAddCommandDefinition.SolutionFolderOptionName).Append(solutionFolder);
         }
 
         if (inRoot is true)
         {
-            commandArgs = commandArgs.Append(SolutionAddCommandParser.InRootOption.Name);
+            commandArgs = commandArgs.Append(SolutionAddCommandDefinition.InRootOptionName);
         }
         var addProjectToSolutionCommand = new SolutionAddCommand(SolutionCommandParser.GetCommand().Parse([.. commandArgs]));
         return addProjectToSolutionCommand.Execute() == 0;
