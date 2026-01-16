@@ -7,7 +7,7 @@ namespace Microsoft.NET.Publish.Tests
 {
     internal static class PublishTestUtils
     {
-#if NET10_0
+#if NET11_0
 
         /// <summary>
         /// This list should contain the TFMs that we're interested in validating publishing support for
@@ -21,6 +21,7 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net7.0" },
             new object[] { "net8.0" },
             new object[] { "net9.0" },
+            new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
@@ -35,6 +36,7 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net7.0" },
             new object[] { "net8.0" },
             new object[] { "net9.0" },
+            new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
@@ -48,6 +50,7 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net7.0" },
             new object[] { "net8.0" },
             new object[] { "net9.0" },
+            new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
@@ -60,6 +63,7 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net7.0" },
             new object[] { "net8.0" },
             new object[] { "net9.0" },
+            new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
@@ -71,6 +75,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             new object[] { "net8.0" },
             new object[] { "net9.0" },
+            new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
@@ -81,6 +86,7 @@ namespace Microsoft.NET.Publish.Tests
         public static IEnumerable<object[]> Net9Plus { get; } = new List<object[]>
         {
             new object[] { "net9.0" },
+            new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
@@ -91,6 +97,16 @@ namespace Microsoft.NET.Publish.Tests
         public static IEnumerable<object[]> Net10Plus { get; } = new List<object[]>
         {
             new object[] { "net10.0" },
+            new object[] { ToolsetInfo.CurrentTargetFramework },
+            // new object[] { ToolsetInfo.NextTargetFramework },
+        };
+
+        /// <summary>
+        /// This list should contain all supported TFMs after net11.0
+        /// </summary>
+        public static IEnumerable<object[]> Net11Plus { get; } = new List<object[]>
+        {
+            new object[] { "net11.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
             // new object[] { ToolsetInfo.NextTargetFramework },
         };

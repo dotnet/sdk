@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CliConstants.HelpOptionKey, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, TestCommandDefinition.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CliConstants.HelpOptionKey, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, TestCommandDefinition.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CliConstants.HelpOptionKey, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, TestCommandDefinition.ConfigurationOption.Name, configuration);
 
             // Parse the help output to extract option names
             var helpOutput = result.StdOut;
