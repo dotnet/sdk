@@ -111,12 +111,23 @@ internal partial class MicrosoftTestingPlatformTestCommand
         // TODO: Replace this with proper CI detection that we already have in telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
         bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
 
+        AnsiMode ansiMode = AnsiMode.AnsiIfPossible;
+        if (noAnsi)
+        {
+            // User explicitly specified --no-ansi.
+            // We should respect that.
+            ansiMode = AnsiMode.NoAnsi;
+        }
+        else if (inCI)
+        {
+            ansiMode = AnsiMode.SimpleAnsi;
+        }
+
         _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
         {
             ShowPassedTests = showPassedTests,
             ShowProgress = !noProgress,
-            UseAnsi = !noAnsi,
-            UseCIAnsi = inCI,
+            AnsiMode = ansiMode,
             ShowAssembly = true,
             ShowAssemblyStartAndComplete = true,
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
