@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testDir.Path)
-                .Execute(filename);
+                .Execute("--my-arg", filename);
 
             result.ExitCode.Should().NotBe(0);
             if (!TestContext.IsLocalized())
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testDir.Path)
-                .Execute("test_directory");
+                .Execute("--myarg", "test_directory");
 
             result.ExitCode.Should().NotBe(0);
             if (!TestContext.IsLocalized())
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testDir.Path)
-                .Execute("test.dll");
+                .Execute("--my-arg", "test.dll");
 
             result.ExitCode.Should().NotBe(0);
             if (!TestContext.IsLocalized())
