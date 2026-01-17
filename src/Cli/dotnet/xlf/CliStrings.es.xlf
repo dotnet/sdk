@@ -425,11 +425,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Error de análisis JSON en el archivo {0} : {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="LevelArgumentName">
-        <source>LEVEL</source>
-        <target state="translated">LEVEL</target>
-        <note />
-      </trans-unit>
       <trans-unit id="LibraryNotFoundInLockFile">
         <source>{0}: library not found in lock file.</source>
         <target state="translated">{0}: no se encontró la biblioteca en el archivo de bloqueo.</target>

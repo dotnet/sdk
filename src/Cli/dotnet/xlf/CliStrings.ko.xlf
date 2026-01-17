@@ -425,11 +425,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">{0} 파일에서 Json 구문 분석 오류 발생: {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="LevelArgumentName">
-        <source>LEVEL</source>
-        <target state="translated">LEVEL</target>
-        <note />
-      </trans-unit>
       <trans-unit id="LibraryNotFoundInLockFile">
         <source>{0}: library not found in lock file.</source>
         <target state="translated">{0}: 잠금 파일에서 라이브러리를 찾지 못했습니다.</target>

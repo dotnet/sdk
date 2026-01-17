@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
+	<!--
     Microsoft ResX Schema
 
     Version 2.0
@@ -59,223 +59,223 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <data name="ActiveTestsRunning_FullTestsCount" xml:space="preserve">
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="metadata">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+							<xsd:attribute name="type" type="xsd:string" />
+							<xsd:attribute name="mimetype" type="xsd:string" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="assembly">
+						<xsd:complexType>
+							<xsd:attribute name="alias" type="xsd:string" />
+							<xsd:attribute name="name" type="xsd:string" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<data name="ActiveTestsRunning_FullTestsCount" xml:space="preserve">
     <value>{0} tests running</value>
   </data>
-  <data name="ActiveTestsRunning_MoreTestsCount" xml:space="preserve">
+	<data name="ActiveTestsRunning_MoreTestsCount" xml:space="preserve">
     <value>and {0} more</value>
   </data>
-  <data name="Actual" xml:space="preserve">
+	<data name="Actual" xml:space="preserve">
     <value>Actual</value>
   </data>
-  <data name="AdditionalDeps" xml:space="preserve">
+	<data name="AdditionalDeps" xml:space="preserve">
     <value>Path to additional deps.json file.</value>
   </data>
-  <data name="AdditionalProbingPathDefinition" xml:space="preserve">
+	<data name="AdditionalProbingPathDefinition" xml:space="preserve">
     <value>Path containing probing policy and assemblies to probe for.</value>
   </data>
-  <data name="AdditionalTools" xml:space="preserve">
+	<data name="AdditionalTools" xml:space="preserve">
     <value>Additional commands from bundled tools:</value>
   </data>
-  <data name="AdManifestPackageDoesNotExist" xml:space="preserve">
+	<data name="AdManifestPackageDoesNotExist" xml:space="preserve">
     <value>Advertising manifest not updated. Manifest package for {0} doesn't exist.</value>
   </data>
-  <data name="AdManifestUpdated" xml:space="preserve">
+	<data name="AdManifestUpdated" xml:space="preserve">
     <value>Updated advertising manifest {0}.</value>
   </data>
-  <data name="Authors" xml:space="preserve">
+	<data name="Authors" xml:space="preserve">
     <value>Authors</value>
     <comment>Table lable</comment>
   </data>
-  <data name="BuildDefinition" xml:space="preserve">
+	<data name="BuildDefinition" xml:space="preserve">
     <value>Build a .NET project.</value>
   </data>
-  <data name="BuildRuntimeOptionDescription" xml:space="preserve">
+	<data name="BuildRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to build for.</value>
   </data>
-  <data name="BuildServerDefinition" xml:space="preserve">
+	<data name="BuildServerDefinition" xml:space="preserve">
     <value>Interact with servers started by a build.</value>
   </data>
-  <data name="BundleUpToDateMessage" xml:space="preserve">
+	<data name="BundleUpToDateMessage" xml:space="preserve">
     <value>Up to date.</value>
   </data>
-  <data name="CacheMissingPackage" xml:space="preserve">
+	<data name="CacheMissingPackage" xml:space="preserve">
     <value>Package {0} version {1} doesn't exist in offline cache {2}.</value>
   </data>
-  <data name="CancelledLowercase" xml:space="preserve">
+	<data name="CancelledLowercase" xml:space="preserve">
     <value>canceled</value>
   </data>
-  <data name="CancellingTestSession" xml:space="preserve">
+	<data name="CancellingTestSession" xml:space="preserve">
     <value>Canceling the test session...</value>
   </data>
-  <data name="CannotAnalyzeVSWorkloadBand" xml:space="preserve">
+	<data name="CannotAnalyzeVSWorkloadBand" xml:space="preserve">
     <value>Workloads managed by Visual Studio must be uninstalled using the Visual Studio Installer. For the version of Visual Studio managing the SDK '{0}', we could not display workloads to uninstall. This is likely because '{0}' uses a different dotnet root path or custom user profile directory from the current running SDK.
 Paths searched: '{1}', '{2}'.</value>
   </data>
-  <data name="CannotCombineOptions" xml:space="preserve">
+	<data name="CannotCombineOptions" xml:space="preserve">
     <value>Cannot use the {0} and {1} options together.</value>
   </data>
-  <data name="CannotCombineSkipManifestAndRollback" xml:space="preserve">
+	<data name="CannotCombineSkipManifestAndRollback" xml:space="preserve">
     <value>Cannot use the {0} and {1} options together. If installing from a rollback file, remove {0}. Otherwise, remove {1}</value>
   </data>
-  <data name="CannotCombineSkipManifestAndVersion" xml:space="preserve">
+	<data name="CannotCombineSkipManifestAndVersion" xml:space="preserve">
     <value>Cannot use the {0} and {1} options together.  Remove one of the options.</value>
   </data>
-  <data name="CannotFindCommandName" xml:space="preserve">
+	<data name="CannotFindCommandName" xml:space="preserve">
     <value>Cannot find a tool in the manifest file that has a command named '{0}'.</value>
   </data>
-  <data name="CannotMigrateSlnx" xml:space="preserve">
+	<data name="CannotMigrateSlnx" xml:space="preserve">
     <value>Only .sln files can be migrated to .slnx format.</value>
   </data>
-  <data name="CannotSpecifyVersionAndWorkloadIdsByComponent" xml:space="preserve">
+	<data name="CannotSpecifyVersionAndWorkloadIdsByComponent" xml:space="preserve">
     <value>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</value>
     <comment>{Locked="--version"}</comment>
   </data>
-  <data name="CannotSpecifyVersionOnCommandLineAndInGlobalJson" xml:space="preserve">
+	<data name="CannotSpecifyVersionOnCommandLineAndInGlobalJson" xml:space="preserve">
     <value>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</value>
   </data>
-  <data name="CannotUseSkipManifestWithGlobalJsonWorkloadVersion" xml:space="preserve">
+	<data name="CannotUseSkipManifestWithGlobalJsonWorkloadVersion" xml:space="preserve">
     <value>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</value>
     <comment>{Locked="workloadVersion"} Locked={"global.json"}</comment>
   </data>
-  <data name="CapabilityExpressionEvaluator_Exception_InvalidExpression" xml:space="preserve">
+	<data name="CapabilityExpressionEvaluator_Exception_InvalidExpression" xml:space="preserve">
     <value>Invalid expression, position: {0}.</value>
   </data>
-  <data name="CheckForUpdatedWorkloadManifests" xml:space="preserve">
+	<data name="CheckForUpdatedWorkloadManifests" xml:space="preserve">
     <value>Checking for updated workload version.</value>
   </data>
-  <data name="CleanDefinition" xml:space="preserve">
+	<data name="CleanDefinition" xml:space="preserve">
     <value>Clean build outputs of a .NET project.</value>
   </data>
-  <data name="CleanFileBasedAppArtifactsErrorRemovingFolder" xml:space="preserve">
+	<data name="CleanFileBasedAppArtifactsErrorRemovingFolder" xml:space="preserve">
     <value>Error removing folder '{0}': {1}</value>
     <comment>{0} is folder path. {1} is inner error message.</comment>
   </data>
-  <data name="CleanFileBasedAppArtifactsWouldRemoveFolders" xml:space="preserve">
+	<data name="CleanFileBasedAppArtifactsWouldRemoveFolders" xml:space="preserve">
     <value>Would remove folders: {0}</value>
     <comment>{0} is count.</comment>
   </data>
-  <data name="CleanFileBasedAppArtifactsTotalFoldersRemoved" xml:space="preserve">
+	<data name="CleanFileBasedAppArtifactsTotalFoldersRemoved" xml:space="preserve">
     <value>Total folders removed: {0}</value>
     <comment>{0} is count.</comment>
   </data>
-  <data name="CleanFileBasedAppArtifactsDirectoryNotFound" xml:space="preserve">
+	<data name="CleanFileBasedAppArtifactsDirectoryNotFound" xml:space="preserve">
     <value>Warning: Artifacts directory does not exist: {0}</value>
     <comment>{0} is directory path.</comment>
   </data>
-  <data name="CleanFileBasedAppArtifactsScanning" xml:space="preserve">
+	<data name="CleanFileBasedAppArtifactsScanning" xml:space="preserve">
     <value>Scanning for folders to remove in: {0}</value>
     <comment>{0} is directory path.</comment>
   </data>
-  <data name="CmdDGFileException" xml:space="preserve">
+	<data name="CmdDGFileException" xml:space="preserve">
     <value>Unable to create dependency graph file for project '{0}'. Cannot add package reference.</value>
   </data>
-  <data name="CmdDGFileIOException" xml:space="preserve">
+	<data name="CmdDGFileIOException" xml:space="preserve">
     <value>Unable to generate a temporary file for project '{0}'. Cannot add package reference. Clear the temp directory and try again.</value>
   </data>
-  <data name="CmdHelpUsageTitle" xml:space="preserve">
+	<data name="CmdHelpUsageTitle" xml:space="preserve">
     <value>Usage:</value>
   </data>
-  <data name="CmdInvalidProjectFileExtensionErrorDescription" xml:space="preserve">
+	<data name="CmdInvalidProjectFileExtensionErrorDescription" xml:space="preserve">
     <value>The provided project file has an invalid extension: {0}.</value>
   </data>
-  <data name="CmdInvalidSolutionFileExtensionErrorDescription" xml:space="preserve">
+	<data name="CmdInvalidSolutionFileExtensionErrorDescription" xml:space="preserve">
     <value>The provided solution file has an invalid extension: {0}.</value>
   </data>
-  <data name="CmdMSBuildProjectsPropertiesErrorDescription" xml:space="preserve">
+	<data name="CmdMSBuildProjectsPropertiesErrorDescription" xml:space="preserve">
     <value>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</value>
   </data>
-  <data name="CmdMultipleBuildPathOptionsErrorDescription" xml:space="preserve">
+	<data name="CmdMultipleBuildPathOptionsErrorDescription" xml:space="preserve">
     <value>Specify either the project, solution, directory, or test modules option.</value>
   </data>
-  <data name="CmdMultipleProjectOrSolutionFilesErrorDescription" xml:space="preserve">
+	<data name="CmdMultipleProjectOrSolutionFilesErrorDescription" xml:space="preserve">
     <value>Specify which project or solution file to use because this folder contains more than one project or solution file.</value>
   </data>
-  <data name="CmdNonExistentDirectoryErrorDescription" xml:space="preserve">
+	<data name="CmdNonExistentDirectoryErrorDescription" xml:space="preserve">
     <value>The provided directory path does not exist: {0}.</value>
   </data>
-  <data name="CmdNonExistentFileErrorDescription" xml:space="preserve">
+	<data name="CmdNonExistentFileErrorDescription" xml:space="preserve">
     <value>The provided file path does not exist: {0}.</value>
   </data>
-  <data name="CmdNonExistentRootDirectoryErrorDescription" xml:space="preserve">
+	<data name="CmdNonExistentRootDirectoryErrorDescription" xml:space="preserve">
     <value>The provided root directory does not exist: {0}.</value>
   </data>
-  <data name="CmdNoProjectOrSolutionFileErrorDescription" xml:space="preserve">
+	<data name="CmdNoProjectOrSolutionFileErrorDescription" xml:space="preserve">
     <value>Specify a project or solution file. The current working directory does not contain a project or solution file.</value>
   </data>
-  <data name="CmdNoTestModulesErrorDescription" xml:space="preserve">
+	<data name="CmdNoTestModulesErrorDescription" xml:space="preserve">
     <value>No test modules found for the given test module pattern: {0} with root directory: {1}</value>
   </data>
-  <data name="CmdOptionCannotBeUsedWithTestModulesDescription" xml:space="preserve">
+	<data name="CmdOptionCannotBeUsedWithTestModulesDescription" xml:space="preserve">
     <value>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</value>
   </data>
-  <data name="Error_restore" xml:space="preserve">
+	<data name="Error_restore" xml:space="preserve">
     <value>Restore failed. Run `dotnet restore` for more details on the issue.</value>
     <comment>{Locked="dotnet restore"}</comment>
   </data>
-  <data name="CmdUnsupportedMessageRequestTypeException" xml:space="preserve">
+	<data name="CmdUnsupportedMessageRequestTypeException" xml:space="preserve">
     <value>Message Request type '{0}' is unsupported.</value>
     <comment>{0} - message request type</comment>
   </data>
-  <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
+	<data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
     <value>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
@@ -284,435 +284,426 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
     <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
 {0} is one or more project names.</comment>
   </data>
-  <data name="Command" xml:space="preserve">
+	<data name="Command" xml:space="preserve">
     <value>Command</value>
   </data>
-  <data name="CommandDoesNotExist" xml:space="preserve">
+	<data name="CommandDoesNotExist" xml:space="preserve">
     <value>Specified command '{0}' is not a valid SDK command. Specify a valid SDK command. For more information, run dotnet help.</value>
   </data>
-  <data name="CommandFooter" xml:space="preserve">
+	<data name="CommandFooter" xml:space="preserve">
     <value>The latest versions of .NET can be installed from https://aka.ms/dotnet-core-download. For more information about .NET lifecycles, see https://aka.ms/dotnet-core-support.</value>
   </data>
-  <data name="Commands" xml:space="preserve">
+	<data name="Commands" xml:space="preserve">
     <value>SDK commands</value>
   </data>
-  <data name="CommandsMismatch" xml:space="preserve">
+	<data name="CommandsMismatch" xml:space="preserve">
     <value>The command {0} specified in the tool manifest file is not contained in the package with Package Id {1}. The commands contained in the package are {2}.</value>
   </data>
-  <data name="ConsoleIsAlreadyInBatchingMode" xml:space="preserve">
+	<data name="ConsoleIsAlreadyInBatchingMode" xml:space="preserve">
     <value>Console is already in batching mode.</value>
     <comment>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</comment>
   </data>
-  <data name="CouldNotFindAProject" xml:space="preserve">
+	<data name="CouldNotFindAProject" xml:space="preserve">
     <value>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</value>
   </data>
-  <data name="Date" xml:space="preserve">
+	<data name="Date" xml:space="preserve">
     <value>Date</value>
   </data>
-  <data name="DeletingWorkloadManifest" xml:space="preserve">
+	<data name="DeletingWorkloadManifest" xml:space="preserve">
     <value>Uninstalling workload manifest {0} version {1}...</value>
   </data>
-  <data name="DeletingWorkloadPack" xml:space="preserve">
+	<data name="DeletingWorkloadPack" xml:space="preserve">
     <value>Uninstalling workload pack {0} version {1}...</value>
   </data>
-  <data name="DeletingWorkloadSet" xml:space="preserve">
+	<data name="DeletingWorkloadSet" xml:space="preserve">
     <value>Deleting workload version {0}.</value>
   </data>
-  <data name="DepsFileDefinition" xml:space="preserve">
+	<data name="DepsFileDefinition" xml:space="preserve">
     <value>Path to &lt;application&gt;.deps.json file.</value>
   </data>
-  <data name="Description" xml:space="preserve">
+	<data name="Description" xml:space="preserve">
     <value>Description</value>
     <comment>Table lable</comment>
   </data>
-  <data name="DescriptionColumnName" xml:space="preserve">
+	<data name="DescriptionColumnName" xml:space="preserve">
     <value>Description</value>
   </data>
-  <data name="DevCertsDefinition" xml:space="preserve">
+	<data name="DevCertsDefinition" xml:space="preserve">
     <value>Create and manage development certificates.</value>
   </data>
-  <data name="Diagnostics_OptionDescription" xml:space="preserve">
-    <value>Enables diagnostic output.</value>
-  </data>
-  <data name="DirectoryAlreadyExists" xml:space="preserve">
+	<data name="DirectoryAlreadyExists" xml:space="preserve">
     <value>The target directory already exists: '{0}'</value>
   </data>
-  <data name="DisableProjectContextEval_OptionDescription" xml:space="preserve">
-    <value>Disables evaluating project context using MSBuild.</value>
-  </data>
-  <data name="DisableSdkTemplates_OptionDescription" xml:space="preserve">
-    <value>If present, prevents templates bundled in the SDK from being presented.</value>
-  </data>
-  <data name="DiscoveredTestsInAssembly" xml:space="preserve">
+	<data name="DiscoveredTestsInAssembly" xml:space="preserve">
     <value>Discovered {0} tests in assembly</value>
     <comment>0 is count, the sentence is followed by the path of the assebly</comment>
   </data>
-  <data name="DiscoveringTestsFrom" xml:space="preserve">
+	<data name="DiscoveringTestsFrom" xml:space="preserve">
     <value>Discovering tests from</value>
   </data>
-  <data name="DownloadingPackToCacheMessage" xml:space="preserve">
+	<data name="DownloadingPackToCacheMessage" xml:space="preserve">
     <value>Downloading pack {0} version {1} to offline cache {2}...</value>
   </data>
-  <data name="Downloads" xml:space="preserve">
+	<data name="Downloads" xml:space="preserve">
     <value>Downloads</value>
     <comment>Table lable</comment>
   </data>
-  <data name="ExecutionUsageDescription" xml:space="preserve">
+	<data name="ExecutionUsageDescription" xml:space="preserve">
     <value>Execute a .NET application.</value>
   </data>
-  <data name="ExitCode" xml:space="preserve">
+	<data name="ExitCode" xml:space="preserve">
     <value>Exit code</value>
   </data>
-  <data name="Expected" xml:space="preserve">
+	<data name="Expected" xml:space="preserve">
     <value>Expected</value>
   </data>
-  <data name="ExpectedSingleManifest" xml:space="preserve">
+	<data name="ExpectedSingleManifest" xml:space="preserve">
     <value>Expected single manifest feature band and manifest folder in MSI from package {0}</value>
   </data>
-  <data name="Failed" xml:space="preserve">
+	<data name="Failed" xml:space="preserve">
     <value>Failed</value>
   </data>
-  <data name="FailedAdManifestUpdate" xml:space="preserve">
+	<data name="FailedAdManifestUpdate" xml:space="preserve">
     <value>Failed to update the advertising manifest {0}: {1}.</value>
   </data>
-  <data name="FailedLowercase" xml:space="preserve">
+	<data name="FailedLowercase" xml:space="preserve">
     <value>failed</value>
   </data>
-  <data name="FailedToCreateToolShim" xml:space="preserve">
+	<data name="FailedToCreateToolShim" xml:space="preserve">
     <value>Failed to create shell shim for tool '{0}': {1}</value>
   </data>
-  <data name="FailedToExtractMsi" xml:space="preserve">
+	<data name="FailedToExtractMsi" xml:space="preserve">
     <value>Failed to extract information from MSI: {0}</value>
   </data>
-  <data name="FailedToInstallWorkloadManifest" xml:space="preserve">
+	<data name="FailedToInstallWorkloadManifest" xml:space="preserve">
     <value>Failed to install manifest {0} version {1}: {2}.</value>
   </data>
-  <data name="FailedToInstallWorkloadSet" xml:space="preserve">
+	<data name="FailedToInstallWorkloadSet" xml:space="preserve">
     <value>Failed to install workload version {0}: {1}</value>
   </data>
-  <data name="FailedToRunTarget" xml:space="preserve">
+	<data name="FailedToRunTarget" xml:space="preserve">
     <value>Failed to restore workload for project {0}: Failed to run MSBuild Target _GetRequiredWorkloads.</value>
   </data>
-  <data name="FailedToUninstallTool" xml:space="preserve">
+	<data name="FailedToUninstallTool" xml:space="preserve">
     <value>Failed to uninstall tool '{0}': {1}</value>
   </data>
-  <data name="FailedWithErrors" xml:space="preserve">
+	<data name="FailedWithErrors" xml:space="preserve">
     <value>failed with {0} error(s)</value>
   </data>
-  <data name="FormatDefinition" xml:space="preserve">
+	<data name="FormatDefinition" xml:space="preserve">
     <value>Apply style preferences to a project or solution.</value>
   </data>
-  <data name="ForTest" xml:space="preserve">
+	<data name="ForTest" xml:space="preserve">
     <value>For test</value>
     <comment>is followed by test name</comment>
   </data>
-  <data name="FromFile" xml:space="preserve">
+	<data name="FromFile" xml:space="preserve">
     <value>from</value>
     <comment>from followed by a file name to point to the file from which test is originating</comment>
   </data>
-  <data name="FsiDefinition" xml:space="preserve">
+	<data name="FsiDefinition" xml:space="preserve">
     <value>Start F# Interactive / execute F# scripts.</value>
   </data>
-  <data name="FxVersionDefinition" xml:space="preserve">
+	<data name="FxVersionDefinition" xml:space="preserve">
     <value>Version of the installed Shared Framework to use to run the application.</value>
   </data>
-  <data name="GarbageCollectingSdkFeatureBandsMessage" xml:space="preserve">
+	<data name="GarbageCollectingSdkFeatureBandsMessage" xml:space="preserve">
     <value>Garbage collecting for SDK feature band(s) {0}...</value>
   </data>
-  <data name="GarbageCollectionFailed" xml:space="preserve">
+	<data name="GarbageCollectionFailed" xml:space="preserve">
     <value>Warning: Workload garbage collection failed with error: {0}.</value>
   </data>
-  <data name="GlobalJsonVersion" xml:space="preserve">
+	<data name="GlobalJsonVersion" xml:space="preserve">
     <value>Global.json Version</value>
   </data>
-  <data name="HelpDefinition" xml:space="preserve">
+	<data name="HelpDefinition" xml:space="preserve">
     <value>Opens the reference page in a browser for the specified command.</value>
   </data>
-  <data name="HelpExtensionOptions" xml:space="preserve">
+	<data name="HelpExtensionOptions" xml:space="preserve">
     <value>Extension Options:</value>
   </data>
-  <data name="HelpModuleIsMissingTheOptionBelow" xml:space="preserve">
+	<data name="HelpModuleIsMissingTheOptionBelow" xml:space="preserve">
     <value>{0} is missing the option below</value>
     <comment>0 is name of the module, this string is followed by lined that list the option</comment>
   </data>
-  <data name="HelpModuleIsMissingTheOptionsBelow" xml:space="preserve">
+	<data name="HelpModuleIsMissingTheOptionsBelow" xml:space="preserve">
     <value>{0} is missing the options below</value>
     <comment>0 is name of the module, this string is followed by lined that list the options</comment>
   </data>
-  <data name="HelpModulesAreMissingTheOptionBelow" xml:space="preserve">
+	<data name="HelpModulesAreMissingTheOptionBelow" xml:space="preserve">
     <value>{0} are missing the option below</value>
     <comment>0 is name of the module, this string is followed by lined that list the option</comment>
   </data>
-  <data name="HelpModulesAreMissingTheOptionsBelow" xml:space="preserve">
+	<data name="HelpModulesAreMissingTheOptionsBelow" xml:space="preserve">
     <value>{0} are missing the options below</value>
     <comment>0 is name of the module, this string is followed by lined that list the options</comment>
   </data>
-  <data name="HelpOptions" xml:space="preserve">
+	<data name="HelpOptions" xml:space="preserve">
     <value>Options:</value>
   </data>
-  <data name="HelpPlatformOptions" xml:space="preserve">
+	<data name="HelpPlatformOptions" xml:space="preserve">
     <value>Platform Options:</value>
   </data>
-  <data name="HelpUnavailableExtensionOptions" xml:space="preserve">
+	<data name="HelpUnavailableExtensionOptions" xml:space="preserve">
     <value>Unavailable extension options:</value>
   </data>
-  <data name="HelpUnavailableOptions" xml:space="preserve">
+	<data name="HelpUnavailableOptions" xml:space="preserve">
     <value>Unavailable options:</value>
   </data>
-  <data name="HelpWaitingForOptionsAndExtensions" xml:space="preserve">
+	<data name="HelpWaitingForOptionsAndExtensions" xml:space="preserve">
     <value>Waiting for options and extensions...</value>
   </data>
-  <data name="HostFxrCouldNotBeLoaded" xml:space="preserve">
+	<data name="HostFxrCouldNotBeLoaded" xml:space="preserve">
     <value>Could not load hostfxr from '{0}'.</value>
   </data>
-  <data name="Id" xml:space="preserve">
+	<data name="Id" xml:space="preserve">
     <value>Id</value>
   </data>
-  <data name="IgnoredArgumentsMessage" xml:space="preserve">
+	<data name="IgnoredArgumentsMessage" xml:space="preserve">
     <value>The following arguments have been ignored : "{0}"</value>
   </data>
-  <data name="InadequatePermissions" xml:space="preserve">
+	<data name="InadequatePermissions" xml:space="preserve">
     <value>Inadequate permissions. Run the command with elevated privileges.</value>
   </data>
-  <data name="InProcessArtifactsProduced" xml:space="preserve">
+	<data name="InProcessArtifactsProduced" xml:space="preserve">
     <value>In process file artifacts produced:</value>
   </data>
-  <data name="InstallingPackVersionMessage" xml:space="preserve">
+	<data name="InstallingPackVersionMessage" xml:space="preserve">
     <value>Installing pack {0} version {1}...</value>
   </data>
-  <data name="InstallingWorkloadManifest" xml:space="preserve">
+	<data name="InstallingWorkloadManifest" xml:space="preserve">
     <value>Installing workload manifest {0} version {1}...</value>
   </data>
-  <data name="InstallingWorkloads" xml:space="preserve">
+	<data name="InstallingWorkloads" xml:space="preserve">
     <value>Installing workloads: {0}</value>
   </data>
-  <data name="InstallToolCommandInvalidGlobalAndLocalAndToolPath" xml:space="preserve">
+	<data name="InstallToolCommandInvalidGlobalAndLocalAndToolPath" xml:space="preserve">
     <value>The local option(--local), the global option (--global), the tool path option (--tool-path), can only have one at a time. Specify only one of the options: {0}.</value>
   </data>
-  <data name="InsufficientPrivilegeToStartServer" xml:space="preserve">
+	<data name="InsufficientPrivilegeToStartServer" xml:space="preserve">
     <value>Insufficient privilege to start the server.</value>
   </data>
-  <data name="InvalidFilePath" xml:space="preserve">
+	<data name="InvalidFilePath" xml:space="preserve">
     <value>The specified file must exist and have '.cs' file extension: '{0}'</value>
     <comment>{Locked=".cs"}</comment>
   </data>
-  <data name="InvalidToolConfiguration" xml:space="preserve">
+	<data name="InvalidToolConfiguration" xml:space="preserve">
     <value>The settings file in the tool's NuGet package is invalid: {0}</value>
   </data>
-  <data name="InvalidVersionForWorkload" xml:space="preserve">
+	<data name="InvalidVersionForWorkload" xml:space="preserve">
     <value>Error parsing version '{1}' for workload manifest ID '{0}'</value>
   </data>
-  <data name="LatestVersion" xml:space="preserve">
+	<data name="LatestVersion" xml:space="preserve">
     <value>Latest Version</value>
     <comment>Table lable</comment>
   </data>
-  <data name="ListToolCommandInvalidGlobalAndLocalAndToolPath" xml:space="preserve">
+	<data name="ListToolCommandInvalidGlobalAndLocalAndToolPath" xml:space="preserve">
     <value>The local option(--local), the global option (--global), the tool path option (--tool-path), can only have one at a time. Specify only one of the options: {0}.</value>
   </data>
-  <data name="LocalOptionDoesNotSupportFrameworkOption" xml:space="preserve">
+	<data name="LocalOptionDoesNotSupportFrameworkOption" xml:space="preserve">
     <value>The local option(--local) does not support the framework option (--framework).</value>
   </data>
-  <data name="LocalToolInstallationSucceeded" xml:space="preserve">
+	<data name="LocalToolInstallationSucceeded" xml:space="preserve">
     <value>You can invoke the tool from this directory using the following commands: 'dotnet tool run {0}' or 'dotnet {0}'.
 Tool '{1}' (version '{2}') was successfully installed. Entry is added to the manifest file {3}.</value>
   </data>
-  <data name="LocalToolsRestoreWasSuccessful" xml:space="preserve">
+	<data name="LocalToolsRestoreWasSuccessful" xml:space="preserve">
     <value>Restore was successful.</value>
   </data>
-  <data name="MaintenanceMessage" xml:space="preserve">
+	<data name="MaintenanceMessage" xml:space="preserve">
     <value>.NET {0} is going out of support soon.</value>
   </data>
-  <data name="ManifestFileColumn" xml:space="preserve">
+	<data name="ManifestFileColumn" xml:space="preserve">
     <value>Manifest</value>
   </data>
-  <data name="ManifestMsiNotFoundInNuGetPackage" xml:space="preserve">
+	<data name="ManifestMsiNotFoundInNuGetPackage" xml:space="preserve">
     <value>Manifest MSI not found in NuGet package {0}</value>
   </data>
-  <data name="ManifestPackageUrlNotResolved" xml:space="preserve">
+	<data name="ManifestPackageUrlNotResolved" xml:space="preserve">
     <value>Manifest package not resolved. Manifest package or URL for {0} doesn't exist.</value>
   </data>
-  <data name="MinimumExpectedTestsPolicyViolation" xml:space="preserve">
+	<data name="MinimumExpectedTestsPolicyViolation" xml:space="preserve">
     <value>Minimum expected tests policy violation, tests ran {0}, minimum expected {1}</value>
     <comment>{0}, {1} number of tests</comment>
   </data>
-  <data name="MsBuildDefinition" xml:space="preserve">
+	<data name="MsBuildDefinition" xml:space="preserve">
     <value>Run Microsoft Build Engine (MSBuild) commands.</value>
   </data>
-  <data name="MSBuildEvaluationResult_Error_NoProjectFound" xml:space="preserve">
+	<data name="MSBuildEvaluationResult_Error_NoProjectFound" xml:space="preserve">
     <value>No project was found at the path: {0}.</value>
     <comment>{0} - the file path where project was expected to be found.</comment>
   </data>
-  <data name="MSBuildEvaluationResult_Error_NotRestored" xml:space="preserve">
+	<data name="MSBuildEvaluationResult_Error_NotRestored" xml:space="preserve">
     <value>{0} is not restored.</value>
     <comment>{0} - the full path to the project.</comment>
   </data>
-  <data name="MSBuildEvaluator_Error_NoTargetFramework" xml:space="preserve">
+	<data name="MSBuildEvaluator_Error_NoTargetFramework" xml:space="preserve">
     <value>Project '{0}' is a SDK-style project, but does not specify the framework.</value>
     <comment>{0} - the full path to the project.</comment>
   </data>
-  <data name="MsiProgressInstall" xml:space="preserve">
+	<data name="MsiProgressInstall" xml:space="preserve">
     <value>Installing {0} </value>
   </data>
-  <data name="MsiProgressRepair" xml:space="preserve">
+	<data name="MsiProgressRepair" xml:space="preserve">
     <value>Repairing {0} </value>
   </data>
-  <data name="MsiProgressUninstall" xml:space="preserve">
+	<data name="MsiProgressUninstall" xml:space="preserve">
     <value>Removing {0} </value>
   </data>
-  <data name="MultipleProjectsEvaluationResult_Error" xml:space="preserve">
+	<data name="MultipleProjectsEvaluationResult_Error" xml:space="preserve">
     <value>Multiple projects found: {0}.</value>
     <comment>{0} - semi-colon separated list of path to projects found.</comment>
   </data>
-  <data name="NameColumnHeader" xml:space="preserve">
+	<data name="NameColumnHeader" xml:space="preserve">
     <value>Name</value>
   </data>
-  <data name="NeedNuGetInConfig" xml:space="preserve">
+	<data name="NeedNuGetInConfig" xml:space="preserve">
     <value>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
     This can be done with this command:
   dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</value>
     <comment>Do not translate 'dotnet tool search' or 'nuget.config'. Do not localize the last line at all.</comment>
   </data>
-  <data name="NewDefinition" xml:space="preserve">
+	<data name="NewDefinition" xml:space="preserve">
     <value>Create a new .NET project or file.</value>
   </data>
-  <data name="NewFeatureBandMessage" xml:space="preserve">
+	<data name="NewFeatureBandMessage" xml:space="preserve">
     <value>Try out the newest .NET SDK features with .NET {0}.</value>
   </data>
-  <data name="NewPatchAvailableMessage" xml:space="preserve">
+	<data name="NewPatchAvailableMessage" xml:space="preserve">
     <value>Patch {0} is available.</value>
   </data>
-  <data name="NewWorkloadSet" xml:space="preserve">
+	<data name="NewWorkloadSet" xml:space="preserve">
     <value>Installing workload version {0}.</value>
   </data>
-  <data name="NoHistoryFound" xml:space="preserve">
+	<data name="NoHistoryFound" xml:space="preserve">
     <value>No workload history found</value>
   </data>
-  <data name="NoManifestFileContainPackageId" xml:space="preserve">
+	<data name="NoManifestFileContainPackageId" xml:space="preserve">
     <value>Cannot find a manifest file that contains package id '{0}'.</value>
   </data>
-  <data name="NoProjectsOrSolutions" xml:space="preserve">
+	<data name="NoProjectsOrSolutions" xml:space="preserve">
     <value>A project or solution file could not be found in {0}. Specify a project or solution file to use.</value>
   </data>
-  <data name="NoResult" xml:space="preserve">
+	<data name="NoResult" xml:space="preserve">
     <value>Could not find any results.</value>
   </data>
-  <data name="NoSerializerRegisteredWithIdErrorMessage" xml:space="preserve">
+	<data name="NoSerializerRegisteredWithIdErrorMessage" xml:space="preserve">
     <value>No serializer registered with ID '{0}'</value>
   </data>
-  <data name="NoSerializerRegisteredWithTypeErrorMessage" xml:space="preserve">
+	<data name="NoSerializerRegisteredWithTypeErrorMessage" xml:space="preserve">
     <value>No serializer registered with type '{0}'</value>
   </data>
-  <data name="NoServersToShutdown" xml:space="preserve">
+	<data name="NoServersToShutdown" xml:space="preserve">
     <value>No build servers are running.</value>
   </data>
-  <data name="NoToolsWereRestored" xml:space="preserve">
+	<data name="NoToolsWereRestored" xml:space="preserve">
     <value>No tools were restored.</value>
   </data>
-  <data name="NoTrustWithParentPID" xml:space="preserve">
+	<data name="NoTrustWithParentPID" xml:space="preserve">
     <value>Failed to establish a trust relationship with parent process ({0}).</value>
   </data>
-  <data name="NoWorkloadHistoryRecords" xml:space="preserve">
+	<data name="NoWorkloadHistoryRecords" xml:space="preserve">
     <value>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</value>
   </data>
-  <data name="NoWorkloadsInstalledInfoWarning" xml:space="preserve">
+	<data name="NoWorkloadsInstalledInfoWarning" xml:space="preserve">
     <value>There are no installed workloads to display.</value>
   </data>
-  <data name="NoWorkloadsToRepair" xml:space="preserve">
+	<data name="NoWorkloadsToRepair" xml:space="preserve">
     <value>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</value>
   </data>
-  <data name="NoWorkloadsToUpdate" xml:space="preserve">
+	<data name="NoWorkloadsToUpdate" xml:space="preserve">
     <value>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</value>
   </data>
-  <data name="NoWorkloadUpdateFound" xml:space="preserve">
+	<data name="NoWorkloadUpdateFound" xml:space="preserve">
     <value>No workload update found.</value>
   </data>
-  <data name="NoWorkloadVersionsFound" xml:space="preserve">
+	<data name="NoWorkloadVersionsFound" xml:space="preserve">
     <value>No workload versions found for SDK feature band {0}.</value>
   </data>
-  <data name="NugetDefinition" xml:space="preserve">
+	<data name="NugetDefinition" xml:space="preserve">
     <value>Provides additional NuGet commands.</value>
   </data>
-  <data name="OnlyLocalOptionSupportManifestFileOption" xml:space="preserve">
+	<data name="OnlyLocalOptionSupportManifestFileOption" xml:space="preserve">
     <value>Specifying the tool manifest option (--tool-manifest) is only valid with the local option (--local or the default).</value>
   </data>
-  <data name="OSDoesNotSupportMsi" xml:space="preserve">
+	<data name="OSDoesNotSupportMsi" xml:space="preserve">
     <value>MSI installations are only supported on Windows.</value>
   </data>
-  <data name="OutOfProcessArtifactsProduced" xml:space="preserve">
+	<data name="OutOfProcessArtifactsProduced" xml:space="preserve">
     <value>Out of process file artifacts produced:</value>
   </data>
-  <data name="OutOfSupportMessage" xml:space="preserve">
+	<data name="OutOfSupportMessage" xml:space="preserve">
     <value>.NET {0} is out of support.</value>
   </data>
-  <data name="PackageDefinition" xml:space="preserve">
+	<data name="PackageDefinition" xml:space="preserve">
     <value>Search for, add, remove, or list PackageReferences for a .NET project.</value>
   </data>
-  <data name="PackageFailedToRestore" xml:space="preserve">
+	<data name="PackageFailedToRestore" xml:space="preserve">
     <value>Package "{0}" failed to restore, due to {1}</value>
   </data>
-  <data name="PackageId" xml:space="preserve">
+	<data name="PackageId" xml:space="preserve">
     <value>Package ID</value>
     <comment>Table lable</comment>
   </data>
-  <data name="PackageListFileNotFound" xml:space="preserve">
+	<data name="PackageListFileNotFound" xml:space="preserve">
     <value>Could not find file or directory '{0}'.</value>
   </data>
-  <data name="PackageRemoveSpecifyExactlyOnePackageReference" xml:space="preserve">
+	<data name="PackageRemoveSpecifyExactlyOnePackageReference" xml:space="preserve">
     <value>Specify only one package reference to remove.</value>
   </data>
-  <data name="DirectivesRemoved" xml:space="preserve">
+	<data name="DirectivesRemoved" xml:space="preserve">
     <value>Removed '{0}' directives ({1}) for '{2}' from: {3}</value>
     <comment>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
     {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</comment>
   </data>
-  <data name="PackagesCommandNameCollisionConclusion" xml:space="preserve">
+	<data name="PackagesCommandNameCollisionConclusion" xml:space="preserve">
     <value>Command names conflict. Command names are case insensitive.
 {0}</value>
   </data>
-  <data name="PackagesCommandNameCollisionForOnePackage" xml:space="preserve">
+	<data name="PackagesCommandNameCollisionForOnePackage" xml:space="preserve">
     <value>A command "{0}" in package "{1}"</value>
   </data>
-  <data name="PackDefinition" xml:space="preserve">
+	<data name="PackDefinition" xml:space="preserve">
     <value>Create a NuGet package.</value>
   </data>
-  <data name="Passed" xml:space="preserve">
+	<data name="Passed" xml:space="preserve">
     <value>Passed</value>
   </data>
-  <data name="PassedLowercase" xml:space="preserve">
+	<data name="PassedLowercase" xml:space="preserve">
     <value>passed</value>
   </data>
-  <data name="PathToApplicationDefinition" xml:space="preserve">
+	<data name="PathToApplicationDefinition" xml:space="preserve">
     <value>The path to an application .dll file to execute.</value>
   </data>
-  <data name="PendingReboot" xml:space="preserve">
+	<data name="PendingReboot" xml:space="preserve">
     <value>The machine has a pending reboot. The workload operation will continue, but you may need to restart.</value>
   </data>
-  <data name="PostAction_AddProjToSln_Error_BothInRootAndSolutionFolderSpecified" xml:space="preserve">
+	<data name="PostAction_AddProjToSln_Error_BothInRootAndSolutionFolderSpecified" xml:space="preserve">
     <value>Add project reference to solution action is not configured correctly in the template.
     The 'solutionFolder' and 'inRoot' cannot be used together; use only one of the options.</value>
     <comment>do not translate: 'solutionFolder', 'inRoot'</comment>
   </data>
-  <data name="PostAction_AddProjToSln_Error_NoProjectsToAdd" xml:space="preserve">
+	<data name="PostAction_AddProjToSln_Error_NoProjectsToAdd" xml:space="preserve">
     <value>Add project reference to solution action is not configured correctly in the template. Unable to determine the project files to add.</value>
   </data>
-  <data name="PostAction_AddProjToSln_Error_NoSolutionFile" xml:space="preserve">
+	<data name="PostAction_AddProjToSln_Error_NoSolutionFile" xml:space="preserve">
     <value>Unable to determine which solution file to add the reference to.</value>
   </data>
-  <data name="PostAction_AddProjToSln_Failed" xml:space="preserve">
+	<data name="PostAction_AddProjToSln_Failed" xml:space="preserve">
     <value>Failed to add project(s) to the solution: {0}</value>
     <comment>{0} - the reason why operation failed, normally ends with period</comment>
   </data>
-  <data name="PostAction_AddProjToSln_Failed_NoReason" xml:space="preserve">
+	<data name="PostAction_AddProjToSln_Failed_NoReason" xml:space="preserve">
     <value>Failed to add project(s) to a solution file.</value>
   </data>
-  <data name="PostAction_AddProjToSln_InRoot_Running" xml:space="preserve">
+	<data name="PostAction_AddProjToSln_InRoot_Running" xml:space="preserve">
     <value>Adding
     project(s): {0}
     in the root of solution file: {1}</value>
     <comment>{0} - list of file paths to projects to add,
 {1} - the path to target solution file</comment>
   </data>
-  <data name="PostAction_AddProjToSln_Running" xml:space="preserve">
+	<data name="PostAction_AddProjToSln_Running" xml:space="preserve">
     <value>Adding
     project(s): {0}
     to solution file: {1}
@@ -721,482 +712,482 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
 {1} - the path to target solution file,
 {2} - the solution folder inside solution to add the projects to.</comment>
   </data>
-  <data name="PostAction_AddProjToSln_Succeeded" xml:space="preserve">
+	<data name="PostAction_AddProjToSln_Succeeded" xml:space="preserve">
     <value>Successfully added project(s) to a solution file.</value>
   </data>
-  <data name="PostAction_AddReference_AddPackageReference" xml:space="preserve">
+	<data name="PostAction_AddReference_AddPackageReference" xml:space="preserve">
     <value>Adding a package reference {0} to project file {1}:</value>
   </data>
-  <data name="PostAction_AddReference_AddPackageReference_Failed" xml:space="preserve">
+	<data name="PostAction_AddReference_AddPackageReference_Failed" xml:space="preserve">
     <value>Failed to add package reference: {0}</value>
     <comment>{0} - the reason why operation failed, normally ends with period</comment>
   </data>
-  <data name="PostAction_AddReference_AddPackageReference_WithVersion" xml:space="preserve">
+	<data name="PostAction_AddReference_AddPackageReference_WithVersion" xml:space="preserve">
     <value>Adding a package reference {0} (version: {1}) to project file {2}:</value>
   </data>
-  <data name="PostAction_AddReference_AddProjectReference" xml:space="preserve">
+	<data name="PostAction_AddReference_AddProjectReference" xml:space="preserve">
     <value>Adding a project reference {0} to project file {1}:</value>
   </data>
-  <data name="PostAction_AddReference_AddProjectReference_Failed" xml:space="preserve">
+	<data name="PostAction_AddReference_AddProjectReference_Failed" xml:space="preserve">
     <value>Failed to add project reference: {0}</value>
     <comment>{0} - the reason why operation failed, normally ends with period</comment>
   </data>
-  <data name="PostAction_AddReference_Error_ActionMisconfigured" xml:space="preserve">
+	<data name="PostAction_AddReference_Error_ActionMisconfigured" xml:space="preserve">
     <value>Add reference action is not configured correctly in the template.</value>
   </data>
-  <data name="PostAction_AddReference_Error_FrameworkNotSupported" xml:space="preserve">
+	<data name="PostAction_AddReference_Error_FrameworkNotSupported" xml:space="preserve">
     <value>Unable to automatically add the framework reference {0} to the project. Manually edit the project file to add it.</value>
   </data>
-  <data name="PostAction_AddReference_Error_ProjFileListHeader" xml:space="preserve">
+	<data name="PostAction_AddReference_Error_ProjFileListHeader" xml:space="preserve">
     <value>Project files found:</value>
   </data>
-  <data name="PostAction_AddReference_Error_UnresolvedProjFile" xml:space="preserve">
+	<data name="PostAction_AddReference_Error_UnresolvedProjFile" xml:space="preserve">
     <value>Unable to determine which project file to add the reference to.</value>
   </data>
-  <data name="PostAction_AddReference_Error_UnsupportedRefType" xml:space="preserve">
+	<data name="PostAction_AddReference_Error_UnsupportedRefType" xml:space="preserve">
     <value>Adding reference type {0} is not supported.</value>
   </data>
-  <data name="PostAction_AddReference_Failed" xml:space="preserve">
+	<data name="PostAction_AddReference_Failed" xml:space="preserve">
     <value>Failed to add a reference to the project file.</value>
   </data>
-  <data name="PostAction_AddReference_Succeeded" xml:space="preserve">
+	<data name="PostAction_AddReference_Succeeded" xml:space="preserve">
     <value>Successfully added a reference to the project file.</value>
   </data>
-  <data name="PostAction_Restore_Error_FailedToDetermineProjectToRestore" xml:space="preserve">
+	<data name="PostAction_Restore_Error_FailedToDetermineProjectToRestore" xml:space="preserve">
     <value>Couldn't determine files to restore.</value>
   </data>
-  <data name="PostAction_Restore_Error_NoProjectsToRestore" xml:space="preserve">
+	<data name="PostAction_Restore_Error_NoProjectsToRestore" xml:space="preserve">
     <value>No projects are configured to restore. Check primary outputs configuration in template.json.</value>
   </data>
-  <data name="PostAction_Restore_Failed" xml:space="preserve">
+	<data name="PostAction_Restore_Failed" xml:space="preserve">
     <value>Restore failed.</value>
   </data>
-  <data name="PostAction_Restore_RestoreFailed" xml:space="preserve">
+	<data name="PostAction_Restore_RestoreFailed" xml:space="preserve">
     <value>Failed to perform restore: {0}</value>
     <comment>{0} - the reason why operation failed, normally ends with period</comment>
   </data>
-  <data name="PostAction_Restore_Running" xml:space="preserve">
+	<data name="PostAction_Restore_Running" xml:space="preserve">
     <value>Restoring {0}:</value>
     <comment>{0} - path to a project to restore</comment>
   </data>
-  <data name="PostAction_Restore_Succeeded" xml:space="preserve">
+	<data name="PostAction_Restore_Succeeded" xml:space="preserve">
     <value>Restore succeeded.</value>
   </data>
-  <data name="PrereleaseAndVersionAreNotSupportedAtTheSameTime" xml:space="preserve">
+	<data name="PrereleaseAndVersionAreNotSupportedAtTheSameTime" xml:space="preserve">
     <value>The --prerelease and --version options are not supported in the same command</value>
   </data>
-  <data name="ProjectCapabilityConstraint_DisplayName" xml:space="preserve">
+	<data name="ProjectCapabilityConstraint_DisplayName" xml:space="preserve">
     <value>Project capabilities</value>
   </data>
-  <data name="ProjectCapabilityConstraint_Error_ArgumentShouldBeString" xml:space="preserve">
+	<data name="ProjectCapabilityConstraint_Error_ArgumentShouldBeString" xml:space="preserve">
     <value>argument should be a string</value>
     <comment>part of a sentence</comment>
   </data>
-  <data name="ProjectCapabilityConstraint_Error_ArgumentShouldNotBeEmpty" xml:space="preserve">
+	<data name="ProjectCapabilityConstraint_Error_ArgumentShouldNotBeEmpty" xml:space="preserve">
     <value>arguments should not contain empty values</value>
     <comment>part of a sentence</comment>
   </data>
-  <data name="ProjectCapabilityConstraint_Error_InvalidConstraintConfiguration" xml:space="preserve">
+	<data name="ProjectCapabilityConstraint_Error_InvalidConstraintConfiguration" xml:space="preserve">
     <value>Invalid constraint configuration</value>
     <comment>part of a sentence</comment>
   </data>
-  <data name="ProjectCapabilityConstraint_Error_InvalidJson" xml:space="preserve">
+	<data name="ProjectCapabilityConstraint_Error_InvalidJson" xml:space="preserve">
     <value>invalid JSON</value>
     <comment>part of a sentence</comment>
   </data>
-  <data name="ProjectCapabilityConstraint_Restricted_EvaluationFailed_Message" xml:space="preserve">
+	<data name="ProjectCapabilityConstraint_Restricted_EvaluationFailed_Message" xml:space="preserve">
     <value>Failed to evaluate project context: {0}</value>
     <comment>{0} - failure reason</comment>
   </data>
-  <data name="ProjectCapabilityConstraint_Restricted_Message" xml:space="preserve">
+	<data name="ProjectCapabilityConstraint_Restricted_Message" xml:space="preserve">
     <value>The template needs project capability '{0}', and current project ({1}) does not satisfy it.</value>
     <comment>{0} - project capability expression (non-localizable), {1} - path to the project.</comment>
   </data>
-  <data name="ProjectCapabilityConstraint_Restricted_MultipleProjectsFound_CTA" xml:space="preserve">
+	<data name="ProjectCapabilityConstraint_Restricted_MultipleProjectsFound_CTA" xml:space="preserve">
     <value>Specify the project to use using {0} option.</value>
     <comment>{0} - option to use - non localizable</comment>
   </data>
-  <data name="ProjectCapabilityConstraint_Restricted_NonSDKStyle_Message" xml:space="preserve">
+	<data name="ProjectCapabilityConstraint_Restricted_NonSDKStyle_Message" xml:space="preserve">
     <value>The project {0} is not an SDK style project, and is not supported for evaluation. It is only possible to use this template with SDK-style projects.</value>
     <comment>{0} - path to the project</comment>
   </data>
-  <data name="ProjectCapabilityConstraint_Restricted_NoProjectFound_CTA" xml:space="preserve">
+	<data name="ProjectCapabilityConstraint_Restricted_NoProjectFound_CTA" xml:space="preserve">
     <value>This template can only be created inside the project.</value>
   </data>
-  <data name="ProjectCapabilityConstraint_Restricted_NotRestored_CTA" xml:space="preserve">
+	<data name="ProjectCapabilityConstraint_Restricted_NotRestored_CTA" xml:space="preserve">
     <value>Run 'dotnet restore {0}' to restore the project.</value>
     <comment>{Locked="dotnet restore {0}"}</comment>
   </data>
-  <data name="ProjectCapabilityConstraintFactory_Exception_EvaluationFailed" xml:space="preserve">
+	<data name="ProjectCapabilityConstraintFactory_Exception_EvaluationFailed" xml:space="preserve">
     <value>Failed to create constraint '{0}': failed to evaluate the project: {1}</value>
     <comment>{0} - type of constraint (non-localizable), {1} - localized reason why evaluation failed, ends with period.</comment>
   </data>
-  <data name="ProjectCapabilityConstraintFactory_Exception_NoEvaluator" xml:space="preserve">
+	<data name="ProjectCapabilityConstraintFactory_Exception_NoEvaluator" xml:space="preserve">
     <value>Failed to create constraint '{0}': {1} component is not available.</value>
     <comment>{0} - type of constraint (non-localizable), {1} - name of required component (non-localizable).</comment>
   </data>
-  <data name="ProjectContextSymbolSource_DisplayName" xml:space="preserve">
+	<data name="ProjectContextSymbolSource_DisplayName" xml:space="preserve">
     <value>Project context</value>
   </data>
-  <data name="ProjectConvertAskForOutputDirectory" xml:space="preserve">
+	<data name="ProjectConvertAskForOutputDirectory" xml:space="preserve">
     <value>Specify the output directory (press Enter for default: '{0}', directory must not exist):</value>
     <comment>{0} is the default value</comment>
   </data>
-  <data name="ProjectConvertWouldCreateDirectory" xml:space="preserve">
+	<data name="ProjectConvertWouldCreateDirectory" xml:space="preserve">
     <value>Dry run: would create directory: {0}</value>
     <comment>{0} is the directory full path.</comment>
   </data>
-  <data name="ProjectConvertWouldCopyFile" xml:space="preserve">
+	<data name="ProjectConvertWouldCopyFile" xml:space="preserve">
     <value>Dry run: would copy file '{0}' to '{1}'.</value>
     <comment>{0} and {1} are file full paths.</comment>
   </data>
-  <data name="ProjectConvertWouldConvertFile" xml:space="preserve">
+	<data name="ProjectConvertWouldConvertFile" xml:space="preserve">
     <value>Dry run: would remove file-level directives from file: {0}</value>
     <comment>{0} is the file full path.</comment>
   </data>
-  <data name="ProjectConvertWouldCreateFile" xml:space="preserve">
+	<data name="ProjectConvertWouldCreateFile" xml:space="preserve">
     <value>Dry run: would create file: {0}</value>
     <comment>{0} is the file full path.</comment>
   </data>
-  <data name="ProjectsHeader" xml:space="preserve">
+	<data name="ProjectsHeader" xml:space="preserve">
     <value>Project(s)</value>
   </data>
-  <data name="InvalidOptionForStdin" xml:space="preserve">
+	<data name="InvalidOptionForStdin" xml:space="preserve">
     <value>Cannot specify option '{0}' when also using '-' to read the file from standard input.</value>
     <comment>{0} is an option name like '--no-build'.</comment>
   </data>
-  <data name="InvalidOptionForFileBasedApp" xml:space="preserve">
+	<data name="InvalidOptionForFileBasedApp" xml:space="preserve">
     <value>Cannot specify option '{0}' when operating on a file-based app.</value>
     <comment>{0} is an option name like '--source'.</comment>
   </data>
-  <data name="NoBinaryLogBecauseUpToDate" xml:space="preserve">
+	<data name="NoBinaryLogBecauseUpToDate" xml:space="preserve">
     <value>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</value>
     <comment>{Locked="--no-cache"}</comment>
   </data>
-  <data name="NoBinaryLogBecauseRunningJustCsc" xml:space="preserve">
+	<data name="NoBinaryLogBecauseRunningJustCsc" xml:space="preserve">
     <value>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</value>
     <comment>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</comment>
   </data>
-  <data name="PublishDefinition" xml:space="preserve">
+	<data name="PublishDefinition" xml:space="preserve">
     <value>Publish a .NET project for deployment.</value>
   </data>
-  <data name="ReferenceDefinition" xml:space="preserve">
+	<data name="ReferenceDefinition" xml:space="preserve">
     <value>Add, remove, or list ProjectReferences for a .NET project.</value>
   </data>
-  <data name="ReleasesLibraryFailed" xml:space="preserve">
+	<data name="ReleasesLibraryFailed" xml:space="preserve">
     <value>Unable to get releases information: {0}</value>
   </data>
-  <data name="RemovingWorkloadInstallationRecord" xml:space="preserve">
+	<data name="RemovingWorkloadInstallationRecord" xml:space="preserve">
     <value>Removing workload installation record for {0}...</value>
   </data>
-  <data name="RepairingWorkloads" xml:space="preserve">
+	<data name="RepairingWorkloads" xml:space="preserve">
     <value>Repairing workload installation for workloads: {0}</value>
   </data>
-  <data name="RepairSucceeded" xml:space="preserve">
+	<data name="RepairSucceeded" xml:space="preserve">
     <value>Successfully repaired workloads: {0}</value>
   </data>
-  <data name="RequiresWindows" xml:space="preserve">
+	<data name="RequiresWindows" xml:space="preserve">
     <value>This command can only be run on Windows</value>
   </data>
-  <data name="RestoreDefinition" xml:space="preserve">
+	<data name="RestoreDefinition" xml:space="preserve">
     <value>Restore dependencies specified in a .NET project.</value>
   </data>
-  <data name="RestoreFailed" xml:space="preserve">
+	<data name="RestoreFailed" xml:space="preserve">
     <value>Restore failed.</value>
   </data>
-  <data name="RestorePartiallyFailed" xml:space="preserve">
+	<data name="RestorePartiallyFailed" xml:space="preserve">
     <value>Restore partially failed.</value>
   </data>
-  <data name="RestoreSuccessful" xml:space="preserve">
+	<data name="RestoreSuccessful" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') was restored. Available commands: {2}</value>
   </data>
-  <data name="RollbackDefinitionContainsExtraneousManifestIds" xml:space="preserve">
+	<data name="RollbackDefinitionContainsExtraneousManifestIds" xml:space="preserve">
     <value>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</value>
   </data>
-  <data name="RollbackDefinitionFileDoesNotExist" xml:space="preserve">
+	<data name="RollbackDefinitionFileDoesNotExist" xml:space="preserve">
     <value>Provided rollback definition file {0} doesn't exist.</value>
   </data>
-  <data name="RollForwardDefinition" xml:space="preserve">
+	<data name="RollForwardDefinition" xml:space="preserve">
     <value>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</value>
   </data>
-  <data name="RollingBackPackInstall" xml:space="preserve">
+	<data name="RollingBackPackInstall" xml:space="preserve">
     <value>Rolling back pack {0} installation...</value>
   </data>
-  <data name="RunCommandBuilding" xml:space="preserve">
+	<data name="RunCommandBuilding" xml:space="preserve">
     <value>Building...</value>
   </data>
-  <data name="RunCommandEvaluationExceptionBuildFailed" xml:space="preserve">
+	<data name="RunCommandEvaluationExceptionBuildFailed" xml:space="preserve">
     <value>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</value>
     <comment>{0} is the name of an MSBuild target</comment>
   </data>
-  <data name="RunCommandException" xml:space="preserve">
+	<data name="RunCommandException" xml:space="preserve">
     <value>The build failed. Fix the build errors and run again.</value>
   </data>
-  <data name="RunCommandExceptionCouldNotApplyLaunchSettings" xml:space="preserve">
+	<data name="RunCommandExceptionCouldNotApplyLaunchSettings" xml:space="preserve">
     <value>The launch profile "{0}" could not be applied.
 {1}</value>
   </data>
-  <data name="RunCommandExceptionCouldNotLocateALaunchSettingsFile" xml:space="preserve">
+	<data name="RunCommandExceptionCouldNotLocateALaunchSettingsFile" xml:space="preserve">
     <value>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</value>
   </data>
-  <data name="RunCommandWarningRunJsonNotUsed" xml:space="preserve">
+	<data name="RunCommandWarningRunJsonNotUsed" xml:space="preserve">
     <value>Warning: Settings from '{0}' are not used because '{1}' has precedence.</value>
     <comment>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</comment>
   </data>
-  <data name="RunCommandExceptionMultipleProjects" xml:space="preserve">
+	<data name="RunCommandExceptionMultipleProjects" xml:space="preserve">
     <value>Specify which project file to use because {0} contains more than one project file.</value>
   </data>
-  <data name="RunCommandExceptionNoProjects" xml:space="preserve">
+	<data name="RunCommandExceptionNoProjects" xml:space="preserve">
     <value>Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</value>
   </data>
-  <data name="RunCommandExceptionUnableToRun" xml:space="preserve">
+	<data name="RunCommandExceptionUnableToRun" xml:space="preserve">
     <value>Unable to proceed with project '{0}'.
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</value>
     <comment>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</comment>
   </data>
-  <data name="RunCommandExceptionUnableToRunSpecifyFramework" xml:space="preserve">
+	<data name="RunCommandExceptionUnableToRunSpecifyFramework" xml:space="preserve">
     <value>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</value>
   </data>
-  <data name="RunCommandSelectTargetFrameworkPrompt" xml:space="preserve">
+	<data name="RunCommandSelectTargetFrameworkPrompt" xml:space="preserve">
     <value>Select the target framework to run:</value>
   </data>
-  <data name="RunCommandMoreFrameworksText" xml:space="preserve">
+	<data name="RunCommandMoreFrameworksText" xml:space="preserve">
     <value>Move up and down to reveal more frameworks</value>
   </data>
-  <data name="RunCommandSearchPlaceholderText" xml:space="preserve">
+	<data name="RunCommandSearchPlaceholderText" xml:space="preserve">
     <value>Type to search</value>
   </data>
-  <data name="RunCommandAvailableTargetFrameworks" xml:space="preserve">
+	<data name="RunCommandAvailableTargetFrameworks" xml:space="preserve">
     <value>Available target frameworks:</value>
   </data>
-  <data name="RunCommandExampleText" xml:space="preserve">
+	<data name="RunCommandExampleText" xml:space="preserve">
     <value>Example</value>
   </data>
-  <data name="RunCommandProjectAbbreviationDeprecated" xml:space="preserve">
+	<data name="RunCommandProjectAbbreviationDeprecated" xml:space="preserve">
     <value>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</value>
     <comment>{Locked="--project"}</comment>
   </data>
-  <data name="RunCommandSpecifiedFileIsNotAValidProject" xml:space="preserve">
+	<data name="RunCommandSpecifiedFileIsNotAValidProject" xml:space="preserve">
     <value>'{0}' is not a valid project file.</value>
   </data>
-  <data name="RunDefinition" xml:space="preserve">
+	<data name="RunDefinition" xml:space="preserve">
     <value>Build and run a .NET project output.</value>
   </data>
-  <data name="RunDotnetCommandHelpForMore" xml:space="preserve">
+	<data name="RunDotnetCommandHelpForMore" xml:space="preserve">
     <value>Run 'dotnet [command] --help' for more information on a command.</value>
   </data>
-  <data name="RunningTestsFrom" xml:space="preserve">
+	<data name="RunningTestsFrom" xml:space="preserve">
     <value>Running tests from</value>
   </data>
-  <data name="RunRuntimeOptionDescription" xml:space="preserve">
+	<data name="RunRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to run for.</value>
   </data>
-  <data name="RuntimeConfigDefinition" xml:space="preserve">
+	<data name="RuntimeConfigDefinition" xml:space="preserve">
     <value>Path to &lt;application&gt;.runtimeconfig.json file.</value>
   </data>
-  <data name="RuntimePropertyNotFound" xml:space="preserve">
+	<data name="RuntimePropertyNotFound" xml:space="preserve">
     <value>Runtime property 'HOSTFXR_PATH' was not set or empty.</value>
   </data>
-  <data name="RuntimeSectionHeader" xml:space="preserve">
+	<data name="RuntimeSectionHeader" xml:space="preserve">
     <value>.NET Runtimes:</value>
   </data>
-  <data name="SamePackageIdInOtherManifestFile" xml:space="preserve">
+	<data name="SamePackageIdInOtherManifestFile" xml:space="preserve">
     <value>Warning: There are other manifest files in the directory hierarchy that will affect this local tool. The following files have not been changed:
 {0}</value>
   </data>
-  <data name="SDKCommandUsageDescription" xml:space="preserve">
+	<data name="SDKCommandUsageDescription" xml:space="preserve">
     <value>Execute a .NET SDK command.</value>
   </data>
-  <data name="SdkDefinition" xml:space="preserve">
+	<data name="SdkDefinition" xml:space="preserve">
     <value>Manage .NET SDK installation.</value>
   </data>
-  <data name="SDKInfoCommandDefinition" xml:space="preserve">
+	<data name="SDKInfoCommandDefinition" xml:space="preserve">
     <value>Display .NET information.</value>
   </data>
-  <data name="SdkInfoProvider_Message_InstallSdk" xml:space="preserve">
+	<data name="SdkInfoProvider_Message_InstallSdk" xml:space="preserve">
     <value>Go to aka.ms/get-dotnet and install any of the supported SDK versions: '{0}'.</value>
     <comment>{0} is the list of supported versions.</comment>
   </data>
-  <data name="SdkInfoProvider_Message_SwitchSdk" xml:space="preserve">
+	<data name="SdkInfoProvider_Message_SwitchSdk" xml:space="preserve">
     <value>You have other SDK version(s) installed that can be used to run this template. Switch to any of the following SDK(s) on your system to run this template: '{0}'. Details on selecting SDK version to run: https://docs.microsoft.com/dotnet/core/tools/global-json.</value>
     <comment>{0} is the list of installed and supported versions.</comment>
   </data>
-  <data name="SDKListRuntimesCommandDefinition" xml:space="preserve">
+	<data name="SDKListRuntimesCommandDefinition" xml:space="preserve">
     <value>Display the installed runtimes.</value>
   </data>
-  <data name="SDKListSdksCommandDefinition" xml:space="preserve">
+	<data name="SDKListSdksCommandDefinition" xml:space="preserve">
     <value>Display the installed SDKs.</value>
   </data>
-  <data name="SDKOptionsHelpDefinition" xml:space="preserve">
+	<data name="SDKOptionsHelpDefinition" xml:space="preserve">
     <value>Show command line help.</value>
   </data>
-  <data name="SdkSectionHeader" xml:space="preserve">
+	<data name="SdkSectionHeader" xml:space="preserve">
     <value>.NET SDKs:</value>
   </data>
-  <data name="SDKVersionCommandDefinition" xml:space="preserve">
+	<data name="SDKVersionCommandDefinition" xml:space="preserve">
     <value>Display .NET SDK version in use.</value>
   </data>
-  <data name="SdkVersionOptionNotSupported" xml:space="preserve">
+	<data name="SdkVersionOptionNotSupported" xml:space="preserve">
     <value>The --sdk-version option is no longer supported for this command.</value>
     <comment>{Locked="--sdk-version"}</comment>
   </data>
-  <data name="ShouldInstallAWorkloadSet" xml:space="preserve">
+	<data name="ShouldInstallAWorkloadSet" xml:space="preserve">
     <value>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</value>
     <comment>{Locked="dotnet workload restore"}</comment>
   </data>
-  <data name="ShutDownFailed" xml:space="preserve">
+	<data name="ShutDownFailed" xml:space="preserve">
     <value>{0} failed to shut down: {1}</value>
   </data>
-  <data name="ShutDownFailedWithPid" xml:space="preserve">
+	<data name="ShutDownFailedWithPid" xml:space="preserve">
     <value>{0} (process {1}) failed to shut down: {2}</value>
   </data>
-  <data name="ShutDownSucceeded" xml:space="preserve">
+	<data name="ShutDownSucceeded" xml:space="preserve">
     <value>{0} shut down successfully.</value>
   </data>
-  <data name="ShutDownSucceededWithPid" xml:space="preserve">
+	<data name="ShutDownSucceededWithPid" xml:space="preserve">
     <value>{0} (process {1}) shut down successfully.</value>
   </data>
-  <data name="ShuttingDownServer" xml:space="preserve">
+	<data name="ShuttingDownServer" xml:space="preserve">
     <value>Shutting down {0}...</value>
   </data>
-  <data name="ShuttingDownServerWithPid" xml:space="preserve">
+	<data name="ShuttingDownServerWithPid" xml:space="preserve">
     <value>Shutting down {0} (process {1})...</value>
   </data>
-  <data name="SkippedLowercase" xml:space="preserve">
+	<data name="SkippedLowercase" xml:space="preserve">
     <value>skipped</value>
   </data>
-  <data name="SkippingManifestUpdate" xml:space="preserve">
+	<data name="SkippingManifestUpdate" xml:space="preserve">
     <value>Manifest packages were not found. Skipping manifest update...</value>
   </data>
-  <data name="SkipSignCheckInvalidOption" xml:space="preserve">
+	<data name="SkipSignCheckInvalidOption" xml:space="preserve">
     <value>Unable to bypass signature verification. The specified option conflicts with a global policy.</value>
   </data>
-  <data name="SlnDefinition" xml:space="preserve">
+	<data name="SlnDefinition" xml:space="preserve">
     <value>Modify Visual Studio solution files.</value>
   </data>
-  <data name="SlnxGenerated" xml:space="preserve">
+	<data name="SlnxGenerated" xml:space="preserve">
     <value>.slnx file {0} generated.</value>
   </data>
-  <data name="SolutionFolderAndInRootMutuallyExclusive" xml:space="preserve">
+	<data name="SolutionFolderAndInRootMutuallyExclusive" xml:space="preserve">
     <value>The --solution-folder and --in-root options cannot be used together; use only one of the options.</value>
   </data>
-  <data name="SolutionFolderHeader" xml:space="preserve">
+	<data name="SolutionFolderHeader" xml:space="preserve">
     <value>Solution Folder(s)</value>
   </data>
-  <data name="SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion" xml:space="preserve">
+	<data name="SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion" xml:space="preserve">
     <value>'useWorkloadVersions' specified to not use a workload version. This is not compatible with updating or installing with a specified workload version from the command line, global.json, or from a history record with a workload version.</value>
   </data>
-  <data name="SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion" xml:space="preserve">
+	<data name="SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion" xml:space="preserve">
     <value>'useWorkloadVersions' specified to use a workload version. This option is not compatible with updating from a rollback file or from history using a set of manifests.</value>
   </data>
-  <data name="SpecifyManifests" xml:space="preserve">
+	<data name="SpecifyManifests" xml:space="preserve">
     <value>Specify at least one manifest with --manifest.</value>
   </data>
-  <data name="StackFrameAt" xml:space="preserve">
+	<data name="StackFrameAt" xml:space="preserve">
     <value>at</value>
     <comment>at that is used for a stack frame location in a stack trace, is followed by a class and method name</comment>
   </data>
-  <data name="StackFrameIn" xml:space="preserve">
+	<data name="StackFrameIn" xml:space="preserve">
     <value>in</value>
     <comment>in that is used in stack frame it is followed by file name</comment>
   </data>
-  <data name="StandardError" xml:space="preserve">
+	<data name="StandardError" xml:space="preserve">
     <value>Error output</value>
   </data>
-  <data name="StandardOutput" xml:space="preserve">
+	<data name="StandardOutput" xml:space="preserve">
     <value>Standard output</value>
   </data>
-  <data name="StatusColumnHeader" xml:space="preserve">
+	<data name="StatusColumnHeader" xml:space="preserve">
     <value>Status</value>
   </data>
-  <data name="StoreDefinition" xml:space="preserve">
+	<data name="StoreDefinition" xml:space="preserve">
     <value>Store the specified assemblies in the runtime package store.</value>
   </data>
-  <data name="Summary" xml:space="preserve">
+	<data name="Summary" xml:space="preserve">
     <value>Summary</value>
     <comment>Table lable</comment>
   </data>
-  <data name="Tags" xml:space="preserve">
+	<data name="Tags" xml:space="preserve">
     <value>Tags</value>
     <comment>Table lable</comment>
   </data>
-  <data name="TestDefinition" xml:space="preserve">
+	<data name="TestDefinition" xml:space="preserve">
     <value>Run unit tests using the test runner specified in a .NET project.</value>
   </data>
-  <data name="TestDiscoveryExitCode" xml:space="preserve">
+	<data name="TestDiscoveryExitCode" xml:space="preserve">
     <value>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</value>
     <comment>0 is whole number, the value of exit code</comment>
   </data>
-  <data name="TestDiscoverySummary" xml:space="preserve">
+	<data name="TestDiscoverySummary" xml:space="preserve">
     <value>Discovered {0} tests in {1} assemblies.</value>
     <comment>0 is number of tests, 1 is count of assemblies</comment>
   </data>
-  <data name="TestDiscoverySummarySingular" xml:space="preserve">
+	<data name="TestDiscoverySummarySingular" xml:space="preserve">
     <value>Discovered {0} tests.</value>
     <comment>0 is number of tests</comment>
   </data>
-  <data name="TestRunExitCode" xml:space="preserve">
+	<data name="TestRunExitCode" xml:space="preserve">
     <value>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</value>
     <comment>0 is whole number, the value of exit code</comment>
   </data>
-  <data name="TestRunSummary" xml:space="preserve">
+	<data name="TestRunSummary" xml:space="preserve">
     <value>Test run summary:</value>
   </data>
-  <data name="ToolAlreadyInstalled" xml:space="preserve">
+	<data name="ToolAlreadyInstalled" xml:space="preserve">
     <value>Tool '{0}' is already installed.</value>
   </data>
-  <data name="ToolCommonNoManifestGuide" xml:space="preserve">
+	<data name="ToolCommonNoManifestGuide" xml:space="preserve">
     <value>If you intended to perform the action on a global tool, use the `--global` option for the command.</value>
   </data>
-  <data name="ToolDefinition" xml:space="preserve">
+	<data name="ToolDefinition" xml:space="preserve">
     <value>Install or manage tools that extend the .NET experience.</value>
   </data>
-  <data name="ToolInstallationFailed" xml:space="preserve">
+	<data name="ToolInstallationFailed" xml:space="preserve">
     <value>Tool '{0}' failed to install.</value>
   </data>
-  <data name="ToolInstallationFailedContactAuthor" xml:space="preserve">
+	<data name="ToolInstallationFailedContactAuthor" xml:space="preserve">
     <value>Tool '{0}' failed to install. Contact the tool author for assistance.</value>
   </data>
-  <data name="ToolInstallationRestoreFailed" xml:space="preserve">
+	<data name="ToolInstallationRestoreFailed" xml:space="preserve">
     <value>The tool package could not be restored.</value>
   </data>
-  <data name="ToolInstallInstallationSucceeded" xml:space="preserve">
+	<data name="ToolInstallInstallationSucceeded" xml:space="preserve">
     <value>You can invoke the tool using the following command: {0}
 Tool '{1}' (version '{2}') was successfully installed.</value>
   </data>
-  <data name="ToolInstallInvalidNuGetVersionRange" xml:space="preserve">
+	<data name="ToolInstallInvalidNuGetVersionRange" xml:space="preserve">
     <value>Specified version '{0}' is not a valid NuGet version range.</value>
   </data>
-  <data name="ToolInstallNuGetConfigurationFileDoesNotExist" xml:space="preserve">
+	<data name="ToolInstallNuGetConfigurationFileDoesNotExist" xml:space="preserve">
     <value>NuGet configuration file '{0}' does not exist.</value>
   </data>
-  <data name="ToolListCommandsColumn" xml:space="preserve">
+	<data name="ToolListCommandsColumn" xml:space="preserve">
     <value>Commands</value>
   </data>
-  <data name="ToolListInvalidPackageWarning" xml:space="preserve">
+	<data name="ToolListInvalidPackageWarning" xml:space="preserve">
     <value>Warning: tool package '{0}' is invalid, contact tool author:
 {1}</value>
   </data>
-  <data name="ToolListInvalidToolPathOption" xml:space="preserve">
+	<data name="ToolListInvalidToolPathOption" xml:space="preserve">
     <value>Tool path '{0}' does not exist.</value>
   </data>
-  <data name="ToolListPackageIdColumn" xml:space="preserve">
+	<data name="ToolListPackageIdColumn" xml:space="preserve">
     <value>Package Id</value>
   </data>
-  <data name="ToolListVersionColumn" xml:space="preserve">
+	<data name="ToolListVersionColumn" xml:space="preserve">
     <value>Version</value>
   </data>
-  <data name="ToolUninstallInvalidToolPathOption" xml:space="preserve">
+	<data name="ToolUninstallInvalidToolPathOption" xml:space="preserve">
     <value>Tool path '{0}' does not exist.</value>
   </data>
-  <data name="ToolUninstallToolHasMultipleVersionsInstalled" xml:space="preserve">
+	<data name="ToolUninstallToolHasMultipleVersionsInstalled" xml:space="preserve">
     <value>Tool '{0}' has multiple versions installed and cannot be uninstalled.</value>
   </data>
-  <data name="ToolUninstallToolNotInstalled" xml:space="preserve">
+	<data name="ToolUninstallToolNotInstalled" xml:space="preserve">
     <value>A tool with the package Id '{0}' could not be found.
 
 Tools are uninstalled using their package Id which may be different
@@ -1204,357 +1195,354 @@ from the tool name you use when calling the tool. You can find the tool names
 and the corresponding package Ids for installed tools using the command
 'dotnet tool list'.</value>
   </data>
-  <data name="ToolUninstallUninstallSucceeded" xml:space="preserve">
+	<data name="ToolUninstallUninstallSucceeded" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') was successfully uninstalled.</value>
   </data>
-  <data name="ToolUpdateToolHasMultipleVersionsInstalled" xml:space="preserve">
+	<data name="ToolUpdateToolHasMultipleVersionsInstalled" xml:space="preserve">
     <value>Tool '{0}' has multiple versions installed and cannot be updated.</value>
   </data>
-  <data name="ToolUpdateUpdateSucceeded" xml:space="preserve">
+	<data name="ToolUpdateUpdateSucceeded" xml:space="preserve">
     <value>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</value>
   </data>
-  <data name="Try" xml:space="preserve">
+	<data name="Try" xml:space="preserve">
     <value>try {0}</value>
     <comment>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</comment>
   </data>
-  <data name="UninstallLocalToolSucceeded" xml:space="preserve">
+	<data name="UninstallLocalToolSucceeded" xml:space="preserve">
     <value>Tool '{0}' was successfully uninstalled and removed from manifest file {1}.</value>
   </data>
-  <data name="UninstallToolCommandInvalidGlobalAndLocalAndToolPath" xml:space="preserve">
+	<data name="UninstallToolCommandInvalidGlobalAndLocalAndToolPath" xml:space="preserve">
     <value>The local option(--local), the global option (--global), the tool path option (--tool-path), can only have one at a time. Specify only one of the options: {0}.</value>
   </data>
-  <data name="UnknownRecordsInformationalMessage" xml:space="preserve">
+	<data name="UnknownRecordsInformationalMessage" xml:space="preserve">
     <value>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</value>
   </data>
-  <data name="UpdatedWorkloadMode" xml:space="preserve">
+	<data name="UpdatedWorkloadMode" xml:space="preserve">
     <value>Successfully updated workload install mode to use {0}.</value>
   </data>
-  <data name="UpdateFromRollbackSwitchesModeToLooseManifests" xml:space="preserve">
+	<data name="UpdateFromRollbackSwitchesModeToLooseManifests" xml:space="preserve">
     <value>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</value>
   </data>
-  <data name="UpdateLocalToolSucceeded" xml:space="preserve">
+	<data name="UpdateLocalToolSucceeded" xml:space="preserve">
     <value>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</value>
   </data>
-  <data name="UpdateLocalToolToLowerVersion" xml:space="preserve">
+	<data name="UpdateLocalToolToLowerVersion" xml:space="preserve">
     <value>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</value>
   </data>
-  <data name="UpdateLocaToolSucceededVersionNoChange" xml:space="preserve">
+	<data name="UpdateLocaToolSucceededVersionNoChange" xml:space="preserve">
     <value>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</value>
   </data>
-  <data name="UpdateModeDoesNotMatchGlobalJson" xml:space="preserve">
+	<data name="UpdateModeDoesNotMatchGlobalJson" xml:space="preserve">
     <value>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</value>
   </data>
-  <data name="UpdateSucceededPreVersionNoChange" xml:space="preserve">
+	<data name="UpdateSucceededPreVersionNoChange" xml:space="preserve">
     <value>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</value>
   </data>
-  <data name="UpdateSucceededStableVersionNoChange" xml:space="preserve">
+	<data name="UpdateSucceededStableVersionNoChange" xml:space="preserve">
     <value>Tool '{0}' was reinstalled with the stable version (version '{1}').</value>
   </data>
-  <data name="UpdateToLowerVersion" xml:space="preserve">
+	<data name="UpdateToLowerVersion" xml:space="preserve">
     <value>The requested version {0} is lower than existing version {1}.</value>
   </data>
-  <data name="UpdateToolCommandInvalidAllAndPackageId" xml:space="preserve">
+	<data name="UpdateToolCommandInvalidAllAndPackageId" xml:space="preserve">
     <value>One must specify either package ID or use the update all option (--all).</value>
   </data>
-  <data name="UpdateToolCommandInvalidAllAndVersion" xml:space="preserve">
+	<data name="UpdateToolCommandInvalidAllAndVersion" xml:space="preserve">
     <value>The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</value>
   </data>
-  <data name="UpdateToolCommandInvalidGlobalAndLocalAndToolPath" xml:space="preserve">
+	<data name="UpdateToolCommandInvalidGlobalAndLocalAndToolPath" xml:space="preserve">
     <value>The local option (--local), the global option (--global), and the tool path option (--tool-path) cannot be used together. Specify only one of the options: {0}.</value>
   </data>
-  <data name="UpdateToolFailed" xml:space="preserve">
+	<data name="UpdateToolFailed" xml:space="preserve">
     <value>Tool '{0}' failed to update due to the following:</value>
   </data>
-  <data name="Usage" xml:space="preserve">
+	<data name="Usage" xml:space="preserve">
     <value>Usage</value>
   </data>
-  <data name="UserJwtsDefinition" xml:space="preserve">
+	<data name="UserJwtsDefinition" xml:space="preserve">
     <value>Manage JSON Web Tokens in development.</value>
   </data>
-  <data name="UserSecretsDefinition" xml:space="preserve">
+	<data name="UserSecretsDefinition" xml:space="preserve">
     <value>Manage development user secrets.</value>
   </data>
-  <data name="UsingCacheForPackInstall" xml:space="preserve">
+	<data name="UsingCacheForPackInstall" xml:space="preserve">
     <value>Installing package {0} version {1} from offline cache {2}.</value>
   </data>
-  <data name="UsingLaunchSettingsFromMessage" xml:space="preserve">
+	<data name="UsingLaunchSettingsFromMessage" xml:space="preserve">
     <value>Using launch settings from {0}...</value>
   </data>
-  <data name="Verbosity_OptionDescription" xml:space="preserve">
-    <value>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</value>
-  </data>
-  <data name="Verified" xml:space="preserve">
+	<data name="Verified" xml:space="preserve">
     <value>Verified</value>
     <comment>Table lable</comment>
   </data>
-  <data name="VersionCheckFailure" xml:space="preserve">
+	<data name="VersionCheckFailure" xml:space="preserve">
     <value>No version found to check if this is up to date. Please check for updates manually.</value>
   </data>
-  <data name="VersionColumnHeader" xml:space="preserve">
+	<data name="VersionColumnHeader" xml:space="preserve">
     <value>Version</value>
   </data>
-  <data name="Versions" xml:space="preserve">
+	<data name="Versions" xml:space="preserve">
     <value>Versions</value>
     <comment>Table lable</comment>
   </data>
-  <data name="VsTestDefinition" xml:space="preserve">
+	<data name="VsTestDefinition" xml:space="preserve">
     <value>Run Microsoft Test Engine (VSTest) commands.</value>
   </data>
-  <data name="VSWorkloadNotRemoved" xml:space="preserve">
+	<data name="VSWorkloadNotRemoved" xml:space="preserve">
     <value>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</value>
   </data>
-  <data name="WatchDefinition" xml:space="preserve">
+	<data name="WatchDefinition" xml:space="preserve">
     <value>Start a file watcher that runs a command when files change.</value>
   </data>
-  <data name="WorkloadAlreadyInstalled" xml:space="preserve">
+	<data name="WorkloadAlreadyInstalled" xml:space="preserve">
     <value>Workload(s) '{0}' are already installed.</value>
   </data>
-  <data name="WorkloadDefinition" xml:space="preserve">
+	<data name="WorkloadDefinition" xml:space="preserve">
     <value>Manage optional workloads.</value>
   </data>
-  <data name="WorkloadHistoryRecordInvalidIdValue" xml:space="preserve">
+	<data name="WorkloadHistoryRecordInvalidIdValue" xml:space="preserve">
     <value>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</value>
   </data>
-  <data name="WorkloadHistoryWorkloadSetVersion" xml:space="preserve">
+	<data name="WorkloadHistoryWorkloadSetVersion" xml:space="preserve">
     <value>Workload Version</value>
   </data>
-  <data name="WorkloadIdColumn" xml:space="preserve">
+	<data name="WorkloadIdColumn" xml:space="preserve">
     <value>Installed Workload Id</value>
   </data>
-  <data name="WorkloadIdColumnName" xml:space="preserve">
+	<data name="WorkloadIdColumnName" xml:space="preserve">
     <value>Workload ID</value>
   </data>
-  <data name="WorkloadInfoProvider_Message_AddWorkloads" xml:space="preserve">
+	<data name="WorkloadInfoProvider_Message_AddWorkloads" xml:space="preserve">
     <value>Run 'dotnet workload search' to search workloads available to be installed on your SDK.</value>
     <comment>{Locked="dotnet workload search"}</comment>
   </data>
-  <data name="WorkloadInstallationFailed" xml:space="preserve">
+	<data name="WorkloadInstallationFailed" xml:space="preserve">
     <value>Workload installation failed: {0}</value>
   </data>
-  <data name="WorkloadInstallInstallationSucceeded" xml:space="preserve">
+	<data name="WorkloadInstallInstallationSucceeded" xml:space="preserve">
     <value>Successfully installed workload(s) {0}.</value>
   </data>
-  <data name="WorkloadInstallRollBackFailedMessage" xml:space="preserve">
+	<data name="WorkloadInstallRollBackFailedMessage" xml:space="preserve">
     <value>Installation rollback failed: {0}</value>
   </data>
-  <data name="WorkloadInstallRollingBackInstall" xml:space="preserve">
+	<data name="WorkloadInstallRollingBackInstall" xml:space="preserve">
     <value>Workload installation failed. Rolling back installed packs...</value>
   </data>
-  <data name="WorkloadInstallTypeColumn" xml:space="preserve">
+	<data name="WorkloadInstallTypeColumn" xml:space="preserve">
     <value>Install Type</value>
   </data>
-  <data name="WorkloadInstallWorkloadCacheDownloadFailed" xml:space="preserve">
+	<data name="WorkloadInstallWorkloadCacheDownloadFailed" xml:space="preserve">
     <value>Download of workload packs to offline cache failed: {0}</value>
   </data>
-  <data name="WorkloadInstallWorkloadUpdatesAvailable" xml:space="preserve">
+	<data name="WorkloadInstallWorkloadUpdatesAvailable" xml:space="preserve">
     <value>Workload updates are available. Run `dotnet workload list` for more information.</value>
   </data>
-  <data name="WorkloadIntegrityCheck" xml:space="preserve">
+	<data name="WorkloadIntegrityCheck" xml:space="preserve">
     <value>Checking the state of installed workloads...</value>
   </data>
-  <data name="WorkloadListFooter" xml:space="preserve">
+	<data name="WorkloadListFooter" xml:space="preserve">
     <value>Use `dotnet workload search` to find additional workloads to install.</value>
     <comment>{Locked="dotnet workload search"}</comment>
   </data>
-  <data name="WorkloadListWorkloadSetVersion" xml:space="preserve">
+	<data name="WorkloadListWorkloadSetVersion" xml:space="preserve">
     <value>Workload version: {0}</value>
   </data>
-  <data name="WorkloadListWorkloadUpdatesAvailable" xml:space="preserve">
+	<data name="WorkloadListWorkloadUpdatesAvailable" xml:space="preserve">
     <value>Updates are available for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</value>
     <comment>{Locked="dotnet workload update"}</comment>
   </data>
-  <data name="WorkloadManifestFeatureBandColumn" xml:space="preserve">
+	<data name="WorkloadManifestFeatureBandColumn" xml:space="preserve">
     <value>Manifest feature band</value>
   </data>
-  <data name="WorkloadManifestIdColumn" xml:space="preserve">
+	<data name="WorkloadManifestIdColumn" xml:space="preserve">
     <value>Workload manifest ID</value>
   </data>
-  <data name="WorkloadManifestInstallationConfigurationWorkloadSets" xml:space="preserve">
+	<data name="WorkloadManifestInstallationConfigurationWorkloadSets" xml:space="preserve">
     <value>Configured to use workload sets when installing new manifests.</value>
     <comment>{Locked="workload sets"}</comment>
   </data>
-  <data name="WorkloadManifestInstallationConfigurationLooseManifests" xml:space="preserve">
+	<data name="WorkloadManifestInstallationConfigurationLooseManifests" xml:space="preserve">
     <value>Configured to use loose manifests when installing new manifests.</value>
   </data>
-  <data name="WorkloadManifestPathColumn" xml:space="preserve">
+	<data name="WorkloadManifestPathColumn" xml:space="preserve">
     <value>Manifest Path</value>
   </data>
-  <data name="WorkloadManifestVersionColumn" xml:space="preserve">
+	<data name="WorkloadManifestVersionColumn" xml:space="preserve">
     <value>Manifest Version</value>
   </data>
-  <data name="WorkloadNotInstalled" xml:space="preserve">
+	<data name="WorkloadNotInstalled" xml:space="preserve">
     <value>Couldn't find workload ID(s): {0}</value>
   </data>
-  <data name="WorkloadNotRecognized" xml:space="preserve">
+	<data name="WorkloadNotRecognized" xml:space="preserve">
     <value>Workload ID {0} is not recognized.</value>
   </data>
-  <data name="AspireWorkloadDeprecated" xml:space="preserve">
+	<data name="AspireWorkloadDeprecated" xml:space="preserve">
     <value>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</value>
   </data>
-  <data name="WorkloadNotSupportedOnPlatform" xml:space="preserve">
+	<data name="WorkloadNotSupportedOnPlatform" xml:space="preserve">
     <value>Workload ID {0} isn't supported on this platform.</value>
   </data>
-  <data name="WorkloadPackAlreadyInstalledMessage" xml:space="preserve">
+	<data name="WorkloadPackAlreadyInstalledMessage" xml:space="preserve">
     <value>Pack {0} version {1} is already installed.</value>
   </data>
-  <data name="WorkloadRepairFailed" xml:space="preserve">
+	<data name="WorkloadRepairFailed" xml:space="preserve">
     <value>Workload repair failed: {0}</value>
   </data>
-  <data name="Workloads" xml:space="preserve">
+	<data name="Workloads" xml:space="preserve">
     <value>Workloads</value>
   </data>
-  <data name="WorkloadSetFromGlobalJsonInstalled" xml:space="preserve">
+	<data name="WorkloadSetFromGlobalJsonInstalled" xml:space="preserve">
     <value>Using workload version {0}, which was specified in the global.json file at {1}.</value>
   </data>
-  <data name="WorkloadSetFromGlobalJsonNotInstalled" xml:space="preserve">
+	<data name="WorkloadSetFromGlobalJsonNotInstalled" xml:space="preserve">
     <value>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</value>
     <comment>{Locked="dotnet workload restore"}</comment>
   </data>
-  <data name="WorkloadSourceColumn" xml:space="preserve">
+	<data name="WorkloadSourceColumn" xml:space="preserve">
     <value>Installation Source</value>
   </data>
-  <data name="WorkloadUninstallFailed" xml:space="preserve">
+	<data name="WorkloadUninstallFailed" xml:space="preserve">
     <value>Workload uninstallation failed: {0}</value>
   </data>
-  <data name="WorkloadUninstallUninstallSucceeded" xml:space="preserve">
+	<data name="WorkloadUninstallUninstallSucceeded" xml:space="preserve">
     <value>Successfully uninstalled workload(s): {0}</value>
   </data>
-  <data name="WorkloadUpdateAdManifestsSucceeded" xml:space="preserve">
+	<data name="WorkloadUpdateAdManifestsSucceeded" xml:space="preserve">
     <value>Successfully updated advertising manifests.</value>
   </data>
-  <data name="WorkloadUpdateFailed" xml:space="preserve">
+	<data name="WorkloadUpdateFailed" xml:space="preserve">
     <value>Workload update failed: {0}</value>
   </data>
-  <data name="WorkloadUpdateRollBackFailedMessage" xml:space="preserve">
+	<data name="WorkloadUpdateRollBackFailedMessage" xml:space="preserve">
     <value>Installation rollback failed: {0}</value>
   </data>
-  <data name="WorkloadUpdateRollingBackInstall" xml:space="preserve">
+	<data name="WorkloadUpdateRollingBackInstall" xml:space="preserve">
     <value>Workload installation failed. Rolling back installed packs...</value>
   </data>
-  <data name="WorkloadUpdateUpdateSucceeded" xml:space="preserve">
+	<data name="WorkloadUpdateUpdateSucceeded" xml:space="preserve">
     <value>Successfully updated workload(s): {0}.</value>
   </data>
-  <data name="WorkloadUpdateWorkloadCacheDownloadFailed" xml:space="preserve">
+	<data name="WorkloadUpdateWorkloadCacheDownloadFailed" xml:space="preserve">
     <value>Failed to download workload update packages to cache: {0}</value>
   </data>
-  <data name="WorkloadVersionNotInstalledShort" xml:space="preserve">
+	<data name="WorkloadVersionNotInstalledShort" xml:space="preserve">
     <value>(not installed)</value>
   </data>
-  <data name="WorkloadVersionRequestedNotFound" xml:space="preserve">
+	<data name="WorkloadVersionRequestedNotFound" xml:space="preserve">
     <value>Workload version {0} not found.</value>
   </data>
-  <data name="WorkloadVersionWithSpecifiedManifestNotFound" xml:space="preserve">
+	<data name="WorkloadVersionWithSpecifiedManifestNotFound" xml:space="preserve">
     <value>No workload version matching {0} was found.</value>
   </data>
-  <data name="WriteCLIRecordForVisualStudioWorkloadMessage" xml:space="preserve">
+	<data name="WriteCLIRecordForVisualStudioWorkloadMessage" xml:space="preserve">
     <value>Writing install records for Visual Studio workloads: '{0}'</value>
   </data>
-  <data name="WritingPackInstallRecordMessage" xml:space="preserve">
+	<data name="WritingPackInstallRecordMessage" xml:space="preserve">
     <value>Writing workload pack installation record for {0} version {1}...</value>
   </data>
-  <data name="ZeroTestsRan" xml:space="preserve">
+	<data name="ZeroTestsRan" xml:space="preserve">
     <value>Zero tests ran</value>
   </data>
-  <data name="ToolDownloadConfirmationPrompt" xml:space="preserve">
+	<data name="ToolDownloadConfirmationPrompt" xml:space="preserve">
     <value>Tool package {0}@{1} will be downloaded from source {2}.
 Proceed?</value>
   </data>
-  <data name="ConfirmationPromptYesValue" xml:space="preserve">
+	<data name="ConfirmationPromptYesValue" xml:space="preserve">
     <value>y</value>
     <comment>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</comment>
   </data>
-  <data name="ConfirmationPromptNoValue" xml:space="preserve">
+	<data name="ConfirmationPromptNoValue" xml:space="preserve">
     <value>n</value>
     <comment>For a command line connfirmation prompt, this is the key that should be pressed for "no", ie to cancel the operation.</comment>
   </data>
-  <data name="ConfirmationPromptInvalidChoiceMessage" xml:space="preserve">
+	<data name="ConfirmationPromptInvalidChoiceMessage" xml:space="preserve">
     <value>Please type '{0}' for yes or '{1}' for no.</value>
   </data>
-  <data name="ToolDownloadCanceled" xml:space="preserve">
+	<data name="ToolDownloadCanceled" xml:space="preserve">
     <value>Tool package download canceled</value>
   </data>
-  <data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
+	<data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
     <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
     <comment>{Locked="--yes"}</comment>
   </data>
-  <data name="TestCommandUseSolution" xml:space="preserve">
+	<data name="TestCommandUseSolution" xml:space="preserve">
     <value>Specifying a solution for 'dotnet test' should be via '--solution'.</value>
   </data>
-  <data name="TestCommandUseProject" xml:space="preserve">
+	<data name="TestCommandUseProject" xml:space="preserve">
     <value>Specifying a project for 'dotnet test' should be via '--project'.</value>
   </data>
-  <data name="TestCommandUseTestModules" xml:space="preserve">
+	<data name="TestCommandUseTestModules" xml:space="preserve">
     <value>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
   </data>
-  <data name="TestCommandUseDirectoryWithSwitch" xml:space="preserve">
+	<data name="TestCommandUseDirectoryWithSwitch" xml:space="preserve">
     <value>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</value>
   </data>
-  <data name="DotnetTestPipeOverlapping" xml:space="preserve">
+	<data name="DotnetTestPipeOverlapping" xml:space="preserve">
     <value>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</value>
   </data>
-  <data name="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage" xml:space="preserve">
+	<data name="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage" xml:space="preserve">
     <value>Method '{0}' did not exit successfully</value>
   </data>
-  <data name="DotnetTestPipeFailureHasHandshake" xml:space="preserve">
+	<data name="DotnetTestPipeFailureHasHandshake" xml:space="preserve">
     <value>Error disposing 'NamedPipeServer' corresponding to handshake:</value>
   </data>
-  <data name="DotnetTestPipeFailureWithoutHandshake" xml:space="preserve">
+	<data name="DotnetTestPipeFailureWithoutHandshake" xml:space="preserve">
     <value>Error disposing 'NamedPipeServer', and no handshake was found.</value>
   </data>
-  <data name="DotnetTestIncompatibleHandshakeVersion" xml:space="preserve">
+	<data name="DotnetTestIncompatibleHandshakeVersion" xml:space="preserve">
     <value>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</value>
   </data>
-  <data name="ErrorRunningTestModule" xml:space="preserve">
+	<data name="ErrorRunningTestModule" xml:space="preserve">
     <value>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
 {2}</value>
     <comment>{Locked="RunCommand"}{Locked="RunArguments"}
 {2} is the exception that occurred.</comment>
   </data>
-  <data name="UnexpectedTestSessionEnd" xml:space="preserve">
+	<data name="UnexpectedTestSessionEnd" xml:space="preserve">
     <value>A test session end event was received without a corresponding test session start.</value>
   </data>
-  <data name="MissingTestSessionEnd" xml:space="preserve">
+	<data name="MissingTestSessionEnd" xml:space="preserve">
     <value>A test session start event was received without a corresponding test session end.</value>
   </data>
-  <data name="Aborted" xml:space="preserve">
+	<data name="Aborted" xml:space="preserve">
     <value>Aborted</value>
   </data>
-  <data name="UnexpectedHelpMessage" xml:space="preserve">
+	<data name="UnexpectedHelpMessage" xml:space="preserve">
     <value>An unexpected help-related message was received when `--help` wasn't used.</value>
   </data>
-  <data name="MismatchingHandshakeInfo" xml:space="preserve">
+	<data name="MismatchingHandshakeInfo" xml:space="preserve">
     <value>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</value>
   </data>
-  <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
+	<data name="UnexpectedMessageInHelpMode" xml:space="preserve">
     <value>A message of type '{0}' was received in help mode, which is not expected.</value>
   </data>
-  <data name="UnexpectedMessageWithoutHandshake" xml:space="preserve">
+	<data name="UnexpectedMessageWithoutHandshake" xml:space="preserve">
     <value>A message of type '{0}' was received before we got any handshakes, which is unexpected.</value>
   </data>
-  <data name="DotnetTestMismatchingExecutionId" xml:space="preserve">
+	<data name="DotnetTestMismatchingExecutionId" xml:space="preserve">
     <value>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</value>
     <comment>{Locked="ExecutionId"}</comment>
   </data>
-  <data name="ErrorColon" xml:space="preserve">
+	<data name="ErrorColon" xml:space="preserve">
     <value>error:</value>
   </data>
-  <data name="TotalColon" xml:space="preserve">
+	<data name="TotalColon" xml:space="preserve">
     <value>total:</value>
   </data>
-  <data name="Retried" xml:space="preserve">
+	<data name="Retried" xml:space="preserve">
     <value>retried</value>
   </data>
-  <data name="FailedColon" xml:space="preserve">
+	<data name="FailedColon" xml:space="preserve">
     <value>failed:</value>
   </data>
-  <data name="SucceededColon" xml:space="preserve">
+	<data name="SucceededColon" xml:space="preserve">
     <value>succeeded:</value>
   </data>
-  <data name="SkippedColon" xml:space="preserve">
+	<data name="SkippedColon" xml:space="preserve">
     <value>skipped:</value>
   </data>
-  <data name="DurationColon" xml:space="preserve">
+	<data name="DurationColon" xml:space="preserve">
     <value>duration:</value>
   </data>
 </root>
