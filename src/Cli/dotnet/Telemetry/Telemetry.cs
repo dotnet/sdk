@@ -88,7 +88,7 @@ public class Telemetry : ITelemetry
     {
         try
         {
-            var eventId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
+            var eventId = Guid.NewGuid().ToString();
             properties ??= new Dictionary<string, string?>();
             properties.Add("event id", eventId);
             measurements ??= new Dictionary<string, double>();

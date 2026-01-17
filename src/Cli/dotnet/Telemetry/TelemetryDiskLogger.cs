@@ -49,9 +49,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
                 version = activity.Source.Version,
                 tags = activity.Source.Tags?.ToDictionary()
             },
-            // TODO: Determine which is better to use, tags or tagObjects
-            //tags = activity.Tags.ToDictionary(),
-            tagObjects = activity.TagObjects.ToDictionary(),
+            tags = activity.Tags.ToDictionary(),
             events = activity.Events.Select(e => new
             {
                 name = e.Name,

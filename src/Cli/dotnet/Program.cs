@@ -5,7 +5,6 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using Azure.Monitor.OpenTelemetry.Exporter;
-using Microsoft.ApplicationInsights;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -47,6 +46,10 @@ public class Program
     private static readonly PosixSignalRegistration s_sigQuitRegistration;
     private static readonly PosixSignalRegistration s_sigTermRegistration;
     private static readonly List<Activity> s_activities = [];
+    // TODO: This is not used anymore, but required for the TelemetryFilter to parse the data including the globalJsonState.
+    // To fix, the code and the tests for Filter in TelemetryFilter would need to be updated.
+    private static readonly Dictionary<string, double> s_performanceData = [];
+    private static string? s_globalJsonState;
 
     static Program()
     {
@@ -70,6 +73,8 @@ public class Program
             .AddAzureMonitorTraceExporter(o =>
             {
                 o.ConnectionString = Telemetry.Telemetry.ConnectionString;
+                // TODO: Remove.
+                //o.ConnectionString = "InstrumentationKey=2c4b2aec-276e-4421-95d9-3da4046d428d";
                 o.EnableLiveMetrics = false;
                 o.StorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, Telemetry.Telemetry.DefaultStorageFolderName);
             })
@@ -81,7 +86,6 @@ public class Program
         s_mainActivity = Activities.Source.CreateActivity("main", s_activityKind, s_parentActivityContext);
         s_mainActivity?.Start();
         s_mainActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
-        // TODO: Activity tags are not part of the event tags, so this may not be useful.
         s_mainActivity?.AddTag("process.pid", Process.GetCurrentProcess().Id);
         s_mainActivity?.AddTag("process.executable.name", "dotnet");
         TelemetryClient = InitializeTelemetry();
@@ -107,7 +111,6 @@ public class Program
         try
         {
             exitCode = ProcessArgs(args);
-            // TODO: Activity tags are not part of the event tags, so this may not be useful.
             s_mainActivity?.AddTag("process.exit.code", exitCode);
             s_mainActivity?.SetStatus(ActivityStatusCode.Ok);
             return exitCode;
@@ -122,7 +125,6 @@ public class Program
             {
                 commandParsingException.ParseResult.ShowHelp();
             }
-            // TODO: Activity tags are not part of the event tags, so this may not be useful.
             s_mainActivity?.AddTag("process.exit.code", exitCode);
             s_mainActivity?.SetStatus(ActivityStatusCode.Error);
             return exitCode;
@@ -132,7 +134,6 @@ public class Program
             // If telemetry object has not been initialized yet. It cannot be collected
             TelemetryEventEntry.SendFiltered(e);
             Reporter.Error.WriteLine(e.ToString().Red().Bold());
-            // TODO: Activity tags are not part of the event tags, so this may not be useful.
             s_mainActivity?.AddTag("process.exit.code", exitCode);
             s_mainActivity?.SetStatus(ActivityStatusCode.Error);
             return exitCode;
@@ -208,9 +209,8 @@ public class Program
             // We don't care about the actual SDK resolution, just the global.json information,
             // so just pass empty string as executable directory for resolution.
             NativeWrapper.SdkResolutionResult result = NativeWrapper.NETCoreSdkResolverNativeWrapper.ResolveSdk(string.Empty, Environment.CurrentDirectory);
-            string? globalJsonState = result.GlobalJsonState;
-            // TODO: Activity tags are not part of the event tags, so this may not be useful.
-            hostStartupActivity?.AddTag("dotnet.globalJson", globalJsonState);
+            s_globalJsonState = result.GlobalJsonState;
+            hostStartupActivity?.AddTag("dotnet.globalJson", s_globalJsonState);
         }
         hostStartupActivity?.SetEndTime(mainTimeStamp);
         hostStartupActivity?.SetStatus(ActivityStatusCode.Ok);
@@ -266,7 +266,6 @@ public class Program
         activity.DisplayName = name;
 
         // Set the command name as an attribute for better filtering in telemetry
-        // TODO: Activity tags are not part of the event tags, so this may not be useful.
         activity.SetTag("command.name", name);
     }
 
@@ -275,7 +274,7 @@ public class Program
         ParseResult parseResult = ParseArgs(args);
         SetupDotnetFirstRun(parseResult);
 
-        TelemetryEventEntry.SendFiltered(parseResult);
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, s_performanceData, s_globalJsonState));
 
         if (parseResult.CanBeInvoked())
         {
