@@ -436,7 +436,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             public IReadOnlyList<TagHelperDescriptor> GetDescriptors(CancellationToken cancellationToken) => TagHelpers;
             public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => TagHelpers;
-            public IReadOnlyList<TagHelperDescriptor> GetTagHelpers(CancellationToken cancellationToken) => TagHelpers;
+            public TagHelperCollection GetTagHelpers(CancellationToken cancellationToken) => new TagHelperCollection(TagHelpers);
         }
     }
 }
