@@ -36,13 +36,14 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.Api;
 using Microsoft.DotNet.Cli.Commands.Sdk;
 using Microsoft.DotNet.Cli.Commands.Solution;
-using Microsoft.DotNet.Cli.Commands.Store;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Tool;
+using Microsoft.DotNet.Cli.Commands.Tool.Store;
 using Microsoft.DotNet.Cli.Commands.VSTest;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli;
@@ -68,7 +69,7 @@ public static class Parser
         FsiCommandParser.GetCommand(),
         ListCommandParser.GetCommand(),
         MSBuildCommandParser.GetCommand(),
-        NewCommandParser.GetCommand(),
+        NewCommandParser.CreateCommand(),
         NuGetCommandParser.GetCommand(),
         PackCommandParser.GetCommand(),
         PackageCommandParser.GetCommand(),
@@ -92,7 +93,7 @@ public static class Parser
         new System.CommandLine.StaticCompletions.CompletionsCommand()
     ];
 
-    public static readonly Option<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
+    public static readonly Option<bool> DiagOption = CommonOptions.CreateDiagnosticsOption(recursive: false);
 
     public static readonly Option<bool> VersionOption = new("--version")
     {
@@ -378,7 +379,7 @@ public static class Parser
             {
                 new FsiForwardingApp(helpArgs).Execute();
             }
-            else if (command is TemplateEngine.Cli.Commands.ICustomHelp helpCommand)
+            else if (command is ICustomHelp helpCommand)
             {
                 var blocks = helpCommand.CustomHelpLayout();
                 foreach (var block in blocks)
@@ -400,7 +401,7 @@ public static class Parser
                         if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
                         {
                             // Name is immutable now, so we create a new Argument with the right name..
-                            listCommand.Arguments[i] = ListCommandDefinition.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
+                            listCommand.Arguments[i] = Commands.Hidden.List.ListCommandDefinition.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
                         }
                     }
                 }

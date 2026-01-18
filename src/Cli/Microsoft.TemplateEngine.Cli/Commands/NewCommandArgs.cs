@@ -7,9 +7,18 @@ using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class NewCommandArgs : GlobalArgs
+    internal sealed class NewCommandArgs : GlobalArgs
     {
-        public NewCommandArgs(NewCommand command, ParseResult parseResult) : base(command, parseResult)
+        private IEnumerable<string> s_passByOptionNames =
+        [
+            SharedOptionsFactory.ForceOptionName,
+            SharedOptionsFactory.NameOptionName,
+            SharedOptionsFactory.DryRunOptionName,
+            SharedOptionsFactory.NoUpdateCheckOptionName
+        ];
+
+        public NewCommandArgs(NewCommand command, ParseResult parseResult)
+            : base(parseResult)
         {
             List<Token> tokensToEvaluate = new();
             foreach (var childrenResult in parseResult.CommandResult.Children)
@@ -20,7 +29,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     {
                         continue;
                     }
-                    if (!CommandDefinition.New.LegacyOptions.Contains(o.Option) && !CommandDefinition.New.PassByOptions.Contains(o.Option))
+
+                    if (!LegacyOptions.AllNames.Contains(o.Option.Name) && !s_passByOptionNames.Contains(o.Option.Name))
                     {
                         continue;
                     }

@@ -329,7 +329,7 @@ Dotnet 本地...  tool-manifest
             suggestedValues.Sort();
 
             //Gets constants defined in TabularOutputSettings.ColumnNams
-            List<string?> columnNamesConstants = (typeof(TabularOutputSettings.ColumnNames))
+            List<string?> columnNamesConstants = (typeof(TabularOutputSettingsColumnNames))
                 .GetFields(BindingFlags.NonPublic | BindingFlags.Static)
                 .Where(fi => fi.IsLiteral && !fi.IsInitOnly)
                 .Select(fi => (string?)fi.GetValue(null))

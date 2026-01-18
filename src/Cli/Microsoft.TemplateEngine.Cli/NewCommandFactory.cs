@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Cli
 {
     public static class NewCommandFactory
     {
-        public static Command Create(Func<ParseResult, ICliTemplateEngineHost> hostBuilder)
-            => new NewCommand(hostBuilder ?? throw new ArgumentNullException(nameof(hostBuilder)));
+        public static Command Create(Func<ParseResult, ICliTemplateEngineHost> hostBuilder, NewCommandDefinition definition)
+            => new NewCommand(hostBuilder, definition);
     }
 }

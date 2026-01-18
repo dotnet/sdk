@@ -29,7 +29,7 @@ internal static class CliCompletion
     private static void Report(Exception e) =>
         Reporter.Verbose.WriteLine($"Exception occurred while getting completions: {e}");
 
-    public static IEnumerable<CompletionItem> RunTimesFromProjectFile(CompletionContext _)
+    public static IEnumerable<CompletionItem> RuntimesFromProjectFile(CompletionContext _)
     {
         try
         {
