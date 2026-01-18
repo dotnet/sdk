@@ -11,7 +11,8 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        //  Changing these tests to core MSBuild only for 8.0 since there were weird test failures and the Full Framework resolver doesn't ship from 8.0 into Visual Studio anymore.
+        [CoreMSBuildOnlyFact]
         public void It_should_build_with_workload()
         {
             var testProject = new TestProject()
@@ -29,7 +30,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_should_fail_without_workload()
         {
             var testProject = new TestProject()
@@ -49,7 +50,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1147");
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_should_create_suggested_workload_items()
         {
             var testProject = new TestProject()
@@ -80,7 +81,7 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo(new[] { ("microsoft-net-sdk-missingtestworkload", "microsoft.net.sdk.missingtestworkload") });
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_should_fail_to_restore_without_workload_when_multitargeted()
         {
             var testProject = new TestProject()
@@ -107,7 +108,7 @@ namespace Microsoft.NET.Build.Tests
             //  .HaveStdOutContaining("android");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/19866")]
+        [CoreMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/19866")]
         public void It_should_fail_to_build_without_workload_when_multitargeted()
         {
             var testProject = new TestProject()
@@ -129,7 +130,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("android");
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_should_fail_to_build_when_multitargeted_to_unknown_platforms()
         {
             var testProject = new TestProject()
@@ -150,7 +151,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_should_fail_with_resolver_disabled()
         {
             var testProject = new TestProject()
@@ -172,7 +173,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1208");
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_should_import_AutoImports_for_installed_workloads()
         {
             var testProject = new TestProject()
@@ -198,7 +199,7 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo("true");
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_should_import_aliased_pack()
         {
             var testProject = new TestProject()
@@ -227,7 +228,7 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo("true");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/19866")]
+        [CoreMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/19866")]
         public void It_should_get_suggested_workload_by_GetRequiredWorkloads_target()
         {
             var mainProject = new TestProject()
@@ -255,7 +256,7 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo("android");
         }
 
-        [Theory(Skip = "https://github.com/dotnet/installer/issues/13361")]
+        [CoreMSBuildOnlyTheory(Skip = "https://github.com/dotnet/installer/issues/13361")]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", $"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", "android;android-aot")]
         [InlineData(ToolsetInfo.CurrentTargetFramework, $"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", "macos;android-aot")]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-ios", $"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-android", "macos;android-aot")]
