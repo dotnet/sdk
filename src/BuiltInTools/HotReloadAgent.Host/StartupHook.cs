@@ -6,9 +6,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Pipes;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Threading;
@@ -21,8 +19,6 @@ using Microsoft.DotNet.HotReload;
 internal sealed class StartupHook
 {
     private static readonly string? s_standardOutputLogPrefix = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages);
-    private static readonly string? s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
-    private static readonly string? s_httpEndpoint = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadHttpEndpoint);
     private static readonly bool s_supportsConsoleColor = !OperatingSystem.IsAndroid()
                                                        && !OperatingSystem.IsIOS()
                                                        && !OperatingSystem.IsTvOS()
@@ -45,76 +41,16 @@ internal sealed class StartupHook
 
         HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
 
-        // Check for named pipe first (default), then fall back to HTTP (used for mobile platforms)
-        if (!string.IsNullOrEmpty(s_namedPipeName))
-        {
-            InitializeWithNamedPipe(processDir);
-        }
-        else if (!string.IsNullOrEmpty(s_httpEndpoint))
-        {
-            InitializeWithHttp(processDir);
-        }
-        else
+        var transport = Transport.TryCreate(Log);
+        if (transport == null)
         {
             Log($"No hot reload endpoint configured. Set {AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName} or {AgentEnvironmentVariables.DotNetWatchHotReloadHttpEndpoint}");
+            return;
         }
-    }
 
-    private static void InitializeWithHttp(string processDir)
-    {
         RegisterSignalHandlers();
 
-        HotReloadHttpClient? httpClient = null;
-
-        var agent = new HotReloadAgent(
-            assemblyResolvingHandler: (_, args) =>
-            {
-                Log($"Resolving '{args.Name}, Version={args.Version}'");
-                var path = Path.Combine(processDir, args.Name + ".dll");
-                return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
-            },
-            hotReloadExceptionCreateHandler: (code, message) =>
-            {
-                // Continue executing the code if the debugger is attached.
-                // It will throw the exception and the debugger will handle it.
-                if (Debugger.IsAttached)
-                {
-                    return;
-                }
-
-                Debug.Assert(httpClient != null);
-                Log($"Runtime rude edit detected: '{message}'");
-
-                SendAndForgetAsync().Wait();
-
-                // Handle Ctrl+C to terminate gracefully:
-                Console.CancelKeyPress += (_, _) => Environment.Exit(0);
-
-                // wait for the process to be terminated by the Hot Reload client (other threads might still execute):
-                Thread.Sleep(Timeout.Infinite);
-
-                async Task SendAndForgetAsync()
-                {
-                    try
-                    {
-                        await httpClient!.SendResponseAsync(new HotReloadExceptionCreatedNotification(code, message), CancellationToken.None);
-                    }
-                    catch
-                    {
-                        // do not crash the app
-                    }
-                }
-            });
-
-        httpClient = new HotReloadHttpClient(s_httpEndpoint!, agent, Log);
-
-        // fire and forget:
-        _ = httpClient.Listen(CancellationToken.None);
-    }
-
-    private static void InitializeWithNamedPipe(string processDir)
-    {
-        PipeListener? listener = null;
+        Listener? listener = null;
 
         var agent = new HotReloadAgent(
             assemblyResolvingHandler: (_, args) =>
@@ -156,7 +92,7 @@ internal sealed class StartupHook
                 }
             });
 
-        listener = new PipeListener(s_namedPipeName!, agent, Log);
+        listener = new Listener(transport, agent, Log);
 
         // fire and forget:
         _ = listener.Listen(CancellationToken.None);
