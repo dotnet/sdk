@@ -158,8 +158,7 @@ namespace Microsoft.DotNet.Watch
         // internal for testing
         internal async Task<int> RunAsync()
         {
-            var isHotReloadEnabled = IsHotReloadEnabled();
-            var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled));
+            var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout());
 
             using var shutdownHandler = new ShutdownHandler(console, logger);
 
@@ -182,7 +181,7 @@ namespace Microsoft.DotNet.Watch
 
                 using var context = CreateContext(processRunner);
 
-                if (isHotReloadEnabled)
+                if (IsHotReloadEnabled())
                 {
                     var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
                     await watcher.WatchAsync(shutdownHandler.CancellationToken);

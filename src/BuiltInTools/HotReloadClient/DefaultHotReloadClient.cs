@@ -12,6 +12,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -99,7 +100,8 @@ namespace Microsoft.DotNet.HotReload
         {
             // Don't report a warning when cancelled or the pipe has been disposed. The process has terminated or the host is shutting down in that case.
             // Best effort: There is an inherent race condition due to time between the process exiting and the cancellation token triggering.
-            if (e is ObjectDisposedException or EndOfStreamException or OperationCanceledException || cancellationToken.IsCancellationRequested)
+            // On Unix named pipes can also throw SocketException with ErrorCode 125 (Operation canceled) when disposed.
+            if (e is ObjectDisposedException or EndOfStreamException or SocketException { ErrorCode: 125 } || cancellationToken.IsCancellationRequested)
             {
                 return;
             }

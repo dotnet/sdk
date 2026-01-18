@@ -99,7 +99,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var reporter = new TestReporter(Logger);
         var loggerFactory = new LoggerFactory(reporter, LogLevel.Trace);
         var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory ?? testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
-        var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled: true));
+        var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout());
 
         var program = Program.TryCreate(
            TestOptions.GetCommandLineOptions(["--verbose", ..args]),
@@ -196,6 +196,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
 
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
+        var projectsRestarted = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRestarted);
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
         var projectBaselinesUpdated = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
         await launchCompletionA.Task;
@@ -210,8 +211,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         await MakeRudeEditChange();
 
-        Log("Waiting for changed handled ...");
-        await changeHandled.WaitAsync(w.ShutdownSource.Token);
+        Log("Waiting for projects restarted ...");
+        await projectsRestarted.WaitAsync(w.ShutdownSource.Token);
 
         // Wait for project baselines to be updated, so that we capture the new solution snapshot
         // and further changes are treated as another update.
