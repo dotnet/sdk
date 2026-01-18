@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 using Microsoft.DotNet.Cli.Commands.New.PostActions;
@@ -32,11 +33,12 @@ internal static class NewCommandParser
 
     public static Command CreateCommand()
     {
-        return NewCommandFactory.Create(GetEngineHost);
+        var definition = new NewCommandDefinition();
+        return NewCommandFactory.Create(GetEngineHost, definition);
 
-        static CliTemplateEngineHost GetEngineHost(ParseResult parseResult)
+        CliTemplateEngineHost GetEngineHost(ParseResult parseResult)
         {
-            var definition = (NewCommandDefinition)parseResult.CommandResult.Command;
+            Debug.Assert(parseResult.CommandResult.Command.Name == NewCommandDefinition.Name);
 
             var disableSdkTemplates = parseResult.GetValue(definition.DisableSdkTemplatesOption);
 

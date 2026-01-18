@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Uninstall_NoArguments(string commandName)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new {commandName}");
             UninstallCommandArgs args = new((BaseUninstallCommand)parseResult.CommandResult.Command, parseResult);
@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Uninstall_WithArgument(string commandName)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new {commandName} source");
             UninstallCommandArgs args = new((BaseUninstallCommand)parseResult.CommandResult.Command, parseResult);
@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Uninstall_WithMultipleArgument(string command)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
             UninstallCommandArgs args = new((BaseUninstallCommand)parseResult.CommandResult.Command, parseResult);
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void Uninstall_CanReturnParseError(string command, string expectedInvalidTokens)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
             IEnumerable<string> errorMessages = parseResult.Errors.Select(error => error.Message);
@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void CommandExampleCanShowParentCommandsBeyondNew()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             Command rootCommand = new("dotnet")
             {
                 myCommand
