@@ -561,13 +561,13 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>99f9e99f92d73ade5453ba8edba5d72247f3cd11</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="2.1.0-preview.26065.7">
+    <Dependency Name="Microsoft.Testing.Platform" Version="2.1.0-preview.26067.2">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>f2ca2cf2507b769ba4e6609683619243588ee4c1</Sha>
+      <Sha>f095074b037430e87786f1b2014feb5b99a1b4cb</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="4.1.0-preview.26065.7">
+    <Dependency Name="MSTest" Version="4.1.0-preview.26067.2">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>f2ca2cf2507b769ba4e6609683619243588ee4c1</Sha>
+      <Sha>f095074b037430e87786f1b2014feb5b99a1b4cb</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.3">
       <Uri>https://github.com/dotnet/dotnet</Uri>
