@@ -142,6 +142,12 @@
   </PropertyGroup>
   <PropertyGroup Label="Workload manifest package versions">
     <MauiFeatureBand>10.0.100</MauiFeatureBand>
+    
+    <!--
+      Updates to any of these versions will require the updating of that package version in the
+      source-build-reference-packages repo as a text-only package.
+      See https://github.com/dotnet/source-build-reference-packages?tab=readme-ov-file#text-only
+    -->
     <MauiWorkloadManifestVersion>10.0.0</MauiWorkloadManifestVersion>
     <XamarinAndroidWorkloadManifestVersion>36.1.2</XamarinAndroidWorkloadManifestVersion>
     <XamarinIOSWorkloadManifestVersion>26.0.11017</XamarinIOSWorkloadManifestVersion>
