@@ -140,11 +140,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
 
             xmlWriter.WriteComment(DiagnosticIdDocumentationComment);
             CreateXmlSerializer().Serialize(xmlWriter, orderedSuppressions);
-            writer.Flush(); // ensure XML is written
+            xmlWriter.Flush(); // ensure XML is written
 
             // Write a new line character at the end of the file as the suppression file often gets checked-in
             // and many repos configure `insert_final_newline=true` in their .editorconfig.
-            writer.WriteWhitespace(Environment.NewLine);
+            xmlWriter.WriteWhitespace(Environment.NewLine);
 
             // Callback for tests
             AfterWritingSuppressionsCallback(stream);
