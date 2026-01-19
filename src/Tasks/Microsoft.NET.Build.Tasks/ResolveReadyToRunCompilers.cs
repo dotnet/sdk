@@ -9,6 +9,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class ResolveReadyToRunCompilers : TaskBase
     {
         public bool EmitSymbols { get; set; }

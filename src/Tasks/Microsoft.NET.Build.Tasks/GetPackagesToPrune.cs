@@ -12,6 +12,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class GetPackagesToPrune : TaskBase
     {
         // Minimum .NET Core version that supports package pruning

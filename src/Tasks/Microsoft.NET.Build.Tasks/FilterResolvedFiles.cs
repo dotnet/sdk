@@ -13,6 +13,7 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Filters out the assemblies from the list based on a given package closure.
     /// </summary>
+    [MSBuildMultiThreadableTask]
     public class FilterResolvedFiles : TaskBase
     {
         private readonly List<ITaskItem> _assembliesToPublish = new();
