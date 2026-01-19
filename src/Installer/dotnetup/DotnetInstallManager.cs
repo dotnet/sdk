@@ -50,11 +50,10 @@ public class DotnetInstallManager : IDotnetInstallManager
             }
 
             // Not fully configured, but PATH resolves to dotnet
-            // Determine type based on location
-            string programFilesPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            string programFilesX86Path = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-            bool isAdminPath = currentInstallRoot.Path.StartsWith(Path.Combine(programFilesPath, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
-                               currentInstallRoot.Path.StartsWith(Path.Combine(programFilesX86Path, "dotnet"), StringComparison.OrdinalIgnoreCase);
+            // Determine type based on location using registry-based detection
+            var programFilesDotnetPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
+            bool isAdminPath = programFilesDotnetPaths.Any(path =>
+                currentInstallRoot.Path.StartsWith(path, StringComparison.OrdinalIgnoreCase));
 
             return new(currentInstallRoot, isAdminPath ? InstallType.Admin : InstallType.User, IsFullyConfigured: false);
         }
