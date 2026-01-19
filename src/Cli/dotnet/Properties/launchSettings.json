@@ -2,6 +2,17 @@
   "profiles": {
     "dotnet": {
       "commandName": "Project"
+    },
+    "redist": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "commandLineArgs": "exec $(SolutionDir)artifacts\\bin\\redist\\Debug\\dotnet\\sdk\\11.0.100-dev\\dotnet.dll run Program.cs -bl",
+      "workingDirectory": "C:\\Users\\janjones\\AppData\\Local\\Temp\\dotnetSdkTests\\CscOnly",
+      "environmentVariables": {
+        "DOTNET_CLI_CONTEXT_VERBOSE": "true",
+        "MSBUILDTERMINALLOGGER": "off",
+        "CI": "true"
+      }
     }
   }
 }
