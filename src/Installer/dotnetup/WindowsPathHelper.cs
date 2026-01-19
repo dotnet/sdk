@@ -139,26 +139,56 @@ internal sealed class WindowsPathHelper : IDisposable
     }
 
     /// <summary>
-    /// Gets the default Program Files dotnet installation path(s).
+    /// Gets the default Program Files dotnet installation path(s) by reading from the registry.
+    /// Reads from HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\ to find actual installations.
     /// </summary>
     public static List<string> GetProgramFilesDotnetPaths()
     {
-        var paths = new List<string>();
+        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-        if (!string.IsNullOrEmpty(programFiles))
+        try
         {
-            paths.Add(Path.Combine(programFiles, "dotnet"));
+            // Read from registry to find actual dotnet installations
+            using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions");
+            if (key != null)
+            {
+                foreach (var archName in key.GetSubKeyNames())
+                {
+                    using var archKey = key.OpenSubKey(archName);
+                    if (archKey != null)
+                    {
+                        var installLocation = archKey.GetValue("InstallLocation") as string;
+                        if (!string.IsNullOrEmpty(installLocation) && Directory.Exists(installLocation))
+                        {
+                            paths.Add(installLocation);
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // If registry reading fails, fall back to default locations
         }
 
-        // On 64-bit Windows, also check Program Files (x86)
-        string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-        if (!string.IsNullOrEmpty(programFilesX86) && !programFilesX86.Equals(programFiles, StringComparison.OrdinalIgnoreCase))
+        // Fall back to default locations if no registry entries found
+        if (paths.Count == 0)
         {
-            paths.Add(Path.Combine(programFilesX86, "dotnet"));
+            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            if (!string.IsNullOrEmpty(programFiles))
+            {
+                paths.Add(Path.Combine(programFiles, "dotnet"));
+            }
+
+            // On 64-bit Windows, also check Program Files (x86)
+            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            if (!string.IsNullOrEmpty(programFilesX86) && !programFilesX86.Equals(programFiles, StringComparison.OrdinalIgnoreCase))
+            {
+                paths.Add(Path.Combine(programFilesX86, "dotnet"));
+            }
         }
 
-        return paths;
+        return paths.ToList();
     }
 
     /// <summary>
