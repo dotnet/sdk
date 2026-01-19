@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             using Stream stream = GetWritableStream(suppressionOutputFile);
             XmlWriter xmlWriter = XmlWriter.Create(stream, new XmlWriterSettings()
             {
-                Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false) // UTF-8, no BOM
+                Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), // UTF-8, no BOM
                 ConformanceLevel = ConformanceLevel.Document,
                 Indent = true
             });
