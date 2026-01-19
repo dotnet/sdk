@@ -105,7 +105,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
             if (item.ItemType == "Compile")
             {
-                if (dryRun)
+                if (_dryRun)
                 {
                     Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCopyFile, item.FullPath, targetItemFullPath);
                     Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldConvertFile, targetItemFullPath);
