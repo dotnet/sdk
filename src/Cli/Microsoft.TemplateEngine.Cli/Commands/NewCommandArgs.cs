@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     {
                         continue;
                     }
-                    if (!command.LegacyOptions.Contains(o.Option) && !command.PassByOptions.Contains(o.Option))
+                    if (!CommandDefinition.New.LegacyOptions.Contains(o.Option) && !CommandDefinition.New.PassByOptions.Contains(o.Option))
                     {
                         continue;
                     }
