@@ -59,9 +59,10 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
             // Expected contract:
             //   - Instance method on the host object named "QueryAllTaskItems".
             //   - Signature: string QueryAllTaskItems().
-            //   - Returns: a JSON array of objects of the shape
-            //       { "ItemSpec": "<string>", "Metadata": { "<string>": "<string>" } }.
-            // The JSON is deserialized into TaskItemDto and then converted to ITaskItem instances below.
+            //   - Returns a JSON array of objects with the shape:
+            //       [{ "ItemSpec": "<string>", "Metadata": { "<key>": "<value>", ... } }, ...]
+            // The JSON is deserialized into TaskItemDto records and converted to ITaskItem instances.
+            // Only UserName and Password metadata are extracted to avoid conflicts with reserved MSBuild metadata.
             string? rawTaskItems = (string?)_hostObject!.GetType().InvokeMember(
                 "QueryAllTaskItems",
                 BindingFlags.InvokeMethod,
@@ -74,16 +75,26 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
                 List<TaskItemDto>? dtos = JsonConvert.DeserializeObject<List<TaskItemDto>>(rawTaskItems);
                 if (dtos is not null)
                 {
+                    _log.LogMessage(MessageImportance.Low, "Successfully retrieved task items via QueryAllTaskItems.");
                     return dtos.Select(ConvertToTaskItem).ToList();
                 }
             }
+
+            _log.LogMessage(MessageImportance.Low, "QueryAllTaskItems returned null or empty result.");
         }
         catch (Exception ex)
         {
             _log.LogMessage(MessageImportance.Low, "Exception trying to call QueryAllTaskItems: {0}", ex.Message);
         }
 
-        return _hostObject as IEnumerable<ITaskItem>;
+        // Fallback: try to use the host object directly as IEnumerable<ITaskItem> (legacy behavior).
+        if (_hostObject is IEnumerable<ITaskItem> enumerableHost)
+        {
+            _log.LogMessage(MessageImportance.Low, "Falling back to IEnumerable<ITaskItem> host object.");
+            return enumerableHost;
+        }
+
+        return null;
 
         static TaskItem ConvertToTaskItem(TaskItemDto dto)
         {
