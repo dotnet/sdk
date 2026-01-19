@@ -7,6 +7,7 @@ using NuGet.RuntimeModel;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class GenerateSdkRuntimeIdentifierChain : Task
     {
         [Required]

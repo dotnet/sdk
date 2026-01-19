@@ -7,6 +7,7 @@ using System.Reflection.PortableExecutable;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class AddMetadataIsPE : Task
     {
         [Required]

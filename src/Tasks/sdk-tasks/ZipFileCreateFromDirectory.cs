@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public sealed class ZipFileCreateFromDirectory : Task
     {
         /// <summary>

@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Build.Tasks
     /// ReplacementPattern could easily be a regex, but it isn't needed for current use cases, so leaving this
     /// as just a string that will be replaced.
     /// </summary>
+    [MSBuildMultiThreadableTask]
     public class ReplaceFileContents : Task
     {
         [Required]

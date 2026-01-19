@@ -9,6 +9,7 @@ namespace Microsoft.DotNet.Build.Tasks
     /// Gets version and commit of a dependency by its name
     /// from eng/Version.Details.xml
     /// </summary>
+    [MSBuildMultiThreadableTask]
     public class GetDependencyInfo : Task
     {
         [Required]

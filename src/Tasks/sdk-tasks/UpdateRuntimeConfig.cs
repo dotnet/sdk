@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public sealed class UpdateRuntimeConfig : Task
     {
         [Required]
