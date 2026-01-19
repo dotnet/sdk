@@ -17,6 +17,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 
 public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 {
+    internal static readonly string IncludeExcludeDefaultKnownExtensions = ".cs, .resx, .json, .razor";
+
     private static readonly string s_program = /* lang=C#-Test */ """
         if (args.Length > 0)
         {
@@ -3470,6 +3472,151 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Hello, String from Util");
     }
 
+    [Fact]
+    public void IncludeDirective_CustomMapping()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, $"""
+            #:property FileBasedProgramsItemMapping=.json=Content
+            #:include *.cs
+            {s_programDependingOnUtil}
+            """);
+
+        var utilPath = Path.Join(testInstance.Path, "Util.cs");
+        File.WriteAllText(utilPath, s_util);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr($"""
+                {DirectiveError(programPath, 2, FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:include", ".json")}
+
+                {CliCommandStrings.RunCommandException}
+                """);
+
+        File.WriteAllText(programPath, $"""
+            #:property FileBasedProgramsItemMapping=.cs=Content
+            #:include *.cs
+            {s_programDependingOnUtil}
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Util' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+
+        File.WriteAllText(programPath, $"""
+            #:property FileBasedProgramsItemMapping=.cs=Compile
+            #:include *.cs
+            {s_programDependingOnUtil}
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, String from Util");
+    }
+
+    [Fact]
+    public void IncludeDirective_CustomMapping_ParseErrors()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #:property FileBasedProgramsItemMapping=x
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // error CS5001: Program does not contain a static 'Main' method suitable for an entry point
+            .And.HaveStdOutContaining("error CS5001");
+
+        File.WriteAllText(programPath, """
+            #:property FileBasedProgramsItemMapping=x
+            #:include *.*
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr($"""
+                {DirectiveError(programPath, 1, FileBasedProgramsResources.InvalidIncludeExcludeMappingEntry, "x")}
+
+                {CliCommandStrings.RunCommandException}
+                """);
+
+        File.WriteAllText(programPath, """
+            #:property FileBasedProgramsItemMapping=.=X;y
+            #:include *.*
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr($"""
+                {DirectiveError(programPath, 1, FileBasedProgramsResources.InvalidIncludeExcludeMappingExtension, ".", ".=X")}
+
+                {CliCommandStrings.RunCommandException}
+                """);
+
+        File.WriteAllText(programPath, """
+            #:property FileBasedProgramsItemMapping=.cs=;y
+            #:include *.*
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr($"""
+                {DirectiveError(programPath, 1, FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, "", ".cs=")}
+
+                {CliCommandStrings.RunCommandException}
+                """);
+
+        File.WriteAllText(programPath, """
+            #:property FileBasedProgramsItemMapping=.x=X;y
+            #:include *.*
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr($"""
+                {DirectiveError(programPath, 1, FileBasedProgramsResources.InvalidIncludeExcludeMappingEntry, "y")}
+
+                {CliCommandStrings.RunCommandException}
+                """);
+    }
+
     [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
     [InlineData(true, null)]
     [InlineData(false, null)]
@@ -5143,6 +5290,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <OutputType>Exe</OutputType>
@@ -5231,6 +5379,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
@@ -5302,6 +5451,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
@@ -5372,6 +5522,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>

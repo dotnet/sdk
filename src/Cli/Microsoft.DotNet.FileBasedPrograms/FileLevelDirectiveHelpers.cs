@@ -587,19 +587,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// </summary>
     public sealed class IncludeOrExclude(in ParseInfo info) : Named(info)
     {
-        private static readonly ImmutableArray<(string Extension, string ItemType)> s_knownExtensions =
-        [
-            (".cs", "Compile"),
-            (".resx", "EmbeddedResource"),
-            (".json", "Content"),
-            (".razor", "Content"),
-        ];
-
-        internal static IEnumerable<string> KnownItemTypes
-            => field ??= s_knownExtensions.Select(static t => t.ItemType).Distinct();
-
-        internal static string KnownExtensions
-            => field ??= string.Join(", ", s_knownExtensions.Select(static t => $"'{t.Extension}'"));
+        public const string MappingPropertyName = "FileBasedProgramsItemMapping";
 
         /// <summary>
         /// Preserved across <see cref="WithName"/> calls, i.e.,
@@ -629,16 +617,19 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             };
         }
 
-        public IncludeOrExclude WithDeterminedItemType(ErrorReporter reportError)
+        /// <param name="mapping">
+        /// See <see cref="ParseMapping"/>.
+        /// </param>
+        public IncludeOrExclude WithDeterminedItemType(ErrorReporter reportError, ImmutableArray<(string Extension, string ItemType)> mapping)
         {
             Debug.Assert(ItemType is null);
 
             string? itemType = null;
-            foreach (var mapping in s_knownExtensions)
+            foreach (var entry in mapping)
             {
-                if (Name.EndsWith(mapping.Extension, StringComparison.OrdinalIgnoreCase))
+                if (Name.EndsWith(entry.Extension, StringComparison.OrdinalIgnoreCase))
                 {
-                    itemType = mapping.ItemType;
+                    itemType = entry.ItemType;
                     break;
                 }
             }
@@ -646,7 +637,9 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             if (itemType is null)
             {
                 reportError(Info.SourceFile, Info.Span,
-                    string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, $"#:{KindToString()}", KnownExtensions));
+                    string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType,
+                    $"#:{KindToString()}",
+                    string.Join(", ", mapping.Select(static e => e.Extension))));
                 return this;
             }
 
@@ -706,6 +699,50 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         }
 
         public override string ToString() => $"#:{KindToString()} {Name}";
+
+        /// <summary>
+        /// Parses a <paramref name="value"/> in the format <c>.protobuf=Protobuf;.cshtml=Content</c>.
+        /// Should come from MSBuild property with name <see cref="MappingPropertyName"/>.
+        /// </summary>
+        public static ImmutableArray<(string Extension, string ItemType)> ParseMapping(
+            string value,
+            SourceFile sourceFile,
+            ErrorReporter reportError)
+        {
+            var pairs = value.Split(';');
+
+            var builder = ImmutableArray.CreateBuilder<(string Extension, string ItemType)>(pairs.Length);
+
+            foreach (var pair in pairs)
+            {
+                var parts = pair.Split('=');
+
+                if (parts.Length != 2)
+                {
+                    reportError(sourceFile, default, string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingEntry, pair));
+                    continue;
+                }
+
+                var extension = parts[0].Trim();
+                var itemType = parts[1].Trim();
+
+                if (!extension.StartsWith(".", StringComparison.Ordinal) || extension.Length < 2)
+                {
+                    reportError(sourceFile, default, string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingExtension, extension, pair));
+                    continue;
+                }
+
+                if (itemType.IsWhiteSpace())
+                {
+                    reportError(sourceFile, default, string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, itemType, pair));
+                    continue;
+                }
+
+                builder.Add((extension, itemType));
+            }
+
+            return builder.DrainToImmutable();
+        }
     }
 }
 

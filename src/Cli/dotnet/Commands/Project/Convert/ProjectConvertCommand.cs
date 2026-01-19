@@ -55,7 +55,6 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
 
-
         CreateDirectory(targetDirectory);
 
         var targetFile = Path.Join(targetDirectory, Path.GetFileName(file));
@@ -156,12 +155,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             string entryPointFileDirectory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
 
             // Include only items we know are files.
-            string[] itemTypes = ["Content", "None", "Compile", "EmbeddedResource"];
+            var mapping = CSharpDirective.IncludeOrExclude.ParseMapping(
+                projectInstance.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
+                builder.EntryPointSourceFile,
+                VirtualProjectBuildingCommand.ThrowingReporter);
 
-            Debug.Assert(CSharpDirective.IncludeOrExclude.KnownItemTypes.All(t => itemTypes.Contains(t)),
-                "We currently rely on conversion being able to copy files supported by include/exclude directives.");
-
-            var items = itemTypes.SelectMany(t => projectInstance.GetItems(t));
+            var items = mapping.SelectMany(e => projectInstance.GetItems(e.ItemType));
 
             var topLevelFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 

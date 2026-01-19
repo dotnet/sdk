@@ -153,7 +153,7 @@ internal sealed class VirtualProjectBuilder
     /// <c>#:include</c>/<c>#:exclude</c> have their <see cref="CSharpDirective.IncludeOrExclude.ItemType"/> determined
     /// and relative paths resolved relative to their containing file.
     /// </remarks>
-    private static ImmutableArray<CSharpDirective> EvaluateDirectives(
+    private ImmutableArray<CSharpDirective> EvaluateDirectives(
         ProjectInstance project,
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
@@ -164,6 +164,8 @@ internal sealed class VirtualProjectBuilder
         }
 
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>(directives.Length);
+
+        ImmutableArray<(string Extension, string ItemType)> mapping = default;
 
         foreach (var directive in directives)
         {
@@ -181,9 +183,15 @@ internal sealed class VirtualProjectBuilder
                     var fullPath = Path.GetFullPath(path: expandedPath, basePath: Path.GetDirectoryName(includeOrExcludeDirective.Info.SourceFile.Path)!);
                     includeOrExcludeDirective = includeOrExcludeDirective.WithName(fullPath);
 
-                    // NOTE: In the future, instead of using only hard-coded item types here,
-                    //       we could read some user/sdk-defined MSBuild property from `project` for additional mapping.
-                    includeOrExcludeDirective = includeOrExcludeDirective.WithDeterminedItemType(reportError);
+                    if (mapping.IsDefault)
+                    {
+                        mapping = CSharpDirective.IncludeOrExclude.ParseMapping(
+                            project.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
+                            EntryPointSourceFile,
+                            reportError);
+                    }
+
+                    includeOrExcludeDirective = includeOrExcludeDirective.WithDeterminedItemType(reportError, mapping);
 
                     builder.Add(includeOrExcludeDirective);
                     break;
@@ -446,6 +454,7 @@ internal sealed class VirtualProjectBuilder
                     <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                     <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                     <FileBasedProgram>true</FileBasedProgram>
+                    <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                     <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                 """);

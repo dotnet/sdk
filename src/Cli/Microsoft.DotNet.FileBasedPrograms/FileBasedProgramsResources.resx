@@ -173,4 +173,16 @@
     <value>Unrecognized directive '{0}'.</value>
     <comment>{0} is the directive name like 'package' or 'sdk'.</comment>
   </data>
+  <data name="InvalidIncludeExcludeMappingEntry" xml:space="preserve">
+    <value>Each entry in 'FileBasedProgramsItemMapping' MSBuild property must have two parts separated by '='. The entry '{0}' is invalid.</value>
+    <comment>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"}{Locked="="}</comment>
+  </data>
+  <data name="InvalidIncludeExcludeMappingExtension" xml:space="preserve">
+    <value>Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map from a non-empty file extension starting with '.'. The extension '{0}' in entry '{1}' is invalid.</value>
+    <comment>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"}{Locked="."}</comment>
+  </data>
+  <data name="InvalidIncludeExcludeMappingItemType" xml:space="preserve">
+    <value>Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map to a non-empty item type. The item type '{0}' in entry '{1}' is invalid.</value>
+    <comment>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"}</comment>
+  </data>
 </root>

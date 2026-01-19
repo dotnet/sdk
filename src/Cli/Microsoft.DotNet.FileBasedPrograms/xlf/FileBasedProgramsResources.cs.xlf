@@ -37,6 +37,21 @@
         <target state="translated">Direktiva by měla obsahovat název bez speciálních znaků a volitelnou hodnotu oddělenou znakem {1}, například #:{0} Název{1}Hodnota.</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
+      <trans-unit id="InvalidIncludeExcludeMappingEntry">
+        <source>Each entry in 'FileBasedProgramsItemMapping' MSBuild property must have two parts separated by '='. The entry '{0}' is invalid.</source>
+        <target state="new">Each entry in 'FileBasedProgramsItemMapping' MSBuild property must have two parts separated by '='. The entry '{0}' is invalid.</target>
+        <note>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"}{Locked="="}</note>
+      </trans-unit>
+      <trans-unit id="InvalidIncludeExcludeMappingExtension">
+        <source>Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map from a non-empty file extension starting with '.'. The extension '{0}' in entry '{1}' is invalid.</source>
+        <target state="new">Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map from a non-empty file extension starting with '.'. The extension '{0}' in entry '{1}' is invalid.</target>
+        <note>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"}{Locked="."}</note>
+      </trans-unit>
+      <trans-unit id="InvalidIncludeExcludeMappingItemType">
+        <source>Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map to a non-empty item type. The item type '{0}' in entry '{1}' is invalid.</source>
+        <target state="new">Each entry in 'FileBasedProgramsItemMapping' MSBuild property must map to a non-empty item type. The item type '{0}' in entry '{1}' is invalid.</target>
+        <note>{Locked="FileBasedProgramsItemMapping"}{Locked="MSBuild"}</note>
+      </trans-unit>
       <trans-unit id="InvalidProjectDirective">
         <source>The '#:project' directive is invalid: {0}</source>
         <target state="translated">Direktiva #:project je neplatná: {0}</target>
