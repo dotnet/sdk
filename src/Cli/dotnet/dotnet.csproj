@@ -99,8 +99,8 @@
   <!-- NOTE: only works for fast-path code changes -->
   <ItemGroup>
     <_CopyToRedistFastPathFile Include="$(TargetPath)" />
-    <_CopyToRedistFastPathFile Include="$(TargetDir)Microsoft.DotNet.ProjectTools.dll" />
-    <_CopyToRedistFastPathFile Include="$(TargetDir)Microsoft.DotNet.Cli.Utils.dll" />
+    <_CopyToRedistFastPathFile Include="$(ArtifactsBinDir)Microsoft.DotNet.ProjectTools\$(Configuration)\$(SdkTargetFramework)\Microsoft.DotNet.ProjectTools.dll" />
+    <_CopyToRedistFastPathFile Include="$(ArtifactsBinDir)Tests\Microsoft.DotNet.Cli.Utils\$(Configuration)\$(SdkTargetFramework)\Microsoft.DotNet.Cli.Utils.dll" />
   </ItemGroup>
   <ItemGroup>
     <UpToDateCheckInput Include="@(_CopyToRedistFastPathFile)" />
