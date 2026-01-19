@@ -2,13 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
 
-internal static class ReferenceListCommandDefinition
+internal sealed class ReferenceListCommandDefinition()
+    : ListReferenceCommandDefinitionBase(Name)
 {
-    public const string Name = "list";
+    public new const string Name = "list";
 
-    public static Command Create()
-        => new(Name, CliCommandStrings.ReferenceListAppFullName);
+    public ReferenceCommandDefinition Parent => (ReferenceCommandDefinition)Parents.Single();
+
+    internal override string? GetFileOrDirectory(ParseResult parseResult)
+        => parseResult.GetValue(Parent.ProjectOption);
 }

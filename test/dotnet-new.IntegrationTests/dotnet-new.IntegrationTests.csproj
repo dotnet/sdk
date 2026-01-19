@@ -6,7 +6,6 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <OutputType>Exe</OutputType>
     <IsUnitTestProject>true</IsUnitTestProject>
-    <EnableStyleCopAnalyzer>true</EnableStyleCopAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 

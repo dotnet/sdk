@@ -70,8 +70,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var propertyOption = command.Options.FirstOrDefault(o => 
                 o.Aliases.Contains("/p") || o.Aliases.Contains("--property"));
             
-            propertyOption.Should().NotBeNull("VSTest command should include CommonOptions.PropertiesOption to support /p Property=Value syntax");
-            propertyOption.Aliases.Should().Contain("/p", "PropertiesOption should include /p alias for MSBuild compatibility");
+            propertyOption.Should().NotBeNull("VSTest command should include CommonOptions.CreatePropertyOption to support /p Property=Value syntax");
+            propertyOption.Aliases.Should().Contain("/p", "CreatePropertyOption should include /p alias for MSBuild compatibility");
         }
 
         [Fact]

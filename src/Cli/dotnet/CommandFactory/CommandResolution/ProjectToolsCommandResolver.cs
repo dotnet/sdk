@@ -385,7 +385,14 @@ public class ProjectToolsCommandResolver(
         string? stdOut;
         string? stdErr;
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..args], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, BuildCommandDefinition.TargetOption, BuildCommandDefinition.VerbosityOption, BuildCommandDefinition.NoLogoOption);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+            [.. args],
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateMSBuildTargetOption(),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption());
+
         var forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(msbuildArgs, msBuildExePath);
         if (forwardingAppWithoutLogging.ExecuteMSBuildOutOfProc)
         {

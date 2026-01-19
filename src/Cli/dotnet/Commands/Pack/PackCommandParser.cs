@@ -7,15 +7,16 @@ namespace Microsoft.DotNet.Cli.Commands.Pack;
 
 internal static class PackCommandParser
 {
-    private static readonly Command Command = SetAction(PackCommandDefinition.Create());
+    private static readonly PackCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetAction(Command command)
+    private static PackCommandDefinition CreateCommand()
     {
+        var command = new PackCommandDefinition();
         command.SetAction(PackCommand.Run);
         return command;
     }

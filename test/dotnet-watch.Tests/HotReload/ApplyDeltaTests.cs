@@ -359,7 +359,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.False(Directory.Exists(logDir));
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, ["--verbose", $"-bl:{binLogPath}"], testFlags: TestFlags.None);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
@@ -753,8 +753,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             if (!verbose)
             {
-                // remove default --verbose arg
-                App.DotnetWatchArgs.Clear();
+                App.SuppressVerboseLogging();
             }
 
             App.Start(testAsset, []);

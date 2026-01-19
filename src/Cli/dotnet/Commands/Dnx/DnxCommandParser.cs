@@ -8,16 +8,16 @@ namespace Microsoft.DotNet.Cli.Commands.Dnx;
 
 internal static class DnxCommandParser
 {
-    public static readonly Command Command = ConfigureCommand(DnxCommandDefinition.Create());
+    public static readonly DnxCommandDefinition Command = ConfigureCommand(new());
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command ConfigureCommand(Command command)
+    public static DnxCommandDefinition ConfigureCommand(DnxCommandDefinition command)
     {
-        command.SetAction((parseResult) => new ToolExecuteCommand(parseResult).Execute());
+        command.SetAction(parseResult => new ToolExecuteCommand(parseResult).Execute());
         return command;
     }
 }
