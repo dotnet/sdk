@@ -53,6 +53,16 @@ namespace Microsoft.DotNet.HotReload
         internal string NamedPipeName
             => _namedPipeName;
 
+        public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
+        {
+            environmentBuilder[AgentEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
+
+            // HotReload startup hook should be loaded before any other startup hooks:
+            environmentBuilder.InsertListItem(AgentEnvironmentVariables.DotNetStartupHooks, startupHookPath, Path.PathSeparator);
+
+            environmentBuilder[AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName] = _namedPipeName;
+        }
+
         public override void InitiateConnection(CancellationToken cancellationToken)
         {
 #if NET
@@ -156,16 +166,6 @@ namespace Microsoft.DotNet.HotReload
             _ = GetCapabilitiesTask();
 
             Debug.Assert(_pipe != null);
-        }
-
-        public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
-        {
-            environmentBuilder[AgentEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
-
-            // HotReload startup hook should be loaded before any other startup hooks:
-            environmentBuilder.InsertListItem(AgentEnvironmentVariables.DotNetStartupHooks, startupHookPath, Path.PathSeparator);
-
-            environmentBuilder[AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName] = _namedPipeName;
         }
 
         public override Task WaitForConnectionEstablishedAsync(CancellationToken cancellationToken)

@@ -14,6 +14,12 @@ internal static class AgentEnvironmentVariables
     public const string DotNetWatchHotReloadNamedPipeName = "DOTNET_WATCH_HOTRELOAD_NAMEDPIPE_NAME";
 
     /// <summary>
+    /// HTTP endpoint for hot reload communication. Used for mobile platforms (Android, iOS, MacCatalyst)
+    /// where named pipes don't work over the network.
+    /// </summary>
+    public const string DotNetWatchHotReloadHttpEndpoint = "DOTNET_WATCH_HOTRELOAD_HTTP_ENDPOINT";
+
+    /// <summary>
     /// Enables logging from the client delta applier agent.
     /// </summary>
     public const string HotReloadDeltaClientLogMessages = "HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES";
@@ -28,10 +34,4 @@ internal static class AgentEnvironmentVariables
     /// dotnet runtime environment variable.
     /// </summary>
     public const string DotNetModifiableAssemblies = "DOTNET_MODIFIABLE_ASSEMBLIES";
-
-    /// <summary>
-    /// HTTP endpoint for hot reload communication. Used for mobile platforms (Android, iOS, MacCatalyst)
-    /// where named pipes don't work over the network.
-    /// </summary>
-    public const string DotNetWatchHotReloadHttpEndpoint = "DOTNET_WATCH_HOTRELOAD_HTTP_ENDPOINT";
 }

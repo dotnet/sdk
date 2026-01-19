@@ -25,9 +25,8 @@ namespace Microsoft.DotNet.HotReload
     /// Hot reload client that uses HTTP instead of named pipes.
     /// Used for mobile platforms (Android, iOS, MacCatalyst) where named pipes don't work over the network.
     /// </summary>
-    internal sealed class HttpHotReloadClient : HotReloadClient
+    internal sealed class MobileHotReloadClient : HotReloadClient
     {
-        private readonly bool _enableStaticAssetUpdates;
         private readonly int _port;
         private readonly string _serverUrl;
 
@@ -47,13 +46,14 @@ namespace Microsoft.DotNet.HotReload
         // Signals when the first poll request has been received
         private TaskCompletionSource _pollReceivedSource = new();
 
-        public HttpHotReloadClient(ILogger logger, ILogger agentLogger, bool enableStaticAssetUpdates, int port)
+        public MobileHotReloadClient(ILogger logger, ILogger agentLogger, int port)
             : base(logger, agentLogger)
         {
-            _enableStaticAssetUpdates = enableStaticAssetUpdates;
             _port = port;
+
+            // TODO: HTTPS, secret
             // Use localhost - this must match what the Android workload writes to the environment file
-            _serverUrl = $"http://localhost:{_port}/hotreload/";
+            _serverUrl = $"http://localhost:{port}/hotreload/";
         }
 
         // for testing
@@ -85,6 +85,16 @@ namespace Microsoft.DotNet.HotReload
             _currentRequestStream = null;
             _currentResponseStream = null;
             _currentContext = null;
+        }
+
+        public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
+        {
+            environmentBuilder[AgentEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
+
+            // For HTTP transport (mobile platforms), the hot reload agent is built into the app itself
+            // via the platform workload, so we don't need to inject the startup hook.
+            // Only set the HTTP endpoint for the app to connect to.
+            environmentBuilder[AgentEnvironmentVariables.DotNetWatchHotReloadHttpEndpoint] = _serverUrl;
         }
 
         public override void InitiateConnection(CancellationToken cancellationToken)
@@ -260,16 +270,6 @@ namespace Microsoft.DotNet.HotReload
             _ = GetCapabilitiesTask();
         }
 
-        public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
-        {
-            environmentBuilder[AgentEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
-
-            // For HTTP transport (mobile platforms), the hot reload agent is built into the app itself
-            // via the platform workload, so we don't need to inject the startup hook.
-            // Only set the HTTP endpoint for the app to connect to.
-            environmentBuilder[AgentEnvironmentVariables.DotNetWatchHotReloadHttpEndpoint] = _serverUrl;
-        }
-
         public override Task WaitForConnectionEstablishedAsync(CancellationToken cancellationToken)
             => GetCapabilitiesTask();
 
@@ -337,12 +337,6 @@ namespace Microsoft.DotNet.HotReload
 
         public async override Task<ApplyStatus> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
         {
-            if (!_enableStaticAssetUpdates)
-            {
-                // The client has no concept of static assets.
-                return ApplyStatus.AllChangesApplied;
-            }
-
             RequireReadyForUpdates();
 
             var appliedUpdateCount = 0;
