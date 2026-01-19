@@ -39,6 +39,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "new",
                 "nuget",
                 "pack",
+                "package",
                 "publish",
                 "remove",
                 "restore",
@@ -117,7 +118,8 @@ namespace Microsoft.DotNet.Tests.Commands
                 "push",
                 "verify",
                 "trust",
-                "sign"
+                "sign",
+                "why"
             };
 
             var reporter = new BufferedReporter();
@@ -282,6 +284,24 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var reporter = new BufferedReporter();
             CompleteCommand.RunWithReporter(new[] { "dotnet nuget sign " }, reporter).Should().Be(0);
+            reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
+        }
+
+        [Fact]
+        public void GivenNuGetWhyCommandItDisplaysCompletions()
+        {
+            var expected = new[] {
+                "--framework",
+                "--help",
+                "-?",
+                "-f",
+                "-h",
+                "/?",
+                "/h"
+            };
+
+            var reporter = new BufferedReporter();
+            CompleteCommand.RunWithReporter(new[] { "dotnet nuget why " }, reporter).Should().Be(0);
             reporter.Lines.OrderBy(c => c).Should().Equal(expected.OrderBy(c => c));
         }
 

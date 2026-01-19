@@ -282,6 +282,11 @@ Der Standardwert lautet FALSE. Wenn sie jedoch auf .NET 7 oder niedriger abziele
         <target state="translated">Die Projektmappe "{0}" enthält bereits das Projekt "{1}" im Projektmappenordner "{2}".</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSettingsNotFound">
+        <source>Tool settings file does not exist for the tool {0}.</source>
+        <target state="translated">Die Tooleinstellungsdatei ist für das Tool „{0}“ nicht vorhanden.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">Aktualisieren</target>

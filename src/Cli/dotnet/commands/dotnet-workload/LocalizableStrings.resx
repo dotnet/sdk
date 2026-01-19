@@ -138,7 +138,7 @@
   <data name="WorkloadInstallTypeColumn" xml:space="preserve">
     <value>Install Type</value>
   </data>
-  <data name="WorkloadManfiestVersionColumn" xml:space="preserve">
+  <data name="WorkloadManifestVersionColumn" xml:space="preserve">
     <value>Manifest Version</value>
   </data>
   <data name="WorkloadManifestPathColumn" xml:space="preserve">
@@ -162,5 +162,11 @@
   </data>
   <data name="WorkloadVersionDescription" xml:space="preserve">
     <value>Display the currently installed workload version.</value>
+  </data>
+  <data name="WriteCLIRecordForVisualStudioWorkloadMessage" xml:space="preserve">
+    <value>Writing install records for Visual Studio workloads: '{0}'</value>
+  </data>
+  <data name="WorkloadManifestInstallationConfiguration" xml:space="preserve">
+    <value>Configured to use {0} when installing new manifests.</value>
   </data>
 </root>
