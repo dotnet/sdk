@@ -97,18 +97,23 @@
   </ItemGroup>
 
   <!-- NOTE: only works for fast-path code changes -->
+  <PropertyGroup>
+    <CollectUpToDateCheckBuiltDesignTimeDependsOn>$(CollectUpToDateCheckBuiltDesignTimeDependsOn);PrepareCopyToRedistFastPath</CollectUpToDateCheckBuiltDesignTimeDependsOn>
+  </PropertyGroup>
   <ItemGroup>
     <_CopyToRedistFastPathFile Include="$(TargetPath)" />
     <_CopyToRedistFastPathFile Include="$(ArtifactsBinDir)Microsoft.DotNet.ProjectTools\$(Configuration)\$(SdkTargetFramework)\Microsoft.DotNet.ProjectTools.dll" />
     <_CopyToRedistFastPathFile Include="$(ArtifactsBinDir)Tests\Microsoft.DotNet.Cli.Utils\$(Configuration)\$(SdkTargetFramework)\Microsoft.DotNet.Cli.Utils.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <UpToDateCheckInput Include="@(_CopyToRedistFastPathFile)" />
-  </ItemGroup>
-  <Target Name="CopyToRedistFastPath" AfterTargets="AfterBuild">
+  <Target Name="PrepareCopyToRedistFastPath">
     <PropertyGroup>
-      <DestinationPath>$([System.IO.Path]::Combine($(TestHostDotNetRoot), "sdk", $(Version)))</DestinationPath>
+      <_RedistDestinationFolder>$([System.IO.Path]::Combine($(TestHostDotNetRoot), "sdk", $(Version)))</_RedistDestinationFolder>
     </PropertyGroup>
-    <Copy SourceFiles="@(_CopyToRedistFastPathFile)" DestinationFolder="$(DestinationPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+    <ItemGroup>
+      <UpToDateCheckBuilt Include="@(_CopyToRedistFastPathFile->'$(_RedistDestinationFolder)\%(FileName)%(Extension)')" Original="%(Identity)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="CopyToRedistFastPath" DependsOnTargets="PrepareCopyToRedistFastPath" AfterTargets="AfterBuild">
+    <Copy SourceFiles="@(_CopyToRedistFastPathFile)" DestinationFolder="$(_RedistDestinationFolder)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
   </Target>
 </Project>
