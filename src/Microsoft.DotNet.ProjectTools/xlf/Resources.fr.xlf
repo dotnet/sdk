@@ -26,6 +26,11 @@ Faites en sorte que les noms de profil soient distincts.</target>
         <target state="new">Unable to determine a temporary directory path. Consider configuring the TEMP environment variable on Windows or local app data folder on Unix.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExperimentalFeatureDisabled">
+        <source>This is an experimental feature, set MSBuild property '{0}' to 'true' to enable it.</source>
+        <target state="new">This is an experimental feature, set MSBuild property '{0}' to 'true' to enable it.</target>
+        <note>{Locked="MSBuild"}{Locked="true"}. {0} is MSBuild property name.</note>
+      </trans-unit>
       <trans-unit id="IncludedFileNotFound">
         <source>File included via #:include directive (or Compile item) not found: {0}</source>
         <target state="new">File included via #:include directive (or Compile item) not found: {0}</target>

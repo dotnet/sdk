@@ -17,6 +17,10 @@ namespace Microsoft.DotNet.ProjectTools;
 
 internal sealed class VirtualProjectBuilder
 {
+    internal const string ExperimentalFileBasedProgramEnableIncludeDirective = nameof(ExperimentalFileBasedProgramEnableIncludeDirective);
+    internal const string ExperimentalFileBasedProgramEnableExcludeDirective = nameof(ExperimentalFileBasedProgramEnableExcludeDirective);
+    internal const string ExperimentalFileBasedProgramEnableTransitiveDirectives = nameof(ExperimentalFileBasedProgramEnableTransitiveDirectives);
+
     private readonly IEnumerable<(string name, string value)> _defaultProperties;
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
@@ -222,6 +226,9 @@ internal sealed class VirtualProjectBuilder
                 projectCollection,
                 evaluatedDirectives,
                 addGlobalProperties);
+
+            CheckDirectives(project, evaluatedDirectives, reportError);
+
             return;
         }
 
@@ -268,6 +275,8 @@ internal sealed class VirtualProjectBuilder
 
         evaluatedDirectives = evaluatedDirectiveBuilder.ToImmutable();
         _evaluatedDirectives = (directivesOriginal, evaluatedDirectives);
+
+        CheckDirectives(project, evaluatedDirectives, reportError);
 
         bool TryGetNextFileToProcess()
         {
@@ -337,6 +346,50 @@ internal sealed class VirtualProjectBuilder
                 var projectRoot = ProjectRootElement.Create(xmlReader, projectCollection);
                 projectRoot.FullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
                 return projectRoot;
+            }
+        }
+    }
+
+    private void CheckDirectives(
+        ProjectInstance project,
+        ImmutableArray<CSharpDirective> directives,
+        ErrorReporter reportError)
+    {
+        bool? includeEnabled = null;
+        bool? excludeEnabled = null;
+        bool? transitiveEnabled = null;
+
+        foreach (var directive in directives)
+        {
+            if (directive is CSharpDirective.IncludeOrExclude includeOrExcludeDirective)
+            {
+                if (includeOrExcludeDirective.Kind == CSharpDirective.IncludeOrExcludeKind.Include)
+                {
+                    CheckFlagEnabled(ref includeEnabled, ExperimentalFileBasedProgramEnableIncludeDirective, directive);
+                }
+                else
+                {
+                    Debug.Assert(includeOrExcludeDirective.Kind == CSharpDirective.IncludeOrExcludeKind.Exclude);
+                    CheckFlagEnabled(ref excludeEnabled, ExperimentalFileBasedProgramEnableExcludeDirective, directive);
+                }
+            }
+
+            if (directive.Info.SourceFile.Path != EntryPointSourceFile.Path)
+            {
+                CheckFlagEnabled(ref transitiveEnabled, ExperimentalFileBasedProgramEnableTransitiveDirectives, directive);
+            }
+        }
+
+        void CheckFlagEnabled(ref bool? flag, string flagName, CSharpDirective directive)
+        {
+            bool value = flag ??= MSBuildUtilities.ConvertStringToBool(project.GetPropertyValue(flagName));
+
+            if (!value)
+            {
+                reportError(
+                    directive.Info.SourceFile,
+                    directive.Info.Span,
+                    string.Format(Resources.ExperimentalFeatureDisabled, flagName));
             }
         }
     }

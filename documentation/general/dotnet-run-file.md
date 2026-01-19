@@ -218,7 +218,11 @@ The directives are processed as follows:
 
   Relative paths are resolved relative to the file containing the directive.
 
+  This is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableIncludeDirective=true`.
+
 - Each `#:exclude` is injected similarly to `#:include` but with `Remove="{0}"` instead of `Include="{0}"`.
+
+  This is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableExcludeDirective=true`.
 
 - Other directive kinds result in an error, reserving them for future use.
 
@@ -236,7 +240,9 @@ Because these directives are limited by the C# language to only appear before th
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
 and can do that efficiently by stopping the search when it sees the first "C# token".
 
-For a given `dotnet run file.cs`, we include directives from the current entry point file (`file.cs`) and all other non-entry-point files.
+For a given `dotnet run file.cs`, we include directives from the current entry point file (`file.cs`) and all other non-entry-point C# files,
+specifically from all `Compile` items included in the project, no matter whether the `Compile` items are specified in some MSBuild code or inferred from `#:include`.
+(Processing directives from other files is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableTransitiveDirectives=true`.)
 The order in which other files are processed is currently unspecified (can change across SDK versions) but deterministic (stable in a given SDK version).
 We do not limit these directives to appear only in entry point files because it allows:
 - a non-entry-point file like `Util.cs` to be self-contained and have all the `#:package`s it needs specified in it,
@@ -248,9 +254,6 @@ Specifically, directives are considered duplicate if their type and name (case i
 Later with deduplication, separate "self-contained" utilities could reference overlapping sets of packages
 even if they end up in the same compilation.
 For example, properties could be concatenated via `;`, more specific package versions could override less specific ones.
-
-Directives are processed from all `.cs` files included in the compilation
-(no matter whether the `Compile` items are specified in some MSBuild code or inferred from `#:include`).
 
 During [grow up](#grow-up), `#:` directives are removed from the `.cs` files and turned into elements in the converted `.csproj` file.
 For project-based programs, `#:` directives are an error (reported by Roslyn when it's told it is in "project-based" mode).
