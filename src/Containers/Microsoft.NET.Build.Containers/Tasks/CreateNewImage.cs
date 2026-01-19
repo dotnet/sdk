@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.MSBuild;
@@ -56,6 +57,17 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.PublishDirectoryDoesntExist), nameof(PublishDirectory), PublishDirectory);
             return !Log.HasLoggedErrors;
+        }
+
+        VSHostObject hostObj = new(HostObject, Log);
+        if (hostObj.TryGetCredentials() is (string userName, string pass))
+        {
+            Environment.SetEnvironmentVariable(ContainerHelpers.HostObjectUser, userName);
+            Environment.SetEnvironmentVariable(ContainerHelpers.HostObjectPass, pass);
+        }
+        else
+        {
+            Log.LogMessage(MessageImportance.Low, Resource.GetString(nameof(Strings.HostObjectNotDetected)));
         }
 
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;

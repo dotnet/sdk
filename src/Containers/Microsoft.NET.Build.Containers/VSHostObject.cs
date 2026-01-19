@@ -1,44 +1,103 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using Newtonsoft.Json;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
-internal sealed class VSHostObject
+internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
 {
     private const string CredentialItemSpecName = "MsDeployCredential";
     private const string UserMetaDataName = "UserName";
     private const string PasswordMetaDataName = "Password";
-    IEnumerable<ITaskItem>? _hostObject;
 
-    public VSHostObject(IEnumerable<ITaskItem>? hostObject)
+    private readonly ITaskHost? _hostObject = hostObject;
+    private readonly TaskLoggingHelper _log = log;
+
+    /// <summary>
+    /// Tries to extract credentials from the host object.
+    /// </summary>
+    /// <returns>A tuple of (username, password) if credentials were found with non-empty username, null otherwise.</returns>
+    public (string username, string password)? TryGetCredentials()
     {
-        _hostObject = hostObject;
+        if (_hostObject is null)
+        {
+            return null;
+        }
+
+        IEnumerable<ITaskItem>? taskItems = GetTaskItems();
+        if (taskItems is null)
+        {
+            _log.LogMessage(MessageImportance.Low, "No task items found in host object.");
+            return null;
+        }
+
+        ITaskItem? credentialItem = taskItems.FirstOrDefault(p => p.ItemSpec == CredentialItemSpecName);
+        if (credentialItem is null)
+        {
+            return null;
+        }
+
+        string username = credentialItem.GetMetadata(UserMetaDataName);
+        if (string.IsNullOrEmpty(username))
+        {
+            return null;
+        }
+
+        string password = credentialItem.GetMetadata(PasswordMetaDataName);
+        return (username, password);
     }
 
-    public bool ExtractCredentials(out string username, out string password, Action<string> logMethod)
+    private IEnumerable<ITaskItem>? GetTaskItems()
     {
-        bool retVal = false;
-        username = password = string.Empty;
-        if (_hostObject != null)
+        try
         {
-            ITaskItem credentialItem = _hostObject.FirstOrDefault<ITaskItem>(p => p.ItemSpec == CredentialItemSpecName);
-            if (credentialItem != null)
+            // !!! Should be in sync with the implementation in Microsoft.WebTools.Publish.MSDeploy.VSMsDeployTaskHostObject
+            string? rawTaskItems = (string?)_hostObject!.GetType().InvokeMember(
+                "QueryAllTaskItems",
+                BindingFlags.InvokeMethod,
+                null,
+                _hostObject,
+                null);
+
+            if (!string.IsNullOrEmpty(rawTaskItems))
             {
-                retVal = true;
-                username = credentialItem.GetMetadata(UserMetaDataName);
-                if (!string.IsNullOrEmpty(username))
+                List<TaskItemDto>? dtos = JsonConvert.DeserializeObject<List<TaskItemDto>>(rawTaskItems);
+                if (dtos is not null)
                 {
-                    password = credentialItem.GetMetadata(PasswordMetaDataName);
-                }
-                else
-                {
-                    logMethod("HostObject credentials not detected. Falling back to Docker credential retrieval.");
+                    return dtos.Select(ConvertToTaskItem).ToList();
                 }
             }
         }
-        return retVal;
-    }
-}
+        catch (Exception ex)
+        {
+            _log.LogMessage(MessageImportance.Low, "Exception trying to call QueryAllTaskItems: {0}", ex.Message);
+        }
 
+        return _hostObject as IEnumerable<ITaskItem>;
+
+        static TaskItem ConvertToTaskItem(TaskItemDto dto)
+        {
+            TaskItem taskItem = new(dto.ItemSpec ?? string.Empty);
+            if (dto.Metadata is not null)
+            {
+                // Only set the custom metadata we care about
+                if (dto.Metadata.TryGetValue(UserMetaDataName, out string? userName))
+                {
+                    taskItem.SetMetadata(UserMetaDataName, userName);
+                }
+                if (dto.Metadata.TryGetValue(PasswordMetaDataName, out string? password))
+                {
+                    taskItem.SetMetadata(PasswordMetaDataName, password);
+                }
+            }
+
+            return taskItem;
+        }
+    }
+
+    private readonly record struct TaskItemDto(string ItemSpec, Dictionary<string, string> Metadata);
+}
