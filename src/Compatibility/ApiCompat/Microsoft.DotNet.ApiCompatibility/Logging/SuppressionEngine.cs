@@ -144,8 +144,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
 
             // Write a new line character at the end of the file as the suppression file often gets checked-in
             // and many repos configure `insert_final_newline=true` in their .editorconfig.
-            byte[] newlineBytes = settings.Encoding.GetBytes(Environment.NewLine);
-            stream.Write(newlineBytes, 0, newlineBytes.Length);
+            writer.WriteWhitespace(Environment.NewLine);
 
             // Callback for tests
             AfterWritingSuppressionsCallback(stream);
