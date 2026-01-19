@@ -26,6 +26,8 @@ internal static class PropertyNames
     public const string DesignTimeBuild = nameof(DesignTimeBuild);
     public const string SkipCompilerExecution = nameof(SkipCompilerExecution);
     public const string ProvideCommandLineArgs = nameof(ProvideCommandLineArgs);
+    public const string DotNetHotReloadAgentStartupHook = nameof(DotNetHotReloadAgentStartupHook);
+    public const string DotNetHotReloadAgentEnvironment = nameof(DotNetHotReloadAgentEnvironment);
 }
 
 internal static class ItemNames
@@ -41,6 +43,7 @@ internal static class MetadataNames
 {
     public const string Watch = nameof(Watch);
     public const string TargetPath = nameof(TargetPath);
+    public const string Value = nameof(Value);
 }
 
 internal static class TargetNames
@@ -49,6 +52,7 @@ internal static class TargetNames
     public const string Restore = nameof(Restore);
     public const string GenerateComputedBuildStaticWebAssets = nameof(GenerateComputedBuildStaticWebAssets);
     public const string ReferenceCopyLocalPathsOutputGroup = nameof(ReferenceCopyLocalPathsOutputGroup);
+    public const string DeployHotReloadAgentConfiguration = nameof(DeployHotReloadAgentConfiguration);
 }
 
 internal static class ProjectCapability
