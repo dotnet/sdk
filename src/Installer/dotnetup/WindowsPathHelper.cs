@@ -144,51 +144,28 @@ internal sealed class WindowsPathHelper : IDisposable
     /// </summary>
     public static List<string> GetProgramFilesDotnetPaths()
     {
-        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var paths = new List<string>();
 
-        try
+        // Read from registry to find actual dotnet installations
+        // Use 32-bit registry hive to ensure we get the correct view
+        using var key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions");
+        if (key != null)
         {
-            // Read from registry to find actual dotnet installations
-            using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions");
-            if (key != null)
+            foreach (var archName in key.GetSubKeyNames())
             {
-                foreach (var archName in key.GetSubKeyNames())
+                using var archKey = key.OpenSubKey(archName);
+                if (archKey != null)
                 {
-                    using var archKey = key.OpenSubKey(archName);
-                    if (archKey != null)
+                    var installLocation = archKey.GetValue("InstallLocation") as string;
+                    if (!string.IsNullOrEmpty(installLocation) && Directory.Exists(installLocation))
                     {
-                        var installLocation = archKey.GetValue("InstallLocation") as string;
-                        if (!string.IsNullOrEmpty(installLocation) && Directory.Exists(installLocation))
-                        {
-                            paths.Add(installLocation);
-                        }
+                        paths.Add(installLocation);
                     }
                 }
             }
         }
-        catch
-        {
-            // If registry reading fails, fall back to default locations
-        }
 
-        // Fall back to default locations if no registry entries found
-        if (paths.Count == 0)
-        {
-            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            if (!string.IsNullOrEmpty(programFiles))
-            {
-                paths.Add(Path.Combine(programFiles, "dotnet"));
-            }
-
-            // On 64-bit Windows, also check Program Files (x86)
-            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-            if (!string.IsNullOrEmpty(programFilesX86) && !programFilesX86.Equals(programFiles, StringComparison.OrdinalIgnoreCase))
-            {
-                paths.Add(Path.Combine(programFilesX86, "dotnet"));
-            }
-        }
-
-        return paths.ToList();
+        return paths;
     }
 
     /// <summary>
