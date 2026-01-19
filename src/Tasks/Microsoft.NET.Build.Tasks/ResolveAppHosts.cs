@@ -9,6 +9,7 @@ using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class ResolveAppHosts : TaskBase
     {
         public string TargetFrameworkIdentifier { get; set; }

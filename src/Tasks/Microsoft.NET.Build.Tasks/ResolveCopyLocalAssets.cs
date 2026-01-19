@@ -13,6 +13,7 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Resolves the assets from the package dependencies that should be copied to output/publish directories.
     /// </summary>
+    [MSBuildMultiThreadableTask]
     public class ResolveCopyLocalAssets : TaskBase
     {
         private readonly List<ITaskItem> _resolvedAssets = new();
