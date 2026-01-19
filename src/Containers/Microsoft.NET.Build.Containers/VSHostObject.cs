@@ -55,7 +55,13 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
     {
         try
         {
-            // !!! Should be in sync with the implementation in Microsoft.WebTools.Publish.MSDeploy.VSMsDeployTaskHostObject
+            // This call mirrors the behavior of Microsoft.WebTools.Publish.MSDeploy.VSMsDeployTaskHostObject.QueryAllTaskItems.
+            // Expected contract:
+            //   - Instance method on the host object named "QueryAllTaskItems".
+            //   - Signature: string QueryAllTaskItems().
+            //   - Returns: a JSON array of objects of the shape
+            //       { "ItemSpec": "<string>", "Metadata": { "<string>": "<string>" } }.
+            // The JSON is deserialized into TaskItemDto and then converted to ITaskItem instances below.
             string? rawTaskItems = (string?)_hostObject!.GetType().InvokeMember(
                 "QueryAllTaskItems",
                 BindingFlags.InvokeMethod,
@@ -99,5 +105,5 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
         }
     }
 
-    private readonly record struct TaskItemDto(string ItemSpec, Dictionary<string, string> Metadata);
+    private readonly record struct TaskItemDto(string? ItemSpec, Dictionary<string, string>? Metadata);
 }
