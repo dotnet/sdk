@@ -166,7 +166,7 @@
   </Target>
 
   <Target Name="GenerateBundledVersionsProps"
-          AfterTargets="AfterBuild">
+          AfterTargets="Build">
     <PropertyGroup>
       <BundledVersionsPropsFileName>Sdk.BundledVersions.props</BundledVersionsPropsFileName>
 
@@ -176,6 +176,9 @@
     <XmlPeek XmlInputPath="$(_NETCoreAppRefFrameworkListFile)" Query="/FileList/@TargetFrameworkVersion">
       <Output TaskParameter="Result" ItemName="NETCoreAppTargetFrameworkVersionFrameworkList" />
     </XmlPeek>
+
+    <Error Condition="'@(NETCoreAppTargetFrameworkVersionFrameworkList)' == ''"
+           Text="The NETCoreApp target framework version could not be read from '$(_NETCoreAppRefFrameworkListFile)'. Ensure the file exists and contains a FileList element with a TargetFrameworkVersion attribute." />
 
     <PropertyGroup>
       <_NETCoreAppTargetFrameworkVersion>%(NETCoreAppTargetFrameworkVersionFrameworkList.Identity)</_NETCoreAppTargetFrameworkVersion>
