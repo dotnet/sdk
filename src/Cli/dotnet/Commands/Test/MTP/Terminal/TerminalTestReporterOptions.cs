@@ -31,7 +31,8 @@ internal sealed class TerminalTestReporterOptions
     public int MinimumExpectedTests { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether we should write the progress periodically to screen. When ANSI is allowed we update the progress as often as we can. When ANSI is not allowed we update it every 3 seconds.
+    /// Gets a value indicating whether we should write the progress periodically to screen. When ANSI is allowed we update the progress as often as we can.
+    /// When ANSI is not allowed we never have progress.
     /// </summary>
     public bool ShowProgress { get; init; }
 
@@ -63,10 +64,4 @@ internal enum AnsiMode
     /// Enable ANSI escape codes, including cursor movement, when the capabilities of the console allow it.
     /// </summary>
     AnsiIfPossible,
-
-    /// <summary>
-    /// Force ANSI escape codes, regardless of the capabilities of the console.
-    /// This is needed only for testing.
-    /// </summary>
-    ForceAnsi,
 }
