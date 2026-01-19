@@ -14,8 +14,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UsingBrowserRuntimeWorkload)' == 'true' or '$(UsingEmscriptenWorkload)' == 'true'">
-    <CurrentEmsdkTarget Condition="'$(TreatPreviousAsCurrent)' == 'true'">9.0</CurrentEmsdkTarget>
-    <CurrentEmsdkTarget Condition="'$(TreatPreviousAsCurrent)' != 'true'">10.0</CurrentEmsdkTarget>
+    <CurrentEmsdkTarget Condition="'$(TreatPreviousAsCurrent)' == 'true'">10.0</CurrentEmsdkTarget>
+    <CurrentEmsdkTarget Condition="'$(TreatPreviousAsCurrent)' != 'true'">11.0</CurrentEmsdkTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BrowserWorkloadDisabled)' == 'true'">

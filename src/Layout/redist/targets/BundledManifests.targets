@@ -1,12 +1,12 @@
 <Project>
 
   <ItemGroup>
-    <BundledManifests Include="Microsoft.NET.Sdk.Android" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinAndroidWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <BundledManifests Include="Microsoft.NET.Sdk.iOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinIOSWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <BundledManifests Include="Microsoft.NET.Sdk.MacCatalyst" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacCatalystWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <BundledManifests Include="Microsoft.NET.Sdk.macOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacOSWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <BundledManifests Include="Microsoft.NET.Sdk.Maui" FeatureBand="$(MauiFeatureBand)" Version="$(MauiWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <BundledManifests Include="Microsoft.NET.Sdk.tvOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinTvOSWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <BundledManifests Include="Microsoft.NET.Sdk.Android" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinAndroidWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.iOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinIOSWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.MacCatalyst" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacCatalystWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.macOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacOSWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.Maui" FeatureBand="$(MauiFeatureBand)" Version="$(MauiWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.tvOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinTvOSWorkloadManifestVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,10 +16,12 @@
     <BuiltinManifests Include="microsoft.net.workload.emscripten.net7" />
     <BuiltinManifests Include="microsoft.net.workload.emscripten.net8" />
     <BuiltinManifests Include="microsoft.net.workload.emscripten.net9" />
+    <BuiltinManifests Include="microsoft.net.workload.emscripten.net10" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net6" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net7" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net8" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net9" />
+    <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net10" />
   </ItemGroup>
 
   <!-- Calculate NuGet package IDs for bundled manifests -->
@@ -117,7 +119,7 @@
     <!-- NOTE: When setting this to true, we need to also add logic to include it in the exe installation bundle, either via a new MSI or by including it in an existing one. -->
     <GenerateBaselineWorkloadSet>false</GenerateBaselineWorkloadSet>
   </PropertyGroup>
-  
+
   <Target Name="LayoutBaselineWorkloadSet" DependsOnTargets="LayoutManifests" Condition="'$(GenerateBaselineWorkloadSet)' == 'true'">
 
     <PropertyGroup>

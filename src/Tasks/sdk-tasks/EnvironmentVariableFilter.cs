@@ -27,7 +27,6 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             "DOTNET_CLI_TELEMETRY_SESSIONID",
             "DOTNET_CLI_UI_LANGUAGE",
-            "DOTNET_MULTILEVEL_LOOKUP",
             "DOTNET_RUNTIME_ID",
             "NUGET_PACKAGES"
         };
