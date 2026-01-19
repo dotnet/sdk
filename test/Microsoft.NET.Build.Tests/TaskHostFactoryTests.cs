@@ -9,7 +9,10 @@ namespace Microsoft.NET.Build.Tests
 
         [Theory]
         [InlineData("NET")]
+        // dotnet.exe doesn't support launching .Net Framework nodes
+#if NETFRAMEWORK
         [InlineData("CLR4")]
+#endif
         public void TaskHostFactory_Communication_Works(string runtime)
         {
             var testProject = new TestProject
