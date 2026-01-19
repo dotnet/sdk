@@ -43,7 +43,9 @@
     <Artifact Remove="@(MsiPackages)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(PublishingWorkloadMsiInternal)' == 'true'">
+  <!-- In 2xx+ bands, MSI packages are downloaded from the 1xx build rather than built locally.
+       Mark them as Internal to avoid republishing. -->
+  <ItemGroup Condition="'$(DownloadWorkloadMsis)' == 'true'">
     <Artifact Update="$(ArtifactsShippingPackagesDir)*.Msi.*.nupkg" Visibility="Internal" />
   </ItemGroup>
 

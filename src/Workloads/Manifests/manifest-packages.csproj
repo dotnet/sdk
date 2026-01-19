@@ -1,13 +1,18 @@
 <Project Sdk="Microsoft.Build.Traversal" DefaultTargets="Pack">
 
   <ItemGroup>
-    <ProjectReference Include="**\*.Manifest.proj" />
+    <ProjectReference Include="**\*.Manifest.proj" Condition="'$(SkipManifestBuild)' != 'true'" />
   </ItemGroup>
 
   <Target Name="LayoutBuiltinManifests">
+
+    <PropertyGroup>
+      <_VersionOverride Condition="'$(DotNet1xxWorkloadManifestVersion)' != ''">Version=$(DotNet1xxWorkloadManifestVersion)</_VersionOverride>
+    </PropertyGroup>
+
     <MSBuild Projects="@(ProjectReference)"
              Targets="LayoutManifest"
-             Properties="ManifestDirectory=$(ManifestDirectory)" />
+             Properties="ManifestDirectory=$(ManifestDirectory);$(_VersionOverride)" />
   </Target>
 
 </Project>
