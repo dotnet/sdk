@@ -159,7 +159,7 @@ internal sealed class WindowsPathHelper : IDisposable
                     var installLocation = archKey.GetValue("InstallLocation") as string;
                     if (!string.IsNullOrEmpty(installLocation) && Directory.Exists(installLocation))
                     {
-                        paths.Add(installLocation);
+                        paths.Add(installLocation.TrimEnd(Path.DirectorySeparatorChar));
                     }
                 }
             }
