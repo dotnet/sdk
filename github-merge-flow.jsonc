@@ -31,8 +31,14 @@
             "ExtraSwitches": "-QuietComments",
             "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Version.Details.props;eng/common/*"
         },
-        // Automate opening PRs to merge sdk repos from release/10.0.2xx to main
+        // Automate opening PRs to merge sdk repos from release/10.0.2xx to release/10.0.3xx
         "release/10.0.2xx":{
+            "MergeToBranch": "release/10.0.3xx",
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Version.Details.props;eng/common/*"
+        },
+        // Automate opening PRs to merge sdk repos from release/10.0.3xx to main
+        "release/10.0.3xx":{
             "MergeToBranch": "main",
             "ExtraSwitches": "-QuietComments",
             "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Version.Details.props;eng/common/*"
