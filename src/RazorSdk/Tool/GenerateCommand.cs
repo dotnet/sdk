@@ -430,13 +430,9 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             public string CssScope { get; }
         }
 
-        private class StaticTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
+        private sealed class StaticTagHelperFeature(TagHelperCollection tagHelpers) : RazorEngineFeatureBase, ITagHelperFeature
         {
-            public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
-
-            public IReadOnlyList<TagHelperDescriptor> GetDescriptors(CancellationToken cancellationToken) => TagHelpers;
-            public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => TagHelpers;
-            public TagHelperCollection GetTagHelpers(CancellationToken cancellationToken) => new TagHelperCollection(TagHelpers);
+            public TagHelperCollection GetTagHelpers(CancellationToken cancellationToken) => tagHelpers;
         }
     }
 }
