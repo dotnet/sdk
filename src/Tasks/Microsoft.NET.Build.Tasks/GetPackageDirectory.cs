@@ -11,6 +11,7 @@ namespace Microsoft.NET.Build.Tasks
 {
     //  Locates the root NuGet package directory for each of the input items that has PackageName and PackageVersion,
     //  but not PackageDirectory metadata specified
+    [MSBuildMultiThreadableTask]
     public class GetPackageDirectory : TaskBase
     {
         public ITaskItem[] Items { get; set; } = Array.Empty<ITaskItem>();

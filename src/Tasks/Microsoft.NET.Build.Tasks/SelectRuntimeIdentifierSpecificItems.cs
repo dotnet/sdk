@@ -11,6 +11,7 @@ namespace Microsoft.NET.Build.Tasks;
 /// This task filters an Item list by those items that contain a specific Metadata that is
 /// compatible with a specified Runtime Identifier, according to a given RuntimeIdentifierGraph file.
 /// </summary>
+[MSBuildMultiThreadableTask]
 public class SelectRuntimeIdentifierSpecificItems : TaskBase
 {
     /// <summary>
