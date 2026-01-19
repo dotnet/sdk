@@ -38,7 +38,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <UsingNETSdkDefaults>true</UsingNETSdkDefaults>
 
-    <CustomBeforeDirectoryBuildProps>$(CustomBeforeDirectoryBuildProps);$(MSBuildThisFileDirectory)Sdk.BundledVersions.props</CustomBeforeDirectoryBuildProps>
+    <!-- Import bundled version information that needs to be availble before the Common.props / D.B.props import
+         in order for users to be able to reference. -->
+    <Import Project="$(MSBuildThisFileDirectory)Sdk.BundledVersions.props" />
+
     <CustomAfterDirectoryBuildProps>$(CustomAfterDirectoryBuildProps);$(MSBuildThisFileDirectory)UseArtifactsOutputPath.props</CustomAfterDirectoryBuildProps>
   </PropertyGroup>
 
