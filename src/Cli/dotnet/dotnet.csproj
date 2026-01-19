@@ -101,6 +101,11 @@
     <PropertyGroup>
       <DestinationPath>$([System.IO.Path]::Combine($(TestHostDotNetRoot), "sdk", $(Version)))</DestinationPath>
     </PropertyGroup>
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DestinationPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+    <ItemGroup>
+      <_CopyToRedistFastPathFile Include="$(TargetPath)" />
+      <_CopyToRedistFastPathFile Include="$(TargetDir)Microsoft.DotNet.ProjectTools.dll" />
+      <_CopyToRedistFastPathFile Include="$(TargetDir)Microsoft.DotNet.Cli.Utils.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_CopyToRedistFastPathFile)" DestinationFolder="$(DestinationPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
   </Target>
 </Project>
