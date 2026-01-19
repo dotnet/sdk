@@ -38,12 +38,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <UsingNETSdkDefaults>true</UsingNETSdkDefaults>
 
-    <!-- Import bundled version information that needs to be availble before the Common.props / D.B.props import
-         in order for users to be able to reference. -->
-    <Import Project="$(MSBuildThisFileDirectory)Sdk.BundledVersions.props" />
-
     <CustomAfterDirectoryBuildProps>$(CustomAfterDirectoryBuildProps);$(MSBuildThisFileDirectory)UseArtifactsOutputPath.props</CustomAfterDirectoryBuildProps>
   </PropertyGroup>
+
+  <!-- Import bundled version information that needs to be availble before the Common.props / D.B.props import
+       in order for users to be able to reference. -->
+  <Import Project="$(MSBuildThisFileDirectory)Sdk.BundledVersions.props" />
 
   <PropertyGroup Condition="'$(MSBuildProjectFullPath)' == '$(ProjectToOverrideProjectExtensionsPath)'">
     <MSBuildProjectExtensionsPath>$(ProjectExtensionsPathForSpecifiedProject)</MSBuildProjectExtensionsPath>
