@@ -84,11 +84,11 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
             TaskItem taskItem = new(dto.ItemSpec ?? string.Empty);
             if (dto.Metadata is not null)
             {
-                // Only set the custom metadata we care about
                 if (dto.Metadata.TryGetValue(UserMetaDataName, out string? userName))
                 {
                     taskItem.SetMetadata(UserMetaDataName, userName);
                 }
+
                 if (dto.Metadata.TryGetValue(PasswordMetaDataName, out string? password))
                 {
                     taskItem.SetMetadata(PasswordMetaDataName, password);
