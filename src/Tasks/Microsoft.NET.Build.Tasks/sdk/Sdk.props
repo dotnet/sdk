@@ -38,6 +38,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <UsingNETSdkDefaults>true</UsingNETSdkDefaults>
 
+    <CustomBeforeDirectoryBuildProps>$(CustomBeforeDirectoryBuildProps);$(MSBuildThisFileDirectory)Sdk.BundledVersions.props</CustomBeforeDirectoryBuildProps>
     <CustomAfterDirectoryBuildProps>$(CustomAfterDirectoryBuildProps);$(MSBuildThisFileDirectory)UseArtifactsOutputPath.props</CustomAfterDirectoryBuildProps>
   </PropertyGroup>
 

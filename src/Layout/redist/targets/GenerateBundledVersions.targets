@@ -145,7 +145,6 @@
       <_AspNet31TargetingPackVersion>3.1.10</_AspNet31TargetingPackVersion>
 
       <!-- Use only major and minor in target framework version -->
-      <_NETCoreAppTargetFrameworkVersion>$(_NETCoreAppPackageVersion.Split('.')[0]).$(_NETCoreAppPackageVersion.Split('.')[1])</_NETCoreAppTargetFrameworkVersion>
       <_NETStandardTargetFrameworkVersion>$(_NETStandardLibraryPackageVersion.Split('.')[0]).$(_NETStandardLibraryPackageVersion.Split('.')[1])</_NETStandardTargetFrameworkVersion>
 
       <_NETCoreSdkBeingBuiltIsPreview Condition=" '$(DotNetFinalVersionKind)' != 'release' ">true</_NETCoreSdkBeingBuiltIsPreview>
@@ -594,9 +593,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PrunePackageDataRoot Condition="'%24(PrunePackageDataRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(MSBuildThisFileDirectory)'))PrunePackageData</PrunePackageDataRoot>
 
     <_NetFrameworkHostedCompilersVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</_NetFrameworkHostedCompilersVersion>
-    <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
-    <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
-    <BundledNETCoreAppTargetFramework>net$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFramework>
     <BundledNETCoreAppPackageVersion>$(_NETCoreAppPackageVersion)</BundledNETCoreAppPackageVersion>
     <BundledNETStandardTargetFrameworkVersion>$(_NETStandardTargetFrameworkVersion)</BundledNETStandardTargetFrameworkVersion>
     <BundledNETStandardPackageVersion>$(_NETStandardLibraryPackageVersion)</BundledNETStandardPackageVersion>

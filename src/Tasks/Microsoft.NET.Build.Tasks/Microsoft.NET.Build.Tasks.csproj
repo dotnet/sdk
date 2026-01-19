@@ -130,6 +130,11 @@
     <Folder Include="FrameworkPackages\" />
   </ItemGroup>
 
+  <!-- To calculate the _NETCoreAppTargetFrameworkVersion property. -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+    <PackageDownload Include="Microsoft.NETCore.App.Ref" Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
+  </ItemGroup>
+
   <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">
     <PropertyGroup>
       <_Stage0SdksFolder>$(DOTNET_INSTALL_DIR)\sdk\$(NETCoreSdkVersion)\Sdks</_Stage0SdksFolder>
@@ -158,6 +163,52 @@
     <ItemGroup>
       <Content Include="$(PackageLayoutOutputPath)**\*" PackagePath="\" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateBundledVersionsProps"
+          AfterTargets="AfterBuild">
+    <PropertyGroup>
+      <BundledVersionsPropsFileName>Sdk.BundledVersions.props</BundledVersionsPropsFileName>
+
+      <_NETCoreAppRefFrameworkListFile>$(NuGetPackageRoot)microsoft.netcore.app.ref\$(MicrosoftNETCoreAppRefPackageVersion)\data\FrameworkList.xml</_NETCoreAppRefFrameworkListFile>
+    </PropertyGroup>
+
+    <XmlPeek XmlInputPath="$(_NETCoreAppRefFrameworkListFile)" Query="/FileList/@TargetFrameworkVersion">
+      <Output TaskParameter="Result" ItemName="NETCoreAppTargetFrameworkVersionFrameworkList" />
+    </XmlPeek>
+
+    <PropertyGroup>
+      <_NETCoreAppTargetFrameworkVersion>%(NETCoreAppTargetFrameworkVersionFrameworkList.Identity)</_NETCoreAppTargetFrameworkVersion>
+
+      <BundledVersionsPropsContent>
+<![CDATA[
+<!--
+***********************************************************************************************
+$(BundledVersionsPropsFileName)
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project>
+
+  <PropertyGroup>
+    <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
+    <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
+    <BundledNETCoreAppTargetFramework>net$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFramework>
+  </PropertyGroup>
+
+</Project>
+]]>
+      </BundledVersionsPropsContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(PackageLayoutOutputPath)Sdk\$(BundledVersionsPropsFileName)"
+                      Lines="$(BundledVersionsPropsContent)"
+                      Overwrite="true" />
   </Target>
 
   <Target Name="GetTargetPath" />
