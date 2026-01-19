@@ -76,6 +76,30 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
             """;
 
+        private const string NonPortableRid = "fedora.42-x64";
+
+        private static readonly string NonPortableRuntimeGraph = $$"""
+            {
+                "runtimes": {
+                    "base": {
+                        "#import": []
+                    },
+                    "any": {
+                        "#import": ["base"]
+                    },
+                    "linux": {
+                        "#import": ["any"]
+                    },
+                    "linux-x64": {
+                        "#import": ["linux"]
+                    },
+                    "{{NonPortableRid}}": {
+                        "#import": ["linux-x64"]
+                    }
+                }
+            }
+            """;
+
         // Shared known framework references
         private readonly MockTaskItem _validWindowsSDKKnownFrameworkReference = CreateKnownFrameworkReference(
             "Microsoft.Windows.SDK.NET.Ref", "net5.0-windows10.0.18362", "10.0.18362.1-preview", 
@@ -491,6 +515,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ["TargetFramework"] = "net10.0",
                 ["ILCompilerPackNamePattern"] = "runtime.**RID**.Microsoft.DotNet.ILCompiler",
                 ["ILCompilerPackVersion"] = "10.0.0-rc.2.25457.102",
+                ["ILCompilerPortableRuntimeIdentifiers"] = "osx-x64;osx-arm64;win-x64;linux-x64",
                 ["ILCompilerRuntimeIdentifiers"] = "osx-x64;osx-arm64;win-x64;linux-x64"
             });
 
@@ -765,6 +790,53 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 task.PackagesToDownload.Should().Contain(p => p.ItemSpec == $"Microsoft.NETCore.App.Runtime.{rid}",
                     $"Should include runtime pack for supported RID: {rid}");
             }
+        }
+
+        [Theory]
+        [InlineData(null, "linux-x64")]
+        [InlineData("linux-x64", "linux-x64")]
+        [InlineData(NonPortableRid, NonPortableRid)]
+        public void It_selects_correct_ILCompiler_based_on_RuntimeIdentifier(string? runtimeIdentifier, string expectedILCompilerRid)
+        {
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.1",
+                "Microsoft.NETCore.App.Runtime.**RID**",
+                "linux-x64;" + NonPortableRid);
+
+            var ilCompilerPack = new MockTaskItem("Microsoft.DotNet.ILCompiler", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["ILCompilerPackNamePattern"] = "runtime.**RID**.Microsoft.DotNet.ILCompiler",
+                ["ILCompilerPackVersion"] = "10.0.1",
+                ["ILCompilerPortableRuntimeIdentifiers"] = "linux-x64",
+                ["ILCompilerRuntimeIdentifiers"] = "linux-x64;" + NonPortableRid
+            });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "10.0",
+                EnableRuntimePackDownload = true,
+                PublishAot = true,
+                NETCoreSdkRuntimeIdentifier = NonPortableRid,
+                NETCoreSdkPortableRuntimeIdentifier = "linux-x64",
+                RuntimeIdentifier = runtimeIdentifier,
+                RuntimeGraphPath = CreateRuntimeGraphFile(NonPortableRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreAppRef },
+                KnownILCompilerPacks = new[] { ilCompilerPack }
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue("Task should succeed");
+
+            // Validate that the expected ILCompiler pack is used
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec.Contains("Microsoft.DotNet.ILCompiler"),
+                "Should include ILCompiler pack when PublishAot is true");
+
+            var ilCompilerPackage = task.PackagesToDownload.FirstOrDefault(p => p.ItemSpec.Contains("Microsoft.DotNet.ILCompiler"));
+            ilCompilerPackage.Should().NotBeNull();
+            ilCompilerPackage!.ItemSpec.Should().Contain(expectedILCompilerRid,
+                $"Should use {expectedILCompilerRid} ILCompiler pack");
         }
     }
 }
