@@ -588,5 +588,20 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void DotnetTest_MTPChildProcessHangTestProject_ShouldNotHang(string configuration)
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("MTPChildProcessHangTest", Guid.NewGuid().ToString())
+                .WithSource();
+
+            var result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+
+            result.ExitCode.Should().Be(8);
+        }
     }
 }
