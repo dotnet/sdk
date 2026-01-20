@@ -1716,6 +1716,11 @@ The default is to publish a framework-dependent application.</target>
         <target state="new">Enable diagnostic output.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SDKSchemaCommandDefinition">
+        <source>Display the command schema as JSON.</source>
+        <target state="new">Display the command schema as JSON.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SdkAppFullName">
         <source>.NET SDK Command</source>
         <target state="new">.NET SDK Command</target>

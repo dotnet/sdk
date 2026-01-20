@@ -4,43 +4,19 @@
 #nullable disable
 
 using System.CommandLine;
-using System.CommandLine.Completions;
 using System.CommandLine.Invocation;
+using System.CommandLine.StaticCompletions;
 using System.Reflection;
-using Microsoft.DotNet.Cli.Commands.Build;
-using Microsoft.DotNet.Cli.Commands.BuildServer;
-using Microsoft.DotNet.Cli.Commands.Clean;
-using Microsoft.DotNet.Cli.Commands.Dnx;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Format;
 using Microsoft.DotNet.Cli.Commands.Fsi;
-using Microsoft.DotNet.Cli.Commands.Help;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
-using Microsoft.DotNet.Cli.Commands.Hidden.Complete;
-using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
-using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
-using Microsoft.DotNet.Cli.Commands.Hidden.Parse;
-using Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
-using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Commands.NuGet;
-using Microsoft.DotNet.Cli.Commands.Pack;
-using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.Commands.Package.Add;
-using Microsoft.DotNet.Cli.Commands.Project;
-using Microsoft.DotNet.Cli.Commands.Publish;
-using Microsoft.DotNet.Cli.Commands.Reference;
-using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Commands.Run.Api;
-using Microsoft.DotNet.Cli.Commands.Sdk;
-using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Commands.Test;
-using Microsoft.DotNet.Cli.Commands.Tool;
-using Microsoft.DotNet.Cli.Commands.Tool.Store;
 using Microsoft.DotNet.Cli.Commands.VSTest;
-using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Help;
@@ -54,81 +30,10 @@ namespace Microsoft.DotNet.Cli;
 
 public static class Parser
 {
-    public static readonly Command InstallSuccessCommand = InternalReportInstallSuccessCommandParser.GetCommand();
-
-    // Subcommands
-    public static readonly Command[] Subcommands =
-    [
-        AddCommandParser.GetCommand(),
-        BuildCommandParser.GetCommand(),
-        BuildServerCommandParser.GetCommand(),
-        CleanCommandParser.GetCommand(),
-        DnxCommandParser.GetCommand(),
-        FormatCommandParser.GetCommand(),
-        CompleteCommandParser.GetCommand(),
-        FsiCommandParser.GetCommand(),
-        ListCommandParser.GetCommand(),
-        MSBuildCommandParser.GetCommand(),
-        NewCommandParser.CreateCommand(),
-        NuGetCommandParser.GetCommand(),
-        PackCommandParser.GetCommand(),
-        PackageCommandParser.GetCommand(),
-        ParseCommandParser.GetCommand(),
-        ProjectCommandParser.GetCommand(),
-        PublishCommandParser.GetCommand(),
-        ReferenceCommandParser.GetCommand(),
-        RemoveCommandParser.GetCommand(),
-        RestoreCommandParser.GetCommand(),
-        RunCommandParser.GetCommand(),
-        RunApiCommandParser.GetCommand(),
-        SolutionCommandParser.GetCommand(),
-        StoreCommandParser.GetCommand(),
-        TestCommandParser.GetCommand(),
-        ToolCommandParser.GetCommand(),
-        VSTestCommandParser.GetCommand(),
-        HelpCommandParser.GetCommand(),
-        SdkCommandParser.GetCommand(),
-        InstallSuccessCommand,
-        WorkloadCommandParser.GetCommand(),
-        new System.CommandLine.StaticCompletions.CompletionsCommand()
-    ];
-
-    public static readonly Option<bool> DiagOption = CommonOptions.CreateDiagnosticsOption(recursive: false);
-
-    public static readonly Option<bool> VersionOption = new("--version")
+    private static DotNetCommandDefinition CreateCommand()
     {
-        Arity = ArgumentArity.Zero
-    };
+        var rootCommand = new DotNetCommandDefinition();
 
-    public static readonly Option<bool> InfoOption = new("--info")
-    {
-        Arity = ArgumentArity.Zero
-    };
-
-    public static readonly Option<bool> ListSdksOption = new("--list-sdks")
-    {
-        Arity = ArgumentArity.Zero
-    };
-
-    public static readonly Option<bool> ListRuntimesOption = new("--list-runtimes")
-    {
-        Arity = ArgumentArity.Zero
-    };
-
-    public static readonly Option<bool> CliSchemaOption = new("--cli-schema")
-    {
-        Description = CliStrings.SDKSchemaCommandDefinition,
-        Arity = ArgumentArity.Zero,
-        Recursive = true,
-        Hidden = true,
-        Action = new PrintCliSchemaAction()
-    };
-
-    // Argument
-    public static readonly Argument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
-
-    private static RootCommand ConfigureCommandLine(RootCommand rootCommand)
-    {
         for (int i = rootCommand.Options.Count - 1; i >= 0; i--)
         {
             Option option = rootCommand.Options[i];
@@ -148,29 +53,16 @@ public static class Parser
             }
         }
 
-        // Add subcommands
-        foreach (var subcommand in Subcommands)
-        {
-            rootCommand.Subcommands.Add(subcommand);
-        }
+        rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction();
 
-        // Add options
-        rootCommand.Options.Add(DiagOption);
-        rootCommand.Options.Add(VersionOption);
-        rootCommand.Options.Add(InfoOption);
-        rootCommand.Options.Add(ListSdksOption);
-        rootCommand.Options.Add(ListRuntimesOption);
-        rootCommand.Options.Add(CliSchemaOption);
-
-        // Add argument
-        rootCommand.Arguments.Add(DotnetSubCommand);
+        rootCommand.Subcommands.Add(new CompletionsCommand());
 
         // NuGet implements several commands in its own repo. Add them to the .NET SDK via the provided API.
         NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.CreateInteractiveOption(acceptArgument: true));
 
         rootCommand.SetAction(parseResult =>
         {
-            if (parseResult.GetValue(DiagOption) && parseResult.Tokens.Count == 1)
+            if (parseResult.GetValue(rootCommand.DiagOption) && parseResult.Tokens.Count == 1)
             {
                 // when user does not specify any args except of diagnostics ("dotnet -d"), we do nothing
                 // as Program.ProcessArgs already enabled the diagnostic output
@@ -188,7 +80,7 @@ public static class Parser
     }
 
     public static Command GetBuiltInCommand(string commandName) =>
-        Subcommands.FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
+        RootCommand.Subcommands.FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Implements token-per-line response file handling for the CLI. We use this instead of the built-in S.CL handling
@@ -239,10 +131,7 @@ public static class Parser
     /// and <see cref="InvocationConfiguration"/> to ensure that the command line parser
     /// and invoker are configured correctly.
     /// </remarks>
-    public static RootCommand RootCommand { get; } = ConfigureCommandLine(new()
-    {
-        Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
-    });
+    internal static DotNetCommandDefinition RootCommand { get; } = CreateCommand();
 
     /// <summary>
     /// You probably want to use <see cref="Parse(string[])"/> instead of this method.
@@ -256,7 +145,6 @@ public static class Parser
     public static Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default) => parseResult.InvokeAsync(InvocationConfiguration, cancellationToken);
     public static int Invoke(string[] args) => Invoke(Parse(args));
     public static Task<int> InvokeAsync(string[] args, CancellationToken cancellationToken = default) => InvokeAsync(Parse(args), cancellationToken);
-
 
     internal static int ExceptionHandler(Exception exception, ParseResult parseResult)
     {

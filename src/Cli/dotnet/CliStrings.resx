@@ -635,9 +635,6 @@ setx PATH "%PATH%;{0}"
     <value>Cannot specify --version when the package argument already contains a version.</value>
     <comment>{Locked="--version"}</comment>
   </data>
-  <data name="SDKSchemaCommandDefinition" xml:space="preserve">
-    <value>Display the command schema as JSON.</value>
-  </data>
   <data name="PackCmd_OneNuspecAllowed" xml:space="preserve">
     <value>Only one .nuspec file can be packed at a time</value>
   </data>

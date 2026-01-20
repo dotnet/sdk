@@ -25,7 +25,8 @@ public class CompletionsCommand : Command
     /// <param name="supportedShells">The shells to support in the completions command. If null, <see cref="DefaultShells"/> will be used.</param>
     /// <param name="commandName">The name of the completions command. Default is "completions". This value is what users will type to activate the command on the command line.</param>
     /// <param name="commandDescription">The description of the completions command. Default is "Commands for generating and registering completions for supported shells".</param>
-    public CompletionsCommand(IEnumerable<IShellProvider>? supportedShells = null, string commandName = "completions", string? commandDescription = null) : this((supportedShells ?? DefaultShells).ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase), commandName, commandDescription ?? Strings.CompletionsCommand_Description)
+    public CompletionsCommand(IEnumerable<IShellProvider>? supportedShells = null, string commandName = "completions", string? commandDescription = null)
+        : this((supportedShells ?? DefaultShells).ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase), commandName, commandDescription ?? Strings.CompletionsCommand_Description)
     { }
 
     private CompletionsCommand(Dictionary<string, IShellProvider> shellMap, string commandName, string commandDescription) : base(commandName, commandDescription)
