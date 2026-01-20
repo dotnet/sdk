@@ -9,7 +9,6 @@ namespace Microsoft.NET.Build.Tasks;
 /// <summary>
 /// This task uses the given RID graph in a given SDK to pick the best match from among a set of supported RIDs for the current RID
 /// </summary>
-[MSBuildMultiThreadableTask]
 public sealed class PickBestRid : TaskBase
 {
     /// <summary>
