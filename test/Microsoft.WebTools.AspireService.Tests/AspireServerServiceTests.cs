@@ -3,27 +3,31 @@
 
 #nullable disable
 
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
-using Microsoft.WebTools.AspireServer.Helpers;
-using Microsoft.WebTools.AspireServer.Models;
 
-namespace Microsoft.WebTools.AspireServer.UnitTests;
+namespace Aspire.Tools.Service.UnitTests;
 
-public class AspireServerServiceTests
+public class AspireServerServiceTests(ITestOutputHelper output)
 {
     private const string Project1Path = @"c:\test\Projects\project1.csproj";
     private const int ProcessId = 34213;
     private const string DcpId = "myid";
-    private const string SpecificProfileName = "SpecificProfile";
     private const string VersionedSessionUrl = $"{RunSessionRequest.Url}?{RunSessionRequest.VersionQuery}={RunSessionRequest.OurProtocolVersion}";
 
     private static readonly TestRunSessionRequest Project1SessionRequest = new TestRunSessionRequest(Project1Path, debugging: false, launchProfile: null, disableLaunchProfile: false)
     {
         args = new List<string> { "--project1Arg" },
+        env = new List<EnvVar> { new EnvVar { Name = "var1", Value = "value1" } }
+    };
+
+    private static readonly TestRunSessionRequest Project2SessionRequest = new TestRunSessionRequest(Project1Path, debugging: false, launchProfile: null, disableLaunchProfile: false)
+    {
+        args = null,
         env = new List<EnvVar> { new EnvVar { Name = "var1", Value = "value1" } }
     };
 
@@ -37,15 +41,15 @@ public class AspireServerServiceTests
         // Start listening
         TaskCompletionSource<bool> connected = new();
 
-        TaskCompletionSource<SessionChangeNotification> notificationTask = new();
-        _ = listenForSessionUpdatesAsync(server, connected, (sn) =>
+        TaskCompletionSource<ProcessRestartedNotification> notificationTask = new();
+        _ = ListenForSessionUpdatesAsync(server, connected, (sn) =>
         {
-            notificationTask.SetResult((SessionChangeNotification)sn);
+            notificationTask.SetResult((ProcessRestartedNotification)sn);
         });
 
         await connected.Task;
 
-        await server.SessionStartedAsync(DcpId,"1", ProcessId, CancellationToken.None);
+        await server.NotifySessionStartedAsync(DcpId,"1", ProcessId, CancellationToken.None);
 
         var result = await notificationTask.Task;
 
@@ -66,21 +70,21 @@ public class AspireServerServiceTests
 
         // Start listening
         TaskCompletionSource<bool> connected = new();
-        TaskCompletionSource<SessionChangeNotification> sessionEndNotificationTask = new();
-        _ = listenForSessionUpdatesAsync(server, connected, (sn) =>
+        TaskCompletionSource<SessionTerminatedNotification> sessionEndNotificationTask = new();
+        _ = ListenForSessionUpdatesAsync(server, connected, (sn) =>
         {
             if (sn.NotificationType == NotificationType.SessionTerminated)
             {
-                sessionEndNotificationTask.SetResult((SessionChangeNotification)sn);
+                sessionEndNotificationTask.SetResult((SessionTerminatedNotification)sn);
             }
         });
 
         await connected.Task;
 
-        await server.SessionEndedAsync(DcpId, "1", ProcessId, 130, CancellationToken.None);
+        await server.NotifySessionEndedAsync(DcpId, "1", ProcessId, 130, CancellationToken.None);
 
         var result = await sessionEndNotificationTask.Task;
-        Assert.Equal(ProcessId, result.PID);
+        Assert.Equal(ProcessId, result.Pid);
         Assert.Equal("1", result.SessionId);
         Assert.Equal(130, result.ExitCode);
 
@@ -98,12 +102,36 @@ public class AspireServerServiceTests
              .ImplementStartProjectAsync(DcpId, "2");
 
         var server = await GetAspireServer(mocks);
-        var tokens = await server.GetServerVariablesAsync();
+        var tokens = server.GetServerVariables();
 
         using HttpClient client = GetHttpClient(tokens);
 
         HttpResponseMessage response;
         response = await client.PutAsJsonAsync(VersionedSessionUrl, Project1SessionRequest);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal($"{client.BaseAddress}run_session/2", response.Headers.Location.AbsoluteUri);
+
+        await server.DisposeAsync();
+
+        mocks.Verify();
+    }
+
+    [Fact]
+    public async Task LaunchProject_WithNullArgs_PassesThroughNullArgs()
+    {
+        var mocks = new Mocks();
+
+        mocks.GetOrCreate<IAspireServerEventsMock>()
+             .ImplementStartProjectAsync(DcpId, "2", requireNullArguments: true);
+
+        var server = await GetAspireServer(mocks);
+        var tokens = server.GetServerVariables();
+
+        using HttpClient client = GetHttpClient(tokens);
+
+        HttpResponseMessage response;
+        response = await client.PutAsJsonAsync(VersionedSessionUrl, Project2SessionRequest);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.Equal($"{client.BaseAddress}run_session/2", response.Headers.Location.AbsoluteUri);
@@ -124,7 +152,7 @@ public class AspireServerServiceTests
              .ImplementStopSessionAsync(DcpId, "3", exists: false);
 
         var server = await GetAspireServer(mocks);
-        var tokens = await server.GetServerVariablesAsync();
+        var tokens = server.GetServerVariables();
 
         using HttpClient client = GetHttpClient(tokens);
 
@@ -154,7 +182,7 @@ public class AspireServerServiceTests
 
         var server = await GetAspireServer(mocks);
 
-        var tokens = await server.GetServerVariablesAsync();
+        var tokens = server.GetServerVariables();
         using HttpClient client = GetHttpClient(tokens);
 
         var response = await client.PutAsJsonAsync(VersionedSessionUrl, Project1SessionRequest);
@@ -174,7 +202,7 @@ public class AspireServerServiceTests
 
         var server = await GetAspireServer(mocks);
 
-        var tokens = await server.GetServerVariablesAsync();
+        var tokens = server.GetServerVariables();
         using HttpClient client = GetHttpClient(tokens);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "badToken");
 
@@ -193,7 +221,7 @@ public class AspireServerServiceTests
 
         var server = await GetAspireServer(mocks);
 
-        var tokens = await server.GetServerVariablesAsync();
+        var tokens = server.GetServerVariables();
         using HttpClient client = GetHttpClient(tokens);
 
         var response = await client.PutAsJsonAsync("/run_badurl", Project1SessionRequest);
@@ -212,7 +240,7 @@ public class AspireServerServiceTests
 
         var aspireServer = await GetAspireServer(mocks);
 
-        var tokens = await aspireServer.GetServerVariablesAsync();
+        var tokens = aspireServer.GetServerVariables();
         using HttpClient client = GetHttpClient(tokens);
 
         var response = await client.PostAsJsonAsync(VersionedSessionUrl, Project1SessionRequest);
@@ -231,7 +259,7 @@ public class AspireServerServiceTests
 
         var server = await GetAspireServer(mocks);
 
-        var tokens = await server.GetServerVariablesAsync();
+        var tokens = server.GetServerVariables();
         using HttpClient client = GetHttpClient(tokens);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "badToken");
 
@@ -250,7 +278,7 @@ public class AspireServerServiceTests
 
         var server = await GetAspireServer(mocks);
 
-        var tokens = await server.GetServerVariablesAsync();
+        var tokens = server.GetServerVariables();
         using HttpClient client = GetHttpClient(tokens);
 
         var response = await client.GetAsync(InfoResponse.Url);
@@ -268,7 +296,7 @@ public class AspireServerServiceTests
 
         var server = await GetAspireServer(mocks);
 
-        var tokens = await server.GetServerVariablesAsync();
+        var tokens = server.GetServerVariables();
         using HttpClient client = GetHttpClient(tokens);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "badToken");
 
@@ -290,15 +318,15 @@ public class AspireServerServiceTests
 
         // Start listening
         TaskCompletionSource<bool> connected = new();
-        TaskCompletionSource<SessionLogsNotification> notificationTask = new();
-        _ = listenForSessionUpdatesAsync(aspireServer, connected, (sn) =>
+        TaskCompletionSource<ServiceLogsNotification> notificationTask = new();
+        _ = ListenForSessionUpdatesAsync(aspireServer, connected, (sn) =>
         {
-            notificationTask.SetResult((SessionLogsNotification)sn);
+            notificationTask.SetResult((ServiceLogsNotification)sn);
         });
 
         await connected.Task;
 
-        await aspireServer.SendLogMessageAsync(DcpId, "1", isStdErr: false, "My Message", CancellationToken.None);
+        await aspireServer.NotifyLogMessageAsync(DcpId, "1", isStdErr: false, "My Message", CancellationToken.None);
 
         var result = await notificationTask.Task;
 
@@ -317,29 +345,29 @@ public class AspireServerServiceTests
         var server = await GetAspireServer(mocks, waitForListening: false);
 
         // First time should create a key
-        var envVars = await server.GetServerConnectionEnvironmentAsync(CancellationToken.None);
+        var envVars = server.GetServerConnectionEnvironment();
 
         Assert.Equal(3, envVars.Count);
         var token = envVars[1];
         Assert.NotNull(token.Value);
 
         // Should return the same
-        envVars = await server.GetServerConnectionEnvironmentAsync(CancellationToken.None);
+        envVars = server.GetServerConnectionEnvironment();
         Assert.Equal(token, envVars[1]);
 
         mocks.Verify();
     }
 
-    private async Task listenForSessionUpdatesAsync(AspireServerService aspireServer, TaskCompletionSource<bool> connected, Action<SessionNotificationBase> callback)
+    private async Task ListenForSessionUpdatesAsync(AspireServerService aspireServer, TaskCompletionSource<bool> connected, Action<SessionNotification> callback)
     {
-        var tokens = await aspireServer.GetServerVariablesAsync();
+        var tokens = aspireServer.GetServerVariables();
         using var httpClient = GetHttpClient(tokens);
 
         using var ws = new ClientWebSocket();
         ws.Options.SetRequestHeader("Authorization", $"Bearer {tokens.bearerToken}");
         try
         {
-            await ws.ConnectAsync(new Uri($"wss://{tokens.serverAddress}{RunSessionRequest.Url}{SessionNotificationBase.Url}"), httpClient, CancellationToken.None);
+            await ws.ConnectAsync(new Uri($"wss://{tokens.serverAddress}{RunSessionRequest.Url}{SessionNotification.Url}"), httpClient, CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -352,53 +380,37 @@ public class AspireServerServiceTests
 
         while (ws.State == WebSocketState.Open)
         {
+            string message;
             try
             {
-                var (message, messageType) = await GetSocketMsgAsync(ws);
+                (message, var messageType) = await GetSocketMsgAsync(ws);
 
                 if (messageType == WebSocketMessageType.Close)
                 {
                     await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
                     return;
                 }
-                else
-                {
-                    var notificationBase = JsonSerializer.Deserialize<SessionNotificationBase>(message, AspireServerService.JsonSerializerOptions);
-                    if (notificationBase is null)
-                    {
-                        Console.WriteLine("Unexpected null SessionNotificationBase message");
-                    }
-                    else if (notificationBase.NotificationType == NotificationType.ProcessRestarted || notificationBase.NotificationType == NotificationType.SessionTerminated)
-                    {
-                        var scn = JsonSerializer.Deserialize<SessionChangeNotification>(message, AspireServerService.JsonSerializerOptions);
-                        if (scn is null)
-                        {
-                            Assert.Fail("Unexpected null SessionChangeNotification message");
-                        }
-                        else
-                        {
-                            callback.Invoke(scn);
-                        }
-                    }
-                    else if (notificationBase.NotificationType == NotificationType.ServiceLogs)
-                    {
-                        var sessionLogs = JsonSerializer.Deserialize<SessionLogsNotification>(message, AspireServerService.JsonSerializerOptions);
-                        if (sessionLogs is null)
-                        {
-                            Assert.Fail("Unexpected null SessionLogsNotification message");
-                        }
-                        else
-                        {
-                            callback.Invoke(sessionLogs);
-                        }
-                    }
-                }
             }
             catch
             {
                 // This is expected if the connection is closed
+                Assert.Equal(WebSocketState.Closed, ws.State);
                 return;
             }
+
+            var notification = JsonSerializer.Deserialize<SessionNotification>(message, AspireServerService.JsonSerializerOptions);
+            Assert.NotNull(notification);
+
+            SessionNotification value = notification.NotificationType switch
+            {
+                NotificationType.ProcessRestarted => JsonSerializer.Deserialize<ProcessRestartedNotification>(message, AspireServerService.JsonSerializerOptions),
+                NotificationType.SessionTerminated => JsonSerializer.Deserialize<SessionTerminatedNotification>(message, AspireServerService.JsonSerializerOptions),
+                NotificationType.ServiceLogs => JsonSerializer.Deserialize<ServiceLogsNotification>(message, AspireServerService.JsonSerializerOptions),
+                _ => throw new InvalidOperationException($"Unexpected {notification.NotificationType}")
+            };
+
+            Assert.NotNull(value);
+            callback.Invoke(value);
         }
     }
 
@@ -440,9 +452,14 @@ public class AspireServerServiceTests
 
     private async Task<AspireServerService> GetAspireServer(Mocks mocks, bool waitForListening = true)
     {
-        var ase = mocks.GetOrCreate<IAspireServerEventsMock>();
+        var serverEvents = mocks.GetOrCreate<IAspireServerEventsMock>();
 
-        var aspireServer = new AspireServerService(ase.Object, displayName: "Test server", Console.WriteLine);
+        var aspireServer = new AspireServerService(serverEvents.Object, displayName: "Test server",
+            line =>
+            {
+                output.WriteLine(line);
+                Debug.WriteLine(line);
+            });
 
         if (waitForListening)
         {
@@ -517,16 +534,16 @@ internal static class AspireServerServiceExtensions
 {
     public static async Task WaitForListeningAsync(this AspireServerService aspireServer)
     {
-        string serverAddress = (await aspireServer.GetServerVariablesAsync()).serverAddress;
+        string serverAddress = aspireServer.GetServerVariables().serverAddress;
 
         // We need to wait on the port being available
         await Helpers.CanConnectToPortAsync(new Uri($"http://{serverAddress}"), 5000, CancellationToken.None);
 
     }
 
-    public static async Task<(string serverAddress, string bearerToken, string certToken)> GetServerVariablesAsync(this AspireServerService aspireServer)
+    public static (string serverAddress, string bearerToken, string certToken) GetServerVariables(this AspireServerService aspireServer)
     {
-        var enVars = await aspireServer.GetServerConnectionEnvironmentAsync(CancellationToken.None);
+        var enVars = aspireServer.GetServerConnectionEnvironment();
         return (enVars[0].Value, enVars[1].Value, enVars[2].Value);
     }
 }
