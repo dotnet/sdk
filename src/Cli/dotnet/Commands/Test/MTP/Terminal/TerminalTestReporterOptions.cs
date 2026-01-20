@@ -41,13 +41,32 @@ internal sealed class TerminalTestReporterOptions
     public bool ShowActiveTests { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether we should use ANSI escape codes or disable them. When true the capabilities of the console are autodetected.
+    /// Gets a value indicating the ANSI mode.
     /// </summary>
-    public bool UseAnsi { get; init; }
+    public AnsiMode AnsiMode { get; init; }
+}
+
+internal enum AnsiMode
+{
+    /// <summary>
+    /// Disable ANSI escape codes.
+    /// </summary>
+    NoAnsi,
 
     /// <summary>
-    /// Gets a value indicating whether we are running in compatible CI, and should use simplified ANSI renderer, which colors output, but does not move cursor.
-    /// Setting <see cref="UseAnsi"/> to false will disable this option.
+    /// Use simplified ANSI renderer, which colors output, but does not move cursor.
+    /// This is used in compatible CI environments.
     /// </summary>
-    public bool UseCIAnsi { get; init; }
+    SimpleAnsi,
+
+    /// <summary>
+    /// Enable ANSI escape codes, including cursor movement, when the capabilities of the console allow it.
+    /// </summary>
+    AnsiIfPossible,
+
+    /// <summary>
+    /// Force ANSI escape codes, regardless of the capabilities of the console.
+    /// This is needed only for testing.
+    /// </summary>
+    ForceAnsi,
 }
