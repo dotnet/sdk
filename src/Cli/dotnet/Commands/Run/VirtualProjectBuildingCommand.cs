@@ -506,10 +506,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             var entryPointFileDirectory = Path.GetDirectoryName(Builder.EntryPointFileFullPath);
             Debug.Assert(entryPointFileDirectory != null);
 
-            var mapping = CSharpDirective.IncludeOrExclude.ParseMapping(
-                projectInstance.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
-                Builder.EntryPointSourceFile,
-                ErrorReporters.IgnoringReporter);
+            var mapping = Builder.GetItemMapping(projectInstance, ErrorReporters.IgnoringReporter);
             foreach (var entry in mapping)
             {
                 if (string.Equals(entry.ItemType, "None", StringComparison.OrdinalIgnoreCase))

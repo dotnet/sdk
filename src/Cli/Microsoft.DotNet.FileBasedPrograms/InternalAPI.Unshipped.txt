@@ -1,3 +1,7 @@
+const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableExcludeDirective = "ExperimentalFileBasedProgramEnableExcludeDirective" -> string!
+const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective = "ExperimentalFileBasedProgramEnableIncludeDirective" -> string!
+const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping = "ExperimentalFileBasedProgramEnableItemMapping" -> string!
+const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives = "ExperimentalFileBasedProgramEnableTransitiveDirectives" -> string!
 const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.MappingPropertyName = "FileBasedProgramsItemMapping" -> string!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.CSharpDirective(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
@@ -123,6 +127,8 @@ override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.ToString() 
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Shebang.ToString() -> string!
 override Microsoft.DotNet.FileBasedPrograms.SourceFile.GetHashCode() -> int
+static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.DefaultMapping.get -> System.Collections.Immutable.ImmutableArray<(string! Extension, string! ItemType)>
+static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.DefaultMappingString.get -> string!
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.ParseMapping(string! value, Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError) -> System.Collections.Immutable.ImmutableArray<(string! Extension, string! ItemType)>
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package?

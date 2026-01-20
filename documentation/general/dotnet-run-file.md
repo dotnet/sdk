@@ -206,23 +206,20 @@ The directives are processed as follows:
   An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.
 
 - Each `#:include` is injected as `<{1} Include="{0}" />` in an `<ItemGroup>`
-  where `{0}` is the directive's value and `{1}` is determined by its extension:
-
-  - `.cs` &rarr; `Compile`
-  - `.resx` &rarr; `EmbeddedResource`
-  - `.json` or `.razor` &rarr; `Content`
-  - Other extensions currently result in an error. We might support more in the future
-    or introduce an extensibility system where users can specify the mapping.
+  where `{0}` is the directive's value and `{1}` is determined by its extension.
+  The mapping can be customized by setting the MSBuild property `FileBasedProgramsItemMapping`
+  which is by default set to `.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content`.
+  (The mapping customization is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableItemMapping=true`.)
 
   It is an error if the value is empty.
 
   Relative paths are resolved relative to the file containing the directive.
 
-  This is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableIncludeDirective=true`.
+  This directive is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableIncludeDirective=true`.
 
 - Each `#:exclude` is injected similarly to `#:include` but with `Remove="{0}"` instead of `Include="{0}"`.
 
-  This is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableExcludeDirective=true`.
+  This directive is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableExcludeDirective=true`.
 
 - Other directive kinds result in an error, reserving them for future use.
 

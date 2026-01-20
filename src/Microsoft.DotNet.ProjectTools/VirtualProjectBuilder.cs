@@ -17,10 +17,6 @@ namespace Microsoft.DotNet.ProjectTools;
 
 internal sealed class VirtualProjectBuilder
 {
-    internal const string ExperimentalFileBasedProgramEnableIncludeDirective = nameof(ExperimentalFileBasedProgramEnableIncludeDirective);
-    internal const string ExperimentalFileBasedProgramEnableExcludeDirective = nameof(ExperimentalFileBasedProgramEnableExcludeDirective);
-    internal const string ExperimentalFileBasedProgramEnableTransitiveDirectives = nameof(ExperimentalFileBasedProgramEnableTransitiveDirectives);
-
     private readonly IEnumerable<(string name, string value)> _defaultProperties;
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
@@ -185,10 +181,7 @@ internal sealed class VirtualProjectBuilder
 
                     if (mapping.IsDefault)
                     {
-                        mapping = CSharpDirective.IncludeOrExclude.ParseMapping(
-                            project.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
-                            EntryPointSourceFile,
-                            reportError);
+                        mapping = GetItemMapping(project, reportError);
                     }
 
                     includeOrExcludeDirective = includeOrExcludeDirective.WithDeterminedItemType(reportError, mapping);
@@ -203,6 +196,16 @@ internal sealed class VirtualProjectBuilder
         }
 
         return builder.DrainToImmutable();
+    }
+
+    public ImmutableArray<(string Extension, string ItemType)> GetItemMapping(ProjectInstance project, ErrorReporter reportError)
+    {
+        return MSBuildUtilities.ConvertStringToBool(project.GetPropertyValue(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping))
+            ? CSharpDirective.IncludeOrExclude.ParseMapping(
+                project.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
+                EntryPointSourceFile,
+                reportError)
+            : CSharpDirective.IncludeOrExclude.DefaultMapping;
     }
 
     public void CreateProjectInstance(
@@ -373,18 +376,18 @@ internal sealed class VirtualProjectBuilder
             {
                 if (includeOrExcludeDirective.Kind == CSharpDirective.IncludeOrExcludeKind.Include)
                 {
-                    CheckFlagEnabled(ref includeEnabled, ExperimentalFileBasedProgramEnableIncludeDirective, directive);
+                    CheckFlagEnabled(ref includeEnabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective, directive);
                 }
                 else
                 {
                     Debug.Assert(includeOrExcludeDirective.Kind == CSharpDirective.IncludeOrExcludeKind.Exclude);
-                    CheckFlagEnabled(ref excludeEnabled, ExperimentalFileBasedProgramEnableExcludeDirective, directive);
+                    CheckFlagEnabled(ref excludeEnabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableExcludeDirective, directive);
                 }
             }
 
             if (directive.Info.SourceFile.Path != EntryPointSourceFile.Path)
             {
-                CheckFlagEnabled(ref transitiveEnabled, ExperimentalFileBasedProgramEnableTransitiveDirectives, directive);
+                CheckFlagEnabled(ref transitiveEnabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives, directive);
             }
         }
 
@@ -454,7 +457,7 @@ internal sealed class VirtualProjectBuilder
                     <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                     <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                     <FileBasedProgram>true</FileBasedProgram>
-                    <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
+                    <FileBasedProgramsItemMapping>{CSharpDirective.IncludeOrExclude.DefaultMappingString}</FileBasedProgramsItemMapping>
                     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                     <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                 """);

@@ -155,10 +155,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             string entryPointFileDirectory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
 
             // Include only items we know are files.
-            var mapping = CSharpDirective.IncludeOrExclude.ParseMapping(
-                projectInstance.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
-                builder.EntryPointSourceFile,
-                VirtualProjectBuildingCommand.ThrowingReporter);
+            var mapping = builder.GetItemMapping(projectInstance, VirtualProjectBuildingCommand.ThrowingReporter);
 
             var items = mapping.SelectMany(e => projectInstance.GetItems(e.ItemType));
 

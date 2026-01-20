@@ -587,7 +587,28 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// </summary>
     public sealed class IncludeOrExclude(in ParseInfo info) : Named(info)
     {
+        public const string ExperimentalFileBasedProgramEnableIncludeDirective = nameof(ExperimentalFileBasedProgramEnableIncludeDirective);
+        public const string ExperimentalFileBasedProgramEnableExcludeDirective = nameof(ExperimentalFileBasedProgramEnableExcludeDirective);
+        public const string ExperimentalFileBasedProgramEnableTransitiveDirectives = nameof(ExperimentalFileBasedProgramEnableTransitiveDirectives);
+        public const string ExperimentalFileBasedProgramEnableItemMapping = nameof(ExperimentalFileBasedProgramEnableItemMapping);
+
         public const string MappingPropertyName = "FileBasedProgramsItemMapping";
+
+        public static string DefaultMappingString => ".cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content";
+
+        public static ImmutableArray<(string Extension, string ItemType)> DefaultMapping
+        {
+            get
+            {
+                if (field.IsDefault)
+                {
+                    field = ParseMapping(DefaultMappingString, sourceFile: default, ErrorReporters.IgnoringReporter);
+                    Debug.Assert(!field.IsDefault);
+                }
+
+                return field;
+            }
+        }
 
         /// <summary>
         /// Preserved across <see cref="WithName"/> calls, i.e.,

@@ -1,12 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Runtime.Versioning;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
@@ -17,7 +19,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 
 public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 {
-    internal static readonly string IncludeExcludeDefaultKnownExtensions = ".cs, .resx, .json, .razor";
+    internal static string s_includeExcludeDefaultKnownExtensions
+        => field ??= string.Join(", ", CSharpDirective.IncludeOrExclude.DefaultMapping.Select(static e => e.Extension));
 
     private static readonly string s_program = /* lang=C#-Test */ """
         if (args.Length > 0)
@@ -3434,39 +3437,39 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 1, Resources.ExperimentalFeatureDisabled, VirtualProjectBuilder.ExperimentalFileBasedProgramEnableIncludeDirective)}
+                {DirectiveError(programPath, 1, Resources.ExperimentalFeatureDisabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective)}
 
                 {CliCommandStrings.RunCommandException}
                 """);
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
-            .WithEnvironmentVariable(VirtualProjectBuilder.ExperimentalFileBasedProgramEnableIncludeDirective, "true")
+            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective, "true")
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(utilPath, 1, Resources.ExperimentalFeatureDisabled, VirtualProjectBuilder.ExperimentalFileBasedProgramEnableExcludeDirective)}
+                {DirectiveError(utilPath, 1, Resources.ExperimentalFeatureDisabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableExcludeDirective)}
 
                 {CliCommandStrings.RunCommandException}
                 """);
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
-            .WithEnvironmentVariable(VirtualProjectBuilder.ExperimentalFileBasedProgramEnableIncludeDirective, "true")
-            .WithEnvironmentVariable(VirtualProjectBuilder.ExperimentalFileBasedProgramEnableExcludeDirective, "true")
+            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective, "true")
+            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableExcludeDirective, "true")
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(utilPath, 1, Resources.ExperimentalFeatureDisabled, VirtualProjectBuilder.ExperimentalFileBasedProgramEnableTransitiveDirectives)}
+                {DirectiveError(utilPath, 1, Resources.ExperimentalFeatureDisabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives)}
 
                 {CliCommandStrings.RunCommandException}
                 """);
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
-            .WithEnvironmentVariable(VirtualProjectBuilder.ExperimentalFileBasedProgramEnableIncludeDirective, "true")
-            .WithEnvironmentVariable(VirtualProjectBuilder.ExperimentalFileBasedProgramEnableExcludeDirective, "true")
-            .WithEnvironmentVariable(VirtualProjectBuilder.ExperimentalFileBasedProgramEnableTransitiveDirectives, "true")
+            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective, "true")
+            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableExcludeDirective, "true")
+            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives, "true")
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Hello, String from Util");
@@ -3481,6 +3484,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
               <PropertyGroup>
                 <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
+                <ExperimentalFileBasedProgramEnableItemMapping>true</ExperimentalFileBasedProgramEnableItemMapping>
               </PropertyGroup>
             </Project>
             """);
@@ -3540,6 +3544,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
               <PropertyGroup>
                 <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
+                <ExperimentalFileBasedProgramEnableItemMapping>true</ExperimentalFileBasedProgramEnableItemMapping>
               </PropertyGroup>
             </Project>
             """);
@@ -3615,6 +3620,69 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                 {CliCommandStrings.RunCommandException}
                 """);
+    }
+
+    /// <summary>
+    /// Demonstrates that consumers (e.g., IDE) can use the API to create an approximate virtual project without needing to know the full mapping.
+    /// </summary>
+    [Fact]
+    public void IncludeDirective_CustomMapping_Api()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = """
+            #:include B.cs
+            #:include C.proto
+            Console.WriteLine();
+            """;
+
+        var builder = new VirtualProjectBuilder(
+            entryPointFileFullPath: programPath,
+            targetFrameworkVersion: VirtualProjectBuildingCommand.TargetFrameworkVersion,
+            sourceText: SourceText.From(code, Encoding.UTF8));
+
+        var directives = FileLevelDirectiveHelpers.FindDirectives(
+            builder.EntryPointSourceFile,
+            reportAllErrors: true,
+            VirtualProjectBuildingCommand.ThrowingReporter);
+
+        ImmutableArray<(string Extension, string ItemType)> mapping = [(".cs", "Compile")];
+
+        var evaluatedBuilder = ImmutableArray.CreateBuilder<CSharpDirective>(directives.Length);
+
+        foreach (var directive in directives)
+        {
+            if (directive is CSharpDirective.IncludeOrExclude includeOrExcludeDirective)
+            {
+                var evaluated = includeOrExcludeDirective.WithDeterminedItemType(ErrorReporters.IgnoringReporter, mapping);
+                evaluatedBuilder.Add(evaluated);
+            }
+            else
+            {
+                evaluatedBuilder.Add(directive);
+            }
+        }
+
+        var evaluatedDirectives = evaluatedBuilder.DrainToImmutable();
+
+        var projectWriter = new System.IO.StringWriter();
+        VirtualProjectBuilder.WriteProjectFile(
+            projectWriter,
+            evaluatedDirectives,
+            VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion),
+            isVirtualProject: true,
+            entryPointFilePath: programPath,
+            artifactsPath: builder.ArtifactsPath);
+
+        var actualProject = projectWriter.ToString();
+
+        Log.WriteLine(actualProject);
+
+        actualProject.Should().Contain("""<Compile Include="B.cs" />""");
+
+        actualProject.Should().NotContain(".proto");
     }
 
     [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
