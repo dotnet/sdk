@@ -17,22 +17,23 @@ namespace Microsoft.DotNet.Cli.Commands.Package;
 
 internal sealed class PackageCommandParser
 {
-    private static readonly Command Command = ConfigureCommand(new PackageCommandDefinition());
+    private static readonly PackageCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command ConfigureCommand(PackageCommandDefinition def)
+    private static PackageCommandDefinition CreateCommand()
     {
-        def.SetAction((parseResult) => parseResult.HandleMissingCommand());
+        var command = new PackageCommandDefinition();
+        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
-        def.RemoveCommand.SetAction(parseResult => new PackageRemoveCommand(parseResult).Execute());
-        def.ListCommand.SetAction(parseResult => new PackageListCommand(parseResult).Execute());
-        ConfigureAddCommand(def.AddCommand);
+        command.RemoveCommand.SetAction(parseResult => new PackageRemoveCommand(parseResult).Execute());
+        command.ListCommand.SetAction(parseResult => new PackageListCommand(parseResult).Execute());
+        ConfigureAddCommand(command.AddCommand);
 
-        def.SearchCommand.SetAction(parseResult =>
+        command.SearchCommand.SetAction(parseResult =>
         {
             var command = new PackageSearchCommand(parseResult);
             int exitCode = command.Execute();
@@ -45,7 +46,7 @@ internal sealed class PackageCommandParser
             return exitCode == 0 ? 0 : 1;
         });
 
-        return def;
+        return command;
     }
 
     internal static void ConfigureAddCommand(PackageAddCommandDefinitionBase def)
