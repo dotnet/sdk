@@ -1,0 +1,95 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.CodeAnalysis.NetAnalyzers</PackageId>
+    <Description>Microsoft recommended code quality rules and .NET API usage rules implemented as analyzers using the .NET Compiler Platform ("Roslyn").</Description>
+    <Summary>Microsoft.CodeAnalysis.NetAnalyzers</Summary>
+    <ReleaseNotes>Diagnostic analyzers for the Microsoft .NET Compiler Platform (Roslyn)</ReleaseNotes>
+    <PackageTags>Roslyn CodeAnalysis Compiler CSharp VB VisualBasic Diagnostic Analyzers Syntax Semantics</PackageTags>
+    <PackageReadmeFile>documentation\README.md</PackageReadmeFile>
+    <IsShippingPackage>true</IsShippingPackage>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+
+    <GeneratedRulesetsDir>$(BaseOutputPath)Rulesets</GeneratedRulesetsDir>
+    <GeneratedEditorconfigsDir>$(BaseOutputPath)Editorconfig</GeneratedEditorconfigsDir>
+    <GeneratedGlobalAnalyzerConfigsDir>$(BaseOutputPath)GlobalAnalyzerConfigs</GeneratedGlobalAnalyzerConfigsDir>
+    <PackagePropsTargetsFileDir>$(BaseOutputPath)Build</PackagePropsTargetsFileDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AnalyzerNupkgAssembly Include="Microsoft.CodeAnalysis.NetAnalyzers.dll" />
+    <AnalyzerNupkgAssembly Include="Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll" />
+    <AnalyzerNupkgAssembly Include="Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="assets\ThirdPartyNotices.txt" Pack="true" PackagePath="/" />
+
+    <None Include="README.md" Pack="true" PackagePath="/documentation" />
+    <None Include="..\docs\Analyzer Configuration.md" Pack="true" PackagePath="/documentation" />
+    <None Include="$(PackageId).md" Pack="true" PackagePath="/documentation" />
+    <None Include="$(PackageId).sarif" Pack="true" PackagePath="/documentation" />
+
+    <None Include="assets\install.ps1" Pack="true" PackagePath="/tools" />
+    <None Include="assets\uninstall.ps1" Pack="true" PackagePath="/tools" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(GeneratedRulesetsDir)/**/*" Pack="true" PackagePath="/rulesets" Visible="false" />
+    <None Include="$(GeneratedEditorconfigsDir)/**/*" Pack="true" PackagePath="/editorconfig" Visible="false" />
+    <None Include="$(GeneratedGlobalAnalyzerConfigsDir)/**/*" Pack="true" PackagePath="/buildTransitive/config" Visible="false" />
+    <None Include="$(PackagePropsTargetsFileDir)/**/*" Pack="true" PackagePath="/buildTransitive" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Microsoft.CodeAnalysis.NetAnalyzers\Microsoft.CodeAnalysis.NetAnalyzers.csproj" PackAsAnalyzer="true" />
+    <ProjectReference Include="Microsoft.CodeAnalysis.CSharp.NetAnalyzers\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj" PackAsAnalyzer="true" />
+    <ProjectReference Include="Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.vbproj" PackAsAnalyzer="true" />
+
+    <!-- build tool -->
+    <ProjectReference Include="$(NetAnalyzersRootDir)tools\GenerateDocumentationAndConfigFiles\GenerateDocumentationAndConfigFiles.csproj" OutputItemType="_GenerateDocumentationAndConfigFilesPath" />
+  </ItemGroup>
+
+  <!-- Needs to run as part of the build (not Pack) as redist.csproj relies on the produced content. -->
+  <Target Name="GenerateAnalyzerConfigAndDocumentationFiles"
+          BeforeTargets="AfterBuild"
+          DependsOnTargets="ResolveProjectReferences">
+    <PropertyGroup>
+      <EscapeDirectorySuffix Condition="'$(OS)' == 'Windows_NT'">\</EscapeDirectorySuffix>
+
+      <ReleaseTrackingOptOut Condition="'$(ReleaseTrackingOptOut)' == ''">false</ReleaseTrackingOptOut>
+      <ContainsPortedFxCopRules>true</ContainsPortedFxCopRules>
+      <GenerateAnalyzerRulesMissingDocumentationFile>true</GenerateAnalyzerRulesMissingDocumentationFile>
+
+      <AnalyzerDocumentationFileDir>$(NetAnalyzersRootDir)src</AnalyzerDocumentationFileDir>
+      <AnalyzerSarifFileDir>$(NetAnalyzersRootDir)src</AnalyzerSarifFileDir>
+      <AnalyzerConfigurationFileDir>$(NetAnalyzersRootDir)docs</AnalyzerConfigurationFileDir>
+
+      <PackagePropsFileName>$(PackageId).props</PackagePropsFileName>
+      <PackageTargetsFileName>$(PackageId).targets</PackageTargetsFileName>
+      <DisableNETAnalyzersPackagePropsFileName>DisableNETAnalyzersForNuGetPackage.props</DisableNETAnalyzersPackagePropsFileName>
+      <AnalyzerDocumentationFileName>$(PackageId).md</AnalyzerDocumentationFileName>
+      <AnalyzerSarifFileName>$(PackageId).sarif</AnalyzerSarifFileName>
+      <AnalyzerConfigurationFileName>Analyzer Configuration.md</AnalyzerConfigurationFileName>
+
+      <!-- Only run validate only in CI builds. Running them in local builds will prevent refreshing auto-generated files. -->
+      <ValidateOnlyFlag>false</ValidateOnlyFlag>
+      <ValidateOnlyFlag Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</ValidateOnlyFlag>
+
+      <!-- Validate offline in .NET product build mode. -->
+      <_ValidateOffline Condition="'$(DotNetBuild)' == 'true'">true</_ValidateOffline>
+
+      <!-- AuthenticationException: The remote certificate is invalid because of errors in the certificate chain: RevocationStatusUnknown -->
+      <_ValidateOffline Condition="'$(_ValidateOffline)' == ''">true</_ValidateOffline>
+
+      <_GenerateDocumentationAndConfigFilesPath>%(_GenerateDocumentationAndConfigFilesPath.Identity)</_GenerateDocumentationAndConfigFilesPath>
+    </PropertyGroup>
+
+    <Exec Command='"$(DotNetTool)" "$(_GenerateDocumentationAndConfigFilesPath)" "-validateOnly:$(ValidateOnlyFlag)" "$(GeneratedRulesetsDir)" "$(GeneratedEditorconfigsDir)" "$(GeneratedGlobalAnalyzerConfigsDir)" "$(ArtifactsBinDir)$(EscapeDirectorySuffix)" "$(Configuration)" "$(TargetFramework)" "@(AnalyzerNupkgAssembly)" "$(PackagePropsTargetsFileDir)" "$(PackagePropsFileName)" "$(PackagePropsTargetsFileDir)" "$(PackageTargetsFileName)" "$(DisableNETAnalyzersPackagePropsFileName)" "$(AnalyzerDocumentationFileDir)" "$(AnalyzerDocumentationFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerSarifFileName)" "$(VersionPrefix)" $(PackageId) $(ContainsPortedFxCopRules) $(GenerateAnalyzerRulesMissingDocumentationFile) $(ReleaseTrackingOptOut) $(_ValidateOffline)' />
+  </Target>
+
+</Project>

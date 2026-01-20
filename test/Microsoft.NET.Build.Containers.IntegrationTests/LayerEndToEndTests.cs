@@ -99,6 +99,26 @@ public sealed class LayerEndToEndTests : IDisposable
         Assert.True(allEntries.TryGetValue("app/wwwroot/.well-known/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing app/wwwroot/.well-known/TestFile.txt file entry");
     }
 
+    [Fact]
+    public void UserIdIsAppliedToFiles()
+    {
+        using TransientTestFolder folder = new();
+
+        string testFilePath = Path.Join(folder.Path, "TestFile.txt");
+        string testString = $"Test content for {nameof(SingleFileInFolder)}";
+        File.WriteAllText(testFilePath, testString);
+
+        var userId = 1234;
+        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2, userId: userId);
+        var allEntries = LoadAllTarEntries(l.BackingFile);
+        Assert.True(allEntries.TryGetValue("app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing app directory entry");
+        Assert.True(allEntries.TryGetValue("app/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing TestFile.txt file entry");
+        Assert.All(allEntries.Values, entry =>
+        {
+            Assert.True(entry.Uid == userId, $"Expected UID {userId} for entry {entry.Name}, but got {entry.Uid}");
+        });
+    }
+
     private static void VerifyDescriptorInfo(Layer l)
     {
         Assert.Equal(l.Descriptor.Size, new FileInfo(l.BackingFile).Length);
