@@ -601,7 +601,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
 
-            result.ExitCode.Should().Be(8);
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
     }
 }
