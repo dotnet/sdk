@@ -592,6 +592,25 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
+        public void RunWithSolutionFilterAsFirstUnmatchedToken_ShouldWork(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
+
+            string testSolutionFilterPath = "TestProjectsWithShared.slnf";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(testSolutionFilterPath,
+                                    TestCommandDefinition.ConfigurationOption.Name, configuration);
+
+            result.StdOut.Should().Contain("TestProject.dll");
+            result.StdOut.Should().NotContain("OtherTestProject.dll");
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
         public void RunWithSolutionAndPlatformConfiguration_ShouldRespectPlatform(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithPlatforms", Guid.NewGuid().ToString()).WithSource();
