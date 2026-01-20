@@ -19,7 +19,6 @@ namespace Microsoft.DotNet.Build.Tasks
     /// the version of .NET hasn't been released yet, so we want to use the later preview version.  The preview
     /// versions should all be on the same NuGet feeds anyway.
     /// </summary>
-    [MSBuildMultiThreadableTask]
     public sealed class OverrideAndCreateBundledNETCoreAppPackageVersion : Task
     {
         [Required] public string Stage0BundledVersionsPath { get; set; }

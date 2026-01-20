@@ -7,7 +7,6 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
-    [MSBuildMultiThreadableTask]
     public class GetRuntimePackRids : Task
     {
         [Required]

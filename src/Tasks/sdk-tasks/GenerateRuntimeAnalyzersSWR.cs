@@ -5,7 +5,6 @@
 
 namespace Microsoft.DotNet.Cli.Build
 {
-    [MSBuildMultiThreadableTask]
     public class GenerateRuntimeAnalyzersSWR : Task
     {
         [Required]
