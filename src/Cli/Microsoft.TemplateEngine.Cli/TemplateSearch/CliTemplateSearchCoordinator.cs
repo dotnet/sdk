@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
@@ -253,7 +254,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             // && !commandInput.RemainingParameters.Any())
             {
                 Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Error_NoTemplateName.Red().Bold());
-                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", FilterOptions.GetAllNames(SearchCommandDefinition.HasSupportedPackageFilterOption).Select(static optionName => $"'{optionName}'")));
+                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", FilterOptions.GetAllNames(NewSearchCommandDefinition.HasSupportedPackageFilterOption).Select(static optionName => $"'{optionName}'")));
                 Reporter.Error.WriteLine(LocalizableStrings.Generic_ExamplesHeader);
                 Reporter.Error.WriteCommand(
                     Example

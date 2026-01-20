@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;

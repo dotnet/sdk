@@ -3,9 +3,8 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using Microsoft.DotNet.Cli;
 
-namespace Microsoft.TemplateEngine.Cli;
+namespace Microsoft.DotNet.Cli.Commands.New;
 
 internal static class CommandDefinitionExtensions
 {

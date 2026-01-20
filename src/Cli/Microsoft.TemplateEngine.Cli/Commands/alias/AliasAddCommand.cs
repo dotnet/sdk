@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed class AliasAddCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, AliasCommandDefinitionBase definition)
-        : BaseCommand<AliasAddCommandArgs, AliasCommandDefinitionBase>(hostBuilder, definition)
+    internal sealed class AliasAddCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewAliasCommandDefinitionBase definition)
+        : BaseCommand<AliasAddCommandArgs, NewAliasCommandDefinitionBase>(hostBuilder, definition)
     {
         protected override Task<NewCommandStatus> ExecuteAsync(
             AliasAddCommandArgs args,

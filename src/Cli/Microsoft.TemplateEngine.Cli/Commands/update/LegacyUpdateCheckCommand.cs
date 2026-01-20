@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed class LegacyUpdateCheckCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, LegacyUpdateCheckCommandDefinition definition)
-        : BaseUpdateCommand<LegacyUpdateCheckCommandDefinition>(hostBuilder, definition)
+    internal sealed class LegacyUpdateCheckCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewUpdateCheckLegacyCommandDefinition definition)
+        : BaseUpdateCommand<NewUpdateCheckLegacyCommandDefinition>(hostBuilder, definition)
     {
         protected override Task<NewCommandStatus> ExecuteAsync(UpdateCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken)
         {

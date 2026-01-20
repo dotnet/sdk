@@ -3,7 +3,7 @@
 
 using System.CommandLine.Completions;
 using System.Reflection;
-using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Mocks;
 

@@ -2,14 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.TemplateSearch;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseSearchCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, SearchCommandDefinition definition)
-        : BaseCommand<SearchCommandArgs, SearchCommandDefinition>(hostBuilder, definition),
+    internal abstract class BaseSearchCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewSearchCommandDefinition definition)
+        : BaseCommand<SearchCommandArgs, NewSearchCommandDefinition>(hostBuilder, definition),
           IFilterableCommand,
           ITabularOutputCommand
     {

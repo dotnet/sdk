@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
-using Microsoft.TemplateEngine.Cli.Commands;
 
-namespace Microsoft.TemplateEngine.Cli;
+namespace Microsoft.DotNet.Cli.Commands.New;
 
 public sealed class FilterOptions
 {

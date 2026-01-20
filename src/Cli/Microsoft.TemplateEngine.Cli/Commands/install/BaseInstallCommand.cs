@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseInstallCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, InstallCommandDefinition definition)
-        : BaseCommand<InstallCommandArgs, InstallCommandDefinition>(hostBuilder, definition)
+    internal abstract class BaseInstallCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewInstallCommandDefinition definition)
+        : BaseCommand<InstallCommandArgs, NewInstallCommandDefinition>(hostBuilder, definition)
     {
         protected override Task<NewCommandStatus> ExecuteAsync(
             InstallCommandArgs args,

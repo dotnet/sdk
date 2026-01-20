@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -14,8 +15,8 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed partial class InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, InstantiateCommandDefinition definition)
-        : BaseCommand<InstantiateCommandArgs, InstantiateCommandDefinition>(hostBuilder, definition), ICustomHelp
+    internal sealed partial class InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewCreateCommandDefinition definition)
+        : BaseCommand<InstantiateCommandArgs, NewCreateCommandDefinition>(hostBuilder, definition), ICustomHelp
     {
         internal static Task<NewCommandStatus> ExecuteAsync(
             NewCommandArgs newCommandArgs,

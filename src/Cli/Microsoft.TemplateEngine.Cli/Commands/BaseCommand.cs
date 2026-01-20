@@ -7,6 +7,7 @@ using System.CommandLine.Invocation;
 using System.Reflection;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
@@ -27,24 +28,24 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         protected static readonly Dictionary<string, Func<Func<ParseResult, ITemplateEngineHost>, Command, Command>> SubcommandFactories = new()
         {
-            { AliasCommandDefinition.Name, (hostBuilder, definition) => new AliasCommand(hostBuilder, (AliasCommandDefinition)definition) },
-            { AliasAddCommandDefinition.Name, (hostBuilder, definition) => new AliasAddCommand(hostBuilder, (AliasAddCommandDefinition)definition) },
-            { AliasAddCommandDefinition.LegacyName, (hostBuilder, definition) => new AliasAddCommand(hostBuilder, (AliasAddCommandDefinition)definition) },
-            { AliasShowCommandDefinition.Name, (hostBuilder, definition) => new AliasShowCommand(hostBuilder, (AliasShowCommandDefinition)definition) },
-            { AliasShowCommandDefinition.LegacyName, (hostBuilder, definition) => new AliasShowCommand(hostBuilder, (AliasShowCommandDefinition)definition) },
-            { InstantiateCommandDefinition.Name, (hostBuilder, definition) => new InstantiateCommand(hostBuilder, (InstantiateCommandDefinition)definition) },
-            { DetailsCommandDefinition.Name, (hostBuilder, definition) => new DetailsCommand(hostBuilder, (DetailsCommandDefinition)definition) },
-            { InstallCommandDefinition.Name, (hostBuilder, definition) => new InstallCommand(hostBuilder, (InstallCommandDefinition)definition) },
-            { InstallCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyInstallCommand(hostBuilder, (InstallCommandDefinition)definition) },
-            { UninstallCommandDefinition.Name, (hostBuilder, definition) => new UninstallCommand(hostBuilder, (UninstallCommandDefinition)definition) },
-            { UninstallCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyUninstallCommand(hostBuilder, (UninstallCommandDefinition)definition) },
-            { ListCommandDefinition.Name, (hostBuilder, definition) => new ListCommand(hostBuilder, (ListCommandDefinition)definition) },
-            { ListCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyListCommand(hostBuilder, (ListCommandDefinition)definition) },
-            { SearchCommandDefinition.Name, (hostBuilder, definition) => new SearchCommand(hostBuilder, (SearchCommandDefinition)definition) },
-            { SearchCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacySearchCommand(hostBuilder, (SearchCommandDefinition)definition) },
-            { UpdateCommandDefinition.Name, (hostBuilder, definition) => new UpdateCommand(hostBuilder, (UpdateCommandDefinition)definition) },
-            { LegacyUpdateApplyCommandDefinition.Name, (hostBuilder, definition) => new LegacyUpdateApplyCommand(hostBuilder, (LegacyUpdateApplyCommandDefinition)definition) },
-            { LegacyUpdateCheckCommandDefinition.Name, (hostBuilder, definition) => new LegacyUpdateCheckCommand(hostBuilder, (LegacyUpdateCheckCommandDefinition)definition) },
+            { NewAliasCommandDefinition.Name, (hostBuilder, definition) => new AliasCommand(hostBuilder, (NewAliasCommandDefinition)definition) },
+            { NewAliasAddCommandDefinition.Name, (hostBuilder, definition) => new AliasAddCommand(hostBuilder, (NewAliasAddCommandDefinition)definition) },
+            { NewAliasAddCommandDefinition.LegacyName, (hostBuilder, definition) => new AliasAddCommand(hostBuilder, (NewAliasAddCommandDefinition)definition) },
+            { NewAliasShowCommandDefinition.Name, (hostBuilder, definition) => new AliasShowCommand(hostBuilder, (NewAliasShowCommandDefinition)definition) },
+            { NewAliasShowCommandDefinition.LegacyName, (hostBuilder, definition) => new AliasShowCommand(hostBuilder, (NewAliasShowCommandDefinition)definition) },
+            { NewCreateCommandDefinition.Name, (hostBuilder, definition) => new InstantiateCommand(hostBuilder, (NewCreateCommandDefinition)definition) },
+            { NewDetailsCommandDefinition.Name, (hostBuilder, definition) => new DetailsCommand(hostBuilder, (NewDetailsCommandDefinition)definition) },
+            { NewInstallCommandDefinition.Name, (hostBuilder, definition) => new InstallCommand(hostBuilder, (NewInstallCommandDefinition)definition) },
+            { NewInstallCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyInstallCommand(hostBuilder, (NewInstallCommandDefinition)definition) },
+            { NewUninstallCommandDefinition.Name, (hostBuilder, definition) => new UninstallCommand(hostBuilder, (NewUninstallCommandDefinition)definition) },
+            { NewUninstallCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyUninstallCommand(hostBuilder, (NewUninstallCommandDefinition)definition) },
+            { NewListCommandDefinition.Name, (hostBuilder, definition) => new ListCommand(hostBuilder, (NewListCommandDefinition)definition) },
+            { NewListCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacyListCommand(hostBuilder, (NewListCommandDefinition)definition) },
+            { NewSearchCommandDefinition.Name, (hostBuilder, definition) => new SearchCommand(hostBuilder, (NewSearchCommandDefinition)definition) },
+            { NewSearchCommandDefinition.LegacyName, (hostBuilder, definition) => new LegacySearchCommand(hostBuilder, (NewSearchCommandDefinition)definition) },
+            { NewUpdateCommandDefinition.Name, (hostBuilder, definition) => new UpdateCommand(hostBuilder, (NewUpdateCommandDefinition)definition) },
+            { NewUpdateApplyLegacyCommandDefinition.Name, (hostBuilder, definition) => new LegacyUpdateApplyCommand(hostBuilder, (NewUpdateApplyLegacyCommandDefinition)definition) },
+            { NewUpdateCheckLegacyCommandDefinition.Name, (hostBuilder, definition) => new LegacyUpdateCheckCommand(hostBuilder, (NewUpdateCheckLegacyCommandDefinition)definition) },
         };
 
         protected internal virtual IEnumerable<CompletionItem> GetCompletions(CompletionContext context, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager)

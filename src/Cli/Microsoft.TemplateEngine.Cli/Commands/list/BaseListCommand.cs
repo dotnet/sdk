@@ -2,18 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseListCommand : BaseCommand<ListCommandArgs, ListCommandDefinition>, IFilterableCommand, ITabularOutputCommand
+    internal abstract class BaseListCommand : BaseCommand<ListCommandArgs, NewListCommandDefinition>, IFilterableCommand, ITabularOutputCommand
     {
-        private readonly ListCommandDefinition _definition;
+        private readonly NewListCommandDefinition _definition;
 
         internal BaseListCommand(
             Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            ListCommandDefinition definition)
+            NewListCommandDefinition definition)
             : base(hostBuilder, definition)
         {
             _definition = definition;

@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Commands.New;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
