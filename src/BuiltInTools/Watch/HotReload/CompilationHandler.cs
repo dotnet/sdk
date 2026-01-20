@@ -713,14 +713,14 @@ namespace Microsoft.DotNet.Watch
             HashSet<ProjectInstance>? failedApplicationProjectInstances = null; 
             if (projectInstancesToRegenerate.Count > 0)
             {
-                var buildReporter = new BuildReporter(_context.BuildLogger, _context.Options, _context.EnvironmentOptions);
+                var buildManager = new BuildManager(_context.BuildLogger, _context.Options, _context.EnvironmentOptions);
 
                 // Note: MSBuild only allows one build at a time in a process.
                 foreach (var projectInstance in projectInstancesToRegenerate)
                 {
                     Logger.LogDebug("[{Project}] Regenerating scoped CSS bundle.", projectInstance.GetDisplayName());
 
-                    using var loggers = buildReporter.GetLoggers(projectInstance.FullPath, "ScopedCss");
+                    using var loggers = await buildManager.StartBuildAsync(projectInstance.FullPath, "ScopedCss", cancellationToken);
 
                     // Deep copy so that we don't pollute the project graph:
                     if (!projectInstance.DeepCopy().Build(s_targets, loggers))

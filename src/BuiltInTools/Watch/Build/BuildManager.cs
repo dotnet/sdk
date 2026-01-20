@@ -11,13 +11,21 @@ using IMSBuildLogger = Microsoft.Build.Framework.ILogger;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class BuildReporter(ILogger logger, GlobalOptions options, EnvironmentOptions environmentOptions)
+internal sealed class BuildManager(ILogger logger, GlobalOptions options, EnvironmentOptions environmentOptions)
 {
+    /// <summary>
+    /// Semaphore that ensures we only start one build build at a time per process, which is required by MSBuild.
+    /// </summary>
+    private static readonly SemaphoreSlim s_buildSemaphore = new(initialCount: 1);
+
     public ILogger Logger => logger;
     public EnvironmentOptions EnvironmentOptions => environmentOptions;
 
-    public Loggers GetLoggers(string projectPath, string operationName)
-        => new(logger, environmentOptions.GetBinLogPath(projectPath, operationName, options));
+    public async ValueTask<Loggers> StartBuildAsync(string projectPath, string operationName, CancellationToken cancellationToken)
+    {
+        await s_buildSemaphore.WaitAsync(cancellationToken);
+        return new(logger, environmentOptions.GetBinLogPath(projectPath, operationName, options));
+    }
 
     public void ReportWatchedFiles(Dictionary<string, FileItem> fileItems)
     {
@@ -52,6 +60,7 @@ internal sealed class BuildReporter(ILogger logger, GlobalOptions options, Envir
 
         public void Dispose()
         {
+            s_buildSemaphore.Release();
             _outputLogger.Clear();
         }
 

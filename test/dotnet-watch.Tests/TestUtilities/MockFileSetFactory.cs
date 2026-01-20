@@ -9,7 +9,7 @@ internal class MockFileSetFactory() : MSBuildFileSetFactory(
     rootProjectFile: "test.csproj",
     buildArguments: [],
     new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
-    new BuildReporter(NullLogger.Instance, new GlobalOptions(), TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet") is var options ? options : options))
+    new BuildManager(NullLogger.Instance, new GlobalOptions(), TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet") is var options ? options : options))
 {
     public Func<EvaluationResult?>? TryCreateImpl;
 

@@ -64,7 +64,7 @@ internal sealed class EvaluationResult(
     /// <summary>
     /// Loads project graph and performs design-time build.
     /// </summary>
-    public static EvaluationResult? TryCreate(
+    public static async ValueTask<EvaluationResult?> TryCreateAsync(
         ProjectGraphFactory factory,
         string rootProjectPath,
         ILogger logger,
@@ -73,7 +73,7 @@ internal sealed class EvaluationResult(
         bool restore,
         CancellationToken cancellationToken)
     {
-        var buildReporter = new BuildReporter(logger, options, environmentOptions);
+        var buildManager = new BuildManager(logger, options, environmentOptions);
 
         var projectGraph = factory.TryLoadProjectGraph(
             rootProjectPath,
@@ -90,7 +90,7 @@ internal sealed class EvaluationResult(
 
         if (restore)
         {
-            using (var loggers = buildReporter.GetLoggers(rootNode.ProjectInstance.FullPath, "Restore"))
+            using (var loggers = await buildManager.StartBuildAsync(rootNode.ProjectInstance.FullPath, "Restore", cancellationToken))
             {
                 if (!rootNode.ProjectInstance.Build([TargetNames.Restore], loggers))
                 {
@@ -127,7 +127,7 @@ internal sealed class EvaluationResult(
                 continue;
             }
 
-            using (var loggers = buildReporter.GetLoggers(projectInstance.FullPath, "DesignTimeBuild"))
+            using (var loggers = await buildManager.StartBuildAsync(projectInstance.FullPath, "DesignTimeBuild", cancellationToken))
             {
                 if (!projectInstance.Build(targets, loggers))
                 {
@@ -198,7 +198,7 @@ internal sealed class EvaluationResult(
             }
         }
 
-        buildReporter.ReportWatchedFiles(fileItems);
+        buildManager.ReportWatchedFiles(fileItems);
 
         return new EvaluationResult(projectGraph, restoredProjectInstances, fileItems, staticWebAssetManifests);
     }

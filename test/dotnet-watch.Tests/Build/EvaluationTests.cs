@@ -444,7 +444,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory, muxerPath: MuxerPath);
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
-            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
+            var buildReporter = new BuildManager(_logger, new GlobalOptions(), options);
 
             var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, buildReporter);
 
@@ -509,7 +509,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
-            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
+            var buildReporter = new BuildManager(_logger, new GlobalOptions(), options);
 
             var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], processRunner, buildReporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
@@ -548,7 +548,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir, muxerPath: MuxerPath) with { TestOutput = testDir };
                 var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
                 var buildArguments = targetFramework != null ? new[] { "/p:TargetFramework=" + targetFramework } : [];
-                var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
+                var buildReporter = new BuildManager(_logger, new GlobalOptions(), options);
                 var factory = new MSBuildFileSetFactory(rootProjectPath, buildArguments, processRunner, buildReporter);
                 var targetsResult = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
                 Assert.NotNull(targetsResult);
