@@ -162,5 +162,47 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 }
             });
         }
+
+        [Fact]
+        public void OutputPathWithSemicolonIsEscaped()
+        {
+            // Test that semicolons in the output path are properly escaped for MSBuild
+            var workingDirectory = TestPathUtilities.FormatAbsolutePath("t;e;s;t");
+            CommandDirectoryContext.PerformActionWithBasePath(workingDirectory, () =>
+            {
+                var msbuildPath = "<msbuildpath>";
+                var command = (RestoringCommand)BuildCommand.FromArgs(new[] { "-o", "dist" }, msbuildPath);
+                
+                var tokens = command.GetArgumentTokensToMSBuild();
+                
+                // The path should contain escaped semicolons (%3B) instead of raw semicolons
+                tokens.Should().Contain(t => t.StartsWith("--property:OutputPath=") && 
+                                            t.Contains("%3B") && 
+                                            !t.Contains(";") &&
+                                            t.EndsWith(Path.DirectorySeparatorChar.ToString()));
+            });
+        }
+
+        [Theory]
+        [InlineData("path;with;semicolons", "%3B")]
+        [InlineData("path%with%percent", "%25")]
+        [InlineData("path$with$dollar", "%24")]
+        [InlineData("path@with@at", "%40")]
+        public void OutputPathWithSpecialCharactersIsEscaped(string pathPart, string expectedEscapeSequence)
+        {
+            // Test that MSBuild special characters in the output path are properly escaped
+            var workingDirectory = TestPathUtilities.FormatAbsolutePath(pathPart);
+            CommandDirectoryContext.PerformActionWithBasePath(workingDirectory, () =>
+            {
+                var msbuildPath = "<msbuildpath>";
+                var command = (RestoringCommand)BuildCommand.FromArgs(new[] { "-o", "dist" }, msbuildPath);
+                
+                var tokens = command.GetArgumentTokensToMSBuild();
+                
+                // The path should contain the expected escape sequence
+                tokens.Should().Contain(t => t.StartsWith("--property:OutputPath=") && 
+                                            t.Contains(expectedEscapeSequence));
+            });
+        }
     }
 }

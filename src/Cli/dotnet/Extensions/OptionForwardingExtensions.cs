@@ -11,6 +11,28 @@ namespace Microsoft.DotNet.Cli.Extensions;
 public static class OptionForwardingExtensions
 {
     /// <summary>
+    /// Escape MSBuild special characters in a property value.
+    /// MSBuild uses special characters like semicolon (;) as item separators,
+    /// so they need to be escaped using percent-encoding when used in property values.
+    /// </summary>
+    /// <param name="value">The value to escape</param>
+    /// <returns>The escaped value safe for use in MSBuild properties</returns>
+    internal static string EscapeMSBuildPropertyValue(string value)
+    {
+        // MSBuild special characters that need to be escaped:
+        // % must be escaped first since we use it for escaping
+        // https://learn.microsoft.com/visualstudio/msbuild/special-characters-to-escape
+        return value
+            .Replace("%", "%25")  // Percent - must be first
+            .Replace(";", "%3B")  // Semicolon (item separator)
+            .Replace("$", "%24")  // Dollar (property reference)
+            .Replace("@", "%40")  // At (item reference)
+            .Replace("'", "%27")  // Apostrophe (string delimiter)
+            .Replace("*", "%2A")  // Asterisk (wildcard)
+            .Replace("?", "%3F"); // Question mark (wildcard)
+    }
+
+    /// <summary>
     /// Set up an option to be forwarded as an output path to MSBuild
     /// </summary>
     /// <param name="option">The command line option</param>
@@ -36,6 +58,10 @@ public static class OptionForwardingExtensions
                 //  preserving the behavior here after refactoring
                 argVal = VSTestOptions.SurroundWithDoubleQuotes(argVal);
             }
+            
+            // Escape MSBuild special characters in the path value
+            argVal = EscapeMSBuildPropertyValue(argVal);
+            
             return [
                 $"--property:{outputPropertyName}={argVal}",
                 "--property:_CommandLineDefinedOutputPath=true"
