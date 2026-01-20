@@ -58,10 +58,10 @@ public static class OptionForwardingExtensions
                 //  preserving the behavior here after refactoring
                 argVal = VSTestOptions.SurroundWithDoubleQuotes(argVal);
             }
-            
+
             // Escape MSBuild special characters in the path value
             argVal = EscapeMSBuildPropertyValue(argVal);
-            
+
             return [
                 $"--property:{outputPropertyName}={argVal}",
                 "--property:_CommandLineDefinedOutputPath=true"
