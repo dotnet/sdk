@@ -103,6 +103,8 @@ internal static class MSBuildUtility
 
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
+        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(otherArgs);
+
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
             .Concat(binLogArgs);
 
@@ -124,9 +126,19 @@ internal static class MSBuildUtility
             diagnosticOutputDirectory = Path.GetFullPath(diagnosticOutputDirectory);
         }
 
+        var projectOrSolutionOptionValue = parseResult.GetValue(definition.ProjectOrSolutionOption);
+        var testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
+
+        if ((projectOrSolutionOptionValue is not null && positionalProjectOrSolution is not null) ||
+            testModulesFilterOptionValue is not null && positionalTestModules is not null)
+        {
+            throw new GracefulException(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
+        }
+
         PathOptions pathOptions = new(
-            parseResult.GetValue(definition.ProjectOrSolutionOption),
+            positionalProjectOrSolution ?? parseResult.GetValue(definition.ProjectOrSolutionOption),
             parseResult.GetValue(definition.SolutionOption),
+            positionalTestModules ?? parseResult.GetValue(definition.TestModulesFilterOption),
             resultsDirectory,
             configFile,
             diagnosticOutputDirectory);
@@ -141,6 +153,83 @@ internal static class MSBuildUtility
             otherArgs,
             msbuildArgs);
     }
+
+    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(List<string> otherArgs)
+    {
+        string? positionalProjectOrSolution = null;
+        string? positionalTestModules = null;
+
+        // In case there is a valid case, users can opt-out.
+        // Note that the validation here is added to have a "better" error message for scenarios that will already fail.
+        // So, disabling validation is okay if the user scenario is valid.
+        bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument = Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
+
+        for (int i = 0; i < otherArgs.Count; i++)
+        {
+            var token = otherArgs[i];
+            if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnf", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseSolution);
+                }
+            }
+            else if ((token.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseProject);
+                }
+            }
+            else if ((token.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                      token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
+                     File.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalTestModules = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseTestModules);
+                }
+            }
+            else if (Directory.Exists(token))
+            {
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseDirectoryWithSwitch);
+                }
+            }
+        }
+
+        return (positionalProjectOrSolution, positionalTestModules);
+    }
+
 
     private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
