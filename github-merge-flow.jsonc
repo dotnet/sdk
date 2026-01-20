@@ -29,7 +29,7 @@
         "release/10.0.1xx":{
             "MergeToBranch": "release/10.0.2xx",
             "ExtraSwitches": "-QuietComments",
-            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Version.Details.props;eng/common/*,src/SourceBuild/*"
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Version.Details.props;eng/common/*;src/SourceBuild/*"
         },
         // Automate opening PRs to merge sdk repos from release/10.0.2xx to release/10.0.3xx
         "release/10.0.2xx":{
