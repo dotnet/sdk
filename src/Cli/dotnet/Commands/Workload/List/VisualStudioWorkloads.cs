@@ -108,7 +108,16 @@ internal static class VisualStudioWorkloads
         SdkFeatureBand? sdkFeatureBand = null,
         ISetupConfiguration2? setupConfiguration = null)
     {
-        setupConfiguration ??= GetSetupConfiguration();
+        try
+        {
+            setupConfiguration ??= GetSetupConfiguration();
+        }
+        catch (COMException e) when (e.ErrorCode == REGDB_E_CLASSNOTREG)
+        {
+            // Query API not registered, good indication there are no VS installations of 15.0 or later.
+            return;
+        }
+
         Dictionary<string, string> visualStudioWorkloadIds = GetAvailableVisualStudioWorkloads(workloadResolver);
         HashSet<string> installedWorkloadComponents = [];
 
