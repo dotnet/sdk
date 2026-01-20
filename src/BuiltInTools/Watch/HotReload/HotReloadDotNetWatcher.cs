@@ -370,7 +370,7 @@ namespace Microsoft.DotNet.Watch
                         // Deploy dependencies after rebuilding and before restarting.
                         if (!projectsToRedeploy.IsEmpty)
                         {
-                            DeployProjectDependencies(evaluationResult.RestoredProjectInstances, projectsToRedeploy, iterationCancellationToken);
+                            await DeployProjectDependenciesAsync(evaluationResult.RestoredProjectInstances, projectsToRedeploy, iterationCancellationToken);
                             _context.Logger.Log(MessageDescriptor.ProjectDependenciesDeployed, projectsToRedeploy.Length);
                         }
 
@@ -651,10 +651,10 @@ namespace Microsoft.DotNet.Watch
             return false;
         }
 
-        private void DeployProjectDependencies(ImmutableArray<ProjectInstance> restoredProjectInstances, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
+        private async ValueTask DeployProjectDependenciesAsync(ImmutableArray<ProjectInstance> restoredProjectInstances, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
         {
             var projectPathSet = projectPaths.ToImmutableHashSet(PathUtilities.OSSpecificPathComparer);
-            var buildReporter = new BuildReporter(_context.Logger, _context.Options, _context.EnvironmentOptions);
+            var buildManager = new BuildManager(_context.Logger, _context.Options, _context.EnvironmentOptions);
             var targetName = TargetNames.ReferenceCopyLocalPathsOutputGroup;
 
             foreach (var restoredProjectInstance in restoredProjectInstances)
@@ -681,12 +681,15 @@ namespace Microsoft.DotNet.Watch
                     continue;
                 }
 
-                using var loggers = buildReporter.GetLoggers(projectPath, targetName);
-                if (!projectInstance.Build([targetName], loggers, out var targetOutputs))
+                IDictionary<string, TargetResult> targetOutputs;
+                using (var loggers = await buildManager.StartBuildAsync(projectPath, targetName, cancellationToken))
                 {
-                    _context.Logger.LogDebug("{TargetName} target failed", targetName);
-                    loggers.ReportOutput();
-                    continue;
+                    if (!projectInstance.Build([targetName], loggers, out targetOutputs))
+                    {
+                        _context.Logger.LogDebug("{TargetName} target failed", targetName);
+                        loggers.ReportOutput();
+                        continue;
+                    }
                 }
 
                 var outputDir = Path.Combine(Path.GetDirectoryName(projectPath)!, relativeOutputDir);
@@ -923,9 +926,9 @@ namespace Microsoft.DotNet.Watch
                 _context.Logger.LogInformation("Evaluating projects ...");
                 var stopwatch = Stopwatch.StartNew();
 
-                var result = EvaluationResult.TryCreate(
+                var result = await EvaluationResult.TryCreateAsync(
                     _designTimeBuildGraphFactory,
-                    _context.RootProjectOptions.ProjectPath,                    
+                    _context.RootProjectOptions.ProjectPath,
                     _context.BuildLogger,
                     _context.Options,
                     _context.EnvironmentOptions,
