@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
 
@@ -26,6 +28,13 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("false", ToolsetInfo.CurrentTargetFramework)]
         public void It_publishes_with_or_without_apphost(string useAppHost, string targetFramework)
         {
+            if ((targetFramework == "net6.0" || targetFramework == "net7.0") &&
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
             var appHostName = $"{TestProjectName}{Constants.ExeSuffix}";
 

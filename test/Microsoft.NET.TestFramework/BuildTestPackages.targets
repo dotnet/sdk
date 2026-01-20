@@ -1,7 +1,7 @@
 <Project ToolsVersion="14.0" DefaultTargets="Test">
 
   <PropertyGroup>
-    <TestPackagesDir>$(ArtifactsTmpDir)testpackages/</TestPackagesDir>
+    <TestPackagesDir>$(TestLayoutDir)testpackages/</TestPackagesDir>
   </PropertyGroup>
 
   <Target Name="PrepareTests"

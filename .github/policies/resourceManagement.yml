@@ -1,10 +1,10 @@
-id: 
+id:
 name: GitOps.PullRequestIssueManagement
 description: GitOps.PullRequestIssueManagement primitive
-owner: 
+owner:
 resource: repository
 disabled: false
-where: 
+where:
 configuration:
   resourceManagementConfiguration:
     scheduledSearches:
@@ -77,18 +77,10 @@ configuration:
       - labelAdded:
           label: breaking-change
       then:
-      - addLabel:
-          label: needs-breaking-change-doc-created
       - addReply:
           reply: >-
-            Added `needs-breaking-change-doc-created` label because this issue has the `breaking-change` label. 
-
-
-            1. [ ] Create and link to this issue a matching issue in the dotnet/docs repo using the [breaking change documentation template](https://aka.ms/dotnet/docs/new-breaking-change-issue), then remove this `needs-breaking-change-doc-created` label.
-
-
-            Tagging @dotnet/compat for awareness of the breaking change.
-      description: Add breaking change doc label to issue
+            Refer to the [.NET SDK breaking change guidelines](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/breaking-change-guidelines.md#required-process-for-all-net-sdk-breaking-changes)
+      description: Add breaking change doc instructions to issue
     - if:
       - payloadType: Pull_Request
       - labelAdded:
@@ -98,7 +90,7 @@ configuration:
           label: needs-breaking-change-doc-created
       - addReply:
           reply: >-
-            Added `needs-breaking-change-doc-created` label because this PR has the `breaking-change` label. 
+            Added `needs-breaking-change-doc-created` label because this PR has the `breaking-change` label.
 
 
             When you commit this breaking change:
@@ -106,10 +98,28 @@ configuration:
 
             1. [ ] Create and link to this PR and the issue a matching issue in the dotnet/docs repo using the [breaking change documentation template](https://aka.ms/dotnet/docs/new-breaking-change-issue), then remove this `needs-breaking-change-doc-created` label.
 
-            2. [ ] Ask a committer to mail the `.NET Breaking Change Notification` DL.
+            2. [ ] Ask a committer to mail the `.NET SDK Breaking Change Notification` email list.
 
 
-            Tagging @dotnet/compat for awareness of the breaking change.
-      description: Add breaking change doc label to PR
-onFailure: 
-onSuccess: 
+            You can refer to the [.NET SDK breaking change guidelines](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/breaking-change-guidelines.md)
+      description: Add breaking change instructions to PR.
+    - description: Remind Telemetry PR authors of the telemetry guidelines
+      if:
+      - payloadType: Pull_Request
+      - labelAdded:
+          label: Area-Telemetry
+      then:
+      - addReply:
+          reply: >-
+            This PR has been labeled with `Area-Telemetry`. Please ensure that any telemetry changes in this PR
+
+            * comply with the [published guidance](https://learn.microsoft.com/dotnet/core/tools/telemetry#data-points)
+            * are added to the [repo-local telemetry documentation](./documentation/project-docs/telemetry.md)
+            * get a matching .NET Docs issue raised to document the telemetry changes
+              * Go to https://learn.microsoft.com/dotnet/core/tools/telemetry
+              * Scroll down to the bottom and click the 'Open a documentation issue' link to create an issue with pre-filled details
+      - requestReview:
+          reviewer: dsplaisted
+
+onFailure:
+onSuccess:

@@ -1,24 +1,25 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.NET.TestFramework.Utilities;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 {
+    //  This class should be superceded by ToolPackageDownloaderMock2.  The Mock2 version derives from ToolPackageDownloaderBase, so a lot less
+    //  business logic needs to be duplicated.
+    //  The class here on the other hand has a lot of code/behavior copied from the product and they could get out of sync.
+    //  So ideally we should migrate existing tests that use this class to the Mock2 version, then delete this version and rename the Mock2 version
+    //  to ToolPackageDownlnoaderMock.
     internal class ToolPackageDownloaderMock : IToolPackageDownloader
     {
         private readonly IToolPackageStore _toolPackageStore;
@@ -38,23 +39,23 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         private const string ProjectFileName = "TempProject.csproj";
         private readonly IFileSystem _fileSystem;
-        private readonly IReporter _reporter;
+        private readonly IReporter? _reporter;
         private readonly List<MockFeed> _feeds;
 
         private readonly Dictionary<PackageId, IEnumerable<string>> _warningsMap;
         private readonly Dictionary<PackageId, IReadOnlyList<FilePath>> _packagedShimsMap;
         private readonly Dictionary<PackageId, IEnumerable<NuGetFramework>> _frameworksMap;
-        private readonly Action _downloadCallback;
+        private readonly Action? _downloadCallback;
 
         public ToolPackageDownloaderMock(
             IToolPackageStore store,
             IFileSystem fileSystem,
-            IReporter reporter = null,
-            List<MockFeed> feeds = null,
-            Action downloadCallback = null,
-            Dictionary<PackageId, IEnumerable<string>> warningsMap = null,
-            Dictionary<PackageId, IReadOnlyList<FilePath>> packagedShimsMap = null,
-            Dictionary<PackageId, IEnumerable<NuGetFramework>> frameworksMap = null
+            IReporter? reporter = null,
+            List<MockFeed>? feeds = null,
+            Action? downloadCallback = null,
+            Dictionary<PackageId, IEnumerable<string>>? warningsMap = null,
+            Dictionary<PackageId, IReadOnlyList<FilePath>>? packagedShimsMap = null,
+            Dictionary<PackageId, IEnumerable<NuGetFramework>>? frameworksMap = null
         )
         {
             _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store)); ;
@@ -95,15 +96,15 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
             VerbosityOptions verbosity,
-            VersionRange versionRange = null,
-            string targetFramework = null,
+            VersionRange? versionRange = null,
+            string? targetFramework = null,
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
-            RestoreActionConfig restoreActionConfig = null,
-            bool verifySignatures = false
+            bool verifySignatures = false,
+            RestoreActionConfig? restoreActionConfig = null
             )
         {
-            string rollbackDirectory = null;
+            string? rollbackDirectory = null;
             var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
 
             return TransactionalAction.Run<IToolPackage>(
@@ -117,7 +118,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
                     if (string.IsNullOrEmpty(packageId.ToString()))
                     {
-                        throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                        throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
                     }
 
                     var feedPackage = GetPackage(
@@ -160,7 +161,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     {
                         throw new ToolPackageException(
                             string.Format(
-                                CommonLocalizableStrings.ToolPackageConflictPackageId,
+                                CliStrings.ToolPackageConflictPackageId,
                                 packageId,
                                 version.ToNormalizedString()));
                     }
@@ -178,8 +179,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         {
                             Id = packageId,
                             Version = NuGetVersion.Parse(feedPackage.Version),
-                            Commands = new List<RestoredCommand> {
-                            new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable) },
+                            Command = new ToolCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable),
                             Warnings = Array.Empty<string>(),
                             PackagedShims = Array.Empty<FilePath>()
                         };
@@ -192,13 +192,13 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         _fileSystem.Directory.Move(_toolDownloadDir.Value, packageDirectory.Value);
                         rollbackDirectory = packageDirectory.Value;
 
-                        IEnumerable<string> warnings = null;
+                        IEnumerable<string>? warnings = null;
                         _warningsMap.TryGetValue(packageId, out warnings);
 
-                        IReadOnlyList<FilePath> packedShims = null;
+                        IReadOnlyList<FilePath>? packedShims = null;
                         _packagedShimsMap.TryGetValue(packageId, out packedShims);
 
-                        IEnumerable<NuGetFramework> frameworks = null;
+                        IEnumerable<NuGetFramework>? frameworks = null;
                         _frameworksMap.TryGetValue(packageId, out frameworks);
 
                         return new ToolPackageMock(_fileSystem, id: packageId,
@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             VersionRange versionRange,
             FilePath? nugetConfig = null,
             DirectoryPath? rootConfigDirectory = null,
-            string[] sourceFeedOverrides = null)
+            string[]? sourceFeedOverrides = null)
         {
             var allPackages = _feeds
                 .Where(feed =>
@@ -258,7 +258,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             if (package == null)
             {
                 _reporter?.WriteLine($"Error: failed to restore package {packageId}.");
-                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
             }
 
             return package;
@@ -309,18 +309,18 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                    || (f.Type == MockFeedType.ExplicitNugetConfig && f.Uri == nugetConfig.Value);
         }
 
-        public NuGetVersion GetNuGetVersion(
+        public (NuGetVersion version, PackageSource source) GetNuGetVersion(
             PackageLocation packageLocation,
             PackageId packageId,
             VerbosityOptions verbosity,
-            VersionRange versionRange = null,
-            bool isGlobalTool = false)
+            VersionRange? versionRange = null,
+            RestoreActionConfig? restoreActionConfig = null)
         {
             versionRange = VersionRange.Parse(versionRange?.OriginalString ?? "*");
 
             if (string.IsNullOrEmpty(packageId.ToString()))
             {
-                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
             }
 
             var feedPackage = GetPackage(
@@ -330,23 +330,29 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 packageLocation.RootConfigDirectory,
                 packageLocation.SourceFeedOverrides);
 
-            return NuGetVersion.Parse(feedPackage.Version);
+            return (NuGetVersion.Parse(feedPackage.Version), new PackageSource("http://mock-feed", "MockFeed"));
         }
+
+        public bool TryGetDownloadedTool(PackageId packageId, NuGetVersion packageVersion, string? targetFramework, VerbosityOptions verbosity, [NotNullWhen(true)] out IToolPackage? toolPackage) => throw new NotImplementedException();
 
         private class TestToolPackage : IToolPackage
         {
             public PackageId Id { get; set; }
 
-            public NuGetVersion Version { get; set; }
+            public NuGetVersion? Version { get; set; }
             public DirectoryPath PackageDirectory { get; set; }
 
-            public IReadOnlyList<RestoredCommand> Commands { get; set; }
+            public ToolCommand? Command { get; set; }
 
-            public IEnumerable<string> Warnings { get; set; }
+            public IEnumerable<string>? Warnings { get; set; }
 
-            public IReadOnlyList<FilePath> PackagedShims { get; set; }
+            public IReadOnlyList<FilePath>? PackagedShims { get; set; }
 
             public IEnumerable<NuGetFramework> Frameworks => throw new NotImplementedException();
+
+            public PackageId ResolvedPackageId { get; set; }
+
+            public NuGetVersion? ResolvedPackageVersion { get; set; }
         }
     }
 }

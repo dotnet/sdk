@@ -9,24 +9,16 @@ function InitializeCustomSDKToolset {
   }
 
   # The following frameworks and tools are used only for testing.
-  # Do not attempt to install them in source build.
-  if ($env:DotNetBuildFromSource -eq "true" -or $productBuild -or $properties -like "*DotNetBuildRepo=true*") {
+  # Do not attempt to install them when building in the VMR.
+  if ($fromVmr) {
     return
   }
 
   $cli = InitializeDotnetCli -install:$true
-  if (-not ($env:PROCESSOR_ARCHITECTURE -like "arm64"))
-  {
-  InstallDotNetSharedFramework "1.0.5"
-  InstallDotNetSharedFramework "1.1.2"
-  InstallDotNetSharedFramework "2.1.0"
-  InstallDotNetSharedFramework "2.2.8"
-  }
-  InstallDotNetSharedFramework "3.1.0"
-  InstallDotNetSharedFramework "5.0.0"
   InstallDotNetSharedFramework "6.0.0"
   InstallDotNetSharedFramework "7.0.0"
   InstallDotNetSharedFramework "8.0.0"
+  InstallDotNetSharedFramework "9.0.0"
 
   CreateBuildEnvScripts
   CreateVSShortcut
@@ -51,12 +43,15 @@ function CreateBuildEnvScripts()
 @echo off
 title SDK Build ($RepoRoot)
 set DOTNET_MULTILEVEL_LOOKUP=0
+REM https://aka.ms/vs/unsigned-dotnet-debugger-lib
+set VSDebugger_ValidateDotnetDebugLibSignatures=0
 
 set DOTNET_ROOT=$env:DOTNET_INSTALL_DIR
 set DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$env:DOTNET_INSTALL_DIR
 
 set PATH=$env:DOTNET_INSTALL_DIR;%PATH%
 set NUGET_PACKAGES=$env:NUGET_PACKAGES
+set DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=0
 
 DOSKEY killdotnet=taskkill /F /IM dotnet.exe /T ^& taskkill /F /IM VSTest.Console.exe /T ^& taskkill /F /IM msbuild.exe /T
 "@
@@ -68,12 +63,15 @@ DOSKEY killdotnet=taskkill /F /IM dotnet.exe /T ^& taskkill /F /IM VSTest.Consol
   $scriptContents = @"
 `$host.ui.RawUI.WindowTitle = "SDK Build ($RepoRoot)"
 `$env:DOTNET_MULTILEVEL_LOOKUP=0
+# https://aka.ms/vs/unsigned-dotnet-debugger-lib
+`$env:VSDebugger_ValidateDotnetDebugLibSignatures=0
 
 `$env:DOTNET_ROOT="$env:DOTNET_INSTALL_DIR"
 `$env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR="$env:DOTNET_INSTALL_DIR"
 
 `$env:PATH="$env:DOTNET_INSTALL_DIR;" + `$env:PATH
 `$env:NUGET_PACKAGES="$env:NUGET_PACKAGES"
+`$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH="0"
 
 function killdotnet {
   taskkill /F /IM dotnet.exe /T
@@ -104,17 +102,17 @@ function CreateVSShortcut()
   }
 
   $scriptPath = Join-Path $ArtifactsDir 'sdk-build-env.ps1'
-  $slnPath = Join-Path $RepoRoot 'sdk.sln'
+  $slnPath = Join-Path $RepoRoot 'sdk.slnx'
   $commandToLaunch = "& '$scriptPath'; & '$devenvPath' '$slnPath'"
   $powershellPath = '%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe'
-  $shortcutPath = Join-Path $ArtifactsDir 'VS with sdk.sln.lnk'
+  $shortcutPath = Join-Path $ArtifactsDir 'VS with sdk.slnx.lnk'
 
   # https://stackoverflow.com/a/9701907/294804
   # https://learn.microsoft.com/en-us/troubleshoot/windows-client/admin-development/create-desktop-shortcut-with-wsh
   $wsShell = New-Object -ComObject WScript.Shell
   $shortcut = $wsShell.CreateShortcut($shortcutPath)
   $shortcut.TargetPath = $powershellPath
-  $shortcut.Arguments = "-WindowStyle Hidden -Command ""$commandToLaunch"""
+  $shortcut.Arguments = "-WindowStyle Hidden -ExecutionPolicy Bypass -Command ""$commandToLaunch"""
   $shortcut.IconLocation = $devenvPath
   $shortcut.WindowStyle = 7 # Minimized
   $shortcut.Save()

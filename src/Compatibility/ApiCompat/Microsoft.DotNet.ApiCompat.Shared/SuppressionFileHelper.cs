@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.ApiCompat
                 return;
             }
 
-            if (suppressionEngine.WriteSuppressionsToFile(suppressionOutputFile, preserveUnnecessarySuppressions).Count > 0)
+            if (suppressionEngine.WriteSuppressionsToFile(suppressionOutputFile, preserveUnnecessarySuppressions).SuppressionFileUpdated)
             {
                 log.LogMessage(MessageImportance.High,
                     string.Format(CommonResources.WroteSuppressions, suppressionOutputFile));
