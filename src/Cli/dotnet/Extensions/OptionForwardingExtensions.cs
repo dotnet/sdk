@@ -19,6 +19,8 @@ public static class OptionForwardingExtensions
     /// <returns>The escaped value safe for use in MSBuild properties</returns>
     internal static string EscapeMSBuildPropertyValue(string value)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         // MSBuild special characters that need to be escaped:
         // % must be escaped first since we use it for escaping
         // https://learn.microsoft.com/visualstudio/msbuild/special-characters-to-escape
