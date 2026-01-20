@@ -65,17 +65,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
     public TerminalTestReporter(IConsole console, TerminalTestReporterOptions options)
     {
         _options = options;
-        TestProgressStateAwareTerminal terminalWithProgress;
+        bool showProgress = _options.ShowProgress;
 
-        // When not writing to ANSI we write the progress to screen and leave it there so we don't want to write it more often than every few seconds.
-        int nonAnsiUpdateCadenceInMs = 3_000;
-        // When writing to ANSI we update the progress in place and it should look responsive so we update every half second, because we only show seconds on the screen, so it is good enough.
-        int ansiUpdateCadenceInMs = 500;
-
+        ITerminal terminal;
         if (_options.AnsiMode == AnsiMode.SimpleAnsi)
         {
             // We are told externally that we are in CI, use simplified ANSI mode.
-            terminalWithProgress = new TestProgressStateAwareTerminal(new SimpleAnsiTerminal(console), _options.ShowProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: nonAnsiUpdateCadenceInMs);
+            terminal = new SimpleAnsiTerminal(console);
+            showProgress = false;
         }
         else
         {
@@ -86,20 +83,16 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
             bool useAnsi = _options.AnsiMode switch
             {
-                AnsiMode.ForceAnsi => true,
                 AnsiMode.NoAnsi => false,
                 AnsiMode.AnsiIfPossible => consoleAcceptsAnsiCodes,
                 _ => throw new UnreachableException(),
             };
 
-            terminalWithProgress = new TestProgressStateAwareTerminal(
-                useAnsi ? new AnsiTerminal(console, _options.BaseDirectory) : new NonAnsiTerminal(console),
-                _options.ShowProgress,
-                writeProgressImmediatelyAfterOutput: useAnsi,
-                updateEvery: useAnsi ? ansiUpdateCadenceInMs : nonAnsiUpdateCadenceInMs);
+            showProgress = showProgress && useAnsi;
+            terminal = useAnsi ? new AnsiTerminal(console, _options.BaseDirectory) : new NonAnsiTerminal(console);
         }
 
-        _terminalWithProgress = terminalWithProgress;
+        _terminalWithProgress = new TestProgressStateAwareTerminal(terminal, showProgress);
     }
 
     public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp, bool isRetry)
