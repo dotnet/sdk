@@ -4075,9 +4075,9 @@ Aby wyświetlić wartość, należy podać odpowiednią opcję wiersza poleceń 
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSetHasMissingManifests">
-        <source>Workload version {0} has missing manifests. Run "dotnet workload repair" to fix this, or run "dotnet workload update" to update to the latest workload version.</source>
-        <target state="new">Workload version {0} has missing manifests. Run "dotnet workload repair" to fix this, or run "dotnet workload update" to update to the latest workload version.</target>
-        <note>{0} is the workload set version. {Locked="dotnet workload repair"}{Locked="dotnet workload update"}</note>
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>

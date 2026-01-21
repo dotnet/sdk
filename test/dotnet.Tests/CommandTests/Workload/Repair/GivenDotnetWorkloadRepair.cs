@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
 
             // Add extra pack dirs and records
             var extraPackRecordPath = Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1", "Test.Pack.A", "1.0.0", sdkFeatureVersion);
-            Directory.CreateDirectory(Path.GetDirectoryName(extraPackRecordPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(extraPackRecordPath)!);
             var extraPackPath = Path.Combine(installRoot, "packs", "Test.Pack.A", "1.0.0");
             Directory.CreateDirectory(extraPackPath);
             var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(new(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, extraPackPath, "Test.Pack.A"));

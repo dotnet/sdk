@@ -143,8 +143,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetHasMissingManifests">
-        <source>Workload version {0} has missing manifests. Run "dotnet workload repair" to fix this.</source>
-        <target state="new">Workload version {0} has missing manifests. Run "dotnet workload repair" to fix this.</target>
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
         <note>{Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadVersionFromGlobalJsonNotFound">
