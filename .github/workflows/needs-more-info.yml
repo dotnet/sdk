@@ -133,8 +133,9 @@ jobs:
 
                     console.log(`Posted ping comment on issue #${issue.number}`);
                   }
+                  // Only continue (skip closing logic) if customer replied after follow-up
+                  continue;
                 }
-                continue;
               }
 
               // Calculate time since last activity from issue author
@@ -153,8 +154,13 @@ jobs:
 
                 console.log(`Days since follow-up: ${daysSinceFollowUp.toFixed(1)}`);
 
-                if (daysSinceFollowUp >= 14 && authorReplies.length === 0) {
-                  // Close the issue
+                // Check if there are any author replies after the follow-up comment
+                const repliesAfterFollowUp = authorReplies.filter(reply =>
+                  new Date(reply.created_at).getTime() > followUpTime
+                );
+
+                if (daysSinceFollowUp >= 14 && repliesAfterFollowUp.length === 0) {
+                  // Close the issue - no response after follow-up for 14 days
                   await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
