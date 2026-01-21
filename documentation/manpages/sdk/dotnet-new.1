@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-new" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet new <TEMPLATE>
 .PP
@@ -90,11 +90,11 @@ If there\[cq]s a newer version of the template available.
 In this case, the project or artifact is created but the CLI warns you about an updated version of the template.
 .PP
 Starting with .NET SDK 5.0.300, the \f[V]search\f[R] command should be used to search for templates in NuGet.org.
+.RE
 .PP
 The following table shows the templates that come pre-installed with the .NET SDK.
 The default language for the template is shown inside the brackets.
 Click on the short name link to see the specific template options.
-.RE
 .PP
 .TS
 tab(@);
@@ -112,7 +112,7 @@ Introduced
 T}
 _
 T{
-Console application
+Console Application
 T}@T{
 \f[V]console\f[R]
 T}@T{
@@ -134,7 +134,7 @@ T}@T{
 1.0
 T}
 T{
-WPF application
+WPF Application
 T}@T{
 \f[V]wpf\f[R]
 T}@T{
@@ -145,7 +145,7 @@ T}@T{
 3.0 (5.0 for VB)
 T}
 T{
-WPF class library
+WPF Class library
 T}@T{
 \f[V]wpflib\f[R]
 T}@T{
@@ -156,7 +156,7 @@ T}@T{
 3.0 (5.0 for VB)
 T}
 T{
-WPF custom control library
+WPF Custom Control Library
 T}@T{
 \f[V]wpfcustomcontrollib\f[R]
 T}@T{
@@ -167,7 +167,7 @@ T}@T{
 3.0 (5.0 for VB)
 T}
 T{
-WPF user control library
+WPF User Control Library
 T}@T{
 \f[V]wpfusercontrollib\f[R]
 T}@T{
@@ -178,7 +178,7 @@ T}@T{
 3.0 (5.0 for VB)
 T}
 T{
-Windows Forms (WinForms) application
+Windows Forms (WinForms) Application
 T}@T{
 \f[V]winforms\f[R]
 T}@T{
@@ -189,7 +189,7 @@ T}@T{
 3.0 (5.0 for VB)
 T}
 T{
-Windows Forms (WinForms) class library
+Windows Forms (WinForms) Class library
 T}@T{
 \f[V]winformslib\f[R]
 T}@T{
@@ -200,7 +200,7 @@ T}@T{
 3.0 (5.0 for VB)
 T}
 T{
-Worker service
+Worker Service
 T}@T{
 \f[V]worker\f[R]
 T}@T{
@@ -211,7 +211,7 @@ T}@T{
 3.0
 T}
 T{
-Unit test project
+Unit Test Project
 T}@T{
 \f[V]mstest\f[R]
 T}@T{
@@ -222,7 +222,7 @@ T}@T{
 1.0
 T}
 T{
-NUnit 3 test project
+NUnit 3 Test Project
 T}@T{
 \f[V]nunit\f[R]
 T}@T{
@@ -233,7 +233,7 @@ T}@T{
 2.1.400
 T}
 T{
-NUnit 3 test item
+NUnit 3 Test Item
 T}@T{
 \f[V]nunit-test\f[R]
 T}@T{
@@ -244,7 +244,7 @@ T}@T{
 2.2
 T}
 T{
-xUnit test project
+xUnit Test Project
 T}@T{
 \f[V]xunit\f[R]
 T}@T{
@@ -255,7 +255,7 @@ T}@T{
 1.0
 T}
 T{
-Razor component
+Razor Component
 T}@T{
 \f[V]razorcomponent\f[R]
 T}@T{
@@ -266,7 +266,7 @@ T}@T{
 3.0
 T}
 T{
-Razor page
+Razor Page
 T}@T{
 \f[V]page\f[R]
 T}@T{
@@ -299,29 +299,29 @@ T}@T{
 2.0
 T}
 T{
-Blazor server app
+Blazor Web App
 T}@T{
-\f[V]blazorserver\f[R]
+\f[V]blazor\f[R]
 T}@T{
 [C#]
 T}@T{
 Web/Blazor
 T}@T{
-3.0
+8.0.100
 T}
 T{
-Blazor WebAssembly app
+Blazor WebAssembly Standalone App
 T}@T{
 \f[V]blazorwasm\f[R]
 T}@T{
 [C#]
 T}@T{
-Web/Blazor/WebAssembly
+Web/Blazor/WebAssembly/PWA
 T}@T{
 3.1.300
 T}
 T{
-ASP.NET Core empty
+ASP.NET Core Empty
 T}@T{
 \f[V]web\f[R]
 T}@T{
@@ -332,7 +332,7 @@ T}@T{
 1.0
 T}
 T{
-ASP.NET Core web app (Model-View-Controller)
+ASP.NET Core Web App (Model-View-Controller)
 T}@T{
 \f[V]mvc\f[R]
 T}@T{
@@ -343,7 +343,7 @@ T}@T{
 1.0
 T}
 T{
-ASP.NET Core web app
+ASP.NET Core Web App
 T}@T{
 \f[V]webapp, razor\f[R]
 T}@T{
@@ -354,40 +354,7 @@ T}@T{
 2.2, 2.0
 T}
 T{
-ASP.NET Core with Angular
-T}@T{
-\f[V]angular\f[R]
-T}@T{
-[C#]
-T}@T{
-Web/MVC/SPA
-T}@T{
-2.0
-T}
-T{
-ASP.NET Core with React.js
-T}@T{
-\f[V]react\f[R]
-T}@T{
-[C#]
-T}@T{
-Web/MVC/SPA
-T}@T{
-2.0
-T}
-T{
-ASP.NET Core with React.js and Redux
-T}@T{
-\f[V]reactredux\f[R]
-T}@T{
-[C#]
-T}@T{
-Web/MVC/SPA
-T}@T{
-2.0
-T}
-T{
-Razor class library
+Razor Class Library
 T}@T{
 \f[V]razorclasslib\f[R]
 T}@T{
@@ -398,18 +365,40 @@ T}@T{
 2.1
 T}
 T{
-ASP.NET Core web API
+ASP.NET Core Web API
 T}@T{
 \f[V]webapi\f[R]
 T}@T{
 [C#], F#
 T}@T{
-Web/WebAPI
+Web/Web API/API/Service/WebAPI
 T}@T{
 1.0
 T}
 T{
-ASP.NET Core gRPC service
+ASP.NET Core API
+T}@T{
+\f[V]webapiaot\f[R]
+T}@T{
+[C#]
+T}@T{
+Web/Web API/API/Service
+T}@T{
+8.0
+T}
+T{
+ASP.NET Core API controller
+T}@T{
+\f[V]apicontroller\f[R]
+T}@T{
+[C#]
+T}@T{
+Web/ASP.NET
+T}@T{
+8.0
+T}
+T{
+ASP.NET Core gRPC Service
 T}@T{
 \f[V]grpc\f[R]
 T}@T{
@@ -440,7 +429,7 @@ T}@T{
 2.0
 T}
 T{
-NuGet config
+NuGet Config
 T}@T{
 \f[V]nugetconfig\f[R]
 T}@T{
@@ -460,7 +449,7 @@ T}@T{
 3.0
 T}
 T{
-Web config
+Web Config
 T}@T{
 \f[V]webconfig\f[R]
 T}@T{
@@ -470,7 +459,7 @@ T}@T{
 1.0
 T}
 T{
-Solution file
+Solution File
 T}@T{
 \f[V]sln\f[R]
 T}@T{
@@ -480,7 +469,7 @@ T}@T{
 1.0
 T}
 T{
-Protocol buffer file
+Protocol Buffer File
 T}@T{
 \f[V]proto\f[R]
 T}@T{
@@ -498,6 +487,81 @@ T}@T{
 Config
 T}@T{
 6.0
+T}
+.TE
+.PP
+The following table shows templates that have been discontinued and no longer come pre-installed with the .NET SDK.
+Click on the short name link to see the specific template options.
+.PP
+.TS
+tab(@);
+l l l l l.
+T{
+Templates
+T}@T{
+Short name
+T}@T{
+Language
+T}@T{
+Tags
+T}@T{
+Discontinued since
+T}
+_
+T{
+ASP.NET Core with Angular
+T}@T{
+\f[V]angular\f[R]
+T}@T{
+[C#]
+T}@T{
+Web/MVC/SPA
+T}@T{
+8.0
+T}
+T{
+ASP.NET Core with React.js
+T}@T{
+\f[V]react\f[R]
+T}@T{
+[C#]
+T}@T{
+Web/MVC/SPA
+T}@T{
+8.0
+T}
+T{
+Blazor Server App
+T}@T{
+\f[V]blazorserver\f[R]
+T}@T{
+[C#]
+T}@T{
+Web/Blazor
+T}@T{
+8.0
+T}
+T{
+Blazor Server App Empty
+T}@T{
+\f[V]blazorserver-empty\f[R]
+T}@T{
+[C#]
+T}@T{
+Web/Blazor
+T}@T{
+8.0
+T}
+T{
+Blazor WebAssembly App Empty
+T}@T{
+\f[V]blazorwasm-empty\f[R]
+T}@T{
+[C#]
+T}@T{
+Web/Blazor/WebAssembly
+T}@T{
+8.0
 T}
 .TE
 .SH OPTIONS
@@ -650,12 +714,12 @@ dotnet new xunit
 .fi
 .RE
 .IP \[bu] 2
-Create a \f[I]global.json\f[R] in the current directory setting the SDK version to 3.1.101:
+Create a \f[I]global.json\f[R] in the current directory setting the SDK version to 8.0.101:
 .RS 2
 .IP
 .nf
 \f[C]
-dotnet new globaljson --sdk-version 3.1.101
+dotnet new globaljson --sdk-version 8.0.101 --roll-forward latestFeature
 \f[R]
 .fi
 .RE
