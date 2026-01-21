@@ -133,12 +133,12 @@ jobs:
         with:
           script: |
             const commentBody = process.env.COMMENT_BODY || '';
-            
+
             // Remove the /newissue command from the body
             const lines = commentBody.split('\n');
             const contentLines = [];
             let foundCommand = false;
-            
+
             for (const line of lines) {
               const trimmedLine = line.trim().toLowerCase();
               if (trimmedLine.startsWith('/newissue')) {
@@ -148,18 +148,19 @@ jobs:
                 if (afterCommand) {
                   contentLines.push(afterCommand);
                 }
-              } else if (foundCommand || !trimmedLine.startsWith('/')) {
+              } else if (foundCommand) {
+                // Include all content after the /newissue command
                 contentLines.push(line);
               }
             }
-            
+
             let issueContent = contentLines.join('\n').trim();
-            
+
             // If no content after command, use a default message
             if (!issueContent) {
               issueContent = 'Follow-up item from PR discussion.';
             }
-            
+
             core.setOutput('content', issueContent);
 
       - name: Create new issue
