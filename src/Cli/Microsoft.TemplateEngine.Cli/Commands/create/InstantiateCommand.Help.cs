@@ -3,9 +3,9 @@
 
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Cli.Help;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
 using Command = System.CommandLine.Command;
