@@ -54,9 +54,7 @@ internal sealed class EvaluationResult(ProjectGraph projectGraph, IReadOnlyDicti
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
             .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
             // this will force CoreCompile task to execute and return command line args even if all inputs and outputs are up to date:
-            .SetItem(PropertyNames.NonExistentFile, "__NonExistentSubDir__\\__NonExistentFile__")
-            // HTTP port for hot reload on mobile platforms (Android, iOS, MacCatalyst):
-            .SetItem(PropertyNames.DotNetWatchHotReloadHttpPort, environmentOptions.HotReloadHttpPort.ToString());
+            .SetItem(PropertyNames.NonExistentFile, "__NonExistentSubDir__\\__NonExistentFile__");
     }
 
     /// <summary>

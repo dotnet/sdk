@@ -24,14 +24,22 @@ public class HotReloadClientTests(ITestOutputHelper output)
             _cancellationSource = new CancellationTokenSource();
 
             Client.InitiateConnection(CancellationToken.None);
-            var listener = new Listener(Client.NamedPipeName, agent, log: _ => { }, connectionTimeoutMS: Timeout.Infinite);
+            var transport = new NamedPipeTransport(Client.NamedPipeName, log: _ => { }, timeoutMS: Timeout.Infinite);
+            var listener = new Listener(transport, agent, log: _ => { });
             _listenerTaskFactory = Task.Run<Task>(() => listener.Listen(_cancellationSource.Token));
         }
 
         public async ValueTask DisposeAsync()
         {
             _cancellationSource.Cancel();
-            await await _listenerTaskFactory;
+            try
+            {
+                await await _listenerTaskFactory;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when cancellation is requested during disposal
+            }
 
             Client.Dispose();
         }

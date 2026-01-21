@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Watch
         string? AutoReloadWebSocketHostName = null,
         int? AutoReloadWebSocketPort = null,
         string? BrowserPath = null,
-        int HotReloadHttpPort = 9000,
+        int HotReloadHttpPort = 0,
         TestFlags TestFlags = TestFlags.None,
         string TestOutput = "")
     {

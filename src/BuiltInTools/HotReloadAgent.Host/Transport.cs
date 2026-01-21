@@ -25,15 +25,24 @@ internal abstract class Transport(Action<string> log) : IDisposable
         }
     }
 
-    private static readonly string? s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
-    private static readonly string? s_httpEndpoint = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadHttpEndpoint);
-
     public static Transport? TryCreate(Action<string> log, int timeoutMS = 5000)
-        => !string.IsNullOrEmpty(s_namedPipeName)
-            ? new NamedPipeTransport(s_namedPipeName, log, timeoutMS)
-            : !string.IsNullOrEmpty(s_httpEndpoint)
-            ? new HttpTransport(s_httpEndpoint, log, timeoutMS)
-            : null;
+    {
+        var namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
+        if (!string.IsNullOrEmpty(namedPipeName))
+        {
+            log($"{AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName}={namedPipeName}");
+            return new NamedPipeTransport(namedPipeName, log, timeoutMS);
+        }
+
+        var webSocketEndpoint = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint);
+        if (!string.IsNullOrEmpty(webSocketEndpoint))
+        {
+            log($"{AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint}={webSocketEndpoint}");
+            return new WebSocketTransport(webSocketEndpoint, log, timeoutMS);
+        }
+
+        return null;
+    }
 
     protected void Log(string message)
         => log(message);

@@ -52,15 +52,13 @@ internal static class ProjectGraphUtilities
         => projectNode.GetCapabilities().Any(static value => value is ProjectCapability.AspNetCore or ProjectCapability.WebAssembly);
 
     /// <summary>
-    /// Returns true if the project targets a mobile platform (Android or iOS).
-    /// These platforms require HTTP transport for hot reload instead of named pipes.
+    /// Returns true if the project has the HotReloadWebSockets capability.
+    /// This indicates the project should use WebSocket transport for hot reload instead of named pipes.
+    /// Mobile workloads (Android, iOS) add this capability since named pipes don't work over the network.
     /// </summary>
-    public static bool IsMobilePlatform(this ProjectGraphNode projectNode)
-    {
-        var targetPlatformIdentifier = projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetPlatformIdentifier);
-        return targetPlatformIdentifier.Equals("Android", StringComparison.OrdinalIgnoreCase) ||
-               targetPlatformIdentifier.Equals("iOS", StringComparison.OrdinalIgnoreCase);
-    }
+    public static bool UsesWebSocketHotReload(this ProjectGraphNode projectNode)
+        => projectNode.GetCapabilities().Any(static value =>
+            value.Equals(ProjectCapability.HotReloadWebSockets, StringComparison.OrdinalIgnoreCase));
 
     public static string? GetOutputDirectory(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetPath) is { Length: >0 } path ? Path.GetDirectoryName(Path.Combine(projectNode.ProjectInstance.Directory, path)) : null;

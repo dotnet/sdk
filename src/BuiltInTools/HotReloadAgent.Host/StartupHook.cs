@@ -39,12 +39,13 @@ internal sealed class StartupHook
 
         Log($"Loaded into process: {processPath} ({typeof(StartupHook).Assembly.Location})");
 
+        var transport = Transport.TryCreate(Log);
+
         HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
 
-        var transport = Transport.TryCreate(Log);
         if (transport == null)
         {
-            Log($"No hot reload endpoint configured. Set {AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName} or {AgentEnvironmentVariables.DotNetWatchHotReloadHttpEndpoint}");
+            Log($"No hot reload endpoint configured. Set {AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName} or {AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint}");
             return;
         }
 
