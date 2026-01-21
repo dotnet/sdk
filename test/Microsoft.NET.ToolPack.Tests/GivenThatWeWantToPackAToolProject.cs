@@ -5,6 +5,7 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
+using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -359,6 +360,62 @@ namespace Microsoft.NET.ToolPack.Tests
                 toolSettingsXml.Root.Attribute("Version").Value.Should().Be("1");
             }
 
+        }
+
+        [Fact]
+        public void Framework_dependent_tool_should_target_base_runtime_version()
+        {
+            // This test verifies that framework-dependent tools (FDD) correctly target the .0 patch version
+            // instead of a specific patch version, ensuring compatibility across runtime installations
+            var testProject = new TestProject()
+            {
+                Name = "FddToolTest",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                IsSdkProject = true,
+            };
+
+            testProject.AdditionalProperties["PackAsTool"] = "true";
+            testProject.AdditionalProperties["ToolCommandName"] = "fddtool";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: "FddToolRuntimeVersion");
+
+            var packCommand = new PackCommand(testAsset);
+            packCommand.Execute().Should().Pass();
+
+            var nupkgPath = packCommand.GetNuGetPackage();
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var anyTfm = nupkgReader.GetSupportedFrameworks().First().GetShortFolderName();
+                var runtimeConfigPath = $"tools/{anyTfm}/any/{testProject.Name}.runtimeconfig.json";
+
+                // Extract and read the runtimeconfig.json
+                var tmpfilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                Directory.CreateDirectory(tmpfilePath);
+                try
+                {
+                    string copiedFile = nupkgReader.ExtractFile(runtimeConfigPath, tmpfilePath, null);
+                    string runtimeConfigContents = File.ReadAllText(copiedFile);
+                    var runtimeConfig = JObject.Parse(runtimeConfigContents);
+
+                    // Get the framework version
+                    var frameworkVersion = runtimeConfig["runtimeOptions"]["framework"]["version"].Value<string>();
+
+                    // Verify that the version ends with .0 (e.g., "11.0.0" instead of "11.0.2")
+                    frameworkVersion.Should().EndWith(".0", 
+                        because: "framework-dependent tools should target the base .0 patch version to ensure compatibility");
+
+                    // Also verify it matches the expected pattern (major.minor.0)
+                    var versionParts = frameworkVersion.Split('.');
+                    versionParts.Should().HaveCount(3, because: "version should be in format major.minor.patch");
+                    versionParts[2].Should().Be("0", because: "patch version should be 0 for FDD tools");
+                }
+                finally
+                {
+                    Directory.Delete(tmpfilePath, recursive: true);
+                }
+            }
         }
     }
 }
