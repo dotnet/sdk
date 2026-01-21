@@ -112,8 +112,6 @@ namespace Microsoft.NET.TestFramework
 
         public void AddTestEnvironmentVariables(IDictionary<string, string> environment)
         {
-            environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
-
             //  Set NUGET_PACKAGES environment variable to match value from build.ps1
             if(NuGetCachePath is not null)
             {
@@ -140,8 +138,6 @@ namespace Microsoft.NET.TestFramework
             {
                 Environment.SetEnvironmentVariable(name, value);
             }
-
-            Environment.SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
 
             //  Reset this environment variable so that if the dotnet under test is different than the
             //  one running the tests, it won't interfere
