@@ -1,5 +1,10 @@
 name: Create issue from PR comment
 
+# This workflow allows contributors to create follow-up issues from PR comments.
+# Usage: Comment `/newissue` followed by the issue description in a PR.
+# The workflow will create a new issue with the `pr-followup` label containing
+# the comment content and context from the PR discussion.
+
 on:
   issue_comment:
     types: [created]
