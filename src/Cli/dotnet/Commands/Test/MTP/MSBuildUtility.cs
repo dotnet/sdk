@@ -159,7 +159,7 @@ internal static class MSBuildUtility
             msbuildArgs,
             CommonOptions.CreatePropertyOption(),
             CommonOptions.CreateRestorePropertyOption(),
-            CommonOptions.CreateRequiredMSBuildTargetOption(CliConstants.MTPTarget),
+            CommonOptions.CreateRequiredMSBuildTargetOption(TestCommandDefinition.MicrosoftTestingPlatform.BuildTargetName),
             CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption());
 
