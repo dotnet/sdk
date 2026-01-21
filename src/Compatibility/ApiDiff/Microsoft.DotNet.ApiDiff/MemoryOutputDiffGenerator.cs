@@ -716,19 +716,19 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     private static string? GenerateDeletedDiff(SyntaxNode beforeNode) => GenerateDeletedDiff(beforeNode.ToFullString());
 
     private static string? GenerateChangedDiff(SyntaxNode beforeNode, SyntaxNode afterNode) =>
-        GenerateDiff(InlineDiffBuilder.Diff(oldText: beforeNode.ToFullString(), newText: afterNode.ToFullString()));
+        GenerateDiff(InlineDiffBuilder.Diff(oldText: beforeNode.ToFullString(), newText: afterNode.ToFullString(), ignoreWhiteSpace: true));
 
     private static string? GenerateAddedDiff(string afterNodeText) =>
-        GenerateDiff(InlineDiffBuilder.Diff(oldText: string.Empty, newText: afterNodeText));
+        GenerateDiff(InlineDiffBuilder.Diff(oldText: string.Empty, newText: afterNodeText, ignoreWhiteSpace: true));
 
     private static string? GenerateDeletedDiff(string beforeNodeText) =>
-        GenerateDiff(InlineDiffBuilder.Diff(oldText:beforeNodeText, newText: string.Empty));
+        GenerateDiff(InlineDiffBuilder.Diff(oldText: beforeNodeText, newText: string.Empty, ignoreWhiteSpace: true));
 
     private static string? GenerateUnchangedDiff(SyntaxNode unchangedNode)
     {
         StringBuilder sb = new();
         string unchangedText = unchangedNode.ToFullString();
-        foreach (var line in InlineDiffBuilder.Diff(oldText: unchangedText, newText: unchangedText).Lines)
+        foreach (var line in InlineDiffBuilder.Diff(oldText: unchangedText, newText: unchangedText, ignoreWhiteSpace: true).Lines)
         {
             sb.AppendLine($"  {line.Text}");
         }
