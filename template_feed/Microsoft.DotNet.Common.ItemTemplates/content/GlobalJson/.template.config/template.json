@@ -30,56 +30,38 @@
       "type": "parameter",
       "datatype": "string",
       "description": "The version of the .NET SDK to use.",
-      "displayName": "SDK version",
-      "forms": {
-        "global": [ "expandToFullSdkVersion" ]
-      }
+      "displayName": "SDK version"
     },
     "dotnet-cli-version": {
       "type": "parameter",
       "datatype": "string",
-      "displayName": "dotnet CLI version",
-      "forms": {
-        "global": [ "expandToFullSdkVersion" ]
-      }
+      "displayName": "dotnet CLI version"
     },
-    "IsMajorOnly": {
-      "type": "generated",
-      "generator": "regexMatch",
-      "dataType": "bool",
-      "parameters": {
-        "source": "SdkVersion",
-        "pattern": "^\\d+$"
-      }
-    },
-    "IsMajorMinor": {
-      "type": "generated",
-      "generator": "regexMatch",
-      "dataType": "bool",
-      "parameters": {
-        "source": "SdkVersion",
-        "pattern": "^\\d+\\.\\d+$"
-      }
-    },
-    "IsFullVersion": {
-      "type": "generated",
-      "generator": "regexMatch",
-      "dataType": "bool",
-      "parameters": {
-        "source": "SdkVersion",
-        "pattern": "^\\d+\\.\\d+\\.\\d+"
-      }
-    },
-    "CombinedVersion": {
+    "CoalescedVersion": {
       "type": "generated",
       "generator": "coalesce",
       "parameters": {
         "sourceVariableName": "SdkVersion",
         "fallbackVariableName": "dotnet-cli-version"
-      },
+      }
+    },
+    "CombinedVersion": {
+      "type": "generated",
+      "generator": "regex",
+      "dataType": "string",
       "replaces": "SDK_VERSION",
-      "forms": {
-        "global": [ "expandToFullSdkVersion" ]
+      "parameters": {
+        "source": "CoalescedVersion",
+        "steps": [
+          {
+            "regex": "^(\\d+)$",
+            "replacement": "$1.0.100"
+          },
+          {
+            "regex": "^(\\d+\\.\\d+)$",
+            "replacement": "$1.100"
+          }
+        ]
       }
     },
     "RollForward": {
@@ -156,22 +138,6 @@
           "displayName": "Microsoft.Testing.Platform"
         }
       ]
-    }
-  },
-  "forms": {
-    "expandToFullSdkVersion": {
-      "identifier": "chain",
-      "steps": [ "expandMajorOnly", "expandMajorMinor" ]
-    },
-    "expandMajorOnly": {
-      "identifier": "replace",
-      "pattern": "^(\\d+)$",
-      "replacement": "$1.0.100"
-    },
-    "expandMajorMinor": {
-      "identifier": "replace",
-      "pattern": "^(\\d+\\.\\d+)$",
-      "replacement": "$1.100"
     }
   },
   "postActions": [
