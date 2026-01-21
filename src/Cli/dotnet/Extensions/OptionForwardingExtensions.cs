@@ -54,15 +54,16 @@ public static class OptionForwardingExtensions
             {
                 argVal += Path.DirectorySeparatorChar;
             }
+
+            // Escape MSBuild special characters in the path value before wrapping with quotes
+            argVal = EscapeMSBuildPropertyValue(argVal);
+
             if (surroundWithDoubleQuotes)
             {
                 //  Not sure if this is necessary, but this is what "dotnet test" previously did and so we are
                 //  preserving the behavior here after refactoring
                 argVal = VSTestOptions.SurroundWithDoubleQuotes(argVal);
             }
-
-            // Escape MSBuild special characters in the path value
-            argVal = EscapeMSBuildPropertyValue(argVal);
 
             return [
                 $"--property:{outputPropertyName}={argVal}",
