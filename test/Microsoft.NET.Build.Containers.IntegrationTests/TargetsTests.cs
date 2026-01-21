@@ -614,6 +614,7 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
+    [InlineData("8.0.100", "v8.0", "jammy-chiseled", "mcr.microsoft.com/dotnet/runtime:8.0-jammy-chiseled-extra")]
     [InlineData("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:9.0-noble-chiseled-extra")]
     [InlineData("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled-extra")]
     [Theory]
@@ -634,6 +635,7 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
+    [InlineData("8.0.100", "v8.0", "jammy-chiseled", "mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled-extra")]
     [InlineData("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:9.0-noble-chiseled-extra")]
     [InlineData("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra")]
     [Theory]
