@@ -37,11 +37,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   -->
 
-  <PropertyGroup Condition="'$(TargetLatestRuntimePatch)' == ''">
-    <TargetLatestRuntimePatch Condition="'$(SelfContained)' == 'true' ">true</TargetLatestRuntimePatch>
-    <TargetLatestRuntimePatch Condition="'$(SelfContained)' != 'true' ">false</TargetLatestRuntimePatch>
-    <_TargetLatestRuntimePatchIsDefault>true</_TargetLatestRuntimePatchIsDefault>
-  </PropertyGroup>
+  <!--
+    This target computes the TargetLatestRuntimePatch property based on SelfContained.
+    It is executed as a target (rather than at evaluation time) to ensure that properties like
+    SelfContained have their final values, which may be set by other targets (e.g., PackTool.targets).
+  -->
+  <Target Name="_ComputeTargetLatestRuntimePatch">
+    <PropertyGroup Condition="'$(TargetLatestRuntimePatch)' == ''">
+      <TargetLatestRuntimePatch Condition="'$(SelfContained)' == 'true' ">true</TargetLatestRuntimePatch>
+      <TargetLatestRuntimePatch Condition="'$(SelfContained)' != 'true' ">false</TargetLatestRuntimePatch>
+      <_TargetLatestRuntimePatchIsDefault>true</_TargetLatestRuntimePatchIsDefault>
+    </PropertyGroup>
+  </Target>
 
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(DisableImplicitFrameworkReferences)' != 'true'">
     <VerifyMatchingImplicitPackageVersion Condition="'$(VerifyMatchingImplicitPackageVersion)' == ''">true</VerifyMatchingImplicitPackageVersion>
@@ -115,7 +122,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ApplyImplicitVersions"
           BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences;ProcessFrameworkReferences"
-          DependsOnTargets="UpdateAspNetToFrameworkReference;CheckForImplicitPackageReferenceOverrides"
+          DependsOnTargets="_ComputeTargetLatestRuntimePatch;UpdateAspNetToFrameworkReference;CheckForImplicitPackageReferenceOverrides"
           Condition="'@(PackageReference)' != ''">
 
     <ApplyImplicitVersions TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
