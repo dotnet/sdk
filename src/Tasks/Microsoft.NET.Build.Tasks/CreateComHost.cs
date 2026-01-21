@@ -8,8 +8,14 @@ using Microsoft.NET.HostModel.ComHost;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class CreateComHost : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class CreateComHost : TaskBase, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         [Required]
         public string ComHostSourcePath { get; set; }
 
@@ -37,10 +43,14 @@ namespace Microsoft.NET.Build.Tasks
                     return;
                 }
 
+                string comHostSourcePath = TaskEnvironment?.GetAbsolutePath(ComHostSourcePath) ?? ComHostSourcePath;
+                string comHostDestinationPath = TaskEnvironment?.GetAbsolutePath(ComHostDestinationPath) ?? ComHostDestinationPath;
+                string clsidMapPath = TaskEnvironment?.GetAbsolutePath(ClsidMapPath) ?? ClsidMapPath;
+
                 ComHost.Create(
-                    ComHostSourcePath,
-                    ComHostDestinationPath,
-                    ClsidMapPath,
+                    comHostSourcePath,
+                    comHostDestinationPath,
+                    clsidMapPath,
                     typeLibIdMap);
             }
             catch (TypeLibraryDoesNotExistException ex)

@@ -5,8 +5,14 @@
 
 namespace Microsoft.DotNet.Cli.Build
 {
-    public class GenerateRuntimeAnalyzersSWR : Task
+    [MSBuildMultiThreadableTask]
+    public class GenerateRuntimeAnalyzersSWR : Task, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment? TaskEnvironment { get; set; }
+
         [Required]
         public string RuntimeAnalyzersLayoutDirectory { get; set; }
 
@@ -17,11 +23,16 @@ namespace Microsoft.DotNet.Cli.Build
         {
             StringBuilder sb = new StringBuilder(SWR_HEADER);
 
+            // Ensure paths are absolute for thread-safe file operations
+            string layoutDir = TaskEnvironment?.GetAbsolutePath(RuntimeAnalyzersLayoutDirectory) ?? RuntimeAnalyzersLayoutDirectory;
+            string outputFile = TaskEnvironment?.GetAbsolutePath(OutputFile) ?? OutputFile;
+
             // NOTE: Keep in sync with SdkAnalyzerAssemblyRedirector.
             // This is intentionally short to avoid long path problems.
             const string installDir = @"Common7\IDE\CommonExtensions\Microsoft\DotNet";
 
             AddFolder(sb,
+                      layoutDir,
                       "",
                       installDir,
                       filesToInclude:
@@ -30,33 +41,38 @@ namespace Microsoft.DotNet.Cli.Build
                       ]);
 
             AddFolder(sb,
+                      layoutDir,
                       "AspNetCoreAnalyzers",
                       @$"{installDir}\AspNetCoreAnalyzers");
 
             AddFolder(sb,
+                      layoutDir,
                       "NetCoreAnalyzers",
                       @$"{installDir}\NetCoreAnalyzers");
 
             AddFolder(sb,
+                      layoutDir,
                       "WindowsDesktopAnalyzers",
                       @$"{installDir}\WindowsDesktopAnalyzers");
 
             AddFolder(sb,
+                      layoutDir,
                       "SDKAnalyzers",
                       @$"{installDir}\SDKAnalyzers");
 
             AddFolder(sb,
+                      layoutDir,
                       "WebSDKAnalyzers",
                       @$"{installDir}\WebSDKAnalyzers");
 
-            File.WriteAllText(OutputFile, sb.ToString());
+            File.WriteAllText(outputFile, sb.ToString());
 
             return true;
         }
 
-        private void AddFolder(StringBuilder sb, string relativeSourcePath, string swrInstallDir, bool ngenAssemblies = false, IEnumerable<string> filesToInclude = null)
+        private void AddFolder(StringBuilder sb, string layoutDirectory, string relativeSourcePath, string swrInstallDir, bool ngenAssemblies = false, IEnumerable<string> filesToInclude = null)
         {
-            string sourceFolder = Path.Combine(RuntimeAnalyzersLayoutDirectory, relativeSourcePath);
+            string sourceFolder = Path.Combine(layoutDirectory, relativeSourcePath);
 
             // If files were specified explicitly, check that they exist.
             if (filesToInclude != null)
@@ -119,7 +135,7 @@ namespace Microsoft.DotNet.Cli.Build
                 string newSwrInstallDir = Path.Combine(swrInstallDir, subfolderName);
 
                 // Don't propagate ngenAssemblies to subdirectories.
-                AddFolder(sb, newRelativeSourcePath, newSwrInstallDir);
+                AddFolder(sb, layoutDirectory, newRelativeSourcePath, newSwrInstallDir);
             }
         }
 

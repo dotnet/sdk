@@ -5,8 +5,14 @@
 
 namespace Microsoft.DotNet.Build.Tasks
 {
-    public class GenerateMSBuildExtensionsSWR : Task
+    [MSBuildMultiThreadableTask]
+    public class GenerateMSBuildExtensionsSWR : Task, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment? TaskEnvironment { get; set; }
+
         [Required]
         public string MSBuildExtensionsLayoutDirectory { get; set; }
 
@@ -17,29 +23,36 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             StringBuilder sb = new StringBuilder(SWR_HEADER);
 
+            // Ensure paths are absolute for thread-safe file operations
+            string layoutDir = TaskEnvironment?.GetAbsolutePath(MSBuildExtensionsLayoutDirectory) ?? MSBuildExtensionsLayoutDirectory;
+            string outputFile = TaskEnvironment?.GetAbsolutePath(OutputFile) ?? OutputFile;
+
             AddFolder(sb,
+                      layoutDir,
                       @"MSBuildSdkResolver",
                       @"MSBuild\Current\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver",
                       ngenAssemblies: true);
 
             AddFolder(sb,
+                      layoutDir,
                       @"msbuildExtensions",
                       @"MSBuild");
 
             AddFolder(sb,
+                      layoutDir,
                       @"msbuildExtensions-ver",
                       @"MSBuild\Current");
 
-            FileInfo outputFileInfo = new FileInfo(OutputFile);
+            FileInfo outputFileInfo = new FileInfo(outputFile);
             outputFileInfo.Directory.Create();
             File.WriteAllText(outputFileInfo.FullName, sb.ToString());
 
             return true;
         }
 
-        private void AddFolder(StringBuilder sb, string relativeSourcePath, string swrInstallDir, bool ngenAssemblies = false)
+        private void AddFolder(StringBuilder sb, string layoutDirectory, string relativeSourcePath, string swrInstallDir, bool ngenAssemblies = false)
         {
-            string sourceFolder = Path.Combine(MSBuildExtensionsLayoutDirectory, relativeSourcePath);
+            string sourceFolder = Path.Combine(layoutDirectory, relativeSourcePath);
             var files = Directory.GetFiles(sourceFolder)
                             .Where(f => !Path.GetExtension(f).Equals(".pdb", StringComparison.OrdinalIgnoreCase) && !Path.GetExtension(f).Equals(".swr", StringComparison.OrdinalIgnoreCase))
                             .ToList();
@@ -73,7 +86,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 string newSwrInstallDir = Path.Combine(swrInstallDir, subfolderName);
 
                 // Don't propagate ngenAssemblies to subdirectories.
-                AddFolder(sb, newRelativeSourcePath, newSwrInstallDir);
+                AddFolder(sb, layoutDirectory, newRelativeSourcePath, newSwrInstallDir);
             }
         }
 

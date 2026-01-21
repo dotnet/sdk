@@ -10,8 +10,14 @@ using Microsoft.NET.HostModel.ComHost;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateClsidMap : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GenerateClsidMap : TaskBase, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         [Required]
         public string IntermediateAssembly { get; set; }
 
@@ -20,7 +26,10 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            using (var assemblyStream = new FileStream(IntermediateAssembly, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
+            string intermediateAssemblyPath = TaskEnvironment?.GetAbsolutePath(IntermediateAssembly) ?? IntermediateAssembly;
+            string clsidMapDestinationPath = TaskEnvironment?.GetAbsolutePath(ClsidMapDestinationPath) ?? ClsidMapDestinationPath;
+
+            using (var assemblyStream = new FileStream(intermediateAssemblyPath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
             {
                 try
                 {
@@ -34,7 +43,7 @@ namespace Microsoft.NET.Build.Tasks
                                 Log.LogError(Strings.ClsidMapInvalidAssembly, IntermediateAssembly);
                                 return;
                             }
-                            ClsidMap.Create(reader, ClsidMapDestinationPath);
+                            ClsidMap.Create(reader, clsidMapDestinationPath);
                         }
                     }
                 }
