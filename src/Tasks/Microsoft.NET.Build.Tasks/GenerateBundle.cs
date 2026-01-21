@@ -6,8 +6,14 @@ using Microsoft.NET.HostModel.Bundle;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateBundle : TaskBase, ICancelableTask
+    [MSBuildMultiThreadableTask]
+    public class GenerateBundle : TaskBase, ICancelableTask, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly Random _jitter =
 #if NET
@@ -76,9 +82,10 @@ namespace Microsoft.NET.Build.Tasks
             options |= EnableCompressionInSingleFile ? BundleOptions.EnableCompression : BundleOptions.None;
 
             Version version = new(TargetFrameworkVersion);
+            string outputDir = TaskEnvironment?.GetAbsolutePath(OutputDir) ?? OutputDir;
             var bundler = new Bundler(
                 AppHostName,
-                OutputDir,
+                outputDir,
                 options,
                 targetOS,
                 targetArch,
@@ -90,7 +97,8 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var item in FilesToBundle)
             {
-                fileSpec.Add(new FileSpec(sourcePath: item.ItemSpec,
+                string sourcePath = TaskEnvironment?.GetAbsolutePath(item.ItemSpec) ?? item.ItemSpec;
+                fileSpec.Add(new FileSpec(sourcePath: sourcePath,
                                           bundleRelativePath: item.GetMetadata(MetadataKeys.RelativePath)));
             }
 

@@ -16,8 +16,14 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Generates the $(project).deps.json file.
     /// </summary>
-    public class GenerateDepsFile : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GenerateDepsFile : TaskBase, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment? TaskEnvironment { get; set; }
+
         [Required]
         public string ProjectPath { get; set; }
 
@@ -139,7 +145,8 @@ namespace Microsoft.NET.Build.Tasks
             LockFileLookup lockFileLookup = null;
             if (AssetsFilePath != null)
             {
-                LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
+                string assetsFilePath = TaskEnvironment?.GetAbsolutePath(AssetsFilePath) ?? AssetsFilePath;
+                LockFile lockFile = new LockFileCache(this).GetLockFile(assetsFilePath);
                 projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
                     EffectiveRuntimeIdentifier,
@@ -218,8 +225,9 @@ namespace Microsoft.NET.Build.Tasks
                 // If a RID-graph is provided to the DependencyContextBuilder, it generates a RID-fallback
                 // graph with respect to the target RuntimeIdentifier.
 
+                string runtimeGraphPath = TaskEnvironment?.GetAbsolutePath(RuntimeGraphPath) ?? RuntimeGraphPath;
                 RuntimeGraph runtimeGraph =
-                    IsSelfContained ? new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath) : null;
+                    IsSelfContained ? new RuntimeGraphCache(this).GetRuntimeGraph(runtimeGraphPath) : null;
 
                 builder = new DependencyContextBuilder(mainProject, IncludeRuntimeFileVersions, runtimeGraph, projectContext, lockFileLookup);
             }
@@ -304,7 +312,8 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            WriteDepsFile(DepsFilePath);
+            string depsFilePath = TaskEnvironment?.GetAbsolutePath(DepsFilePath) ?? DepsFilePath;
+            WriteDepsFile(depsFilePath);
         }
     }
 }

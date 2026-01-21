@@ -8,8 +8,14 @@ using Microsoft.NET.HostModel.ComHost;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateRegFreeComManifest : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GenerateRegFreeComManifest : TaskBase, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment? TaskEnvironment { get; set; }
+
         [Required]
         public string IntermediateAssembly { get; set; }
 
@@ -40,12 +46,16 @@ namespace Microsoft.NET.Build.Tasks
                     return;
                 }
 
+                string intermediateAssemblyPath = TaskEnvironment?.GetAbsolutePath(IntermediateAssembly) ?? IntermediateAssembly;
+                string clsidMapPath = TaskEnvironment?.GetAbsolutePath(ClsidMapPath) ?? ClsidMapPath;
+                string comManifestPath = TaskEnvironment?.GetAbsolutePath(ComManifestPath) ?? ComManifestPath;
+
                 RegFreeComManifest.CreateManifestFromClsidmap(
                     Path.GetFileNameWithoutExtension(IntermediateAssembly),
                     ComHostName,
-                    FileUtilities.TryGetAssemblyVersion(IntermediateAssembly).ToString(),
-                    ClsidMapPath,
-                    ComManifestPath);
+                    FileUtilities.TryGetAssemblyVersion(intermediateAssemblyPath).ToString(),
+                    clsidMapPath,
+                    comManifestPath);
             }
             catch (TypeLibraryDoesNotExistException ex)
             {

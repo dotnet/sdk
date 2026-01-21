@@ -7,8 +7,14 @@ using NuGet.RuntimeModel;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
-    public class GenerateSdkRuntimeIdentifierChain : Task
+    [MSBuildMultiThreadableTask]
+    public class GenerateSdkRuntimeIdentifierChain : Task, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment? TaskEnvironment { get; set; }
+
         [Required]
         public string RuntimeIdentifier { get; set; }
 
@@ -20,10 +26,21 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public override bool Execute()
         {
-            var runtimeIdentifierGraph = JsonRuntimeFormat.ReadRuntimeGraph(RuntimeIdentifierGraphPath);
+            // Ensure paths are absolute for thread-safe file operations
+            string graphPath = TaskEnvironment?.GetAbsolutePath(RuntimeIdentifierGraphPath) ?? RuntimeIdentifierGraphPath;
+            string outputPath = TaskEnvironment?.GetAbsolutePath(RuntimeIdentifierChainOutputPath) ?? RuntimeIdentifierChainOutputPath;
+
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            var runtimeIdentifierGraph = JsonRuntimeFormat.ReadRuntimeGraph(graphPath);
 
             var chainContents = string.Join("\n", runtimeIdentifierGraph.ExpandRuntime(RuntimeIdentifier));
-            File.WriteAllText(RuntimeIdentifierChainOutputPath, chainContents);
+            File.WriteAllText(outputPath, chainContents);
 
             return true;
         }

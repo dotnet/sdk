@@ -7,14 +7,21 @@
 using System.Formats.Tar;
 #endif
 using System.IO.Compression;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
     /// <summary>
     /// Extracts a .zip or .tar.gz file to a directory.
     /// </summary>
-    public sealed class ExtractArchiveToDirectory : ToolTask
+    [MSBuildMultiThreadableTask]
+    public sealed class ExtractArchiveToDirectory : ToolTask, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         /// <summary>
         /// The path to the archive to extract.
         /// </summary>
@@ -43,13 +50,16 @@ namespace Microsoft.DotNet.Build.Tasks
 
             var retVal = true;
 
-            if (Directory.Exists(DestinationDirectory) && CleanDestination == true)
+            string destinationDirectory = TaskEnvironment?.GetAbsolutePath(DestinationDirectory) ?? DestinationDirectory;
+            string sourceArchive = TaskEnvironment?.GetAbsolutePath(SourceArchive) ?? SourceArchive;
+
+            if (Directory.Exists(destinationDirectory) && CleanDestination == true)
             {
                 Log.LogMessage(MessageImportance.Low, "'{0}' already exists, trying to delete before unzipping...", DestinationDirectory);
-                Directory.Delete(DestinationDirectory, recursive: true);
+                Directory.Delete(destinationDirectory, recursive: true);
             }
 
-            if (!File.Exists(SourceArchive))
+            if (!File.Exists(sourceArchive))
             {
                 Log.LogError($"SourceArchive '{SourceArchive} does not exist.");
 
@@ -59,7 +69,7 @@ namespace Microsoft.DotNet.Build.Tasks
             if (retVal)
             {
                 Log.LogMessage($"Creating Directory {DestinationDirectory}");
-                Directory.CreateDirectory(DestinationDirectory);
+                Directory.CreateDirectory(destinationDirectory);
             }
             
             return retVal;
@@ -81,16 +91,18 @@ namespace Microsoft.DotNet.Build.Tasks
                     if (DirectoriesToCopy != null && DirectoriesToCopy.Length != 0)
                     {
                         // Partial archive extraction
+                        string sourceArchivePath = TaskEnvironment?.GetAbsolutePath(SourceArchive) ?? SourceArchive;
                         if (isZipArchive)
                         {
-                            using var zip = new ZipArchive(File.OpenRead(SourceArchive));
+                            using var zip = new ZipArchive(File.OpenRead(sourceArchivePath));
                             string fullDestDirPath = GetFullDirectoryPathWithSeperator(DestinationDirectory);
 
                             foreach (var entry in zip.Entries)
                             {
                                 if (ShouldExtractItem(entry.FullName))
                                 {
-                                    string destinationPath = Path.GetFullPath(Path.Combine(DestinationDirectory, entry.FullName));
+                                    string combinedPath = Path.Combine(DestinationDirectory, entry.FullName);
+                                    string destinationPath = TaskEnvironment?.GetAbsolutePath(combinedPath) ?? Path.GetFullPath(combinedPath);
 
                                     CheckDestinationPath(destinationPath, fullDestDirPath);
 
@@ -108,7 +120,7 @@ namespace Microsoft.DotNet.Build.Tasks
                             retVal = base.Execute();
 #else
                             // Decompress GZip content
-                            using FileStream compressedFileStream = File.OpenRead(SourceArchive);
+                            using FileStream compressedFileStream = File.OpenRead(sourceArchivePath);
                             using var decompressor = new GZipStream(compressedFileStream, CompressionMode.Decompress);
                             using var decompressedStream = new MemoryStream();
                             decompressor.CopyTo(decompressedStream);
@@ -125,7 +137,8 @@ namespace Microsoft.DotNet.Build.Tasks
                                     entryName = entryName.StartsWith("./") ? entryName[2..] : entryName;
                                     if (ShouldExtractItem(entryName))
                                     {
-                                        string destinationPath = Path.GetFullPath(Path.Combine(DestinationDirectory, entryName));
+                                        string combinedPath = Path.Combine(DestinationDirectory, entryName);
+                                        string destinationPath = TaskEnvironment?.GetAbsolutePath(combinedPath) ?? Path.GetFullPath(combinedPath);
 
                                         CheckDestinationPath(destinationPath, fullDestDirPath);
                                         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
@@ -141,14 +154,16 @@ namespace Microsoft.DotNet.Build.Tasks
                     else
                     {
                         // Complete archive extraction
+                        string sourceArchivePath = TaskEnvironment?.GetAbsolutePath(SourceArchive) ?? SourceArchive;
+                        string destinationDirectoryPath = TaskEnvironment?.GetAbsolutePath(DestinationDirectory) ?? DestinationDirectory;
                         if (isZipArchive)
                         {
 #if NETFRAMEWORK
                             //  .NET Framework doesn't have overload to overwrite files
-                            ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory);
+                            ZipFile.ExtractToDirectory(sourceArchivePath, destinationDirectoryPath);
 #else
 
-                            ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory, overwriteFiles: true);
+                            ZipFile.ExtractToDirectory(sourceArchivePath, destinationDirectoryPath, overwriteFiles: true);
 #endif
                         }
                         else
@@ -171,7 +186,8 @@ namespace Microsoft.DotNet.Build.Tasks
             if (!retVal)
             {
                 Log.LogMessage($"Deleting Directory {DestinationDirectory}");
-                Directory.Delete(DestinationDirectory);
+                string destinationDirectoryPath = TaskEnvironment?.GetAbsolutePath(DestinationDirectory) ?? DestinationDirectory;
+                Directory.Delete(destinationDirectoryPath);
             }
 
             return retVal;
@@ -179,7 +195,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
         private string GetFullDirectoryPathWithSeperator(string directory)
         {
-            string fullDirectoryPath = Path.GetFullPath(directory);
+            string fullDirectoryPath = TaskEnvironment?.GetAbsolutePath(directory) ?? Path.GetFullPath(directory);
 
             if (!fullDirectoryPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
             {
