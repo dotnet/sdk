@@ -38,19 +38,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <UsingNETSdkDefaults>true</UsingNETSdkDefaults>
 
-    <NETCoreSdkBundledVersionsProps Condition="'$(NETCoreSdkBundledVersionsProps)' == ''">$(MSBuildThisFileDirectory)..\..\..\Microsoft.NETCoreSdk.BundledVersions.props</NETCoreSdkBundledVersionsProps>
     <CustomAfterDirectoryBuildProps>$(CustomAfterDirectoryBuildProps);$(MSBuildThisFileDirectory)UseArtifactsOutputPath.props</CustomAfterDirectoryBuildProps>
   </PropertyGroup>
-
-  <!-- Import bundled version information that needs to be availble before the Common.props / D.B.props import
-       in order for users to be able to reference it. -->
-  <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="Exists('$(NETCoreSdkBundledVersionsProps)')" />
 
   <PropertyGroup Condition="'$(MSBuildProjectFullPath)' == '$(ProjectToOverrideProjectExtensionsPath)'">
     <MSBuildProjectExtensionsPath>$(ProjectExtensionsPathForSpecifiedProject)</MSBuildProjectExtensionsPath>
   </PropertyGroup>
 
+  <Import Project="..\targets\Microsoft.NET.Sdk.BeforeCommon.props" />
+
   <Import Project="$(AlternateCommonProps)" Condition="'$(AlternateCommonProps)' != ''" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="'$(AlternateCommonProps)' == ''"/>
+
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.props"  />
+
 </Project>

@@ -13,11 +13,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- This file is imported by Microsoft.CppCommon.props -->
 
-  <PropertyGroup Condition="'$(NETCoreSdkBundledVersionsProps)' == ''">
-    <NETCoreSdkBundledVersionsProps>$(MSBuildThisFileDirectory)..\..\..\Microsoft.NETCoreSdk.BundledVersions.props</NETCoreSdkBundledVersionsProps>
-  </PropertyGroup>
-
-  <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="'$(UsingNETSdkDefaults)' != 'true' and Exists('$(NETCoreSdkBundledVersionsProps)')" /> 
+  <Import Project="..\targets\Microsoft.NET.Sdk.BeforeCommon.props" />
   <Import Project="..\targets\Microsoft.NET.Sdk.BeforeCommon.targets" />
 
 </Project>
