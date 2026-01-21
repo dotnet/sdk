@@ -366,7 +366,9 @@ namespace Microsoft.NET.ToolPack.Tests
         public void Framework_dependent_tool_should_target_base_runtime_version()
         {
             // This test verifies that framework-dependent tools (FDD) correctly target the .0 patch version
-            // instead of a specific patch version, ensuring compatibility across runtime installations
+            // instead of a specific patch version, ensuring compatibility across runtime installations.
+            // File-based apps default to PublishAot=true, which was causing the issue, so we set it here
+            // to properly test the fix.
             var testProject = new TestProject()
             {
                 Name = "FddToolTest",
@@ -377,6 +379,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
             testProject.AdditionalProperties["PackAsTool"] = "true";
             testProject.AdditionalProperties["ToolCommandName"] = "fddtool";
+            testProject.AdditionalProperties["PublishAot"] = "true";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: "FddToolRuntimeVersion");
 
