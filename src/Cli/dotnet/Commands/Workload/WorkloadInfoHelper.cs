@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
@@ -187,6 +189,9 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
                     reporter.Write($"{separator}{CliCommandStrings.WorkloadInstallTypeColumn}:");
                     reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(Product.Version), dotnetPath).ToString(),align}"
                     );
+
+                    PrintWorkloadDependencies(workloadManifest.ManifestPath, separator, reporter);
+
                     reporter.WriteLine("");
                 }
             }
@@ -196,5 +201,190 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         {
             WriteUpdateModeAndAnyError();
         }
+    }
+
+    private static void PrintWorkloadDependencies(string manifestPath, string separator, IReporter reporter)
+    {
+        var manifestDir = Path.GetDirectoryName(manifestPath);
+        if (manifestDir == null)
+        {
+            return;
+        }
+
+        var dependenciesPath = Path.Combine(manifestDir, "WorkloadDependencies.json");
+        if (!File.Exists(dependenciesPath))
+        {
+            return;
+        }
+
+        try
+        {
+            var json = File.ReadAllText(dependenciesPath);
+            using var doc = JsonDocument.Parse(json);
+
+            // The root object has workload manifest IDs as keys (e.g., "microsoft.net.sdk.android")
+            foreach (var manifestEntry in doc.RootElement.EnumerateObject())
+            {
+                // Each manifest entry contains dependency categories (e.g., "workload", "jdk", "androidsdk")
+                foreach (var category in manifestEntry.Value.EnumerateObject())
+                {
+                    // Skip the "workload" category as it's metadata, not a dependency
+                    if (category.Name.Equals("workload", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    reporter.WriteLine($"{separator}{CliCommandStrings.WorkloadDependenciesColumn} ({category.Name}):");
+                    PrintDependencyCategory(category.Value, separator + "   ", reporter);
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            // Silently ignore malformed JSON
+        }
+        catch (IOException)
+        {
+            // Silently ignore file read errors
+        }
+    }
+
+    private static void PrintDependencyCategory(JsonElement category, string indent, IReporter reporter)
+    {
+        const int labelWidth = 21; // Align with "Recommended Version: "
+
+        foreach (var prop in category.EnumerateObject())
+        {
+            if (prop.Value.ValueKind == JsonValueKind.Array)
+            {
+                // Handle any array of items (packages, drivers, etc.)
+                foreach (var item in prop.Value.EnumerateArray())
+                {
+                    PrintItemInfo(item, indent, labelWidth, reporter);
+                }
+            }
+            else
+            {
+                // Handle simple properties like "version", "recommendedVersion"
+                var value = GetJsonValueAsString(prop.Value);
+                if (!string.IsNullOrEmpty(value))
+                {
+                    var displayName = GetLocalizedPropertyName(prop.Name);
+                    var label = displayName + ":";
+                    reporter.WriteLine($"{indent}{label.PadRight(labelWidth)}{value}");
+                }
+            }
+        }
+    }
+
+    private static string GetLocalizedPropertyName(string propertyName)
+    {
+        return propertyName.ToLowerInvariant() switch
+        {
+            "version" => CliCommandStrings.WorkloadDependencyVersion,
+            "recommendedversion" => CliCommandStrings.WorkloadDependencyRecommendedVersion,
+            _ => propertyName
+        };
+    }
+
+    private static void PrintItemInfo(JsonElement item, string indent, int labelWidth, IReporter reporter)
+    {
+        string? displayName = null;
+        string? id = null;
+        string? version = null;
+        string? recommendedVersion = null;
+        bool? optional = null;
+
+        foreach (var prop in item.EnumerateObject())
+        {
+            switch (prop.Name.ToLowerInvariant())
+            {
+                case "desc":
+                case "name":
+                    displayName = GetJsonValueAsString(prop.Value);
+                    break;
+                case "id":
+                    id = GetJsonValueAsString(prop.Value);
+                    break;
+                case "version":
+                    version = GetJsonValueAsString(prop.Value);
+                    break;
+                case "recommendedversion":
+                    recommendedVersion = GetJsonValueAsString(prop.Value);
+                    break;
+                case "optional":
+                    optional = prop.Value.ValueKind == JsonValueKind.True ||
+                        string.Equals(prop.Value.ToString(), bool.TrueString, StringComparison.OrdinalIgnoreCase);
+                    break;
+                case "sdkpackage":
+                    foreach (var sdkProp in prop.Value.EnumerateObject())
+                    {
+                        if (sdkProp.Name.Equals("id", StringComparison.OrdinalIgnoreCase))
+                        {
+                            id = GetJsonValueAsString(sdkProp.Value);
+                        }
+                        else if (sdkProp.Name.Equals("recommendedVersion", StringComparison.OrdinalIgnoreCase))
+                        {
+                            recommendedVersion = GetJsonValueAsString(sdkProp.Value);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(displayName))
+        {
+            var optionalText = optional == true ? $" ({CliCommandStrings.WorkloadDependencyOptional})" : "";
+            reporter.WriteLine($"{indent}- {displayName}{optionalText}");
+            var detailIndent = indent + "    ";
+            if (!string.IsNullOrEmpty(id))
+            {
+                reporter.WriteLine($"{detailIndent}{id}");
+            }
+            if (!string.IsNullOrEmpty(version))
+            {
+                var label = CliCommandStrings.WorkloadDependencyVersion + ":";
+                reporter.WriteLine($"{detailIndent}{label.PadRight(labelWidth)}{version}");
+            }
+            if (!string.IsNullOrEmpty(recommendedVersion))
+            {
+                var label = CliCommandStrings.WorkloadDependencyRecommendedVersion + ":";
+                reporter.WriteLine($"{detailIndent}{label.PadRight(labelWidth)}{recommendedVersion}");
+            }
+        }
+    }
+
+    private static string? GetJsonValueAsString(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => element.GetString(),
+            JsonValueKind.Number => element.GetRawText(),
+            JsonValueKind.True => bool.TrueString,
+            JsonValueKind.False => bool.FalseString,
+            JsonValueKind.Object => GetPlatformSpecificId(element),
+            _ => null
+        };
+    }
+
+    private static string? GetPlatformSpecificId(JsonElement element)
+    {
+        // Handle platform-specific IDs like:
+        // "id": { "win-x64": "...", "mac-arm64": "...", ... }
+        var rid = RuntimeInformation.RuntimeIdentifier;
+
+        // Try exact match first
+        if (element.TryGetProperty(rid, out var exactMatch))
+        {
+            return GetJsonValueAsString(exactMatch);
+        }
+
+        // Fall back to first available
+        foreach (var prop in element.EnumerateObject())
+        {
+            return $"{GetJsonValueAsString(prop.Value)} ({prop.Name})";
+        }
+
+        return null;
     }
 }

@@ -1,0 +1,77 @@
+{
+  "xamarin-android": {
+    "workload": {
+      "description": "This should be skipped"
+    },
+    "jdk": {
+      "version": "[11.0,18.0)",
+      "recommendedVersion": "11.0.12"
+    },
+    "androidsdk": {
+      "packages": [
+        {
+          "desc": "Android SDK Build-Tools 30",
+          "id": "build-tools;30.0.3"
+        },
+        {
+          "desc": "Android SDK Platform-Tools",
+          "sdkPackage": {
+            "id": "platform-tools",
+            "recommendedVersion": "31.0.3"
+          }
+        },
+        {
+          "desc": "Android Emulator",
+          "id": "emulator",
+          "optional": true,
+          "recommendedVersion": "31.2.10"
+        },
+        {
+          "desc": "Not Optional Item",
+          "id": "not-optional",
+          "optional": false
+        },
+        {
+          "desc": "Google APIs System Image",
+          "sdkPackage": {
+            "id": {
+              "win-x64": "system-images;android-35;google_apis;x86_64",
+              "win-arm64": "system-images;android-35;google_apis;x86_64",
+              "osx-x64": "system-images;android-35;google_apis;x86_64",
+              "osx-arm64": "system-images;android-35;google_apis;arm64-v8a",
+              "linux-x64": "system-images;android-35;google_apis;x86_64",
+              "linux-arm64": "system-images;android-35;google_apis;arm64-v8a"
+            }
+          },
+          "optional": true
+        }
+      ]
+    },
+    "appium": {
+      "version": "[2.17.1,)",
+      "recommendedVersion": "2.17.1",
+      "drivers": [
+        {
+          "name": "windows",
+          "version": "[3.1.1,)",
+          "recommendedVersion": "3.1.1"
+        },
+        {
+          "name": "xcuitest",
+          "version": "[7.32.0,)",
+          "recommendedVersion": "7.32.0"
+        },
+        {
+          "name": "mac2",
+          "version": "[1.20.3,)",
+          "recommendedVersion": "1.20.3"
+        },
+        {
+          "name": "uiautomator2",
+          "version": "[4.2.1,)",
+          "recommendedVersion": "4.2.1"
+        }
+      ]
+    }
+  }
+}

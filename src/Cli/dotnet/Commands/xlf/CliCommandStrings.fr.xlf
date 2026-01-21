@@ -3735,6 +3735,26 @@ Pour afficher une valeur, spécifiez l’option de ligne de commande corresponda
         <target state="translated">Gérez les charges de travail facultatives.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadDependenciesColumn">
+        <source>Dependencies</source>
+        <target state="new">Dependencies</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadDependencyOptional">
+        <source>optional</source>
+        <target state="new">optional</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadDependencyRecommendedVersion">
+        <source>Recommended Version</source>
+        <target state="new">Recommended Version</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadDependencyVersion">
+        <source>Version</source>
+        <target state="new">Version</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadElevateCommandDescription">
         <source>Start the elevated server process to facilitate MSI based installations.</source>
         <target state="translated">Démarrez le processus du serveur avec élévation de privilèges pour faciliter les installations basées sur MSI.</target>

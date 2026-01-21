@@ -2434,6 +2434,18 @@ To display a value, specify the corresponding command-line option without provid
   <data name="WorkloadManifestVersionColumn" xml:space="preserve">
     <value>Manifest Version</value>
   </data>
+  <data name="WorkloadDependenciesColumn" xml:space="preserve">
+    <value>Dependencies</value>
+  </data>
+  <data name="WorkloadDependencyVersion" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="WorkloadDependencyRecommendedVersion" xml:space="preserve">
+    <value>Recommended Version</value>
+  </data>
+  <data name="WorkloadDependencyOptional" xml:space="preserve">
+    <value>optional</value>
+  </data>
   <data name="WorkloadNotInstalled" xml:space="preserve">
     <value>Couldn't find workload ID(s): {0}</value>
   </data>
