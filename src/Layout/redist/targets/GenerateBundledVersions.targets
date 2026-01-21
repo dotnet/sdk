@@ -77,6 +77,18 @@
   <Target Name="GenerateBundledVersionsProps">
     <PropertyGroup>
       <BundledVersionsPropsFileName>Microsoft.NETCoreSdk.BundledVersions.props</BundledVersionsPropsFileName>
+      <_NETCoreAppRefFrameworkListFile>$(NuGetPackageRoot)microsoft.netcore.app.ref\$(MicrosoftNETCoreAppRefPackageVersion)\data\FrameworkList.xml</_NETCoreAppRefFrameworkListFile>
+    </PropertyGroup>
+
+    <XmlPeek XmlInputPath="$(_NETCoreAppRefFrameworkListFile)" Query="/FileList/@TargetFrameworkVersion">
+      <Output TaskParameter="Result" ItemName="NETCoreAppTargetFrameworkVersionFrameworkList" />
+    </XmlPeek>
+
+    <Error Condition="'@(NETCoreAppTargetFrameworkVersionFrameworkList)' == ''"
+           Text="The NETCoreApp target framework version could not be read from '$(_NETCoreAppRefFrameworkListFile)'. Ensure the file exists and contains a FileList element with a TargetFrameworkVersion attribute." />
+
+    <PropertyGroup>
+      <_NETCoreAppTargetFrameworkVersion>%(NETCoreAppTargetFrameworkVersionFrameworkList.Identity)</_NETCoreAppTargetFrameworkVersion>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -593,6 +605,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PrunePackageDataRoot Condition="'%24(PrunePackageDataRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(MSBuildThisFileDirectory)'))PrunePackageData</PrunePackageDataRoot>
 
     <_NetFrameworkHostedCompilersVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</_NetFrameworkHostedCompilersVersion>
+    <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
+    <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
+    <BundledNETCoreAppTargetFramework>net$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFramework>
     <BundledNETCoreAppPackageVersion>$(_NETCoreAppPackageVersion)</BundledNETCoreAppPackageVersion>
     <BundledNETStandardTargetFrameworkVersion>$(_NETStandardTargetFrameworkVersion)</BundledNETStandardTargetFrameworkVersion>
     <BundledNETStandardPackageVersion>$(_NETStandardLibraryPackageVersion)</BundledNETStandardPackageVersion>
