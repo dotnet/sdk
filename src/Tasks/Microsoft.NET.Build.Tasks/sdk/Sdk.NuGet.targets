@@ -11,10 +11,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project>
 
+  <!-- This file is imported by Microsoft.DesktopBridge.targets -->
+
   <PropertyGroup Condition="'$(NETCoreSdkBundledVersionsProps)' == ''">
     <NETCoreSdkBundledVersionsProps>$(MSBuildThisFileDirectory)..\..\..\Microsoft.NETCoreSdk.BundledVersions.props</NETCoreSdkBundledVersionsProps>
   </PropertyGroup>
-  <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="Exists('$(NETCoreSdkBundledVersionsProps)')" />
+  <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="'$(UsingNETSdkDefaults)' != 'true' and Exists('$(NETCoreSdkBundledVersionsProps)')" />
 
   <Import Project="..\targets\Microsoft.NET.Sdk.DefaultItems.props" />
   

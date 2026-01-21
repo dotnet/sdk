@@ -14,6 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- For projects that aren't using Microsoft.NET.Sdk, these props files won't have been imported yet.
        So import them here. -->
   <ImportGroup Condition="'$(UsingNETSdkDefaults)' != 'true'">
+    <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="'$(UsingNETSdkDefaults)' != 'true' and Exists('$(NETCoreSdkBundledVersionsProps)')" />
     <Import Project="Microsoft.NET.Sdk.DefaultItems.props" />
     <Import Project="Microsoft.NET.SupportedTargetFrameworks.props" />
     <Import Project="Microsoft.NET.SupportedPlatforms.props" />
