@@ -15,7 +15,7 @@ internal static class EnvironmentVariables
         public const string DotnetLaunchProfile = "DOTNET_LAUNCH_PROFILE";
 
         public const string DotNetWatchHotReloadNamedPipeName = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName;
-        public const string DotNetWatchHotReloadHttpEndpoint = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadHttpEndpoint;
+        public const string DotNetWatchHotReloadWebSocketEndpoint = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint;
         public const string DotNetWatchHotReloadHttpPort = "DOTNET_WATCH_HOTRELOAD_HTTP_PORT";
         public const string DotNetStartupHooks = HotReload.AgentEnvironmentVariables.DotNetStartupHooks;
         public const string DotNetModifiableAssemblies = HotReload.AgentEnvironmentVariables.DotNetModifiableAssemblies;
@@ -62,7 +62,7 @@ internal static class EnvironmentVariables
     public static string? BrowserPath => Environment.GetEnvironmentVariable("DOTNET_WATCH_BROWSER_PATH");
 
     /// <summary>
-    /// Port for HTTP hot reload communication. Used for mobile platforms (Android, iOS, MacCatalyst).
+    /// Port for HTTP hot reload communication. Used for mobile platforms (Android, iOS).
     /// Defaults to 9000 if not specified.
     /// </summary>
     public static int HotReloadHttpPort => ReadInt(Names.DotNetWatchHotReloadHttpPort) ?? 9000;

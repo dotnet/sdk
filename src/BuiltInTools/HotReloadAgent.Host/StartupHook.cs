@@ -44,7 +44,7 @@ internal sealed class StartupHook
         var transport = Transport.TryCreate(Log);
         if (transport == null)
         {
-            Log($"No hot reload endpoint configured. Set {AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName} or {AgentEnvironmentVariables.DotNetWatchHotReloadHttpEndpoint}");
+            Log($"No hot reload endpoint configured. Set {AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName} or {AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint}");
             return;
         }
 

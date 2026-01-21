@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Watch;
 internal sealed class MobileAppModel(DotNetWatchContext context, ProjectGraphNode project) : HotReloadAppModel
 {
     public override ValueTask<HotReloadClients?> TryCreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
-        // Use HTTP transport for mobile platforms (Android, iOS, MacCatalyst)
+        // Use WebSocket transport for mobile platforms (Android, iOS)
         // Named pipes don't work over the network for remote device scenarios
         => new(new HotReloadClients(new MobileHotReloadClient(clientLogger, agentLogger, context.EnvironmentOptions.HotReloadHttpPort), browserRefreshServer: null));
 

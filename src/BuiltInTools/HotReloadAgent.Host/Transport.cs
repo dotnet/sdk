@@ -26,13 +26,13 @@ internal abstract class Transport(Action<string> log) : IDisposable
     }
 
     private static readonly string? s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
-    private static readonly string? s_httpEndpoint = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadHttpEndpoint);
+    private static readonly string? s_webSocketEndpoint = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint);
 
     public static Transport? TryCreate(Action<string> log, int timeoutMS = 5000)
         => !string.IsNullOrEmpty(s_namedPipeName)
             ? new NamedPipeTransport(s_namedPipeName, log, timeoutMS)
-            : !string.IsNullOrEmpty(s_httpEndpoint)
-            ? new HttpTransport(s_httpEndpoint, log, timeoutMS)
+            : !string.IsNullOrEmpty(s_webSocketEndpoint)
+            ? new WebSocketTransport(s_webSocketEndpoint, log, timeoutMS)
             : null;
 
     protected void Log(string message)
