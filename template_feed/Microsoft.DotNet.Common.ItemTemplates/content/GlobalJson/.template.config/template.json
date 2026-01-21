@@ -30,12 +30,45 @@
       "type": "parameter",
       "datatype": "string",
       "description": "The version of the .NET SDK to use.",
-      "displayName": "SDK version"
+      "displayName": "SDK version",
+      "forms": {
+        "global": [ "expandToFullSdkVersion" ]
+      }
     },
     "dotnet-cli-version": {
       "type": "parameter",
       "datatype": "string",
-      "displayName": "dotnet CLI version"
+      "displayName": "dotnet CLI version",
+      "forms": {
+        "global": [ "expandToFullSdkVersion" ]
+      }
+    },
+    "IsMajorOnly": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "dataType": "bool",
+      "parameters": {
+        "source": "SdkVersion",
+        "pattern": "^\\d+$"
+      }
+    },
+    "IsMajorMinor": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "dataType": "bool",
+      "parameters": {
+        "source": "SdkVersion",
+        "pattern": "^\\d+\\.\\d+$"
+      }
+    },
+    "IsFullVersion": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "dataType": "bool",
+      "parameters": {
+        "source": "SdkVersion",
+        "pattern": "^\\d+\\.\\d+\\.\\d+"
+      }
     },
     "CombinedVersion": {
       "type": "generated",
@@ -44,7 +77,10 @@
         "sourceVariableName": "SdkVersion",
         "fallbackVariableName": "dotnet-cli-version"
       },
-      "replaces": "SDK_VERSION"
+      "replaces": "SDK_VERSION",
+      "forms": {
+        "global": [ "expandToFullSdkVersion" ]
+      }
     },
     "RollForward": {
       "type": "parameter",
@@ -120,6 +156,22 @@
           "displayName": "Microsoft.Testing.Platform"
         }
       ]
+    }
+  },
+  "forms": {
+    "expandToFullSdkVersion": {
+      "identifier": "chain",
+      "steps": [ "expandMajorOnly", "expandMajorMinor" ]
+    },
+    "expandMajorOnly": {
+      "identifier": "replace",
+      "pattern": "^(\\d+)$",
+      "replacement": "$1.0.100"
+    },
+    "expandMajorMinor": {
+      "identifier": "replace",
+      "pattern": "^(\\d+\\.\\d+)$",
+      "replacement": "$1.100"
     }
   },
   "postActions": [
