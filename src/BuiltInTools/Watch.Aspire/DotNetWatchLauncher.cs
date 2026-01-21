@@ -40,6 +40,9 @@ internal static class DotNetWatchLauncher
 
         var muxerPath = Path.GetFullPath(Path.Combine(options.SdkDirectory, "..", "..", "dotnet" + PathUtilities.ExecutableExtension));
 
+        // msbuild tasks depend on host path variable:
+        Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetHostPath, muxerPath);
+
         var console = new PhysicalConsole(TestFlags.None);
         var reporter = new ConsoleReporter(console, suppressEmojis: false);
         var environmentOptions = EnvironmentOptions.FromEnvironment(muxerPath);

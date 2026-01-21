@@ -39,7 +39,7 @@ public sealed class HelpCommand(string[] helpArgs)
     public static void PrintVersionHeader()
     {
         var versionString = string.IsNullOrEmpty(Product.Version) ? string.Empty : $" ({Product.Version})";
-        Reporter.Output.WriteLine(Product.LongName + versionString);
+        Reporter.Output.WriteLine(LocalizableStrings.DotNetSdkInfo + versionString);
     }
 
     public static Process ConfigureProcess(string docUrl)

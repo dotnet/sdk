@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
+    <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\TestLogger.cs" Link="Utilities\TestLogger.cs" />
   </ItemGroup>
 
   <ItemGroup>

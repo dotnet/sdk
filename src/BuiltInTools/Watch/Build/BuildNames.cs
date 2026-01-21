@@ -19,8 +19,6 @@ internal static class PropertyNames
     public const string HotReloadAutoRestart = nameof(HotReloadAutoRestart);
     public const string DefaultItemExcludes = nameof(DefaultItemExcludes);
     public const string CustomCollectWatchItems = nameof(CustomCollectWatchItems);
-    public const string UsingMicrosoftNETSdkRazor = nameof(UsingMicrosoftNETSdkRazor);
-    public const string DotNetWatchContentFiles = nameof(DotNetWatchContentFiles);
     public const string DotNetWatchBuild = nameof(DotNetWatchBuild);
     public const string DotNetWatchHotReloadHttpPort = nameof(DotNetWatchHotReloadHttpPort);
     public const string DesignTimeBuild = nameof(DesignTimeBuild);
@@ -37,19 +35,25 @@ internal static class ItemNames
     public const string Compile = nameof(Compile);
     public const string Content = nameof(Content);
     public const string ProjectCapability = nameof(ProjectCapability);
+    public const string ScopedCssInput = nameof(ScopedCssInput);
+    public const string StaticWebAssetEndpoint = nameof(StaticWebAssetEndpoint);
 }
 
 internal static class MetadataNames
 {
-    public const string Watch = nameof(Watch);
     public const string TargetPath = nameof(TargetPath);
+    public const string AssetFile = nameof(AssetFile);
+    public const string EndpointProperties = nameof(EndpointProperties);
     public const string Value = nameof(Value);
 }
 
 internal static class TargetNames
 {
     public const string Compile = nameof(Compile);
+    public const string CompileDesignTime = nameof(CompileDesignTime);
     public const string Restore = nameof(Restore);
+    public const string ResolveScopedCssInputs = nameof(ResolveScopedCssInputs);
+    public const string ResolveReferencedProjectsStaticWebAssets = nameof(ResolveReferencedProjectsStaticWebAssets);
     public const string GenerateComputedBuildStaticWebAssets = nameof(GenerateComputedBuildStaticWebAssets);
     public const string ReferenceCopyLocalPathsOutputGroup = nameof(ReferenceCopyLocalPathsOutputGroup);
     public const string DeployHotReloadAgentConfiguration = nameof(DeployHotReloadAgentConfiguration);
