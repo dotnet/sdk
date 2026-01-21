@@ -593,6 +593,12 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="CmdSolutionPathName" xml:space="preserve">
     <value>SOLUTION_PATH</value>
   </data>
+  <data name="VerbRun" xml:space="preserve">
+    <value>run</value>
+  </data>
+  <data name="VerbTest" xml:space="preserve">
+    <value>test</value>
+  </data>
   <data name="CmdSourceOption" xml:space="preserve">
     <value>SOURCE</value>
   </data>
@@ -1170,6 +1176,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="NoWorkloadsToRepair" xml:space="preserve">
     <value>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</value>
+    <comment>{Locked="dotnet workload search"}</comment>
   </data>
   <data name="NoWorkloadsToUpdate" xml:space="preserve">
     <value>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</value>
@@ -1658,6 +1665,9 @@ The default is to publish a framework-dependent application.</value>
   <data name="RestoreSuccessful" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') was restored. Available commands: {2}</value>
   </data>
+  <data name="RestoreNewVersionAvailable" xml:space="preserve">
+    <value>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</value>
+  </data>
   <data name="RollbackDefinitionContainsExtraneousManifestIds" xml:space="preserve">
     <value>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</value>
   </data>
@@ -1685,6 +1695,9 @@ The default is to publish a framework-dependent application.</value>
   </data>
   <data name="RunCommandException" xml:space="preserve">
     <value>The build failed. Fix the build errors and run again.</value>
+  </data>
+  <data name="RunCommandDeployFailed" xml:space="preserve">
+    <value>Deployment to device failed. Fix any deployment errors and run again.</value>
   </data>
   <data name="RunCommandExceptionCouldNotApplyLaunchSettings" xml:space="preserve">
     <value>The launch profile "{0}" could not be applied.
@@ -1754,6 +1767,30 @@ Your project targets multiple frameworks. Specify which framework to run using '
   </data>
   <data name="RunRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to run for.</value>
+  </data>
+  <data name="CommandOptionDeviceDescription" xml:space="preserve">
+    <value>The device identifier to use for running the application.</value>
+  </data>
+  <data name="CommandOptionDeviceHelpName" xml:space="preserve">
+    <value>DEVICE</value>
+  </data>
+  <data name="CommandOptionListDevicesDescription" xml:space="preserve">
+    <value>List available devices for running the application.</value>
+  </data>
+  <data name="RunCommandAvailableDevices" xml:space="preserve">
+    <value>Available devices:</value>
+  </data>
+  <data name="RunCommandNoDevicesAvailable" xml:space="preserve">
+    <value>No devices are available for this project.</value>
+  </data>
+  <data name="RunCommandSelectDevicePrompt" xml:space="preserve">
+    <value>Select a device to run on:</value>
+  </data>
+  <data name="RunCommandMoreDevicesText" xml:space="preserve">
+    <value>Move up and down to reveal more devices</value>
+  </data>
+  <data name="RunCommandExceptionUnableToRunSpecifyDevice" xml:space="preserve">
+    <value>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</value>
   </data>
   <data name="RuntimeConfigDefinition" xml:space="preserve">
     <value>Path to &lt;application&gt;.runtimeconfig.json file.</value>
@@ -2462,7 +2499,7 @@ To display a value, specify the corresponding command-line option without provid
     <value>Workloads</value>
   </data>
   <data name="WorkloadSearchCommandDescription" xml:space="preserve">
-    <value>Search for available workloads.</value>
+    <value>Search for available workloads or workload versions.</value>
   </data>
   <data name="WorkloadSetFromGlobalJsonInstalled" xml:space="preserve">
     <value>Using workload version {0}, which was specified in the global.json file at {1}.</value>
@@ -2561,6 +2598,9 @@ Proceed?</value>
   <data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
     <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
     <comment>{Locked="--yes"}</comment>
+  </data>
+  <data name="ToolInstallPackageIdMissing" xml:space="preserve">
+    <value>A package ID was not specified for tool installation.</value>
   </data>
   <data name="TestCommandUseSolution" xml:space="preserve">
     <value>Specifying a solution for 'dotnet test' should be via '--solution'.</value>

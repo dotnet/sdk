@@ -48,6 +48,18 @@ internal sealed class RunCommandDefinition : Command
         Description = CliCommandStrings.CommandOptionNoLaunchProfileArgumentsDescription
     };
 
+    public readonly Option<string> DeviceOption = new("--device")
+    {
+        Description = CliCommandStrings.CommandOptionDeviceDescription,
+        HelpName = CliCommandStrings.CommandOptionDeviceHelpName
+    };
+
+    public readonly Option<bool> ListDevicesOption = new("--list-devices")
+    {
+        Description = CliCommandStrings.CommandOptionListDevicesDescription,
+        Arity = ArgumentArity.Zero
+    };
+
     public const string NoBuildOptionName = "--no-build";
 
     public readonly Option<bool> NoBuildOption = new(NoBuildOptionName)
@@ -98,6 +110,8 @@ internal sealed class RunCommandDefinition : Command
         Options.Add(PropertyOption);
         Options.Add(LaunchProfileOption);
         Options.Add(NoLaunchProfileOption);
+        Options.Add(DeviceOption);
+        Options.Add(ListDevicesOption);
         Options.Add(NoBuildOption);
         Options.Add(InteractiveOption);
         Options.Add(NoRestoreOption);

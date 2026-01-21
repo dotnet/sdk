@@ -562,7 +562,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "_bin", "blazorwasm.wasm")).Should().NotExist();
         }
 
-        [Fact]
+        [Fact(Skip = "NET11TFM https://github.com/dotnet/sdk/issues/52429")]
         public void Build_SatelliteAssembliesAreCopiedToBuildOutput()
         {
             // Arrange
@@ -695,6 +695,23 @@ public class TestReference
             var outputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
             var fileInWwwroot = new FileInfo(Path.Combine(outputDirectory, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.wasm"));
             fileInWwwroot.Should().Exist();
+        }
+
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        public void Restore_WithRuntime_Works()
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorHosted");
+
+            var nugetRestorePath = Path.Combine(testInstance.TestRoot, ".nuget");
+
+            new DotnetRestoreCommand(Log, "-bl:msbuild-restore.binlog", "-r", "linux-x64")
+                .WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"))
+                .WithEnvironmentVariable("NUGET_PACKAGES", nugetRestorePath)
+                .Execute()
+                .Should().Pass();
+
+            new DirectoryInfo(Path.Combine(nugetRestorePath, "microsoft.netcore.app.runtime.mono.linux-x64"))
+                .Should().NotExist();
         }
 
         [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]

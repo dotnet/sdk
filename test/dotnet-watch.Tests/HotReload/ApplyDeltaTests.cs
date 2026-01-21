@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
         public async Task AddSourceFile()
         {
             Log("AddSourceFile started");
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
         public async Task ChangeFileInDependency()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
         public async Task ProjectChange_UpdateDirectoryBuildPropsThenUpdateSource()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"dotnet watch 🔥 [App.WithDeps ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
         [CombinatorialData]
         public async Task ProjectChange_Update(bool isDirectoryProps)
         {
@@ -309,7 +309,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Ignoring change in output directory: Add '{objDirFilePath}'");
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
         public async Task ProjectChange_GlobalUsings()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -346,7 +346,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.ReEvaluationCompleted);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
         public async Task BinaryLogs()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -399,7 +399,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
         [CombinatorialData]
         public async Task AutoRestartOnRudeEdit(bool nonInteractive)
         {
@@ -500,7 +500,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.RestartingApplication, $"WatchHotReloadApp ({tfm})");
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
         public async Task AutoRestartOnRudeEditAfterRestartPrompt()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -541,7 +541,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
         [CombinatorialData]
         public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
         {
@@ -667,7 +667,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="https://github.com/dotnet/sdk/issues/51491")]
         public async Task HandleTypeLoadFailure()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppTypeLoadFailure")
@@ -777,7 +777,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")]
         public async Task GracefulTermination_Windows()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -810,7 +810,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("exited with exit code 0.");
         }
 
-        [PlatformSpecificFact(TestPlatforms.AnyUnix)]
+        [PlatformSpecificFact(TestPlatforms.AnyUnix, Skip = "https://github.com/dotnet/sdk/issues/51491")]
         public async Task GracefulTermination_Unix()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -901,7 +901,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task BlazorWasm_MSBuildWarning()
         {
             var testAsset = TestAssets
@@ -923,7 +923,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")] // "https://github.com/dotnet/sdk/issues/49307" https://github.com/dotnet/aspnetcore/issues/63759
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -970,7 +970,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva AddExplicitInterfaceImplementation.");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -1060,7 +1060,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip="https://github.com/dotnet/sdk/issues/51491")]
         public async Task HandleMissingAssemblyFailure()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppMissingAssemblyFailure")
@@ -1096,7 +1096,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
         [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
         [InlineData(false)]
         public async Task RenameSourceFile(bool useMove)
@@ -1148,7 +1148,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> Renamed.cs");
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/dotnet/sdk/issues/51491")]
         [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
         [InlineData(false)]
         public async Task RenameDirectory(bool useMove)
@@ -1206,7 +1206,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> NewSubdir", failure: _ => false);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task Aspire_BuildError_ManualRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -1307,7 +1307,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("dotnet watch ⭐ [#3] Sending 'sessionTerminated'");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/51491")] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task Aspire_NoEffect_AutoRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
