@@ -6,6 +6,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.NET.Sdk.Localization;
+using Microsoft.DotNet.Cli.Commands;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
@@ -563,8 +564,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         /// <summary>
         /// Checks if the workload set has any manifests that are missing from disk.
+        /// This checks all manifest roots (including user-local installs).
         /// </summary>
-        private bool HasMissingManifests(WorkloadSet workloadSet)
+        public bool HasMissingManifests(WorkloadSet workloadSet)
         {
             foreach (var manifestEntry in workloadSet.ManifestVersions)
             {

@@ -71,7 +71,7 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
             return;
         }
 
-        if (!HasMissingManifests(workloadSet, _dotnetPath))
+        if (!provider?.HasMissingManifests(workloadSet) ?? true)
         {
             return;
         }
@@ -85,31 +85,7 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
         CliTransaction.RunNew(context => RepairCorruptWorkloadSet(context, workloadSet));
     }
 
-    public static bool HasMissingManifests(WorkloadSet workloadSet, string dotnetPath)
-    {
-        string manifestRoot = Path.Combine(dotnetPath, "sdk-manifests");
 
-        foreach (var manifestEntry in workloadSet.ManifestVersions)
-        {
-            string manifestId = manifestEntry.Key.ToString();
-            string manifestVersion = manifestEntry.Value.Version.ToString();
-            string manifestFeatureBand = manifestEntry.Value.FeatureBand.ToString();
-
-            string manifestDirectory = Path.Combine(manifestRoot, manifestFeatureBand, manifestId, manifestVersion);
-            if (!Directory.Exists(manifestDirectory))
-            {
-                return true;
-            }
-
-            string manifestFile = Path.Combine(manifestDirectory, "WorkloadManifest.json");
-            if (!File.Exists(manifestFile))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     private void RepairCorruptWorkloadSet(ITransactionContext context, WorkloadSet workloadSet)
     {

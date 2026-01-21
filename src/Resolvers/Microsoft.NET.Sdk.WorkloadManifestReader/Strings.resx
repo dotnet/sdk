@@ -214,7 +214,7 @@
     <value>No manifest with ID {0} exists.</value>
   </data>
   <data name="WorkloadSetHasMissingManifests" xml:space="preserve">
-    <value>Workload version {0} has missing manifests. Run "dotnet workload repair" to fix this.</value>
+    <value>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</value>
     <comment>{Locked="dotnet workload repair"}</comment>
   </data>
 
