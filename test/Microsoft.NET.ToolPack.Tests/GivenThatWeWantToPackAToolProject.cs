@@ -390,30 +390,25 @@ namespace Microsoft.NET.ToolPack.Tests
                 var anyTfm = nupkgReader.GetSupportedFrameworks().First().GetShortFolderName();
                 var runtimeConfigPath = $"tools/{anyTfm}/any/{testProject.Name}.runtimeconfig.json";
 
-                // Extract and read the runtimeconfig.json
-                var tmpfilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                Directory.CreateDirectory(tmpfilePath);
-                try
+                // Read the runtimeconfig.json directly from the archive
+                using (var stream = nupkgReader.GetStream(runtimeConfigPath))
+                using (var reader = new StreamReader(stream))
                 {
-                    string copiedFile = nupkgReader.ExtractFile(runtimeConfigPath, tmpfilePath, null);
-                    string runtimeConfigContents = File.ReadAllText(copiedFile);
+                    string runtimeConfigContents = reader.ReadToEnd();
                     var runtimeConfig = JObject.Parse(runtimeConfigContents);
 
                     // Get the framework version
                     var frameworkVersion = runtimeConfig["runtimeOptions"]["framework"]["version"].Value<string>();
 
-                    // Verify that the version ends with .0 (e.g., "11.0.0" instead of "11.0.2")
-                    frameworkVersion.Should().EndWith(".0", 
-                        because: "framework-dependent tools should target the base .0 patch version to ensure compatibility");
+                    // Parse the version to get the base version (major.minor.patch) without any prerelease suffix
+                    // e.g., "11.0.0-preview.1.26069.105" -> "11.0.0"
+                    var dashIndex = frameworkVersion.IndexOf('-');
+                    var baseVersion = dashIndex >= 0 ? frameworkVersion.Substring(0, dashIndex) : frameworkVersion;
 
-                    // Also verify it matches the expected pattern (major.minor.0)
-                    var versionParts = frameworkVersion.Split('.');
+                    // Verify it matches the expected pattern (major.minor.0)
+                    var versionParts = baseVersion.Split('.');
                     versionParts.Should().HaveCount(3, because: "version should be in format major.minor.patch");
-                    versionParts[2].Should().Be("0", because: "patch version should be 0 for FDD tools");
-                }
-                finally
-                {
-                    Directory.Delete(tmpfilePath, recursive: true);
+                    versionParts[2].Should().Be("0", because: "patch version should be 0 for FDD tools to ensure compatibility across runtime installations");
                 }
             }
         }
