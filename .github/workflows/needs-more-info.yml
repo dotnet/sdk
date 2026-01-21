@@ -1,5 +1,12 @@
 name: 'Needs More Info: Follow Up and Close'
 
+# This workflow manages issues with the 'needs more info' label:
+# 1. After 2 weeks of inactivity, posts a follow-up comment
+# 2. If customer replies, pings the person who added the label and any assignees
+# 3. If customer doesn't reply within 14 days of follow-up, closes the issue
+# 4. If label is removed and re-added, the cycle restarts
+# 5. Once customer replies, the issue won't be auto-closed even if team doesn't respond
+
 on:
   schedule:
     - cron: '30 5,17 * * *' # Twice daily at 5:30 and 17:30 UTC
@@ -49,6 +56,8 @@ jobs:
               });
 
               // Find the most recent 'labeled' event for 'needs more info'
+              // This ensures that if the label is removed and re-added,
+              // we restart the cycle from the most recent addition
               const labelEvents = events.filter(e =>
                 e.event === 'labeled' &&
                 e.label &&
@@ -91,6 +100,8 @@ jobs:
 
               if (authorReplies.length > 0 && botFollowUpComment) {
                 // Customer has replied after follow-up - ping the label creator
+                // Per requirements: Don't close the issue after customer replies,
+                // even if it goes idle from the team's side
                 const lastAuthorReply = authorReplies[authorReplies.length - 1];
                 const lastAuthorReplyTime = new Date(lastAuthorReply.created_at).getTime();
                 const botCommentTime = new Date(botFollowUpComment.created_at).getTime();
