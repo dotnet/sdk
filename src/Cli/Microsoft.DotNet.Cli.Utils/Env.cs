@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.DotNet.Cli.Utils;
 
 public static class Env
@@ -20,6 +22,9 @@ public static class Env
 
     public static bool GetEnvironmentVariableAsBool(string name, bool defaultValue = false) =>
         s_environment.GetEnvironmentVariableAsBool(name, defaultValue);
+
+    public static bool TryGetEnvironmentVariableAsBool(string name, [NotNullWhen(true)] out bool value) =>
+        s_environment.TryGetEnvironmentVariableAsBool(name, out value);
 
     public static int? GetEnvironmentVariableAsNullableInt(string name) =>
         s_environment.GetEnvironmentVariableAsNullableInt(name);
