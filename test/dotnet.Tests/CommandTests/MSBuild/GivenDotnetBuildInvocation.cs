@@ -175,11 +175,14 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 
                 var tokens = command.GetArgumentTokensToMSBuild();
                 
+                // Find the OutputPath property token
+                var outputPathToken = tokens.FirstOrDefault(t => t.StartsWith("--property:OutputPath="));
+                outputPathToken.Should().NotBeNull("OutputPath property should be set");
+                
                 // The path should contain escaped semicolons (%3B) instead of raw semicolons
-                tokens.Should().Contain(t => t.StartsWith("--property:OutputPath=") && 
-                                            t.Contains("%3B") && 
-                                            !t.Contains(";") &&
-                                            t.EndsWith(Path.DirectorySeparatorChar.ToString()));
+                outputPathToken.Should().Contain("%3B", "semicolons should be escaped");
+                outputPathToken.Should().NotContain(";", "raw semicolons should not be present after property name");
+                outputPathToken.Should().EndWith(Path.DirectorySeparatorChar.ToString(), "path should end with directory separator");
             });
         }
 
@@ -199,9 +202,12 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 
                 var tokens = command.GetArgumentTokensToMSBuild();
                 
+                // Find the OutputPath property token
+                var outputPathToken = tokens.FirstOrDefault(t => t.StartsWith("--property:OutputPath="));
+                outputPathToken.Should().NotBeNull("OutputPath property should be set");
+                
                 // The path should contain the expected escape sequence
-                tokens.Should().Contain(t => t.StartsWith("--property:OutputPath=") && 
-                                            t.Contains(expectedEscapeSequence));
+                outputPathToken.Should().Contain(expectedEscapeSequence, $"special characters should be escaped as {expectedEscapeSequence}");
             });
         }
     }
