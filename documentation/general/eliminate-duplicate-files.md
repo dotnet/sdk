@@ -128,7 +128,7 @@ The proposed approach leverages file links to eliminate duplicate files within t
 
 ### Platform-Specific Link Strategy
 
-Due to platform-specific constraints, the implementation uses different link types on different operating systems:
+Due to platform-specific constraints, the implementation will at least initially use different link types on different operating systems:
 
 **Windows: Hard Links**
 
@@ -136,23 +136,34 @@ On Windows, hard links must be used because symbolic links require the `SeCreate
 Regular users cannot create symbolic links without either having this privilege explicitly granted or [enabling Developer Mode](https://blogs.windows.com/windowsdeveloper/2016/12/02/symlinks-windows-10/).
 Hard links do not require elevated privileges and work for all users.
 
-**Linux and macOS: Symbolic Links**
+**Linux and macOS: Symbolic Links (Current Strategy)**
 
-On Linux, hard links cause problems with RPM packages.
-This has been verified across Azure Linux, Fedora and CentOS Stream.
-While we could use hard links on Linux as the default and symbolic links specifically for RPM packages, this would create problems for distribution maintainers who consume archives to produce RPMs.
-To maintain consistency and avoid these issues, symbolic links will be used on Linux.
+Our desired direction is to use hard links across all platforms for their performance advantages.
+However, there are currently unknowns with using hard links in RPM packages that prevent us from implementing this approach on Linux at this time.
 
-For macOS, symbolic links will also be used to maintain consistency across Unix-like platforms, simplifying implementation and testing.
+While the RPM protocol itself supports hard links, there are known issues in both the tooling used to create RPM packages and in some package managers' extraction implementations ([RHEL investigation](https://github.com/dotnet/source-build/discussions/3535#discussioncomment-6939375)).
+Additionally, our current build infrastructure (Arcade) does not support creating RPM packages with hard links ([dotnet/arcade#16453](https://github.com/dotnet/arcade/issues/16453)).
 
-**Future Considerations**
+Before we can confidently support hard links on Linux, we need to:
+1. Fix the Arcade infrastructure to support creating RPM packages with hard links
+2. Test comprehensively on the Linux distributions we target, particularly Azure Linux
+3. Work with distribution maintainers to ensure compatibility
+
+Until this work is completed and validated, we will use symbolic links on non-Windows platforms including macOS for implementation simplicity.
+
+If we find that hard links cannot be used in RPM packages long term, one alternative to consider would be using hard links everywhere except RPM packages, which would continue using symbolic links.
+However, this approach has trade-offs that would need to be carefully evaluated:
+- **Con:** Different link types across acquisition channels adds complexity
+- **Con:** Distribution maintainers who create RPM packages from our source tarballs would need to translate hard links to symbolic links
+
+A decision on this alternative approach will be made once the RPM packaging investigation is complete and we have a clearer understanding of the constraints.
+
+**Why Hard Links are Preferred**
 
 Hard links are generally preferred because they [offer performance advantages since no extra steps are needed to resolve the file path](https://www.linuxbash.sh/post/symbolic-links-ln-s-vs-hard-links), providing slightly better access time compared to symbolic links which require path resolution.
-If the RPM limitations are resolved in future Linux distributions, we may revisit this decision and switch Linux to hard links for optimal performance.
 
-For now, having platform consistency in approach (one link type per platform) is valued over using hard links universally.
 
-**Key Benefits:**
+**Key Benefits of File Links:**
 - **No runtime changes required** — Components continue to reference files using their existing paths. Both hard links and symbolic links are transparent to applications.
 - **Immediate disk savings** — Links reduce disk usage by the size of duplicate files.
 - **Tarball compatibility** — Tar format natively supports both hard links and symbolic links, preserving space savings in compressed archives.
