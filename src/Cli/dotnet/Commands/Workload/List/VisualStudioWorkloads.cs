@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Runtime.Versioning;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -69,6 +67,7 @@ internal static class VisualStudioWorkloads
         foreach (var workload in workloadResolver.GetAvailableWorkloads())
         {
             string workloadId = workload.Id.ToString();
+
             // Old style VS components simply replaced '-' with '.' in the workload ID.
             string componentId = workload.Id.ToString().Replace('-', '.');
 
@@ -84,7 +83,7 @@ internal static class VisualStudioWorkloads
                 }
             }
 
-            componentId = s_visualStudioComponentPrefix + "." + componentId;
+            componentId = $"{s_visualStudioComponentPrefix}.{componentId}";
             visualStudioComponentWorkloads.Add(componentId, workloadId);
         }
 
@@ -98,18 +97,34 @@ internal static class VisualStudioWorkloads
     /// <param name="workloadResolver">The workload resolver used to obtain available workloads.</param>
     /// <param name="installedWorkloads">The collection of installed workloads to update.</param>
     /// <param name="sdkFeatureBand">The feature band of the executing SDK.
-    /// If null, then workloads from all feature bands in VS will be returned.
+    /// If <see langword="null"/>, then workloads from all feature bands in VS will be returned.
     /// </param>
-    internal static void GetInstalledWorkloads(IWorkloadResolver workloadResolver,
-        InstalledWorkloadsCollection installedWorkloads, SdkFeatureBand? sdkFeatureBand = null)
+    /// <param name="setupConfiguration">
+    /// The Visual Studio setup interface. If <see langword="null"/> the default object will be used.
+    /// </param>
+    internal static void GetInstalledWorkloads(
+        IWorkloadResolver workloadResolver,
+        InstalledWorkloadsCollection installedWorkloads,
+        SdkFeatureBand? sdkFeatureBand = null,
+        ISetupConfiguration2? setupConfiguration = null)
     {
+        try
+        {
+            setupConfiguration ??= GetSetupConfiguration();
+        }
+        catch (COMException e) when (e.ErrorCode == REGDB_E_CLASSNOTREG)
+        {
+            // Query API not registered, good indication there are no VS installations of 15.0 or later.
+            return;
+        }
+
         Dictionary<string, string> visualStudioWorkloadIds = GetAvailableVisualStudioWorkloads(workloadResolver);
         HashSet<string> installedWorkloadComponents = [];
 
         // Visual Studio instances contain a large set of packages and we have to perform a linear
         // search to determine whether a matching SDK was installed and look for each installable
         // workload from the SDK. The search is optimized to only scan each set of packages once.
-        foreach (ISetupInstance2 instance in GetVisualStudioInstances())
+        foreach (ISetupInstance2 instance in GetVisualStudioInstances(setupConfiguration))
         {
             ISetupPackageReference[] packages = instance.GetPackages();
             bool hasMatchingSdk = false;
@@ -149,7 +164,7 @@ internal static class VisualStudioWorkloads
                     continue;
                 }
 
-                if (visualStudioWorkloadIds.TryGetValue(packageId, out string workloadId))
+                if (visualStudioWorkloadIds.TryGetValue(packageId, out string? workloadId))
                 {
                     installedWorkloadComponents.Add(workloadId);
                 }
@@ -201,11 +216,18 @@ internal static class VisualStudioWorkloads
 
     }
 
+    private static ISetupConfiguration2 GetSetupConfiguration()
+    {
+        SetupConfiguration setupConfiguration = new();
+        ISetupConfiguration2 setupConfiguration2 = setupConfiguration;
+        return setupConfiguration2;
+    }
+
     /// <summary>
     /// Gets a list of all Visual Studio instances.
     /// </summary>
     /// <returns>A list of Visual Studio instances.</returns>
-    private static List<ISetupInstance> GetVisualStudioInstances()
+    private static List<ISetupInstance> GetVisualStudioInstances(ISetupConfiguration2 setupConfiguration)
     {
         // The underlying COM API has a bug where-by it's not safe for concurrent calls. Until their
         // bug fix is rolled out use a lock to ensure we don't concurrently access this API.
@@ -216,9 +238,7 @@ internal static class VisualStudioWorkloads
 
             try
             {
-                SetupConfiguration setupConfiguration = new();
-                ISetupConfiguration2 setupConfiguration2 = setupConfiguration;
-                IEnumSetupInstances setupInstances = setupConfiguration2.EnumInstances();
+                IEnumSetupInstances setupInstances = setupConfiguration.EnumInstances();
                 ISetupInstance[] instances = new ISetupInstance[1];
                 int fetched = 0;
 
@@ -232,7 +252,7 @@ internal static class VisualStudioWorkloads
 
                         // .NET Workloads only shipped in 17.0 and later and we should only look at IDE based SKUs
                         // such as community, professional, and enterprise.
-                        if (Version.TryParse(instance.GetInstallationVersion(), out Version version) &&
+                        if (Version.TryParse(instance.GetInstallationVersion(), out Version? version) &&
                             version.Major >= 17 &&
                             s_visualStudioProducts.Contains(instance.GetProduct().GetId()))
                         {

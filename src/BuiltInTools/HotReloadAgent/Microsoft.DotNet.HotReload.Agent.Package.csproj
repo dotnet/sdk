@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Watch\TargetFrameworks.props"/>
 
   <PropertyGroup>
     <!--
       Intentionally pinned. This feature is supported in projects targeting 6.0 or newer.
     -->
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>$(AgentTargetFrameworkV6)</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>
