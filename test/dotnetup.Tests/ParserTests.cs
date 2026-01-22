@@ -135,4 +135,18 @@ public class ParserTests
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
     }
+
+    [Fact]
+    public void Parser_ShouldParseEnvCommandHelp()
+    {
+        // Arrange
+        var args = new[] { "env", "--help" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
 }
