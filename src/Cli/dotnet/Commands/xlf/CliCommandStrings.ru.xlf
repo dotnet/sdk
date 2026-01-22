@@ -358,11 +358,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">Создание сертификатов разработки и управление ими.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Diagnostics_OptionDescription">
-        <source>Enables diagnostic output.</source>
-        <target state="translated">Включает диагностические выходные данные.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">Удалены директивы "{0}" ({1}) для "{2}" из: {3}</target>
@@ -372,16 +367,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">Целевой каталог уже существует: "{0}"</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableProjectContextEval_OptionDescription">
-        <source>Disables evaluating project context using MSBuild.</source>
-        <target state="translated">Отключает оценку контекста проекта с помощью MSBuild.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableSdkTemplates_OptionDescription">
-        <source>If present, prevents templates bundled in the SDK from being presented.</source>
-        <target state="translated">При наличии этого параметра шаблоны, входящие в пакет SDK, не будут представлены.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiscoveredTestsInAssembly">
@@ -1991,11 +1976,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="VSWorkloadNotRemoved">
         <source>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</source>
         <target state="translated">Рабочая нагрузка "{0}" не удалена, так как она установлена и управляется Visual Studio: "{1}". Удалите эту рабочую нагрузку с помощью Visual Studio Installer, чтобы полностью удалить ее.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Verbosity_OptionDescription">
-        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
-        <target state="translated">Задает уровень детализации. Допустимые значения: q (без вывода подробных сведений), m (минимальный), n (нормальный) и diag (диагностический).</target>
         <note />
       </trans-unit>
       <trans-unit id="Verified">
