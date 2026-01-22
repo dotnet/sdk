@@ -150,8 +150,8 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetXliffTasksPackageVersion>10.0.0-beta.25611.1</MicrosoftDotNetXliffTasksPackageVersion>
     <MicrosoftDotNetXUnitExtensionsPackageVersion>10.0.0-beta.25611.1</MicrosoftDotNetXUnitExtensionsPackageVersion>
     <!-- microsoft/testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>2.1.0-preview.26068.4</MicrosoftTestingPlatformPackageVersion>
-    <MSTestPackageVersion>4.1.0-preview.26068.4</MSTestPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>2.1.0-preview.26071.3</MicrosoftTestingPlatformPackageVersion>
+    <MSTestPackageVersion>4.1.0-preview.26071.3</MSTestPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
