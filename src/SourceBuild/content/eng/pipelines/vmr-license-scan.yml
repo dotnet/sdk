@@ -42,7 +42,7 @@ jobs:
 - job: Setup
   pool:
     name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals 1es-ubuntu-2204
+    demands: ImageOverride -equals linux-1es-pt-prerequisites-v2
   steps:
   - script: |
       vmrSrcDir="$(Build.SourcesDirectory)/src"
@@ -80,7 +80,7 @@ jobs:
     options: '--memory=6g'
   pool:
     name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals 1es-ubuntu-2204
+    demands: ImageOverride -equals linux-1es-pt-prerequisites-v2
   timeoutInMinutes: 420
   strategy:
     matrix: $[ dependencies.Setup.outputs['GetMatrix.matrix'] ]
@@ -151,7 +151,7 @@ jobs:
   condition: or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
   pool:
     name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals 1es-ubuntu-2204
+    demands: ImageOverride -equals linux-1es-pt-prerequisites-v2
   variables:
   - template: templates/variables/pipelines.yml
   steps:
