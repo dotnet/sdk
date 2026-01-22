@@ -611,8 +611,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var testProject = new TestProject()
             {
-                IsExe = true,
-                UseArtifactsOutput = true
+                IsExe = true
             };
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -652,8 +651,7 @@ namespace Microsoft.NET.Build.Tests
             // This tests the scenario from the issue where ArtifactsPath with relative paths should be canonicalized
             var testProject = new TestProject()
             {
-                IsExe = true,
-                UseArtifactsOutput = true
+                IsExe = true
             };
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -688,8 +686,9 @@ namespace Microsoft.NET.Build.Tests
                 $"SourceRoot should contain the canonicalized artifacts path: {expectedArtifactsPath}");
 
             // Verify that there's no SourceRoot with relative path portions
-            sourceRoots.Should().NotContain(s => s.Contains(@"..\") || s.Contains("../"),
-                "SourceRoot should not contain relative path portions");
+            var pathsWithRelativePortions = sourceRoots.Where(s => s.Contains(@"..\") || s.Contains("../")).ToList();
+            pathsWithRelativePortions.Should().BeEmpty(
+                $"SourceRoot should not contain relative path portions, but found: {string.Join(", ", pathsWithRelativePortions)}");
         }
     }
 
