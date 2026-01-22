@@ -7,14 +7,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 internal class EnvCommand : CommandBase
 {
-    private readonly string? _shellName;
+    private readonly IEnvShellProvider _shellProvider;
     private readonly string? _dotnetInstallPath;
     private readonly IDotnetInstallManager _dotnetInstaller;
 
     public EnvCommand(ParseResult result, IDotnetInstallManager? dotnetInstaller = null) : base(result)
     {
         _dotnetInstaller = dotnetInstaller ?? new DotnetInstallManager();
-        _shellName = result.GetValue(EnvCommandParser.ShellOption);
+        _shellProvider = result.GetValue(EnvCommandParser.ShellOption)!; // this cannot be null due to the way the ShellOption is defined/configured
         _dotnetInstallPath = result.GetValue(EnvCommandParser.DotnetInstallPathOption);
     }
 
@@ -22,28 +22,11 @@ internal class EnvCommand : CommandBase
     {
         try
         {
-            // Validation should have caught this at parse time, but check defensively
-            if (string.IsNullOrEmpty(_shellName))
-            {
-                Console.Error.WriteLine("Error: Shell option is required. Use --shell to specify the shell (bash, zsh, or pwsh).");
-                return 1;
-            }
-
-            // Find the shell provider
-            var shellProvider = EnvCommandParser.SupportedShells.FirstOrDefault(s =>
-                s.ArgumentName.Equals(_shellName, StringComparison.OrdinalIgnoreCase));
-
-            if (shellProvider == null)
-            {
-                Console.Error.WriteLine($"Error: Unsupported shell '{_shellName}'. Supported shells: {string.Join(", ", EnvCommandParser.SupportedShells.Select(s => s.ArgumentName))}");
-                return 1;
-            }
-
             // Determine the dotnet install path
             string installPath = _dotnetInstallPath ?? _dotnetInstaller.GetDefaultDotnetInstallPath();
 
             // Generate the shell script
-            string script = shellProvider.GenerateEnvScript(installPath);
+            string script = _shellProvider.GenerateEnvScript(installPath);
 
             // Output the script to stdout
             Console.WriteLine(script);
