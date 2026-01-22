@@ -20,8 +20,8 @@ public class EnvShellProviderTests
         // Assert
         script.Should().NotBeNullOrEmpty();
         script.Should().Contain("#!/usr/bin/env bash");
-        script.Should().Contain($"export DOTNET_ROOT=\"{installPath}\"");
-        script.Should().Contain($"export PATH=\"{installPath}:$PATH\"");
+        script.Should().Contain($"export DOTNET_ROOT='{installPath}'");
+        script.Should().Contain($"export PATH='{installPath}':$PATH");
     }
 
     [Fact]
@@ -37,8 +37,8 @@ public class EnvShellProviderTests
         // Assert
         script.Should().NotBeNullOrEmpty();
         script.Should().Contain("#!/usr/bin/env zsh");
-        script.Should().Contain($"export DOTNET_ROOT=\"{installPath}\"");
-        script.Should().Contain($"export PATH=\"{installPath}:$PATH\"");
+        script.Should().Contain($"export DOTNET_ROOT='{installPath}'");
+        script.Should().Contain($"export PATH='{installPath}':$PATH");
     }
 
     [Fact]
@@ -53,8 +53,8 @@ public class EnvShellProviderTests
 
         // Assert
         script.Should().NotBeNullOrEmpty();
-        script.Should().Contain($"$env:DOTNET_ROOT = \"{installPath}\"");
-        script.Should().Contain($"$env:PATH = \"{installPath}\"");
+        script.Should().Contain($"$env:DOTNET_ROOT = '{installPath}'");
+        script.Should().Contain($"$env:PATH = '{installPath}'");
         script.Should().Contain("[IO.Path]::PathSeparator");
     }
 
@@ -106,5 +106,50 @@ public class EnvShellProviderTests
         provider.ArgumentName.Should().Be("pwsh");
         provider.Extension.Should().Be("ps1");
         provider.HelpDescription.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void BashProvider_ShouldEscapeSingleQuotesInPath()
+    {
+        // Arrange
+        var provider = new BashEnvShellProvider();
+        var installPath = "/test/path/with'quote";
+
+        // Act
+        var script = provider.GenerateEnvScript(installPath);
+
+        // Assert
+        script.Should().Contain("export DOTNET_ROOT='/test/path/with'\\''quote'");
+        script.Should().Contain("export PATH='/test/path/with'\\''quote':$PATH");
+    }
+
+    [Fact]
+    public void ZshProvider_ShouldEscapeSingleQuotesInPath()
+    {
+        // Arrange
+        var provider = new ZshEnvShellProvider();
+        var installPath = "/test/path/with'quote";
+
+        // Act
+        var script = provider.GenerateEnvScript(installPath);
+
+        // Assert
+        script.Should().Contain("export DOTNET_ROOT='/test/path/with'\\''quote'");
+        script.Should().Contain("export PATH='/test/path/with'\\''quote':$PATH");
+    }
+
+    [Fact]
+    public void PowerShellProvider_ShouldEscapeSingleQuotesInPath()
+    {
+        // Arrange
+        var provider = new PowerShellEnvShellProvider();
+        var installPath = "/test/path/with'quote";
+
+        // Act
+        var script = provider.GenerateEnvScript(installPath);
+
+        // Assert
+        script.Should().Contain("$env:DOTNET_ROOT = '/test/path/with''quote'");
+        script.Should().Contain("$env:PATH = '/test/path/with''quote'");
     }
 }
