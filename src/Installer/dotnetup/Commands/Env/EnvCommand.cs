@@ -23,7 +23,7 @@ internal class EnvCommand : CommandBase
         try
         {
             // Find the shell provider
-            var shellProvider = EnvCommandParser.SupportedShells.FirstOrDefault(s => 
+            var shellProvider = EnvCommandParser.SupportedShells.FirstOrDefault(s =>
                 s.ArgumentName.Equals(_shellName, StringComparison.OrdinalIgnoreCase));
 
             if (shellProvider == null)

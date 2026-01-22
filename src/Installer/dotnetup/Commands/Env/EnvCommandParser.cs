@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 internal static class EnvCommandParser
 {
-    internal static readonly IEnvShellProvider[] SupportedShells = 
+    internal static readonly IEnvShellProvider[] SupportedShells =
     [
         new BashEnvShellProvider(),
         new ZshEnvShellProvider(),
