@@ -13,10 +13,10 @@ internal static class ValidationUtility
 {
     public static void ValidateMutuallyExclusiveOptions(ParseResult parseResult, PathOptions pathOptions)
     {
-        ValidatePathOptions(parseResult, pathOptions);
-        ValidateOptionsIrrelevantToModulesFilter(parseResult, pathOptions);
+        ValidatePathOptions(pathOptions);
+        ValidateOptionsIrrelevantToModulesFilter(parseResult, pathOptions.TestModules);
 
-        static void ValidatePathOptions(ParseResult parseResult, PathOptions pathOptions)
+        static void ValidatePathOptions(PathOptions pathOptions)
         {
             var count = 0;
             if (pathOptions.TestModules is not null)
@@ -25,7 +25,7 @@ internal static class ValidationUtility
             if (pathOptions.SolutionPath is not null)
                 count++;
 
-            if (pathOptions.ProjectOrSolutionPath)
+            if (pathOptions.ProjectOrSolutionPath is not null)
                 count++;
 
             if (count > 1)
