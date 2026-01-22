@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
@@ -10,6 +11,7 @@ using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -61,14 +63,20 @@ internal sealed class TestApplication(
             var outputAndError = await Task.WhenAll(stdOutTask, stdErrTask);
             await process.WaitForExitAsync();
 
-            _handler.OnTestProcessExited(process.ExitCode, outputAndError[0], outputAndError[1]);
+            var exitCode = process.ExitCode;
+            _handler.OnTestProcessExited(exitCode, outputAndError[0], outputAndError[1]);
 
-            if (_handler.HasMismatchingTestSessionEventCount())
+            // This condition is to prevent considering the test app as successful when we didn't receive test session end.
+            // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
+            // For example, if hangdump timeout is reached, the process will be killed and we will have mismatching count.
+            // Or if there is a crash (e.g, Environment.FailFast), etc.
+            // So this is only a safe guard to avoid passing the test run if Environment.Exit(0) is called in one of the tests for example.
+            if (exitCode == 0 && _handler.HasMismatchingTestSessionEventCount())
             {
                 throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
             }
 
-            return process.ExitCode;
+            return exitCode;
         }
         finally
         {
@@ -97,12 +105,11 @@ internal sealed class TestApplication(
             processStartInfo.WorkingDirectory = Module.RunProperties.WorkingDirectory;
         }
 
-        if (Module.LaunchSettings is not null)
+        if (Module.LaunchSettings is ProjectLaunchProfile)
         {
             foreach (var entry in Module.LaunchSettings.EnvironmentVariables)
             {
-                string value = Environment.ExpandEnvironmentVariables(entry.Value);
-                processStartInfo.Environment[entry.Key] = value;
+                processStartInfo.Environment[entry.Key] = entry.Value;
             }
 
             // Env variables specified on command line override those specified in launch profile:
@@ -123,6 +130,7 @@ internal sealed class TestApplication(
             processStartInfo.Environment[Module.DotnetRootArchVariableName] = Path.GetDirectoryName(new Muxer().MuxerPath);
         }
 
+        processStartInfo.Environment["DOTNET_CLI_TEST_COMMAND_WORKING_DIRECTORY"] = Directory.GetCurrentDirectory();
         return processStartInfo;
     }
 
@@ -144,22 +152,22 @@ internal sealed class TestApplication(
 
         if (TestOptions.IsDiscovery)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ListTestsOption.Name}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}");
         }
 
         if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ResultsDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ResultsDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
         }
 
         if (_buildOptions.PathOptions.ConfigFilePath is { } configFilePath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ConfigFileOption.Name} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
         }
 
         if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
         }
 
         foreach (var arg in _buildOptions.UnmatchedTokens)
