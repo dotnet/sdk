@@ -49,9 +49,25 @@
     </ItemGroup>
   </Target>
 
+  <!-- Log environment variables passed via dotnet run -e during build -->
+  <Target Name="_LogRuntimeEnvironmentVariableDuringBuild" 
+          BeforeTargets="CoreCompile" 
+          Condition="'@(RuntimeEnvironmentVariable)' != ''">
+    <Message Text="Build: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
+  </Target>
+
+  <!-- Log environment variables passed via dotnet run -e during ComputeRunArguments -->
+  <Target Name="_LogRuntimeEnvironmentVariableDuringComputeRunArguments" 
+          BeforeTargets="ComputeRunArguments" 
+          Condition="'@(RuntimeEnvironmentVariable)' != ''">
+    <Message Text="ComputeRunArguments: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
+  </Target>
+
   <!-- DeployToDevice target for testing, ResolveFrameworkReferences mimics Android -->
   <Target Name="DeployToDevice" DependsOnTargets="ResolveFrameworkReferences">
-    <Message Text="DeployToDevice: Deployed to device $(Device) with RuntimeIdentifier $(RuntimeIdentifier)" Importance="high" />
+    <Message Text="DeployToDevice: Deployed to device $(Device) with RuntimeIdentifier $(RuntimeIdentifier)" />
+    <!-- Log environment variables passed via dotnet run -e -->
+    <Message Text="DeployToDevice: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
   </Target>
 
 </Project>

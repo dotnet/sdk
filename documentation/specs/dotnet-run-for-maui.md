@@ -86,6 +86,7 @@ to subsequent build, deploy, and run steps._
 
 * `build`: unchanged, but is passed `-p:Device` and optionally `-p:RuntimeIdentifier`
   if the selected device provided a `%(RuntimeIdentifier)` metadata value.
+  Environment variables from `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
 
 * `deploy`
 
@@ -96,12 +97,15 @@ to subsequent build, deploy, and run steps._
     `-p:Device` global MSBuild property, and optionally `-p:RuntimeIdentifier`
     if the selected device provided a `%(RuntimeIdentifier)` metadata value.
 
+  * Environment variables from `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
+
   * This step needs to run, even with `--no-build`, as you may have
     selected a different device.
 
-* `ComputeRunArguments`: unchanged, but is passed `-p:Device` and optionally
-  `-p:RuntimeIdentifier` if the selected device provided a `%(RuntimeIdentifier)` 
-  metadata value.
+* `ComputeRunArguments`: unchanged, but is passed `-p:Device` and
+  optionally `-p:RuntimeIdentifier` if the selected device provided a
+  `%(RuntimeIdentifier)` metadata value. Environment variables from
+  `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
 
 * `run`: unchanged. `ComputeRunArguments` should have set a valid
   `$(RunCommand)` and `$(RunArguments)` using the value supplied by
@@ -145,6 +149,73 @@ A new `--device` switch will:
 
 * The iOS and Android workloads will know how to interpret `$(Device)`
   to select an appropriate device, emulator, or simulator.
+
+## Environment Variables
+
+The `dotnet run` command supports passing environment variables via the
+`-e` or `--environment` option:
+
+```dotnetcli
+dotnet run -e FOO=BAR -e ANOTHER=VALUE
+```
+
+These environment variables are:
+
+1. **Passed to the running application** - as process environment
+   variables when the app is launched.
+
+2. **Passed to MSBuild during build, deploy, and ComputeRunArguments** -
+   as `@(RuntimeEnvironmentVariable)` items that workloads can consume:
+
+```xml
+<ItemGroup>
+  <RuntimeEnvironmentVariable Include="FOO" Value="BAR" />
+  <RuntimeEnvironmentVariable Include="ANOTHER" Value="VALUE" />
+</ItemGroup>
+```
+
+This allows workloads (iOS, Android, etc.) to access environment
+variables during the `build`, `DeployToDevice`, and `ComputeRunArguments` target execution.
+
+Workloads can consume these items in their MSBuild targets:
+
+```xml
+<Target Name="DeployToDevice">
+  <!-- Access environment variables from dotnet run -e -->
+  <Message Text="Environment: @(RuntimeEnvironmentVariable->'%(Identity)=%(Value)')" />
+</Target>
+```
+
+### Implementation Details
+
+For the **build step**, which uses out-of-process MSBuild via `dotnet build`,
+environment variables are injected by creating a temporary `.props` file.
+The file is created in the project's `$(IntermediateOutputPath)` directory
+(e.g., `obj/Debug/net11.0-android/dotnet-run-env.props`). The path is
+obtained from the project evaluation performed during target framework and
+device selection. If `IntermediateOutputPath` is not available, the file
+falls back to the `obj/` directory.
+
+The file is passed to MSBuild via the `CustomBeforeMicrosoftCommonProps` property,
+ensuring the items are available early in evaluation.
+The temporary file is automatically deleted after the build completes.
+
+The generated props file looks like:
+
+```xml
+<Project>
+  <ItemGroup>
+    <RuntimeEnvironmentVariable Include="FOO" Value="BAR" />
+    <RuntimeEnvironmentVariable Include="ANOTHER" Value="VALUE" />
+  </ItemGroup>
+</Project>
+```
+
+For the **deploy step** (`DeployToDevice` target) and
+**ComputeRunArguments target**, which use in-process MSBuild,
+environment variables are added directly as
+`@(RuntimeEnvironmentVariable)` items to the `ProjectInstance` before
+invoking the target.
 
 ## Binary Logs for Device Selection
 

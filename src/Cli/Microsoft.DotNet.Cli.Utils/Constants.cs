@@ -33,9 +33,16 @@ public static class Constants
     public const string DeployToDevice = nameof(DeployToDevice);
     public const string CoreCompile = nameof(CoreCompile);
 
+    // MSBuild items
+    internal const string RuntimeEnvironmentVariable = nameof(RuntimeEnvironmentVariable);
+
     // MSBuild item metadata
     public const string Identity = nameof(Identity);
     public const string FullPath = nameof(FullPath);
+
+    // MSBuild properties
+    public const string CustomBeforeMicrosoftCommonProps = nameof(CustomBeforeMicrosoftCommonProps);
+    public const string IntermediateOutputPath = nameof(IntermediateOutputPath);
 
     // MSBuild CLI flags
 
