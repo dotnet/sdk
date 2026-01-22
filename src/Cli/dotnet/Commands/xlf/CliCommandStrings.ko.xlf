@@ -358,11 +358,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">개발 인증서를 만들고 관리합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Diagnostics_OptionDescription">
-        <source>Enables diagnostic output.</source>
-        <target state="translated">진단 출력을 사용하도록 설정합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">다음에서 '{2}'에 대한 '{0}' 지시문({1})을 제거했습니다. {3}</target>
@@ -372,16 +367,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">대상 디렉터리가 이미 있습니다. '{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableProjectContextEval_OptionDescription">
-        <source>Disables evaluating project context using MSBuild.</source>
-        <target state="translated">MSBuild를 사용하여 프로젝트 컨텍스트 평가를 사용하지 않도록 설정합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableSdkTemplates_OptionDescription">
-        <source>If present, prevents templates bundled in the SDK from being presented.</source>
-        <target state="translated">있는 경우 SDK에 번들로 제공되는 템플릿이 표시되지 않도록 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiscoveredTestsInAssembly">
@@ -1990,11 +1975,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="VSWorkloadNotRemoved">
         <source>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</source>
         <target state="translated">'{0}' 워크로드는 '{1}' Visual Studio 설치 관리자에서 설치하고 관리하므로 제거되지 않았습니다. Visual Studio 설치 관리자를 사용하여 이 워크로드를 제거하여 완전히 제거하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Verbosity_OptionDescription">
-        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
-        <target state="translated">세부 정보 표시 수준을 설정합니다. 허용되는 값은 q[uiet], m[inimal], n[ormal] 및 diag[nostic]입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Verified">
