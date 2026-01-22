@@ -362,9 +362,6 @@ setx PATH "%PATH%;{0}"
   <data name="FailedToFindLibraryInAssetsFile" xml:space="preserve">
     <value>Failed to find library in NuGet assets file for tool package '{0}': {1}</value>
   </data>
-  <data name="LevelArgumentName" xml:space="preserve">
-    <value>LEVEL</value>
-  </data>
   <data name="SolutionOrProjectArgumentName" xml:space="preserve">
     <value>PROJECT | SOLUTION</value>
   </data>

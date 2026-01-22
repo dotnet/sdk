@@ -373,11 +373,6 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
         <target state="translated">Crea y administra certificados de desarrollo.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Diagnostics_OptionDescription">
-        <source>Enables diagnostic output.</source>
-        <target state="translated">Permite habilitar la salida de diagnóstico.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">Se eliminaron las directivas '{0}' ({1}) para '{2}' de: {3}</target>
@@ -387,16 +382,6 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">El directorio de destino ya existe: "{0}"</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableProjectContextEval_OptionDescription">
-        <source>Disables evaluating project context using MSBuild.</source>
-        <target state="translated">Deshabilita la evaluación del contexto del proyecto mediante MSBuild.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableSdkTemplates_OptionDescription">
-        <source>If present, prevents templates bundled in the SDK from being presented.</source>
-        <target state="translated">Si está presente, impide que se presenten las plantillas agrupadas en el SDK.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiscoveredTestsInAssembly">
@@ -2035,11 +2020,6 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
       <trans-unit id="VSWorkloadNotRemoved">
         <source>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</source>
         <target state="translated">La carga de trabajo '{0}' no se quitó porque está instalada y administrada por Visual Studio: '{1}'. Desinstale esta carga de trabajo mediante el Instalador de Visual Studio para quitarla por completo.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Verbosity_OptionDescription">
-        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
-        <target state="translated">Permite establecer el nivel de detalle. Los valores permitidos son q[uiet], m[inimal], n[ormal] y diag[nostic].</target>
         <note />
       </trans-unit>
       <trans-unit id="Verified">

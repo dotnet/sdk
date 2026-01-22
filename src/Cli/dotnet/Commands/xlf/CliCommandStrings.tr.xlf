@@ -373,11 +373,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <target state="translated">Geliştirme sertifikaları oluşturun ve yönetin.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Diagnostics_OptionDescription">
-        <source>Enables diagnostic output.</source>
-        <target state="translated">Tanılama çıkışı sağlar.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">‘{2}’ için ‘{0}’ yönergeleri ({1}) şuradan kaldırıldı: {3}</target>
@@ -387,16 +382,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">Hedef dizin zaten mevcut: '{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableProjectContextEval_OptionDescription">
-        <source>Disables evaluating project context using MSBuild.</source>
-        <target state="translated">MSBuild kullanarak proje bağlamının değerlendirilmesini devre dışı bırakır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableSdkTemplates_OptionDescription">
-        <source>If present, prevents templates bundled in the SDK from being presented.</source>
-        <target state="translated">Varsa, SDK'da paketlenmiş şablonların sunumlarını önler.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiscoveredTestsInAssembly">
@@ -2035,11 +2020,6 @@ karşılık gelen paket kimliklerini bulmak için
       <trans-unit id="VSWorkloadNotRemoved">
         <source>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</source>
         <target state="translated">Visual Studio: '{1}' tarafından yüklendiği ve yönetildiği için '{0}' iş yükü kaldırılmadı. Bu iş yükünü tamamen kaldırmak için Visual Studio Yükleyicisini kullanarak kaldırın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Verbosity_OptionDescription">
-        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
-        <target state="translated">Ayrıntı düzeyini ayarlayın. İzin verilen değerler şunlardır: q[uiet], m[inimal], n[ormal] ve diag[nostic].</target>
         <note />
       </trans-unit>
       <trans-unit id="Verified">

@@ -373,11 +373,6 @@ Další informace najdete na https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Vytvoří a spravuje certifikáty pro vývoj.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Diagnostics_OptionDescription">
-        <source>Enables diagnostic output.</source>
-        <target state="translated">Povolí diagnostický výstup.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">Odebrány direktivy {0} ({1}) pro {2} z umístění: {3}</target>
@@ -387,16 +382,6 @@ Další informace najdete na https://aka.ms/dotnet-test/mtp.</target>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">Cílový adresář již existuje: {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableProjectContextEval_OptionDescription">
-        <source>Disables evaluating project context using MSBuild.</source>
-        <target state="translated">Zakáže vyhodnocování kontextu projektu pomocí nástroje MSBuild.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableSdkTemplates_OptionDescription">
-        <source>If present, prevents templates bundled in the SDK from being presented.</source>
-        <target state="translated">Pokud je k dispozici, zabrání zobrazení šablon, které jsou součástí sady SDK.</target>
         <note />
       </trans-unit>
       <trans-unit id="DiscoveredTestsInAssembly">
@@ -2035,11 +2020,6 @@ příkazu „dotnet tool list“.</target>
       <trans-unit id="VSWorkloadNotRemoved">
         <source>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</source>
         <target state="translated">Úloha „{0}“ se neodebrala, protože je nainstalovaná a spravovaná Visual Studio: „{1}“. Pokud chcete tuto úlohu úplně odebrat, odinstalujte ji pomocí Instalační program pro Visual Studio.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Verbosity_OptionDescription">
-        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
-        <target state="translated">Nastaví úroveň podrobností. Povolené hodnoty jsou: q[uiet], m[inimal], n[ormal] a diag[nostic].</target>
         <note />
       </trans-unit>
       <trans-unit id="Verified">

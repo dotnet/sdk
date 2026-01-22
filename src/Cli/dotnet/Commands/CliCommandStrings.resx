@@ -331,17 +331,8 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   <data name="DevCertsDefinition" xml:space="preserve">
     <value>Create and manage development certificates.</value>
   </data>
-  <data name="Diagnostics_OptionDescription" xml:space="preserve">
-    <value>Enables diagnostic output.</value>
-  </data>
   <data name="DirectoryAlreadyExists" xml:space="preserve">
     <value>The target directory already exists: '{0}'</value>
-  </data>
-  <data name="DisableProjectContextEval_OptionDescription" xml:space="preserve">
-    <value>Disables evaluating project context using MSBuild.</value>
-  </data>
-  <data name="DisableSdkTemplates_OptionDescription" xml:space="preserve">
-    <value>If present, prevents templates bundled in the SDK from being presented.</value>
   </data>
   <data name="DiscoveredTestsInAssembly" xml:space="preserve">
     <value>Discovered {0} tests in assembly</value>
@@ -1306,9 +1297,6 @@ and the corresponding package Ids for installed tools using the command
   </data>
   <data name="UsingLaunchSettingsFromMessage" xml:space="preserve">
     <value>Using launch settings from {0}...</value>
-  </data>
-  <data name="Verbosity_OptionDescription" xml:space="preserve">
-    <value>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</value>
   </data>
   <data name="Verified" xml:space="preserve">
     <value>Verified</value>
