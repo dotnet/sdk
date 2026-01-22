@@ -13,33 +13,33 @@ internal static class ValidationUtility
 {
     public static void ValidateMutuallyExclusiveOptions(ParseResult parseResult, PathOptions pathOptions)
     {
-        var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+        ValidatePathOptions(parseResult, pathOptions);
+        ValidateOptionsIrrelevantToModulesFilter(parseResult, pathOptions);
 
-        ValidatePathOptions(parseResult);
-        ValidateOptionsIrrelevantToModulesFilter(parseResult);
-
-        void ValidatePathOptions(ParseResult parseResult)
+        static void ValidatePathOptions(ParseResult parseResult, PathOptions pathOptions)
         {
             var count = 0;
-            if (parseResult.HasOption(definition.TestModulesFilterOption))
+            if (pathOptions.TestModules is not null)
                 count++;
 
-            if (parseResult.HasOption(definition.SolutionOption))
+            if (pathOptions.SolutionPath is not null)
                 count++;
 
-            if (parseResult.HasOption(definition.ProjectOrSolutionOption))
+            if (pathOptions.ProjectOrSolutionPath)
                 count++;
 
             if (count > 1)
                 throw new GracefulException(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
         }
 
-        void ValidateOptionsIrrelevantToModulesFilter(ParseResult parseResult)
+        static void ValidateOptionsIrrelevantToModulesFilter(ParseResult parseResult, string? testModules)
         {
-            if (!parseResult.HasOption(definition.TestModulesFilterOption))
+            if (testModules is null)
             {
                 return;
             }
+
+            var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
             if (parseResult.HasOption(definition.TargetPlatformOptions.ArchitectureOption) ||
                 parseResult.HasOption(definition.ConfigurationOption) ||
