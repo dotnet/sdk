@@ -358,11 +358,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">建立及管理開發憑證。</target>
         <note />
       </trans-unit>
-      <trans-unit id="Diagnostics_OptionDescription">
-        <source>Enables diagnostic output.</source>
-        <target state="translated">啟用診斷輸出。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">已從 {3} 移除 '{2}' 的 '{0}' 指令 ({1})</target>
@@ -372,16 +367,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">目標目錄已存在: '{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableProjectContextEval_OptionDescription">
-        <source>Disables evaluating project context using MSBuild.</source>
-        <target state="translated">使用 MSBuild 停用評估專案內容。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableSdkTemplates_OptionDescription">
-        <source>If present, prevents templates bundled in the SDK from being presented.</source>
-        <target state="translated">如果存在，則會防止顯示 SDK 中套件組合的範本。</target>
         <note />
       </trans-unit>
       <trans-unit id="DiscoveredTestsInAssembly">
@@ -1990,11 +1975,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="VSWorkloadNotRemoved">
         <source>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</source>
         <target state="translated">未移除工作負載 '{0}'，因為它已安裝並由 Visual Studio管理: '{1}'。請使用 Visual Studio 安裝程式解除安裝此工作負載，以將其完全移除。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Verbosity_OptionDescription">
-        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
-        <target state="translated">設定詳細資訊層級。允許的值為 q[uiet]、m[inimal]、n[ormal] 和 diag[nostic]。</target>
         <note />
       </trans-unit>
       <trans-unit id="Verified">

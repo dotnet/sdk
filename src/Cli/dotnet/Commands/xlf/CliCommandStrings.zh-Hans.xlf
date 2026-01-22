@@ -358,11 +358,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">创建和管理开发证书。</target>
         <note />
       </trans-unit>
-      <trans-unit id="Diagnostics_OptionDescription">
-        <source>Enables diagnostic output.</source>
-        <target state="translated">启用诊断输出。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">已从 {3} 移除“{2}”的“{0}”指令({1})</target>
@@ -372,16 +367,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">目标目录已存在: '{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableProjectContextEval_OptionDescription">
-        <source>Disables evaluating project context using MSBuild.</source>
-        <target state="translated">禁用使用 MSBuild 评估项目上下文。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableSdkTemplates_OptionDescription">
-        <source>If present, prevents templates bundled in the SDK from being presented.</source>
-        <target state="translated">如果存在，则阻止显示捆绑在 SDK 中的模板。</target>
         <note />
       </trans-unit>
       <trans-unit id="DiscoveredTestsInAssembly">
@@ -1990,11 +1975,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="VSWorkloadNotRemoved">
         <source>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</source>
         <target state="translated">未删除工作负载“{0}”，因为它由 Visual Studio“{1}”安装和管理。请使用 Visual Studio 安装程序卸载此工作负载以将其完全删除。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Verbosity_OptionDescription">
-        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
-        <target state="translated">设置详细级别。允许的值为 q[uiet]、m[inimal]、n[ormal]、diag[nostic]。</target>
         <note />
       </trans-unit>
       <trans-unit id="Verified">

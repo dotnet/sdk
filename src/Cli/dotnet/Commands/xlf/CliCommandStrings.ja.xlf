@@ -358,11 +358,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">開発証明書を作成し、管理します。</target>
         <note />
       </trans-unit>
-      <trans-unit id="Diagnostics_OptionDescription">
-        <source>Enables diagnostic output.</source>
-        <target state="translated">診断出力を有効にします。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">'{2}' の '{0}' ディレクティブ ({1}) を次から削除しました: {3}</target>
@@ -372,16 +367,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">ターゲット ディレクトリは既に存在します: '{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableProjectContextEval_OptionDescription">
-        <source>Disables evaluating project context using MSBuild.</source>
-        <target state="translated">MSBuild を使用してプロジェクト コンテキストの評価を無効にします。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableSdkTemplates_OptionDescription">
-        <source>If present, prevents templates bundled in the SDK from being presented.</source>
-        <target state="translated">SDK にバンドルされているテンプレートがある場合にそれらが表示されないようにします。</target>
         <note />
       </trans-unit>
       <trans-unit id="DiscoveredTestsInAssembly">
@@ -1990,11 +1975,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="VSWorkloadNotRemoved">
         <source>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</source>
         <target state="translated">ワークロード '{0}' は、Visual Studio '{1}' によってインストールおよび管理されているため、削除されませんでした。このワークロードを完全に削除するには、Visual Studio インストーラーを使用してこのワークロードをアンインストールしてください。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Verbosity_OptionDescription">
-        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
-        <target state="translated">詳細レベルを設定します。許可されている値: q[uiet]、m[inimal]、n[ormal]、diag[nostic]。</target>
         <note />
       </trans-unit>
       <trans-unit id="Verified">
