@@ -22,27 +22,53 @@ public class DotnetInstallManager : IDotnetInstallManager
 
     public DotnetInstallRootConfiguration? GetConfiguredInstallType()
     {
-
         string? foundDotnet = _environmentProvider.GetCommandPath("dotnet");
         if (string.IsNullOrEmpty(foundDotnet))
         {
             return null;
         }
 
-        string installDir = Path.GetDirectoryName(foundDotnet)!;
+        var currentInstallRoot = new DotnetInstallRoot(Path.GetDirectoryName(foundDotnet)!, InstallerUtilities.GetDefaultInstallArchitecture());
 
+        // Use InstallRootManager to determine if the install is fully configured
+        if (OperatingSystem.IsWindows())
+        {
+            var installRootManager = new InstallRootManager(this);
 
-        string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-        string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-        bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
-                              installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase); // TODO: This should be improved to not be windows-specific https://github.com/dotnet/sdk/issues/51601
+            // Check if user install root is fully configured
+            var userChanges = installRootManager.GetUserInstallRootChanges();
+            if (!userChanges.NeedsChange() && DotnetupUtilities.PathsEqual(currentInstallRoot.Path, userChanges.UserDotnetPath))
+            {
+                return new(currentInstallRoot, InstallType.User, IsFullyConfigured: true);
+            }
 
-        var installRoot = new DotnetInstallRoot(installDir, InstallerUtilities.GetDefaultInstallArchitecture());
+            // Check if admin install root is fully configured
+            var adminChanges = installRootManager.GetAdminInstallRootChanges();
+            if (!adminChanges.NeedsChange())
+            {
+                return new(currentInstallRoot, InstallType.Admin, IsFullyConfigured: true);
+            }
 
-        bool isSetAsDotnetRoot = DotnetupUtilities.PathsEqual(dotnetRoot, installDir);
+            // Not fully configured, but PATH resolves to dotnet
+            // Determine type based on location using registry-based detection
+            var programFilesDotnetPaths = WindowsPathHelper.GetProgramFilesDotnetPaths();
+            bool isAdminPath = programFilesDotnetPaths.Any(path =>
+                currentInstallRoot.Path.StartsWith(path, StringComparison.OrdinalIgnoreCase));
 
-        return new(installRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsOnPath: true, isSetAsDotnetRoot);
+            return new(currentInstallRoot, isAdminPath ? InstallType.Admin : InstallType.User, IsFullyConfigured: false);
+        }
+        else
+        {
+            // For non-Windows platforms, determine based on path location
+            // TODO: This should be improved to not be windows-specific https://github.com/dotnet/sdk/issues/51601
+            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            bool isAdminInstall = currentInstallRoot.Path.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
+                                  currentInstallRoot.Path.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
+
+            // For now, we consider it fully configured if it's on PATH
+            return new(currentInstallRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsFullyConfigured: true);
+        }
     }
 
     public string GetDefaultDotnetInstallPath()
@@ -114,36 +140,80 @@ public class DotnetInstallManager : IDotnetInstallManager
 
     public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null)
     {
-        // Get current PATH
-        var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
-        var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-        string exeName = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
-        // Remove only actual dotnet installation folders from PATH
-        pathEntries = pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName))).ToList();
-
-        switch (installType)
+        if (OperatingSystem.IsWindows())
         {
-            case InstallType.User:
-                if (string.IsNullOrEmpty(dotnetRoot))
-                    throw new ArgumentNullException(nameof(dotnetRoot));
-                // Add dotnetRoot to PATH
-                pathEntries.Insert(0, dotnetRoot);
-                // Set DOTNET_ROOT
-                Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
-                break;
-            case InstallType.Admin:
-                if (string.IsNullOrEmpty(dotnetRoot))
-                    throw new ArgumentNullException(nameof(dotnetRoot));
-                // Add dotnetRoot to PATH
-                pathEntries.Insert(0, dotnetRoot);
-                // Unset DOTNET_ROOT
-                Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
-                break;
-            default:
-                throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
+            // On Windows, use InstallRootManager for proper configuration
+            var installRootManager = new InstallRootManager(this);
+
+            switch (installType)
+            {
+                case InstallType.User:
+                    if (string.IsNullOrEmpty(dotnetRoot))
+                        throw new ArgumentNullException(nameof(dotnetRoot));
+
+                    var userChanges = installRootManager.GetUserInstallRootChanges();
+                    bool succeeded = installRootManager.ApplyUserInstallRoot(
+                        userChanges,
+                        msg => AnsiConsole.WriteLine(msg),
+                        msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));
+
+                    if (!succeeded)
+                    {
+                        throw new InvalidOperationException("Failed to configure user install root.");
+                    }
+                    break;
+
+                case InstallType.Admin:
+                    var adminChanges = installRootManager.GetAdminInstallRootChanges();
+                    bool adminSucceeded = installRootManager.ApplyAdminInstallRoot(
+                        adminChanges,
+                        msg => AnsiConsole.WriteLine(msg),
+                        msg => AnsiConsole.MarkupLine($"[red]{msg}[/]"));
+
+                    if (!adminSucceeded)
+                    {
+                        throw new InvalidOperationException("Failed to configure admin install root.");
+                    }
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
+            }
         }
-        // Update PATH
-        var newPath = string.Join(Path.PathSeparator, pathEntries);
-        Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
+        else
+        {
+            // Non-Windows platforms: use the simpler PATH-based approach
+            // Get current PATH
+            var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
+            var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
+            string exeName = "dotnet";
+            // Remove only actual dotnet installation folders from PATH
+            pathEntries = pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName))).ToList();
+
+            switch (installType)
+            {
+                case InstallType.User:
+                    if (string.IsNullOrEmpty(dotnetRoot))
+                        throw new ArgumentNullException(nameof(dotnetRoot));
+                    // Add dotnetRoot to PATH
+                    pathEntries.Insert(0, dotnetRoot);
+                    // Set DOTNET_ROOT
+                    Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
+                    break;
+                case InstallType.Admin:
+                    if (string.IsNullOrEmpty(dotnetRoot))
+                        throw new ArgumentNullException(nameof(dotnetRoot));
+                    // Add dotnetRoot to PATH
+                    pathEntries.Insert(0, dotnetRoot);
+                    // Unset DOTNET_ROOT
+                    Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
+            }
+            // Update PATH
+            var newPath = string.Join(Path.PathSeparator, pathEntries);
+            Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
+        }
     }
 }
