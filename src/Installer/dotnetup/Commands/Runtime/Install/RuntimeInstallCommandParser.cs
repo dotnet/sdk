@@ -14,7 +14,7 @@ internal static class RuntimeInstallCommandParser
     {
         HelpName = "TYPE",
         Description = "The type of runtime to install: core, aspnetcore, or windowsdesktop",
-        Arity = ArgumentArity.ExactlyOne,
+        Arity = ArgumentArity.ExactlyOne, // eventually we'd support no type, which would install all 3 on windows, or core + aspnetcore concurrently on unix
     };
 
     /// <summary>

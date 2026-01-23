@@ -38,6 +38,14 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             return 1;
         }
 
+        // Feature bands (like 9.0.1xx) are SDK-specific and not valid for runtimes
+        if (!string.IsNullOrEmpty(_versionOrChannel) && IsFeatureBand(_versionOrChannel))
+        {
+            Console.Error.WriteLine($"Error: Feature bands (like '{_versionOrChannel}') are only valid for SDK installations, not runtimes.");
+            Console.Error.WriteLine("Use a version channel like '9.0', 'latest', 'lts', or a specific version like '9.0.12'.");
+            return 1;
+        }
+
         InstallWorkflow workflow = new(_dotnetInstaller, _channelVersionResolver);
 
         InstallWorkflow.InstallWorkflowOptions options = new(
@@ -52,5 +60,14 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 
         InstallWorkflow.InstallWorkflowResult workflowResult = workflow.Execute(options);
         return workflowResult.ExitCode;
+    }
+
+    /// <summary>
+    /// Checks if the channel string is a feature band pattern (e.g., "9.0.1xx", "10.0.2xx").
+    /// </summary>
+    private static bool IsFeatureBand(string channel)
+    {
+        var parts = channel.Split('.');
+        return parts.Length >= 3 && parts[2].EndsWith("xx", StringComparison.OrdinalIgnoreCase);
     }
 }

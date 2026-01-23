@@ -204,8 +204,10 @@ public class ReuseAndErrorTests
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = DotnetupTestUtilities.BuildRuntimeArguments("core", "9.0.1xx", testEnv.InstallPath, testEnv.ManifestPath);
 
-        (int exitCode, _) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().NotBe(0, "Feature bands should not be valid for runtime installation");
+        output.Should().Contain("Feature bands", "should explain that feature bands are not valid for runtimes");
+        output.Should().Contain("only valid for SDK", "should clarify feature bands are SDK-specific");
     }
 
     [Fact]
@@ -214,7 +216,9 @@ public class ReuseAndErrorTests
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = DotnetupTestUtilities.BuildRuntimeArguments("invalid", "9.0", testEnv.InstallPath, testEnv.ManifestPath);
 
-        (int exitCode, _) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().NotBe(0, "Invalid runtime type should return error");
+        output.Should().Contain("Unknown runtime type", "should indicate invalid runtime type");
+        output.Should().Contain("Valid types are:", "should list valid runtime types");
     }
 }
