@@ -93,6 +93,14 @@ public static class Parser
         // Currently `new` command implementation replaces the definition entirely:
         rootCommand.Subcommands[rootCommand.Subcommands.IndexOf(rootCommand.NewCommand)] = NewCommandParser.ConfigureCommand(rootCommand.NewCommand);
 
+        // TODO: https://github.com/dotnet/sdk/issues/52661
+        // https://github.com/NuGet/NuGet.Client/blob/bf048eb714eb6b1912ba868edca4c7cfec454841/src/NuGet.Core/NuGet.CommandLine.XPlat/Commands/Why/WhyCommand.cs
+        // Add `why` subcommand to the definition instead.
+        var nugetCommand = rootCommand.NuGetCommand;
+        NuGet.CommandLine.XPlat.Commands.Why.WhyCommand.GetWhyCommand(nugetCommand);
+
+        NuGetCommandParser.ConfigureCommand(nugetCommand);
+
         PackCommandParser.ConfigureCommand(rootCommand.PackCommand);
         PackageCommandParser.ConfigureCommand(rootCommand.PackageCommand);
         ParseCommandParser.ConfigureCommand(rootCommand.ParseCommand);
@@ -117,7 +125,9 @@ public static class Parser
 
         rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction();
 
-        // NuGet implements several commands in its own repo. Add them to the .NET SDK via the provided API.
+        // TODO: https://github.com/dotnet/sdk/issues/52661
+        // https://github.com/NuGet/NuGet.Client/blob/bf048eb714eb6b1912ba868edca4c7cfec454841/src/NuGet.Core/NuGet.CommandLine.XPlat/NuGetCommands.cs
+        // Add `package` subcommands to the definition instead.
         NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.CreateInteractiveOption(acceptArgument: true));
 
         rootCommand.SetAction(parseResult =>
@@ -304,7 +314,7 @@ public static class Parser
                 option.EnsureHelpName();
             }
 
-            if (command.Equals(NuGetCommandParser.GetCommand()) || command.Parents.Any(parent => parent == NuGetCommandParser.GetCommand()))
+            if (command.GetRootCommand() is NuGetCommandDefinition)
             {
                 NuGetCommand.Run(context.ParseResult);
             }

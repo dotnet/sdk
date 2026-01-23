@@ -18,6 +18,7 @@ using Microsoft.DotNet.Cli.Commands.Hidden.Parse;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.New;
+using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Pack;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Project;
@@ -85,7 +86,7 @@ internal sealed class DotNetCommandDefinition : RootCommand
     public readonly ListCommandDefinition ListCommand;
     public readonly MSBuildCommandDefinition MSBuildCommand;
     public readonly NewCommandDefinition NewCommand;
-    // TODO: public readonly NuGetCommandDefinition NuGetCommand;
+    public readonly NuGetCommandDefinition NuGetCommand;
     public readonly PackCommandDefinition PackCommand;
     public readonly PackageCommandDefinition PackageCommand;
     public readonly ParseCommandDefinition ParseCommand;
@@ -134,7 +135,7 @@ internal sealed class DotNetCommandDefinition : RootCommand
         Subcommands.Add(ListCommand = new());
         Subcommands.Add(MSBuildCommand = new());
         Subcommands.Add(NewCommand = new());
-        // TODO: Subcommands.Add(NuGetCommand = new());
+        Subcommands.Add(NuGetCommand = new());
         Subcommands.Add(PackCommand = new());
         Subcommands.Add(PackageCommand = new());
         Subcommands.Add(ParseCommand = new());
