@@ -1167,7 +1167,6 @@ class C
     {
     }
 
-    [RequiresDynamicCode(""Aot analysis warning"")]
     static C()
     {
     }
