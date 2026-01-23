@@ -59,6 +59,19 @@ namespace Microsoft.NET.TestFramework
                         targetFrameworks.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
                         targetFrameworks.AddAfterSelf(new XElement("AttachWeakETagToCompressedAssetsDuringDevelopment", "false"));
                     }
+
+                    // HotReload as ProjectReference
+                    if (TestContext.Current.HotReloadWebAssemblyProjectPath != null)
+                    {
+                        var propertyGroup = new XElement("PropertyGroup");
+                        propertyGroup.Add(new XElement("WasmEnableHotReload", false));
+                        project.Root?.Add(propertyGroup);
+                        var itemGroup = new XElement("ItemGroup");
+                        var projectReference = new XElement("ProjectReference");
+                        projectReference.SetAttributeValue("Include", Path.Combine(TestContext.Current.HotReloadWebAssemblyProjectPath, "Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj"));
+                        itemGroup.Add(projectReference);
+                        project.Root?.Add(itemGroup);
+                    }
                 });
 
             foreach (string assetPath in Directory.EnumerateFiles(Path.Combine(_testAssetsManager.TestAssetsRoot, "WasmOverride")))

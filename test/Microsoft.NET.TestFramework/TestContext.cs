@@ -59,6 +59,8 @@ namespace Microsoft.NET.TestFramework
 
         public string? SdkVersion { get; set; }
 
+        public string? HotReloadWebAssemblyProjectPath { get; set; }
+
         private ToolsetInfo? _toolsetUnderTest;
 
         public ToolsetInfo ToolsetUnderTest
@@ -166,6 +168,7 @@ namespace Microsoft.NET.TestFramework
             else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")) && Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY") is not null)
             {
                 testContext.TestAssetsDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")!;
+                testContext.HotReloadWebAssemblyProjectPath = Path.Combine(testContext.TestAssetsDirectory, "HotReloadAgent", "HotReloadAgent.WebAssembly.Browser");
             }
 
             string? repoRoot = null;
@@ -261,6 +264,11 @@ namespace Microsoft.NET.TestFramework
                 {
                     testContext.TestPackages = testPackages;
                 }
+            }
+
+            if (repoRoot != null && !Directory.Exists(testContext.HotReloadWebAssemblyProjectPath))
+            {
+                testContext.HotReloadWebAssemblyProjectPath = Path.Combine(repoRoot, "src", "BuiltInTools", "HotReloadAgent.WebAssembly.Browser");
             }
 
             if (commandLine.SdkVersion != null)
