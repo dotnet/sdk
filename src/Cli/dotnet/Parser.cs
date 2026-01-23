@@ -120,8 +120,7 @@ public static class Parser
         SdkCommandParser.ConfigureCommand(rootCommand.SdkCommand);
         InternalReportInstallSuccessCommandParser.ConfigureCommand(rootCommand.InternalReportInstallSuccessCommand);
         WorkloadCommandParser.ConfigureCommand(rootCommand.WorkloadCommand);
-
-        rootCommand.Subcommands.Add(new CompletionsCommand());
+        CompletionsCommandParser.ConfigureCommand(rootCommand.CompletionsCommand);
 
         rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction();
 

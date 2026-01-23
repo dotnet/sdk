@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.BuildServer;
 using Microsoft.DotNet.Cli.Commands.Clean;
@@ -106,7 +107,7 @@ internal sealed class DotNetCommandDefinition : RootCommand
     public readonly InternalReportInstallSuccessCommandDefinition InternalReportInstallSuccessCommand;
     public readonly WorkloadCommandDefinition WorkloadCommand;
     public readonly TestCommandDefinition TestCommand;
-    // TODO: public readonly CompletionsCommandDefinition CompletionsCommand;
+    public readonly CompletionsCommandDefinition CompletionsCommand;
 
     public DotNetCommandDefinition()
         : base("dotnet")
@@ -155,6 +156,6 @@ internal sealed class DotNetCommandDefinition : RootCommand
         Subcommands.Add(SdkCommand = new());
         Subcommands.Add(InternalReportInstallSuccessCommand = new());
         Subcommands.Add(WorkloadCommand = new());
-        // TODO: Subcommands.Add(CompletionsCommand = new());
+        Subcommands.Add(CompletionsCommand = new());
     }
 }
