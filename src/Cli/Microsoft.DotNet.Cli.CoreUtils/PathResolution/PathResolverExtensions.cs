@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Cli.Utils;
+namespace Microsoft.DotNet.Cli;
 
 /// <summary>
 /// Extension methods providing all derived paths from the three anchor points.
@@ -9,6 +9,9 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// </summary>
 public static class PathResolverExtensions
 {
+    private static readonly string ExeSuffix =
+        RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
+
     private const string SdksDirectoryName = "Sdks";
 
     extension(IPathResolver resolver)
@@ -83,7 +86,6 @@ public static class PathResolverExtensions
         /// <summary>
         /// Gets the full path to a bundled tool using relative path from SDK root.
         /// </summary>
-        /// <param name="resolver">The path resolver</param>
         /// <param name="relativePath">
         /// Path relative to SDK root. Examples:
         /// - "NuGet.CommandLine.XPlat.dll"
@@ -104,7 +106,6 @@ public static class PathResolverExtensions
         /// <summary>
         /// Gets the workload manifest directory for a specific feature band.
         /// </summary>
-        /// <param name="resolver">The path resolver</param>
         /// <param name="featureBand">SDK feature band (e.g., "10.0.100")</param>
         /// <returns>Full path to manifest directory</returns>
         /// <example>{DOTNET_ROOT}/sdk-manifests/10.0.100</example>
@@ -121,7 +122,6 @@ public static class PathResolverExtensions
         /// <summary>
         /// Gets the path to a specific pack.
         /// </summary>
-        /// <param name="resolver">The path resolver</param>
         /// <param name="packId">Pack identifier (e.g., "Microsoft.NETCore.App.Ref")</param>
         /// <param name="version">Pack version</param>
         /// <param name="rid">Runtime identifier</param>
@@ -186,7 +186,6 @@ public static class PathResolverExtensions
         /// <summary>
         /// Gets the path to the Microsoft.NETCore.App reference assemblies.
         /// </summary>
-        /// <param name="resolver">The path resolver</param>
         /// <param name="version">Target framework version (e.g., "10.0.0")</param>
         /// <param name="tfm">Target framework moniker (e.g., "net10.0")</param>
         public string GetNetCoreAppRefPath(string version, string tfm) => Path.Combine(
@@ -199,7 +198,6 @@ public static class PathResolverExtensions
         /// <summary>
         /// Gets the path to the Microsoft.NETCore.App.Host apphost for a specific RID.
         /// </summary>
-        /// <param name="resolver">The path resolver</param>
         /// <param name="rid">Runtime identifier (e.g., "win-x64")</param>
         /// <param name="version">Runtime version</param>
         public string GetAppHostPath(string rid, string version)
@@ -212,7 +210,7 @@ public static class PathResolverExtensions
                 "runtimes",
                 rid,
                 "native",
-                $"apphost{Constants.ExeSuffix}");
+                $"apphost{ExeSuffix}");
         }
 
         // ===================================================================
@@ -222,7 +220,6 @@ public static class PathResolverExtensions
         /// <summary>
         /// Gets the path to workload sets for a specific feature band.
         /// </summary>
-        /// <param name="resolver">The path resolver</param>
         /// <param name="featureBand">SDK feature band (e.g., "10.0.100")</param>
         /// <param name="workloadSetVersion">Workload set version</param>
         public string GetWorkloadSetPath(string featureBand, string workloadSetVersion) => Path.Combine(

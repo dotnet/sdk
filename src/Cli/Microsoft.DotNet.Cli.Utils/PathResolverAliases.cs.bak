@@ -1,0 +1,11 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+// Type aliases for backward compatibility
+// PathResolver has moved to Microsoft.DotNet.Cli.CoreUtils.PathResolution
+
+global using IPathResolver = Microsoft.DotNet.Cli.CoreUtils.PathResolution.IPathResolver;
+global using PathResolver = Microsoft.DotNet.Cli.CoreUtils.PathResolution.PathResolver;
+global using PathResolverExtensions = Microsoft.DotNet.Cli.CoreUtils.PathResolution.PathResolverExtensions;
+global using StandardLayoutPathResolver = Microsoft.DotNet.Cli.CoreUtils.PathResolution.StandardLayoutPathResolver;
+global using ConfigurablePathResolver = Microsoft.DotNet.Cli.CoreUtils.PathResolution.ConfigurablePathResolver;

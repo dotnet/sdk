@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.DotNet.Cli.Utils;
+namespace Microsoft.DotNet.Cli;
 
 /// <summary>
 /// Standard layout path resolver using current SDK discovery mechanisms.
@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// 1. DotnetExecutable: Current process path (Environment.ProcessPath)
 /// 2. DotnetRoot: Parent directory of dotnet executable
 /// 3. SdkRoot: Current SDK location (AppContext.BaseDirectory)
-/// 
+///
 /// This assumes the standard .NET SDK layout where:
 /// - CLI is at {dotnetRoot}/sdk/{version}/
 /// - Dotnet executable is at {dotnetRoot}/dotnet

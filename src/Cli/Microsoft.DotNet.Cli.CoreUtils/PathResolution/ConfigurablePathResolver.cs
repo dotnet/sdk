@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.DotNet.Cli.Utils;
+namespace Microsoft.DotNet.Cli;
 
 /// <summary>
 /// Configurable path resolver that supports environment variable-based configuration.
@@ -14,11 +14,11 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// 1. Constructor parameters (for testing/explicit configuration)
 /// 2. Environment variables (DOTNET_ROOT, DOTNET_SDK_ROOT)
 /// 3. Discovery fallbacks (same as StandardLayoutPathResolver)
-/// 
+///
 /// Required environment variables for portable scenarios:
 /// - DOTNET_ROOT: Root installation directory
 /// - DOTNET_SDK_ROOT: Versioned SDK tools directory
-/// 
+///
 /// The dotnet executable path is always auto-discovered from the running process.
 /// </remarks>
 public class ConfigurablePathResolver : IPathResolver

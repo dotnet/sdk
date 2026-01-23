@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Cli.Utils;
+namespace Microsoft.DotNet.Cli;
 
 /// <summary>
 /// Global access point for the default path resolver instance.
@@ -9,9 +9,9 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// <remarks>
 /// This provides a transitional mechanism for legacy code to access the path resolver
 /// without requiring dependency injection throughout the entire codebase.
-/// 
+///
 /// New code should prefer constructor injection of IPathResolver where possible.
-/// 
+///
 /// Usage:
 /// - Set Default once at application startup (Program.cs)
 /// - Access via PathResolver.Default throughout the codebase
@@ -46,7 +46,7 @@ public static class PathResolver
     /// </summary>
     /// <remarks>
     /// This method should be called once at application startup.
-    /// 
+    ///
     /// If DOTNET_ROOT or DOTNET_SDK_ROOT environment variables are set,
     /// uses ConfigurablePathResolver to enable portable scenarios.
     /// Otherwise, uses StandardLayoutPathResolver for standard SDK layout.
