@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Newtonsoft.Json;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
@@ -72,7 +72,7 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
 
             if (!string.IsNullOrEmpty(rawTaskItems))
             {
-                List<TaskItemDto>? dtos = JsonConvert.DeserializeObject<List<TaskItemDto>>(rawTaskItems);
+                List<TaskItemDto>? dtos = JsonSerializer.Deserialize<List<TaskItemDto>>(rawTaskItems);
                 if (dtos is not null)
                 {
                     _log.LogMessage(MessageImportance.Low, "Successfully retrieved task items via QueryAllTaskItems.");
