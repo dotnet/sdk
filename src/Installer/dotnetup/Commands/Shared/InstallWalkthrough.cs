@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
@@ -24,6 +25,48 @@ internal class InstallWalkthrough
     }
 
     private InstallRootManager InstallRootManager => _installRootManager ??= new InstallRootManager(_dotnetInstaller);
+
+    /// <summary>
+    /// Prompts the user to install a higher admin version when switching to user install.
+    /// This is relevant when the user is setting up a user install and has a higher version in admin install.
+    /// </summary>
+    /// <param name="resolvedVersion">The version being installed.</param>
+    /// <param name="setDefaultInstall">Whether the install will be set as default.</param>
+    /// <param name="currentInstallRoot">Current installation configuration.</param>
+    /// <param name="interactive">Whether in interactive mode.</param>
+    /// <param name="componentDescription">Description of the component (e.g., ".NET SDK").</param>
+    /// <returns>List of additional versions to install, empty if none.</returns>
+    public List<string> GetAdditionalAdminVersionsToMigrate(
+        ReleaseVersion? resolvedVersion,
+        bool setDefaultInstall,
+        DotnetInstallRootConfiguration? currentInstallRoot,
+        bool interactive,
+        string componentDescription)
+    {
+        var additionalVersions = new List<string>();
+
+        if (setDefaultInstall && currentInstallRoot?.InstallType == InstallType.Admin)
+        {
+            if (interactive)
+            {
+                var latestAdminVersion = _dotnetInstaller.GetLatestInstalledAdminVersion();
+                if (latestAdminVersion is not null && resolvedVersion < new ReleaseVersion(latestAdminVersion))
+                {
+                    SpectreAnsiConsole.WriteLine($"Since the admin installs of the {componentDescription} will no longer be accessible, we recommend installing the latest admin installed " +
+                        $"version ({latestAdminVersion}) to the new user install location. This will make sure this version of the {componentDescription} continues to be used for projects that don't specify a .NET SDK version in global.json.");
+
+                    if (SpectreAnsiConsole.Confirm($"Also install {componentDescription} {latestAdminVersion}?",
+                        defaultValue: true))
+                    {
+                        additionalVersions.Add(latestAdminVersion);
+                    }
+                }
+            }
+            //  TODO: Add command-line option for installing admin versions locally
+        }
+
+        return additionalVersions;
+    }
 
     /// <summary>
     /// Resolves the channel or version to install, considering global.json and user input.

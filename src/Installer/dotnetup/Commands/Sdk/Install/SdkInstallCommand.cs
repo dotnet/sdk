@@ -2,14 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Net.Http;
-using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
-using Spectre.Console;
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
@@ -85,8 +81,6 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             installPathFromGlobalJson,
             _interactive);
 
-        List<string> additionalVersionsToInstall = new();
-
         // Create a request and resolve it using the channel version resolver
         var installRequest = new DotnetInstallRequest(
             new DotnetInstallRoot(resolvedInstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
@@ -99,84 +93,39 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         var resolvedVersion = _channelVersionResolver.Resolve(installRequest);
 
-        if (resolvedSetDefaultInstall == true && currentDotnetInstallRoot?.InstallType == InstallType.Admin)
-        {
-            if (_interactive)
-            {
-                var latestAdminVersion = _dotnetInstaller.GetLatestInstalledAdminVersion();
-                if (latestAdminVersion is not null && resolvedVersion < new ReleaseVersion(latestAdminVersion))
-                {
-                    SpectreAnsiConsole.WriteLine($"Since the admin installs of the .NET SDK will no longer be accessible, we recommend installing the latest admin installed " +
-                        $"version ({latestAdminVersion}) to the new user install location.  This will make sure this version of the .NET SDK continues to be used for projects that don't specify a .NET SDK version in global.json.");
-
-                    if (SpectreAnsiConsole.Confirm($"Also install .NET SDK {latestAdminVersion}?",
-                        defaultValue: true))
-                    {
-                        additionalVersionsToInstall.Add(latestAdminVersion);
-                    }
-                }
-            }
-            else
-            {
-                //  TODO: Add command-line option for installing admin versions locally
-            }
-        }
+        // Check if user wants to migrate admin versions when switching to user install
+        var additionalVersionsToInstall = InstallWalkthrough.GetAdditionalAdminVersionsToMigrate(
+            resolvedVersion,
+            resolvedSetDefaultInstall,
+            currentDotnetInstallRoot,
+            _interactive,
+            ComponentDescription);
 
         //  TODO: Implement transaction / rollback?
 
-        SpectreAnsiConsole.MarkupLineInterpolated($"Installing .NET SDK [blue]{resolvedVersion}[/] to [blue]{resolvedInstallPath}[/]...");
-
-        DotnetInstall? mainInstall;
-
-        // Pass the _noProgress flag to the InstallerOrchestratorSingleton
-        // The orchestrator will handle installation with or without progress based on the flag
-        mainInstall = InstallerOrchestratorSingleton.Instance.Install(installRequest, _noProgress);
-        if (mainInstall == null)
+        var installResult = InstallExecutor.ExecuteInstall(installRequest, resolvedVersion?.ToString(), ComponentDescription, _noProgress);
+        if (!installResult.Success)
         {
-            SpectreAnsiConsole.MarkupLine($"[red]Failed to install .NET SDK {resolvedVersion}[/]");
             return 1;
         }
-        SpectreAnsiConsole.MarkupLine($"[green]Installed .NET SDK {mainInstall.Version}, available via {mainInstall.InstallRoot}[/]");
 
         // Install any additional versions
-        foreach (var additionalVersion in additionalVersionsToInstall)
-        {
-            // Create the request for the additional version
-            var additionalRequest = new DotnetInstallRequest(
-                new DotnetInstallRoot(resolvedInstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
-                new UpdateChannel(additionalVersion),
-                InstallComponent.SDK,
-                new InstallRequestOptions
-                {
-                    ManifestPath = _manifestPath
-                });
+        InstallExecutor.ExecuteAdditionalInstalls(
+            additionalVersionsToInstall,
+            new DotnetInstallRoot(resolvedInstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
+            InstallComponent.SDK,
+            ComponentDescription,
+            _manifestPath,
+            _noProgress);
 
-            // Install the additional version with the same progress settings as the main installation
-            DotnetInstall? additionalInstall = InstallerOrchestratorSingleton.Instance.Install(additionalRequest);
-            if (additionalInstall == null)
-            {
-                SpectreAnsiConsole.MarkupLine($"[red]Failed to install additional .NET SDK {additionalVersion}[/]");
-            }
-            else
-            {
-                SpectreAnsiConsole.MarkupLine($"[green]Installed additional .NET SDK {additionalInstall.Version}, available via {additionalInstall.InstallRoot}[/]");
-            }
-        }
-
-        if (resolvedSetDefaultInstall == true)
-        {
-            // Use ConfigureInstallType on all platforms (Windows uses InstallRootManager internally)
-            _dotnetInstaller.ConfigureInstallType(InstallType.User, resolvedInstallPath);
-        }
+        InstallExecutor.ConfigureDefaultInstallIfRequested(_dotnetInstaller, resolvedSetDefaultInstall, resolvedInstallPath);
 
         if (resolvedUpdateGlobalJson == true)
         {
             _dotnetInstaller.UpdateGlobalJson(globalJsonInfo!.GlobalJsonPath!, resolvedVersion!.ToString(), globalJsonInfo.AllowPrerelease, globalJsonInfo.RollForward);
         }
 
-
-        SpectreAnsiConsole.WriteLine($"Complete!");
-
+        InstallExecutor.DisplayComplete();
 
         return 0;
     }
