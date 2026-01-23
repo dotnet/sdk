@@ -200,3 +200,137 @@ public class ConcurrentInstallationTests
         finalInstalls[0].Version.ToString().Should().Be(channel);
     }
 }
+
+/// <summary>
+/// E2E tests for runtime installation using dotnetup.
+/// </summary>
+[Collection("DotnetupRuntimeCollection")]
+public class RuntimeInstallEndToEndTests
+{
+    /// <summary>
+    /// Core runtime channel test data - most scenarios use core runtime.
+    /// </summary>
+    public static IEnumerable<object[]> CoreRuntimeChannels => new List<object[]>
+    {
+        new object[] { "core", "9.0" },
+        new object[] { "core", "latest" },
+        new object[] { "core", "lts" },
+    };
+
+    /// <summary>
+    /// Test data for other runtime types (ASP.NET Core, Windows Desktop).
+    /// </summary>
+    public static IEnumerable<object[]> OtherRuntimeTypes => new List<object[]>
+    {
+        new object[] { "aspnetcore", "9.0" },
+        new object[] { "windowsdesktop", "9.0" },
+    };
+
+    [Theory(Skip = "Requires runtime install implementation fix - currently downloads SDK instead of runtime")]
+    [MemberData(nameof(CoreRuntimeChannels))]
+    public void RuntimeInstall_CoreRuntime(string runtimeType, string channel)
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // Verify version resolution
+        var updateChannel = new UpdateChannel(channel);
+        var expectedVersion = new ChannelVersionResolver().GetLatestVersionForChannel(updateChannel, InstallComponent.Runtime);
+        expectedVersion.Should().NotBeNull($"Channel {channel} should resolve to a valid runtime version");
+
+        Console.WriteLine($"Runtime channel '{channel}' resolved to version: {expectedVersion}");
+
+        // Execute the command
+        var args = DotnetupTestUtilities.BuildRuntimeArguments(runtimeType, channel, testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
+
+        // Verify manifest tracking
+        List<DotnetInstall> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            installs = manifest.GetInstalledVersions().ToList();
+        }
+
+        var matchingInstalls = installs.Where(i => DotnetupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
+        matchingInstalls.Should().ContainSingle();
+        matchingInstalls[0].Component.Should().Be(InstallComponent.Runtime);
+
+        // Verify files on disk
+        var runtimePath = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App");
+        Directory.Exists(runtimePath).Should().BeTrue("Core runtime should be installed");
+    }
+
+    [Theory(Skip = "Requires runtime install implementation fix - currently downloads SDK instead of runtime")]
+    [MemberData(nameof(OtherRuntimeTypes))]
+    public void RuntimeInstall_OtherTypes(string runtimeType, string channel)
+    {
+        // Skip Windows Desktop on non-Windows
+        if (runtimeType == "windowsdesktop" && !OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var component = runtimeType == "aspnetcore" ? InstallComponent.ASPNETCore : InstallComponent.WindowsDesktop;
+
+        // Execute
+        var args = DotnetupTestUtilities.BuildRuntimeArguments(runtimeType, channel, testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
+
+        // Verify
+        List<DotnetInstall> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            installs = manifest.GetInstalledVersions().ToList();
+        }
+
+        var matchingInstalls = installs.Where(i => DotnetupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
+        matchingInstalls.Should().ContainSingle();
+        matchingInstalls[0].Component.Should().Be(component);
+    }
+
+    [Fact(Skip = "Requires runtime install implementation fix - currently downloads SDK instead of runtime")]
+    public void RuntimeInstall_ReusesExistingInstall()
+    {
+        const string channel = "9.0";
+
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var args = DotnetupTestUtilities.BuildRuntimeArguments("core", channel, testEnv.InstallPath, testEnv.ManifestPath);
+
+        // First install
+        (int exitCode, _) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, "First installation should succeed");
+
+        // Second install should be skipped
+        (exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, "Second installation should succeed");
+        output.Should().Contain("is already installed, skipping installation");
+    }
+
+    [Fact]
+    public void RuntimeInstall_FeatureBand_ReturnsError()
+    {
+        // Feature bands like "9.0.1xx" are SDK-specific and should fail for runtimes
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var args = DotnetupTestUtilities.BuildRuntimeArguments("core", "9.0.1xx", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+
+        // Should fail - feature bands don't work for runtimes
+        exitCode.Should().NotBe(0, "Feature bands should not be valid for runtime installation");
+    }
+
+    [Fact]
+    public void RuntimeInstall_InvalidType_ReturnsError()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var args = DotnetupTestUtilities.BuildRuntimeArguments("invalid", "9.0", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, _) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+
+        exitCode.Should().NotBe(0, "Invalid runtime type should return error");
+    }
+}
