@@ -8,20 +8,11 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 
 internal static class RunCommandParser
 {
-    private static readonly RunCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(RunCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static RunCommandDefinition CreateCommand()
-    {
-        var command = new RunCommandDefinition();
         command.SetAction(RunCommand.Run);
         command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
         command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
         command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RuntimesFromProjectFile);
-        return command;
     }
 }

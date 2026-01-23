@@ -8,15 +8,39 @@ using System.CommandLine.Invocation;
 using System.CommandLine.StaticCompletions;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.BuildServer;
+using Microsoft.DotNet.Cli.Commands.Clean;
+using Microsoft.DotNet.Cli.Commands.Dnx;
 using Microsoft.DotNet.Cli.Commands.Format;
 using Microsoft.DotNet.Cli.Commands.Fsi;
+using Microsoft.DotNet.Cli.Commands.Help;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
+using Microsoft.DotNet.Cli.Commands.Hidden.Complete;
+using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
+using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
+using Microsoft.DotNet.Cli.Commands.Hidden.Parse;
+using Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Commands.NuGet;
+using Microsoft.DotNet.Cli.Commands.Pack;
+using Microsoft.DotNet.Cli.Commands.Package;
+using Microsoft.DotNet.Cli.Commands.Project;
+using Microsoft.DotNet.Cli.Commands.Publish;
+using Microsoft.DotNet.Cli.Commands.Reference;
+using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Run.Api;
+using Microsoft.DotNet.Cli.Commands.Sdk;
+using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Tool;
+using Microsoft.DotNet.Cli.Commands.Tool.Store;
 using Microsoft.DotNet.Cli.Commands.VSTest;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Help;
@@ -53,9 +77,45 @@ public static class Parser
             }
         }
 
-        rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction();
+        // Augment the definition of each subcommand with command-specific actions and completions.
+
+        AddCommandParser.ConfigureCommand(rootCommand.AddCommand);
+        BuildCommandParser.ConfigureCommand(rootCommand.BuildCommand);
+        BuildServerCommandParser.ConfigureCommand(rootCommand.BuildServerCommand);
+        CleanCommandParser.ConfigureCommand(rootCommand.CleanCommand);
+        DnxCommandParser.ConfigureCommand(rootCommand.DnxCommand);
+        FormatCommandParser.ConfigureCommand(rootCommand.FormatCommand);
+        CompleteCommandParser.ConfigureCommand(rootCommand.CompleteCommand);
+        FsiCommandParser.ConfigureCommand(rootCommand.FsiCommand);
+        ListCommandParser.ConfigureCommand(rootCommand.ListCommand);
+        MSBuildCommandParser.ConfigureCommand(rootCommand.MSBuildCommand);
+
+        // Currently `new` command implementation replaces the definition entirely:
+        rootCommand.Subcommands[rootCommand.Subcommands.IndexOf(rootCommand.NewCommand)] = NewCommandParser.ConfigureCommand(rootCommand.NewCommand);
+
+        PackCommandParser.ConfigureCommand(rootCommand.PackCommand);
+        PackageCommandParser.ConfigureCommand(rootCommand.PackageCommand);
+        ParseCommandParser.ConfigureCommand(rootCommand.ParseCommand);
+        ProjectCommandParser.ConfigureCommand(rootCommand.ProjectCommand);
+        PublishCommandParser.ConfigureCommand(rootCommand.PublishCommand);
+        ReferenceCommandParser.ConfigureCommand(rootCommand.ReferenceCommand);
+        RemoveCommandParser.ConfigureCommand(rootCommand.RemoveCommand);
+        RestoreCommandParser.ConfigureCommand(rootCommand.RestoreCommand);
+        RunCommandParser.ConfigureCommand(rootCommand.RunCommand);
+        RunApiCommandParser.ConfigureCommand(rootCommand.RunApiCommand);
+        SolutionCommandParser.ConfigureCommand(rootCommand.SolutionCommand);
+        StoreCommandParser.ConfigureCommand(rootCommand.StoreCommand);
+        TestCommandParser.ConfigureCommand(rootCommand.TestCommand);
+        ToolCommandParser.ConfigureCommand(rootCommand.ToolCommand);
+        VSTestCommandParser.ConfigureCommand(rootCommand.VSTestCommand);
+        HelpCommandParser.ConfigureCommand(rootCommand.HelpCommand);
+        SdkCommandParser.ConfigureCommand(rootCommand.SdkCommand);
+        InternalReportInstallSuccessCommandParser.ConfigureCommand(rootCommand.InternalReportInstallSuccessCommand);
+        WorkloadCommandParser.ConfigureCommand(rootCommand.WorkloadCommand);
 
         rootCommand.Subcommands.Add(new CompletionsCommand());
+
+        rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction();
 
         // NuGet implements several commands in its own repo. Add them to the .NET SDK via the provided API.
         NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.CreateInteractiveOption(acceptArgument: true));
@@ -248,7 +308,7 @@ public static class Parser
             {
                 NuGetCommand.Run(context.ParseResult);
             }
-            else if (command.Name.Equals(MSBuildCommandParser.GetCommand().Name))
+            else if (command is MSBuildCommandDefinition)
             {
                 new MSBuildForwardingApp(MSBuildArgs.ForHelp).Execute();
                 context.Output.WriteLine();
