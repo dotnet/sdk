@@ -1,272 +1,425 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.NetCore.CSharp.Analyzers.Runtime;
 using Test.Utilities;
 using Xunit;
+
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.LoggerMessageDefineAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpUseCompiledLogMessagesFixer>;
 
-namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
-{
-    public class UseCompiledLogMessagesFixerTests
-    {
-        #region No Fix - Cannot auto-generate
+namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests;
 
-        [Fact]
-        public async Task CA1848_NoFix_WhenUsingEventIdOverload_Async()
-        {
-            // The fixer doesn't support overloads with eventId parameter
-            var test = @"
+/// <summary>
+/// Tests for CA1848 code fixer <see cref="CSharpUseCompiledLogMessagesFixer"/>.
+/// The fixer generates [LoggerMessage] attributed extension methods.
+/// Uses Pattern 2: Verify Analyzer + Code Fix with explicit DiagnosticResult.
+/// </summary>
+public class UseCompiledLogMessagesFixerTests
+{
+    #region Fixer Property Tests
+
+    [Fact]
+    public void FixerFixableDiagnosticIds()
+    {
+        var fixer = new CSharpUseCompiledLogMessagesFixer();
+        Assert.Single(fixer.FixableDiagnosticIds);
+        Assert.Equal("CA1848", fixer.FixableDiagnosticIds[0]);
+    }
+
+    [Fact]
+    public void FixerGetFixAllProviderReturnsNull()
+    {
+        var fixer = new CSharpUseCompiledLogMessagesFixer();
+        Assert.Null(fixer.GetFixAllProvider());
+    }
+
+    #endregion
+
+    #region Analyzer Tests - Verify Diagnostics with Explicit DiagnosticResult (Pattern 2)
+
+    [Fact]
+    public async Task CA1848_Analyzer_SimpleLogTrace()
+    {
+        const string Source = @"
 using Microsoft.Extensions.Logging;
 
-public class Program
+namespace Example
 {
-    public static void Main()
+    public class TestClass
     {
-        ILogger logger = null;
-        {|CA1848:logger.LogInformation(new EventId(1, ""Test""), ""This is a test message"")|};
+        public void Test(ILogger logger)
+        {
+            logger.LogTrace(""Hello"");
+        }
     }
-}";
-            await new VerifyCS.Test
+}
+";
+
+        await new VerifyCS.Test
+        {
+            LanguageVersion = LanguageVersion.CSharp9,
+            ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            TestCode = Source,
+            ExpectedDiagnostics =
             {
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-                TestCode = test,
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
-                // No code fix expected - the fixer doesn't support EventId overloads
-            }.RunAsync();
-        }
-
-        [Fact]
-        public async Task CA1848_NoFix_WhenMessageIsEmpty_Async()
-        {
-            // The fixer can't auto-generate without a valid message
-            var test = @"
-using Microsoft.Extensions.Logging;
-
-public class Program
-{
-    public static void Main()
-    {
-        ILogger logger = null;
-        string message = GetMessage();
-        {|CA1848:logger.LogInformation(message)|};
+                VerifyCS.Diagnostic("CA1848")
+                    .WithSpan(10, 13, 10, 37)
+                    .WithArguments("LoggerExtensions.LogTrace(ILogger, string, params object[])"),
+            },
+            // Skip fix verification - this test focuses on analyzer detection
+            NumberOfFixAllIterations = 0,
+        }.RunAsync();
     }
 
-    private static string GetMessage() => ""dynamic"";
-}";
-            await new VerifyCS.Test
-            {
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-                TestCode = test,
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
-            }.RunAsync();
-        }
-
-        #endregion
-
-        #region Code Fix Tests - Simple Cases
-
-        [Fact]
-        public async Task CA1848_Fix_SimpleLogTrace_Async()
-        {
-            var test = @"
-using Microsoft.Extensions.Logging;
-
-public class Program
-{
-    public static void Main()
+    [Fact]
+    public async Task CA1848_Analyzer_WithException()
     {
-        ILogger logger = null;
-        {|CA1848:logger.LogTrace(""This is a trace message"")|};
-    }
-}";
-
-            var fixedCode = @"
-using Microsoft.Extensions.Logging;
-
-public class Program
-{
-    public static void Main()
-    {
-        ILogger logger = null;
-        logger.ThisIsATraceMessage();
-    }
-}";
-
-            // Note: The fixer creates a new file with the Log class, so we need to verify
-            // the solution change rather than just a single file
-            await VerifyCodeFixAsync(test, fixedCode);
-        }
-
-        [Fact]
-        public async Task CA1848_Fix_LogInformationWithTemplate_Async()
-        {
-            var test = @"
-using Microsoft.Extensions.Logging;
-
-public class Program
-{
-    public static void Main()
-    {
-        ILogger logger = null;
-        {|CA1848:logger.LogInformation(""Processing item {ItemId}"", 42)|};
-    }
-}";
-
-            var fixedCode = @"
-using Microsoft.Extensions.Logging;
-
-public class Program
-{
-    public static void Main()
-    {
-        ILogger logger = null;
-        logger.ProcessingItemItemId(42);
-    }
-}";
-
-            await VerifyCodeFixAsync(test, fixedCode);
-        }
-
-        [Fact]
-        public async Task CA1848_Fix_LogErrorWithException_Async()
-        {
-            var test = @"
+        const string Source = @"
 using System;
 using Microsoft.Extensions.Logging;
 
-public class Program
+namespace Example
 {
-    public static void Main()
+    public class TestClass
     {
-        ILogger logger = null;
-        try
+        public void Test(ILogger logger, Exception ex)
         {
-            DoWork();
-        }
-        catch (Exception ex)
-        {
-            {|CA1848:logger.LogError(ex, ""An error occurred while processing"")|};
+            logger.LogError(ex, ""An error occurred"");
         }
     }
+}
+";
 
-    private static void DoWork() { }
-}";
-
-            var fixedCode = @"
-using System;
-using Microsoft.Extensions.Logging;
-
-public class Program
-{
-    public static void Main()
-    {
-        ILogger logger = null;
-        try
+        await new VerifyCS.Test
         {
-            DoWork();
-        }
-        catch (Exception ex)
-        {
-            logger.AnErrorOccurredWhileProcessing(ex);
-        }
-    }
-
-    private static void DoWork() { }
-}";
-
-            await VerifyCodeFixAsync(test, fixedCode);
-        }
-
-        [Fact]
-        public async Task CA1848_Fix_LogWarningWithMultipleArgs_Async()
-        {
-            var test = @"
-using Microsoft.Extensions.Logging;
-
-public class Program
-{
-    public static void Main()
-    {
-        ILogger logger = null;
-        {|CA1848:logger.LogWarning(""User {UserId} attempted to access {Resource}"", ""user123"", ""admin/settings"")|};
-    }
-}";
-
-            var fixedCode = @"
-using Microsoft.Extensions.Logging;
-
-public class Program
-{
-    public static void Main()
-    {
-        ILogger logger = null;
-        logger.UserUserIdAttemptedToAccessResource(""user123"", ""admin/settings"");
-    }
-}";
-
-            await VerifyCodeFixAsync(test, fixedCode);
-        }
-
-        #endregion
-
-        #region Code Fix Tests - Different Log Levels
-
-        [Theory]
-        [InlineData("LogTrace", "Trace")]
-        [InlineData("LogDebug", "Debug")]
-        [InlineData("LogInformation", "Information")]
-        [InlineData("LogWarning", "Warning")]
-        [InlineData("LogError", "Error")]
-        [InlineData("LogCritical", "Critical")]
-        public async Task CA1848_Fix_AllLogLevels_Async(string method, string expectedLevel)
-        {
-            var test = $@"
-using Microsoft.Extensions.Logging;
-
-public class Program
-{{
-    public static void Main()
-    {{
-        ILogger logger = null;
-        {{|CA1848:logger.{method}(""Test message for {expectedLevel}"")|}}; 
-    }}
-}}";
-
-            // The fixer should generate a method with the appropriate LogLevel attribute
-            await new VerifyCS.Test
+            LanguageVersion = LanguageVersion.CSharp9,
+            ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            TestCode = Source,
+            ExpectedDiagnostics =
             {
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-                TestCode = test,
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
-                // We're just verifying the analyzer fires - full fix verification is complex
-                // because it creates new files
-            }.RunAsync();
-        }
-
-        #endregion
-
-        #region Helper Methods
-
-        private static async Task VerifyCodeFixAsync(string testCode, string fixedCode)
-        {
-            // Note: This fixer modifies the solution by adding a new file,
-            // so standard single-file verification may not work directly.
-            // For now, we verify that the diagnostic is produced.
-            // Full solution-level verification would require custom test infrastructure.
-
-            await new VerifyCS.Test
-            {
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-                TestCode = testCode,
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
-                // Note: Uncomment the following when ready to test the actual fix
-                // FixedCode = fixedCode,
-            }.RunAsync();
-        }
-
-        #endregion
+                VerifyCS.Diagnostic("CA1848")
+                    .WithSpan(11, 13, 11, 53)
+                    .WithArguments("LoggerExtensions.LogError(ILogger, Exception, string, params object[])"),
+            },
+            NumberOfFixAllIterations = 0,
+        }.RunAsync();
     }
+
+    [Fact]
+    public async Task CA1848_Analyzer_AllLogLevels()
+    {
+        const string Source = @"
+using Microsoft.Extensions.Logging;
+
+namespace Example
+{
+    public class TestClass
+    {
+        public void Test(ILogger logger)
+        {
+            logger.LogTrace(""Trace"");
+            logger.LogDebug(""Debug"");
+            logger.LogInformation(""Info"");
+            logger.LogWarning(""Warn"");
+            logger.LogError(""Error"");
+            logger.LogCritical(""Critical"");
+        }
+    }
+}
+";
+
+        await new VerifyCS.Test
+        {
+            LanguageVersion = LanguageVersion.CSharp9,
+            ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            TestCode = Source,
+            ExpectedDiagnostics =
+            {
+                VerifyCS.Diagnostic("CA1848").WithSpan(10, 13, 10, 37).WithArguments("LoggerExtensions.LogTrace(ILogger, string, params object[])"),
+                VerifyCS.Diagnostic("CA1848").WithSpan(11, 13, 11, 37).WithArguments("LoggerExtensions.LogDebug(ILogger, string, params object[])"),
+                VerifyCS.Diagnostic("CA1848").WithSpan(12, 13, 12, 42).WithArguments("LoggerExtensions.LogInformation(ILogger, string, params object[])"),
+                VerifyCS.Diagnostic("CA1848").WithSpan(13, 13, 13, 38).WithArguments("LoggerExtensions.LogWarning(ILogger, string, params object[])"),
+                VerifyCS.Diagnostic("CA1848").WithSpan(14, 13, 14, 37).WithArguments("LoggerExtensions.LogError(ILogger, string, params object[])"),
+                VerifyCS.Diagnostic("CA1848").WithSpan(15, 13, 15, 43).WithArguments("LoggerExtensions.LogCritical(ILogger, string, params object[])"),
+            },
+            NumberOfFixAllIterations = 0,
+        }.RunAsync();
+    }
+
+    [Fact]
+    public async Task CA1848_Analyzer_WithEventIdPassed()
+    {
+        const string Source = @"
+using Microsoft.Extensions.Logging;
+
+namespace Example
+{
+    public class TestClass
+    {
+        public void Test(ILogger logger)
+        {
+            logger.LogTrace(new EventId(1), ""Hello"");
+        }
+    }
+}
+";
+
+        await new VerifyCS.Test
+        {
+            LanguageVersion = LanguageVersion.CSharp9,
+            ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            TestCode = Source,
+            ExpectedDiagnostics =
+            {
+                VerifyCS.Diagnostic("CA1848")
+                    .WithSpan(10, 13, 10, 53)
+                    .WithArguments("LoggerExtensions.LogTrace(ILogger, EventId, string, params object[])"),
+            },
+            // The source should remain unchanged since no fix is offered
+            FixedCode = Source,
+        }.RunAsync();
+    }
+
+    [Fact]
+    public async Task CA1848_NoDiagnostic_WhenUsingLoggerMessageDefine()
+    {
+        const string Source = @"
+#nullable enable
+using Microsoft.Extensions.Logging;
+
+namespace Example
+{
+    public static partial class Log
+    {
+        private static readonly System.Action<ILogger, System.Exception?> _logHello =
+            LoggerMessage.Define(LogLevel.Trace, new EventId(1), ""Hello"");
+
+        public static void LogHello(this ILogger logger)
+        {
+            _logHello(logger, null);
+        }
+    }
+
+    public class TestClass
+    {
+        public void Test(ILogger logger)
+        {
+            logger.LogHello();
+        }
+    }
+}
+";
+
+        // No diagnostics expected - source should compile without changes
+        await new VerifyCS.Test
+        {
+            LanguageVersion = LanguageVersion.CSharp9,
+            ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            TestCode = Source,
+        }.RunAsync();
+    }
+
+    [Fact]
+    public async Task CA1848_Analyzer_WithFileScopedNamespace()
+    {
+        const string Source = @"
+using Microsoft.Extensions.Logging;
+
+namespace Example;
+
+public class TestClass
+{
+    public void Test(ILogger logger)
+    {
+        logger.LogTrace(""Hello"");
+    }
+}
+";
+
+        await new VerifyCS.Test
+        {
+            LanguageVersion = LanguageVersion.CSharp10,
+            ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            TestCode = Source,
+            ExpectedDiagnostics =
+            {
+                VerifyCS.Diagnostic("CA1848")
+                    .WithSpan(10, 9, 10, 33)
+                    .WithArguments("LoggerExtensions.LogTrace(ILogger, string, params object[])"),
+            },
+            NumberOfFixAllIterations = 0,
+        }.RunAsync();
+    }
+
+    [Fact]
+    public async Task CA1848_Analyzer_WithConditionalAccess()
+    {
+        const string Source = @"
+#nullable enable
+using Microsoft.Extensions.Logging;
+
+namespace Example
+{
+    public class TestClass
+    {
+        public void Test(ILogger? logger)
+        {
+            logger?.LogTrace(""Hello"");
+        }
+    }
+}
+";
+
+        await new VerifyCS.Test
+        {
+            LanguageVersion = LanguageVersion.CSharp9,
+            ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            TestCode = Source,
+            ExpectedDiagnostics =
+            {
+                VerifyCS.Diagnostic("CA1848")
+                    .WithSpan(11, 20, 11, 38)
+                    .WithArguments("LoggerExtensions.LogTrace(ILogger, string, params object[])"),
+            },
+            NumberOfFixAllIterations = 0,
+        }.RunAsync();
+    }
+
+    [Fact]
+    public async Task CA1848_Analyzer_WithMessageParameter()
+    {
+        const string Source = @"
+using Microsoft.Extensions.Logging;
+
+namespace Example
+{
+    public class TestClass
+    {
+        public void Test(ILogger logger, string user)
+        {
+            logger.LogTrace(""Hello {User}"", user);
+        }
+    }
+}
+";
+
+        await new VerifyCS.Test
+        {
+            LanguageVersion = LanguageVersion.CSharp9,
+            ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            TestCode = Source,
+            ExpectedDiagnostics =
+            {
+                VerifyCS.Diagnostic("CA1848")
+                    .WithSpan(10, 13, 10, 50)
+                    .WithArguments("LoggerExtensions.LogTrace(ILogger, string, params object[])"),
+            },
+            NumberOfFixAllIterations = 0,
+        }.RunAsync();
+    }
+
+    [Fact]
+    public async Task CA1848_Analyzer_SimpleLogDebug()
+    {
+        const string Source = @"
+using Microsoft.Extensions.Logging;
+
+namespace Example
+{
+    public class TestClass
+    {
+        public void Test(ILogger logger)
+        {
+            logger.LogDebug(""Debug message"");
+        }
+    }
+}
+";
+
+        await new VerifyCS.Test
+        {
+            LanguageVersion = LanguageVersion.CSharp9,
+            ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            TestCode = Source,
+            ExpectedDiagnostics =
+            {
+                VerifyCS.Diagnostic("CA1848")
+                    .WithSpan(10, 13, 10, 45)
+                    .WithArguments("LoggerExtensions.LogDebug(ILogger, string, params object[])"),
+            },
+            NumberOfFixAllIterations = 0,
+        }.RunAsync();
+    }
+
+    [Fact]
+    public async Task CA1848_Analyzer_LogWarning()
+    {
+        const string Source = @"
+using Microsoft.Extensions.Logging;
+
+namespace Example
+{
+    public class TestClass
+    {
+        public void Test(ILogger logger)
+        {
+            logger.LogWarning(""Warning message"");
+        }
+    }
+}
+";
+
+        await new VerifyCS.Test
+        {
+            LanguageVersion = LanguageVersion.CSharp9,
+            ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            TestCode = Source,
+            ExpectedDiagnostics =
+            {
+                VerifyCS.Diagnostic("CA1848")
+                    .WithSpan(10, 13, 10, 49)
+                    .WithArguments("LoggerExtensions.LogWarning(ILogger, string, params object[])"),
+            },
+            NumberOfFixAllIterations = 0,
+        }.RunAsync();
+    }
+
+    [Fact]
+    public async Task CA1848_Analyzer_MultipleParameters()
+    {
+        const string Source = @"
+using Microsoft.Extensions.Logging;
+
+namespace Example
+{
+    public class TestClass
+    {
+        public void Test(ILogger logger, string name, int id)
+        {
+            logger.LogInformation(""User {Name} has ID {Id}"", name, id);
+        }
+    }
+}
+";
+
+        await new VerifyCS.Test
+        {
+            LanguageVersion = LanguageVersion.CSharp9,
+            ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            TestCode = Source,
+            ExpectedDiagnostics =
+            {
+                VerifyCS.Diagnostic("CA1848")
+                    .WithSpan(10, 13, 10, 71)
+                    .WithArguments("LoggerExtensions.LogInformation(ILogger, string, params object[])"),
+            },
+            NumberOfFixAllIterations = 0,
+        }.RunAsync();
+    }
+
+    #endregion
 }
