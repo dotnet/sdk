@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -95,6 +96,41 @@ public class VisualStudioWorkloadsTests
         VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
 
         installedWorkloads.AsEnumerable().Should().BeEmpty();
+#pragma warning restore CA1416 // Validate platform compatibility
+    }
+
+    [WindowsOnlyFact]
+    public void GetInstalledWorkloads_SetupConfigurationNotRegistered_ReturnsEmpty()
+    {
+        // This test verifies that COMException with REGDB_E_CLASSNOTREG is handled gracefully
+        // when Visual Studio setup configuration COM classes are not registered (e.g., no VS installed)
+        MockWorkloadResolver workloadResolver = new(s_workloadInfo);
+#pragma warning disable CA1416 // Validate platform compatibility
+        InstalledWorkloadsCollection installedWorkloads = new();
+
+        SetupConfigurationThrowingMock setupConfiguration = new(
+            new COMException("Class not registered", unchecked((int)0x80040154)));
+
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+
+        installedWorkloads.AsEnumerable().Should().BeEmpty();
+#pragma warning restore CA1416 // Validate platform compatibility
+    }
+
+    [WindowsOnlyFact]
+    public void GetInstalledWorkloads_OtherCOMException_Throws()
+    {
+        // Other COM exceptions should not be swallowed
+        MockWorkloadResolver workloadResolver = new(s_workloadInfo);
+#pragma warning disable CA1416 // Validate platform compatibility
+        InstalledWorkloadsCollection installedWorkloads = new();
+
+        SetupConfigurationThrowingMock setupConfiguration = new(
+            new COMException("Some other COM error", unchecked((int)0x80004005)));
+
+        Action act = () => VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+
+        act.Should().Throw<COMException>().Where(e => e.ErrorCode == unchecked((int)0x80004005));
 #pragma warning restore CA1416 // Validate platform compatibility
     }
 
@@ -772,6 +808,22 @@ public class VisualStudioWorkloadsTests
         }
 
         public IEnumSetupInstances EnumInstances() => _enumSetupInstances;
+
+        public IEnumSetupInstances EnumInstancesThatSupportComponents(string pwszComponentId) => throw new NotImplementedException();
+        public ISetupInstance GetInstanceForCurrentProcess() => throw new NotImplementedException();
+        public ISetupInstance GetInstanceForPath(string path) => throw new NotImplementedException();
+        public IEnumSetupInstances EnumAllInstances() => throw new NotImplementedException();
+    }
+
+    public class SetupConfigurationThrowingMock : ISetupConfiguration2
+    {
+        private readonly COMException _exception;
+        public SetupConfigurationThrowingMock(COMException exception)
+        {
+            _exception = exception;
+        }
+
+        public IEnumSetupInstances EnumInstances() => throw _exception;
 
         public IEnumSetupInstances EnumInstancesThatSupportComponents(string pwszComponentId) => throw new NotImplementedException();
         public ISetupInstance GetInstanceForCurrentProcess() => throw new NotImplementedException();
