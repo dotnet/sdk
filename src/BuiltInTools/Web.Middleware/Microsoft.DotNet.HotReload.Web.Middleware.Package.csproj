@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Watch\TargetFrameworks.props"/>
 
   <PropertyGroup>
     <!--
       This source code may be loaded by a .NET 6.0+ web server.
       When updating the TFM also update minimal supported version in dotnet-watch.csproj and WebApplicationAppModel.cs.
     -->
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>$(MiddlewareTargetFrameworkV6)</TargetFrameworks>
     <DisableTransitiveFrameworkReferenceDownloads Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</DisableTransitiveFrameworkReferenceDownloads>
 
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
