@@ -217,6 +217,9 @@ internal sealed class MSBuildForwardingAppWithoutLogging
             { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? Environment.GetEnvironmentVariable("MSBuildExtensionsPath") ?? pathResolver.SdkRoot },
             { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
             { "DOTNET_HOST_PATH", GetDotnetPath() },
+            // CRITICAL: Force MSBuild to use SDK location, not its assembly load location
+            // This enables portable CLI scenarios where MSBuild.dll may load from a different directory
+            { "MSBUILD_EXE_PATH", pathResolver.GetMSBuildPath() },
         };
     }
 
