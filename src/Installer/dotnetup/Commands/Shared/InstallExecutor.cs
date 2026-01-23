@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
@@ -15,6 +16,43 @@ internal class InstallExecutor
     /// Result of an installation execution.
     /// </summary>
     public record InstallResult(bool Success, DotnetInstall? Install);
+
+    /// <summary>
+    /// Result of creating and resolving an install request.
+    /// </summary>
+    public record ResolvedInstallRequest(DotnetInstallRequest Request, ReleaseVersion? ResolvedVersion);
+
+    /// <summary>
+    /// Creates a DotnetInstallRequest and resolves the version using the channel version resolver.
+    /// </summary>
+    /// <param name="installPath">The installation path.</param>
+    /// <param name="channel">The channel or version to install.</param>
+    /// <param name="component">The component type (SDK, Runtime, ASPNETCore, WindowsDesktop).</param>
+    /// <param name="manifestPath">Optional manifest path for tracking installations.</param>
+    /// <param name="channelVersionResolver">The resolver to use for version resolution.</param>
+    /// <returns>The resolved install request with version information.</returns>
+    public static ResolvedInstallRequest CreateAndResolveRequest(
+        string installPath,
+        string channel,
+        InstallComponent component,
+        string? manifestPath,
+        ChannelVersionResolver channelVersionResolver)
+    {
+        var installRoot = new DotnetInstallRoot(installPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        var request = new DotnetInstallRequest(
+            installRoot,
+            new UpdateChannel(channel),
+            component,
+            new InstallRequestOptions
+            {
+                ManifestPath = manifestPath
+            });
+
+        var resolvedVersion = channelVersionResolver.Resolve(request);
+
+        return new ResolvedInstallRequest(request, resolvedVersion);
+    }
 
     /// <summary>
     /// Executes the installation of a .NET component and displays appropriate status messages.
