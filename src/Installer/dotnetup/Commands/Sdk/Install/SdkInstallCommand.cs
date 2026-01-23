@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
@@ -14,6 +15,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 {
+    private const string ComponentDescription = ".NET SDK";
+
     private readonly string? _versionOrChannel = result.GetValue(SdkInstallCommandParser.ChannelArgument);
     private readonly string? _installPath = result.GetValue(SdkInstallCommandParser.InstallPathOption);
     private readonly bool? _setDefaultInstall = result.GetValue(SdkInstallCommandParser.SetDefaultInstallOption);
@@ -24,58 +27,34 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
-    private InstallRootManager? _installRootManager;
-    private InstallRootManager InstallRootManager => _installRootManager ??= new InstallRootManager(_dotnetInstaller);
+    private InstallPathResolver? _installPathResolver;
+    private InstallWalkthrough? _installWalkthrough;
+
+    private InstallPathResolver InstallPathResolver => _installPathResolver ??= new InstallPathResolver(_dotnetInstaller);
+    private InstallWalkthrough InstallWalkthrough => _installWalkthrough ??= new InstallWalkthrough(_dotnetInstaller, _channelVersionResolver);
 
     public override int Execute()
     {
         var globalJsonInfo = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
-
         var currentDotnetInstallRoot = _dotnetInstaller.GetConfiguredInstallType();
 
-        string? resolvedInstallPath = null;
+        // Resolve the install path using the shared resolver
+        var pathResolution = InstallPathResolver.Resolve(
+            _installPath,
+            globalJsonInfo,
+            currentDotnetInstallRoot,
+            _interactive,
+            ComponentDescription,
+            out var error);
 
-        string? installPathFromGlobalJson = null;
-        if (globalJsonInfo?.GlobalJsonPath is not null)
+        if (pathResolution == null)
         {
-            installPathFromGlobalJson = globalJsonInfo.SdkPath;
-
-            if (installPathFromGlobalJson is not null && _installPath is not null &&
-                !DotnetupUtilities.PathsEqual(installPathFromGlobalJson, _installPath))
-            {
-                //  TODO: Add parameter to override error
-                Console.Error.WriteLine($"Error: The install path specified in global.json ({installPathFromGlobalJson}) does not match the install path provided ({_installPath}).");
-                return 1;
-            }
-
-            resolvedInstallPath = installPathFromGlobalJson;
+            Console.Error.WriteLine(error);
+            return 1;
         }
 
-        if (resolvedInstallPath == null)
-        {
-            resolvedInstallPath = _installPath;
-        }
-
-        if (resolvedInstallPath == null && currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
-        {
-            //  If a user installation is already set up, we don't need to prompt for the install path
-            resolvedInstallPath = currentDotnetInstallRoot.Path;
-        }
-
-        if (resolvedInstallPath == null)
-        {
-            if (_interactive)
-            {
-                resolvedInstallPath = SpectreAnsiConsole.Prompt(
-                    new TextPrompt<string>("Where should we install the .NET SDK to?)")
-                        .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
-            }
-            else
-            {
-                //  If no install path is specified, use the default install path
-                resolvedInstallPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
-            }
-        }
+        string resolvedInstallPath = pathResolution.ResolvedInstallPath;
+        string? installPathFromGlobalJson = pathResolution.InstallPathFromGlobalJson;
 
         string? channelFromGlobalJson = null;
         if (globalJsonInfo?.GlobalJsonPath is not null)
@@ -83,131 +62,28 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             channelFromGlobalJson = ResolveChannelFromGlobalJson(globalJsonInfo.GlobalJsonPath);
         }
 
-        bool? resolvedUpdateGlobalJson = null;
+        // Check if global.json should be updated
+        bool? resolvedUpdateGlobalJson = InstallWalkthrough.ResolveUpdateGlobalJson(
+            channelFromGlobalJson,
+            _versionOrChannel,
+            _updateGlobalJson,
+            _interactive);
 
-        if (channelFromGlobalJson is not null && _versionOrChannel is not null &&
-            //  TODO: Should channel comparison be case-sensitive?
-            !channelFromGlobalJson.Equals(_versionOrChannel, StringComparison.OrdinalIgnoreCase))
-        {
-            if (_interactive && _updateGlobalJson == null)
-            {
-                resolvedUpdateGlobalJson = SpectreAnsiConsole.Confirm(
-                    $"The channel specified in global.json ({channelFromGlobalJson}) does not match the channel specified ({_versionOrChannel}). Do you want to update global.json to match the specified channel?",
-                    defaultValue: true);
-            }
-        }
+        // Resolve the channel/version to install
+        string resolvedChannel = InstallWalkthrough.ResolveChannel(
+            _versionOrChannel,
+            channelFromGlobalJson,
+            globalJsonInfo?.GlobalJsonPath,
+            _interactive,
+            ComponentDescription);
 
-        string? resolvedChannel = null;
-
-        if (channelFromGlobalJson is not null)
-        {
-            SpectreAnsiConsole.WriteLine($".NET SDK {channelFromGlobalJson} will be installed since {globalJsonInfo?.GlobalJsonPath} specifies that version.");
-
-            resolvedChannel = channelFromGlobalJson;
-        }
-        else if (_versionOrChannel is not null)
-        {
-            resolvedChannel = _versionOrChannel;
-        }
-        else
-        {
-            if (_interactive)
-            {
-
-                SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', _channelVersionResolver.GetSupportedChannels()));
-                SpectreAnsiConsole.WriteLine("You can also specify a specific version (for example 9.0.304).");
-
-                resolvedChannel = SpectreAnsiConsole.Prompt(
-                    new TextPrompt<string>("Which channel of the .NET SDK do you want to install?")
-                        .DefaultValue("latest"));
-            }
-            else
-            {
-                resolvedChannel = "latest"; // Default to latest if no channel is specified
-            }
-        }
-
-        bool? resolvedSetDefaultInstall = _setDefaultInstall;
-
-        if (resolvedSetDefaultInstall == null)
-        {
-            //  If global.json specified an install path, we don't prompt for setting the default install path (since you probably don't want to do that for a repo-local path)
-            if (_interactive && installPathFromGlobalJson == null)
-            {
-                if (currentDotnetInstallRoot == null)
-                {
-                    resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                        $"Do you want to set the install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
-                        defaultValue: true);
-                }
-                else if (currentDotnetInstallRoot.InstallType == InstallType.User)
-                {
-                    if (DotnetupUtilities.PathsEqual(resolvedInstallPath, currentDotnetInstallRoot.Path))
-                    {
-                        //  If the current install is fully configured and matches the resolved path, skip the prompt
-                        if (currentDotnetInstallRoot.IsFullyConfigured)
-                        {
-                            // Default install is already set up correctly, no need to prompt
-                            resolvedSetDefaultInstall = false;
-                        }
-                        else
-                        {
-                            // Not fully configured - display what needs to be configured and prompt
-                            if (OperatingSystem.IsWindows())
-                            {
-                                UserInstallRootChanges userInstallRootChanges = InstallRootManager.GetUserInstallRootChanges();
-
-                                SpectreAnsiConsole.WriteLine($"The .NET installation at {resolvedInstallPath} is not fully configured.");
-                                SpectreAnsiConsole.WriteLine("The following changes are needed:");
-
-                                if (userInstallRootChanges.NeedsRemoveAdminPath)
-                                {
-                                    SpectreAnsiConsole.WriteLine("  - Remove admin .NET paths from system PATH");
-                                }
-                                if (userInstallRootChanges.NeedsAddToUserPath)
-                                {
-                                    SpectreAnsiConsole.WriteLine($"  - Add {userInstallRootChanges.UserDotnetPath} to user PATH");
-                                }
-                                if (userInstallRootChanges.NeedsSetDotnetRoot)
-                                {
-                                    SpectreAnsiConsole.WriteLine($"  - Set DOTNET_ROOT to {userInstallRootChanges.UserDotnetPath}");
-                                }
-
-                                resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                                    "Do you want to apply these configuration changes?",
-                                    defaultValue: true);
-                            }
-                            else
-                            {
-                                // On non-Windows, we don't have detailed configuration info
-                                //  No need to prompt here, the default install is already set up.
-                            }
-                        }
-                    }
-                    else
-                    {
-                        resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                            $"The default dotnet install is currently set to {currentDotnetInstallRoot.Path}.  Do you want to change it to {resolvedInstallPath}?",
-                            defaultValue: false);
-                    }
-                }
-                else if (currentDotnetInstallRoot.InstallType == InstallType.Admin)
-                {
-                    SpectreAnsiConsole.WriteLine($"You have an existing admin install of .NET in {currentDotnetInstallRoot.Path}. We can configure your system to use the new install of .NET " +
-                        $"in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
-                    SpectreAnsiConsole.WriteLine("You can change this later with the \"dotnetup defaultinstall\" command.");
-                    resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                        $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
-                        defaultValue: true);
-                }
-
-                //  TODO: Add checks for whether PATH and DOTNET_ROOT need to be updated, or if the install is in an inconsistent state
-            }
-            else
-            {
-                resolvedSetDefaultInstall = false; // Default to not setting the default install path if not specified
-            }
-        }
+        // Resolve whether to set this as the default install
+        bool resolvedSetDefaultInstall = InstallWalkthrough.ResolveSetDefaultInstall(
+            _setDefaultInstall,
+            currentDotnetInstallRoot,
+            resolvedInstallPath,
+            installPathFromGlobalJson,
+            _interactive);
 
         List<string> additionalVersionsToInstall = new();
 
