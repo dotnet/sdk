@@ -65,6 +65,7 @@ namespace Microsoft.NET.TestFramework
                     {
                         var propertyGroup = new XElement("PropertyGroup");
                         propertyGroup.Add(new XElement("WasmEnableHotReload", false));
+                        propertyGroup.Add(new XElement("SdkTargetFramework", "net11.0"));
                         project.Root?.Add(propertyGroup);
                         var itemGroup = new XElement("ItemGroup");
                         var projectReference = new XElement("ProjectReference");
