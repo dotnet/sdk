@@ -23,8 +23,9 @@ The .NET Runtime archives also include `dotnet.exe`. The host replacement logic 
 There are 3 runtime archives produced: the runtime, aspnetcore runtime, and windows desktop runtime (see [`InstallComponent`](../../../src/Installer/Microsoft.Dotnet.Installation/InstallComponent.cs)).
 
 We'll allow install with an option as follows:
-- `dotnetup runtime install aspnetcore` (or `-a`)
-- `dotnetup runtime install windowsdesktop` (or `-w`)
+- `dotnetup runtime install core` (or `-c`) - Installs the .NET Runtime only
+- `dotnetup runtime install aspnetcore` (or `-a`) - Installs the ASP.NET Core Runtime (includes core runtime)
+- `dotnetup runtime install windowsdesktop` (or `-w`) - Installs the Windows Desktop Runtime (includes core runtime)
 
 To reduce boilerplate code we will go with the option of one command. Providing no option will install all runtimes.
 
@@ -35,9 +36,9 @@ We will expand this to support `[runtime_type]@version` syntax for explicit or u
 ## Shared Resources
 
 The .NET SDK install may include the .NET Runtime.
-We chose to include the runtime install in the [`dotnetup` manifest](../../../src/Installer/dotnetup/DotnetupSharedManifest.cs) as a separate install item only when the runtime is installed individually, and not as part of the SDK install.
+We chose to include the runtime install in the [`dotnetup` manifest](../../../src/Installer/dotnetup/DotnetupSharedManifest.cs) as a separate install item even when the runtime is installed as part of the SDK install. This ensures explicit tracking of all installed runtime components.
 
-This means uninstalling the SDK will uninstall the runtime, but only if the runtime wasn't separately requested. This is essentially a reference count in the manifest as a separate item.
+This means uninstalling the SDK will not uninstall runtimes that are tracked in the manifest. Runtimes must be explicitly uninstalled via `dotnetup runtime uninstall`.
 
 What we will do is check `shared/{runtime-type}/{runtime-version}` and `host/fxr/{runtime-version}` in the hive location. We could also query the muxer itself (via [`HostFxrWrapper`](../../../src/Installer/Microsoft.Dotnet.Installation/Internal/HostFxrWrapper.cs)) for a more concrete answer as to if the install exists on disk.
 
