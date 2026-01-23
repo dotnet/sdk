@@ -84,7 +84,9 @@ internal static class EnvCommandParser
         var shellPath = Environment.GetEnvironmentVariable("SHELL");
         if (shellPath is null)
         {
-            throw new InvalidOperationException("Unable to detect current shell. The SHELL environment variable is not set. Please specify the shell using --shell option.");
+            // Return bash as default if we can't detect the shell
+            // This can happen when showing help or in environments without SHELL set
+            return ShellMap["bash"];
         }
 
         var shellName = Path.GetFileName(shellPath);
@@ -94,7 +96,9 @@ internal static class EnvCommandParser
         }
         else
         {
-            throw new InvalidOperationException($"Unsupported shell '{shellName}'. Supported shells: {string.Join(", ", ShellMap.Keys)}. Please specify the shell using --shell option.");
+            // Return bash as default for unsupported shells
+            // This can happen when showing help or for shells we don't support
+            return ShellMap["bash"];
         }
     }
 
