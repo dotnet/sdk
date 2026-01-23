@@ -47,7 +47,8 @@ internal class InstallerOrchestratorSingleton
         {
             if (InstallAlreadyExists(install, customManifestPath))
             {
-                Console.WriteLine($"\n.NET SDK {versionToInstall} is already installed, skipping installation.");
+                string componentDescription = GetComponentDescription(installRequest.Component);
+                Console.WriteLine($"\n{componentDescription} {versionToInstall} is already installed, skipping installation.");
                 return install;
             }
         }
@@ -104,4 +105,16 @@ internal class InstallerOrchestratorSingleton
             existing.Version.Equals(install.Version) &&
             existing.Component == install.Component);
     }
+
+    /// <summary>
+    /// Gets a user-friendly description for the install component type.
+    /// </summary>
+    private static string GetComponentDescription(InstallComponent component) => component switch
+    {
+        InstallComponent.SDK => ".NET SDK",
+        InstallComponent.Runtime => ".NET Runtime",
+        InstallComponent.ASPNETCore => "ASP.NET Core Runtime",
+        InstallComponent.WindowsDesktop => "Windows Desktop Runtime",
+        _ => ".NET"
+    };
 }

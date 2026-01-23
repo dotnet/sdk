@@ -36,10 +36,11 @@ internal class DotnetArchiveExtractor : IDisposable
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
+        string componentDescription = GetComponentDescription(_request.Component);
         using (var progressReporter = _progressTarget.CreateProgressReporter())
         {
-            var downloadTask = progressReporter.AddTask($"Downloading .NET SDK {_resolvedVersion}", 100);
-            var reporter = new DownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
+            var downloadTask = progressReporter.AddTask($"Downloading {componentDescription} {_resolvedVersion}", 100);
+            var reporter = new DownloadProgressReporter(downloadTask, $"Downloading {componentDescription} {_resolvedVersion}");
 
             try
             {
@@ -57,9 +58,10 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
 
+        string componentDescription = GetComponentDescription(_request.Component);
         using (var progressReporter = _progressTarget.CreateProgressReporter())
         {
-            var installTask = progressReporter.AddTask($"Installing .NET SDK {_resolvedVersion}", maxValue: 100);
+            var installTask = progressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
 
             // Extract archive directly to target directory with special handling for muxer
             ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
@@ -333,6 +335,18 @@ internal class DotnetArchiveExtractor : IDisposable
         entry.ExtractToFile(destPath, overwrite: true);
         installTask?.Value += 1;
     }
+
+    /// <summary>
+    /// Gets a user-friendly description for the install component type.
+    /// </summary>
+    private static string GetComponentDescription(InstallComponent component) => component switch
+    {
+        InstallComponent.SDK => ".NET SDK",
+        InstallComponent.Runtime => ".NET Runtime",
+        InstallComponent.ASPNETCore => "ASP.NET Core Runtime",
+        InstallComponent.WindowsDesktop => "Windows Desktop Runtime",
+        _ => ".NET"
+    };
 
     public void Dispose()
     {

@@ -226,7 +226,7 @@ public class RuntimeInstallEndToEndTests
         new object[] { "windowsdesktop", "9.0" },
     };
 
-    [Theory(Skip = "Requires runtime install implementation fix - currently downloads SDK instead of runtime")]
+    [Theory]
     [MemberData(nameof(CoreRuntimeChannels))]
     public void RuntimeInstall_CoreRuntime(string runtimeType, string channel)
     {
@@ -261,7 +261,7 @@ public class RuntimeInstallEndToEndTests
         Directory.Exists(runtimePath).Should().BeTrue("Core runtime should be installed");
     }
 
-    [Theory(Skip = "Requires runtime install implementation fix - currently downloads SDK instead of runtime")]
+    [Theory]
     [MemberData(nameof(OtherRuntimeTypes))]
     public void RuntimeInstall_OtherTypes(string runtimeType, string channel)
     {
@@ -292,7 +292,7 @@ public class RuntimeInstallEndToEndTests
         matchingInstalls[0].Component.Should().Be(component);
     }
 
-    [Fact(Skip = "Requires runtime install implementation fix - currently downloads SDK instead of runtime")]
+    [Fact]
     public void RuntimeInstall_ReusesExistingInstall()
     {
         const string channel = "9.0";
