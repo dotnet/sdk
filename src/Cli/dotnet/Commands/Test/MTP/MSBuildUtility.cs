@@ -136,9 +136,9 @@ internal static class MSBuildUtility
         }
 
         PathOptions pathOptions = new(
-            parseResult.GetValue(definition.ProjectOrSolutionOption),
+            positionalProjectOrSolution ?? parseResult.GetValue(definition.ProjectOrSolutionOption),
             parseResult.GetValue(definition.SolutionOption),
-            parseResult.GetValue(definition.TestModulesFilterOption),
+            positionalTestModules ?? parseResult.GetValue(definition.TestModulesFilterOption),
             resultsDirectory,
             configFile,
             diagnosticOutputDirectory);
