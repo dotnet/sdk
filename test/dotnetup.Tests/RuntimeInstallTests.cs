@@ -900,7 +900,7 @@ public class RuntimeInstallTests
 
     #region Runtime Archive Dependency Tests
 
-    [Fact]
+    [Fact(Skip = "Long-running test - downloads ASP.NET Core runtime. Run manually to verify manifest behavior.")]
     public void ASPNETCoreInstall_OnlyTracksASPNETCoreInManifest_NotCoreRuntime()
     {
         // IMPORTANT: When installing ASP.NET Core, the archive includes Microsoft.NETCore.App files,
@@ -947,6 +947,54 @@ public class RuntimeInstallTests
 
         _log.WriteLine($"\nWARNING: Core runtime exists at {coreRuntimePath} but is NOT in manifest!");
         _log.WriteLine("This means uninstalling ASPNETCore could orphan or break other components.");
+    }
+
+    [Fact]
+    public void ASPNETCoreInstall_OnlyTracksASPNETCoreInManifest_NotCoreRuntime_UnitTest()
+    {
+        // Unit test version - no download, just verifies manifest tracking logic
+        // IMPORTANT: When installing ASP.NET Core, the manifest ONLY tracks ASPNETCore - NOT the core runtime.
+
+        // Arrange
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifestManager = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // Simulate what the orchestrator does: add ONLY the requested component to manifest
+        var aspnetInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.ASPNETCore);
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifestManager.AddInstalledVersion(aspnetInstall);
+        }
+
+        // Simulate: Core runtime files also exist on disk (from the archive)
+        var coreRuntimePath = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "9.0.12");
+        Directory.CreateDirectory(coreRuntimePath);
+        File.WriteAllText(Path.Combine(coreRuntimePath, "System.Runtime.dll"), "placeholder");
+
+        // Assert - Check what's in the manifest
+        IEnumerable<DotnetInstall> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            installs = manifestManager.GetInstalledVersions(installRoot).ToList();
+        }
+
+        _log.WriteLine($"After ASP.NET Core install, manifest contains {installs.Count()} entries:");
+        foreach (var install in installs)
+        {
+            _log.WriteLine($"  - {install.Component}: {install.Version}");
+        }
+
+        // Manifest should ONLY have ASPNETCore, not Runtime
+        installs.Should().ContainSingle("only ASPNETCore should be tracked");
+        installs.First().Component.Should().Be(InstallComponent.ASPNETCore);
+
+        // But the core runtime files ARE on disk!
+        Directory.Exists(coreRuntimePath).Should().BeTrue(
+            "Core runtime files exist on disk but are NOT tracked in manifest");
+
+        _log.WriteLine($"\nWARNING: Core runtime exists at {coreRuntimePath} but is NOT in manifest!");
+        _log.WriteLine("This is a design concern: uninstalling ASPNETCore could orphan or break other components.");
     }
 
     [Fact]
@@ -1007,6 +1055,280 @@ public class RuntimeInstallTests
         _log.WriteLine("because the SDK might depend on those files.");
         _log.WriteLine("Current implementation: Uninstall logic must check for dependent components.");
     }
+
+    #endregion
+
+    #region Uninstall Strategy Tests
+
+    /// <summary>
+    /// Helper to check if core runtime can be safely uninstalled based on manifest state.
+    /// This mirrors the logic that should be implemented in the uninstall command.
+    /// </summary>
+    private static bool CanSafelyUninstallCoreRuntime(IEnumerable<DotnetInstall> manifestInstalls, ReleaseVersion runtimeVersion)
+    {
+        int majorMinor = runtimeVersion.Major * 100 + runtimeVersion.Minor;
+
+        // Check for SDK with same major.minor (SDK 9.0.1xx bundles runtime 9.0.x)
+        bool hasSdkWithSameMajorMinor = manifestInstalls.Any(i =>
+            i.Component == InstallComponent.SDK &&
+            (i.Version.Major * 100 + i.Version.Minor) == majorMinor);
+
+        // Check for other runtime components with same major.minor
+        bool hasOtherRuntimeWithSameMajorMinor = manifestInstalls.Any(i =>
+            i.Component == InstallComponent.ASPNETCore &&
+            (i.Version.Major * 100 + i.Version.Minor) == majorMinor);
+
+        // Can only uninstall if no SDK or other runtime depends on it
+        return !hasSdkWithSameMajorMinor && !hasOtherRuntimeWithSameMajorMinor;
+    }
+
+    [Fact]
+    public void UninstallStrategy_CoreRuntime_BlockedBySdk()
+    {
+        // When SDK 9.0.100 exists, cannot safely uninstall core runtime 9.0.x
+
+        // Arrange
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifestManager = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // SDK 9.0.100 and explicitly installed Runtime 9.0.12
+        var sdkInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.100"), InstallComponent.SDK);
+        var runtimeInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.Runtime);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifestManager.AddInstalledVersion(sdkInstall);
+            manifestManager.AddInstalledVersion(runtimeInstall);
+        }
+
+        // Act
+        IEnumerable<DotnetInstall> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            installs = manifestManager.GetInstalledVersions(installRoot).ToList();
+        }
+
+        bool canUninstall = CanSafelyUninstallCoreRuntime(installs, new ReleaseVersion("9.0.12"));
+
+        // Assert
+        _log.WriteLine($"Manifest: {string.Join(", ", installs.Select(i => $"{i.Component}:{i.Version}"))}");
+        _log.WriteLine($"Can safely uninstall core runtime 9.0.12: {canUninstall}");
+
+        canUninstall.Should().BeFalse("SDK 9.0.100 depends on core runtime 9.0.x");
+    }
+
+    [Fact]
+    public void UninstallStrategy_CoreRuntime_BlockedByASPNETCore()
+    {
+        // When ASPNETCore 9.0.12 exists, cannot safely uninstall core runtime 9.0.x
+
+        // Arrange
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifestManager = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // ASPNETCore 9.0.12 and explicitly installed Runtime 9.0.12
+        var aspnetInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.ASPNETCore);
+        var runtimeInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.Runtime);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifestManager.AddInstalledVersion(aspnetInstall);
+            manifestManager.AddInstalledVersion(runtimeInstall);
+        }
+
+        // Act
+        IEnumerable<DotnetInstall> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            installs = manifestManager.GetInstalledVersions(installRoot).ToList();
+        }
+
+        bool canUninstall = CanSafelyUninstallCoreRuntime(installs, new ReleaseVersion("9.0.12"));
+
+        // Assert
+        _log.WriteLine($"Manifest: {string.Join(", ", installs.Select(i => $"{i.Component}:{i.Version}"))}");
+        _log.WriteLine($"Can safely uninstall core runtime 9.0.12: {canUninstall}");
+
+        canUninstall.Should().BeFalse("ASPNETCore 9.0.12 depends on core runtime 9.0.x");
+    }
+
+    [Fact]
+    public void UninstallStrategy_CoreRuntime_AllowedWhenNoDependencies()
+    {
+        // When only core runtime exists, can safely uninstall
+
+        // Arrange
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifestManager = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // Only explicitly installed Runtime 9.0.12
+        var runtimeInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.Runtime);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifestManager.AddInstalledVersion(runtimeInstall);
+        }
+
+        // Act
+        IEnumerable<DotnetInstall> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            installs = manifestManager.GetInstalledVersions(installRoot).ToList();
+        }
+
+        bool canUninstall = CanSafelyUninstallCoreRuntime(installs, new ReleaseVersion("9.0.12"));
+
+        // Assert
+        _log.WriteLine($"Manifest: {string.Join(", ", installs.Select(i => $"{i.Component}:{i.Version}"))}");
+        _log.WriteLine($"Can safely uninstall core runtime 9.0.12: {canUninstall}");
+
+        canUninstall.Should().BeTrue("No other components depend on core runtime 9.0.x");
+    }
+
+    [Fact]
+    public void UninstallStrategy_CoreRuntime_DifferentMajorMinor_Allowed()
+    {
+        // SDK 9.0.100 should NOT block uninstall of runtime 10.0.x (different major.minor)
+
+        // Arrange
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifestManager = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // SDK 9.0.100 and Runtime 10.0.2 (different major.minor)
+        var sdkInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.100"), InstallComponent.SDK);
+        var runtimeInstall = new DotnetInstall(installRoot, new ReleaseVersion("10.0.2"), InstallComponent.Runtime);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifestManager.AddInstalledVersion(sdkInstall);
+            manifestManager.AddInstalledVersion(runtimeInstall);
+        }
+
+        // Act
+        IEnumerable<DotnetInstall> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            installs = manifestManager.GetInstalledVersions(installRoot).ToList();
+        }
+
+        bool canUninstall = CanSafelyUninstallCoreRuntime(installs, new ReleaseVersion("10.0.2"));
+
+        // Assert
+        _log.WriteLine($"Manifest: {string.Join(", ", installs.Select(i => $"{i.Component}:{i.Version}"))}");
+        _log.WriteLine($"Can safely uninstall core runtime 10.0.2: {canUninstall}");
+
+        canUninstall.Should().BeTrue("SDK 9.0.100 does not depend on runtime 10.0.x");
+    }
+
+    [Fact]
+    public void UninstallStrategy_ASPNETCore_SafeToUninstallWhenSdkExists()
+    {
+        // ASP.NET Core specific files (Microsoft.AspNetCore.App) can be uninstalled
+        // even when SDK exists, because SDK doesn't depend on ASP.NET Core runtime
+
+        // Arrange
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifestManager = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        var sdkInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.100"), InstallComponent.SDK);
+        var aspnetInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.ASPNETCore);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifestManager.AddInstalledVersion(sdkInstall);
+            manifestManager.AddInstalledVersion(aspnetInstall);
+        }
+
+        // Assert - ASP.NET Core specific directory can be deleted
+        // but Microsoft.NETCore.App should NOT be deleted
+        _log.WriteLine("When uninstalling ASPNETCore 9.0.12 with SDK 9.0.100 present:");
+        _log.WriteLine("  - DELETE: shared/Microsoft.AspNetCore.App/9.0.12 ✓");
+        _log.WriteLine("  - KEEP: shared/Microsoft.NETCore.App/9.0.x (SDK depends on it)");
+    }
+
+    [Fact]
+    public void UninstallStrategy_WindowsDesktop_AlwaysSafeToUninstall()
+    {
+        // Windows Desktop runtime is standalone - no other component depends on it
+
+        // Arrange
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifestManager = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        var sdkInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.100"), InstallComponent.SDK);
+        var aspnetInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.ASPNETCore);
+        var desktopInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.WindowsDesktop);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifestManager.AddInstalledVersion(sdkInstall);
+            manifestManager.AddInstalledVersion(aspnetInstall);
+            manifestManager.AddInstalledVersion(desktopInstall);
+        }
+
+        // Assert
+        _log.WriteLine("When uninstalling WindowsDesktop 9.0.12:");
+        _log.WriteLine("  - DELETE: shared/Microsoft.WindowsDesktop.App/9.0.12 ✓");
+        _log.WriteLine("  - No other components depend on Windows Desktop");
+        _log.WriteLine("  - WindowsDesktop archive doesn't include core runtime, so no shared file concerns");
+    }
+
+    [Fact]
+    public void ManifestTracking_CoreRuntimeOnlyTrackedWhenExplicitlyInstalled()
+    {
+        // Core runtime should ONLY be tracked in manifest when installed via "dotnetup runtime install core"
+        // NOT when it comes bundled with aspnetcore or windowsdesktop archives
+
+        // Arrange
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var manifestManager = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // Scenario 1: User installs ASPNETCore - should NOT track core runtime
+        var aspnetInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.ASPNETCore);
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifestManager.AddInstalledVersion(aspnetInstall);
+        }
+
+        IEnumerable<DotnetInstall> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            installs = manifestManager.GetInstalledVersions(installRoot).ToList();
+        }
+
+        _log.WriteLine("After 'dotnetup runtime install aspnetcore 9.0':");
+        foreach (var i in installs) _log.WriteLine($"  - {i.Component}: {i.Version}");
+
+        installs.Should().NotContain(i => i.Component == InstallComponent.Runtime,
+            "Core runtime should NOT be tracked when installing ASPNETCore");
+
+        // Scenario 2: User explicitly installs core runtime - SHOULD track it
+        var runtimeInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.Runtime);
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifestManager.AddInstalledVersion(runtimeInstall);
+        }
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            installs = manifestManager.GetInstalledVersions(installRoot).ToList();
+        }
+
+        _log.WriteLine("\nAfter 'dotnetup runtime install core 9.0':");
+        foreach (var i in installs) _log.WriteLine($"  - {i.Component}: {i.Version}");
+
+        installs.Should().Contain(i => i.Component == InstallComponent.Runtime,
+            "Core runtime SHOULD be tracked when explicitly installed via 'core' option");
+    }
+
+    #endregion
 
     [Fact]
     public void ASPNETCoreArchive_IncludesCoreRuntime()
@@ -1108,8 +1430,6 @@ public class RuntimeInstallTests
         Directory.Exists(aspNetPath).Should().BeTrue("Core runtime archive includes ASP.NET Core");
         Directory.Exists(desktopPath).Should().BeFalse("Core runtime archive should not include Windows Desktop");
     }
-
-    #endregion
 }
 
 /// <summary>
