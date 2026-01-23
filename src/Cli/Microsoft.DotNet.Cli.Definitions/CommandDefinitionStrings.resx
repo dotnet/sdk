@@ -675,6 +675,15 @@ If not specified the file will be generated inside the default 'TestResults' dir
     <value>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</value>
     <comment>{Locked="launchSettings.json"}{Locked=".run.json"}</comment>
   </data>
+  <data name="CommandOptionDeviceDescription" xml:space="preserve">
+    <value>The device identifier to use for running the application.</value>
+  </data>
+  <data name="CommandOptionDeviceHelpName" xml:space="preserve">
+    <value>DEVICE</value>
+  </data>
+  <data name="CommandOptionListDevicesDescription" xml:space="preserve">
+    <value>List available devices for running the application.</value>
+  </data>
   <data name="CommandOptionProjectHelpName" xml:space="preserve">
     <value>PROJECT_PATH</value>
   </data>
