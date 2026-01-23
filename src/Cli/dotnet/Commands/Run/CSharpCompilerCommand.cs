@@ -40,8 +40,9 @@ internal sealed partial class CSharpCompilerCommand
         "link:",
     ];
 
-    private static string SdkPath => field ??= PathUtility.EnsureNoTrailingDirectorySeparator(AppContext.BaseDirectory);
-    private static string DotNetRootPath => field ??= Path.GetDirectoryName(Path.GetDirectoryName(SdkPath)!)!;
+    private static IPathResolver PathResolver => field ??= Utils.PathResolver.Default;
+    private static string SdkPath => PathResolver.SdkRoot;
+    private static string DotNetRootPath => PathResolver.DotnetRoot;
     private static string ClientDirectory => field ??= Path.Combine(SdkPath, "Roslyn", "bincore");
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
     internal static string RuntimeVersion => field ??= RuntimeInformation.FrameworkDescription.Split(' ').Last();
@@ -75,7 +76,7 @@ internal sealed partial class CSharpCompilerCommand
         PrepareAuxiliaryFiles(out string rspPath);
 
         // Ensure the compiler is launched with the correct dotnet.
-        Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
+        Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", PathResolver.Default.DotnetExecutable);
 
         // Create a request for the compiler server
         // (this is much faster than starting a csc.dll process, especially on Windows).

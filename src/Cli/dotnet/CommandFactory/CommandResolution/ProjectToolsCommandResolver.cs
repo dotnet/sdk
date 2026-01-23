@@ -376,7 +376,7 @@ public class ProjectToolsCommandResolver(
         var msBuildExePath = _environment.GetEnvironmentVariable(Constants.MSBUILD_EXE_PATH);
 
         msBuildExePath = string.IsNullOrEmpty(msBuildExePath) ?
-            Path.Combine(AppContext.BaseDirectory, "MSBuild.dll") :
+            PathResolver.Default.GetMSBuildPath() :
             msBuildExePath;
 
         Reporter.Verbose.WriteLine(string.Format(CliStrings.MSBuildArgs,

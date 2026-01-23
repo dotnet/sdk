@@ -536,7 +536,7 @@ public class RunCommand
                 targetFrameworkVersion);
             if (rootVariableName != null && string.IsNullOrEmpty(Environment.GetEnvironmentVariable(rootVariableName)))
             {
-                command.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
+                command.EnvironmentVariable(rootVariableName, PathResolver.Default.DotnetRoot);
             }
         }
 
@@ -937,7 +937,7 @@ public class RunCommand
             {
                 var globalProperties = MSBuildArgs.GlobalProperties?.ToDictionary() ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 globalProperties[Constants.EnableDefaultItems] = "false";
-                globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
+                globalProperties[Constants.MSBuildExtensionsPath] = PathResolver.Default.SdkRoot;
 
                 using var collection = new ProjectCollection(globalProperties: globalProperties);
                 var project = collection.LoadProject(ProjectFileFullPath).CreateProjectInstance();

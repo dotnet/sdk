@@ -50,6 +50,6 @@ public class NuGetCommand
 
     private static string GetDotnetPath()
     {
-        return new Muxer().MuxerPath;
+        return PathResolver.Default.DotnetExecutable;
     }
 }

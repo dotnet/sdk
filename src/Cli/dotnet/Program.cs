@@ -33,6 +33,9 @@ public class Program
     public static ITelemetry TelemetryClient;
     public static int Main(string[] args)
     {
+        // Initialize path resolver early - this is the foundation for all path resolution
+        PathResolver.Initialize();
+
         // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
         // See https://github.com/dotnet/docs/issues/46226.
         using var termSignalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ => Environment.Exit(0));

@@ -126,7 +126,7 @@ internal sealed class TestApplication(
 
         if (Module.DotnetRootArchVariableName is not null)
         {
-            processStartInfo.Environment[Module.DotnetRootArchVariableName] = Path.GetDirectoryName(new Muxer().MuxerPath);
+            processStartInfo.Environment[Module.DotnetRootArchVariableName] = PathResolver.Default.DotnetRoot;
         }
 
         return processStartInfo;
