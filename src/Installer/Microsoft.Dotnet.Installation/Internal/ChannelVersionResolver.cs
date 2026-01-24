@@ -22,18 +22,23 @@ internal class ChannelVersionResolver
         _releaseManifest = releaseManifest;
     }
 
-    public IEnumerable<string> GetSupportedChannels()
+    public IEnumerable<string> GetSupportedChannels(bool includeFeatureBands = true)
     {
         var productIndex = _releaseManifest.GetReleasesIndex();
         return ["latest", "preview", "lts", "sts",
             ..productIndex
                 .Where(p => p.IsSupported)
                 .OrderByDescending(p => p.LatestReleaseVersion)
-                .SelectMany(GetChannelsForProduct)
+                .SelectMany(p => GetChannelsForProduct(p, includeFeatureBands))
         ];
 
-        static IEnumerable<string> GetChannelsForProduct(Product product)
+        static IEnumerable<string> GetChannelsForProduct(Product product, bool includeFeatureBands)
         {
+            if (!includeFeatureBands)
+            {
+                return [product.ProductVersion];
+            }
+
             return [product.ProductVersion,
                 ..product.GetReleasesAsync().GetAwaiter().GetResult()
                     .SelectMany(r => r.Sdks)

@@ -98,5 +98,54 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
                 $"Version {version} should be a preview/rc/beta/alpha version"
             );
         }
+
+        [Fact]
+        public void GetSupportedChannels_WithFeatureBands_IncludesFeatureBandChannels()
+        {
+            var resolver = new ChannelVersionResolver();
+            var channels = resolver.GetSupportedChannels(includeFeatureBands: true).ToList();
+
+            // Should include named channels
+            Assert.Contains("latest", channels);
+            Assert.Contains("lts", channels);
+            Assert.Contains("sts", channels);
+            Assert.Contains("preview", channels);
+
+            // Should include product versions like "10.0"
+            Assert.Contains(channels, c => c.EndsWith(".0") && !c.Contains("xx"));
+
+            // Should include feature bands like "10.0.1xx"
+            Assert.Contains(channels, c => c.EndsWith("xx"));
+        }
+
+        [Fact]
+        public void GetSupportedChannels_WithoutFeatureBands_ExcludesFeatureBandChannels()
+        {
+            var resolver = new ChannelVersionResolver();
+            var channels = resolver.GetSupportedChannels(includeFeatureBands: false).ToList();
+
+            // Should include named channels
+            Assert.Contains("latest", channels);
+            Assert.Contains("lts", channels);
+            Assert.Contains("sts", channels);
+            Assert.Contains("preview", channels);
+
+            // Should include product versions like "10.0"
+            Assert.Contains(channels, c => c.EndsWith(".0") && !c.Contains("xx"));
+
+            // Should NOT include feature bands like "10.0.1xx"
+            Assert.DoesNotContain(channels, c => c.EndsWith("xx"));
+        }
+
+        [Fact]
+        public void GetSupportedChannels_DefaultIncludesFeatureBands()
+        {
+            var resolver = new ChannelVersionResolver();
+            
+            // Default call should include feature bands (for backward compatibility)
+            var channels = resolver.GetSupportedChannels().ToList();
+            
+            Assert.Contains(channels, c => c.EndsWith("xx"));
+        }
     }
 }

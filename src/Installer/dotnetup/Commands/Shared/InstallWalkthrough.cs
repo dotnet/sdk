@@ -76,6 +76,7 @@ internal class InstallWalkthrough
     /// <param name="globalJsonPath">Path to the global.json file, for display purposes.</param>
     /// <param name="interactive">Whether to prompt the user for input.</param>
     /// <param name="componentDescription">Description of the component (e.g., ".NET SDK", ".NET Runtime").</param>
+    /// <param name="component">The component being installed (SDK or runtime type).</param>
     /// <param name="defaultChannel">The default channel to use if none specified (typically "latest").</param>
     /// <returns>The resolved channel or version string.</returns>
     public string ResolveChannel(
@@ -84,6 +85,7 @@ internal class InstallWalkthrough
         string? globalJsonPath,
         bool interactive,
         string componentDescription,
+        InstallComponent component,
         string defaultChannel = "latest")
     {
         if (channelFromGlobalJson is not null)
@@ -99,7 +101,9 @@ internal class InstallWalkthrough
 
         if (interactive)
         {
-            SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', _channelVersionResolver.GetSupportedChannels()));
+            // Feature bands (like 9.0.1xx) are SDK-specific, don't show them for runtimes
+            bool includeFeatureBands = component == InstallComponent.SDK;
+            SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', _channelVersionResolver.GetSupportedChannels(includeFeatureBands)));
             SpectreAnsiConsole.WriteLine("You can also specify a specific version (for example 9.0.304).");
 
             return SpectreAnsiConsole.Prompt(

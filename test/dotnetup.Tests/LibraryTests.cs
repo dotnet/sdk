@@ -24,17 +24,21 @@ public class LibraryTests
     }
 
     [Theory]
-    [InlineData("9")]
-    [InlineData("latest")]
-    [InlineData("sts")]
-    [InlineData("lts")]
-    [InlineData("preview")]
-    public void LatestVersionForChannelCanBeInstalled(string channel)
+    [InlineData("9", InstallComponent.SDK)]
+    [InlineData("latest", InstallComponent.SDK)]
+    [InlineData("sts", InstallComponent.SDK)]
+    [InlineData("lts", InstallComponent.SDK)]
+    [InlineData("preview", InstallComponent.SDK)]
+    [InlineData("9", InstallComponent.Runtime)]
+    [InlineData("latest", InstallComponent.Runtime)]
+    [InlineData("9", InstallComponent.ASPNETCore)]
+    [InlineData("latest", InstallComponent.ASPNETCore)]
+    public void LatestVersionForChannelCanBeInstalled(string channel, InstallComponent component)
     {
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
 
-        var latestVersion = releaseInfoProvider.GetLatestVersion(InstallComponent.SDK, channel);
-        Log.WriteLine($"Latest version for channel '{channel}' is '{latestVersion}'");
+        var latestVersion = releaseInfoProvider.GetLatestVersion(component, channel);
+        Log.WriteLine($"Latest {component} version for channel '{channel}' is '{latestVersion}'");
 
         var installer = InstallerFactory.CreateInstaller(new NullProgressTarget());
 
@@ -44,7 +48,7 @@ public class LibraryTests
 
         installer.Install(
             new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
-            InstallComponent.SDK,
+            component,
             latestVersion!);
     }
 

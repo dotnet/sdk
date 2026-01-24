@@ -91,7 +91,8 @@ internal class InstallWorkflow
             channelFromGlobalJson,
             globalJsonInfo?.GlobalJsonPath,
             options.Interactive,
-            options.ComponentDescription);
+            options.ComponentDescription,
+            options.Component);
 
         // Resolve whether to set this as the default install
         bool resolvedSetDefaultInstall = _installWalkthrough.ResolveSetDefaultInstall(
