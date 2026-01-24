@@ -8,7 +8,7 @@ namespace System.CommandLine.StaticCompletions;
 public static class ShellNames
 {
     public const string Bash = "bash";
-    public const string Powershell = "pwsh";
+    public const string PowerShell = "pwsh";
     public const string Fish = "fish";
     public const string Zsh = "zsh";
     public const string Nushell = "nushell";
@@ -16,7 +16,7 @@ public static class ShellNames
     public static readonly IEnumerable<string> All =
     [
         Bash,
-        Powershell,
+        PowerShell,
         Fish,
         Zsh,
         Nushell,
@@ -26,7 +26,7 @@ public static class ShellNames
     {
         if (OperatingSystem.IsWindows())
         {
-            return Powershell;
+            return PowerShell;
         }
 
         var shellPath = Environment.GetEnvironmentVariable("SHELL") ?? throw new InvalidOperationException(Strings.ShellDiscovery_ShellEnvironmentNotSet);

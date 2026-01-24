@@ -8,9 +8,9 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.StaticCompletions.Resources;
 
-public class PowershellShellProvider : IShellProvider
+public class PowerShellShellProvider : IShellProvider
 {
-    public string ArgumentName => ShellNames.Powershell;
+    public string ArgumentName => ShellNames.PowerShell;
 
     public string Extension => "ps1";
 

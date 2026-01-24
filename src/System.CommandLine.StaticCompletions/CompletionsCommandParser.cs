@@ -16,7 +16,7 @@ public sealed class CompletionsCommandParser
         var providers = new IShellProvider[]
         {
             new BashShellProvider(),
-            new PowershellShellProvider(),
+            new PowerShellShellProvider(),
             new FishShellProvider(),
             new ZshShellProvider(),
             new NushellShellProvider()
