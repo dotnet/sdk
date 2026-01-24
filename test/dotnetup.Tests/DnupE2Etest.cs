@@ -221,4 +221,58 @@ public class ReuseAndErrorTests
         output.Should().Contain("Unknown runtime type", "should indicate invalid runtime type");
         output.Should().Contain("Valid types are:", "should list valid runtime types");
     }
+
+    [Theory]
+    [InlineData("core", InstallComponent.Runtime, true)] // SDK includes core runtime
+    [InlineData("aspnetcore", InstallComponent.ASPNETCore, true)] // SDK also includes aspnetcore runtime
+    [InlineData("windowsdesktop", InstallComponent.WindowsDesktop, true)] // SDK does include windowsdesktop
+    public void RuntimeInstall_AfterSdkInstall_BehavesCorrectly(string runtimeType, InstallComponent expectedComponent, bool shouldSkipDownload)
+    {
+        // This test verifies that:
+        // 1. SDK install completes and is tracked in manifest
+        // 2. Runtime install for same version succeeds and is tracked separately
+        // 3. Runtime reuses files from SDK if already present (no download)
+
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // Step 1: Install SDK
+        var sdkArgs = DotnetupTestUtilities.BuildSdkArguments("9.0", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(sdkArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"SDK installation failed. Output:\n{output}");
+
+        // Verify SDK is in manifest
+        List<DotnetInstall> installsAfterSdk;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            installsAfterSdk = manifest.GetInstalledVersions().ToList();
+        }
+        installsAfterSdk.Should().ContainSingle(i => i.Component == InstallComponent.SDK);
+        // Verify target runtime is NOT in manifest yet
+        installsAfterSdk.Should().NotContain(i => i.Component == expectedComponent,
+            $"{expectedComponent} should not be in manifest before explicit runtime install");
+
+        // Step 2: Install runtime for same major.minor
+        var runtimeArgs = DotnetupTestUtilities.BuildRuntimeArguments(runtimeType, "9.0", testEnv.InstallPath, testEnv.ManifestPath);
+        (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(runtimeArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"Runtime installation failed. Output:\n{output}");
+
+        // Step 3: Verify both SDK and Runtime are in manifest
+        List<DotnetInstall> finalInstalls;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            finalInstalls = manifest.GetInstalledVersions().ToList();
+        }
+        finalInstalls.Should().HaveCount(2, $"both SDK and {expectedComponent} should be tracked");
+        finalInstalls.Should().Contain(i => i.Component == InstallComponent.SDK);
+        finalInstalls.Should().Contain(i => i.Component == expectedComponent);
+
+        // Step 4: Verify correct behavior based on whether SDK included this runtime
+        if (shouldSkipDownload)
+        {
+            output.Should().Contain("files already exist", "Should detect files already exist from SDK");
+            output.Should().NotContain("Downloading", "Should not download when files already exist from SDK");
+        }
+    }
 }

@@ -69,16 +69,36 @@ internal class ArchiveInstallationValidator : IInstallationValidator
         if (component == InstallComponent.SDK)
         {
             string sdkDirectory = Path.Combine(installRoot, "sdk", resolvedVersion);
-            return Directory.Exists(sdkDirectory);
+            return DirectoryExistsAndNotEmpty(sdkDirectory);
         }
 
         if (RuntimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker))
         {
             string runtimeDirectory = Path.Combine(installRoot, "shared", runtimeMoniker, resolvedVersion);
-            return Directory.Exists(runtimeDirectory);
+            return DirectoryExistsAndNotEmpty(runtimeDirectory);
         }
 
         return false;
+    }
+
+    private static bool DirectoryExistsAndNotEmpty(string path)
+    {
+        return Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any();
+    }
+
+    /// <summary>
+    /// Checks if the component files already exist on disk (e.g., from an SDK install that includes the runtime).
+    /// This is a lightweight check that doesn't validate the full installation integrity.
+    /// </summary>
+    public static bool ComponentFilesExist(DotnetInstall install)
+    {
+        string? installRoot = install.InstallRoot.Path;
+        if (string.IsNullOrEmpty(installRoot))
+        {
+            return false;
+        }
+
+        return ValidateComponentLayout(installRoot, install.Version.ToString(), install.Component);
     }
 
     private bool ValidateWithHostFxr(string installRoot, ReleaseVersion resolvedVersion, InstallComponent component)
