@@ -525,10 +525,10 @@
       <WindowsDesktop50RuntimePackRids Include="@(WindowsDesktop31RuntimePackRids);win-arm64" />
       <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
 
-      <_KnownRuntimeIdentiferPlatforms Include="any;aot;freebsd;illumos;solaris;unix" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
+      <_KnownRuntimeIdentifierPlatforms Include="any;aot;freebsd;illumos;solaris;unix" />
+      <_ExcludedKnownRuntimeIdentifierPlatforms Include="tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+      <_ExcludedKnownRuntimeIdentifierPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
+      <_ExcludedKnownRuntimeIdentifierPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
     </ItemGroup>
 
     <!--
@@ -1543,8 +1543,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WindowsSdkSupportedTargetPlatformVersion Include="8.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="7.0" />
 
-    <_KnownRuntimeIdentiferPlatforms Include="@(_KnownRuntimeIdentiferPlatforms, '%3B')" />
-    <_ExcludedKnownRuntimeIdentiferPlatforms Include="@(_ExcludedKnownRuntimeIdentiferPlatforms, '%3B')" />
+    <_KnownRuntimeIdentifierPlatforms Include="@(_KnownRuntimeIdentifierPlatforms, '%3B')" />
+    <_ExcludedKnownRuntimeIdentifierPlatforms Include="@(_ExcludedKnownRuntimeIdentifierPlatforms, '%3B')" />
   </ItemGroup>
 
 </Project>
