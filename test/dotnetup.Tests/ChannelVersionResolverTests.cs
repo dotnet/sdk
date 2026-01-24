@@ -141,10 +141,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         public void GetSupportedChannels_DefaultIncludesFeatureBands()
         {
             var resolver = new ChannelVersionResolver();
-            
+
             // Default call should include feature bands (for backward compatibility)
             var channels = resolver.GetSupportedChannels().ToList();
-            
+
             Assert.Contains(channels, c => c.EndsWith("xx"));
         }
     }

@@ -19,6 +19,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IProgressTarget _progressTarget;
     private string scratchDownloadDirectory;
     private string? _archivePath;
+    private IProgressReporter? _progressReporter;
 
     public DotnetArchiveExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, IProgressTarget progressTarget)
     {
@@ -27,6 +28,12 @@ internal class DotnetArchiveExtractor : IDisposable
         _progressTarget = progressTarget;
         scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
     }
+
+    /// <summary>
+    /// Gets or creates the shared progress reporter for both Prepare and Commit phases.
+    /// This avoids multiple newlines from Spectre.Console Progress between phases.
+    /// </summary>
+    private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget.CreateProgressReporter();
 
     public void Prepare()
     {
@@ -37,36 +44,30 @@ internal class DotnetArchiveExtractor : IDisposable
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
         string componentDescription = GetComponentDescription(_request.Component);
-        using (var progressReporter = _progressTarget.CreateProgressReporter())
+        var downloadTask = ProgressReporter.AddTask($"Downloading {componentDescription} {_resolvedVersion}", 100);
+        var reporter = new DownloadProgressReporter(downloadTask, $"Downloading {componentDescription} {_resolvedVersion}");
+
+        try
         {
-            var downloadTask = progressReporter.AddTask($"Downloading {componentDescription} {_resolvedVersion}", 100);
-            var reporter = new DownloadProgressReporter(downloadTask, $"Downloading {componentDescription} {_resolvedVersion}");
-
-            try
-            {
-                archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
-            }
-
-            downloadTask.Value = 100;
+            archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
         }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
+        }
+
+        downloadTask.Value = 100;
     }
     public void Commit()
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
 
         string componentDescription = GetComponentDescription(_request.Component);
-        using (var progressReporter = _progressTarget.CreateProgressReporter())
-        {
-            var installTask = progressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
+        var installTask = ProgressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
 
-            // Extract archive directly to target directory with special handling for muxer
-            ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
-            installTask.Value = installTask.MaxValue;
-        }
+        // Extract archive directly to target directory with special handling for muxer
+        ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
+        installTask.Value = installTask.MaxValue;
     }
 
     /// <summary>
@@ -350,6 +351,15 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Dispose()
     {
+        try
+        {
+            // Dispose the progress reporter to finalize progress display
+            _progressReporter?.Dispose();
+        }
+        catch
+        {
+        }
+
         try
         {
             // Clean up temporary download directory
