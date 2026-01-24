@@ -139,5 +139,79 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             settingsCount.Should().Be(0);
             TestCommand.ContainsBuiltTestSources(parseResult, settingsCount).Should().Be(expectedContainsBuiltTestSource);
         }
+
+        [Theory]
+        [InlineData("", "empty")]
+        [InlineData("{ invalid json }", "invalid")]
+        [InlineData(@"{ ""sdk"": { ""version"": ""8.0.0"" } }", "valid without test node")]
+        public void CreateShouldDefaultToVSTestForProblematicGlobalJson(string jsonContent, string description)
+        {
+            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var globalJsonPath = Path.Combine(tempDir, "global.json");
+                File.WriteAllText(globalJsonPath, jsonContent);
+
+                var originalDir = Environment.CurrentDirectory;
+                try
+                {
+                    Environment.CurrentDirectory = tempDir;
+                    var command = TestCommandDefinition.Create();
+                    command.Should().BeOfType<TestCommandDefinition.VSTest>($"because global.json is {description}");
+                }
+                finally
+                {
+                    Environment.CurrentDirectory = originalDir;
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, true);
+                }
+            }
+        }
+
+        [Fact]
+        public void CreateShouldDefaultToVSTestForUnreadableGlobalJson()
+        {
+            // Skip on Windows as file permissions work differently
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
+            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var globalJsonPath = Path.Combine(tempDir, "global.json");
+                File.WriteAllText(globalJsonPath, @"{ ""test"": { ""runner"": ""vstest"" } }");
+                
+                // Remove read permissions to make file unreadable
+                File.SetUnixFileMode(globalJsonPath, UnixFileMode.None);
+
+                var originalDir = Environment.CurrentDirectory;
+                try
+                {
+                    Environment.CurrentDirectory = tempDir;
+                    var command = TestCommandDefinition.Create();
+                    command.Should().BeOfType<TestCommandDefinition.VSTest>("because global.json is unreadable");
+                }
+                finally
+                {
+                    Environment.CurrentDirectory = originalDir;
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, true);
+                }
+            }
+        }
     }
 }
