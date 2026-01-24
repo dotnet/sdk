@@ -693,11 +693,6 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
         <target state="translated">PACKAGE_NAME</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdPackageDescription">
-        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
-        <target state="translated">Eklenecek paket başvurusu. Bu sadece 'Newtonsoft.Json' gibi paket tanımlayıcısı biçiminde olabilir, veya 'Newtonsoft.Json@13.0.3' gibi '@' ile ayrılmış bir paket tanımlayıcısı ve sürümü şeklinde olabilir</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdPackageDirectory">
         <source>PACKAGE_DIR</source>
         <target state="translated">PACKAGE_DIR</target>
@@ -1031,16 +1026,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <target state="translated">Konsol zaten işlem grubu oluşturma modunda bulunuyor.</target>
         <note>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</note>
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">'{0}' özelliğinin değeri boole değerine dönüştürülemedi.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">'{0}' özelliğinin değeri dizeye dönüştürülemedi.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAProject">
         <source>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</source>
         <target state="translated">Proje bulunamadı. {0} içinde proje olduğundan emin olun veya {1} kullanarak yolu projeye geçirin.</target>
@@ -1302,16 +1287,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <target state="translated">{0} hatayla başarısız oldu</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedWithErrorsAndWarnings">
-        <source>failed with {0} error(s) and {1} warning(s)</source>
-        <target state="translated">{0} hata ve {1} uyarıyla başarısız oldu</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedWithWarnings">
-        <source>failed with {0} warning(s)</source>
-        <target state="translated">{0} uyarıyla başarısız oldu</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ForTest">
         <source>For test</source>
         <target state="translated">Test için</target>
@@ -1566,11 +1541,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Standart girişten dosyayı okumak için ‘-’ kullanırken '{0}' seçeneği belirtilemez.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidSemVerVersionString">
-        <source>Failed to parse "{0}" as a semantic version.</source>
-        <target state="translated">'{0}' bir anlamsal sürüm olarak ayrıştırılamadı.</target>
-        <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
       </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
         <source>The settings file in the tool's NuGet package is invalid: {0}</source>
@@ -2415,16 +2385,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Dry run: would create file: {0}</source>
         <target state="translated">Deneme çalıştırması: şu dosya oluşturuluyor: {0}</target>
         <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldDeleteFile">
-        <source>Dry run: would delete file: {0}</source>
-        <target state="translated">Deneme çalıştırması: şu dosya siliniyor: {0}</target>
-        <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldMoveFile">
-        <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="translated">Deneme çalıştırması: '{0}' dosyası '{1}' konumuna taşınıyor.</target>
-        <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>
@@ -3286,16 +3246,6 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">NuGet yapılandırma dosyası '{0}' yok.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to install.</source>
-        <target state="translated">Yüklenecek aracın NuGet Paket Kimliği.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
         <target state="new">A package ID was not specified for tool installation.</target>
@@ -3528,16 +3478,6 @@ karşılık gelen paket kimliklerini bulmak için
         <target state="translated">Genel veya yerel bir aracı güncelleştirin.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to update.</source>
-        <target state="translated">Güncelleştirilecek aracın NuGet Paket Kimliği.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolUpdateToolHasMultipleVersionsInstalled">
         <source>Tool '{0}' has multiple versions installed and cannot be updated.</source>
         <target state="translated">'{0}' aracının birden fazla sürümü yüklü ve güncelleştirilemiyor.</target>
@@ -3707,21 +3647,6 @@ karşılık gelen paket kimliklerini bulmak için
         <source>Cannot specify --version when the package argument already contains a version.</source>
         <target state="translated">Paket bağımsız değişkeni zaten bir sürüm içeriyorsa --version belirtilemez.</target>
         <note>{Locked="--version"}</note>
-      </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">'{0}' özelliği belirtilmişse bir nesne olmalıdır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbRun">
-        <source>run</source>
-        <target state="new">run</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbTest">
-        <source>test</source>
-        <target state="new">test</target>
-        <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
