@@ -2,25 +2,25 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hant" original="../Resources.resx">
     <body>
+      <trans-unit id="Cannot_specify_both_0_and_1_options">
+        <source>Cannot specify both '{0}' and '{1}' options.</source>
+        <target state="new">Cannot specify both '{0}' and '{1}' options.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Could_not_find_msbuild_project_file_in_0">
+        <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
+        <target state="new">Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</target>
+        <note>{Locked="MSBuild"}{Locked="--project"}</note>
+      </trans-unit>
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
-        <target state="translated">在 '{0}' 中找到多個 MSBuild 專案檔。請指定要搭配 --project 選項使用的專案檔。</target>
-        <note>{Locked="--project"}</note>
-      </trans-unit>
-      <trans-unit id="Error_NoProjectsFound">
-        <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
-        <target state="translated">在 '{0}' 中找不到 MSBuild 專案檔。請指定要搭配 --project 選項使用的專案。</target>
-        <note>{Locked="--project"}</note>
+        <target state="needs-review-translation">在 '{0}' 中找到多個 MSBuild 專案檔。請指定要搭配 --project 選項使用的專案檔。</target>
+        <note>{Locked="MSBuild"}{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
         <source>The project file '{0}' does not exist.</source>
         <target state="translated">專案檔 '{0}' 不存在。</target>
         <note />
-      </trans-unit>
-      <trans-unit id="Error_QuietAndVerboseSpecified">
-        <source>Cannot specify both '--quiet' and '--verbose' options.</source>
-        <target state="translated">無法同時指定 '--quiet' 和 '--verbose' 選項。</target>
-        <note>{Locked="--quiet"}{Locked="--verbose"}</note>
       </trans-unit>
       <trans-unit id="Help">
         <source>
@@ -140,6 +140,11 @@ Examples:
         <target state="translated">
       顯示詳細資訊輸出
     </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="The_specified_path_0_is_invalid_1">
+        <source>The specified path '{0}' is invalid: {1}</source>
+        <target state="new">The specified path '{0}' is invalid: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">

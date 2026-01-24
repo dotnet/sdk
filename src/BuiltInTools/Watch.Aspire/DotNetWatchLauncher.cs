@@ -27,7 +27,7 @@ internal static class DotNetWatchLauncher
         var rootProjectOptions = new ProjectOptions()
         {
             IsRootProject = true,
-            ProjectPath = options.ProjectPath,
+            Representation = options.Project,
             WorkingDirectory = workingDirectory,
             TargetFramework = null,
             BuildArguments = [],

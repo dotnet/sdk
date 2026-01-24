@@ -23,6 +23,6 @@ internal static class TestOptions
     public static ProjectOptions GetProjectOptions(string[]? args = null)
     {
         var options = GetCommandLineOptions(args ?? []);
-        return options.GetProjectOptions(options.ProjectPath ?? "test.csproj", workingDirectory: "");
+        return options.GetProjectOptions(new ProjectRepresentation(options.ProjectPath ?? "test.csproj", entryPointFilePath: null), workingDirectory: "");
     }
 }

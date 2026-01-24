@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
         private readonly TimeSpan NegativeTimeout = TimeSpan.FromSeconds(5);
-        private readonly TestAssetsManager _testAssetManager = new TestAssetsManager(output);
+        private readonly TestAssetsManager _testAssetManager = new(output);
 
         private async Task TestOperation(
             string dir,
