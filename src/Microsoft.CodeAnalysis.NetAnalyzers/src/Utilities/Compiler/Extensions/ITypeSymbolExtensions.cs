@@ -175,7 +175,7 @@ namespace Analyzer.Utilities.Extensions
         /// </summary>
         /// <param name="type">The type symbol.</param>
         /// <param name="attributeUsageAttribute">The compilation symbol for <see cref="AttributeUsageAttribute"/>.</param>
-        public static IEnumerable<AttributeData> GetApplicableAttributes(this INamedTypeSymbol type, INamedTypeSymbol? attributeUsageAttribute)
+        public static List<AttributeData> GetApplicableAttributes(this INamedTypeSymbol type, INamedTypeSymbol? attributeUsageAttribute)
         {
             var attributes = new List<AttributeData>();
             var onlyIncludeInherited = false;
@@ -242,7 +242,7 @@ namespace Analyzer.Utilities.Extensions
             }
         }
 
-        public static IEnumerable<AttributeData> GetApplicableExportAttributes(this INamedTypeSymbol? type, INamedTypeSymbol? exportAttributeV1, INamedTypeSymbol? exportAttributeV2, INamedTypeSymbol? inheritedExportAttribute)
+        public static List<AttributeData> GetApplicableExportAttributes(this INamedTypeSymbol? type, INamedTypeSymbol? exportAttributeV1, INamedTypeSymbol? exportAttributeV2, INamedTypeSymbol? inheritedExportAttribute)
         {
             var attributes = new List<AttributeData>();
             var onlyIncludeInherited = false;
