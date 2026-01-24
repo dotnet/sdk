@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -231,5 +232,52 @@ public class LibraryTests
         {
             return null;
         }
+    }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_ResolvesRelativeToDirectory()
+    {
+        // Regression test: SdkPath should resolve relative paths using the directory
+        // containing global.json, not the file path itself.
+        // Bug: Path.GetFullPath(".", "D:\sdk\global.json") incorrectly treats global.json as a directory.
+        // Fix: Use Path.GetDirectoryName(GlobalJsonPath) as the base path.
+
+        var globalJsonPath = Path.Combine("C:", "repo", "global.json");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = globalJsonPath,
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new[] { ".dotnet" }
+                }
+            }
+        };
+
+        var sdkPath = globalJsonInfo.SdkPath;
+
+        // Should resolve to C:\repo\.dotnet, NOT C:\repo\global.json\.dotnet
+        sdkPath.Should().Be(Path.Combine("C:", "repo", ".dotnet"));
+        sdkPath.Should().NotContain("global.json");
+    }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_ReturnsNullWhenNoPathsConfigured()
+    {
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine("C:", "repo", "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Version = "9.0.100"
+                    // No Paths configured
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().BeNull();
     }
 }

@@ -48,7 +48,7 @@ public class GlobalJsonInfo
         get
         {
             return (GlobalJsonContents?.Sdk?.Paths is not null && GlobalJsonContents.Sdk.Paths.Length > 0) ?
-                Path.GetFullPath(GlobalJsonContents.Sdk.Paths[0], GlobalJsonPath!) : null;
+                Path.GetFullPath(GlobalJsonContents.Sdk.Paths[0], Path.GetDirectoryName(GlobalJsonPath)!) : null;
         }
     }
 }

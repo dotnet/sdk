@@ -23,7 +23,7 @@
         "version": "0.2.0",
         "configurations": [
             {
-                "name": "Launch dotnetup (Default)",
+                "name": "Launch dotnetup SDK install",
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build",
@@ -31,6 +31,24 @@
                 "args": [
                     "sdk",
                     "install"
+                ],
+                "cwd": "${workspaceFolder:installer}/dotnetup",
+                "console": "integratedTerminal",
+                "stopAtEntry": false,
+                "logging": {
+                    "moduleLoad": false
+                }
+            },
+            {
+                "name": "Launch dotnetup Runtime install",
+                "type": "coreclr",
+                "request": "launch",
+                "preLaunchTask": "build",
+                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
+                "args": [
+                    "runtime",
+                    "install",
+                    "${input:runtimeType}"
                 ],
                 "cwd": "${workspaceFolder:installer}/dotnetup",
                 "console": "integratedTerminal",
@@ -88,6 +106,17 @@
         ],
         "compounds": [],
         "inputs": [
+            {
+                "id": "runtimeType",
+                "type": "pickString",
+                "description": "Select runtime type to install",
+                "options": [
+                    "core",
+                    "aspnetcore",
+                    "windowsdesktop"
+                ],
+                "default": "core"
+            },
             {
                 "id": "testName",
                 "type": "promptString",
