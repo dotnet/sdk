@@ -19,7 +19,7 @@ internal static class EnvCommandParser
     private static readonly Dictionary<string, IEnvShellProvider> ShellMap =
         SupportedShells.ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase);
 
-    public static readonly Option<IEnvShellProvider> ShellOption = new("--shell", "-s")
+    public static readonly Option<IEnvShellProvider?> ShellOption = new("--shell", "-s")
     {
         Description = $"The shell for which to generate the environment script (supported: {string.Join(", ", SupportedShells.Select(s => s.ArgumentName))}). If not specified, the current shell will be detected.",
         Arity = ArgumentArity.ZeroOrOne,
@@ -74,7 +74,7 @@ internal static class EnvCommandParser
         return command;
     }
 
-    private static IEnvShellProvider LookupShellFromEnvironment()
+    private static IEnvShellProvider? LookupShellFromEnvironment()
     {
         if (OperatingSystem.IsWindows())
         {
@@ -84,9 +84,9 @@ internal static class EnvCommandParser
         var shellPath = Environment.GetEnvironmentVariable("SHELL");
         if (shellPath is null)
         {
-            // Return bash as default if we can't detect the shell
-            // This can happen when showing help or in environments without SHELL set
-            return ShellMap["bash"];
+            // Return null if we can't detect the shell
+            // This allows help to work, but Execute will handle the error
+            return null;
         }
 
         var shellName = Path.GetFileName(shellPath);
@@ -96,9 +96,9 @@ internal static class EnvCommandParser
         }
         else
         {
-            // Return bash as default for unsupported shells
-            // This can happen when showing help or for shells we don't support
-            return ShellMap["bash"];
+            // Return null for unsupported shells
+            // This allows help to work, but Execute will handle the error
+            return null;
         }
     }
 
