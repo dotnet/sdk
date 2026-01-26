@@ -34,7 +34,15 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     {
         if (!RuntimeTypeMap.TryGetValue(_runtimeType, out var runtimeInfo))
         {
-            Console.Error.WriteLine($"Error: Unknown runtime type '{_runtimeType}'. Valid types are: {string.Join(", ", RuntimeTypeMap.Keys)}");
+            Console.Error.WriteLine($"Error: Unknown runtime type '{_runtimeType}'. Valid types are: {string.Join(", ", GetValidRuntimeTypes())}");
+            return 1;
+        }
+
+        // Windows Desktop Runtime is only available on Windows
+        if (runtimeInfo.Component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
+        {
+            Console.Error.WriteLine("Error: Windows Desktop Runtime is only available on Windows.");
+            Console.Error.WriteLine($"Valid runtime types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
             return 1;
         }
 
@@ -60,5 +68,21 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 
         InstallWorkflow.InstallWorkflowResult workflowResult = workflow.Execute(options);
         return workflowResult.ExitCode;
+    }
+
+    /// <summary>
+    /// Gets the list of valid runtime types for the current platform.
+    /// </summary>
+    private static IEnumerable<string> GetValidRuntimeTypes()
+    {
+        foreach (var kvp in RuntimeTypeMap)
+        {
+            // Windows Desktop is only valid on Windows
+            if (kvp.Value.Component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
+            {
+                continue;
+            }
+            yield return kvp.Key;
+        }
     }
 }

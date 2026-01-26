@@ -8,12 +8,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 internal static class RuntimeInstallCommandParser
 {
     /// <summary>
-    /// The runtime type to install (core, aspnetcore, windowsdesktop).
+    /// The runtime type to install (core, aspnetcore, windowsdesktop on Windows).
     /// </summary>
     public static readonly Argument<string> TypeArgument = new("type")
     {
         HelpName = "TYPE",
-        Description = "The type of runtime to install: core, aspnetcore, or windowsdesktop",
+        Description = OperatingSystem.IsWindows()
+            ? "The type of runtime to install: core, aspnetcore, or windowsdesktop"
+            : "The type of runtime to install: core or aspnetcore",
         Arity = ArgumentArity.ExactlyOne, // eventually we'd support no type, which would install all 3 on windows, or core + aspnetcore concurrently on unix
     };
 
