@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using Microsoft.DotNet.Cli.Help;
 
 namespace Microsoft.TemplateEngine.Cli.Help;
 

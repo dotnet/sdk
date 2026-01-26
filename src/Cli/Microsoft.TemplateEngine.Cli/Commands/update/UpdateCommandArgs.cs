@@ -3,37 +3,20 @@
 
 using System.CommandLine;
 
-namespace Microsoft.TemplateEngine.Cli.Commands
+namespace Microsoft.TemplateEngine.Cli.Commands;
+
+internal sealed class UpdateCommandArgs : GlobalArgs
 {
-    internal class UpdateCommandArgs : GlobalArgs
+    public UpdateCommandArgs(ParseResult parseResult)
+        : base(parseResult)
     {
-        public UpdateCommandArgs(BaseUpdateCommand command, ParseResult parseResult) : base(command, parseResult)
-        {
-            if (command is UpdateCommand)
-            {
-                CheckOnly = parseResult.GetValue(CommandDefinition.Update.CheckOnlyOption);
-            }
-            else if (command is LegacyUpdateCheckCommand)
-            {
-                CheckOnly = true;
-            }
-            else if (command is LegacyUpdateApplyCommand)
-            {
-                CheckOnly = false;
-            }
-            else
-            {
-                throw new ArgumentException($"Unsupported type {command.GetType().FullName}", nameof(command));
-            }
-
-            Interactive = parseResult.GetValue(command.Definition.InteractiveOption);
-            AdditionalSources = parseResult.GetValue(command.Definition.AddSourceOption);
-        }
-
-        public bool CheckOnly { get; }
-
-        public bool Interactive { get; }
-
-        public IReadOnlyList<string>? AdditionalSources { get; }
+        var definition = ((IUpdateCommand)parseResult.CommandResult.Command).Definition;
+        CheckOnly = definition.GetCheckOnlyValue(parseResult);
+        Interactive = parseResult.GetValue(definition.InteractiveOption);
+        AdditionalSources = parseResult.GetValue(definition.AddSourceOption);
     }
+
+    public bool CheckOnly { get; }
+    public bool Interactive { get; }
+    public IReadOnlyList<string>? AdditionalSources { get; }
 }

@@ -2,22 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed class SearchCommandArgs : BaseFilterableArgs, ITabularOutputArgs
+    internal sealed class SearchCommandArgs : BaseFilterableArgs<NewSearchCommandDefinition>, ITabularOutputArgs
     {
-        internal SearchCommandArgs(BaseSearchCommand command, ParseResult parseResult) : base(command, parseResult)
+        internal SearchCommandArgs(BaseSearchCommand command, ParseResult parseResult)
+            : base(parseResult)
         {
-            string? nameCriteria = parseResult.GetValue(CommandDefinition.Search.NameArgument);
+            string? nameCriteria = parseResult.GetValue(command.Definition.NameArgument);
             if (!string.IsNullOrWhiteSpace(nameCriteria))
             {
                 SearchNameCriteria = nameCriteria;
             }
             // for legacy case new command argument is also accepted
-            else if (command is LegacySearchCommand legacySearchCommand)
+            else if (command is LegacySearchCommand)
             {
-                string? newCommandArgument = parseResult.GetValue(CommandDefinition.New.ShortNameArgument);
+                var newCommand = (NewCommand)command.Parents.Single();
+                string? newCommandArgument = parseResult.GetValue(newCommand.Definition.ShortNameArgument);
                 if (!string.IsNullOrWhiteSpace(newCommandArgument))
                 {
                     SearchNameCriteria = newCommandArgument;

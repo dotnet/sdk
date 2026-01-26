@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed class ListCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-        : BaseListCommand(hostBuilder, CommandDefinition.List.Command)
+    internal sealed class ListCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewListCommandDefinition definition)
+        : BaseListCommand(hostBuilder, definition)
     {
         protected override async Task<NewCommandStatus> ExecuteAsync(
             ListCommandArgs args,
