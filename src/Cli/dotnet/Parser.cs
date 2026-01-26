@@ -154,6 +154,9 @@ public static class Parser
             rootCommand.Subcommands.Add(subcommand);
         }
 
+        // Attach verbosity actions to all commands recursively
+        AttachVerbosityActionsToCommand(rootCommand);
+
         // Add options
         rootCommand.Options.Add(DiagOption);
         rootCommand.Options.Add(VersionOption);
@@ -432,6 +435,32 @@ public static class Parser
         {
             CliSchema.PrintCliSchema(parseResult.CommandResult, parseResult.InvocationConfiguration.Output, Program.TelemetryClient);
             return 0;
+        }
+    }
+
+    /// <summary>
+    /// Recursively attaches ApplyVerbosityAction to all verbosity options in the command tree.
+    /// </summary>
+    private static void AttachVerbosityActionsToCommand(Command command)
+    {
+        foreach (var option in command.Options)
+        {
+            if (option.Name == "--verbosity")
+            {
+                if (option is Option<VerbosityOptions> verbosityOpt)
+                {
+                    verbosityOpt.Action = new ApplyVerbosityAction<VerbosityOptions>(verbosityOpt);
+                }
+                else if (option is Option<VerbosityOptions?> nullableVerbosityOpt)
+                {
+                    nullableVerbosityOpt.Action = new ApplyVerbosityAction<VerbosityOptions?>(nullableVerbosityOpt);
+                }
+            }
+        }
+
+        foreach (var subcommand in command.Subcommands)
+        {
+            AttachVerbosityActionsToCommand(subcommand);
         }
     }
 }
