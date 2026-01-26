@@ -11,8 +11,14 @@ namespace Microsoft.NET.Build.Tasks
 {
     //  This task is used for projects targeting .NET 5 and higher and generates errors if there are any
     //  unsupported WinMD references.
-    public class CheckForUnsupportedWinMDReferences : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class CheckForUnsupportedWinMDReferences : TaskBase, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         public string TargetFrameworkMoniker { get; set; }
 
         public ITaskItem[] ReferencePaths { get; set; } = Array.Empty<ITaskItem>();
@@ -48,19 +54,20 @@ namespace Microsoft.NET.Build.Tasks
                 //  to figure out which one to generate shouldn't matter.
                 foreach (var referencePath in ReferencePaths)
                 {
-                    if (!Path.GetExtension(referencePath.ItemSpec).Equals(".winmd", StringComparison.OrdinalIgnoreCase) &&
-                        AssemblyHasWindowsRuntimeReference(referencePath.ItemSpec))
+                    string absolutePath = TaskEnvironment?.GetAbsolutePath(referencePath.ItemSpec) ?? referencePath.ItemSpec;
+                    if (!Path.GetExtension(absolutePath).Equals(".winmd", StringComparison.OrdinalIgnoreCase) &&
+                        AssemblyHasWindowsRuntimeReference(absolutePath))
                     {
                         //  Ignore System.Runtime.WindowsRuntime.dll, as it has windowsruntime metadata references, but is a dependency of
                         //  the Microsoft.Windows.Sdk.Contracts package, so generating an error about it isn't helpful
-                        if (Path.GetFileName(referencePath.ItemSpec).Equals("System.Runtime.WindowsRuntime.dll", StringComparison.OrdinalIgnoreCase))
+                        if (Path.GetFileName(absolutePath).Equals("System.Runtime.WindowsRuntime.dll", StringComparison.OrdinalIgnoreCase))
                         {
                             continue;
                         }
 
                         shouldShowWinMDReferenceErrors = false;
 
-                        Log.LogError(Strings.WinMDTransitiveReferenceNotSupported, Path.GetFileName(referencePath.ItemSpec));
+                        Log.LogError(Strings.WinMDTransitiveReferenceNotSupported, Path.GetFileName(absolutePath));
                     }
                 }
             }

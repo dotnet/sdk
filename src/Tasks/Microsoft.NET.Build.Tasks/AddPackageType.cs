@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class AddPackageType : Task
     {
         public string? CurrentPackageType { get; set; }

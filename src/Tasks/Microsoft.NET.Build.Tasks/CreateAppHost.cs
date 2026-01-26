@@ -13,8 +13,14 @@ namespace Microsoft.NET.Build.Tasks
     /// Creates the runtime host to be used for an application.
     /// This embeds the application DLL path into the apphost and performs additional customizations as requested.
     /// </summary>
-    public class CreateAppHost : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class CreateAppHost : TaskBase, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         /// <summary>
         /// The number of additional retries to attempt for creating the apphost.
         /// <summary>
@@ -59,7 +65,11 @@ namespace Microsoft.NET.Build.Tasks
             try
             {
                 var isGUI = WindowsGraphicalUserInterface;
-                var resourcesAssembly = IntermediateAssembly;
+                
+                // Ensure paths are absolute for thread-safe file operations
+                string appHostSourcePath = TaskEnvironment?.GetAbsolutePath(AppHostSourcePath) ?? AppHostSourcePath;
+                string appHostDestinationPath = TaskEnvironment?.GetAbsolutePath(AppHostDestinationPath) ?? AppHostDestinationPath;
+                string resourcesAssembly = TaskEnvironment?.GetAbsolutePath(IntermediateAssembly) ?? IntermediateAssembly;
 
                 int attempts = 0;
 
@@ -91,8 +101,8 @@ namespace Microsoft.NET.Build.Tasks
                             };
                         }
 
-                        HostWriter.CreateAppHost(appHostSourceFilePath: AppHostSourcePath,
-                                                appHostDestinationFilePath: AppHostDestinationPath,
+                        HostWriter.CreateAppHost(appHostSourceFilePath: appHostSourcePath,
+                                                appHostDestinationFilePath: appHostDestinationPath,
                                                 appBinaryFilePath: AppBinaryName,
                                                 windowsGraphicalUserInterface: isGUI,
                                                 assemblyToCopyResourcesFrom: resourcesAssembly,
@@ -141,7 +151,7 @@ namespace Microsoft.NET.Build.Tasks
             }
             catch (PlaceHolderNotFoundInAppHostException ex)
             {
-                throw new BuildErrorException(Strings.AppHostHasBeenModified, AppHostSourcePath, BitConverter.ToString(ex.MissingPattern));
+                throw new BuildErrorException(Strings.AppHostHasBeenModified, appHostSourcePath, BitConverter.ToString(ex.MissingPattern));
             }
         }
     }
