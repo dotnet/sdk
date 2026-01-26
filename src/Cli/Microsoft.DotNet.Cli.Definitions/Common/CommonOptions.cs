@@ -274,13 +274,13 @@ internal static class CommonOptions
         Arity = ArgumentArity.Zero,
     };
 
-    public static Option<bool?> CreateSelfContainedOption() =>
-        new Option<bool?>("--self-contained", "--sc")
+    public static Option<bool> CreateSelfContainedOption() =>
+        new Option<bool>("--self-contained", "--sc")
         {
             Description = CommandDefinitionStrings.SelfContainedOptionDescription,
             Arity = ArgumentArity.ZeroOrOne
         }
-        .ForwardAsMany(o => o.HasValue ? [$"--property:SelfContained={o.Value}", "--property:_CommandLineDefinedSelfContained=true"] : []);
+        .ForwardAsMany(o => [$"--property:SelfContained={o}", "--property:_CommandLineDefinedSelfContained=true"]);
 
     public static Option<bool> CreateNoSelfContainedOption() =>
         new Option<bool>("--no-self-contained")
