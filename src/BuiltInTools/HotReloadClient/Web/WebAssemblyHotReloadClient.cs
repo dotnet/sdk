@@ -41,24 +41,30 @@ namespace Microsoft.DotNet.HotReload
 
         private static ImmutableArray<string> GetUpdateCapabilities(ILogger logger, ImmutableArray<string> projectHotReloadCapabilities, Version projectTargetFrameworkVersion)
         {
-            var capabilities = projectHotReloadCapabilities;
-
-            if (capabilities.IsEmpty)
-            {
-                logger.LogDebug("Using capabilities based on project target framework version: '{Version}'.", projectTargetFrameworkVersion);
-
-                capabilities = projectTargetFrameworkVersion.Major switch
+            var capabilities = projectHotReloadCapabilities.IsEmpty
+                ? projectTargetFrameworkVersion.Major switch
                 {
                     9 => s_defaultCapabilities90,
                     8 => s_defaultCapabilities80,
                     7 => s_defaultCapabilities70,
                     6 => s_defaultCapabilities60,
                     _ => [],
-                };
+                }
+                : projectHotReloadCapabilities;
+
+            if (capabilities is not [])
+            {
+                capabilities = AddImplicitCapabilities(capabilities);
+            }
+
+            var capabilitiesStr = string.Join(", ", capabilities);
+            if (projectHotReloadCapabilities.IsEmpty)
+            {
+                logger.LogDebug("Project specifies capabilities: {Capabilities}.", capabilitiesStr);
             }
             else
             {
-                logger.LogDebug("Project specifies capabilities: '{Capabilities}'", string.Join(" ", capabilities));
+                logger.LogDebug("Using capabilities based on project target framework version: '{Version}': {Capabilities}.", projectTargetFrameworkVersion, capabilitiesStr);
             }
 
             return capabilities;

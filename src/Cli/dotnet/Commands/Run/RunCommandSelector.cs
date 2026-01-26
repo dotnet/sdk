@@ -31,21 +31,25 @@ internal sealed class RunCommandSelector : IDisposable
     
     private ProjectCollection? _collection;
     private Microsoft.Build.Evaluation.Project? _project;
-    private ProjectInstance? _projectInstance;
+
+    /// <summary>
+    /// Gets whether the selector has a valid project that can be evaluated.
+    /// This is false for .sln files or other invalid project files.
+    /// </summary>
+    public bool HasValidProject { get; private set; }
 
     /// <param name="projectFilePath">Path to the project file to evaluate</param>
-    /// <param name="globalProperties">Global MSBuild properties to use during evaluation</param>
     /// <param name="isInteractive">Whether to prompt the user for selections</param>
+    /// <param name="msbuildArgs">MSBuild arguments containing properties and verbosity settings</param>
     /// <param name="binaryLogger">Optional binary logger for MSBuild operations. The logger will not be disposed by this class.</param>
     public RunCommandSelector(
         string projectFilePath,
-        Dictionary<string, string> globalProperties,
         bool isInteractive,
         MSBuildArgs msbuildArgs,
         FacadeLogger? binaryLogger = null)
     {
         _projectFilePath = projectFilePath;
-        _globalProperties = globalProperties;
+        _globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
         _isInteractive = isInteractive;
         _msbuildArgs = msbuildArgs;
         _binaryLogger = binaryLogger;
@@ -102,9 +106,9 @@ internal sealed class RunCommandSelector : IDisposable
 
         // Dispose existing project to force re-evaluation
         _project = null;
-        _projectInstance = null;
         _collection?.Dispose();
         _collection = null;
+        HasValidProject = false;
     }
 
     /// <summary>
@@ -114,8 +118,10 @@ internal sealed class RunCommandSelector : IDisposable
     {
         if (_project is not null)
         {
-            Debug.Assert(_projectInstance is not null);
-            projectInstance = _projectInstance;
+            // Create a fresh ProjectInstance for each build operation
+            // to avoid accumulating state (existing item groups) from previous builds
+            projectInstance = _project.CreateProjectInstance();
+            HasValidProject = true;
             return true;
         }
 
@@ -126,14 +132,15 @@ internal sealed class RunCommandSelector : IDisposable
                 loggers: GetLoggers(),
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
             _project = _collection.LoadProject(_projectFilePath);
-            _projectInstance = _project.CreateProjectInstance();
-            projectInstance = _projectInstance;
+            projectInstance = _project.CreateProjectInstance();
+            HasValidProject = true;
             return true;
         }
         catch (InvalidProjectFileException)
         {
             // Invalid project file, return false
             projectInstance = null;
+            HasValidProject = false;
             return false;
         }
     }
@@ -459,6 +466,36 @@ internal sealed class RunCommandSelector : IDisposable
             // If Spectre.Console fails (e.g., terminal doesn't support it), return null
             return null;
         }
+    }
+
+    /// <summary>
+    /// Attempts to deploy to a device by calling the DeployToDevice MSBuild target if it exists.
+    /// This reuses the already-loaded project instance for performance.
+    /// </summary>
+    /// <returns>True if deployment succeeded or was skipped (no target), false if deployment failed</returns>
+    public bool TryDeployToDevice()
+    {
+        if (!OpenProjectIfNeeded(out var projectInstance))
+        {
+            // Invalid project file
+            return false;
+        }
+
+        // Check if the DeployToDevice target exists in the project
+        if (!projectInstance.Targets.ContainsKey(Constants.DeployToDevice))
+        {
+            // Target doesn't exist, skip deploy step
+            return true;
+        }
+
+        // Build the DeployToDevice target
+        var buildResult = projectInstance.Build(
+            targets: [Constants.DeployToDevice],
+            loggers: GetLoggers(),
+            remoteLoggers: null,
+            out _);
+
+        return buildResult;
     }
 
     /// <summary>

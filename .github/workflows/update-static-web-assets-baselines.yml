@@ -8,111 +8,398 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
-  update-baselines:
+  metadata:
+    name: Fetch Pull Request Metadata
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
-    
+      contents: read
+      pull-requests: read
+    outputs:
+      pr_number: ${{ steps.info.outputs.pr_number }}
+      head_ref: ${{ steps.info.outputs.head_ref }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-      
-      - name: Checkout PR branch
-        run: |
-          gh pr checkout ${GITHUB_EVENT_INPUTS_PR_NUMBER}
+      - name: Load pull request details
+        id: info
+        uses: actions/github-script@v7
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_EVENT_INPUTS_PR_NUMBER: ${{ github.event.inputs.pr_number }}
-      
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        with:
+          script: |
+            const prNumber = Number(process.env.PR_NUMBER);
+            if (!Number.isInteger(prNumber)) {
+              core.setFailed(`Invalid PR number: ${process.env.PR_NUMBER}`);
+              return;
+            }
+
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+
+            if (pr.data.state !== 'open') {
+              core.setFailed(`Pull request #${prNumber} is not open.`);
+              return;
+            }
+
+            if (pr.data.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`) {
+              core.setFailed('Pull request head branch is in a fork. Cannot update baselines automatically.');
+              return;
+            }
+
+            core.setOutput('pr_number', String(pr.data.number));
+            core.setOutput('head_ref', pr.data.head.ref);
+
+  generate:
+    name: Generate Baseline Updates
+    needs: metadata
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      changes: ${{ steps.check.outputs.changes }}
+      diff_summary: ${{ steps.package.outputs.diff_summary }}
+    defaults:
+      run:
+        working-directory: pr
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          token: ${{ github.token }}
+          fetch-depth: 0
+          ref: refs/pull/${{ needs.metadata.outputs.pr_number }}/head
+          path: pr
+          persist-credentials: false
+
       - name: Run build script
         id: build
         run: |
           chmod +x ./build.sh
           ./build.sh -c Release
         continue-on-error: true
-      
+        env:
+          GITHUB_TOKEN: ""
+          GH_TOKEN: ""
+
       - name: Update baselines
         id: update
         if: steps.build.outcome == 'success'
         run: |
-          # Set DOTNET_ROOT to the local dotnet installation
-          export DOTNET_ROOT="$(pwd)/.dotnet"
-          # Prepend DOTNET_ROOT to PATH
-          export PATH="$DOTNET_ROOT:$PATH"
-          
-          # Run the update baselines script
           chmod +x src/RazorSdk/update-test-baselines.sh
+          export DOTNET_ROOT="$(pwd)/.dotnet"
+          export PATH="$DOTNET_ROOT:$PATH"
           src/RazorSdk/update-test-baselines.sh
         continue-on-error: true
-      
-      - name: Check for changes
-        id: check-changes
+        env:
+          GITHUB_TOKEN: ""
+          GH_TOKEN: ""
+
+      - name: Check for baseline changes
+        id: check
         if: steps.update.outcome == 'success'
         run: |
-          # Check if there are changes to any *.json files under the test folder
-          if git diff --name-only | grep -E '^test/.*\.json$'; then
-            echo "changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "changes=false" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          shopt -s globstar
+
+          mapfile -t changed_files < <(git diff --name-only)
+          if [ ${#changed_files[@]} -eq 0 ]; then
+            echo "changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
-      
-      - name: Commit and push changes
-        id: commit
-        if: steps.update.outcome == 'success' && steps.check-changes.outputs.changes == 'true'
+
+          for file in "${changed_files[@]}"; do
+            if [[ "$file" != test/**/*.json ]]; then
+              echo "Unexpected file changed: $file" >&2
+              exit 1
+            fi
+          done
+
+          printf '%s\n' "${changed_files[@]}" > __changed-files.txt
+          echo "changes=true" >> "$GITHUB_OUTPUT"
+
+      - name: Evaluate generation result
+        id: evaluate
+        if: always()
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          # Create commit with formatted date
-          COMMIT_DATE=$(date -u +"%Y-%m-%d")
-          git add test/**/*.json
-          git commit -m "[Infrastructure] Update baselines $COMMIT_DATE"
-          
-          # Push to the PR branch
-          git push
-        continue-on-error: true
-      
-      - name: Comment on PR - No changes
-        if: steps.update.outcome == 'success' && steps.check-changes.outputs.changes == 'false'
-        run: |
-          gh pr comment ${GITHUB_EVENT_INPUTS_PR_NUMBER} \
-            --body "No baselines were updated."
+          status="success"
+          reason=""
+
+          if [ "${BUILD_OUTCOME}" != "success" ]; then
+            status="failed"
+            reason="build"
+          elif [ "${UPDATE_OUTCOME}" != "success" ]; then
+            status="failed"
+            reason="update"
+          fi
+
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ -n "$reason" ]; then
+            echo "failure_reason=$reason" >> "$GITHUB_OUTPUT"
+          fi
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_EVENT_INPUTS_PR_NUMBER: ${{ github.event.inputs.pr_number }}
-      
-      - name: Comment on PR - Changes pushed
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          UPDATE_OUTCOME: ${{ steps.update.outcome }}
+
+      - name: Package baseline artifacts
+        id: package
+        if: steps.evaluate.outputs.status == 'success' && steps.check.outputs.changes == 'true'
+        run: |
+          mkdir -p __artifacts
+          mv __changed-files.txt __artifacts/changed-files.txt
+          git diff --stat -- test/ > __artifacts/diff-summary.txt
+          tar -czf __artifacts/baselines.tar.gz -T __artifacts/changed-files.txt
+          printf 'diff_summary<<EOF\n%s\nEOF\n' "$(cat __artifacts/diff-summary.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload baseline artifacts
+        if: steps.evaluate.outputs.status == 'success' && steps.check.outputs.changes == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-web-assets-baselines
+          path: pr/__artifacts
+          if-no-files-found: error
+
+      - name: Create failure diagnostics
+        if: steps.evaluate.outputs.status == 'failed'
+        run: |
+          mkdir -p __failure
+          if [ -n "${{ steps.evaluate.outputs.failure_reason }}" ]; then
+            echo "${{ steps.evaluate.outputs.failure_reason }}" > __failure/failure_reason.txt
+          else
+            echo "unknown" > __failure/failure_reason.txt
+          fi
+
+      - name: Upload failure diagnostics
+        if: steps.evaluate.outputs.status == 'failed'
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-web-assets-baselines-failure
+          path: pr/__failure
+          if-no-files-found: ignore
+
+      - name: Fail job when generation unsuccessful
+        if: steps.evaluate.outputs.status == 'failed'
+        run: |
+          echo "Baseline generation failed."
+          exit 1
+
+  apply:
+    name: Apply Baseline Updates
+    needs: [metadata, generate]
+    if: needs.generate.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v6
+        with:
+          token: ${{ github.token }}
+          fetch-depth: 0
+          ref: ${{ needs.metadata.outputs.head_ref }}
+          persist-credentials: false
+
+      - name: Download baseline artifacts
+        if: needs.generate.outputs.changes == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: static-web-assets-baselines
+          path: artifact
+
+      - name: Apply generated baselines
+        if: needs.generate.outputs.changes == 'true'
+        run: |
+          tar -xzf artifact/baselines.tar.gz
+
+      - name: Validate and stage baseline files
+        if: needs.generate.outputs.changes == 'true'
+        run: |
+          set -euo pipefail
+          shopt -s globstar
+
+          if [ ! -f artifact/changed-files.txt ]; then
+            echo "Expected changed-files.txt is missing" >&2
+            exit 1
+          fi
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            if [[ "$file" != test/**/*.json ]]; then
+              echo "Disallowed file in artifact: $file" >&2
+              exit 1
+            fi
+            if [ ! -f "$file" ]; then
+              echo "File listed in artifact is missing: $file" >&2
+              exit 1
+            fi
+            git add "$file"
+          done < artifact/changed-files.txt
+
+      - name: Prepare commit message
+        id: commit-message
+        if: needs.generate.outputs.changes == 'true'
+        shell: bash
+        run: |
+          COMMIT_DATE=$(date -u +"%Y-%m-%d")
+          printf 'message=[Infrastructure] Update baselines %s\n' "$COMMIT_DATE" >> "$GITHUB_OUTPUT"
+
+      - name: Commit baseline changes
+        id: commit
+        if: needs.generate.outputs.changes == 'true'
+        shell: bash
+        env:
+          COMMIT_MESSAGE: ${{ steps.commit-message.outputs.message }}
+          ALLOWED_PATTERNS: |
+            test/**/*.json
+          GIT_USER_NAME: github-actions[bot]
+          GIT_USER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: |
+          set -euo pipefail
+          shopt -s globstar
+
+          git config user.name "${GIT_USER_NAME}"
+          git config user.email "${GIT_USER_EMAIL}"
+
+          mapfile -t staged_files < <(git diff --cached --name-only)
+          if [ ${#staged_files[@]} -eq 0 ]; then
+            echo "No staged files were found. Nothing to commit." >&2
+            exit 1
+          fi
+
+          if [ -z "${ALLOWED_PATTERNS//,/ }" ]; then
+            echo "No allowed patterns were provided." >&2
+            exit 1
+          fi
+
+          patterns_normalised=$(printf '%s' "${ALLOWED_PATTERNS}" | tr ',' '\n')
+          mapfile -t allowed_patterns < <(printf '%s\n' "${patterns_normalised}" | sed -e 's/^\s*//' -e 's/\s*$//' | sed -e '/^$/d')
+
+          if [ ${#allowed_patterns[@]} -eq 0 ]; then
+            echo "Allowed pattern list is empty after normalisation." >&2
+            exit 1
+          fi
+
+          for file in "${staged_files[@]}"; do
+            match=false
+            for pattern in "${allowed_patterns[@]}"; do
+              if [[ "$file" == $pattern ]]; then
+                match=true
+                break
+              fi
+            done
+
+            if [ "$match" = false ]; then
+              echo "File '$file' does not match the allowed patterns." >&2
+              exit 1
+            fi
+          done
+
+          git commit -m "${COMMIT_MESSAGE}"
+
+      - name: Push baseline changes
         if: steps.commit.outcome == 'success'
         run: |
-          gh pr comment ${GITHUB_EVENT_INPUTS_PR_NUMBER} \
-            --body "Baselines updated."
+          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ needs.metadata.outputs.head_ref }}
+
+      - name: Comment on PR - Success
+        if: steps.commit.outcome == 'success'
+        uses: actions/github-script@v7
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_EVENT_INPUTS_PR_NUMBER: ${{ github.event.inputs.pr_number }}
-      
-      - name: Comment on PR - Failure
-        if: steps.build.outcome == 'failure' || steps.update.outcome == 'failure' || (steps.check-changes.outputs.changes == 'true' && steps.commit.outcome == 'failure')
+          COMMENT_BODY: |
+            ✅ Static web assets baselines were updated and pushed to this pull request. Review [the workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+          ISSUE_NUMBER: ${{ needs.metadata.outputs.pr_number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: process.env.COMMENT_BODY,
+            });
+
+      - name: Comment on PR - No changes
+        if: needs.generate.outputs.changes != 'true'
+        uses: actions/github-script@v7
+        env:
+          COMMENT_BODY: |
+            ℹ️ No static web assets baselines needed updating. Review [the workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+          ISSUE_NUMBER: ${{ needs.metadata.outputs.pr_number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: process.env.COMMENT_BODY,
+            });
+
+  report-failure:
+    name: Report Failure
+    needs: [metadata, generate, apply]
+    if: needs.metadata.result == 'success' && failure()
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download failure diagnostics
+        uses: actions/download-artifact@v4
+        with:
+          name: static-web-assets-baselines-failure
+          path: diagnostics
+        continue-on-error: true
+
+      - name: Prepare failure comment
+        id: failure-comment
+        shell: bash
+        env:
+          GENERATE_RESULT: ${{ needs.generate.result }}
+          APPLY_RESULT: ${{ needs.apply.result }}
         run: |
-          ERROR_MSG="Update baselines failed"
-          
-          if [[ "${STEPS_BUILD_OUTCOME}" == "failure" ]]; then
-            ERROR_MSG="$ERROR_MSG: Build script failed"
-          elif [[ "${STEPS_UPDATE_OUTCOME}" == "failure" ]]; then
-            ERROR_MSG="$ERROR_MSG: Update baselines script failed"
-          elif [[ "${STEPS_COMMIT_OUTCOME}" == "failure" ]]; then
-            ERROR_MSG="$ERROR_MSG: Failed to commit or push changes"
+          run_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          reason=""
+          if [ -f diagnostics/failure_reason.txt ]; then
+            reason=$(tr -d '\r' < diagnostics/failure_reason.txt | tr -d '\000')
           fi
-          
-          gh pr comment ${GITHUB_EVENT_INPUTS_PR_NUMBER} \
-            --body "$ERROR_MSG"
+
+          message="❌ Failed to update static web assets baselines."
+          if [ "${GENERATE_RESULT}" = "failure" ]; then
+            case "$reason" in
+              build)
+                message="$message The build failed."
+                ;;
+              update)
+                message="$message The baseline update script failed."
+                ;;
+            esac
+          elif [ "${APPLY_RESULT}" = "failure" ]; then
+            message="$message Applying or pushing the baseline changes failed."
+          fi
+
+          message="$message Please check [the workflow run](${run_url}) for details."
+          printf 'body<<EOF\n%s\nEOF\n' "$message" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR - Failure
+        uses: actions/github-script@v7
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          STEPS_BUILD_OUTCOME: ${{ steps.build.outcome }}
-          STEPS_UPDATE_OUTCOME: ${{ steps.update.outcome }}
-          STEPS_COMMIT_OUTCOME: ${{ steps.commit.outcome }}
-          GITHUB_EVENT_INPUTS_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          COMMENT_BODY: ${{ steps.failure-comment.outputs.body }}
+          ISSUE_NUMBER: ${{ needs.metadata.outputs.pr_number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(process.env.ISSUE_NUMBER),
+              body: process.env.COMMENT_BODY,
+            });

@@ -1066,11 +1066,6 @@ Consulte https://aka.ms/dotnet-test/mtp para obter mais informações.</target>
         <target state="translated">Data</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(Padrão)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">Instalando o manifesto da carga de trabalho {0} versão {1}...</target>
@@ -1100,11 +1095,6 @@ Consulte https://aka.ms/dotnet-test/mtp para obter mais informações.</target>
         <source>Description</source>
         <target state="translated">Descrição</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">Ocorreu um erro ao ler '{0}': {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1206,15 +1196,6 @@ Consulte https://aka.ms/dotnet-test/mtp para obter mais informações.</target>
         <source>Downloads</source>
         <target state="translated">Downloads</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">Existem vários perfis de inicialização com nomes que diferenciam maiúsculas de minúsculas, o que não é permitido:
-{0}
-Diferencie os nomes dos perfis.</target>
-        <note />
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1605,26 +1586,6 @@ Diferencie os nomes dos perfis.</target>
         <source>Latest Version</source>
         <target state="translated">Última Versão</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">Um perfil de lançamento com o nome '{0}' não existe.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">Não há suporte para o tipo de perfil de inicialização '{0}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">Um perfil com o nome especificado não é um objeto JSON válido.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">A propriedade 'perfis' do documento de configurações de inicialização não é um objeto JSON.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -2627,6 +2588,11 @@ O padrão é publicar uma aplicação dependente de framework.</target>
         <target state="translated">Falha na restauração.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">Falha parcial na restauração.</target>
@@ -2685,6 +2651,11 @@ O padrão é publicar uma aplicação dependente de framework.</target>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">Compilando...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
@@ -3695,11 +3666,6 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
         <target state="translated">Modo de instalação da carga de trabalho atualizado com êxito para usar {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Um perfil de inicialização utilizável não pôde ser localizado.</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">

@@ -516,6 +516,9 @@ dotnet_diagnostic.IDE0040.severity = warning
 [*.txt]
 insert_final_newline = false
 
+[*.sarif]
+insert_final_newline = false
+
 # Verify settings
 [*.{received,verified}.{txt,xml,json,sh,zsh,nu,fish,ps1}]
 charset = "utf-8-bom"
