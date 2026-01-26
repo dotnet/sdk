@@ -206,8 +206,8 @@ public class ReuseAndErrorTests
 
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().NotBe(0, "Feature bands should not be valid for runtime installation");
-        output.Should().Contain("Feature bands", "should explain that feature bands are not valid for runtimes");
-        output.Should().Contain("only valid for SDK", "should clarify feature bands are SDK-specific");
+        output.Should().Contain("SDK version or feature band", "should explain that feature bands are not valid for runtimes");
+        output.Should().Contain("not valid for runtime", "should clarify this is a runtime-specific error");
     }
 
     [Fact]
