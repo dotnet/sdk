@@ -39,6 +39,8 @@ Even releases that are in lockdown can still take changes as long as they are ap
 
 For servicing changes to other repos like MSBuild and NuGet, we recommend getting approval from tactics before the PR is merged. For codeflow, we do not gate codeflow on approvals as many codeflows are just infra work that doesn't require approval. Separating those out would add additional complexity we want to avoid.
 
+Once your bug is ready for approval (has sign-off and the template details in the description), you can come to tactics for live approval or send email to the tactics alias. If you get tactics approval offline from the .NET QB, remove the `servicing-consider` label, add the `servicing-approved` label, set the milestone to match the runtime release this ships with, and merge if the branch is open.
+
 ## External contributions
 External contributions are encouraged and welcome. There are so many teams working in this repo that it can be hard to track. Contributors looking to learn more about how to contribute should check out the [Developer Guide](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/developer-guide.md).
 

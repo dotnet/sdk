@@ -1,0 +1,15 @@
+<Project>
+  <!--
+    !!! Intentionally fixed versions. Do not update to the latest. !!!
+  -->
+  <PropertyGroup>
+    <!-- Used for assemblies injected to apps targeting .NET 6.0 - .NET 9.0. -->
+    <AgentTargetFrameworkV6>net6.0</AgentTargetFrameworkV6>
+
+    <!-- Used for assemblies injected to apps targeting .NET 10.0+ -->
+    <AgentTargetFrameworkV10>net10.0</AgentTargetFrameworkV10>
+
+    <!-- Used for assemblies injected to web apps targeting .NET 6.0+ -->
+    <MiddlewareTargetFrameworkV6>net6.0</MiddlewareTargetFrameworkV6>
+  </PropertyGroup>
+</Project>

@@ -11,7 +11,7 @@
     <SDKCustomXUnitArguments Condition="'$(SDKCustomXUnitArguments)' == ''">-nocolor</SDKCustomXUnitArguments>
 
     <!-- Keep TFM in sync with HelixTasks.csproj -->
-    <SDKHelixCustomSdkTaskDll>$(ArtifactsBinDir)HelixTasks\$(Configuration)\$(NetToolCurrent)\HelixTasks.dll</SDKHelixCustomSdkTaskDll>
+    <SDKHelixCustomSdkTaskDll>$(ArtifactsBinDir)HelixTasks\$(Configuration)\HelixTasks.dll</SDKHelixCustomSdkTaskDll>
   </PropertyGroup>
 
   <UsingTask TaskName="SDKCustomCreateXUnitWorkItemsWithTestExclusion" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />

@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
+using Microsoft.NET.TestFramework.Commands;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -603,6 +604,91 @@ namespace Microsoft.NET.Build.Tests
                     .Should()
                     .Pass();
             }
+        }
+
+        [Fact]
+        public void ArtifactsPathIsAddedAsSourceRoot()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <UseArtifactsOutput>true</UseArtifactsOutput>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.Path, testProject.Name),
+                ToolsetInfo.CurrentTargetFramework, "SourceRoot", GetValuesCommand.ValueType.Item)
+            {
+                ShouldCompile = false,
+                DependsOnTargets = ""
+            };
+
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var sourceRoots = getValuesCommand.GetValues();
+
+            // The ArtifactsPath should be added as a SourceRoot item with a canonicalized path
+            var expectedArtifactsPath = Path.GetFullPath(Path.Combine(testAsset.Path, "artifacts")) + Path.DirectorySeparatorChar;
+            sourceRoots.Should().Contain(s => s.Equals(expectedArtifactsPath, StringComparison.OrdinalIgnoreCase),
+                $"SourceRoot should contain the artifacts path: {expectedArtifactsPath}");
+        }
+
+        [Fact]
+        public void ArtifactsPathIsAddedAsSourceRootWithRelativePath()
+        {
+            // This tests the scenario from the issue where ArtifactsPath with relative paths should be canonicalized
+            var testProject = new TestProject()
+            {
+                IsExe = true
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            // Set an ArtifactsPath that uses relative path portions (..\)
+            File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <ArtifactsPath>$(MSBuildThisFileDirectory)subdir\..\artifacts</ArtifactsPath>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.Path, testProject.Name),
+                ToolsetInfo.CurrentTargetFramework, "SourceRoot", GetValuesCommand.ValueType.Item)
+            {
+                ShouldCompile = false,
+                DependsOnTargets = ""
+            };
+
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var sourceRoots = getValuesCommand.GetValues();
+
+            // The ArtifactsPath should be canonicalized (no relative path portions like ..\)
+            var expectedArtifactsPath = Path.GetFullPath(Path.Combine(testAsset.Path, "artifacts")) + Path.DirectorySeparatorChar;
+            sourceRoots.Should().Contain(s => s.Equals(expectedArtifactsPath, StringComparison.OrdinalIgnoreCase),
+                $"SourceRoot should contain the canonicalized artifacts path: {expectedArtifactsPath}");
+
+            // Verify that there's no SourceRoot with relative path portions
+            var pathsWithRelativePortions = sourceRoots.Where(s => s.Contains(@"..\") || s.Contains("../")).ToList();
+            pathsWithRelativePortions.Should().BeEmpty(
+                $"SourceRoot should not contain relative path portions, but found: {string.Join(", ", pathsWithRelativePortions)}");
         }
     }
 
