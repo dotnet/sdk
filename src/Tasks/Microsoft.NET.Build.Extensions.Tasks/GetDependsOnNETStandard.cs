@@ -9,8 +9,14 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Determines if any Reference depends on netstandard.dll.
     /// </summary>
-    public partial class GetDependsOnNETStandard : TaskBase
+    [MSBuildMultiThreadableTask]
+    public partial class GetDependsOnNETStandard : TaskBase, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment? TaskEnvironment { get; set; }
+
         private const string NetStandardAssemblyName = "netstandard";
 
         // System.Runtime from netstandard1.5
@@ -42,6 +48,7 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var reference in References ?? Array.Empty<ITaskItem>())
             {
                 var referenceSourcePath = ItemUtilities.GetSourcePath(reference);
+                referenceSourcePath = TaskEnvironment?.GetAbsolutePath(referenceSourcePath) ?? referenceSourcePath;
 
                 if (referenceSourcePath != null && File.Exists(referenceSourcePath))
                 {
