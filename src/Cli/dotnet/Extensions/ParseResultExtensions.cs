@@ -177,12 +177,12 @@ public static class ParseResultExtensions
 
     public static bool UsingRunCommandShorthandProjectOption(this ParseResult parseResult)
     {
-        if (parseResult.HasOption(RunCommandParser.PropertyOption) && parseResult.GetValue(RunCommandParser.PropertyOption)!.Any())
+        if (parseResult.HasOption(RunCommandDefinition.PropertyOption) && parseResult.GetValue(RunCommandDefinition.PropertyOption)!.Any())
         {
             var projVals = parseResult.GetRunCommandShorthandProjectValues();
             if (projVals?.Any() is true)
             {
-                if (projVals.Count() != 1 || parseResult.HasOption(RunCommandParser.ProjectOption))
+                if (projVals.Count() != 1 || parseResult.HasOption(RunCommandDefinition.ProjectOption))
                 {
                     throw new GracefulException(CliStrings.OnlyOneProjectAllowed);
                 }

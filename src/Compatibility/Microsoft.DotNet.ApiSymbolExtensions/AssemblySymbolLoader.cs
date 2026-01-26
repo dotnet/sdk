@@ -480,7 +480,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                         // Temporarily downgrade assembly reference load warnings to messages: https://github.com/dotnet/sdk/issues/46236
                         // _log.LogWarning(AssemblyReferenceNotFoundErrorCode,
                         //     string.Format(Resources.CouldNotResolveReference, assemblyReferenceName, rootAssemblyDisplayString));
-                        _log.LogMessage(MessageImportance.High, string.Format(Resources.CouldNotResolveReference, assemblyReferenceName, rootAssemblyDisplayString));
+                        _log.LogMessage(MessageImportance.Normal, string.Format(Resources.CouldNotResolveReference, assemblyReferenceName, rootAssemblyDisplayString));
                     }
                 }
             }

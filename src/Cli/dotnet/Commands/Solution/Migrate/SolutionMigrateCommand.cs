@@ -14,7 +14,7 @@ internal class SolutionMigrateCommand(
     ParseResult parseResult,
     IReporter reporter = null) : CommandBase(parseResult)
 {
-    private readonly string _slnFileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
+    private readonly string _slnFileOrDirectory = parseResult.GetValue(SolutionCommandDefinition.SlnArgument);
     private readonly IReporter _reporter = reporter ?? Reporter.Output;
 
     public override int Execute()

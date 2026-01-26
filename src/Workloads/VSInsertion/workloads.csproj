@@ -50,7 +50,7 @@
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.MonoTargets.Sdk" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Sdk" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Templates.net10" />
+    <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Templates.net11" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Wasi.Sdk" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Sdk.WebAssembly.Pack" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.AOT.win-arm64.Cross.android-arm" />

@@ -671,12 +671,19 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Theory, CombinatorialData]
         public void FileBasedApp_CentralPackageManagement_NoVersionSpecified_KeepExisting(bool legacyForm, bool fileOption, bool noRestore)
         {
-            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore) is not { } args) return;
+            if (GetFileBasedAppArgs(legacyForm, versionOption: null, fileOption, noRestore, packageName: "A") is not { } args) return;
 
             var testInstance = _testAssetsManager.CreateTestDirectory();
+
+            string[] versions = ["0.0.5", "0.9.0", "1.0.0-preview.3"];
+            var packages = versions.Select(e => GetPackagePath(ToolsetInfo.CurrentTargetFramework, "A", e, identifier: e + versions.GetHashCode().ToString())).ToArray();
+
+            var restoreSources = string.Join(";", packages.Select(package => Path.GetDirectoryName(package)));
+
             var file = Path.Join(testInstance.Path, "Program.cs");
-            var source = """
-                #:package Humanizer
+            var source = $"""
+                #:property RestoreSources=$(RestoreSources);{restoreSources}
+                #:package A
                 Console.WriteLine();
                 """;
             File.WriteAllText(file, source);
@@ -688,7 +695,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageVersion Include="Humanizer" Version="2.9.9" />
+                    <PackageVersion Include="A" Version="0.0.5" />
                   </ItemGroup>
                 </Project>
                 """;

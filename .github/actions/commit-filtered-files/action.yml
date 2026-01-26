@@ -1,0 +1,63 @@
+name: Commit Filtered Files
+description: Ensure staged files have allowed endings before committing.
+author: dotnet-sdk
+inputs:
+  commit-message:
+    description: Commit message to use when creating the commit.
+    required: true
+  allowed-file-endings:
+    description: Newline- or comma-separated list of allowed file name suffixes (e.g. .xlf).
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Commit filtered files
+      shell: bash
+      env:
+        COMMIT_MESSAGE: ${{ inputs.commit-message }}
+        ALLOWED_ENDINGS: ${{ inputs.allowed-file-endings }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "${COMMIT_MESSAGE}" ]; then
+          echo "Commit message input is empty." >&2
+          exit 1
+        fi
+
+        staged_files_output=$(git diff --cached --name-only)
+        if [ $? -ne 0 ]; then
+          echo "Failed to retrieve staged files due to a git error." >&2
+          exit 1
+        fi
+
+        mapfile -t staged_files <<< "${staged_files_output}"
+        if [ ${#staged_files[@]} -eq 0 ]; then
+          echo "No staged files were found. Nothing to commit." >&2
+          exit 1
+        fi
+
+        endings_raw=$(printf '%s' "${ALLOWED_ENDINGS}" | tr ',' '\n')
+        mapfile -t allowed_endings < <(printf '%s\n' "${endings_raw}" | sed -e 's/^\s*//' -e 's/\s*$//' -e '/^$/d')
+        if [ ${#allowed_endings[@]} -eq 0 ]; then
+          echo "No allowed file endings were provided." >&2
+          exit 1
+        fi
+
+        for file in "${staged_files[@]}"; do
+          match=false
+          for ending in "${allowed_endings[@]}"; do
+            if [[ "${file}" == *"${ending}" ]]; then
+              match=true
+              break
+            fi
+          done
+          if [ "${match}" = false ]; then
+            echo "File '${file}' does not match the allowed endings." >&2
+            exit 1
+          fi
+        done
+
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        git commit -m "${COMMIT_MESSAGE}"

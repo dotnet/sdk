@@ -16,8 +16,6 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     {
     }
 
-    string ExpectedRid => OperatingSystem.IsWindows() ? "win" : (OperatingSystem.IsMacOS() ? "osx" : "linux");
-
     /// <summary>
     /// Helper method to assert conditions about MSBuild target execution in a binlog file
     /// </summary>
@@ -179,7 +177,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         // Should auto-select the single device and run successfully
         result.Should().Pass()
             .And.HaveStdOutContaining("Device: single-device")
-            .And.HaveStdOutContaining($"RuntimeIdentifier: {ExpectedRid}");
+            .And.HaveStdOutContaining($"RuntimeIdentifier: {RuntimeInformation.RuntimeIdentifier}");
 
         // Verify the binlog file was created and the ComputeAvailableDevices target ran
         File.Exists(binlogPath).Should().BeTrue("the binlog file should be created");
@@ -279,5 +277,103 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         // Should fail with framework selection error, not device selection error
         result.Should().Fail()
             .And.HaveStdErrContaining("Your project targets multiple frameworks. Specify which framework to run using '--framework'");
+    }
+
+    [Fact]
+    public void ItCallsDeployToDeviceTargetWhenDeviceIsSpecified()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        string deviceId = "test-device-1";
+        string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
+
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId, "-bl");
+
+        // Should run successfully
+        result.Should().Pass()
+            .And.HaveStdOutContaining($"Device: {deviceId}");
+
+        // Verify the binlog file was created and the DeployToDevice target ran
+        File.Exists(binlogPath).Should().BeTrue("the binlog file should be created");
+        AssertTargetInBinlog(binlogPath, "DeployToDevice",
+            targets => targets.Should().NotBeEmpty("DeployToDevice target should have been executed"));
+    }
+
+    [Fact]
+    public void ItCallsDeployToDeviceTargetEvenWithNoBuild()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        string deviceId = "test-device-1";
+        string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
+
+        // First build the project with the device so DeviceInfo gets generated
+        // Note: dotnet build doesn't support --device flag, use -p:Device= instead
+        new DotnetCommand(Log, "build")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, $"-p:Device={deviceId}")
+            .Should().Pass();
+
+        // Now run with --no-build
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId, "--no-build", "-bl");
+
+        // Should run successfully
+        result.Should().Pass()
+            .And.HaveStdOutContaining($"Device: {deviceId}");
+
+        // Verify the binlog file was created and the DeployToDevice target ran
+        File.Exists(binlogPath).Should().BeTrue("the binlog file should be created");
+        AssertTargetInBinlog(binlogPath, "DeployToDevice",
+            targets => targets.Should().NotBeEmpty("DeployToDevice target should have been executed even with --no-build"));
+    }
+
+    [Fact]
+    public void ItCallsDeployToDeviceTargetWhenDeviceIsAutoSelected()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
+
+        // Run with auto-selection of single device
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "-p:SingleDevice=true", "-bl");
+
+        // Should run successfully
+        result.Should().Pass()
+            .And.HaveStdOutContaining("Device: single-device");
+
+        // Verify the binlog file was created
+        File.Exists(binlogPath).Should().BeTrue("the binlog file should be created");
+
+        // DeployToDevice target should have been called since a device was selected
+        AssertTargetInBinlog(binlogPath, "DeployToDevice",
+            targets => targets.Should().NotBeEmpty("DeployToDevice target should have been executed when a device is selected"));
+    }
+
+    [Fact]
+    public void ItPassesRuntimeIdentifierToDeployToDeviceTarget()
+    {
+        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        string deviceId = "test-device-1";
+        string rid = RuntimeInformation.RuntimeIdentifier;
+
+        var result = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId, "--runtime", rid);
+
+        // Should run successfully and show the RuntimeIdentifier in the app output
+        result.Should().Pass()
+            .And.HaveStdOutContaining($"Device: {deviceId}")
+            .And.HaveStdOutContaining($"RuntimeIdentifier: {rid}");
     }
 }

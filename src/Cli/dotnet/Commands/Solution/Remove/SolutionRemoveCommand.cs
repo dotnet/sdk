@@ -18,9 +18,9 @@ internal class SolutionRemoveCommand : CommandBase
 
     public SolutionRemoveCommand(ParseResult parseResult) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
+        _fileOrDirectory = parseResult.GetValue(SolutionCommandDefinition.SlnArgument);
 
-        _projects = (parseResult.GetValue(SolutionRemoveCommandParser.ProjectPathArgument) ?? []).ToList().AsReadOnly();
+        _projects = (parseResult.GetValue(SolutionRemoveCommandDefinition.ProjectPathArgument) ?? []).ToList().AsReadOnly();
 
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Remove);
     }
@@ -40,7 +40,7 @@ internal class SolutionRemoveCommand : CommandBase
                 .Select(p => Path.GetRelativePath(
                     Path.GetDirectoryName(solutionFileFullPath),
                     Directory.Exists(p)
-                        ? MsbuildProject.GetProjectFileFromDirectory(p).FullName
+                        ? MsbuildProject.GetProjectFileFromDirectory(p)
                         : p));
 
             RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();

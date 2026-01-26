@@ -5,7 +5,7 @@
     <TargetFrameworks>net9.0;$(CurrentTargetFramework)</TargetFrameworks>
   </PropertyGroup>
 
-  <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+  <Target Name="ComputeAvailableDevices" Returns="@(Devices)" DependsOnTargets="ResolveFrameworkReferences">
     <!-- If SingleDevice property is set, return only one device -->
     <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' == 'true'">
       <Devices Include="single-device" Description="Single Device" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
@@ -47,6 +47,11 @@
       <Compile Include="$(DeviceInfoFile)" />
       <FileWrites Include="$(DeviceInfoFile)" />
     </ItemGroup>
+  </Target>
+
+  <!-- DeployToDevice target for testing, ResolveFrameworkReferences mimics Android -->
+  <Target Name="DeployToDevice" DependsOnTargets="ResolveFrameworkReferences">
+    <Message Text="DeployToDevice: Deployed to device $(Device) with RuntimeIdentifier $(RuntimeIdentifier)" Importance="high" />
   </Target>
 
 </Project>

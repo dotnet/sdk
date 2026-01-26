@@ -1418,9 +1418,9 @@ namespace Microsoft.NET.Publish.Tests
             var linkedPdbSize = new FileInfo(linkedPdb).Length;
             var publishPdbSize = new FileInfo(publishedPdb).Length;
 
-            if (targetFramework != "net10.0")
+            if (!Net10Plus.Any(tfm => (string)tfm[0] == targetFramework))
             {
-                // Check disabled for net10.0 due to https://github.com/dotnet/sdk/issues/48633
+                // Check disabled for net10.0+ due to https://github.com/dotnet/sdk/issues/48633
                 linkedPdbSize.Should().BeLessThanOrEqualTo(intermediatePdbSize);
             }
             publishPdbSize.Should().Be(linkedPdbSize);
@@ -1523,9 +1523,9 @@ namespace Microsoft.NET.Publish.Tests
             var linkedPdbSize = new FileInfo(linkedPdb).Length;
             var publishPdbSize = new FileInfo(publishedPdb).Length;
 
-            if (targetFramework != "net10.0")
+            if (!Net10Plus.Any(tfm => (string)tfm[0] == targetFramework))
             {
-                // Check disabled for net10.0 due to https://github.com/dotnet/sdk/issues/48633
+                // Check disabled for net10.0+ due to https://github.com/dotnet/sdk/issues/48633
                 linkedPdbSize.Should().BeLessThanOrEqualTo(intermediatePdbSize);
             }
             publishPdbSize.Should().Be(linkedPdbSize);
@@ -1660,28 +1660,6 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("error IL2026")
                 .And.NotHaveStdOutContaining("error IL2046")
                 .And.NotHaveStdOutContaining("error IL2075");
-        }
-
-        /// <summary>
-        /// The reason we test this on net7 and below is because in net8 _IsPublishing was added which changes
-        /// the RID-defaulting behavior such that 8+ apps are not 'portable apps' when published for configurations that
-        /// require a RID (self-contained, or trimmed).
-        /// </summary>
-        /// <param name="targetFramework"></param>
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(TFMsThatDoNotInferPublishSelfContained), MemberType = typeof(PublishTestUtils))]
-        public void ILLink_error_on_portable_app(string targetFramework)
-        {
-            var projectName = "HelloWorld";
-            var referenceProjectName = "ClassLibForILLink";
-
-            var testProject = CreateTestProjectForILLinkTesting(_testAssetsManager, targetFramework, projectName, referenceProjectName, setSelfContained: false);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
-
-            var publishCommand = new PublishCommand(testAsset);
-            publishCommand.Execute("/p:PublishTrimmed=true")
-                .Should().Fail()
-                .And.HaveStdOutContaining(Strings.ILLinkNotSupportedError);
         }
 
         //  https://github.com/dotnet/sdk/issues/49665

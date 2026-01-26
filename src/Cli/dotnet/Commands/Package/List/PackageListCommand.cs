@@ -19,9 +19,9 @@ internal class PackageListCommand(
 {
     //The file or directory passed down by the command
     private readonly string _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
-            parseResult.HasOption(PackageCommandParser.ProjectOption) ?
-            parseResult.GetValue(PackageCommandParser.ProjectOption) :
-            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument) ?? "");
+            parseResult.HasOption(PackageCommandDefinition.ProjectOption) ?
+            parseResult.GetValue(PackageCommandDefinition.ProjectOption) :
+            parseResult.GetValue(ListCommandDefinition.SlnOrProjectArgument) ?? "");
 
     private static string GetAbsolutePath(string currentDirectory, string relativePath)
     {
@@ -31,13 +31,13 @@ internal class PackageListCommand(
     public override int Execute()
     {
         string projectFile = GetProjectOrSolution();
-        bool noRestore = _parseResult.HasOption(PackageListCommandParser.NoRestore);
+        bool noRestore = _parseResult.HasOption(PackageListCommandDefinition.NoRestore);
         int restoreExitCode = 0;
 
         if (!noRestore)
         {
-            ReportOutputFormat formatOption = _parseResult.GetValue((Option<ReportOutputFormat>)PackageListCommandParser.FormatOption);
-            bool interactive = _parseResult.GetValue((Option<bool>)PackageListCommandParser.InteractiveOption);
+            ReportOutputFormat formatOption = _parseResult.GetValue((Option<ReportOutputFormat>)PackageListCommandDefinition.FormatOption);
+            bool interactive = _parseResult.GetValue((Option<bool>)PackageListCommandDefinition.InteractiveOption);
             restoreExitCode = RunRestore(projectFile, formatOption, interactive);
         }
 
@@ -100,9 +100,9 @@ internal class PackageListCommand(
     internal static void EnforceOptionRules(ParseResult parseResult)
     {
         var mutexOptionCount = 0;
-        mutexOptionCount += parseResult.HasOption(PackageListCommandParser.DeprecatedOption) ? 1 : 0;
-        mutexOptionCount += parseResult.HasOption(PackageListCommandParser.OutdatedOption) ? 1 : 0;
-        mutexOptionCount += parseResult.HasOption(PackageListCommandParser.VulnerableOption) ? 1 : 0;
+        mutexOptionCount += parseResult.HasOption(PackageListCommandDefinition.DeprecatedOption) ? 1 : 0;
+        mutexOptionCount += parseResult.HasOption(PackageListCommandDefinition.OutdatedOption) ? 1 : 0;
+        mutexOptionCount += parseResult.HasOption(PackageListCommandDefinition.VulnerableOption) ? 1 : 0;
         if (mutexOptionCount > 1)
         {
             throw new GracefulException(CliCommandStrings.OptionsCannotBeCombined);
@@ -118,7 +118,7 @@ internal class PackageListCommand(
             projectOrSolution
         };
 
-        args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageListCommandParser.GetCommand()));
+        args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageListCommandDefinition.Create()));
 
         EnforceOptionRules(_parseResult);
 

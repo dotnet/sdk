@@ -678,8 +678,25 @@ _testhost() {
                                     (update)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--project=[Path to a project or solution file, or a directory.]: : ' \
-                                            '--vulnerable=[Upgrade packages with known vulnerabilities.]: :((False\:"False" True\:"True" ))' \
                                             '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
+                                            '--vulnerable=[Upgrade packages with known vulnerabilities.]: :((False\:"False" True\:"True" ))' \
+                                            '--verbosity=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '-v=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '--help[Show command line help.]' \
+                                            '-h[Show command line help.]' \
+                                            '*::packages -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
+                                            && ret=0
+                                        ;;
+                                    (download)
+                                        _arguments "${_arguments_options[@]}" : \
+                                            '--allow-insecure-connections[Allows downloading from HTTP (non-HTTPS) package sources.]' \
+                                            '--configfile=[The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https\://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior.]: : ' \
+                                            '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
+                                            '--output=[Directory where the package will be placed. Defaults to the current working directory.]: : ' \
+                                            '-o=[Directory where the package will be placed. Defaults to the current working directory.]: : ' \
+                                            '--prerelease[Allows prerelease packages to be installed.]' \
+                                            '*--source=[Specifies one or more NuGet package sources to use.]: : ' \
+                                            '*-s=[Specifies one or more NuGet package sources to use.]: : ' \
                                             '--verbosity=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--help[Show command line help.]' \
@@ -1750,6 +1767,7 @@ _testhost__package_commands() {
         'list:List all package references of the project or solution.' \
         'remove:Remove a NuGet package reference from the project.' \
         'update:Update referenced packages in a project or solution.' \
+        'download:Downloads a NuGet package to a local folder without requiring a project file.' \
     )
     _describe -t commands 'testhost package commands' commands "$@"
 }
@@ -1782,6 +1800,12 @@ _testhost__package__remove_commands() {
 _testhost__package__update_commands() {
     local commands; commands=()
     _describe -t commands 'testhost package update commands' commands "$@"
+}
+
+(( $+functions[_testhost__package__download_commands] )) ||
+_testhost__package__download_commands() {
+    local commands; commands=()
+    _describe -t commands 'testhost package download commands' commands "$@"
 }
 
 (( $+functions[_testhost__project_commands] )) ||

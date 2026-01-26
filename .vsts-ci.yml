@@ -270,7 +270,7 @@ extends:
               name: Azure Pipelines
               vmImage: macOS-latest
               os: macOS
-            helixTargetQueue: osx.13.arm64
+            helixTargetQueue: osx.15.arm64
             populateInternalRuntimeVariables: true
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             macOSJobParameterSets:

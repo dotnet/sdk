@@ -663,6 +663,32 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [Fact]
+        [WorkItem(50328, "https://github.com/dotnet/sdk/issues/50328")]
+        public static async Task ShouldNotTrigger6()
+        {
+            const string Source = @"
+#nullable enable
+                interface IFoo
+                {
+                    int M() => 42;
+                }
+                public class C : IFoo
+                {
+                }
+                public class Use
+                {
+                    static int Bar()
+                    {
+                        IFoo f = new C();
+                        return f.M();
+                    }
+                }
+                ";
+
+            await TestCSAsync(Source);
+        }
+
+        [Fact]
         public static async Task ShouldTrigger_InterpolatedString_Mameof()
         {
             const string Source = @"

@@ -39,11 +39,11 @@ internal class SolutionAddCommand : CommandBase
 
     public SolutionAddCommand(ParseResult parseResult) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument)!;
-        _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SolutionAddCommandParser.ProjectPathArgument) ?? []);
-        _inRoot = parseResult.GetValue(SolutionAddCommandParser.InRootOption);
-        _solutionFolderPath = parseResult.GetValue(SolutionAddCommandParser.SolutionFolderOption);
-        _includeReferences = parseResult.GetValue(SolutionAddCommandParser.IncludeReferencesOption);
+        _fileOrDirectory = parseResult.GetValue(SolutionCommandDefinition.SlnArgument)!;
+        _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SolutionAddCommandDefinition.ProjectPathArgument) ?? []);
+        _inRoot = parseResult.GetValue(SolutionAddCommandDefinition.InRootOption);
+        _solutionFolderPath = parseResult.GetValue(SolutionAddCommandDefinition.SolutionFolderOption);
+        _includeReferences = parseResult.GetValue(SolutionAddCommandDefinition.IncludeReferencesOption);
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
         _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
     }
@@ -61,7 +61,7 @@ internal class SolutionAddCommand : CommandBase
         IEnumerable<string> fullProjectPaths = _projects.Select(project =>
         {
             var fullPath = Path.GetFullPath(project);
-            return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
+            return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath) : fullPath;
         });
 
         // Add projects to the solution
