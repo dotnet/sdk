@@ -13,6 +13,7 @@ using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -94,7 +95,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         _environmentPathInstruction = environmentPathInstruction ?? EnvironmentPathFactory.CreateEnvironmentPathInstruction();
         _createShellShimRepository = createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
 
-        var tempDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
+        var tempDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
         var configOption = parseResult.GetValue(Definition.ConfigOption);
         var sourceOption = parseResult.GetValue(Definition.AddSourceOption);
         var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), additionalSourceFeeds: sourceOption, basePath: _currentWorkingDirectory);

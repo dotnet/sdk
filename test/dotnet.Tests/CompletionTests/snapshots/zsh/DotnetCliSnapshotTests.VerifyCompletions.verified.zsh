@@ -50,7 +50,6 @@ _testhost() {
                         '-verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                        '--debug[]' \
                         '--output=[The output directory to place built artifacts in.]:OUTPUT_DIR: ' \
                         '-o=[The output directory to place built artifacts in.]:OUTPUT_DIR: ' \
                         '--artifacts-path=[The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.]:ARTIFACTS_DIR: ' \
@@ -894,6 +893,8 @@ _testhost() {
                         '--launch-profile=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
                         '-lp=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
                         '--no-launch-profile[Do not attempt to use launchSettings.json or \[app\].run.json to configure the application.]' \
+                        '--device=[The device identifier to use for running the application.]:DEVICE: ' \
+                        '--list-devices[List available devices for running the application.]' \
                         '--no-build[Do not build the project before running. Implies --no-restore.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--no-restore[Do not restore the project before building.]' \
@@ -974,7 +975,6 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '::SLN_FILE -- The solution file to operate on. If not specified, the command will search the current directory for one.: ' \
                                             && ret=0
                                         ;;
                                 esac

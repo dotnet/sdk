@@ -7,15 +7,16 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal class InstallCommandArgs : GlobalArgs
     {
-        public InstallCommandArgs(BaseInstallCommand installCommand, ParseResult parseResult) : base(installCommand, parseResult)
+        public InstallCommandArgs(BaseInstallCommand installCommand, ParseResult parseResult)
+            : base(parseResult)
         {
-            var nameResult = parseResult.GetResult(CommandDefinition.Install.NameArgument);
+            var nameResult = parseResult.GetResult(installCommand.Definition.NameArgument);
             if (nameResult is null || nameResult.Errors.Any())
             {
-                throw new ArgumentException($"{nameof(parseResult)} should contain at least one argument for {CommandDefinition.Install.NameArgument.Name}", nameof(parseResult));
+                throw new ArgumentException($"{nameof(parseResult)} should contain at least one argument for {installCommand.Definition.NameArgument.Name}", nameof(parseResult));
             }
 
-            TemplatePackages = parseResult.GetValue(CommandDefinition.Install.NameArgument)!;
+            TemplatePackages = parseResult.GetValue(installCommand.Definition.NameArgument)!;
 
             //workaround for --install source1 --install source2 case
             if (installCommand is LegacyInstallCommand && (TemplatePackages.Contains(installCommand.Name) || installCommand.Aliases.Any(alias => TemplatePackages.Contains(alias))))
@@ -25,12 +26,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             if (!TemplatePackages.Any())
             {
-                throw new ArgumentException($"{nameof(parseResult)} should contain at least one argument for {CommandDefinition.Install.NameArgument.Name}", nameof(parseResult));
+                throw new ArgumentException($"{nameof(parseResult)} should contain at least one argument for {installCommand.Definition.NameArgument.Name}", nameof(parseResult));
             }
 
             Interactive = parseResult.GetValue(installCommand.Definition.InteractiveOption);
             AdditionalSources = parseResult.GetValue(installCommand.Definition.AddSourceOption);
-            Force = parseResult.GetValue(CommandDefinition.Install.ForceOption);
+            Force = parseResult.GetValue(installCommand.Definition.ForceOption);
         }
 
         public IReadOnlyList<string> TemplatePackages { get; }

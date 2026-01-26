@@ -144,7 +144,7 @@ _testhost_build() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--use-current-runtime --framework --configuration --version-suffix --no-restore --interactive --verbosity --debug --output --artifacts-path --no-incremental --no-dependencies --no-logo --self-contained --no-self-contained --runtime --arch --os --disable-build-servers --help" 
+    opts="--use-current-runtime --framework --configuration --version-suffix --no-restore --interactive --verbosity --output --artifacts-path --no-incremental --no-dependencies --no-logo --self-contained --no-self-contained --runtime --arch --os --disable-build-servers --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1379,7 +1379,7 @@ _testhost_run() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--configuration --framework --project --file --launch-profile --no-launch-profile --no-build --interactive --no-restore --no-cache --self-contained --no-self-contained --verbosity --runtime --arch --os --disable-build-servers --artifacts-path --environment --help" 
+    opts="--configuration --framework --project --file --launch-profile --no-launch-profile --device --list-devices --no-build --interactive --no-restore --no-cache --self-contained --no-self-contained --verbosity --runtime --arch --os --disable-build-servers --artifacts-path --environment --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
