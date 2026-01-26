@@ -49,7 +49,7 @@ internal class ChannelVersionResolver
 
     public ReleaseVersion? Resolve(DotnetInstallRequest installRequest)
     {
-        return GetLatestVersionForChannel(installRequest.Channel, installRequest.Component);
+        return GetLatestVersionForChannel(installRequest.Channel, installRequest.Component, installRequest.Options.NoFallback);
     }
 
     /// <summary>
@@ -89,8 +89,9 @@ internal class ChannelVersionResolver
     /// </summary>
     /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "sts", "preview")</param>
     /// <param name="component">The component to check (ie SDK or runtime)</param>
+    /// <param name="noFallback">If true, prevents fallback to GA when no preview is available</param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
-    public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
+    public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component, bool noFallback = false)
     {
         if (string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) || string.Equals(channel.Name, "sts", StringComparison.OrdinalIgnoreCase))
         {
@@ -101,7 +102,7 @@ internal class ChannelVersionResolver
         else if (string.Equals(channel.Name, "preview", StringComparison.OrdinalIgnoreCase))
         {
             var productIndex = _releaseManifest.GetReleasesIndex();
-            return GetLatestPreviewVersion(productIndex, component);
+            return GetLatestPreviewVersion(productIndex, component, noFallback);
         }
         else if (string.Equals(channel.Name, "latest", StringComparison.OrdinalIgnoreCase))
         {
@@ -175,8 +176,9 @@ internal class ChannelVersionResolver
     /// </summary>
     /// <param name="index">The product collection to search</param>
     /// <param name="component">The component to check (ie SDK or runtime)</param>
+    /// <param name="noFallback">If true, returns null when no preview is available instead of falling back to GA</param>
     /// <returns>Latest preview or GoLive version string, or null if none found</returns>
-    private ReleaseVersion? GetLatestPreviewVersion(IEnumerable<Product> index, InstallComponent component)
+    private ReleaseVersion? GetLatestPreviewVersion(IEnumerable<Product> index, InstallComponent component, bool noFallback = false)
     {
         ReleaseVersion? latestPreviewVersion = GetLatestVersionBySupportPhase(index, component, [SupportPhase.Preview, SupportPhase.GoLive]);
         if (latestPreviewVersion is not null)
@@ -184,7 +186,14 @@ internal class ChannelVersionResolver
             return latestPreviewVersion;
         }
 
-        return GetLatestVersionBySupportPhase(index, component, [SupportPhase.Active]);
+        // If no preview or GoLive version is found and fallback is allowed, return the latest active (GA) version
+        if (!noFallback)
+        {
+            return GetLatestVersionBySupportPhase(index, component, [SupportPhase.Active]);
+        }
+
+        // If noFallback is set, return null to indicate no preview is available
+        return null;
     }
 
     /// <summary>

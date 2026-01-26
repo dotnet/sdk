@@ -21,6 +21,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly string? _manifestPath = result.GetValue(SdkInstallCommandParser.ManifestPathOption);
     private readonly bool _interactive = result.GetValue(SdkInstallCommandParser.InteractiveOption);
     private readonly bool _noProgress = result.GetValue(SdkInstallCommandParser.NoProgressOption);
+    private readonly bool _noFallback = result.GetValue(SdkInstallCommandParser.NoFallbackOption);
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
@@ -218,10 +219,21 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             InstallComponent.SDK,
             new InstallRequestOptions
             {
-                ManifestPath = _manifestPath
+                ManifestPath = _manifestPath,
+                NoFallback = _noFallback
             });
 
         var resolvedVersion = _channelVersionResolver.Resolve(installRequest);
+
+        if (resolvedVersion == null)
+        {
+            SpectreAnsiConsole.MarkupLine($"[red]Error: No version available for channel '{resolvedChannel}'.[/]");
+            if (_noFallback && resolvedChannel.Equals("preview", StringComparison.OrdinalIgnoreCase))
+            {
+                SpectreAnsiConsole.MarkupLine($"[red]No preview releases are currently available. Use --channel latest to install the latest GA version, or remove --no-fallback to allow automatic fallback.[/]");
+            }
+            return 1;
+        }
 
         if (resolvedSetDefaultInstall == true && currentDotnetInstallRoot?.InstallType == InstallType.Admin)
         {
@@ -272,8 +284,21 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 InstallComponent.SDK,
                 new InstallRequestOptions
                 {
-                    ManifestPath = _manifestPath
+                    ManifestPath = _manifestPath,
+                    NoFallback = _noFallback
                 });
+
+            // Resolve the version first to provide better error messaging
+            var additionalResolvedVersion = _channelVersionResolver.Resolve(additionalRequest);
+            if (additionalResolvedVersion == null)
+            {
+                SpectreAnsiConsole.MarkupLine($"[red]Error: No version available for channel '{additionalVersion}'.[/]");
+                if (_noFallback && additionalVersion.Equals("preview", StringComparison.OrdinalIgnoreCase))
+                {
+                    SpectreAnsiConsole.MarkupLine($"[red]No preview releases are currently available. Use --channel latest to install the latest GA version, or remove --no-fallback to allow automatic fallback.[/]");
+                }
+                continue; // Skip this version and try the next one
+            }
 
             // Install the additional version with the same progress settings as the main installation
             DotnetInstall? additionalInstall = InstallerOrchestratorSingleton.Instance.Install(additionalRequest);
