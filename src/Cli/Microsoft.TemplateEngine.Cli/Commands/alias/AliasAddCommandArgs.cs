@@ -3,12 +3,6 @@
 
 using System.CommandLine;
 
-namespace Microsoft.TemplateEngine.Cli.Commands
-{
-    internal class AliasAddCommandArgs : GlobalArgs
-    {
-        public AliasAddCommandArgs(BaseAliasAddCommand command, ParseResult parseResult) : base(command, parseResult)
-        {
-        }
-    }
-}
+namespace Microsoft.TemplateEngine.Cli.Commands;
+
+internal sealed class AliasAddCommandArgs(ParseResult parseResult) : GlobalArgs(parseResult);

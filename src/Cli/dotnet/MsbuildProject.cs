@@ -34,7 +34,7 @@ internal class MsbuildProject
     {
         _projects = projects;
         ProjectRootElement = project;
-        ProjectDirectory = PathUtility.EnsureTrailingSlash(ProjectRootElement.DirectoryPath);
+        ProjectDirectory = PathUtilities.EnsureTrailingSlash(ProjectRootElement.DirectoryPath);
         _interactive = interactive;
     }
 

@@ -139,7 +139,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
 
                 //  Check to see if workload set is from a different feature band
-                var workloadSetFeatureBand = WorkloadSetVersion.GetFeatureBand(workloadSetVersion);
+                var workloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(workloadSetVersion);
                 if (!workloadSetFeatureBand.Equals(_sdkVersionBand))
                 {
                     var featureBandWorkloadSets = GetAvailableWorkloadSets(workloadSetFeatureBand);

@@ -16,7 +16,7 @@ Usage:
   dotnet list [<PROJECT>] reference [options]
 
 Arguments:
-  <PROJECT>    The project file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT>    The project file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
   -?, -h, --help    Show command line help.";
@@ -28,7 +28,7 @@ Usage:
   dotnet list [<PROJECT | SOLUTION>] [command] [options]
 
 Arguments:
-  <PROJECT | SOLUTION>    The project or solution file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | SOLUTION>    The project or solution file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
   -?, -h, --help    Show command line help.

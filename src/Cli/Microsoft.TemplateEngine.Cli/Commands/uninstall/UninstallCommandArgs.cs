@@ -5,11 +5,14 @@ using System.CommandLine;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class UninstallCommandArgs : GlobalArgs
+    internal sealed class UninstallCommandArgs : GlobalArgs
     {
-        public UninstallCommandArgs(BaseUninstallCommand uninstallCommand, ParseResult parseResult) : base(uninstallCommand, parseResult)
+        public IReadOnlyList<string> TemplatePackages { get; }
+
+        public UninstallCommandArgs(BaseUninstallCommand uninstallCommand, ParseResult parseResult)
+            : base(parseResult)
         {
-            TemplatePackages = parseResult.GetValue(CommandDefinition.Uninstall.NameArgument) ?? Array.Empty<string>();
+            TemplatePackages = parseResult.GetValue(uninstallCommand.Definition.NameArgument) ?? [];
 
             //workaround for --install source1 --install source2 case
             if (uninstallCommand is LegacyUninstallCommand && (TemplatePackages.Contains(uninstallCommand.Name) || uninstallCommand.Aliases.Any(alias => TemplatePackages.Contains(alias))))
@@ -17,7 +20,5 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 TemplatePackages = TemplatePackages.Where(package => uninstallCommand.Name != package && !uninstallCommand.Aliases.Contains(package)).ToList();
             }
         }
-
-        public IReadOnlyList<string> TemplatePackages { get; }
     }
 }

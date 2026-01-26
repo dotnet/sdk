@@ -2,26 +2,27 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
 
 internal static class CleanCommandParser
 {
-    private static readonly Command Command = SetAction(CleanCommandDefinition.Create());
+    private static readonly CleanCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetAction(Command command)
+    private static CleanCommandDefinition CreateCommand()
     {
+        var command = new CleanCommandDefinition();
         command.SetAction(CleanCommand.Run);
-
-        command.Subcommands.Single(c => c.Name == CleanFileBasedAppArtifactsCommandDefinition.Name)
-            .SetAction(parseResult => new CleanFileBasedAppArtifactsCommand(parseResult).Execute());
-
+        command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
+        command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
+        command.FileBasedAppsCommand.SetAction(parseResult => new CleanFileBasedAppArtifactsCommand(parseResult).Execute());
         return command;
     }
 }
