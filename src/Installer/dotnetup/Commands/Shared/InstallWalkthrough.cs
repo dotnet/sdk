@@ -16,12 +16,17 @@ internal class InstallWalkthrough
 {
     private readonly IDotnetInstallManager _dotnetInstaller;
     private readonly ChannelVersionResolver _channelVersionResolver;
+    private readonly InstallWorkflow.InstallWorkflowOptions _options;
     private InstallRootManager? _installRootManager;
 
-    public InstallWalkthrough(IDotnetInstallManager dotnetInstaller, ChannelVersionResolver channelVersionResolver)
+    public InstallWalkthrough(
+        IDotnetInstallManager dotnetInstaller,
+        ChannelVersionResolver channelVersionResolver,
+        InstallWorkflow.InstallWorkflowOptions options)
     {
         _dotnetInstaller = dotnetInstaller;
         _channelVersionResolver = channelVersionResolver;
+        _options = options;
     }
 
     private InstallRootManager InstallRootManager => _installRootManager ??= new InstallRootManager(_dotnetInstaller);
@@ -33,29 +38,25 @@ internal class InstallWalkthrough
     /// <param name="resolvedVersion">The version being installed.</param>
     /// <param name="setDefaultInstall">Whether the install will be set as default.</param>
     /// <param name="currentInstallRoot">Current installation configuration.</param>
-    /// <param name="interactive">Whether in interactive mode.</param>
-    /// <param name="componentDescription">Description of the component (e.g., ".NET SDK").</param>
     /// <returns>List of additional versions to install, empty if none.</returns>
     public List<string> GetAdditionalAdminVersionsToMigrate(
         ReleaseVersion? resolvedVersion,
         bool setDefaultInstall,
-        DotnetInstallRootConfiguration? currentInstallRoot,
-        bool interactive,
-        string componentDescription)
+        DotnetInstallRootConfiguration? currentInstallRoot)
     {
         var additionalVersions = new List<string>();
 
         if (setDefaultInstall && currentInstallRoot?.InstallType == InstallType.Admin)
         {
-            if (interactive)
+            if (_options.Interactive)
             {
                 var latestAdminVersion = _dotnetInstaller.GetLatestInstalledAdminVersion();
                 if (latestAdminVersion is not null && resolvedVersion < new ReleaseVersion(latestAdminVersion))
                 {
-                    SpectreAnsiConsole.WriteLine($"Since the admin installs of the {componentDescription} will no longer be accessible, we recommend installing the latest admin installed " +
-                        $"version ({latestAdminVersion}) to the new user install location. This will make sure this version of the {componentDescription} continues to be used for projects that don't specify a .NET SDK version in global.json.");
+                    SpectreAnsiConsole.WriteLine($"Since the admin installs of the {_options.ComponentDescription} will no longer be accessible, we recommend installing the latest admin installed " +
+                        $"version ({latestAdminVersion}) to the new user install location. This will make sure this version of the {_options.ComponentDescription} continues to be used for projects that don't specify a .NET SDK version in global.json.");
 
-                    if (SpectreAnsiConsole.Confirm($"Also install {componentDescription} {latestAdminVersion}?",
+                    if (SpectreAnsiConsole.Confirm($"Also install {_options.ComponentDescription} {latestAdminVersion}?",
                         defaultValue: true))
                     {
                         additionalVersions.Add(latestAdminVersion);
@@ -71,43 +72,35 @@ internal class InstallWalkthrough
     /// <summary>
     /// Resolves the channel or version to install, considering global.json and user input.
     /// </summary>
-    /// <param name="explicitVersionOrChannel">The version/channel explicitly provided by the user.</param>
     /// <param name="channelFromGlobalJson">The channel resolved from global.json, if any.</param>
     /// <param name="globalJsonPath">Path to the global.json file, for display purposes.</param>
-    /// <param name="interactive">Whether to prompt the user for input.</param>
-    /// <param name="componentDescription">Description of the component (e.g., ".NET SDK", ".NET Runtime").</param>
-    /// <param name="component">The component being installed (SDK or runtime type).</param>
     /// <param name="defaultChannel">The default channel to use if none specified (typically "latest").</param>
     /// <returns>The resolved channel or version string.</returns>
     public string ResolveChannel(
-        string? explicitVersionOrChannel,
         string? channelFromGlobalJson,
         string? globalJsonPath,
-        bool interactive,
-        string componentDescription,
-        InstallComponent component,
         string defaultChannel = "latest")
     {
         if (channelFromGlobalJson is not null)
         {
-            SpectreAnsiConsole.WriteLine($"{componentDescription} {channelFromGlobalJson} will be installed since {globalJsonPath} specifies that version.");
+            SpectreAnsiConsole.WriteLine($"{_options.ComponentDescription} {channelFromGlobalJson} will be installed since {globalJsonPath} specifies that version.");
             return channelFromGlobalJson;
         }
 
-        if (explicitVersionOrChannel is not null)
+        if (_options.VersionOrChannel is not null)
         {
-            return explicitVersionOrChannel;
+            return _options.VersionOrChannel;
         }
 
-        if (interactive)
+        if (_options.Interactive)
         {
             // Feature bands (like 9.0.1xx) are SDK-specific, don't show them for runtimes
-            bool includeFeatureBands = component == InstallComponent.SDK;
+            bool includeFeatureBands = _options.Component == InstallComponent.SDK;
             SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', _channelVersionResolver.GetSupportedChannels(includeFeatureBands)));
             SpectreAnsiConsole.WriteLine("You can also specify a specific version (for example 9.0.304).");
 
             return SpectreAnsiConsole.Prompt(
-                new TextPrompt<string>($"Which channel of the {componentDescription} do you want to install?")
+                new TextPrompt<string>($"Which channel of the {_options.ComponentDescription} do you want to install?")
                     .DefaultValue(defaultChannel));
         }
 
@@ -118,24 +111,17 @@ internal class InstallWalkthrough
     /// Determines whether global.json should be updated based on channel mismatch.
     /// </summary>
     /// <param name="channelFromGlobalJson">The channel from global.json.</param>
-    /// <param name="explicitVersionOrChannel">The explicitly specified channel.</param>
-    /// <param name="explicitUpdateGlobalJson">The explicitly specified update-global-json option.</param>
-    /// <param name="interactive">Whether to prompt the user.</param>
     /// <returns>True if global.json should be updated, false otherwise, or null if not determined.</returns>
-    public bool? ResolveUpdateGlobalJson(
-        string? channelFromGlobalJson,
-        string? explicitVersionOrChannel,
-        bool? explicitUpdateGlobalJson,
-        bool interactive)
+    public bool? ResolveUpdateGlobalJson(string? channelFromGlobalJson)
     {
-        if (channelFromGlobalJson is not null && explicitVersionOrChannel is not null &&
+        if (channelFromGlobalJson is not null && _options.VersionOrChannel is not null &&
             //  TODO: Should channel comparison be case-sensitive?
-            !channelFromGlobalJson.Equals(explicitVersionOrChannel, StringComparison.OrdinalIgnoreCase))
+            !channelFromGlobalJson.Equals(_options.VersionOrChannel, StringComparison.OrdinalIgnoreCase))
         {
-            if (interactive && explicitUpdateGlobalJson == null)
+            if (_options.Interactive && _options.UpdateGlobalJson == null)
             {
                 return SpectreAnsiConsole.Confirm(
-                    $"The channel specified in global.json ({channelFromGlobalJson}) does not match the channel specified ({explicitVersionOrChannel}). Do you want to update global.json to match the specified channel?",
+                    $"The channel specified in global.json ({channelFromGlobalJson}) does not match the channel specified ({_options.VersionOrChannel}). Do you want to update global.json to match the specified channel?",
                     defaultValue: true);
             }
         }
@@ -146,25 +132,21 @@ internal class InstallWalkthrough
     /// <summary>
     /// Resolves whether the installation should be set as the default .NET install.
     /// </summary>
-    /// <param name="explicitSetDefaultInstall">The explicitly specified set-default-install option.</param>
     /// <param name="currentDotnetInstallRoot">The current .NET installation configuration.</param>
     /// <param name="resolvedInstallPath">The resolved installation path.</param>
     /// <param name="installPathFromGlobalJson">Whether the install path came from global.json.</param>
-    /// <param name="interactive">Whether to prompt the user.</param>
     /// <returns>True if the installation should be set as default, false otherwise.</returns>
     public bool ResolveSetDefaultInstall(
-        bool? explicitSetDefaultInstall,
         DotnetInstallRootConfiguration? currentDotnetInstallRoot,
         string resolvedInstallPath,
-        string? installPathFromGlobalJson,
-        bool interactive)
+        string? installPathFromGlobalJson)
     {
-        bool? resolvedSetDefaultInstall = explicitSetDefaultInstall;
+        bool? resolvedSetDefaultInstall = _options.SetDefaultInstall;
 
         if (resolvedSetDefaultInstall == null)
         {
             //  If global.json specified an install path, we don't prompt for setting the default install path (since you probably don't want to do that for a repo-local path)
-            if (interactive && installPathFromGlobalJson == null)
+            if (_options.Interactive && installPathFromGlobalJson == null)
             {
                 if (currentDotnetInstallRoot == null)
                 {

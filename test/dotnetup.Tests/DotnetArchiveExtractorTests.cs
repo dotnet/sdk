@@ -38,7 +38,7 @@ public class DotnetArchiveExtractorTests
             installRoot,
             new UpdateChannel("99.99"),
             InstallComponent.Runtime,
-            new DotnetInstallOptions());
+            new InstallRequestOptions());
 
         var releaseManifest = new ReleaseManifest();
         var progressTarget = new NullProgressTarget();
@@ -88,12 +88,10 @@ public class DotnetArchiveExtractorTests
             installRoot,
             new UpdateChannel("9.0"),
             InstallComponent.Runtime,
-            new DotnetInstallOptions());
+            new InstallRequestOptions());
 
         var releaseManifest = new ReleaseManifest();
         var progressTarget = new NullProgressTarget();
-
-        string? scratchDir = null;
 
         {
             using var extractor = new DotnetArchiveExtractor(request, version, releaseManifest, progressTarget);
