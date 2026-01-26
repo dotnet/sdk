@@ -19,17 +19,40 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
     private readonly IProgressTarget _progressTarget;
+    private readonly IArchiveDownloader _archiveDownloader;
+    private readonly bool _shouldDisposeDownloader;
     private string scratchDownloadDirectory;
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
 
-    public DotnetArchiveExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, IProgressTarget progressTarget)
+    public DotnetArchiveExtractor(
+        DotnetInstallRequest request,
+        ReleaseVersion resolvedVersion,
+        ReleaseManifest releaseManifest,
+        IProgressTarget progressTarget,
+        IArchiveDownloader? archiveDownloader = null)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
         _progressTarget = progressTarget;
         scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
+
+        if (archiveDownloader != null)
+        {
+            _archiveDownloader = archiveDownloader;
+            _shouldDisposeDownloader = false;
+        }
+        else
+        {
+            _archiveDownloader = new DotnetArchiveDownloader(releaseManifest);
+            _shouldDisposeDownloader = true;
+        }
     }
+
+    /// <summary>
+    /// Gets the scratch download directory path. Exposed for testing.
+    /// </summary>
+    internal string ScratchDownloadDirectory => scratchDownloadDirectory;
 
     /// <summary>
     /// Gets or creates the shared progress reporter for both Prepare and Commit phases.
@@ -41,7 +64,6 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
 
-        using var archiveDownloader = new DotnetArchiveDownloader();
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
@@ -51,7 +73,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
         try
         {
-            archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
+            _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
         }
         catch (Exception ex)
         {
@@ -345,6 +367,18 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             // Dispose the progress reporter to finalize progress display
             _progressReporter?.Dispose();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            // Dispose the archive downloader if we created it
+            if (_shouldDisposeDownloader)
+            {
+                _archiveDownloader.Dispose();
+            }
         }
         catch
         {
