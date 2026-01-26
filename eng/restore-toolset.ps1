@@ -15,6 +15,10 @@ function InitializeCustomSDKToolset {
   }
 
   $cli = InitializeDotnetCli -install:$true
+  
+  # Build dotnetup if not already present (needs SDK to be installed first)
+  EnsureDotnetupBuilt
+  
   InstallDotNetSharedFramework "6.0.0"
   InstallDotNetSharedFramework "7.0.0"
   InstallDotNetSharedFramework "8.0.0"
@@ -23,6 +27,29 @@ function InitializeCustomSDKToolset {
   CreateBuildEnvScripts
   CreateVSShortcut
   InstallNuget
+}
+
+function EnsureDotnetupBuilt {
+  $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
+  
+  if (!(Test-Path $dotnetupExe)) {
+    Write-Host "Building dotnetup..."
+    $dotnetupProject = Join-Path $RepoRoot "src\Installer\dotnetup\dotnetup.csproj"
+    $dotnetupOutDir = Join-Path $PSScriptRoot "dotnetup"
+    
+    & $env:DOTNET_INSTALL_DIR\dotnet publish $dotnetupProject -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o $dotnetupOutDir
+    
+    if ($lastExitCode -ne 0) {
+      Write-Host "Warning: Failed to build dotnetup, will fall back to dotnet-install script"
+      return
+    }
+    
+    # Clean up satellite assemblies and PDB to keep only the essential executable
+    Get-ChildItem $dotnetupOutDir -Directory | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item (Join-Path $dotnetupOutDir "dotnetup.pdb") -Force -ErrorAction SilentlyContinue
+    
+    Write-Host "dotnetup built successfully"
+  }
 }
 
 function InstallNuGet {
@@ -123,11 +150,23 @@ function InstallDotNetSharedFramework([string]$version) {
   $fxDir = Join-Path $dotnetRoot "shared\Microsoft.NETCore.App\$version"
 
   if (!(Test-Path $fxDir)) {
-    $installScript = GetDotNetInstallScript $dotnetRoot
-    & $installScript -Version $version -InstallDir $dotnetRoot -Runtime "dotnet" -SkipNonVersionedFiles
+    $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
+    
+    if (Test-Path $dotnetupExe) {
+      # Use dotnetup to install the runtime
+      & $dotnetupExe runtime install core $version --install-path $dotnetRoot --no-progress --set-default-install false
+      
+      if($lastExitCode -ne 0) {
+        throw "Failed to install shared Framework $version to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
+      }
+    } else {
+      # Fallback to dotnet-install script if dotnetup is not available
+      $installScript = GetDotNetInstallScript $dotnetRoot
+      & $installScript -Version $version -InstallDir $dotnetRoot -Runtime "dotnet" -SkipNonVersionedFiles
 
-    if($lastExitCode -ne 0) {
-      throw "Failed to install shared Framework $version to '$dotnetRoot' (exit code '$lastExitCode')."
+      if($lastExitCode -ne 0) {
+        throw "Failed to install shared Framework $version to '$dotnetRoot' (exit code '$lastExitCode')."
+      }
     }
   }
 }
