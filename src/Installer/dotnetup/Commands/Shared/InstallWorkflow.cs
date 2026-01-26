@@ -26,6 +26,10 @@ internal class InstallWorkflow
     /// <summary>
     /// Options for the install workflow.
     /// </summary>
+    /// <remarks>
+    /// TODO: Consider refactoring to use a builder pattern to reduce the number of constructor parameters.
+    /// This would make the API more flexible and easier to extend with new options.
+    /// </remarks>
     public record InstallWorkflowOptions(
         string? VersionOrChannel,
         string? InstallPath,

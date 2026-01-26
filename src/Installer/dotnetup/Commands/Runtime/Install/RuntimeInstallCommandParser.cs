@@ -27,25 +27,9 @@ internal static class RuntimeInstallCommandParser
         Arity = ArgumentArity.ZeroOrOne,
     };
 
-    public static readonly Option<string> InstallPathOption = new("--install-path")
-    {
-        HelpName = "INSTALL_PATH",
-        Description = "The path to install the .NET Runtime to",
-    };
-
-    public static readonly Option<bool?> SetDefaultInstallOption = new("--set-default-install")
-    {
-        Description = "Set the install path as the default dotnet install. This will update the PATH and DOTNET_ROOT environment variables.",
-        Arity = ArgumentArity.ZeroOrOne,
-        DefaultValueFactory = r => null
-    };
-
-    public static readonly Option<string> ManifestPathOption = new("--manifest-path")
-    {
-        HelpName = "MANIFEST_PATH",
-        Description = "Custom path to the manifest file for tracking .NET Runtime installations",
-    };
-
+    public static readonly Option<string> InstallPathOption = CommonOptions.InstallPathOption;
+    public static readonly Option<bool?> SetDefaultInstallOption = CommonOptions.SetDefaultInstallOption;
+    public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
     public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
 

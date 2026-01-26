@@ -12,6 +12,8 @@ using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
+using Microsoft.Dotnet.Installation;
+
 internal class DotnetArchiveExtractor : IDisposable
 {
     private readonly DotnetInstallRequest _request;
@@ -43,7 +45,7 @@ internal class DotnetArchiveExtractor : IDisposable
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
-        string componentDescription = GetComponentDescription(_request.Component);
+        string componentDescription = _request.Component.GetDescription();
         var downloadTask = ProgressReporter.AddTask($"Downloading {componentDescription} {_resolvedVersion}", 100);
         var reporter = new DownloadProgressReporter(downloadTask, $"Downloading {componentDescription} {_resolvedVersion}");
 
@@ -62,7 +64,7 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
 
-        string componentDescription = GetComponentDescription(_request.Component);
+        string componentDescription = _request.Component.GetDescription();
         var installTask = ProgressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
 
         // Extract archive directly to target directory with special handling for muxer
@@ -336,18 +338,6 @@ internal class DotnetArchiveExtractor : IDisposable
         entry.ExtractToFile(destPath, overwrite: true);
         installTask?.Value += 1;
     }
-
-    /// <summary>
-    /// Gets a user-friendly description for the install component type.
-    /// </summary>
-    private static string GetComponentDescription(InstallComponent component) => component switch
-    {
-        InstallComponent.SDK => ".NET SDK",
-        InstallComponent.Runtime => ".NET Runtime",
-        InstallComponent.ASPNETCore => "ASP.NET Core Runtime",
-        InstallComponent.WindowsDesktop => "Windows Desktop Runtime",
-        _ => ".NET"
-    };
 
     public void Dispose()
     {
