@@ -10,8 +10,14 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public sealed class GenerateShims : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class GenerateShims : TaskBase, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment? TaskEnvironment { get; set; }
+
         /// <summary>
         /// Relative paths for Apphost for different ShimRuntimeIdentifiers with RuntimeIdentifier as meta data
         /// </summary>
@@ -83,10 +89,13 @@ namespace Microsoft.NET.Build.Tasks
                 var packagedShimOutputDirectoryAndRid = Path.Combine(
                         PackagedShimOutputDirectory,
                         runtimeIdentifier);
+                packagedShimOutputDirectoryAndRid = TaskEnvironment?.GetAbsolutePath(packagedShimOutputDirectoryAndRid) ?? packagedShimOutputDirectoryAndRid;
 
                 var appHostDestinationFilePath = Path.Combine(
                         packagedShimOutputDirectoryAndRid,
                         ToolCommandName + ExecutableExtension.ForRuntimeIdentifier(runtimeIdentifier));
+                appHostDestinationFilePath = TaskEnvironment?.GetAbsolutePath(appHostDestinationFilePath) ?? appHostDestinationFilePath;
+
 
                 Directory.CreateDirectory(packagedShimOutputDirectoryAndRid);
 
@@ -105,6 +114,7 @@ namespace Microsoft.NET.Build.Tasks
                         NuGetUtils.ParseFrameworkName(TargetFrameworkMoniker).GetShortFolderName(),
                         "any",
                         ToolEntryPoint});
+                appBinaryFilePath = TaskEnvironment?.GetAbsolutePath(appBinaryFilePath) ?? appBinaryFilePath;
 
                 try
                 {

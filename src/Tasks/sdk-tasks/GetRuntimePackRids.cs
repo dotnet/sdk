@@ -7,8 +7,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
-    public class GetRuntimePackRids : Task
+    [MSBuildMultiThreadableTask]
+    public class GetRuntimePackRids : Task, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment? TaskEnvironment { get; set; }
+
         [Required]
         public string MetapackagePath { get; set; }
 
@@ -17,8 +23,14 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public override bool Execute()
         {
-            string runtimeJsonPath = Path.Combine(MetapackagePath, "runtime.json");
-            string runtimeJsonContents = File.ReadAllText(runtimeJsonPath);
+            string absoluteMetapackagePath = TaskEnvironment?.GetAbsolutePath(MetapackagePath) ?? MetapackagePath;
+            string runtimeJsonPath = Path.Combine(absoluteMetapackagePath, "runtime.json");
+            string runtimeJsonContents;
+            using (var stream = new FileStream(runtimeJsonPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var reader = new StreamReader(stream))
+            {
+                runtimeJsonContents = reader.ReadToEnd();
+            }
             var runtimeJsonRoot = JObject.Parse(runtimeJsonContents);
             string [] runtimeIdentifiers = ((JObject)runtimeJsonRoot["runtimes"]).Properties().Select(p => p.Name).ToArray();
             AvailableRuntimePackRuntimeIdentifiers = runtimeIdentifiers.Select(rid => new TaskItem(rid)).ToArray();

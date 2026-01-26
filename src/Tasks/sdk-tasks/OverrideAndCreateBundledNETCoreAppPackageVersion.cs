@@ -19,8 +19,14 @@ namespace Microsoft.DotNet.Build.Tasks
     /// the version of .NET hasn't been released yet, so we want to use the later preview version.  The preview
     /// versions should all be on the same NuGet feeds anyway.
     /// </summary>
-    public sealed class OverrideAndCreateBundledNETCoreAppPackageVersion : Task
+    [MSBuildMultiThreadableTask]
+    public sealed class OverrideAndCreateBundledNETCoreAppPackageVersion : Task, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment? TaskEnvironment { get; set; }
+
         [Required] public string Stage0BundledVersionsPath { get; set; }
         [Required] public string Stage2BundledVersionsPath { get; set; }
 
@@ -28,8 +34,19 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             try
             {
-                var stage0Doc = XDocument.Load(Stage0BundledVersionsPath);
-                var stage2Doc = XDocument.Load(Stage2BundledVersionsPath);
+                string stage0Path = TaskEnvironment?.GetAbsolutePath(Stage0BundledVersionsPath) ?? Stage0BundledVersionsPath;
+                string stage2Path = TaskEnvironment?.GetAbsolutePath(Stage2BundledVersionsPath) ?? Stage2BundledVersionsPath;
+
+                XDocument stage0Doc;
+                using (var stream = new FileStream(stage0Path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    stage0Doc = XDocument.Load(stream);
+                }
+                XDocument stage2Doc;
+                using (var stream = new FileStream(stage2Path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    stage2Doc = XDocument.Load(stream);
+                }
                 var ns = stage2Doc.Root.Name.Namespace;
 
                 // Load all items from all ItemGroups
@@ -115,7 +132,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 UpdateItems("KnownRuntimePack", new[] { "Include", "TargetFramework", "RuntimePackLabels" }, new[] { "LatestRuntimeFrameworkVersion" });
                 UpdateItems("KnownILLinkPack", new[] { "Include", "TargetFramework" }, new[] { "ILLinkPackVersion" });
 
-                stage2Doc.Save(Stage2BundledVersionsPath);
+                stage2Doc.Save(stage2Path);
                 return !Log.HasLoggedErrors;
             }
             catch (Exception ex)
