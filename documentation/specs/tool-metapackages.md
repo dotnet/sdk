@@ -14,6 +14,25 @@ Users often need to install multiple related .NET tools together. Today, each to
 - Makes common scenarios (like installing all diagnostic tools) unnecessarily complex
 - Is particularly painful in Dockerfiles where tools like dotnet-dump, dotnet-trace, dotnet-counters, etc. are installed one at a time
 
+### Last Known Good (LKG) Design Philosophy
+
+This design uses a "Last Known Good" approach where metapackages specify exact versions of tools that have been tested to work well together. This provides:
+
+**Safety and Predictability:**
+- Users get a tested, stable set of tools guaranteed to work together
+- No surprises from automatic version resolution or updates
+- Reproducible installations across different environments
+
+**Quality Control:**
+- Individual tools can evolve independently with varying quality/testing levels
+- Metapackage authors explicitly choose which versions are "production ready"
+- Pre-release or experimental tool versions won't automatically be included
+
+**Uniform Experience:**
+- Tools with shared formats (e.g., diagnostic tools sharing trace formats) are guaranteed to be compatible
+- Version mismatches between related tools are prevented
+- Users get a cohesive toolset with consistent behavior
+
 ## Use Cases
 
 This feature targets three primary scenarios:
@@ -64,7 +83,7 @@ The existing `DotNetCliTool` XML schema will be extended to support metapackages
 </DotNetCliTool>
 ```
 
-**New Metapackage Schema:**
+**New Metapackage Schema (Last Known Good):**
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <DotNetCliTool Version="3" IsMetapackage="true">
@@ -72,12 +91,12 @@ The existing `DotNetCliTool` XML schema will be extended to support metapackages
     <!-- Empty for metapackages - no direct commands -->
   </Commands>
   <MetapackageTools>
-    <Tool Id="dotnet-dump" VersionRange="8.0.*" />
-    <Tool Id="dotnet-trace" VersionRange="8.0.*" />
-    <Tool Id="dotnet-counters" VersionRange="8.0.*" />
-    <Tool Id="dotnet-gcdump" VersionRange="8.0.*" />
-    <Tool Id="dotnet-stack" VersionRange="8.0.*" />
-    <Tool Id="dotnet-sos" VersionRange="8.0.*" />
+    <Tool Id="dotnet-dump" Version="8.0.553" />
+    <Tool Id="dotnet-trace" Version="8.0.553" />
+    <Tool Id="dotnet-counters" Version="8.0.553" />
+    <Tool Id="dotnet-gcdump" Version="8.0.553" />
+    <Tool Id="dotnet-stack" Version="8.0.553" />
+    <Tool Id="dotnet-sos" Version="8.0.553" />
   </MetapackageTools>
 </DotNetCliTool>
 ```
@@ -86,8 +105,15 @@ The existing `DotNetCliTool` XML schema will be extended to support metapackages
 - `Version="3"` - New version for metapackage support
 - `IsMetapackage="true"` - Attribute to identify metapackages
 - `<MetapackageTools>` - New element containing tool references
-- `<Tool>` - Each tool reference with `Id` and `VersionRange` attributes
+- `<Tool>` - Each tool reference with `Id` and exact `Version` attributes (Last Known Good)
 - `Commands` element is empty for metapackages (no direct executable)
+
+**Last Known Good (LKG) Design:**
+Metapackages use exact versions (not version ranges) to specify the "last known good" set of tools that have been tested to work well together. This approach:
+- Ensures predictable, tested tool combinations
+- Allows individual tools to evolve independently with different quality/testing levels
+- Guarantees tools with shared formats are updated together for a uniform experience
+- Provides a safer default than open-ended version ranges
 
 ### NuGet Package Structure
 
@@ -128,7 +154,7 @@ public class DotNetCliToolMetapackageTool
     public string? Id { get; set; }
 
     [XmlAttribute]
-    public string? VersionRange { get; set; }
+    public string? Version { get; set; }
 }
 ```
 
@@ -174,7 +200,7 @@ public class ToolConfiguration
 public class MetapackageToolReference
 {
     public string Id { get; set; }
-    public VersionRange VersionRange { get; set; }
+    public NuGetVersion Version { get; set; }
 }
 ```
 
@@ -213,8 +239,8 @@ private int InstallMetapackage(IToolPackage metapackage)
     {
         try
         {
-            // Recursive call to install individual tool
-            var tool = InstallToolFromMetapackage(toolRef.Id, toolRef.VersionRange);
+            // Install the exact LKG version specified in the metapackage
+            var tool = InstallToolFromMetapackage(toolRef.Id, toolRef.Version);
             installedTools.Add(new InstalledToolInfo(
                 tool.Command.Name, 
                 tool.Id, 
@@ -335,9 +361,9 @@ if (dotNetCliTool.IsMetapackage &&
 
 **Rationale:**
 1. Local tool manifests track specific tool versions for reproducible builds
-2. Metapackages with version ranges would complicate version resolution
+2. Metapackages reference other packages, adding indirection to the manifest
 3. The primary use case (e.g., installing diagnostic tools in containers) is global installation
-4. Users who need specific versions should install individual tools locally
+4. Users who need specific versions should install individual tools locally with exact versions
 
 **Implementation:**
 - When installing with `--local` or when a tool manifest exists: Reject metapackages
@@ -419,9 +445,10 @@ Add support in `Microsoft.NET.PackTool.targets` for creating metapackages:
 </PropertyGroup>
 
 <ItemGroup>
-  <!-- Define tools to include in metapackage -->
-  <MetapackageTool Include="dotnet-dump" VersionRange="8.0.*" />
-  <MetapackageTool Include="dotnet-trace" VersionRange="8.0.*" />
+  <!-- Define LKG tools to include in metapackage with exact versions -->
+  <MetapackageTool Include="dotnet-dump" Version="8.0.553" />
+  <MetapackageTool Include="dotnet-trace" Version="8.0.553" />
+  <MetapackageTool Include="dotnet-counters" Version="8.0.553" />
   <!-- etc -->
 </ItemGroup>
 ```
@@ -487,10 +514,21 @@ Allow metapackages to specify different tools for different platforms.
 Allow metapackages in local tool manifests.
 
 **Rejected because:**
-- Conflicts with reproducible build goals (version ranges in manifest)
-- Complex version resolution across multiple tools
+- Conflicts with reproducible build goals (exact versions needed in manifest)
+- Metapackages add indirection that complicates manifest management
 - Primary use case doesn't require local installation
 - Can be added later if real need emerges
+
+### Alternative 4: Use Version Ranges Instead of Exact Versions
+Allow metapackages to specify version ranges (e.g., "8.0.*") instead of exact versions.
+
+**Rejected because:**
+- Less safe - unpredictable which versions get installed
+- Tools can race ahead with lower quality/testing, breaking the metapackage experience
+- Tools with shared formats might become incompatible
+- Harder to ensure uniform experience across all included tools
+- LKG approach is more conservative and appropriate for the initial design
+- Can be added as future enhancement if user demand emerges
 
 ## Backward Compatibility
 
@@ -503,11 +541,12 @@ Allow metapackages in local tool manifests.
 
 ### Potential additions for future versions:
 
-1. **Metapackage updates**: `dotnet tool update -g <metapackage>` updates all contained tools
+1. **Metapackage updates**: `dotnet tool update -g <metapackage>` updates all contained tools to new LKG versions
 2. **Metapackage uninstall**: `dotnet tool uninstall -g <metapackage>` uninstalls all contained tools
 3. **Selective installation**: `dotnet tool install -g dotnet-diagnostics --include dotnet-dump,dotnet-trace`
 4. **Tool groups in manifest**: Allow grouping related tools in local manifests
 5. **Metapackage search**: Enhanced `dotnet tool search` to show metapackage contents
+6. **Version ranges**: Support `VersionRange` attribute based on user demand, allowing flexibility when LKG precision isn't needed
 
 ## Open Questions
 
@@ -518,6 +557,9 @@ None. All design decisions have been made per the problem statement requirements
 This design enables installing multiple related .NET tools with a single command, reducing cognitive load and simplifying common scenarios like container setup. The implementation:
 
 - Extends the DotnetToolSettings.xml schema to Version 3 with metapackage support
+- Uses Last Known Good (LKG) design with exact versions for safety and predictability
+- Allows individual tools to evolve independently while metapackages provide stable combinations
+- Ensures tools with shared formats are compatible through explicit version selection
 - Prohibits combining metapackages with RID-specific packaging
 - Restricts metapackages to global installation only
 - Shows PATH configuration help only once per installation session
