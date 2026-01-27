@@ -9,7 +9,7 @@
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     
     <!-- Single file settings -->
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- IncludeAllContentForSelfExtract embeds satellite assemblies in the single-file bundle -->
     <DebugType>embedded</DebugType>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
 
