@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project>
     <!-- .NET Core App -->
     <!-- Conditional inclusion ensures customers using new SDKs with older VS versions do not see unsupported target frameworks.
-         For example, net10.0 is not supported in VS 17.14 and should only appear when using VS 18.0.0 or higher. -->
+         For example, net10.0 is not supported in VS 17.14 and should only appear when using MSBuild 18.0.0 or higher (VS 18.0.0+). -->
     <ItemGroup>
         <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v1.0" DisplayName=".NET Core 1.0" Alias="netcoreapp1.0" />
         <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v1.1" DisplayName=".NET Core 1.1" Alias="netcoreapp1.1" />
