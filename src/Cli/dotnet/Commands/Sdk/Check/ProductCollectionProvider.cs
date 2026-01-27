@@ -5,18 +5,48 @@
 
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
 public class ProductCollectionProvider : IProductCollectionProvider
 {
+    private const string ReleasesCacheFolderName = "releases";
+
+    private static string GetReleasesIndexCachePath()
+    {
+        return Path.Combine(
+            CliFolderPathCalculator.DotnetUserProfileFolderPath,
+            ReleasesCacheFolderName,
+            "releases-index.json");
+    }
+
+    private static string GetProductReleasesCachePath(string productVersion)
+    {
+        return Path.Combine(
+            CliFolderPathCalculator.DotnetUserProfileFolderPath,
+            ReleasesCacheFolderName,
+            productVersion,
+            "releases.json");
+    }
+
     public ProductCollection GetProductCollection(Uri uri = null, string filePath = null)
     {
         try
         {
-            return uri != null ? Task.Run(() => ProductCollection.GetAsync(uri.ToString())).Result :
-                filePath != null ? Task.Run(() => ProductCollection.GetFromFileAsync(filePath, false)).Result :
-                Task.Run(() => ProductCollection.GetAsync()).Result;
+            if (uri != null)
+            {
+                return Task.Run(() => ProductCollection.GetAsync(uri.ToString())).Result;
+            }
+            
+            if (filePath != null)
+            {
+                return Task.Run(() => ProductCollection.GetFromFileAsync(filePath, false)).Result;
+            }
+
+            // Use caching with proper path under .dotnet/releases
+            string cachePath = GetReleasesIndexCachePath();
+            return Task.Run(() => ProductCollection.GetFromFileAsync(cachePath, downloadLatest: true)).Result;
         }
         catch (Exception e)
         {
@@ -28,7 +58,9 @@ public class ProductCollectionProvider : IProductCollectionProvider
     {
         try
         {
-            return product.GetReleasesAsync().Result;
+            // Use caching with proper path under .dotnet/releases/{version}
+            string cachePath = GetProductReleasesCachePath(product.ProductVersion);
+            return product.GetReleasesAsync(cachePath, downloadLatest: true).Result;
         }
         catch (Exception e)
         {
