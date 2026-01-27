@@ -114,9 +114,17 @@ internal readonly struct FilePathExclusions(
                 return Path.TrimEndingDirectorySeparator(Path.GetFullPath(fixedPart));
             }
         }
-        catch
+        catch (ArgumentException)
         {
-            // ignore invalid paths
+            // Path contains invalid characters or is invalid
+        }
+        catch (NotSupportedException)
+        {
+            // Path contains a colon in a position other than the drive letter
+        }
+        catch (PathTooLongException)
+        {
+            // Path is too long
         }
 
         return null;
