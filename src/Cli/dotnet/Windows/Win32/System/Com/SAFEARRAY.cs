@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.CompilerServices;
 using Windows.Win32.System.Variant;
 using static Windows.Win32.System.Com.ADVANCED_FEATURE_FLAGS;
 using static Windows.Win32.System.Variant.VARENUM;
@@ -54,42 +53,6 @@ internal unsafe partial struct SAFEARRAY
                 PInvoke.SafeArrayGetVartype(pThis, &vt).ThrowOnFailure();
                 return vt;
             }
-        }
-    }
-
-    /// <summary>
-    ///  Gets the value of type <typeparamref name="T"/> at the specified indices in the <see cref="SAFEARRAY"/>.
-    /// </summary>
-    /// <typeparam name="T">The type of the value to retrieve.</typeparam>
-    /// <param name="indices">A span of indices specifying the position in each dimension.</param>
-    /// <returns>The value at the specified indices.</returns>
-    public T GetValue<T>(Span<int> indices)
-    {
-        // SAFEARRAY is laid out in column-major order.
-        // See https://docs.microsoft.com/previous-versions/windows/desktop/automat/array-manipulation-functions
-        int indicesIndex = 0;
-        int c1 = indices[indicesIndex++];
-        uint dimensionSize = 1;
-
-        fixed (void* b = &rgsabound)
-        {
-            ReadOnlySpan<SAFEARRAYBOUND> bounds = new(b, cDims);
-
-            int boundIndex = cDims - 1;
-
-            uint cell = 0;
-            for (ushort dim = 1; dim < cDims; dim++)
-            {
-                dimensionSize *= bounds[boundIndex--].cElements;
-
-                int diff = (indices[indicesIndex++] - bounds[boundIndex].lLbound);
-                cell += (uint)diff * dimensionSize;
-            }
-
-            cell += (uint)(c1 - bounds[cDims - 1].lLbound);
-
-            void* v = Unsafe.Add<T>(pvData, (int)cell);
-            return Unsafe.AsRef<T>(v);
         }
     }
 }
