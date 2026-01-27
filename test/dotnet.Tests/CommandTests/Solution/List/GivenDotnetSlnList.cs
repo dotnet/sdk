@@ -348,7 +348,6 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
         public void WhenProjectsPresentInTheReadonlySolutionItListsThemInJsonFormatWhenJsonFormattingIsSpecified(string solutionCommand, string solutionExtension)
         {
             var expectedOutput = $"""["{Path.Combine("App", "App.csproj")}", "{Path.Combine("Lib", "Lib.csproj")}"]""";
-            // var expectedOutput = $"""["{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}"]""";
 
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"GivenDotnetSlnList-Readonly-{solutionCommand}{solutionExtension}")
