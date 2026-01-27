@@ -8,6 +8,7 @@ namespace Microsoft.DotNet.Watch;
 /// <summary>
 /// Watches for changes in a <see cref="WatchedDirectory"/> and its subdirectories.
 /// </summary>
+/// <param name="watchedFileNames">If non-empty, <see cref="OnFileChange"/> is only raised if the file name matches one of the given file names.</param>
 internal abstract class DirectoryWatcher(string watchedDirectory, ImmutableHashSet<string> watchedFileNames, bool includeSubdirectories) : IDisposable
 {
     public string WatchedDirectory { get; } = watchedDirectory;
