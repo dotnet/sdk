@@ -5,7 +5,7 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 
-public static class SolutionListCommandDefinition
+internal static class SolutionListCommandDefinition
 {
     public const string Name = "list";
 

@@ -409,7 +409,7 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
         [InlineData("solution")]
         public void WhenSolutionFilterOriginalPathContainsSpecialCharactersTheyAreUnescapedJsonFormatWhenJsonFormattingIsSpecified(string solutionCommand)
         {
-            var expectedOutput = $"""["{Path.Combine("App", "App.csproj")}", "{Path.Combine("Lib", "Lib.csproj")}"]""";
+            var expectedOutput = $"""["{Path.Combine("src", "App", "App.csproj")}"]""";
 
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndSlnfWithSpecialCharactersInPath", identifier: "GivenDotnetSlnList-Filter-Unescape")
@@ -420,6 +420,7 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
                 .Execute(solutionCommand, "App.slnf", "list", "--format", "json");
 
             cmd.Should().Pass();
+            cmd.StdOut.Should().Be(expectedOutput);
         }
     }
 }
