@@ -246,7 +246,9 @@ public class LibraryTests
         // Bug: Path.GetFullPath(".", "D:\sdk\global.json") incorrectly treats global.json as a directory.
         // Fix: Use Path.GetDirectoryName(GlobalJsonPath) as the base path.
 
-        var globalJsonPath = Path.Combine("C:", "repo", "global.json");
+        // Use a cross-platform absolute path (temp directory is always fully qualified)
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonPath = Path.Combine(repoDir, "global.json");
         var globalJsonInfo = new GlobalJsonInfo
         {
             GlobalJsonPath = globalJsonPath,
@@ -261,17 +263,19 @@ public class LibraryTests
 
         var sdkPath = globalJsonInfo.SdkPath;
 
-        // Should resolve to C:\repo\.dotnet, NOT C:\repo\global.json\.dotnet
-        sdkPath.Should().Be(Path.Combine("C:", "repo", ".dotnet"));
+        // Should resolve to <repoDir>\.dotnet, NOT <repoDir>\global.json\.dotnet
+        sdkPath.Should().Be(Path.Combine(repoDir, ".dotnet"));
         sdkPath.Should().NotContain("global.json");
     }
 
     [Fact]
     public void GlobalJsonInfo_SdkPath_ReturnsNullWhenNoPathsConfigured()
     {
+        // Use a cross-platform absolute path (temp directory is always fully qualified)
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
         var globalJsonInfo = new GlobalJsonInfo
         {
-            GlobalJsonPath = Path.Combine("C:", "repo", "global.json"),
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
             GlobalJsonContents = new GlobalJsonContents
             {
                 Sdk = new GlobalJsonContents.SdkSection

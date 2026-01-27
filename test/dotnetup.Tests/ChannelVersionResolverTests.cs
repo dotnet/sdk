@@ -147,5 +147,30 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
             Assert.Contains(channels, c => c.EndsWith("xx"));
         }
+
+        #region UpdateChannel.IsSdkVersionOrFeatureBand Tests
+
+        [Theory]
+        [InlineData("9.0.1xx", true)]    // Feature band pattern
+        [InlineData("9.0.2xx", true)]    // Feature band pattern
+        [InlineData("10.0.1xx", true)]   // Feature band pattern
+        [InlineData("9.0.12x", true)]    // Partial feature band pattern (unsupported but should be caught)
+        [InlineData("9.0.103", true)]    // SDK version (patch >= 100)
+        [InlineData("9.0.304", true)]    // SDK version (patch >= 100)
+        [InlineData("10.0.100", true)]   // SDK version (patch >= 100)
+        [InlineData("9.0.12", false)]    // Runtime version (patch < 100)
+        [InlineData("9.0.0", false)]     // Runtime version (patch < 100)
+        [InlineData("9.0.99", false)]    // Runtime version (patch < 100, edge case)
+        [InlineData("latest", false)]    // Channel name
+        [InlineData("lts", false)]       // Channel name
+        [InlineData("9.0", false)]       // Major.minor channel
+        [InlineData("9", false)]         // Major-only channel
+        public void UpdateChannel_IsSdkVersionOrFeatureBand_DetectsCorrectly(string channel, bool expectedResult)
+        {
+            var updateChannel = new UpdateChannel(channel);
+            Assert.Equal(expectedResult, updateChannel.IsSdkVersionOrFeatureBand());
+        }
+
+        #endregion
     }
 }

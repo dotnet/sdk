@@ -13,19 +13,14 @@ internal class InstallWorkflow
     private readonly IDotnetInstallManager _dotnetInstaller;
     private readonly ChannelVersionResolver _channelVersionResolver;
     private readonly InstallPathResolver _installPathResolver;
-    private readonly InstallWalkthrough _installWalkthrough;
 
     public InstallWorkflow(IDotnetInstallManager dotnetInstaller, ChannelVersionResolver channelVersionResolver)
     {
         _dotnetInstaller = dotnetInstaller;
         _channelVersionResolver = channelVersionResolver;
         _installPathResolver = new InstallPathResolver(dotnetInstaller);
-        _installWalkthrough = new InstallWalkthrough(dotnetInstaller, channelVersionResolver);
     }
 
-    /// <summary>
-    /// Options for the install workflow.
-    /// </summary>
     public record InstallWorkflowOptions(
         string? VersionOrChannel,
         string? InstallPath,
@@ -35,125 +30,144 @@ internal class InstallWorkflow
         bool NoProgress,
         InstallComponent Component,
         string ComponentDescription,
-        // SDK-specific options (optional for runtime)
         bool? UpdateGlobalJson = null,
         Func<string, string?>? ResolveChannelFromGlobalJson = null);
 
-    /// <summary>
-    /// Result of the install workflow.
-    /// </summary>
     public record InstallWorkflowResult(int ExitCode, InstallExecutor.ResolvedInstallRequest? ResolvedRequest);
 
     /// <summary>
-    /// Executes the common installation workflow.
+    /// Holds all resolved state during workflow execution, eliminating repeated parameter passing.
     /// </summary>
+    private record WorkflowContext(
+        InstallWorkflowOptions Options,
+        InstallWalkthrough Walkthrough,
+        GlobalJsonInfo? GlobalJson,
+        DotnetInstallRootConfiguration? CurrentInstallRoot,
+        string InstallPath,
+        string? InstallPathFromGlobalJson,
+        string Channel,
+        bool SetDefaultInstall,
+        bool? UpdateGlobalJson);
+
     public InstallWorkflowResult Execute(InstallWorkflowOptions options)
     {
-        GlobalJsonInfo? globalJsonInfo = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
-        DotnetInstallRootConfiguration? currentDotnetInstallRoot = _dotnetInstaller.GetConfiguredInstallType();
-
-        // Resolve the install path
-        InstallPathResolver.InstallPathResolutionResult? pathResolution = _installPathResolver.Resolve(
-            options.InstallPath,
-            globalJsonInfo,
-            currentDotnetInstallRoot,
-            options.Interactive,
-            options.ComponentDescription,
-            out string? error);
-
-        if (pathResolution == null)
+        var context = ResolveWorkflowContext(options, out string? error);
+        if (context is null)
         {
             Console.Error.WriteLine(error);
             return new InstallWorkflowResult(1, null);
         }
 
-        string resolvedInstallPath = pathResolution.ResolvedInstallPath;
-        string? installPathFromGlobalJson = pathResolution.InstallPathFromGlobalJson;
+        var resolved = CreateInstallRequest(context);
 
-        // Handle global.json channel resolution (SDK-specific)
-        string? channelFromGlobalJson = null;
-        bool? resolvedUpdateGlobalJson = null;
-
-        if (options.ResolveChannelFromGlobalJson is not null && globalJsonInfo?.GlobalJsonPath is not null)
-        {
-            channelFromGlobalJson = options.ResolveChannelFromGlobalJson(globalJsonInfo.GlobalJsonPath);
-
-            resolvedUpdateGlobalJson = _installWalkthrough.ResolveUpdateGlobalJson(
-                channelFromGlobalJson,
-                options.VersionOrChannel,
-                options.UpdateGlobalJson,
-                options.Interactive);
-        }
-
-        // Resolve the channel/version to install
-        string resolvedChannel = _installWalkthrough.ResolveChannel(
-            options.VersionOrChannel,
-            channelFromGlobalJson,
-            globalJsonInfo?.GlobalJsonPath,
-            options.Interactive,
-            options.ComponentDescription,
-            options.Component);
-
-        // Resolve whether to set this as the default install
-        bool resolvedSetDefaultInstall = _installWalkthrough.ResolveSetDefaultInstall(
-            options.SetDefaultInstall,
-            currentDotnetInstallRoot,
-            resolvedInstallPath,
-            installPathFromGlobalJson,
-            options.Interactive);
-
-        // Create a request and resolve the version
-        InstallExecutor.ResolvedInstallRequest resolved = InstallExecutor.CreateAndResolveRequest(
-            resolvedInstallPath,
-            resolvedChannel,
-            options.Component,
-            options.ManifestPath,
-            _channelVersionResolver);
-
-        // Check if user wants to migrate admin versions when switching to user install
-        List<string> additionalVersionsToInstall = _installWalkthrough.GetAdditionalAdminVersionsToMigrate(
-            resolved.ResolvedVersion,
-            resolvedSetDefaultInstall,
-            currentDotnetInstallRoot,
-            options.Interactive,
-            options.ComponentDescription);
-
-        // Execute the installation
-        InstallExecutor.InstallResult installResult = InstallExecutor.ExecuteInstall(
-            resolved.Request,
-            resolved.ResolvedVersion?.ToString(),
-            options.ComponentDescription,
-            options.NoProgress);
-
-        if (!installResult.Success)
+        if (!ExecuteInstallations(context, resolved))
         {
             return new InstallWorkflowResult(1, resolved);
         }
 
-        // Install any additional versions
-        InstallExecutor.ExecuteAdditionalInstalls(
-            additionalVersionsToInstall,
-            resolved.Request.InstallRoot,
-            options.Component,
-            options.ComponentDescription,
-            options.ManifestPath,
-            options.NoProgress);
-
-        // Configure default install if requested
-        InstallExecutor.ConfigureDefaultInstallIfRequested(_dotnetInstaller, resolvedSetDefaultInstall, resolvedInstallPath);
-
-        // Handle global.json update (SDK-specific)
-        if (resolvedUpdateGlobalJson == true && globalJsonInfo?.GlobalJsonPath is not null)
-        {
-            _dotnetInstaller.UpdateGlobalJson(
-                globalJsonInfo.GlobalJsonPath,
-                resolved.ResolvedVersion!.ToString(),
-                globalJsonInfo.AllowPrerelease,
-                globalJsonInfo.RollForward);
-        }
+        ApplyPostInstallConfiguration(context, resolved);
 
         InstallExecutor.DisplayComplete();
-
         return new InstallWorkflowResult(0, resolved);
+    }
+
+    private WorkflowContext? ResolveWorkflowContext(InstallWorkflowOptions options, out string? error)
+    {
+        error = null;
+        var walkthrough = new InstallWalkthrough(_dotnetInstaller, _channelVersionResolver, options);
+        var globalJson = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        var currentInstallRoot = _dotnetInstaller.GetConfiguredInstallType();
+
+        var pathResolution = _installPathResolver.Resolve(
+            options.InstallPath,
+            globalJson,
+            currentInstallRoot,
+            options.Interactive,
+            options.ComponentDescription,
+            out error);
+
+        if (pathResolution is null)
+        {
+            return null;
+        }
+
+        string? channelFromGlobalJson = null;
+        bool? updateGlobalJson = null;
+
+        if (options.ResolveChannelFromGlobalJson is not null && globalJson?.GlobalJsonPath is not null)
+        {
+            channelFromGlobalJson = options.ResolveChannelFromGlobalJson(globalJson.GlobalJsonPath);
+            updateGlobalJson = walkthrough.ResolveUpdateGlobalJson(channelFromGlobalJson);
+        }
+
+        string channel = walkthrough.ResolveChannel(channelFromGlobalJson, globalJson?.GlobalJsonPath);
+        bool setDefaultInstall = walkthrough.ResolveSetDefaultInstall(
+            currentInstallRoot,
+            pathResolution.ResolvedInstallPath,
+            pathResolution.InstallPathFromGlobalJson);
+
+        return new WorkflowContext(
+            options,
+            walkthrough,
+            globalJson,
+            currentInstallRoot,
+            pathResolution.ResolvedInstallPath,
+            pathResolution.InstallPathFromGlobalJson,
+            channel,
+            setDefaultInstall,
+            updateGlobalJson);
+    }
+
+    private InstallExecutor.ResolvedInstallRequest CreateInstallRequest(WorkflowContext context)
+    {
+        return InstallExecutor.CreateAndResolveRequest(
+            context.InstallPath,
+            context.Channel,
+            context.Options.Component,
+            context.Options.ManifestPath,
+            _channelVersionResolver);
+    }
+
+    private bool ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+    {
+        var installResult = InstallExecutor.ExecuteInstall(
+            resolved.Request,
+            resolved.ResolvedVersion?.ToString(),
+            context.Options.ComponentDescription,
+            context.Options.NoProgress);
+
+        if (!installResult.Success)
+        {
+            return false;
+        }
+
+        var additionalVersions = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
+            resolved.ResolvedVersion,
+            context.SetDefaultInstall,
+            context.CurrentInstallRoot);
+
+        InstallExecutor.ExecuteAdditionalInstalls(
+            additionalVersions,
+            resolved.Request.InstallRoot,
+            context.Options.Component,
+            context.Options.ComponentDescription,
+            context.Options.ManifestPath,
+            context.Options.NoProgress);
+
+        return true;
+    }
+
+    private void ApplyPostInstallConfiguration(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
+    {
+        InstallExecutor.ConfigureDefaultInstallIfRequested(_dotnetInstaller, context.SetDefaultInstall, context.InstallPath);
+
+        if (context.UpdateGlobalJson == true && context.GlobalJson?.GlobalJsonPath is not null)
+        {
+            _dotnetInstaller.UpdateGlobalJson(
+                context.GlobalJson.GlobalJsonPath,
+                resolved.ResolvedVersion!.ToString(),
+                context.GlobalJson.AllowPrerelease,
+                context.GlobalJson.RollForward);
+        }
     }
 }

@@ -34,15 +34,23 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     {
         if (!RuntimeTypeMap.TryGetValue(_runtimeType, out var runtimeInfo))
         {
-            Console.Error.WriteLine($"Error: Unknown runtime type '{_runtimeType}'. Valid types are: {string.Join(", ", RuntimeTypeMap.Keys)}");
+            Console.Error.WriteLine($"Error: Unknown runtime type '{_runtimeType}'. Valid types are: {string.Join(", ", GetValidRuntimeTypes())}");
             return 1;
         }
 
-        // Feature bands (like 9.0.1xx) are SDK-specific and not valid for runtimes
-        if (!string.IsNullOrEmpty(_versionOrChannel) && IsFeatureBand(_versionOrChannel))
+        // Windows Desktop Runtime is only available on Windows
+        if (runtimeInfo.Component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
         {
-            Console.Error.WriteLine($"Error: Feature bands (like '{_versionOrChannel}') are only valid for SDK installations, not runtimes.");
-            Console.Error.WriteLine("Use a version channel like '9.0', 'latest', 'lts', or a specific version like '9.0.12'.");
+            Console.Error.WriteLine("Error: Windows Desktop Runtime is only available on Windows.");
+            Console.Error.WriteLine($"Valid runtime types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
+            return 1;
+        }
+
+        // SDK versions and feature bands (like 9.0.103, 9.0.1xx) are SDK-specific and not valid for runtimes
+        if (!string.IsNullOrEmpty(_versionOrChannel) && new UpdateChannel(_versionOrChannel).IsSdkVersionOrFeatureBand())
+        {
+            Console.Error.WriteLine($"Error: '{_versionOrChannel}' looks like an SDK version or feature band, which is not valid for runtime installations.");
+            Console.Error.WriteLine("Use a version channel like '9.0', 'latest', 'lts', or a specific runtime version like '9.0.12'.");
             return 1;
         }
 
@@ -63,11 +71,18 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     }
 
     /// <summary>
-    /// Checks if the channel string is a feature band pattern (e.g., "9.0.1xx", "10.0.2xx").
+    /// Gets the list of valid runtime types for the current platform.
     /// </summary>
-    private static bool IsFeatureBand(string channel)
+    private static IEnumerable<string> GetValidRuntimeTypes()
     {
-        var parts = channel.Split('.');
-        return parts.Length >= 3 && parts[2].EndsWith("xx", StringComparison.OrdinalIgnoreCase);
+        foreach (var kvp in RuntimeTypeMap)
+        {
+            // Windows Desktop is only valid on Windows
+            if (kvp.Value.Component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
+            {
+                continue;
+            }
+            yield return kvp.Key;
+        }
     }
 }

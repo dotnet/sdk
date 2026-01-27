@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -40,7 +41,7 @@ internal class InstallerOrchestratorSingleton
             installRequest.Component);
 
         string? customManifestPath = installRequest.Options.ManifestPath;
-        string componentDescription = GetComponentDescription(installRequest.Component);
+        string componentDescription = installRequest.Component.GetDescription();
 
         // Check if the install already exists and we don't need to do anything
         // read write mutex only for manifest?
@@ -115,16 +116,4 @@ internal class InstallerOrchestratorSingleton
             existing.Version.Equals(install.Version) &&
             existing.Component == install.Component);
     }
-
-    /// <summary>
-    /// Gets a user-friendly description for the install component type.
-    /// </summary>
-    private static string GetComponentDescription(InstallComponent component) => component switch
-    {
-        InstallComponent.SDK => ".NET SDK",
-        InstallComponent.Runtime => ".NET Runtime",
-        InstallComponent.ASPNETCore => "ASP.NET Core Runtime",
-        InstallComponent.WindowsDesktop => "Windows Desktop Runtime",
-        _ => ".NET"
-    };
 }

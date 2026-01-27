@@ -7,8 +7,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 internal static class SdkInstallCommandParser
 {
-
-
     public static readonly Argument<string?> ChannelArgument = new("channel")
     {
         HelpName = "CHANNEL",
@@ -16,18 +14,11 @@ internal static class SdkInstallCommandParser
         Arity = ArgumentArity.ZeroOrOne,
     };
 
-    public static readonly Option<string> InstallPathOption = new("--install-path")
-    {
-        HelpName = "INSTALL_PATH",
-        Description = "The path to install the .NET SDK to",
-    };
-
-    public static readonly Option<bool?> SetDefaultInstallOption = new("--set-default-install")
-    {
-        Description = "Set the install path as the default dotnet install.  This will update the PATH and DOTNET_ROOT environhment variables.",
-        Arity = ArgumentArity.ZeroOrOne,
-        DefaultValueFactory = r => null
-    };
+    public static readonly Option<string> InstallPathOption = CommonOptions.InstallPathOption;
+    public static readonly Option<bool?> SetDefaultInstallOption = CommonOptions.SetDefaultInstallOption;
+    public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
+    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
+    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
 
     public static readonly Option<bool?> UpdateGlobalJsonOption = new("--update-global-json")
     {
@@ -35,15 +26,6 @@ internal static class SdkInstallCommandParser
         Arity = ArgumentArity.ZeroOrOne,
         DefaultValueFactory = r => null
     };
-
-    public static readonly Option<string> ManifestPathOption = new("--manifest-path")
-    {
-        HelpName = "MANIFEST_PATH",
-        Description = "Custom path to the manifest file for tracking .NET SDK installations",
-    };
-
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
-    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
 
     private static readonly Command SdkInstallCommand = ConstructCommand();
 

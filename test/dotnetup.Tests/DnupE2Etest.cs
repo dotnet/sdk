@@ -206,8 +206,8 @@ public class ReuseAndErrorTests
 
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().NotBe(0, "Feature bands should not be valid for runtime installation");
-        output.Should().Contain("Feature bands", "should explain that feature bands are not valid for runtimes");
-        output.Should().Contain("only valid for SDK", "should clarify feature bands are SDK-specific");
+        output.Should().Contain("SDK version or feature band", "should explain that feature bands are not valid for runtimes");
+        output.Should().Contain("not valid for runtime", "should clarify this is a runtime-specific error");
     }
 
     [Fact]
@@ -222,12 +222,34 @@ public class ReuseAndErrorTests
         output.Should().Contain("Valid types are:", "should list valid runtime types");
     }
 
+    [Fact]
+    public void RuntimeInstall_WindowsDesktop_OnNonWindows_ReturnsError()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return; // This test only applies to non-Windows platforms
+        }
+
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var args = DotnetupTestUtilities.BuildRuntimeArguments("windowsdesktop", "9.0", testEnv.InstallPath, testEnv.ManifestPath);
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().NotBe(0, "Windows Desktop Runtime should not be installable on non-Windows");
+        output.Should().Contain("Windows Desktop Runtime is only available on Windows", "should explain Windows Desktop is Windows-only");
+    }
+
     [Theory]
     [InlineData("core", InstallComponent.Runtime, true)] // SDK includes core runtime
     [InlineData("aspnetcore", InstallComponent.ASPNETCore, true)] // SDK also includes aspnetcore runtime
-    [InlineData("windowsdesktop", InstallComponent.WindowsDesktop, true)] // SDK does include windowsdesktop
+    [InlineData("windowsdesktop", InstallComponent.WindowsDesktop, true)] // SDK does include windowsdesktop (Windows only)
     public void RuntimeInstall_AfterSdkInstall_BehavesCorrectly(string runtimeType, InstallComponent expectedComponent, bool shouldSkipDownload)
     {
+        // Windows Desktop Runtime is only available on Windows - skip this test case on non-Windows
+        if (runtimeType == "windowsdesktop" && !OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         // This test verifies that:
         // 1. SDK install completes and is tracked in manifest
         // 2. Runtime install for same version succeeds and is tracked separately
