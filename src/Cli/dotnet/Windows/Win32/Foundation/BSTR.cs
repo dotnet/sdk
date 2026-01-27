@@ -27,17 +27,6 @@ internal readonly unsafe partial struct BSTR : IDisposable, ISpanFormattable
         Unsafe.AsRef(in this) = default;
     }
 
-    /// <summary>
-    ///  Converts the <see cref="BSTR"/> to a managed string and frees the underlying memory.
-    /// </summary>
-    /// <returns>A managed string representation of the <see cref="BSTR"/>.</returns>
-    public string ToStringAndFree()
-    {
-        string result = ToString();
-        Dispose();
-        return result;
-    }
-
     /// <inheritdoc cref="ISpanFormattable.TryFormat(Span{char}, out int, ReadOnlySpan{char}, IFormatProvider?)"/>
     public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
     {

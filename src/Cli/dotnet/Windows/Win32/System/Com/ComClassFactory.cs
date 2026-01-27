@@ -10,75 +10,7 @@ namespace Windows.Win32.System.Com;
 /// </summary>
 internal sealed unsafe class ComClassFactory : IDisposable
 {
-    private readonly HMODULE _module;
-    private readonly bool _unloadModule;
     private readonly IClassFactory* _classFactory;
-
-    private delegate HRESULT DllGetClassObjectProc(
-        Guid* rclsid,
-        Guid* riid,
-        void** ppv);
-
-    /// <summary>
-    ///  The class ID.
-    /// </summary>
-    public Guid ClassId { get; }
-
-    private const string ExportMethodName = "DllGetClassObject";
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ComClassFactory"/> class.
-    /// </summary>
-    public ComClassFactory(
-        string filePath,
-        Guid classId) : this(HMODULE.LoadModule(filePath), classId)
-    {
-        _unloadModule = true;
-    }
-
-    /// <summary>
-    ///  Initializes a new instance of the <see cref="ComClassFactory"/> class.
-    /// </summary>
-    public ComClassFactory(
-        HMODULE module,
-        Guid classId)
-    {
-        _module = module;
-        ClassId = classId;
-
-        // Dynamically get the class factory method.
-
-        // HRESULT DllGetClassObject(
-        //   [in] REFCLSID rclsid,
-        //   [in] REFIID riid,
-        //   [out] LPVOID* ppv
-        // );
-
-        FARPROC proc = PInvoke.GetProcAddress(module, ExportMethodName);
-
-        if (proc.IsNull)
-        {
-            Error.ThrowLastError();
-        }
-
-        IClassFactory* classFactory;
-        Guid iid = IClassFactory.IID_Guid;
-
-#if NETFRAMEWORK
-        // In .NET Framework we need to use the delegate type to call the method.
-        Marshal.GetDelegateForFunctionPointer<DllGetClassObjectProc>(proc.Value)(
-            &classId,
-            &iid,
-            (void**)&classFactory).ThrowOnFailure();
-#else
-        ((delegate* unmanaged<Guid*, Guid*, void**, HRESULT>)proc.Value)(
-            &classId,
-            &iid,
-            (void**)&classFactory).ThrowOnFailure();
-#endif
-
-        _classFactory = classFactory;
-    }
 
     /// <summary>
     ///  Creates a class factory for a registered COM class with the given class ID.
@@ -99,17 +31,6 @@ internal sealed unsafe class ComClassFactory : IDisposable
     }
 
     /// <summary>
-    ///  Tries to create an instance of the given <typeparamref name="TInterface"/>. Throws if unsuccessful.
-    /// </summary>
-    public ComScope<TInterface> CreateInstance<TInterface>()
-        where TInterface : unmanaged, IComIID
-    {
-        ComScope<TInterface> scope = TryCreateInstance<TInterface>(out HRESULT result);
-        result.ThrowOnFailure();
-        return scope;
-    }
-
-    /// <summary>
     ///  Tries to create the interface for the given <typeparamref name="TInterface"/>.
     /// </summary>
     public ComScope<TInterface> TryCreateInstance<TInterface>(out HRESULT result)
@@ -125,9 +46,5 @@ internal sealed unsafe class ComClassFactory : IDisposable
     public void Dispose()
     {
         _classFactory->Release();
-        if (_unloadModule && !_module.IsNull)
-        {
-            PInvoke.FreeLibrary(_module);
-        }
     }
 }
