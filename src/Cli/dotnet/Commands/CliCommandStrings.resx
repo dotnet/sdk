@@ -2574,6 +2574,9 @@ To display a value, specify the corresponding command-line option without provid
   <data name="SolutionAddReferencedProjectsOptionDescription" xml:space="preserve">
     <value>Recursively add projects' ReferencedProjects to solution</value>
   </data>
+  <data name="SolutionListFormatOptionDescription" xml:space="preserve">
+    <value>The output format for the list of projects in the solution.</value>
+  </data>
   <data name="ToolExecuteCommandDescription" xml:space="preserve">
     <value>Executes a tool from source without permanently installing it.</value>
   </data>

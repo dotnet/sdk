@@ -4,16 +4,19 @@
 #nullable disable
 
 using System.CommandLine;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 
 internal class SolutionListCommand(
-    ParseResult parseResult) : CommandBase(parseResult)
+    ParseResult parseResult, IReporter reporter = null) : CommandBase(parseResult)
 {
     private readonly string _fileOrDirectory = parseResult.GetValue(SolutionCommandDefinition.SlnArgument);
     private readonly bool _displaySolutionFolders = parseResult.GetValue(SolutionListCommandDefinition.SolutionFolderOption);
+    private readonly SolutionListOutputFormat _outputFormat = parseResult.GetValue(SolutionListCommandDefinition.SolutionListFormatOption);
+    private readonly IReporter _reporter = reporter ?? Reporter.Output;
 
     public override int Execute()
     {
@@ -43,22 +46,38 @@ internal class SolutionListCommand(
         {
             paths = [.. solution.SolutionProjects.Select(project => project.FilePath)];
         }
-        if (paths.Length == 0)
+        Array.Sort(paths);
+
+        if (_outputFormat is SolutionListOutputFormat.json)
         {
-            Reporter.Output.WriteLine(CliStrings.NoProjectsFound);
+            PrintJson(paths);
         }
         else
         {
-            Array.Sort(paths);
+            PrintText(paths);
+        }
+    }
 
-            string header = _displaySolutionFolders ? CliCommandStrings.SolutionFolderHeader : CliCommandStrings.ProjectsHeader;
-            Reporter.Output.WriteLine(header);
-            Reporter.Output.WriteLine(new string('-', header.Length));
-            foreach (string slnProject in paths)
-            {
-                Reporter.Output.WriteLine(slnProject);
-            }
+    private void PrintText(string[] paths)
+    {
+        if (paths.Length == 0)
+        {
+            _reporter.WriteLine(CliStrings.NoProjectsFound);
+            return;
         }
 
+        string header = _displaySolutionFolders ? CliCommandStrings.SolutionFolderHeader : CliCommandStrings.ProjectsHeader;
+        _reporter.WriteLine(header);
+        _reporter.WriteLine(new string('-', header.Length));
+        foreach (string slnProject in paths)
+        {
+            _reporter.WriteLine(slnProject);
+        }
+    }
+
+    private void PrintJson(string[] paths)
+    {
+        string jsonString = JsonSerializer.Serialize(paths, JsonHelper.NoEscapeSerializerOptions);
+        _reporter.WriteLine(jsonString);
     }
 }

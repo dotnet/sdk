@@ -15,10 +15,18 @@ public static class SolutionListCommandDefinition
         Arity = ArgumentArity.Zero
     };
 
+    public static readonly Option<SolutionListOutputFormat> SolutionListFormatOption = new("--format")
+    {
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = _ => SolutionListOutputFormat.text,
+        Description = CliCommandStrings.SolutionListFormatOptionDescription
+    };
+
     public static Command Create()
     {
         Command command = new(Name, CliCommandStrings.ListAppFullName);
         command.Options.Add(SolutionFolderOption);
+        command.Options.Add(SolutionListFormatOption);
         return command;
     }
 }

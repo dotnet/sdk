@@ -19,6 +19,7 @@ Arguments:
 
 Options:
   --solution-folders  Display solution folder paths. [default: False]
+  --format <json|text> The output format for the list of projects in the solution. [default: text]
   -?, -h, --help      Show command line help.";
 
 
@@ -295,6 +296,129 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "App.slnf", "list");
+
+            cmd.Should().Pass();
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenNoProjectsArePresentInTheSolutionItPrintsAnEmptyJsonArrayWhenJsonFormattingIsSpecified(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithEmptySln", identifier: $"GivenDotnetSlnList-{solutionCommand}{solutionExtension}")
+                .WithSource()
+                .Path;
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "list", "--format", "json");
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be("[]");
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenProjectsPresentInTheSolutionItListsThemInJsonFormatWhenJsonFormattingIsSpecified(string solutionCommand, string solutionExtension)
+        {
+            var expectedOutput = $"""["{Path.Combine("App", "App.csproj")}", "{Path.Combine("Lib", "Lib.csproj")}"]""";
+
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"GivenDotnetSlnList-{solutionCommand}{solutionExtension}")
+                .WithSource()
+                .Path;
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "list", "--format", "json");
+            cmd.Should().Pass();
+            cmd.StdOut.Should().BeVisuallyEquivalentTo(expectedOutput);
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenProjectsPresentInTheReadonlySolutionItListsThemInJsonFormatWhenJsonFormattingIsSpecified(string solutionCommand, string solutionExtension)
+        {
+            var expectedOutput = $"""["{Path.Combine("App", "App.csproj")}", "{Path.Combine("Lib", "Lib.csproj")}"]""";
+            // var expectedOutput = $"""["{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}"]""";
+
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"GivenDotnetSlnList-Readonly-{solutionCommand}{solutionExtension}")
+                .WithSource()
+                .Path;
+
+            var slnFileName = Path.Combine(projectDirectory, $"App{solutionExtension}");
+            var attributes = File.GetAttributes(slnFileName);
+            File.SetAttributes(slnFileName, attributes | FileAttributes.ReadOnly);
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "list", "--format", "json");
+            cmd.Should().Pass();
+            cmd.StdOut.Should().BeVisuallyEquivalentTo(expectedOutput);
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenProjectsInSolutionFoldersPresentInTheSolutionItListsSolutionFolderPathsInJsonFormatWhenJsonFormattingIsSpecified(string solutionCommand, string solutionExtension)
+        {
+            var expectedOutput = """["EmptyFolder","EmptyFolder/NestedEmptyFolder","NestedSolution","NestedSolution/NestedFolder","NestedSolution/NestedFolder/NestedFolder","NewFolder1","NewFolder1/NewFolder2","Root Empty Folder"]""";
+
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("SlnFileWithSolutionItemsInNestedFolders", identifier: $"GivenDotnetSlnList-{solutionCommand}")
+                .WithSource()
+                .Path;
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "list", "--solution-folders", "--format", "json");
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(expectedOutput);
+        }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenSolutionFilterIsPassedItListsProjectsMatchingJsonFormatWhenJsonFormattingIsSpecified(string solutionCommand)
+        {
+            var expectedOutput = $"""["{Path.Combine("src", "App", "App.csproj")}"]""";
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnxAndSolutionFilters", identifier: "GivenDotnetSlnList-Filter")
+                .WithSource()
+                .Path;
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "list", "--format", "json");
+            cmd.Should().Pass();
+            cmd.StdOut.Should().ContainAll(expectedOutput);
+        }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenSolutionFilterOriginalPathContainsSpecialCharactersTheyAreUnescapedJsonFormatWhenJsonFormattingIsSpecified(string solutionCommand)
+        {
+            var expectedOutput = $"""["{Path.Combine("App", "App.csproj")}", "{Path.Combine("Lib", "Lib.csproj")}"]""";
+
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndSlnfWithSpecialCharactersInPath", identifier: "GivenDotnetSlnList-Filter-Unescape")
+                .WithSource()
+                .Path;
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "list", "--format", "json");
 
             cmd.Should().Pass();
         }
