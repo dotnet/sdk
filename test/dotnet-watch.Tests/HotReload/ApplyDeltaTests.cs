@@ -69,6 +69,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), newSrc);
 
             await App.AssertOutputLineStartsWith("Changed!");
+
+            App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
         }
 
         [Fact]
@@ -357,7 +359,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.False(Directory.Exists(logDir));
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, ["--verbose", $"-bl:{binLogPath}"], testFlags: TestFlags.None);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
@@ -751,8 +753,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             if (!verbose)
             {
-                // remove default --verbose arg
-                App.DotnetWatchArgs.Clear();
+                App.SuppressVerboseLogging();
             }
 
             App.Start(testAsset, []);
@@ -892,11 +893,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // check project specified capapabilities:
             if (projectSpecifiesCapabilities)
             {
-                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType.");
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddMethodToExistingType Baseline.");
             }
             else
             {
-                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType.");
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
             }
         }
 
@@ -963,10 +964,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
 
             // client capabilities:
-            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project 'blazorwasm ({tfm})' specifies capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType'");
+            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project specifies capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType AddExplicitInterfaceImplementation.");
 
             // server capabilities:
-            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva'");
+            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva AddExplicitInterfaceImplementation.");
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
@@ -996,8 +997,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(scopedCssPath, newCss);
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
 
-            App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("RazorApp.css"));
-            App.AssertOutputContains(MessageDescriptor.HotReloadOfScopedCssSucceeded);
+            App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/RazorClassLibrary.bundle.scp.css"));
+            App.AssertOutputContains(MessageDescriptor.StaticAssetsReloaded);
             App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();
 
@@ -1006,9 +1007,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
 
-            // "wwwroot" directory is required for MAUI. Web sites work with or without it.
             App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/app.css"));
-            App.AssertOutputContains(MessageDescriptor.HotReloadOfStaticAssetsSucceeded);
+            App.AssertOutputContains(MessageDescriptor.StaticAssetsReloaded);
             App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();
         }
@@ -1017,7 +1017,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// Currently only works on Windows.
         /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
         /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/40006")]
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public async Task MauiBlazor()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor")
@@ -1051,6 +1051,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // update static asset:
             var cssPath = Path.Combine(testAsset.Path, "wwwroot", "css", "app.css");
             UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
+
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
+            App.AssertOutputContains("Updates applied: 1 out of 1.");
+            App.AssertOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
+            App.AssertOutputContains("No C# changes to apply.");
+            App.Process.ClearOutput();
+
+            // update scoped css:
+            var scopedCssPath = Path.Combine(testAsset.Path, "Components", "Pages", "Counter.razor.css");
+            UpdateSourceFile(scopedCssPath, content => content.Replace("background-color: green", "background-color: red"));
 
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
             App.AssertOutputContains("Updates applied: 1 out of 1.");

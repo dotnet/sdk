@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../FileBasedProgramsResources.resx">
     <body>
@@ -26,6 +26,11 @@
         <source>Duplicate directives are not supported: {0}</source>
         <target state="translated">Повторяющиеся директивы не поддерживаются: {0}</target>
         <note>{0} is the directive type and name.</note>
+      </trans-unit>
+      <trans-unit id="EmptyTempPath">
+        <source>Unable to determine a temporary directory path. Consider configuring the TEMP environment variable on Windows or local app data folder on Unix.</source>
+        <target state="translated">Не удалось определить путь к временному каталогу. Рассмотрите возможность настроить переменную среды TEMP в Windows или папку локальных данных приложений в Unix.</target>
+        <note />
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>

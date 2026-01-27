@@ -663,7 +663,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="Net10NotCompatibleWithVS17">
         <source>NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</source>
-        <target state="new">NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</target>
+        <target state="translated">NETSDK1233: 不支持在 Visual Studio 2022 17.14 中以 .NET 10.0 或更高版本为目标。</target>
         <note>{StrBegins="NETSDK1233: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
@@ -863,7 +863,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="RoslynCompilerTypeFrameworkIsDeprecated">
         <source>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</source>
-        <target state="new">NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</target>
+        <target state="translated">NETSDK1234: RoslynCompilerType 'Framework' 已弃用，并将在将来的版本中移除。有关详细信息，请参阅 {0}。</target>
         <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">

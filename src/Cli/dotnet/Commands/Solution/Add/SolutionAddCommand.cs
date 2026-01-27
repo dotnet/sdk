@@ -14,7 +14,7 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Add;
 
-internal class SolutionAddCommand : CommandBase
+internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinition>
 {
     private readonly string _fileOrDirectory;
     private readonly bool _inRoot;
@@ -37,13 +37,14 @@ internal class SolutionAddCommand : CommandBase
             && !relativePath.StartsWith(".."); // This means path is outside the solution directory
     }
 
-    public SolutionAddCommand(ParseResult parseResult) : base(parseResult)
+    public SolutionAddCommand(ParseResult parseResult)
+        : base(parseResult)
     {
-        _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument)!;
-        _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SolutionAddCommandParser.ProjectPathArgument) ?? []);
-        _inRoot = parseResult.GetValue(SolutionAddCommandParser.InRootOption);
-        _solutionFolderPath = parseResult.GetValue(SolutionAddCommandParser.SolutionFolderOption);
-        _includeReferences = parseResult.GetValue(SolutionAddCommandParser.IncludeReferencesOption);
+        _fileOrDirectory = parseResult.GetValue(Definition.Parent.SlnArgument)!;
+        _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(Definition.ProjectPathArgument) ?? []);
+        _inRoot = parseResult.GetValue(Definition.InRootOption);
+        _solutionFolderPath = parseResult.GetValue(Definition.SolutionFolderOption);
+        _includeReferences = parseResult.GetValue(Definition.IncludeReferencesOption);
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
         _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
     }
@@ -61,7 +62,7 @@ internal class SolutionAddCommand : CommandBase
         IEnumerable<string> fullProjectPaths = _projects.Select(project =>
         {
             var fullPath = Path.GetFullPath(project);
-            return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
+            return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath) : fullPath;
         });
 
         // Add projects to the solution
@@ -102,9 +103,17 @@ internal class SolutionAddCommand : CommandBase
             relativeSolutionFolderPath = _solutionFolderPath;
         }
 
-        return string.IsNullOrEmpty(relativeSolutionFolderPath)
-            ? null
-            : solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativeSolutionFolderPath));
+        if (string.IsNullOrEmpty(relativeSolutionFolderPath))
+        {
+            return null;
+        }
+
+        // Check if a solution folder with this path already exists
+        // Solution folder paths should be unique, so use SingleOrDefault
+        var solutionFolderPath = GetSolutionFolderPathWithForwardSlashes(relativeSolutionFolderPath);
+        var existingFolder = solution.SolutionFolders.SingleOrDefault(f => f.Path == solutionFolderPath);
+        
+        return existingFolder ?? solution.AddFolder(solutionFolderPath);
     }
 
     private async Task AddProjectsToSolutionAsync(IEnumerable<string> projectPaths, CancellationToken cancellationToken)

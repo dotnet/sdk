@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.InternalAbstractions;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -327,7 +328,7 @@ public class ProjectToolsCommandResolver(
             CliStrings.GeneratingDepsJson,
             depsPath));
 
-        var tempDepsFile = Path.Combine(PathUtilities.CreateTempSubdirectory(), Path.GetRandomFileName());
+        var tempDepsFile = Path.Combine(TemporaryDirectory.CreateSubdirectory(), Path.GetRandomFileName());
 
         List<string> args =
         [
@@ -385,7 +386,14 @@ public class ProjectToolsCommandResolver(
         string? stdOut;
         string? stdErr;
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..args], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, BuildCommandParser.TargetOption, BuildCommandParser.VerbosityOption, BuildCommandParser.NoLogoOption);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+            [.. args],
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateMSBuildTargetOption(),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption());
+
         var forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(msbuildArgs, msBuildExePath);
         if (forwardingAppWithoutLogging.ExecuteMSBuildOutOfProc)
         {

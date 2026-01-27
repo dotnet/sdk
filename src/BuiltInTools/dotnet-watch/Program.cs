@@ -46,11 +46,13 @@ namespace Microsoft.DotNet.Watch
 
                 var environmentOptions = EnvironmentOptions.FromEnvironment(processPath);
 
+                // msbuild tasks depend on host path variable:
+                Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetHostPath, environmentOptions.MuxerPath);
+
                 var program = TryCreate(
                     args,
                     new PhysicalConsole(environmentOptions.TestFlags),
                     environmentOptions,
-                    EnvironmentVariables.VerboseCliOutput,
                     out var exitCode);
 
                 if (program == null)
@@ -68,9 +70,9 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private static Program? TryCreate(IReadOnlyList<string> args, IConsole console, EnvironmentOptions environmentOptions, bool verbose, out int errorCode)
+        private static Program? TryCreate(IReadOnlyList<string> args, IConsole console, EnvironmentOptions environmentOptions, out int errorCode)
         {
-            var parsingLoggerFactory = new LoggerFactory(new ConsoleReporter(console, verbose, quiet: false, environmentOptions.SuppressEmojis));
+            var parsingLoggerFactory = new LoggerFactory(new ConsoleReporter(console, environmentOptions.SuppressEmojis), environmentOptions.CliLogLevel ?? LogLevel.Information);
             var options = CommandLineOptions.Parse(args, parsingLoggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName), console.Out, out errorCode);
             if (options == null)
             {
@@ -78,8 +80,9 @@ namespace Microsoft.DotNet.Watch
                 return null;
             }
 
-            var reporter = new ConsoleReporter(console, verbose || options.GlobalOptions.Verbose, options.GlobalOptions.Quiet, environmentOptions.SuppressEmojis);
-            var loggerFactory = new LoggerFactory(reporter);
+            var logLevel = environmentOptions.CliLogLevel ?? options.GlobalOptions.LogLevel;
+            var reporter = new ConsoleReporter(console, environmentOptions.SuppressEmojis);
+            var loggerFactory = new LoggerFactory(reporter, logLevel);
             return TryCreate(options, console, environmentOptions, loggerFactory, reporter, out errorCode);
         }
 

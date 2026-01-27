@@ -15,7 +15,7 @@ Usage:
   dotnet solution [<SLN_FILE>] list [options]
 
 Arguments:
-  <SLN_FILE>  The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <SLN_FILE>  The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
   --solution-folders  Display solution folder paths. [default: False]

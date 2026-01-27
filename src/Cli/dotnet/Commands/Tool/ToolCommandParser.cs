@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Execute;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
@@ -12,39 +10,31 @@ using Microsoft.DotNet.Cli.Commands.Tool.Run;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 using Microsoft.DotNet.Cli.Commands.Tool.Update;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool;
 
 internal static class ToolCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-tool";
-
-    private static readonly Command Command = ConstructCommand();
+    private static readonly ToolCommandDefinition Command = ConfigureCommand(new ToolCommandDefinition());
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command ConstructCommand()
+    public static ToolCommandDefinition ConfigureCommand(ToolCommandDefinition command)
     {
-        Command command = new("tool", CliCommandStrings.ToolCommandDescription)
-        {
-            DocsLink = DocsLink
-        };
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-        command.Subcommands.Add(ToolInstallCommandParser.GetCommand());
-        command.Subcommands.Add(ToolUninstallCommandParser.GetCommand());
-        command.Subcommands.Add(ToolUpdateCommandParser.GetCommand());
-        command.Subcommands.Add(ToolListCommandParser.GetCommand());
-        command.Subcommands.Add(ToolRunCommandParser.GetCommand());
-        command.Subcommands.Add(ToolSearchCommandParser.GetCommand());
-        command.Subcommands.Add(ToolRestoreCommandParser.GetCommand());
-        command.Subcommands.Add(ToolExecuteCommandParser.GetCommand());
-
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
+        command.InstallCommand.SetAction(parseResult => new ToolInstallCommand(parseResult).Execute());
+        command.UninstallCommand.SetAction(parseResult => new ToolUninstallCommand(parseResult).Execute());
+        command.UpdateCommand.SetAction(parseResult => new ToolUpdateCommand(parseResult).Execute());
+        command.ListCommand.SetAction(parseResult => new ToolListCommand(parseResult).Execute());
+        command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
+        command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
+        command.RestoreCommand.SetAction(parseResult => new ToolRestoreCommand(parseResult).Execute());
+        command.ExecuteCommand.SetAction(parseResult => new ToolExecuteCommand(parseResult).Execute());
 
         return command;
     }

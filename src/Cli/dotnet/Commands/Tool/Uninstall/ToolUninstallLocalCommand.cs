@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -13,7 +12,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
-internal class ToolUninstallLocalCommand : CommandBase
+internal sealed class ToolUninstallLocalCommand : CommandBase<ToolUninstallCommandDefinition>
 {
     private readonly IToolManifestFinder _toolManifestFinder;
     private readonly IToolManifestEditor _toolManifestEditor;
@@ -29,8 +28,8 @@ internal class ToolUninstallLocalCommand : CommandBase
         IReporter reporter = null)
         : base(parseResult)
     {
-        _packageId = new PackageId(parseResult.GetValue(ToolUninstallCommandParser.PackageIdArgument));
-        _explicitManifestFile = parseResult.GetValue(ToolUninstallCommandParser.ToolManifestOption);
+        _packageId = new PackageId(parseResult.GetValue(Definition.PackageIdArgument));
+        _explicitManifestFile = parseResult.GetValue(Definition.ToolManifestOption);
 
         _reporter = reporter ?? Reporter.Output;
 
