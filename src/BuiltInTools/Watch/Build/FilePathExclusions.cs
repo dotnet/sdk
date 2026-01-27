@@ -7,16 +7,22 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal readonly struct FilePathExclusions(
-    IEnumerable<(MSBuildGlob glob, string value, string projectDir)> exclusionGlobs,
-    IReadOnlySet<string> outputDirectories)
+internal readonly struct ExclusionGlob(string projectDir, MSBuildGlob glob, string value, MSBuildGlob? encompassingRootGlob)
+{
+    public string ProjectDir { get; } = projectDir;
+    public MSBuildGlob Glob { get; } = glob;
+    public MSBuildGlob? EncompassingRootGlob { get; } = encompassingRootGlob;
+    public string Value { get; } = value;
+}
+
+internal readonly struct FilePathExclusions(IEnumerable<ExclusionGlob> exclusionGlobs, IReadOnlySet<string> outputDirectories)
 {
     public static readonly FilePathExclusions Empty = new(exclusionGlobs: [], outputDirectories: new HashSet<string>());
 
     public static FilePathExclusions Create(ProjectGraph projectGraph)
     {
         var outputDirectories = new HashSet<string>(PathUtilities.OSSpecificPathComparer);
-        var globs = new Dictionary<(string fixedDirectoryPart, string wildcardDirectoryPart, string filenamePart), (MSBuildGlob glob, string value, string projectDir)>();
+        var globs = new Dictionary<(string fixedDirectoryPart, string wildcardDirectoryPart, string filenamePart), ExclusionGlob>();
 
         foreach (var projectNode in projectGraph.ProjectNodes)
         {
@@ -29,9 +35,15 @@ internal readonly struct FilePathExclusions(
                     var glob = MSBuildGlob.Parse(projectDir, globValue);
                     if (glob.IsLegal)
                     {
+                        var encompassingRootGlob = TryGetEncompassingRootDirectoryPattern(globValue, out var encompassingRootPattern)
+                            ? MSBuildGlob.Parse(projectDir, globValue)
+                            : null;
+
                         // The glob creates regex based on the three parts of the glob.
                         // Avoid adding duplicate globs that match the same files.
-                        globs.TryAdd((glob.FixedDirectoryPart, glob.WildcardDirectoryPart, glob.FilenamePart), (glob, globValue, projectDir));
+                        globs.TryAdd(
+                            (glob.FixedDirectoryPart, glob.WildcardDirectoryPart, glob.FilenamePart),
+                            new ExclusionGlob(projectDir, glob, globValue, encompassingRootGlob));
                     }
                 }
             }
@@ -71,7 +83,7 @@ internal readonly struct FilePathExclusions(
 
     public void Report(ILogger log)
     {
-        foreach (var globsPerDirectory in exclusionGlobs.GroupBy(keySelector: static g => g.projectDir, elementSelector: static g => g.value))
+        foreach (var globsPerDirectory in exclusionGlobs.GroupBy(keySelector: static g => g.ProjectDir, elementSelector: static g => g.Value))
         {
             log.LogDebug("Exclusion glob: '{Globs}' under project '{Directory}'", string.Join(";", globsPerDirectory), globsPerDirectory.Key);
         }
@@ -82,7 +94,7 @@ internal readonly struct FilePathExclusions(
         }
     }
 
-    internal bool IsExcluded(string fullPath, ChangeKind changeKind, ILogger logger)
+    public bool IsExcluded(string fullPath, ChangeKind changeKind, ILogger logger)
     {
         if (PathUtilities.ContainsPath(outputDirectories, fullPath))
         {
@@ -90,15 +102,52 @@ internal readonly struct FilePathExclusions(
             return true;
         }
 
-        foreach (var (glob, globValue, projectDir) in exclusionGlobs)
+        foreach (var exclusionGlob in exclusionGlobs)
         {
-            if (glob.IsMatch(fullPath))
+            if (exclusionGlob.Glob.IsMatch(fullPath))
             {
-                logger.Log(MessageDescriptor.IgnoringChangeInExcludedFile, fullPath, changeKind, "DefaultItemExcludes", globValue, projectDir);
+                logger.Log(MessageDescriptor.IgnoringChangeInExcludedFile, fullPath, changeKind, "DefaultItemExcludes", exclusionGlob.Value, exclusionGlob.ProjectDir);
                 return true;
             }
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// True if the entire subdirectory <paramref name="directoryPath"/> is excluded.
+    /// </summary>
+    public bool IsExcludedSubdirectory(string directoryPath)
+        => exclusionGlobs.Any(exclusionGlob => exclusionGlob.EncompassingRootGlob?.IsMatch(directoryPath) == true) ||
+           PathUtilities.ContainsPath(outputDirectories, directoryPath);
+
+    /// <summary>
+    /// If the <paramref name="pattern"/> matches all possible files and directories under a root directory,
+    /// returns true and the pattern that matches all such root directories. Otherwise, returns false.
+    /// </summary>
+    internal static bool TryGetEncompassingRootDirectoryPattern(ReadOnlySpan<char> pattern, out ReadOnlySpan<char> rootPattern)
+    {
+        var hasDoubleStar = false;
+        while (true)
+        {
+            var separator = pattern.LastIndexOfAny('/', '\\');
+            var part = pattern[(separator + 1)..];
+
+            if (part is "")
+            {
+                continue;
+            }
+
+            if (part is not ("*" or "**"))
+            {
+                break;
+            }
+
+            hasDoubleStar |= part is "**";
+            pattern = pattern[..separator];
+        }
+
+        rootPattern = pattern;
+        return hasDoubleStar;
     }
 }

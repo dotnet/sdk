@@ -735,7 +735,7 @@ namespace Microsoft.DotNet.Watch
             else
             {
                 // evaluation cancelled - watch for any changes in the directory tree containing the root project:
-                fileWatcher.WatchContainingDirectories([_context.RootProjectOptions.ProjectPath], includeSubdirectories: true);
+                fileWatcher.WatchContainingDirectories([_context.RootProjectOptions.ProjectPath], FilePathExclusions.Empty, includeSubdirectories: true);
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
                     acceptChange: change => AcceptChange(change),
