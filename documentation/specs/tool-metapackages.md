@@ -1,5 +1,7 @@
 # .NET Tool Metapackages Design
 
+**Related Issue:** [#52609](https://github.com/dotnet/sdk/issues/52609)
+
 ## Overview
 
 This document describes the design and implementation of .NET tool metapackages, which enable multiple related tools to be installed with a single gesture. This feature is inspired by VS Code's Extension Packs and addresses common scenarios where users need to install multiple related tools.
