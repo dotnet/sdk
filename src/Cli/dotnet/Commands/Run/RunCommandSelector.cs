@@ -56,6 +56,23 @@ internal sealed class RunCommandSelector : IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets whether the project has opted in to receiving environment variables as MSBuild items.
+    /// When true, 'dotnet run -e' will pass environment variables as @(RuntimeEnvironmentVariable) items
+    /// via CustomBeforeMicrosoftCommonProps.
+    /// </summary>
+    public bool UseRuntimeEnvironmentVariableItems
+    {
+        get
+        {
+            if (OpenProjectIfNeeded(out var projectInstance))
+            {
+                return string.Equals(projectInstance.GetPropertyValue(Constants.UseRuntimeEnvironmentVariableItems), "true", StringComparison.OrdinalIgnoreCase);
+            }
+            return false;
+        }
+    }
+
     /// <param name="projectFilePath">Path to the project file to evaluate</param>
     /// <param name="isInteractive">Whether to prompt the user for selections</param>
     /// <param name="msbuildArgs">MSBuild arguments containing properties and verbosity settings</param>
@@ -509,8 +526,11 @@ internal sealed class RunCommandSelector : IDisposable
             return true;
         }
 
-        // Add environment variables as items before building the target
-        EnvironmentVariablesToMSBuild.AddAsItems(projectInstance, _environmentVariables);
+        // Add environment variables as items before building the target, only if opted in
+        if (UseRuntimeEnvironmentVariableItems)
+        {
+            EnvironmentVariablesToMSBuild.AddAsItems(projectInstance, _environmentVariables);
+        }
 
         // Build the DeployToDevice target
         var buildResult = projectInstance.Build(

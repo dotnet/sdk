@@ -165,7 +165,9 @@ These environment variables are:
    variables when the app is launched.
 
 2. **Passed to MSBuild during build, deploy, and ComputeRunArguments** -
-   as `@(RuntimeEnvironmentVariable)` items that workloads can consume:
+   as `@(RuntimeEnvironmentVariable)` items that workloads can consume.
+   **This behavior is opt-in**: projects must set `$(UseRuntimeEnvironmentVariableItems)=true`
+   to receive these items.
 
 ```xml
 <ItemGroup>
@@ -176,6 +178,20 @@ These environment variables are:
 
 This allows workloads (iOS, Android, etc.) to access environment
 variables during the `build`, `DeployToDevice`, and `ComputeRunArguments` target execution.
+
+### Opting In
+
+To receive environment variables as MSBuild items, projects must opt in by setting
+the `UseRuntimeEnvironmentVariableItems` property:
+
+```xml
+<PropertyGroup>
+  <UseRuntimeEnvironmentVariableItems>true</UseRuntimeEnvironmentVariableItems>
+</PropertyGroup>
+```
+
+Mobile workloads (iOS, Android, etc.) should set this property in their SDK targets
+so that all projects using those workloads automatically opt in.
 
 Workloads can consume these items in their MSBuild targets:
 

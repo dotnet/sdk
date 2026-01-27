@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net9.0;$(CurrentTargetFramework)</TargetFrameworks>
+    <!-- Opt in to receiving environment variables as @(RuntimeEnvironmentVariable) items from dotnet run -e -->
+    <UseRuntimeEnvironmentVariableItems>true</UseRuntimeEnvironmentVariableItems>
   </PropertyGroup>
 
   <Target Name="ComputeAvailableDevices" Returns="@(Devices)" DependsOnTargets="ResolveFrameworkReferences">

@@ -44,6 +44,12 @@ public static class Constants
     public const string CustomBeforeMicrosoftCommonProps = nameof(CustomBeforeMicrosoftCommonProps);
     public const string IntermediateOutputPath = nameof(IntermediateOutputPath);
 
+    /// <summary>
+    /// Property that workloads set to opt in to receiving environment variables as MSBuild items.
+    /// When true, 'dotnet run -e' will pass environment variables as @(RuntimeEnvironmentVariable) items.
+    /// </summary>
+    public const string UseRuntimeEnvironmentVariableItems = nameof(UseRuntimeEnvironmentVariableItems);
+
     // MSBuild CLI flags
 
     /// <summary>
