@@ -86,33 +86,64 @@ internal readonly struct FilePathExclusions(
 
     /// <summary>
     /// Determines if a glob pattern excludes an entire subdirectory recursively.
-    /// Patterns like "dir/**" or "dir/**/*.*" exclude all contents of "dir".
     /// </summary>
     private static bool IsDirectoryExclusionPattern(MSBuildGlob glob, string globValue)
     {
-        // Check if the pattern ends with /** or /**/* or /**/*.*
-        // These patterns match all files recursively in a directory
-        return globValue.EndsWith("/**", StringComparison.Ordinal) ||
-               globValue.EndsWith("/**/*", StringComparison.Ordinal) ||
-               globValue.EndsWith("/**/*.*", StringComparison.Ordinal);
+        // A pattern excludes an entire subdirectory if it ends with wildcards that match all files recursively
+        // We need to check if the glob value ends with a pattern that matches all content
+        return globValue.EndsWith("/**", StringComparison.Ordinal) || 
+               globValue.EndsWith("/**/*", StringComparison.Ordinal);
     }
 
     /// <summary>
     /// Extracts the directory path that should be excluded from watching.
+    /// For patterns like "**/bin/**", we want to extract "**/bin".
+    /// For patterns like "obj/**", we want to extract "obj".
     /// </summary>
     private static string? GetExcludedDirectory(MSBuildGlob glob)
     {
         try
         {
-            // The FixedDirectoryPart contains the path up to the first wildcard
-            // For patterns like "C:/project/bin/**", FixedDirectoryPart is "C:/project/bin/"
-            var fixedPart = glob.FixedDirectoryPart;
+            // Combine FixedDirectoryPart and WildcardDirectoryPart to get the full directory pattern
+            // Then trim trailing ** and * parts to get the directory to exclude
+            var fixedPart = glob.FixedDirectoryPart ?? string.Empty;
+            var wildcardPart = glob.WildcardDirectoryPart ?? string.Empty;
             
-            if (!string.IsNullOrEmpty(fixedPart))
+            // Combine the parts
+            var fullPath = fixedPart + wildcardPart;
+            
+            if (string.IsNullOrEmpty(fullPath))
             {
-                // Remove trailing directory separator and get the full path
-                return Path.TrimEndingDirectorySeparator(Path.GetFullPath(fixedPart));
+                return null;
             }
+            
+            // Trim trailing directory separators and wildcard patterns (**, *, etc.)
+            fullPath = fullPath.TrimEnd('/', '\\');
+            
+            // Remove trailing wildcards (**, *, etc.) to get the directory path
+            while (fullPath.Length > 0)
+            {
+                if (fullPath.EndsWith("**", StringComparison.Ordinal))
+                {
+                    fullPath = fullPath.Substring(0, fullPath.Length - 2).TrimEnd('/', '\\');
+                }
+                else if (fullPath.EndsWith("*", StringComparison.Ordinal))
+                {
+                    fullPath = fullPath.Substring(0, fullPath.Length - 1).TrimEnd('/', '\\');
+                }
+                else
+                {
+                    break;
+                }
+            }
+            
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                return null;
+            }
+            
+            // Get the full absolute path
+            return Path.TrimEndingDirectorySeparator(Path.GetFullPath(fullPath));
         }
         catch (ArgumentException)
         {

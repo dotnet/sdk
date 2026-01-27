@@ -15,9 +15,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Theory]
         [InlineData("bin/**")]
         [InlineData("bin/**/*")]
-        [InlineData("bin/**/*.*")]
         [InlineData("obj/**")]
         [InlineData("**/node_modules/**")]
+        [InlineData("**/**/dist/**")]
         public void ExcludesDirectoriesMatchingGlobPatterns(string exclusionPattern)
         {
             // Create a simple test project with default item excludes
