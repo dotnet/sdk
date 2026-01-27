@@ -4,35 +4,38 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
 /// Handles muxer (dotnet executable) replacement logic during archive extraction.
 /// The muxer should only be replaced when installing a newer core runtime version.
-/// 
+///
 /// Workflow:
 /// 1. Before extraction: record the highest existing runtime version
 /// 2. Extract everything, but redirect the muxer to a temp file
 /// 3. After extraction: check if a higher runtime version now exists
 /// 4. If yes, move the temp muxer to the real location; otherwise delete it
 /// </summary>
-internal class MuxerHandler
+ internal class MuxerHandler
 {
     private readonly string _targetDir;
     private readonly string _muxerName;
     private readonly string _muxerTargetPath;
     private readonly string _tempMuxerPath;
     private readonly string _existingMuxerBackupPath;
+    private readonly bool _requireMuxerUpdate;
 
     private Version? _preExtractionHighestRuntimeVersion;
     private bool _hadExistingMuxer;
     private bool _extractedNewMuxer;
     private bool _movedExistingMuxer;
 
-    public MuxerHandler(string targetDir)
+    public MuxerHandler(string targetDir, bool requireMuxerUpdate = false)
     {
         _targetDir = targetDir;
+        _requireMuxerUpdate = requireMuxerUpdate;
         _muxerName = DotnetupUtilities.GetDotnetExeName();
         _muxerTargetPath = Path.Combine(targetDir, _muxerName);
         _tempMuxerPath = $"{_muxerTargetPath}.{Guid.NewGuid()}.new";
@@ -126,9 +129,17 @@ internal class MuxerHandler
             }
             catch (Exception ex) when (IsFileInUseException(ex))
             {
-                Console.WriteLine($"Warning: Could not update dotnet executable - it is currently in use by another process. " +
-                    $"The existing muxer will be retained. This may cause issues if the new runtime requires a newer muxer.");
                 TryDeleteTempMuxer();
+
+                if (_requireMuxerUpdate)
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot update dotnet executable at '{_muxerTargetPath}' - it is currently in use by another process. " +
+                        $"Close all running .NET applications and try again.", ex);
+                }
+
+                SpectreAnsiConsole.MarkupLine($"[yellow]Warning: Could not update dotnet executable at '{Spectre.Console.Markup.Escape(_muxerTargetPath)}' - it is currently in use by another process. " +
+                    $"The existing muxer will be retained. This may cause issues if the new runtime requires a newer muxer.[/]");
                 return;
             }
         }
@@ -192,10 +203,9 @@ internal class MuxerHandler
 
     private static bool IsFileInUseException(Exception ex)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            return ex is UnauthorizedAccessException || ex is IOException;
-        }
-        return false;
+        // On Windows, IOException or UnauthorizedAccessException typically indicates file in use
+        // On Unix, this is less common (you can rename/delete running executables), but we still
+        // want to handle permission errors or other I/O issues gracefully
+        return ex is UnauthorizedAccessException || ex is IOException;
     }
 }

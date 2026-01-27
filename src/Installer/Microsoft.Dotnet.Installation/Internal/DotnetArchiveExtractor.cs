@@ -103,7 +103,7 @@ internal class DotnetArchiveExtractor : IDisposable
         Directory.CreateDirectory(targetDir);
 
         // Set up muxer handling - muxer will be extracted to temp path during main extraction
-        var muxerHandler = new MuxerHandler(targetDir);
+        var muxerHandler = new MuxerHandler(targetDir, _request.Options.RequireMuxerUpdate);
         muxerHandler.RecordPreExtractionState();
 
         // Extract everything, redirecting muxer to temp path

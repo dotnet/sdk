@@ -16,6 +16,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     private readonly string? _manifestPath = result.GetValue(RuntimeInstallCommandParser.ManifestPathOption);
     private readonly bool _interactive = result.GetValue(RuntimeInstallCommandParser.InteractiveOption);
     private readonly bool _noProgress = result.GetValue(RuntimeInstallCommandParser.NoProgressOption);
+    private readonly bool _requireMuxerUpdate = result.GetValue(RuntimeInstallCommandParser.RequireMuxerUpdateOption);
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
@@ -64,7 +65,8 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             _interactive,
             _noProgress,
             runtimeInfo.Component,
-            runtimeInfo.Description);
+            runtimeInfo.Description,
+            RequireMuxerUpdate: _requireMuxerUpdate);
 
         InstallWorkflow.InstallWorkflowResult workflowResult = workflow.Execute(options);
         return workflowResult.ExitCode;
