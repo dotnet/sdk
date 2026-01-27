@@ -37,7 +37,14 @@ function EnsureDotnetupBuilt {
         $dotnetupProject = Join-Path $RepoRoot "src\Installer\dotnetup\dotnetup.csproj"
         $dotnetupOutDir = Join-Path $PSScriptRoot "dotnetup"
 
-        & $env:DOTNET_INSTALL_DIR\dotnet publish $dotnetupProject -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o $dotnetupOutDir
+        # Determine RID based on architecture
+        $rid = if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
+            "win-arm64"
+        } else {
+            "win-x64"
+        }
+
+        & $env:DOTNET_INSTALL_DIR\dotnet publish $dotnetupProject -c Release -r $rid --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o $dotnetupOutDir
 
         if ($lastExitCode -ne 0) {
             throw "Failed to build dotnetup (exit code '$lastExitCode')."
