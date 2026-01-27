@@ -62,10 +62,10 @@ namespace Microsoft.DotNet.Watch
         /// <summary>
         /// Watches an entire directory or directory tree.
         /// </summary>
-        public void WatchContainingDirectories(IEnumerable<string> filePaths, bool includeSubdirectories)
-            => Watch(filePaths, containingDirectories: true, includeSubdirectories);
+        public void WatchContainingDirectories(IEnumerable<string> filePaths, bool includeSubdirectories, IReadOnlySet<string>? excludedDirectories = null)
+            => Watch(filePaths, containingDirectories: true, includeSubdirectories, excludedDirectories);
 
-        private void Watch(IEnumerable<string> filePaths, bool containingDirectories, bool includeSubdirectories)
+        private void Watch(IEnumerable<string> filePaths, bool containingDirectories, bool includeSubdirectories, IReadOnlySet<string>? excludedDirectories = null)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             Debug.Assert(containingDirectories || !includeSubdirectories);
@@ -78,6 +78,19 @@ namespace Microsoft.DotNet.Watch
 
             foreach (var (directory, fileNames) in filesByDirectory)
             {
+                // Skip watching directories that are excluded
+                if (includeSubdirectories && excludedDirectories != null)
+                {
+                    var normalizedDirectory = Path.TrimEndingDirectorySeparator(directory);
+                    
+                    // Check if this directory or any parent directory is excluded
+                    if (PathUtilities.ContainsPath(excludedDirectories, normalizedDirectory))
+                    {
+                        logger.LogDebug("Skipping watch on excluded directory: '{Directory}'", normalizedDirectory);
+                        continue;
+                    }
+                }
+
                 // the directory is watched by active directory watcher:
                 if (!includeSubdirectories && _directoryWatchers.TryGetValue(directory, out var existingDirectoryWatcher))
                 {

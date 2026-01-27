@@ -9,13 +9,17 @@ namespace Microsoft.DotNet.Watch;
 
 internal readonly struct FilePathExclusions(
     IEnumerable<(MSBuildGlob glob, string value, string projectDir)> exclusionGlobs,
-    IReadOnlySet<string> outputDirectories)
+    IReadOnlySet<string> outputDirectories,
+    IReadOnlySet<string> excludedDirectories)
 {
-    public static readonly FilePathExclusions Empty = new(exclusionGlobs: [], outputDirectories: new HashSet<string>());
+    public static readonly FilePathExclusions Empty = new(exclusionGlobs: [], outputDirectories: new HashSet<string>(), excludedDirectories: new HashSet<string>());
+
+    public IReadOnlySet<string> ExcludedDirectories => excludedDirectories;
 
     public static FilePathExclusions Create(ProjectGraph projectGraph)
     {
         var outputDirectories = new HashSet<string>(PathUtilities.OSSpecificPathComparer);
+        var excludedDirectories = new HashSet<string>(PathUtilities.OSSpecificPathComparer);
         var globs = new Dictionary<(string fixedDirectoryPart, string wildcardDirectoryPart, string filenamePart), (MSBuildGlob glob, string value, string projectDir)>();
 
         foreach (var projectNode in projectGraph.ProjectNodes)
@@ -32,6 +36,17 @@ internal readonly struct FilePathExclusions(
                         // The glob creates regex based on the three parts of the glob.
                         // Avoid adding duplicate globs that match the same files.
                         globs.TryAdd((glob.FixedDirectoryPart, glob.WildcardDirectoryPart, glob.FilenamePart), (glob, globValue, projectDir));
+
+                        // If the glob excludes an entire subdirectory (e.g., ends with /** or /**/*.*)
+                        // we can avoid watching that subdirectory
+                        if (IsDirectoryExclusionPattern(glob, globValue))
+                        {
+                            var excludedDir = GetExcludedDirectory(glob);
+                            if (excludedDir != null)
+                            {
+                                excludedDirectories.Add(excludedDir);
+                            }
+                        }
                     }
                 }
             }
@@ -66,7 +81,45 @@ internal readonly struct FilePathExclusions(
             }
         }
 
-        return new FilePathExclusions(globs.Values, outputDirectories);
+        return new FilePathExclusions(globs.Values, outputDirectories, excludedDirectories);
+    }
+
+    /// <summary>
+    /// Determines if a glob pattern excludes an entire subdirectory recursively.
+    /// Patterns like "dir/**" or "dir/**/*.*" exclude all contents of "dir".
+    /// </summary>
+    private static bool IsDirectoryExclusionPattern(MSBuildGlob glob, string globValue)
+    {
+        // Check if the pattern ends with /** or /**/* or /**/*.*
+        // These patterns match all files recursively in a directory
+        return globValue.EndsWith("/**", StringComparison.Ordinal) ||
+               globValue.EndsWith("/**/*", StringComparison.Ordinal) ||
+               globValue.EndsWith("/**/*.*", StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Extracts the directory path that should be excluded from watching.
+    /// </summary>
+    private static string? GetExcludedDirectory(MSBuildGlob glob)
+    {
+        try
+        {
+            // The FixedDirectoryPart contains the path up to the first wildcard
+            // For patterns like "C:/project/bin/**", FixedDirectoryPart is "C:/project/bin/"
+            var fixedPart = glob.FixedDirectoryPart;
+            
+            if (!string.IsNullOrEmpty(fixedPart))
+            {
+                // Remove trailing directory separator and get the full path
+                return Path.TrimEndingDirectorySeparator(Path.GetFullPath(fixedPart));
+            }
+        }
+        catch
+        {
+            // ignore invalid paths
+        }
+
+        return null;
     }
 
     public void Report(ILogger log)
@@ -79,6 +132,11 @@ internal readonly struct FilePathExclusions(
         foreach (var dir in outputDirectories)
         {
             log.LogDebug("Excluded directory: '{Directory}'", dir);
+        }
+
+        foreach (var dir in excludedDirectories)
+        {
+            log.LogDebug("Excluded directory from watching: '{Directory}'", dir);
         }
     }
 

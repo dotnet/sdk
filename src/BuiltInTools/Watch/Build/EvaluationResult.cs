@@ -33,11 +33,15 @@ internal sealed class EvaluationResult(ProjectGraph projectGraph, IReadOnlyDicti
 
     public void WatchFiles(FileWatcher fileWatcher)
     {
-        fileWatcher.WatchContainingDirectories(Files.Keys, includeSubdirectories: true);
+        // Combine excluded directories from output directories and glob-based exclusions
+        var excludedDirectories = ItemExclusions.ExcludedDirectories.ToHashSet(PathUtilities.OSSpecificPathComparer);
+
+        fileWatcher.WatchContainingDirectories(Files.Keys, includeSubdirectories: true, excludedDirectories);
 
         fileWatcher.WatchContainingDirectories(
             StaticWebAssetsManifests.Values.SelectMany(static manifest => manifest.DiscoveryPatterns.Select(static pattern => pattern.Directory)),
-            includeSubdirectories: true);
+            includeSubdirectories: true,
+            excludedDirectories);
 
         fileWatcher.WatchFiles(BuildFiles);
     }
