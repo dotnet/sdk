@@ -1043,11 +1043,6 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1200: 如果 UseArtifactsPath 設定為 true 且未設定 ArtifactsPath，則必須有 Directory.Build.props 檔案，才能判斷成品資料夾的位置。</target>
         <note>{StrBegins="NETSDK1200: "}</note>
       </trans-unit>
-      <trans-unit id="UnsupportedVisualStudioVersion">
-        <source>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</source>
-        <target state="translated">NETSDK1209: 目前的 Visual Studio 版本不支援將 {0} {1} 設定為目標。請將 {0} {2} 或更低版本設定為目標，或是使用 Visual Studio 版本 {3} 或更新版本</target>
-        <note>{StrBegins="NETSDK1209: "}</note>
-      </trans-unit>
       <trans-unit id="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled">
         <source>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</source>
         <target state="translated">NETSDK1208: 無法辨識目標平台識別碼 {0}。這是因為 MSBuildEnableWorkloadResolver 設為 false，這會停用此識別碼所需的 .NET SDK 工作負載。取消設定此環境變數或 MSBuild 屬性以啟用工作負載。</target>
