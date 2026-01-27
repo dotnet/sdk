@@ -47,7 +47,6 @@
 
     <!-- TFMs -->
     <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
-    <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
     <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
     <VisualStudioTargetFramework>$(NetFrameworkToolCurrent)</VisualStudioTargetFramework>
