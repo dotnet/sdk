@@ -233,17 +233,15 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
             BufferedReporter bufferedReporter = new();
             
-            // Set up Reporter.Verbose to capture the message
+            // Set up Reporter.Verbose to capture the message at diagnostic verbosity
             CommandLoggingContext.SetVerbose(true);
             Reporter.SetVerbose(bufferedReporter);
-            Reporter.Reset();
             
             try
             {
                 NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
                     new MockFirstPartyNuGetPackageSigningVerifier(),
-                    _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true), 
-                    verbosityOptions: VerbosityOptions.diagnostic);
+                    _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true));
                 await nuGetPackageDownloader.DownloadPackageAsync(
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
