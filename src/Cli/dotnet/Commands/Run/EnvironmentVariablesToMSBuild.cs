@@ -61,7 +61,8 @@ internal static class EnvironmentVariablesToMSBuild
                 : Path.Combine(projectDirectory, intermediateOutputPath);
         Directory.CreateDirectory(objDir);
 
-        string propsFilePath = Path.Combine(objDir, PropsFileName);
+        // Ensure we return a full path for MSBuild property usage
+        string propsFilePath = Path.GetFullPath(Path.Combine(objDir, PropsFileName));
         using (var stream = File.Create(propsFilePath))
         {
             WritePropsFileContent(stream, environmentVariables);
