@@ -34,6 +34,7 @@ internal static class RuntimeInstallCommandParser
     public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
     public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
+    public static readonly Option<bool> RequireMuxerUpdateOption = CommonOptions.RequireMuxerUpdateOption;
 
     private static readonly Command RuntimeInstallCommand = ConstructCommand();
 
@@ -55,6 +56,7 @@ internal static class RuntimeInstallCommandParser
 
         command.Options.Add(InteractiveOption);
         command.Options.Add(NoProgressOption);
+        command.Options.Add(RequireMuxerUpdateOption);
 
         command.SetAction(parseResult => new RuntimeInstallCommand(parseResult).Execute());
 
