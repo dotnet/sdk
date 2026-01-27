@@ -40,7 +40,8 @@ function EnsureDotnetupBuilt {
         # Determine RID based on architecture
         $rid = if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
             "win-arm64"
-        } else {
+        }
+        else {
             "win-x64"
         }
 

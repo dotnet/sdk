@@ -7,9 +7,9 @@
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
-    
+
     <!-- Single file settings -->
-    <!-- IncludeAllContentForSelfExtract embeds satellite assemblies in the single-file bundle -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <DebugType>embedded</DebugType>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
 
