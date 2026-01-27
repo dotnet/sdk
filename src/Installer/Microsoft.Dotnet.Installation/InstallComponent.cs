@@ -10,3 +10,21 @@ public enum InstallComponent
     ASPNETCore,
     WindowsDesktop
 }
+
+/// <summary>
+/// Extension methods for InstallComponent.
+/// </summary>
+public static class InstallComponentExtensions
+{
+    /// <summary>
+    /// Gets a user-friendly description for the install component type.
+    /// </summary>
+    public static string GetDescription(this InstallComponent component) => component switch
+    {
+        InstallComponent.SDK => ".NET SDK",
+        InstallComponent.Runtime => ".NET Runtime",
+        InstallComponent.ASPNETCore => "ASP.NET Core Runtime",
+        InstallComponent.WindowsDesktop => "Windows Desktop Runtime",
+        _ => ".NET"
+    };
+}

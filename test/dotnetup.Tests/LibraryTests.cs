@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -23,17 +24,21 @@ public class LibraryTests
     }
 
     [Theory]
-    [InlineData("9")]
-    [InlineData("latest")]
-    [InlineData("sts")]
-    [InlineData("lts")]
-    [InlineData("preview")]
-    public void LatestVersionForChannelCanBeInstalled(string channel)
+    [InlineData("9", InstallComponent.SDK)]
+    [InlineData("latest", InstallComponent.SDK)]
+    [InlineData("sts", InstallComponent.SDK)]
+    [InlineData("lts", InstallComponent.SDK)]
+    [InlineData("preview", InstallComponent.SDK)]
+    [InlineData("9", InstallComponent.Runtime)]
+    [InlineData("latest", InstallComponent.Runtime)]
+    [InlineData("9", InstallComponent.ASPNETCore)]
+    [InlineData("latest", InstallComponent.ASPNETCore)]
+    public void LatestVersionForChannelCanBeInstalled(string channel, InstallComponent component)
     {
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
 
-        var latestVersion = releaseInfoProvider.GetLatestVersion(InstallComponent.SDK, channel);
-        Log.WriteLine($"Latest version for channel '{channel}' is '{latestVersion}'");
+        var latestVersion = releaseInfoProvider.GetLatestVersion(component, channel);
+        Log.WriteLine($"Latest {component} version for channel '{channel}' is '{latestVersion}'");
 
         var installer = InstallerFactory.CreateInstaller(new NullProgressTarget());
 
@@ -43,7 +48,7 @@ public class LibraryTests
 
         installer.Install(
             new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
-            InstallComponent.SDK,
+            component,
             latestVersion!);
     }
 
@@ -231,5 +236,56 @@ public class LibraryTests
         {
             return null;
         }
+    }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_ResolvesRelativeToDirectory()
+    {
+        // Regression test: SdkPath should resolve relative paths using the directory
+        // containing global.json, not the file path itself.
+        // Bug: Path.GetFullPath(".", "D:\sdk\global.json") incorrectly treats global.json as a directory.
+        // Fix: Use Path.GetDirectoryName(GlobalJsonPath) as the base path.
+
+        // Use a cross-platform absolute path (temp directory is always fully qualified)
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonPath = Path.Combine(repoDir, "global.json");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = globalJsonPath,
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new[] { ".dotnet" }
+                }
+            }
+        };
+
+        var sdkPath = globalJsonInfo.SdkPath;
+
+        // Should resolve to <repoDir>\.dotnet, NOT <repoDir>\global.json\.dotnet
+        sdkPath.Should().Be(Path.Combine(repoDir, ".dotnet"));
+        sdkPath.Should().NotContain("global.json");
+    }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_ReturnsNullWhenNoPathsConfigured()
+    {
+        // Use a cross-platform absolute path (temp directory is always fully qualified)
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Version = "9.0.100"
+                    // No Paths configured
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().BeNull();
     }
 }

@@ -36,27 +36,45 @@ internal static class DotnetupTestUtilities
     }
 
     /// <summary>
-    /// Builds command line arguments for dotnetup
+    /// Builds command line arguments for SDK install
+    /// </summary>
+    public static string[] BuildSdkArguments(string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
+        => BuildArguments(InstallComponent.SDK, channel, installPath, manifestPath, disableProgress, runtimeType: null);
+
+    /// <summary>
+    /// Builds command line arguments for runtime install
+    /// </summary>
+    public static string[] BuildRuntimeArguments(string runtimeType, string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
+        => BuildArguments(InstallComponent.Runtime, channel, installPath, manifestPath, disableProgress, runtimeType);
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup (legacy - defaults to SDK)
     /// </summary>
     public static string[] BuildArguments(string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
+        => BuildSdkArguments(channel, installPath, manifestPath, disableProgress);
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup
+    /// </summary>
+    public static string[] BuildArguments(InstallComponent component, string channel, string installPath, string? manifestPath = null, bool disableProgress = true, string? runtimeType = null)
     {
-        var args = new List<string>
+        var args = new List<string>();
+
+        if (component == InstallComponent.SDK)
         {
-            "sdk",
-            "install",
-            channel
-        };
+            args.AddRange(["sdk", "install", channel]);
+        }
+        else
+        {
+            // Runtime install: dotnetup runtime install <type> <channel>
+            args.AddRange(["runtime", "install", runtimeType ?? "core", channel]);
+        }
 
-        args.Add("--install-path");
-        args.Add(installPath);
-        args.Add("--interactive");
-        args.Add("false");
+        args.AddRange(["--install-path", installPath, "--interactive", "false"]);
 
-        // Add manifest path option if specified for test isolation
         if (!string.IsNullOrEmpty(manifestPath))
         {
-            args.Add("--manifest-path");
-            args.Add(manifestPath);
+            args.AddRange(["--manifest-path", manifestPath]);
         }
 
         // Add no-progress option when running tests in parallel to avoid Spectre.Console exclusivity issues
