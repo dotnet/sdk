@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -107,6 +108,15 @@ internal static class MicrosoftTestingPlatformOptions
     };
 
     public static readonly Option<string[]> MTPTargetOption = CommonOptions.RequiredMSBuildTargetOption(CliConstants.MTPTarget);
+
+    // Custom self-contained option for MTP that accepts boolean values
+    // Using string type to avoid automatic --no- prefix from System.CommandLine
+    public static readonly Option<bool> SelfContainedOption =
+        new Option<bool>("--self-contained", "--sc")
+        {
+            Description = CliStrings.SelfContainedOptionDescription
+        }
+        .ForwardIfEnabled([$"--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true"]);
 }
 
 internal enum OutputOptions

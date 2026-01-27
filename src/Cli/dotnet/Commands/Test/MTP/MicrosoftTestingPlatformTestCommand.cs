@@ -40,6 +40,9 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult, buildOptions.PathOptions);
 
+        // Note: --self-contained is now a boolean flag that accepts true/false values
+        // No validation needed as mutual exclusivity is not applicable
+
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
         var testOptions = new TestOptions(
             IsHelp: isHelp,
