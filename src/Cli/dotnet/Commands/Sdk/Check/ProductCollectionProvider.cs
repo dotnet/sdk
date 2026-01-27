@@ -38,7 +38,7 @@ public class ProductCollectionProvider : IProductCollectionProvider
             {
                 return Task.Run(() => ProductCollection.GetAsync(uri.ToString())).Result;
             }
-            
+
             if (filePath != null)
             {
                 return Task.Run(() => ProductCollection.GetFromFileAsync(filePath, false)).Result;
