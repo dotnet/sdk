@@ -419,5 +419,62 @@ namespace Microsoft.DotNet.NativeWrapper
 #endif
             string? exeDir,
             hostfxr_get_available_sdks_result_fn result);
+    
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        internal struct hostfxr_initialize_parameters
+        {
+            public nint size;
+            public PlatformString host_path;
+            public PlatformString dotnet_root;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        internal struct hostfxr_framework_result
+        {
+            public nint size;
+            public PlatformString name;
+            public PlatformString requested_version;
+            public PlatformString resolved_version;
+            public PlatformString resolved_path;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        internal struct hostfxr_resolve_frameworks_result
+        {
+            public nint size;
+
+            public nint resolved_count;
+            public hostfxr_framework_result resolved_frameworks;
+
+            public nint unresolved_count;
+            public hostfxr_framework_result unresolved_frameworks;
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        internal unsafe delegate void hostfxr_resolve_frameworks_result_fn(
+            ref hostfxr_resolve_frameworks_result result,
+            IntPtr result_context
+        );
+
+#if NET
+        [LibraryImport(
+            Constants.HostFxr,
+            EntryPoint = "hostfxr_resolve_frameworks_for_runtime_config",
+            StringMarshalling = StringMarshalling.Custom,
+            StringMarshallingCustomType = typeof(PlatformStringMarshaller))]
+        [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+        internal static partial StatusCode hostfxr_resolve_frameworks_for_runtime_config(
+#else
+        [DllImport(
+            Constants.HostFxr,
+            EntryPoint = "hostfxr_resolve_frameworks_for_runtime_config",
+            CharSet = CharSet.Unicode,
+            CallingConvention = CallingConvention.Cdecl)]
+        internal static extern StatusCode hostfxr_resolve_frameworks_for_runtime_config(
+#endif
+            string runtime_config_path,
+            IntPtr parameters,
+            hostfxr_resolve_frameworks_result_fn callback,
+            IntPtr result_context);
     }
 }
