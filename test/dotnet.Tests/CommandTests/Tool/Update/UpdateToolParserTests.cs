@@ -200,8 +200,6 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Parse("dotnet tool update -g console.test.app@1.0.0 --version 2.0.0");
 
-            var definition = Assert.IsType<ToolUpdateCommandDefinition>(result.CommandResult.Command);
-
             var toolUpdateCommand = new Cli.Commands.Tool.Update.ToolUpdateCommand(result);
 
             Action a = () => toolUpdateCommand.Execute();

@@ -179,8 +179,6 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Parse("dotnet tool install -g console.test.app@1.0.0 --version 2.0.0");
 
-            var definition = Assert.IsType<ToolInstallCommandDefinition>(result.CommandResult.Command);
-
             var toolInstallCommand = new Cli.Commands.Tool.Install.ToolInstallCommand(result);
 
             Action a = () => toolInstallCommand.Execute();
