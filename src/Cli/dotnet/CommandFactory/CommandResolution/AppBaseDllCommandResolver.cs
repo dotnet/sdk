@@ -18,7 +18,7 @@ public class AppBaseDllCommandResolver : ICommandResolver
         }
         if (commandResolverArguments.CommandName.EndsWith(FileNameSuffixes.DotNet.DynamicLib))
         {
-            var localPath = Path.Combine(AppContext.BaseDirectory,
+            var localPath = Path.Combine(PathResolver.Default.SdkRoot,
                 commandResolverArguments.CommandName);
             if (File.Exists(localPath))
             {
@@ -26,7 +26,7 @@ public class AppBaseDllCommandResolver : ICommandResolver
                     new[] { localPath }
                     .Concat(commandResolverArguments.CommandArguments.OrEmptyIfNull()));
                 return new CommandSpec(
-                    new Muxer().MuxerPath,
+                    PathResolver.Default.DotnetExecutable,
                     escapedArgs);
             }
         }

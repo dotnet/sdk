@@ -33,7 +33,7 @@ internal sealed class PerformanceLogEventSource : EventSource
 
         LogMachineConfiguration();
         OSInfo(RuntimeEnvironment.OperatingSystem, RuntimeEnvironment.OperatingSystemVersion, RuntimeEnvironment.OperatingSystemPlatform.ToString());
-        SDKInfo(Product.Version, commitSha, RuntimeInformation.RuntimeIdentifier, versionFile.BuildRid, AppContext.BaseDirectory);
+        SDKInfo(Product.Version, commitSha, RuntimeInformation.RuntimeIdentifier, versionFile.BuildRid, PathResolver.Default.SdkRoot);
         EnvironmentInfo(Environment.CommandLine);
         LogMemoryConfiguration();
         LogDrives();

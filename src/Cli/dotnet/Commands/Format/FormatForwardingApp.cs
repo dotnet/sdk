@@ -11,11 +11,11 @@ public class FormatForwardingApp(IEnumerable<string> argsToForward)
         runtimeConfig: GetRuntimeConfigPath())
 {
     private static string GetForwardApplicationPath()
-        => Path.Combine(AppContext.BaseDirectory, "DotnetTools/dotnet-format/dotnet-format.dll");
+        => PathResolver.Default.GetFormatPath();
 
     private static string GetDepsFilePath()
-        => Path.Combine(AppContext.BaseDirectory, "DotnetTools/dotnet-format/dotnet-format.deps.json");
+        => PathResolver.Default.GetFormatDepsPath();
 
     private static string GetRuntimeConfigPath()
-        => Path.Combine(AppContext.BaseDirectory, "DotnetTools/dotnet-format/dotnet-format.runtimeconfig.json");
+        => PathResolver.Default.GetFormatRuntimeConfigPath();
 }

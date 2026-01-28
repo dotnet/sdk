@@ -105,11 +105,8 @@ internal readonly struct TargetPlatformOptions
 
     public static string GetCurrentRuntimeId()
     {
-        // Get the dotnet directory, while ignoring custom msbuild resolvers
-        string? dotnetRootPath = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
-            key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
-                ? null
-                : Environment.GetEnvironmentVariable(key));
+        // Get the dotnet directory
+        string? dotnetRootPath = PathResolver.Default.DotnetRoot;
         var ridFileName = "NETCoreSdkRuntimeIdentifierChain.txt";
         var sdkPath = dotnetRootPath is not null ? Path.Combine(dotnetRootPath, "sdk") : "sdk";
 

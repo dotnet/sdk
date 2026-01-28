@@ -35,7 +35,7 @@ public class VSTestForwardingApp : ForwardingApp
             return vsTestConsolePath;
         }
 
-        return Path.Combine(AppContext.BaseDirectory, VstestAppName);
+        return PathResolver.Default.GetVSTestPath();
     }
 
     internal static Dictionary<string, string> GetVSTestRootVariables()
@@ -45,9 +45,10 @@ public class VSTestForwardingApp : ForwardingApp
         // This way if we have private installation of .NET SDK, the testhost.exe will be able to use the same private installation.
         // The way to set the environment is complicated and depends on the version of testhost, so we leave that implementation to vstest console,
         // we just tell it where the current .net SDK is located, and what is the architecture of it. We don't have more information than that here.
+        var pathResolver = PathResolver.Default;
         return new()
         {
-            ["VSTEST_DOTNET_ROOT_PATH"] = Path.GetDirectoryName(new Muxer().MuxerPath),
+            ["VSTEST_DOTNET_ROOT_PATH"] = pathResolver.DotnetRoot,
             ["VSTEST_DOTNET_ROOT_ARCHITECTURE"] = RuntimeInformation.ProcessArchitecture.ToString()
         };
     }
