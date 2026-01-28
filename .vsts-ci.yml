@@ -193,7 +193,7 @@ extends:
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true
+              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true /p:BuildSdkRpm=true
               runTests: false
             - categoryName: glibc
               targetArchitecture: arm64
@@ -201,7 +201,7 @@ extends:
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true
+              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true /p:BuildSdkRpm=true
               runTests: false
             ### musl ###
             - categoryName: musl
