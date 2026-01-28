@@ -30,7 +30,6 @@ namespace Microsoft.DotNet.NativeWrapper
 
             try
             {
-                bool resolved = false;
                 IntPtr parameters = IntPtr.Zero;
                 IntPtr resultContext = IntPtr.Zero;
 
@@ -51,6 +50,7 @@ namespace Microsoft.DotNet.NativeWrapper
             catch
             {
                 // If hostfxr call fails, return false
+                // This ensures tool installation continues with fallback behavior
                 return false;
             }
         }
