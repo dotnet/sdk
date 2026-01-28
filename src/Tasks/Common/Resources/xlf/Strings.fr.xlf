@@ -1043,11 +1043,6 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1200: si UseArtifactsPath est défini sur true et que le chemin de l'artefact n'est pas défini, il doit y avoir un fichier Directory.Build.props afin de déterminer l'emplacement du dossier des artefacts.</target>
         <note>{StrBegins="NETSDK1200: "}</note>
       </trans-unit>
-      <trans-unit id="UnsupportedVisualStudioVersion">
-        <source>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</source>
-        <target state="translated">NETSDK1209: la version Visual Studio actuelle ne prend pas en charge le ciblage de {0} {1}.  Ciblez {0} {2} ou une version antérieure, ou utilisez Visual Studio version {3} ou ultérieure</target>
-        <note>{StrBegins="NETSDK1209: "}</note>
-      </trans-unit>
       <trans-unit id="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled">
         <source>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</source>
         <target state="translated">NETSDK1208: l’identificateur de plateforme cible {0} n’a pas été reconnu. Cela est dû au fait que MSBuildEnableWorkloadResolver a la valeur false, ce qui désactive les charges de travail SDK .NET requises pour cet identificateur. Annulez la définition de cette variable d’environnement ou propriété MSBuild pour activer les charges de travail.</target>
