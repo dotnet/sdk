@@ -33,9 +33,22 @@ public static class Constants
     public const string DeployToDevice = nameof(DeployToDevice);
     public const string CoreCompile = nameof(CoreCompile);
 
+    // MSBuild items
+    internal const string RuntimeEnvironmentVariable = nameof(RuntimeEnvironmentVariable);
+
     // MSBuild item metadata
     public const string Identity = nameof(Identity);
     public const string FullPath = nameof(FullPath);
+
+    // MSBuild properties
+    public const string CustomBeforeMicrosoftCommonProps = nameof(CustomBeforeMicrosoftCommonProps);
+    public const string IntermediateOutputPath = nameof(IntermediateOutputPath);
+
+    /// <summary>
+    /// Property that workloads set to opt in to receiving environment variables as MSBuild items.
+    /// When true, 'dotnet run -e' will pass environment variables as @(RuntimeEnvironmentVariable) items.
+    /// </summary>
+    public const string UseRuntimeEnvironmentVariableItems = nameof(UseRuntimeEnvironmentVariableItems);
 
     // MSBuild CLI flags
 
