@@ -4074,6 +4074,11 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">{1}에 지정된 워크로드 버전 {0}을(를) 찾을 수 없습니다. "dotnet workload restore"을 실행하여 이 워크로드 버전을 설치합니다.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">표시할 워크로드 버전 또는 '@' 문자로 결합된 하나 이상의 워크로드와 해당 버전입니다.</target>
