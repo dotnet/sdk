@@ -99,11 +99,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 // we could allow an addition if removals are allowed, and the addition is a less-derived base type or interface
                 // for example: changing a constraint from MemoryStream to Stream on a sealed type, or non-virtual member
                 // but we'll leave this to suppressions
-                
+
                 addedConstraints.AddRange(rightOnlyConstraints.Select(x => x.GetDocumentationCommentId()!));
 
                 // additions
-                foreach(var addedConstraint in addedConstraints) 
+                foreach (var addedConstraint in addedConstraints)
                 {
                     differences.Add(new CompatDifference(
                         leftMetadata,

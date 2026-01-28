@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 new CannotAddAbstractMember(settings, context),
                 new CannotAddMemberToInterface(settings, context),
                 new CannotAddOrRemoveVirtualKeyword(settings, context),
+                new CannotAddOrRemoveStaticKeyword(settings, context),
                 new CannotRemoveBaseTypeOrInterface(settings, context),
                 new CannotSealType(settings, context),
                 new EnumsMustMatch(settings, context),
