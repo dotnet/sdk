@@ -4074,6 +4074,11 @@ Para mostrar un valor, especifique la opción de línea de comandos correspondie
         <target state="translated">No se encontró la versión de carga de trabajo {0}, que se especificó en {1}. Ejecuta "dotnet workload restore" para instalar esta versión de carga de trabajo.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Una versión de carga de trabajo para mostrar o una o varias cargas de trabajo y sus versiones unidas por el carácter "@".</target>
