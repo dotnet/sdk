@@ -30,7 +30,7 @@ parameters:
   - categoryName: ContainerBased
     container: azureLinux30Amd64
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64
-    osProperties: /p:OSName=linux /p:BuildSdkDeb=true
+    osProperties: /p:OSName=linux /p:BuildSdkDeb=true /p:BuildSdkRpm=true
     # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
     disableJob: true
   - categoryName: TemplateEngine
