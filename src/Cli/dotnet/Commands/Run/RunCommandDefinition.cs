@@ -7,119 +7,123 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
-internal static class RunCommandDefinition
+internal sealed class RunCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-run";
+    private const string Link = "https://aka.ms/dotnet-run";
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.RunConfigurationOptionDescription);
+    public readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.RunConfigurationOptionDescription);
 
-    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.RunFrameworkOptionDescription);
+    public readonly Option<string> FrameworkOption = CommonOptions.CreateFrameworkOption(CliCommandStrings.RunFrameworkOptionDescription);
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.RunRuntimeOptionDescription);
+    public readonly TargetPlatformOptions TargetPlatformOptions = new(CliCommandStrings.RunRuntimeOptionDescription);
 
-    public static readonly Option<string> ProjectOption = new("--project")
+    public readonly Option<string> ProjectOption = new("--project")
     {
         Description = CliCommandStrings.CmdProjectDescriptionFormat,
         HelpName = CliCommandStrings.CommandOptionProjectHelpName
     };
 
-    public static readonly Option<string> FileOption = new("--file")
+    public readonly Option<string> FileOption = new("--file")
     {
         Description = CliCommandStrings.CommandOptionFileDescription,
         HelpName = CliCommandStrings.CommandOptionFileHelpName,
     };
 
-    public static readonly Option<ReadOnlyDictionary<string, string>?> PropertyOption = CommonOptions.PropertiesOption;
+    public readonly Option<ReadOnlyDictionary<string, string>?> PropertyOption = CommonOptions.CreatePropertyOption();
 
-    public static readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
+    public readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
     {
         Description = CliCommandStrings.CommandOptionLaunchProfileDescription,
         HelpName = CliCommandStrings.CommandOptionLaunchProfileHelpName
     };
 
-    public static readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile")
+    public readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile")
     {
         Description = CliCommandStrings.CommandOptionNoLaunchProfileDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<bool> NoLaunchProfileArgumentsOption = new("--no-launch-profile-arguments")
+    public readonly Option<bool> NoLaunchProfileArgumentsOption = new("--no-launch-profile-arguments")
     {
         Description = CliCommandStrings.CommandOptionNoLaunchProfileArgumentsDescription
     };
 
-    public static readonly Option<string> DeviceOption = new("--device")
+    public readonly Option<string> DeviceOption = new("--device")
     {
         Description = CliCommandStrings.CommandOptionDeviceDescription,
         HelpName = CliCommandStrings.CommandOptionDeviceHelpName
     };
 
-    public static readonly Option<bool> ListDevicesOption = new("--list-devices")
+    public readonly Option<bool> ListDevicesOption = new("--list-devices")
     {
         Description = CliCommandStrings.CommandOptionListDevicesDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<bool> NoBuildOption = new("--no-build")
+    public const string NoBuildOptionName = "--no-build";
+
+    public readonly Option<bool> NoBuildOption = new(NoBuildOptionName)
     {
         Description = CliCommandStrings.CommandOptionNoBuildDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+    public readonly Option<bool> NoRestoreOption = CommonOptions.CreateNoRestoreOption();
 
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveMsBuildForwardOption;
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
 
-    public static readonly Option<bool> NoCacheOption = new("--no-cache")
+    public const string NoCacheOptionName = "--no-cache";
+
+    public readonly Option<bool> NoCacheOption = new(NoCacheOptionName)
     {
         Description = CliCommandStrings.CommandOptionNoCacheDescription,
         Arity = ArgumentArity.Zero,
     };
 
-    public static readonly Option SelfContainedOption = CommonOptions.SelfContainedOption;
+    public readonly Option<bool> SelfContainedOption = CommonOptions.CreateSelfContainedOption();
 
-    public static readonly Option NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
+    public readonly Option<bool> NoSelfContainedOption = CommonOptions.CreateNoSelfContainedOption();
 
-    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
+    public readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
 
-    public static readonly Argument<string[]> ApplicationArguments = new("applicationArguments")
+    public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
+
+    public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
+
+    public readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CommonOptions.CreateEnvOption();
+
+    public readonly Argument<string[]> ApplicationArguments = new("applicationArguments")
     {
         DefaultValueFactory = _ => [],
         Description = "Arguments passed to the application that is being run."
     };
 
-    public static Command Create()
+    public RunCommandDefinition()
+        : base("run", CliCommandStrings.RunAppFullName)
     {
-        Command command = new("run", CliCommandStrings.RunAppFullName)
-        {
-            DocsLink = DocsLink
-        };
+        this.DocsLink = Link;
 
-        command.Options.Add(ConfigurationOption);
-        command.Options.Add(FrameworkOption);
-        command.Options.Add(RuntimeOption);
-        command.Options.Add(ProjectOption);
-        command.Options.Add(FileOption);
-        command.Options.Add(PropertyOption);
-        command.Options.Add(LaunchProfileOption);
-        command.Options.Add(NoLaunchProfileOption);
-        command.Options.Add(DeviceOption);
-        command.Options.Add(ListDevicesOption);
-        command.Options.Add(NoBuildOption);
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(NoRestoreOption);
-        command.Options.Add(NoCacheOption);
-        command.Options.Add(SelfContainedOption);
-        command.Options.Add(NoSelfContainedOption);
-        command.Options.Add(VerbosityOption);
-        command.Options.Add(CommonOptions.ArchitectureOption);
-        command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.DisableBuildServersOption);
-        command.Options.Add(CommonOptions.ArtifactsPathOption);
-        command.Options.Add(CommonOptions.EnvOption);
+        Options.Add(ConfigurationOption);
+        Options.Add(FrameworkOption);
+        Options.Add(ProjectOption);
+        Options.Add(FileOption);
+        Options.Add(PropertyOption);
+        Options.Add(LaunchProfileOption);
+        Options.Add(NoLaunchProfileOption);
+        Options.Add(DeviceOption);
+        Options.Add(ListDevicesOption);
+        Options.Add(NoBuildOption);
+        Options.Add(InteractiveOption);
+        Options.Add(NoRestoreOption);
+        Options.Add(NoCacheOption);
+        Options.Add(SelfContainedOption);
+        Options.Add(NoSelfContainedOption);
+        Options.Add(VerbosityOption);
+        TargetPlatformOptions.AddTo(Options);
+        Options.Add(DisableBuildServersOption);
+        Options.Add(ArtifactsPathOption);
+        Options.Add(EnvOption);
 
-        command.Arguments.Add(ApplicationArguments);
-
-        return command;
+        Arguments.Add(ApplicationArguments);
     }
 }

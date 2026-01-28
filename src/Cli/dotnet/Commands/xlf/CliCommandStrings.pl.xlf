@@ -740,17 +740,17 @@ Jest to równoważne usunięciu pliku project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
         <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Określa ścieżkę do pliku projektu do uruchomienia. Użyj ścieżki do pliku projektu lub katalogu, w którym ten plik się znajduje. Jeśli nie zostanie określony, domyślnie będzie to bieżący katalog.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
         <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Określa ścieżkę do pliku projektu lub rozwiązania do przetestowania. Użyj ścieżki do pliku projektu lub katalogu, w którym ten plik się znajduje. Jeśli nie zostanie określony, domyślnie będzie to bieżący katalog.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
         <source>PROJECT_OR_SOLUTION_PATH</source>
-        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
+        <target state="translated">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -797,7 +797,7 @@ Jeśli określony katalog nie istnieje, zostanie utworzony.</target>
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Określa ścieżkę do pliku rozwiązania do przetestowania. Użyj ścieżki do pliku rozwiązania lub katalogu, w którym ten plik się znajduje. Jeśli nie zostanie określony, domyślnie będzie to bieżący katalog.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -2388,7 +2388,7 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="needs-review-translation">Określ katalog wyjściowy ({0}):</target>
+        <target state="translated">Określ katalog wyjściowy (naciśnij Enter, aby użyć wartości domyślnej: „{0}”, katalog nie może istnieć):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2645,7 +2645,7 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
         <source>Available target frameworks:</source>
-        <target state="new">Available target frameworks:</target>
+        <target state="translated">Dostępne docelowe struktury:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -2665,7 +2665,7 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
       </trans-unit>
       <trans-unit id="RunCommandExampleText">
         <source>Example</source>
-        <target state="new">Example</target>
+        <target state="translated">Przykład</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -2727,7 +2727,7 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">Przesuń w górę lub w dół, aby zobaczyć więcej struktur</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
@@ -2742,7 +2742,7 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
       </trans-unit>
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">Wpisz, aby wyszukać</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
@@ -2752,7 +2752,7 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">Wybierz docelową strukturę do uruchomienia:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">

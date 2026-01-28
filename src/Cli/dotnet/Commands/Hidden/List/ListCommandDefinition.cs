@@ -8,31 +8,31 @@ using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.List;
 
-internal static class ListCommandDefinition
+internal sealed class ListCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-list";
+    private new const string Name = "list";
+    private const string Link = "https://aka.ms/dotnet-list";
 
-    public static readonly Argument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CliStrings.SolutionOrProjectArgumentName, CliStrings.SolutionOrProjectArgumentDescription);
-
-    internal static Argument<string> CreateSlnOrProjectArgument(string name, string description)
+    public static Argument<string> CreateSlnOrProjectArgument(string name, string description)
         => new Argument<string>(name)
         {
             Description = description,
             Arity = ArgumentArity.ZeroOrOne
         }.DefaultToCurrentDirectory();
 
-    public static Command Create()
+    public readonly Argument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CliStrings.SolutionOrProjectArgumentName, CliStrings.SolutionOrProjectArgumentDescription);
+
+    public readonly ListPackageCommandDefinition PackageCommand = new();
+    public readonly ListReferenceCommandDefinition ReferenceCommand = new();
+
+    public ListCommandDefinition()
+        : base(Name, CliCommandStrings.NetListCommand)
     {
-        var command = new Command("list", CliCommandStrings.NetListCommand)
-        {
-            Hidden = true,
-            DocsLink = DocsLink
-        };
+        Hidden = true;
+        this.DocsLink = Link;
 
-        command.Arguments.Add(SlnOrProjectArgument);
-        command.Subcommands.Add(ListPackageCommandDefinition.Create());
-        command.Subcommands.Add(ListReferenceCommandDefinition.Create());
-
-        return command;
+        Arguments.Add(SlnOrProjectArgument);
+        Subcommands.Add(PackageCommand);
+        Subcommands.Add(ReferenceCommand);
     }
 }

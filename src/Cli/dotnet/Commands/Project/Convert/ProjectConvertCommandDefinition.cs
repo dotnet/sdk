@@ -6,35 +6,37 @@ using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
-internal sealed class ProjectConvertCommandDefinition
+internal sealed class ProjectConvertCommandDefinition : Command
 {
-    public const string Name = "convert";
-
-    public static readonly Argument<string> FileArgument = new("file")
+    public readonly Argument<string> FileArgument = new("file")
     {
         Description = CliCommandStrings.CmdFileDescription,
         Arity = ArgumentArity.ExactlyOne,
     };
 
-    public static readonly Option<bool> ForceOption = new("--force")
+    public readonly Option<FileInfo> OutputOption = SharedOptionsFactory.CreateOutputOption();
+
+    public readonly Option<bool> ForceOption = new("--force")
     {
         Description = CliCommandStrings.CmdOptionForceDescription,
         Arity = ArgumentArity.Zero,
     };
 
-    public static readonly Option<bool> DryRunOption = new("--dry-run")
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption();
+
+    public readonly Option<bool> DryRunOption = new("--dry-run")
     {
         Description = CliCommandStrings.ProjectConvertDryRun,
         Arity = ArgumentArity.Zero,
     };
 
-    public static Command Create()
-        => new(Name, CliCommandStrings.ProjectConvertAppFullName)
-        {
-            FileArgument,
-            SharedOptions.OutputOption,
-            ForceOption,
-            CommonOptions.InteractiveOption(),
-            DryRunOption,
-        };
+    public ProjectConvertCommandDefinition()
+        : base("convert", CliCommandStrings.ProjectConvertAppFullName)
+    {
+        Arguments.Add(FileArgument);
+        Options.Add(OutputOption);
+        Options.Add(ForceOption);
+        Options.Add(InteractiveOption);
+        Options.Add(DryRunOption);
+    }
 }

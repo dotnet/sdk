@@ -9,28 +9,31 @@ using Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference;
 
-internal static class ReferenceCommandDefinition
+internal sealed class ReferenceCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-reference";
+    public new const string Name = "reference";
+    private const string Link = "https://aka.ms/dotnet-reference";
 
-    public static readonly Option<string> ProjectOption = new Option<string>("--project")
+    public static Option<string> CreateProjectOption() => new("--project")
     {
         Description = CliStrings.ProjectArgumentDescription,
         Recursive = true
     };
 
-    public static Command Create()
+    public readonly Option<string> ProjectOption = CreateProjectOption();
+
+    public readonly ReferenceAddCommandDefinition AddCommand = new();
+    public readonly ReferenceListCommandDefinition ListCommand = new();
+    public readonly ReferenceRemoveCommandDefinition RemoveCommand = new();
+
+    public ReferenceCommandDefinition()
+        : base(Name, CliCommandStrings.NetRemoveCommand)
     {
-        var command = new Command("reference", CliCommandStrings.NetRemoveCommand)
-        {
-            DocsLink = DocsLink
-        };
+        this.DocsLink = Link;
 
-        command.Subcommands.Add(ReferenceAddCommandDefinition.Create());
-        command.Subcommands.Add(ReferenceListCommandDefinition.Create());
-        command.Subcommands.Add(ReferenceRemoveCommandDefinition.Create());
-        command.Options.Add(ProjectOption);
-
-        return command;
+        Subcommands.Add(AddCommand);
+        Subcommands.Add(ListCommand);
+        Subcommands.Add(RemoveCommand);
+        Options.Add(ProjectOption);
     }
 }
