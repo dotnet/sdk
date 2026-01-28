@@ -849,13 +849,13 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   </data>
   <data name="ToolRequiresRuntimeSuggestions" xml:space="preserve">
     <value>To install this tool, you can:
-  - Install .NET {0} or a compatible version
+  - Install {0} or a compatible version
   - Choose a different version of the tool that is compatible with your installed runtimes
   - Use --allow-roll-forward to allow the tool to run on a newer runtime version</value>
   </data>
   <data name="ToolRequiresRuntimeSuggestionsNoRollForward" xml:space="preserve">
     <value>To install this tool, you can:
-  - Install .NET {0} or a compatible version
+  - Install {0} or a compatible version
   - Choose a different version of the tool that is compatible with your installed runtimes</value>
   </data>
   <data name="ToolInstallWithRollForwardPrompt" xml:space="preserve">
