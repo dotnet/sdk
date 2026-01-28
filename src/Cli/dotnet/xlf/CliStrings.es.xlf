@@ -1063,11 +1063,6 @@ El valor predeterminado es "false." Sin embargo, cuando el destino es .NET 7 o i
         <target state="translated">Debe especificar al menos una referencia para quitarla.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallWithRollForwardPrompt">
-        <source>Would you like to install the tool with --allow-roll-forward? (Y/N)</source>
-        <target state="new">Would you like to install the tool with --allow-roll-forward? (Y/N)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0}: se encontró biblioteca de herramientas {1}</target>

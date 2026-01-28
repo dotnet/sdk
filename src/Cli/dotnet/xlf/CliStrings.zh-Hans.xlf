@@ -1064,11 +1064,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">必须至少指定一个要删除的引用。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallWithRollForwardPrompt">
-        <source>Would you like to install the tool with --allow-roll-forward? (Y/N)</source>
-        <target state="new">Would you like to install the tool with --allow-roll-forward? (Y/N)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0}: 找到工具库 {1}</target>
