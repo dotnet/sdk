@@ -206,14 +206,15 @@ internal class ToolPackageInstance : IToolPackage
                                 var frameworkPath = Path.Combine(toolsPackagePath, $"net{minRequiredFramework.Version.Major}.{minRequiredFramework.Version.Minor}");
                                 if (fileSystem.Directory.Exists(frameworkPath))
                                 {
-                                    // Search for runtimeconfig.json files in the framework directory and subdirectories
+                                    // Search for runtimeconfig.json files with max depth of 3 levels
                                     var runtimeConfigFiles = new List<string>();
-                                    SearchForRuntimeConfigFiles(frameworkPath, runtimeConfigFiles, fileSystem);
+                                    SearchForRuntimeConfigFiles(frameworkPath, runtimeConfigFiles, fileSystem, currentDepth: 0, maxDepth: 3);
                                     
                                     if (runtimeConfigFiles.Any())
                                     {
-                                        // Use the first runtimeconfig.json we find
-                                        var runtimeConfigPath = runtimeConfigFiles.First();
+                                        // Use the first runtimeconfig.json we find (sorted for determinism)
+                                        // All runtimeconfig.json files in a tool package should have the same framework requirements
+                                        var runtimeConfigPath = runtimeConfigFiles.OrderBy(f => f).First();
                                         hasCompatibleRuntime = InstalledRuntimeEnumerator.CanResolveFrameworks(runtimeConfigPath);
                                     }
                                 }
@@ -221,6 +222,7 @@ internal class ToolPackageInstance : IToolPackage
                             catch
                             {
                                 // If hostfxr resolution fails, fall back to version-based check
+                                // This ensures tool installation continues even if hostfxr is unavailable
                             }
                             
                             // If hostfxr resolution didn't work, fall back to version-based check
@@ -292,8 +294,13 @@ internal class ToolPackageInstance : IToolPackage
         }
     }
 
-    private static void SearchForRuntimeConfigFiles(string directory, List<string> results, IFileSystem fileSystem)
+    private static void SearchForRuntimeConfigFiles(string directory, List<string> results, IFileSystem fileSystem, int currentDepth, int maxDepth)
     {
+        if (currentDepth >= maxDepth)
+        {
+            return;
+        }
+
         foreach (var file in fileSystem.Directory.EnumerateFiles(directory))
         {
             if (file.EndsWith(".runtimeconfig.json", StringComparison.OrdinalIgnoreCase))
@@ -304,7 +311,7 @@ internal class ToolPackageInstance : IToolPackage
 
         foreach (var subdir in fileSystem.Directory.EnumerateDirectories(directory))
         {
-            SearchForRuntimeConfigFiles(subdir, results, fileSystem);
+            SearchForRuntimeConfigFiles(subdir, results, fileSystem, currentDepth + 1, maxDepth);
         }
     }
 

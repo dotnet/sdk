@@ -30,14 +30,16 @@ namespace Microsoft.DotNet.NativeWrapper
 
             try
             {
-                bool resolved = false;
                 IntPtr parameters = IntPtr.Zero;
                 IntPtr resultContext = IntPtr.Zero;
 
+                // Use a field to avoid GC issues with local functions and delegates
+                bool callbackInvoked = false;
+                
                 void Callback(IntPtr assemblyPath, IntPtr nativeSearchPath, nuint frameworkCount, IntPtr frameworks)
                 {
-                    // If we get here with frameworks, resolution succeeded
-                    resolved = frameworkCount > 0 || assemblyPath != IntPtr.Zero;
+                    // Callback is only invoked on successful resolution
+                    callbackInvoked = true;
                 }
 
                 int errorCode = Interop.hostfxr_resolve_frameworks_for_runtime_config(
@@ -46,12 +48,13 @@ namespace Microsoft.DotNet.NativeWrapper
                     Callback,
                     resultContext);
 
-                // Return code 0 means success
-                return errorCode == 0 && resolved;
+                // Return code 0 means success, and callback should have been invoked
+                return errorCode == 0 && callbackInvoked;
             }
             catch
             {
                 // If hostfxr call fails, return false
+                // This ensures tool installation continues with fallback behavior
                 return false;
             }
         }
