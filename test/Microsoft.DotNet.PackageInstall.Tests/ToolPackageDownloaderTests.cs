@@ -1025,8 +1025,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
 
             action.Should().Throw<GracefulException>()
-                .WithMessage("*requires a higher version of .NET*")
-                .WithMessage("*.NET 99*");
+                .WithMessage("*requires .NET runtime .NET 99*")
+                .WithMessage("*To install this tool, you can*");
         }
     }
 }
