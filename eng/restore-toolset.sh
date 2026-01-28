@@ -65,6 +65,7 @@ export DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=0
 "
 
   echo "$scriptContents" > ${scriptPath}
+  chmod +x ${scriptPath}
 }
 
 # ReadVersionFromJson [json key]
