@@ -7,6 +7,21 @@
         <target state="new">Allows the command to stop and wait for user input or action.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InfoHeader">
+        <source>dotnetup Information:</source>
+        <target state="new">dotnetup Information:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InfoJsonOptionDescription">
+        <source>Output information in JSON format.</source>
+        <target state="new">Output information in JSON format.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InfoOptionDescription">
+        <source>Display dotnetup information.</source>
+        <target state="new">Display dotnetup information.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

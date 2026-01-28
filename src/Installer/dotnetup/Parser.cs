@@ -8,6 +8,7 @@ using System.CommandLine.Completions;
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
@@ -30,6 +31,12 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
         public static ParseResult Parse(string[] args) => RootCommand.Parse(args, ParserConfiguration);
         public static int Invoke(ParseResult parseResult) => parseResult.Invoke(InvocationConfiguration);
 
+        public static readonly Option<bool> InfoOption = new("--info")
+        {
+            Description = Strings.InfoOptionDescription,
+            Arity = ArgumentArity.Zero
+        };
+
         private static RootCommand RootCommand { get; } = ConfigureCommandLine(new()
         {
             Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
@@ -37,6 +44,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
 
         private static RootCommand ConfigureCommandLine(RootCommand rootCommand)
         {
+            rootCommand.Options.Add(InfoOption);
+            rootCommand.Options.Add(InfoCommandParser.JsonOption);
+
             rootCommand.Subcommands.Add(SdkCommandParser.GetCommand());
             rootCommand.Subcommands.Add(SdkInstallCommandParser.GetRootInstallCommand());
             rootCommand.Subcommands.Add(SdkUpdateCommandParser.GetRootUpdateCommand());

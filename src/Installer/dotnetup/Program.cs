@@ -1,5 +1,5 @@
-﻿
-using Microsoft.DotNet.Tools.Bootstrapper;
+﻿using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
@@ -12,6 +12,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
             DotnetupDebugHelper.HandleDebugSwitch(ref args);
 
             var parseResult = Parser.Parse(args);
+
+            // Handle --info at the top level before other command processing
+            if (parseResult.GetValue(Parser.InfoOption))
+            {
+                var jsonOutput = parseResult.GetValue(InfoCommandParser.JsonOption);
+                return InfoCommand.Execute(jsonOutput);
+            }
+
             return Parser.Invoke(parseResult);
         }
     }
