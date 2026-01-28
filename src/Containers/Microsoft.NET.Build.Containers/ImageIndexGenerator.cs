@@ -64,7 +64,7 @@ internal static class ImageIndexGenerator
         // Here we are using ManifestListV2 struct, but we could use ImageIndexV1 struct as well.
         // We are filling the same fields, so we can use the same struct.
         var manifests = new PlatformSpecificManifest[images.Length];
-        
+
         for (int i = 0; i < images.Length; i++)
         {
             manifests[i] = new PlatformSpecificManifest
@@ -93,7 +93,7 @@ internal static class ImageIndexGenerator
     internal static string GenerateImageIndexWithAnnotations(string manifestMediaType, string manifestDigest, long manifestSize, string repository, string[] tags)
     {
         string containerdImageNamePrefix = repository.Contains('/') ? "docker.io/" : "docker.io/library/";
-        
+
         var manifests = new PlatformSpecificOciManifest[tags.Length];
         for (int i = 0; i < tags.Length; i++)
         {
@@ -103,10 +103,10 @@ internal static class ImageIndexGenerator
                 mediaType = manifestMediaType,
                 size = manifestSize,
                 digest = manifestDigest,
-                annotations = new Dictionary<string, string> 
+                annotations = new Dictionary<string, string>
                 {
                     { "io.containerd.image.name", $"{containerdImageNamePrefix}{repository}:{tag}" },
-                    { "org.opencontainers.image.ref.name", tag } 
+                    { "org.opencontainers.image.ref.name", tag }
                 }
             };
         }
