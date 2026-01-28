@@ -8,18 +8,9 @@ namespace Microsoft.DotNet.Cli.Commands.Pack;
 
 internal static class PackCommandParser
 {
-    private static readonly PackCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(PackCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static PackCommandDefinition CreateCommand()
-    {
-        var command = new PackCommandDefinition();
         command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
         command.SetAction(PackCommand.Run);
-        return command;
     }
 }

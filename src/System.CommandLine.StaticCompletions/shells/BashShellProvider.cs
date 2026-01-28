@@ -6,9 +6,10 @@ using System.CommandLine.Completions;
 using System.CommandLine.StaticCompletions.Resources;
 
 namespace System.CommandLine.StaticCompletions.Shells;
+
 public class BashShellProvider : IShellProvider
 {
-    public string ArgumentName => "bash";
+    public string ArgumentName => ShellNames.Bash;
 
     public string Extension => "sh";
 
