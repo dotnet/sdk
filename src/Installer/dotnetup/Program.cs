@@ -13,7 +13,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
 
             var parseResult = Parser.Parse(args);
 
-            // Handle --info at the top level before other command processing
+            // Handle --info at the top level before other command processing.
+            // This is necessary because System.CommandLine requires an action on the root command
+            // for subcommand-style invocation (e.g., "dotnetup info"). By handling --info here,
+            // we can support "dotnetup --info" (option style) consistent with "dotnet --info".
             if (parseResult.GetValue(Parser.InfoOption))
             {
                 var jsonOutput = parseResult.GetValue(InfoCommandParser.JsonOption);

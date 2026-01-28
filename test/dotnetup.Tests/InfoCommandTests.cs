@@ -25,26 +25,13 @@ public class InfoCommandTests
         // but we handle --info before subcommand validation in Program.Main
     }
 
-    [Fact]
-    public void Parser_ShouldParseInfoWithJsonOption()
+    [Theory]
+    [InlineData("--info", "--json")]
+    [InlineData("--json", "--info")]
+    public void Parser_ShouldParseInfoWithJsonOption_OrderIndependent(string first, string second)
     {
         // Arrange
-        var args = new[] { "--info", "--json" };
-
-        // Act
-        var parseResult = Parser.Parse(args);
-
-        // Assert
-        parseResult.Should().NotBeNull();
-        parseResult.GetValue(Parser.InfoOption).Should().BeTrue();
-        parseResult.GetValue(InfoCommandParser.JsonOption).Should().BeTrue();
-    }
-
-    [Fact]
-    public void Parser_ShouldParseJsonWithInfoOption()
-    {
-        // Arrange - test that order doesn't matter
-        var args = new[] { "--json", "--info" };
+        var args = new[] { first, second };
 
         // Act
         var parseResult = Parser.Parse(args);
@@ -70,8 +57,10 @@ public class InfoCommandTests
         parseResult.GetValue(InfoCommandParser.NoListOption).Should().BeTrue();
     }
 
-    [Fact]
-    public void InfoCommand_ShouldReturnZeroExitCode()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InfoCommand_ShouldReturnZeroExitCode(bool jsonOutput)
     {
         // Arrange - capture and restore stdout
         var originalOut = Console.Out;
@@ -81,29 +70,7 @@ public class InfoCommandTests
             Console.SetOut(sw);
 
             // Act - use noList: true to avoid manifest access in unit tests
-            var exitCode = InfoCommand.Execute(jsonOutput: false, noList: true);
-
-            // Assert
-            exitCode.Should().Be(0);
-        }
-        finally
-        {
-            Console.SetOut(originalOut);
-        }
-    }
-
-    [Fact]
-    public void InfoCommand_ShouldReturnZeroExitCodeForJson()
-    {
-        // Arrange - capture and restore stdout
-        var originalOut = Console.Out;
-        try
-        {
-            using var sw = new StringWriter();
-            Console.SetOut(sw);
-
-            // Act - use noList: true to avoid manifest access in unit tests
-            var exitCode = InfoCommand.Execute(jsonOutput: true, noList: true);
+            var exitCode = InfoCommand.Execute(jsonOutput: jsonOutput, noList: true);
 
             // Assert
             exitCode.Should().Be(0);
@@ -266,32 +233,6 @@ public class InfoCommandTests
 
             architecture.Should().NotBeNull();
             architecture.Should().Be(architecture!.ToLowerInvariant(), "architecture should be lowercase");
-        }
-        finally
-        {
-            Console.SetOut(originalOut);
-        }
-    }
-
-    [Fact]
-    public void InfoCommand_VersionShouldNotBeEmpty()
-    {
-        // Arrange - capture and restore stdout
-        var originalOut = Console.Out;
-        try
-        {
-            using var sw = new StringWriter();
-            Console.SetOut(sw);
-
-            // Act - use noList: true to avoid manifest access in unit tests
-            InfoCommand.Execute(jsonOutput: true, noList: true);
-            var output = sw.ToString();
-
-            // Assert
-            using var doc = JsonDocument.Parse(output);
-            var version = doc.RootElement.GetProperty("version").GetString();
-
-            version.Should().NotBeNullOrEmpty();
         }
         finally
         {

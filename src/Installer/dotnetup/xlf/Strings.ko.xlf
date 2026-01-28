@@ -58,8 +58,8 @@
         <note />
       </trans-unit>
       <trans-unit id="RootCommandDescription">
-        <source>.NET installation manager for user and local installs. Manage multiple .NET versions without requiring administrator privileges.</source>
-        <target state="new">.NET installation manager for user and local installs. Manage multiple .NET versions without requiring administrator privileges.</target>
+        <source>.NET installation manager for user level installs.</source>
+        <target state="new">.NET installation manager for user level installs.</target>
         <note />
       </trans-unit>
     </body>

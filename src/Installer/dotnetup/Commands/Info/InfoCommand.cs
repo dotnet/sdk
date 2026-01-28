@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
+using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
@@ -53,16 +54,16 @@ internal static class InfoCommand
 
     private static (string Version, string Commit) ParseInformationalVersion(string informationalVersion)
     {
-        // Format: "1.0.0+abc123def" or just "1.0.0"
+        // Format: "1.0.0+abc123d" or just "1.0.0"
         var plusIndex = informationalVersion.IndexOf('+');
         if (plusIndex > 0)
         {
             var version = informationalVersion.Substring(0, plusIndex);
             var commit = informationalVersion.Substring(plusIndex + 1);
-            // Truncate commit to 10 characters for display (standard short SHA)
-            if (commit.Length > 10)
+            // Truncate commit to 7 characters for display (git's standard short SHA)
+            if (commit.Length > 7)
             {
-                commit = commit.Substring(0, 10);
+                commit = commit.Substring(0, 7);
             }
             return (version, commit);
         }
@@ -72,11 +73,11 @@ internal static class InfoCommand
 
     private static void PrintHumanReadableInfo(DotnetupInfo info, List<InstallationInfo>? installations)
     {
-        Console.WriteLine(Strings.InfoHeader);
-        Console.WriteLine($" Version:      {info.Version}");
-        Console.WriteLine($" Commit:       {info.Commit}");
-        Console.WriteLine($" Architecture: {info.Architecture}");
-        Console.WriteLine($" RID:          {info.Rid}");
+        SpectreAnsiConsole.WriteLine(Strings.InfoHeader);
+        SpectreAnsiConsole.WriteLine($" Version:      {info.Version}");
+        SpectreAnsiConsole.WriteLine($" Commit:       {info.Commit}");
+        SpectreAnsiConsole.WriteLine($" Architecture: {info.Architecture}");
+        SpectreAnsiConsole.WriteLine($" RID:          {info.Rid}");
 
         if (installations is not null)
         {

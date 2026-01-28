@@ -7,11 +7,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 
 internal static class ListCommandParser
 {
-    public static readonly Option<bool> JsonOption = new("--json")
-    {
-        Description = Strings.ListJsonOptionDescription,
-        Arity = ArgumentArity.ZeroOrOne
-    };
+    public static Option<bool> JsonOption => CommonOptions.JsonOption;
 
     public static readonly Option<bool> VerifyOption = new("--verify")
     {

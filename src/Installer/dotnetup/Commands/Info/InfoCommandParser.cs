@@ -7,11 +7,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
 internal static class InfoCommandParser
 {
-    public static readonly Option<bool> JsonOption = new("--json")
-    {
-        Description = Strings.InfoJsonOptionDescription,
-        Arity = ArgumentArity.ZeroOrOne
-    };
+    public static Option<bool> JsonOption => CommonOptions.JsonOption;
 
     public static readonly Option<bool> NoListOption = new("--no-list")
     {
