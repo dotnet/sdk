@@ -232,7 +232,11 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
                 {
                     var lockFile = new LockFileFormat().Read(projectAssetsFile);
                     var library = lockFile.Libraries.FirstOrDefault(l => string.Equals(l.Name, _packageId.Id, StringComparison.OrdinalIgnoreCase));
-                    if (library != null)
+                    if (library == null)
+                    {
+                        Reporter.Verbose.WriteLine($"Package '{_packageId.Id}' not found in assets file: {projectAssetsFile}");
+                    }
+                    else
                     {
                         var restoredVersion = library.Version.ToString();
                         if (central is { } centralValue)
@@ -329,8 +333,7 @@ internal sealed class PackageAddCommand : CommandBase<PackageAddCommandDefinitio
             {
                 // Get the ItemGroup to add a PackageVersion to or create a new one.
                 var itemGroup = directoryPackagesPropsProject.Xml.ItemGroups
-                        .Where(e => e.Items.Any(i => string.Equals(i.ItemType, packageVersionItemType, StringComparison.OrdinalIgnoreCase)))
-                        .FirstOrDefault()
+                        .FirstOrDefault(e => e.Items.Any(i => string.Equals(i.ItemType, packageVersionItemType, StringComparison.OrdinalIgnoreCase)))
                     ?? directoryPackagesPropsProject.Xml.AddItemGroup();
 
                 // Add a PackageVersion item.
