@@ -9,64 +9,21 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class ListCommandTests
 {
-    [Fact]
-    public void Parser_ShouldParseListCommand()
+    [Theory]
+    [InlineData(new[] { "list" }, false, false)]
+    [InlineData(new[] { "list", "--json" }, true, false)]
+    [InlineData(new[] { "list", "--verify" }, false, true)]
+    [InlineData(new[] { "list", "--json", "--verify" }, true, true)]
+    public void Parser_ShouldParseListCommand(string[] args, bool expectedJson, bool expectedVerify)
     {
-        // Arrange
-        var args = new[] { "list" };
-
         // Act
         var parseResult = Parser.Parse(args);
 
         // Assert
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void Parser_ShouldParseListWithJsonOption()
-    {
-        // Arrange
-        var args = new[] { "list", "--json" };
-
-        // Act
-        var parseResult = Parser.Parse(args);
-
-        // Assert
-        parseResult.Should().NotBeNull();
-        parseResult.Errors.Should().BeEmpty();
-        parseResult.GetValue(ListCommandParser.JsonOption).Should().BeTrue();
-    }
-
-    [Fact]
-    public void Parser_ShouldParseListWithVerifyOption()
-    {
-        // Arrange
-        var args = new[] { "list", "--verify" };
-
-        // Act
-        var parseResult = Parser.Parse(args);
-
-        // Assert
-        parseResult.Should().NotBeNull();
-        parseResult.Errors.Should().BeEmpty();
-        parseResult.GetValue(ListCommandParser.VerifyOption).Should().BeTrue();
-    }
-
-    [Fact]
-    public void Parser_ShouldParseListWithBothOptions()
-    {
-        // Arrange
-        var args = new[] { "list", "--json", "--verify" };
-
-        // Act
-        var parseResult = Parser.Parse(args);
-
-        // Assert
-        parseResult.Should().NotBeNull();
-        parseResult.Errors.Should().BeEmpty();
-        parseResult.GetValue(ListCommandParser.JsonOption).Should().BeTrue();
-        parseResult.GetValue(ListCommandParser.VerifyOption).Should().BeTrue();
+        parseResult.GetValue(CommonOptions.JsonOption).Should().Be(expectedJson);
+        parseResult.GetValue(ListCommandParser.VerifyOption).Should().Be(expectedVerify);
     }
 
     [Fact]

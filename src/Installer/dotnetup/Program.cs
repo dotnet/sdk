@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
             // we can support "dotnetup --info" (option style) consistent with "dotnet --info".
             if (parseResult.GetValue(Parser.InfoOption))
             {
-                var jsonOutput = parseResult.GetValue(InfoCommandParser.JsonOption);
+                var jsonOutput = parseResult.GetValue(CommonOptions.JsonOption);
                 var noList = parseResult.GetValue(InfoCommandParser.NoListOption);
                 return InfoCommand.Execute(jsonOutput, noList);
             }

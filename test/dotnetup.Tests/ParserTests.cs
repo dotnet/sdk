@@ -109,13 +109,17 @@ public class ParserTests
     [Fact]
     public void Parser_Version_ShouldMatchAssemblyVersion()
     {
-        // Verify that --version outputs the expected version format
+        // Get the expected version from the assembly
         var assembly = typeof(Program).Assembly;
-        var informationalVersion = assembly.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
-        // The version should not be empty or null
-        informationalVersion.Should().NotBeNullOrEmpty();
-        // Version should start with a digit (e.g., "0.0.1-preview" or "9.0.0")
-        informationalVersion.Should().MatchRegex(@"^\d+\.\d+\.\d+");
+        // Capture --version output
+        using var capture = new Utilities.ConsoleOutputCapture();
+        var result = Parser.Invoke(["--version"]);
+
+        var output = capture.GetOutput().Trim();
+
+        // The output should exactly match the informational version
+        output.Should().Be(informationalVersion);
     }
 }

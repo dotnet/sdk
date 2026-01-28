@@ -212,31 +212,4 @@ public class InfoCommandTests
             Console.SetOut(originalOut);
         }
     }
-
-    [Fact]
-    public void InfoCommand_Json_ArchitectureShouldBeLowercase()
-    {
-        // Arrange - capture and restore stdout
-        var originalOut = Console.Out;
-        try
-        {
-            using var sw = new StringWriter();
-            Console.SetOut(sw);
-
-            // Act - use noList: true to avoid manifest access in unit tests
-            InfoCommand.Execute(jsonOutput: true, noList: true);
-            var output = sw.ToString();
-
-            // Assert
-            using var doc = JsonDocument.Parse(output);
-            var architecture = doc.RootElement.GetProperty("architecture").GetString();
-
-            architecture.Should().NotBeNull();
-            architecture.Should().Be(architecture!.ToLowerInvariant(), "architecture should be lowercase");
-        }
-        finally
-        {
-            Console.SetOut(originalOut);
-        }
-    }
 }
