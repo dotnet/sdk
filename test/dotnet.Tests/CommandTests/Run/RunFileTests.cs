@@ -431,7 +431,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine("hello world");
             """);
 
-        new DotnetCommand(Log, "new", "tool-manifest")
+        new DotnetNewCommand(Log, "tool-manifest")
+            .WithVirtualHive()
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();

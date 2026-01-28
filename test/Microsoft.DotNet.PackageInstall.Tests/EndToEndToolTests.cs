@@ -87,7 +87,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
-            new DotnetCommand(Log, "new", "tool-manifest")
+            new DotnetNewCommand(Log, "tool-manifest")
+                .WithVirtualHive()
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
                 .Execute()
@@ -121,7 +122,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
-            new DotnetCommand(Log, "new", "tool-manifest")
+            new DotnetNewCommand(Log, "tool-manifest")
+                .WithVirtualHive()
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
                 .Execute()
@@ -524,7 +526,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
-            new DotnetCommand(Log, "new", "tool-manifest")
+            new DotnetNewCommand(Log, "tool-manifest")
+                .WithVirtualHive()
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
                 .Execute()

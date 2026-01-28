@@ -51,7 +51,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var dotnetNewConsole = Path.Join(testInstance.Path, "DotnetNewConsole");
         Directory.CreateDirectory(dotnetNewConsole);
 
-        new DotnetCommand(Log, "new", "console")
+        new DotnetNewCommand(Log, "console")
+            .WithVirtualHive()
             .WithWorkingDirectory(dotnetNewConsole)
             .Execute()
             .Should().Pass();
