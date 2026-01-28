@@ -805,7 +805,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task VerifyRuntimeAsyncReportsDiagnostic()
+        public async Task VerifyRuntimeAsyncAwaitReportsDiagnostic()
         {
             var csInput = """
                 using System.Threading.Tasks;
@@ -818,7 +818,7 @@ namespace Preview_Feature_Scratch
                 }
                 """;
 
-            var test = new RuntimeAsyncFixVerifier
+            var test = new RuntimeAsyncTestVerifier
             {
                 TestState =
                 {
@@ -838,7 +838,7 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
-        public async Task VerifyRuntimeAsyncReportsDiagnostic_CustomAwaiter()
+        public async Task VerifyRuntimeAsyncAwaitCustomAwaiterReportsDiagnostic()
         {
             var csInput = """
                 using System.Threading.Tasks;
@@ -851,7 +851,7 @@ namespace Preview_Feature_Scratch
                 }
                 """;
 
-            var test = new RuntimeAsyncFixVerifier
+            var test = new RuntimeAsyncTestVerifier
             {
                 TestState =
                 {
@@ -869,11 +869,133 @@ namespace Preview_Feature_Scratch
             await test.RunAsync();
         }
 
-        private class RuntimeAsyncFixVerifier : VerifyCS.Test
+        [Fact]
+        public async Task VerifyRuntimeAsyncAwaitUsingDeclarationReportsDiagnostic()
         {
-            public static readonly ReferenceAssemblies Net100 = new("net10.0", new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0-rc.1.25451.107"), Path.Combine("ref", "net10.0"));
+            var csInput = """
+                using System.Threading.Tasks;
+                using System;
+                class C
+                {
+                    async Task M()
+                    {
+                        await using var stream = new MemoryStream();
+                    }
+                }
 
-            public RuntimeAsyncFixVerifier()
+                class MemoryStream : IAsyncDisposable
+                {
+                    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+                }
+                """;
+
+            var test = new RuntimeAsyncTestVerifier
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        csInput
+                    }
+                },
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(7,9): error CA2252: Using 'UnsafeAwaitAwaiter' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.
+                    VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithSpan(7, 9, 7, 52).WithArguments("UnsafeAwaitAwaiter", DetectPreviewFeatureAnalyzer.DefaultURL)
+                }
+            };
+
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task VerifyRuntimeAsyncAwaitUsingStatementReportsDiagnostic()
+        {
+            var csInput = """
+                using System.Threading.Tasks;
+                using System;
+                class C
+                {
+                    async Task M()
+                    {
+                        await using (var stream = new MemoryStream())
+                        {
+                        }
+                    }
+                }
+
+                class MemoryStream : IAsyncDisposable
+                {
+                    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+                }
+                """;
+
+            var test = new RuntimeAsyncTestVerifier
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        csInput
+                    }
+                },
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(7,9): error CA2252: Using 'UnsafeAwaitAwaiter' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.
+                    VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithSpan(7, 9, 7, 54).WithArguments("UnsafeAwaitAwaiter", DetectPreviewFeatureAnalyzer.DefaultURL)
+                }
+            };
+
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task VerifyRuntimeAsyncAwaitForeachReportsDiagnostic()
+        {
+            var csInput = """
+                using System.Collections.Generic;
+                using System.Threading.Tasks;
+                class C
+                {
+                    async Task M()
+                    {
+                        await foreach (var item in GetItemsAsync())
+                        {
+                        }
+                    }
+
+                    async IAsyncEnumerable<int> GetItemsAsync()
+                    {
+                        yield return 1;
+                        await Task.CompletedTask;
+                    }
+                }
+                """;
+
+            var test = new RuntimeAsyncTestVerifier
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        csInput
+                    }
+                },
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(7,9): error CA2252: Using 'UnsafeAwaitAwaiter' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.
+                    VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithSpan(7, 9, 7, 56).WithArguments("UnsafeAwaitAwaiter", DetectPreviewFeatureAnalyzer.DefaultURL)
+                }
+            };
+
+            await test.RunAsync();
+        }
+
+        private class RuntimeAsyncTestVerifier : VerifyCS.Test
+        {
+            public static readonly ReferenceAssemblies Net100 = new("net10.0", new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0-rc.1.25451.107"), System.IO.Path.Combine("ref", "net10.0"));
+
+            public RuntimeAsyncTestVerifier()
             {
                 ReferenceAssemblies = Net100;
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10;
