@@ -778,11 +778,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Vous devez spécifier au moins une référence à retirer.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallWithRollForwardPrompt">
-        <source>Would you like to install the tool with --allow-roll-forward? (Y/N)</source>
-        <target state="new">Would you like to install the tool with --allow-roll-forward? (Y/N)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0} : bibliothèque d'outils trouvée {1}</target>

@@ -670,7 +670,4 @@ setx PATH "%PATH%;{0}"
   - Install {0} or a compatible version
   - Choose a different version of the tool that is compatible with your installed runtimes</value>
   </data>
-  <data name="ToolInstallWithRollForwardPrompt" xml:space="preserve">
-    <value>Would you like to install the tool with --allow-roll-forward? (Y/N)</value>
-  </data>
 </root>
