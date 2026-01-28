@@ -115,7 +115,8 @@ public class ParserTests
 
         // Capture --version output
         using var capture = new Utilities.ConsoleOutputCapture();
-        var result = Parser.Invoke(["--version"]);
+        var parseResult = Parser.Parse(new[] { "--version" });
+        var result = Parser.Invoke(parseResult);
 
         var output = capture.GetOutput().Trim();
 

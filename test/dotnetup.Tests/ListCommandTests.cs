@@ -57,7 +57,7 @@ public class ListCommandTests
     public void InstallationLister_WriteHumanReadable_WithInstallations_ShouldShowDetails()
     {
         // Arrange - use secure temp subdirectory
-        using var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
         var testInstallRoot = Path.Combine(tempDir.FullName, ".dotnet");
         var installations = new List<InstallationInfo>
         {
@@ -99,7 +99,7 @@ public class ListCommandTests
     public void InstallationLister_WriteJson_ShouldContainExpectedStructure()
     {
         // Arrange - use secure temp subdirectory
-        using var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
         var testInstallRoot = tempDir.FullName;
         var installations = new List<InstallationInfo>
         {
