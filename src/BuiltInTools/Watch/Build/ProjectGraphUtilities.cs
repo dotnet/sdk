@@ -51,6 +51,17 @@ internal static class ProjectGraphUtilities
     public static bool IsWebApp(this ProjectGraphNode projectNode)
         => projectNode.GetCapabilities().Any(static value => value is ProjectCapability.AspNetCore or ProjectCapability.WebAssembly);
 
+    /// <summary>
+    /// Returns true if the project targets a mobile platform (Android or iOS).
+    /// These platforms require HTTP transport for hot reload instead of named pipes.
+    /// </summary>
+    public static bool IsMobilePlatform(this ProjectGraphNode projectNode)
+    {
+        var targetPlatformIdentifier = projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetPlatformIdentifier);
+        return targetPlatformIdentifier.Equals("Android", StringComparison.OrdinalIgnoreCase) ||
+               targetPlatformIdentifier.Equals("iOS", StringComparison.OrdinalIgnoreCase);
+    }
+
     public static string? GetOutputDirectory(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetPath) is { Length: >0 } path ? Path.GetDirectoryName(Path.Combine(projectNode.ProjectInstance.Directory, path)) : null;
 
