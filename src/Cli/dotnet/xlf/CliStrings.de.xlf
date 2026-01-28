@@ -1063,11 +1063,6 @@ Der Standardwert lautet FALSE. Wenn sie jedoch auf .NET 7 oder niedriger abziele
         <target state="translated">Geben Sie mindestens einen zu löschenden Verweis an.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallWithRollForwardPrompt">
-        <source>Would you like to install the tool with --allow-roll-forward? (Y/N)</source>
-        <target state="new">Would you like to install the tool with --allow-roll-forward? (Y/N)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0}: Toolbibliothek gefunden: {1}</target>

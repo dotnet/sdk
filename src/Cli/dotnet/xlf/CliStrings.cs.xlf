@@ -1064,11 +1064,6 @@ Výchozí hodnota je false. Pokud však cílíte na .NET 7 nebo nižší a je za
         <target state="translated">Musíte zadat aspoň jeden odkaz, který chcete odebrat.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallWithRollForwardPrompt">
-        <source>Would you like to install the tool with --allow-roll-forward? (Y/N)</source>
-        <target state="new">Would you like to install the tool with --allow-roll-forward? (Y/N)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0}: Nalezena knihovna nástrojů {1}</target>

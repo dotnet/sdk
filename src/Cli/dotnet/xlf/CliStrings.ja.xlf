@@ -1063,11 +1063,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">削除する参照を少なくとも 1 つ指定する必要があります。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallWithRollForwardPrompt">
-        <source>Would you like to install the tool with --allow-roll-forward? (Y/N)</source>
-        <target state="new">Would you like to install the tool with --allow-roll-forward? (Y/N)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0}: ツール ライブラリで {1} が見つかりました</target>
