@@ -47,14 +47,14 @@
         <target state="new">(none)</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListNoVerifyOptionDescription">
+        <source>Skip verification that each installation exists on disk.</source>
+        <target state="new">Skip verification that each installation exists on disk.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListTotal">
         <source>Total</source>
         <target state="new">Total</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListVerifyOptionDescription">
-        <source>Verify each installation exists on disk.</source>
-        <target state="new">Verify each installation exists on disk.</target>
         <note />
       </trans-unit>
       <trans-unit id="RootCommandDescription">

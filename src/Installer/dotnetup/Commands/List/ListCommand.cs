@@ -16,7 +16,7 @@ internal class ListCommand : CommandBase
 
     public ListCommand(ParseResult parseResult) : base(parseResult)
     {
-        _jsonOutput = parseResult.GetValue(CommonOptions.JsonOption);
+        _jsonOutput = parseResult.GetValue(ListCommandParser.JsonOption);
         _verify = parseResult.GetValue(ListCommandParser.VerifyOption);
     }
 
