@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Watch
             _runtimeProcessLauncherFactory = runtimeProcessLauncherFactory;
             if (!context.Options.NonInteractive)
             {
-                var consoleInput = new ConsoleInputReader(_console, context.Options.Quiet, context.EnvironmentOptions.SuppressEmojis);
+                var consoleInput = new ConsoleInputReader(_console, context.Options.LogLevel, context.EnvironmentOptions.SuppressEmojis);
 
                 var noPrompt = context.EnvironmentOptions.RestartOnRudeEdit;
                 if (noPrompt)

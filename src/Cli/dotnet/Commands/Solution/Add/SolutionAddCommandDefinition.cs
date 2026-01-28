@@ -5,42 +5,43 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Add;
 
-public static class SolutionAddCommandDefinition
+public sealed class SolutionAddCommandDefinition : Command
 {
-    public const string Name = "add";
-
-    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.AddProjectPathArgumentName)
+    public readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.AddProjectPathArgumentName)
     {
         HelpName = CliCommandStrings.AddProjectPathArgumentName,
         Description = CliCommandStrings.AddProjectPathArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore,
     };
 
-    public static readonly Option<bool> InRootOption = new("--in-root")
+    public const string InRootOptionName = "--in-root";
+
+    public readonly Option<bool> InRootOption = new(InRootOptionName)
     {
         Description = CliCommandStrings.InRoot
     };
 
-    public static readonly Option<string> SolutionFolderOption = new("--solution-folder", "-s")
+    public const string SolutionFolderOptionName = "--solution-folder";
+
+    public readonly Option<string> SolutionFolderOption = new(SolutionFolderOptionName, "-s")
     {
         Description = CliCommandStrings.AddProjectSolutionFolderArgumentDescription
     };
 
-    public static readonly Option<bool> IncludeReferencesOption = new("--include-references")
+    public readonly Option<bool> IncludeReferencesOption = new("--include-references")
     {
         Description = CliCommandStrings.SolutionAddReferencedProjectsOptionDescription,
         DefaultValueFactory = (_) => true,
     };
 
-    public static Command Create()
+    public SolutionAddCommandDefinition()
+        : base("add", CliCommandStrings.AddAppFullName)
     {
-        Command command = new(Name, CliCommandStrings.AddAppFullName);
-
-        command.Arguments.Add(ProjectPathArgument);
-        command.Options.Add(InRootOption);
-        command.Options.Add(SolutionFolderOption);
-        command.Options.Add(IncludeReferencesOption);
-
-        return command;
+        Arguments.Add(ProjectPathArgument);
+        Options.Add(InRootOption);
+        Options.Add(SolutionFolderOption);
+        Options.Add(IncludeReferencesOption);
     }
+
+    public SolutionCommandDefinition Parent => (SolutionCommandDefinition)Parents.Single();
 }
