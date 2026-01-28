@@ -20,7 +20,7 @@ internal static class NuGetCommandParser
 
         foreach (var subcommand in command.Subcommands)
         {
-            subcommand.SetAction(NuGetCommand.Run);
+            SetAction(subcommand);
         }
 
         return command;

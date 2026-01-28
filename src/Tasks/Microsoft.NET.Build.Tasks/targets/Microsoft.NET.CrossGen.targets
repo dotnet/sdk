@@ -26,6 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishReadyToRunPerfmapFormatVersion Condition="'$(PublishReadyToRunPerfmapFormatVersion)' == ''">1</PublishReadyToRunPerfmapFormatVersion>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and ('$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'tvos' or '$(TargetPlatformIdentifier)' == 'maccatalyst')">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunContainerFormat Condition="'$(PublishReadyToRunContainerFormat)' == '' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 11.0))">pe</PublishReadyToRunContainerFormat>
+    <PublishReadyToRunCreateSharedLibrary Condition="'$(PublishReadyToRunCreateSharedLibrary)' == ''">true</PublishReadyToRunCreateSharedLibrary>
 
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('ios-'))">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('tvos-'))">false</PublishReadyToRunEmitSymbols>
@@ -649,7 +650,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="_FindMachOToolchain"
     Inputs="@(_ReadyToRunNativeObjectOutputs->'%(NativeLinkerInputPath)')"
     Outputs="%(_ReadyToRunNativeObjectOutputs.Identity)"
-    Condition="'$(PublishReadyToRunContainerFormat)' == 'macho'">
+    Condition="'$(PublishReadyToRunContainerFormat)' == 'macho' And '$(PublishReadyToRunCreateSharedLibrary)' != 'false'">
 
     <PropertyGroup>
       <SharedLibraryInstallName Condition="'$(SharedLibraryInstallName)' == ''">@rpath/%(_ReadyToRunNativeObjectOutputs.Filename)%(_ReadyToRunNativeObjectOutputs.Extension)</SharedLibraryInstallName>

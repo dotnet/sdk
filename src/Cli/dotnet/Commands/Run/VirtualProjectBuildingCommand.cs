@@ -204,11 +204,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 if (buildLevel is BuildLevel.Csc)
                 {
-                    if (binaryLogger is not null)
-                    {
-                        Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
-                    }
-
                     MarkBuildStart();
 
                     // Execute CSC.
@@ -227,6 +222,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         if (result == 0)
                         {
                             MarkBuildSuccess(cache);
+                        }
+
+                        if (binaryLogger is not null)
+                        {
+                            Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
                         }
 
                         return result;
@@ -804,12 +804,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return true;
         }
 
-        // Check that the source file is not modified.
+        var reasonToNotReuseCscArguments = GetReasonToNotReuseCscArguments(cache);
         var targetFile = ResolveLinkTargetOrSelf(entryPointFile);
-        if (targetFile.LastWriteTimeUtc > buildTimeUtc)
+
+        // Check that the source file is not modified.
+        // Only do this here if we cannot reuse CSC arguments (then checking this first is faster); otherwise we need to check implicit build files anyway.
+        if (reasonToNotReuseCscArguments != null && targetFile.LastWriteTimeUtc > buildTimeUtc)
         {
-            cache.CanUseCscViaPreviousArguments = true;
             Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
+            Reporter.Verbose.WriteLine(reasonToNotReuseCscArguments);
             return true;
         }
 
@@ -834,6 +837,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
 
+        // If we might be able to reuse CSC arguments, check whether the source file is modified.
+        // NOTE: This must be the last check (otherwise setting cache.CanUseCscViaPreviousArguments would be incorrect).
+        if (reasonToNotReuseCscArguments == null && targetFile.LastWriteTimeUtc > buildTimeUtc)
+        {
+            cache.CanUseCscViaPreviousArguments = true;
+            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
+            return true;
+        }
+
         return false;
 
         static FileSystemInfo ResolveLinkTargetOrSelf(FileSystemInfo fileSystemInfo)
@@ -844,6 +856,30 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             return fileSystemInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileSystemInfo;
+        }
+
+        static string? GetReasonToNotReuseCscArguments(CacheInfo cache)
+        {
+            if (cache.PreviousEntry?.CscArguments.IsDefaultOrEmpty != false)
+            {
+                return "No CSC arguments from previous run.";
+            }
+            else if (cache.PreviousEntry.Run == null)
+            {
+                return "We have CSC arguments but not run properties. That's unexpected.";
+            }
+            else if (cache.PreviousEntry.BuildResultFile == null)
+            {
+                return "We have CSC arguments but not build result file. That's unexpected.";
+            }
+            else if (!cache.PreviousEntry.Directives.SequenceEqual(cache.CurrentEntry.Directives))
+            {
+                return "Cannot use CSC arguments from previous run because directives changed.";
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 
@@ -883,36 +919,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return BuildLevel.None;
         }
 
-        // Determine whether we can invoke CSC using previous arguments.
         if (cache.CanUseCscViaPreviousArguments)
         {
-            if (cache.PreviousEntry?.CscArguments.IsDefaultOrEmpty != false)
-            {
-                Reporter.Verbose.WriteLine("No CSC arguments from previous run.");
-            }
-            else if (cache.PreviousEntry?.Run == null)
-            {
-                Reporter.Verbose.WriteLine("We have CSC arguments but not run properties. That's unexpected.");
-            }
-            else if (cache.PreviousEntry?.BuildResultFile == null)
-            {
-                Reporter.Verbose.WriteLine("We have CSC arguments but not build result file. That's unexpected.");
-            }
-            else if (!cache.PreviousEntry.Directives.SequenceEqual(cache.CurrentEntry.Directives))
-            {
-                Reporter.Verbose.WriteLine("Cannot use CSC arguments from previous run because directives changed.");
-            }
-            else
-            {
-                Reporter.Verbose.WriteLine("We have CSC arguments from previous run. Skipping MSBuild and using CSC only.");
+            Reporter.Verbose.WriteLine("We have CSC arguments from previous run. Skipping MSBuild and using CSC only.");
 
-                // Keep the cached info for next time, so we can use CSC again.
-                cache.CurrentEntry.CscArguments = cache.PreviousEntry.CscArguments;
-                cache.CurrentEntry.BuildResultFile = cache.PreviousEntry.BuildResultFile;
-                cache.CurrentEntry.Run = cache.PreviousEntry.Run;
+            // Keep the cached info for next time, so we can use CSC again.
+            Debug.Assert(cache.PreviousEntry != null);
+            cache.CurrentEntry.CscArguments = cache.PreviousEntry.CscArguments;
+            cache.CurrentEntry.BuildResultFile = cache.PreviousEntry.BuildResultFile;
+            cache.CurrentEntry.Run = cache.PreviousEntry.Run;
 
-                return BuildLevel.Csc;
-            }
+            return BuildLevel.Csc;
         }
 
         // Determine whether we can use CSC only or need to use MSBuild.
