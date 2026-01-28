@@ -3970,6 +3970,11 @@ Pokud chcete zobrazit hodnotu, zadejte odpovídající volbu příkazového řá
         <target state="translated">Verze {0} úlohy, která byla zadána v {1}, nebyla nalezena. Spuštěním příkazu dotnet workload restore nainstalujte tuto verzi úlohy.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Verze úlohy, která se má zobrazit, nebo jedna nebo více úloh a jejich verze spojené znakem @.</target>
