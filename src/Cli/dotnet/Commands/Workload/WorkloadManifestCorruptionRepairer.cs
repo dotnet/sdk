@@ -71,7 +71,7 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
             return;
         }
 
-        if (!provider?.HasMissingManifests(workloadSet) ?? true)
+        if (provider == null || !provider.HasMissingManifests(workloadSet))
         {
             return;
         }
