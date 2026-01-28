@@ -85,8 +85,6 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
         CliTransaction.RunNew(context => RepairCorruptWorkloadSet(context, workloadSet));
     }
 
-
-
     private void RepairCorruptWorkloadSet(ITransactionContext context, WorkloadSet workloadSet)
     {
         var manifestUpdates = CreateManifestUpdatesFromWorkloadSet(workloadSet);
