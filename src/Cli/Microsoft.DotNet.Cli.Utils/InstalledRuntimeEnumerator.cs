@@ -1,20 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.NativeWrapper;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
 /// <summary>
-/// Enumerates installed .NET runtimes on the system
+/// Enumerates installed .NET runtimes on the system using hostfxr
 /// </summary>
 internal static class InstalledRuntimeEnumerator
 {
     private const string NetCoreAppFrameworkName = "Microsoft.NETCore.App";
 
     /// <summary>
-    /// Gets all installed .NET Core runtimes
+    /// Gets all installed .NET Core runtimes using hostfxr_get_dotnet_environment_info
     /// </summary>
     /// <returns>List of installed .NET Core runtime versions</returns>
     public static IEnumerable<NuGetVersion> GetInstalledRuntimes()
@@ -23,24 +24,23 @@ internal static class InstalledRuntimeEnumerator
         
         try
         {
-            var dotnetRoot = GetDotnetRoot();
-            if (dotnetRoot == null)
-            {
-                return runtimes;
-            }
+            // Get the dotnet executable directory to pass to hostfxr
+            var muxer = new Muxer();
+            var dotnetPath = Path.GetDirectoryName(muxer.MuxerPath);
+            
+            // Use hostfxr to enumerate runtimes
+            var bundleProvider = new NETBundlesNativeWrapper();
+            var envInfo = bundleProvider.GetDotnetEnvironmentInfo(dotnetPath ?? string.Empty);
 
-            var sharedFrameworkPath = Path.Combine(dotnetRoot, "shared", NetCoreAppFrameworkName);
-            if (!Directory.Exists(sharedFrameworkPath))
+            // Filter to only Microsoft.NETCore.App runtimes and convert to NuGetVersion
+            foreach (var runtime in envInfo.RuntimeInfo)
             {
-                return runtimes;
-            }
-
-            foreach (var versionDir in Directory.GetDirectories(sharedFrameworkPath))
-            {
-                var versionString = Path.GetFileName(versionDir);
-                if (NuGetVersion.TryParse(versionString, out var version))
+                if (runtime.Name == NetCoreAppFrameworkName)
                 {
-                    runtimes.Add(version);
+                    if (NuGetVersion.TryParse(runtime.Version.ToString(), out var version))
+                    {
+                        runtimes.Add(version);
+                    }
                 }
             }
         }
@@ -107,26 +107,5 @@ internal static class InstalledRuntimeEnumerator
 
         // Check if there's any runtime with a higher major version
         return installedRuntimes.Any(v => v.Major > requiredVersion.Major);
-    }
-
-    private static string? GetDotnetRoot()
-    {
-        // Try to get dotnet root from current process location
-        // The SDK is typically in <root>/sdk/<version>, so we go up two levels
-        string? rootPath = Path.GetDirectoryName(Path.GetDirectoryName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar)));
-        
-        if (rootPath != null && Directory.Exists(Path.Combine(rootPath, "shared")))
-        {
-            return rootPath;
-        }
-
-        // Fallback to DOTNET_ROOT environment variable
-        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-        if (dotnetRoot != null && Directory.Exists(Path.Combine(dotnetRoot, "shared")))
-        {
-            return dotnetRoot;
-        }
-
-        return null;
     }
 }
