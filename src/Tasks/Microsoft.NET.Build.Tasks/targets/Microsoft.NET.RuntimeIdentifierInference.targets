@@ -127,7 +127,8 @@ Copyright (c) .NET Foundation. All rights reserved.
        then set a default value for PublishRuntimeIdentifier if RuntimeIdentifier isn't set.
        However, don't do this if we are packing a PackAsTool project, as the "outer" build should still be
        without a RuntimeIdentifier -->
-  <PropertyGroup Condition="'$(PublishRuntimeIdentifier)' == '' And
+  <PropertyGroup Condition="'$(UseDefaultPublishRuntimeIdentifier)' == '' And
+                            '$(PublishRuntimeIdentifier)' == '' And
                             '$(RuntimeIdentifier)' == '' And
                             '$(_IsExecutable)' == 'true' And
                             (
@@ -138,6 +139,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                               '$(PublishAot)' == 'true'
                             ) And
                             !('$(PackAsTool)' == 'true' And '$(_IsPacking)' == 'true')">
+    <UseDefaultPublishRuntimeIdentifier>true</UseDefaultPublishRuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UseDefaultPublishRuntimeIdentifier)' == 'true'">
     <PublishRuntimeIdentifier>$(NETCoreSdkPortableRuntimeIdentifier)</PublishRuntimeIdentifier>
   </PropertyGroup>
 
