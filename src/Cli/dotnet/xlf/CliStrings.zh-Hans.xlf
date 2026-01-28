@@ -1094,6 +1094,36 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolRequiresRuntimeNotInstalled">
+        <source>Tool '{0}' requires .NET runtime {1} which is not installed.</source>
+        <target state="new">Tool '{0}' requires .NET runtime {1} which is not installed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresRuntimeNotInstalledWithRollForward">
+        <source>Tool '{0}' requires .NET runtime {1} which is not installed. However, a compatible runtime could be used with --allow-roll-forward.</source>
+        <target state="new">Tool '{0}' requires .NET runtime {1} which is not installed. However, a compatible runtime could be used with --allow-roll-forward.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresRuntimeSuggestions">
+        <source>To install this tool, you can:
+  - Install {0} or a compatible version
+  - Choose a different version of the tool that is compatible with your installed runtimes
+  - Use --allow-roll-forward to allow the tool to run on a newer runtime version</source>
+        <target state="new">To install this tool, you can:
+  - Install {0} or a compatible version
+  - Choose a different version of the tool that is compatible with your installed runtimes
+  - Use --allow-roll-forward to allow the tool to run on a newer runtime version</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresRuntimeSuggestionsNoRollForward">
+        <source>To install this tool, you can:
+  - Install {0} or a compatible version
+  - Choose a different version of the tool that is compatible with your installed runtimes</source>
+        <target state="new">To install this tool, you can:
+  - Install {0} or a compatible version
+  - Choose a different version of the tool that is compatible with your installed runtimes</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">
         <source>Command '{0}' contains one or more of the following invalid characters: {1}.</source>
         <target state="translated">命令“{0}”包含一个或多个以下无效字符: {1}。</target>

@@ -190,29 +190,82 @@ internal class ToolPackageInstance : IToolPackage
 
                     if (availableFrameworks.Count > 0)
                     {
-                        var currentFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
-
                         // Find the minimum framework version required by the tool
                         var minRequiredFramework = availableFrameworks.MinBy(f => f.Version);
 
-                        // If all available frameworks require a higher version than current runtime
-                        if (minRequiredFramework != null && minRequiredFramework.Version > currentFramework.Version)
+                        if (minRequiredFramework != null)
                         {
-                            var requiredVersionString = $".NET {minRequiredFramework.Version.Major}.{minRequiredFramework.Version.Minor}";
-                            var currentVersionString = $".NET {currentFramework.Version.Major}.{currentFramework.Version.Minor}";
-
-                            var errorMessage = string.Format(
-                                CliStrings.ToolRequiresHigherDotNetVersion,
-                                packageId,
-                                requiredVersionString,
-                                currentVersionString);
-
-                            var suggestion = string.Format(
-                                CliStrings.ToolRequiresHigherDotNetVersionSuggestion,
-                                minRequiredFramework.Version.Major,
-                                currentFramework.Version.Major);
-
-                            throw new GracefulException($"{errorMessage} {suggestion}", isUserError: false);
+                            bool hasCompatibleRuntime = false;
+                            
+                            // First, try to use hostfxr to resolve frameworks using the runtimeconfig.json
+                            // This is the most accurate way to check compatibility
+                            try
+                            {
+                                // Try to find the runtimeconfig.json file
+                                // It should be in tools/{framework}/{rid}/*.runtimeconfig.json
+                                var frameworkPath = Path.Combine(toolsPackagePath, $"net{minRequiredFramework.Version.Major}.{minRequiredFramework.Version.Minor}");
+                                if (fileSystem.Directory.Exists(frameworkPath))
+                                {
+                                    // Search for runtimeconfig.json files with max depth of 3 levels
+                                    var runtimeConfigFiles = new List<string>();
+                                    SearchForRuntimeConfigFiles(frameworkPath, runtimeConfigFiles, fileSystem, currentDepth: 0, maxDepth: 3);
+                                    
+                                    if (runtimeConfigFiles.Any())
+                                    {
+                                        // Use the first runtimeconfig.json we find (sorted for determinism)
+                                        // All runtimeconfig.json files in a tool package should have the same framework requirements
+                                        var runtimeConfigPath = runtimeConfigFiles.OrderBy(f => f).First();
+                                        hasCompatibleRuntime = InstalledRuntimeEnumerator.CanResolveFrameworks(runtimeConfigPath);
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                // If hostfxr resolution fails, fall back to version-based check
+                                // This ensures tool installation continues even if hostfxr is unavailable
+                            }
+                            
+                            // If hostfxr resolution didn't work, fall back to version-based check
+                            if (!hasCompatibleRuntime)
+                            {
+                                hasCompatibleRuntime = InstalledRuntimeEnumerator.IsCompatibleRuntimeAvailable(minRequiredFramework, allowRollForward: false);
+                            }
+                            
+                            if (!hasCompatibleRuntime)
+                            {
+                                var requiredVersionString = $".NET {minRequiredFramework.Version.Major}.{minRequiredFramework.Version.Minor}";
+                                
+                                // Check if roll-forward would help
+                                bool rollForwardWouldHelp = InstalledRuntimeEnumerator.WouldRollForwardHelp(minRequiredFramework);
+                                
+                                string errorMessage;
+                                string suggestions;
+                                
+                                if (rollForwardWouldHelp)
+                                {
+                                    errorMessage = string.Format(
+                                        CliStrings.ToolRequiresRuntimeNotInstalledWithRollForward,
+                                        packageId,
+                                        requiredVersionString);
+                                    
+                                    suggestions = string.Format(
+                                        CliStrings.ToolRequiresRuntimeSuggestions,
+                                        requiredVersionString);
+                                }
+                                else
+                                {
+                                    errorMessage = string.Format(
+                                        CliStrings.ToolRequiresRuntimeNotInstalled,
+                                        packageId,
+                                        requiredVersionString);
+                                    
+                                    suggestions = string.Format(
+                                        CliStrings.ToolRequiresRuntimeSuggestionsNoRollForward,
+                                        requiredVersionString);
+                                }
+                                
+                                throw new GracefulException($"{errorMessage}\n\n{suggestions}", isUserError: false);
+                            }
                         }
                     }
                 }
@@ -238,6 +291,27 @@ internal class ToolPackageInstance : IToolPackage
                     CliStrings.FailedToRetrieveToolConfiguration,
                     ex.Message),
                 ex);
+        }
+    }
+
+    private static void SearchForRuntimeConfigFiles(string directory, List<string> results, IFileSystem fileSystem, int currentDepth, int maxDepth)
+    {
+        if (currentDepth >= maxDepth)
+        {
+            return;
+        }
+
+        foreach (var file in fileSystem.Directory.EnumerateFiles(directory))
+        {
+            if (file.EndsWith(".runtimeconfig.json", StringComparison.OrdinalIgnoreCase))
+            {
+                results.Add(file);
+            }
+        }
+
+        foreach (var subdir in fileSystem.Directory.EnumerateDirectories(directory))
+        {
+            SearchForRuntimeConfigFiles(subdir, results, fileSystem, currentDepth + 1, maxDepth);
         }
     }
 
