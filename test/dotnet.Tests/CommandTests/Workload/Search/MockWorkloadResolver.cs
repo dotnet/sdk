@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Reflection.Metadata.Ecma335;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Search.Tests
