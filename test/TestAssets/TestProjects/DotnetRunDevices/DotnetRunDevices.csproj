@@ -5,11 +5,16 @@
     <TargetFrameworks>net9.0;$(CurrentTargetFramework)</TargetFrameworks>
     <!-- Opt in to receiving environment variables as @(RuntimeEnvironmentVariable) items from dotnet run -e -->
     <UseRuntimeEnvironmentVariableItems>true</UseRuntimeEnvironmentVariableItems>
-    <!-- Disable default EmbeddedResource items to avoid MSB3552 error on macOS with long paths.
-         The **/*.resx glob fails to expand on long paths and becomes a literal filename.
+    <!-- Disable default items to avoid glob expansion failures on macOS with long paths.
+         Globs like **/*.cs and **/*.resx fail to expand and become literal filenames,
+         causing CS2021/CS2001 and MSB3552 errors respectively.
          See https://github.com/dotnet/msbuild/issues/12546 -->
-    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+  </ItemGroup>
 
   <Target Name="ComputeAvailableDevices" Returns="@(Devices)" DependsOnTargets="ResolveFrameworkReferences">
     <!-- If SingleDevice property is set, return only one device -->
