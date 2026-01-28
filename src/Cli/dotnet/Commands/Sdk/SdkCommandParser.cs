@@ -9,19 +9,18 @@ namespace Microsoft.DotNet.Cli.Commands.Sdk;
 
 internal static class SdkCommandParser
 {
-    private static readonly Command Command = ConfigureCommand(SdkCommandDefinition.Create());
+    private static readonly SdkCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command ConfigureCommand(Command command)
+    private static SdkCommandDefinition CreateCommand()
     {
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-
-        command.Subcommands.Single(c => c.Name == SdkCheckCommandDefinition.Name).SetAction(SdkCheckCommand.Run);
-
+        var command = new SdkCommandDefinition();
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
+        command.CheckCommand.SetAction(SdkCheckCommand.Run);
         return command;
     }
 }

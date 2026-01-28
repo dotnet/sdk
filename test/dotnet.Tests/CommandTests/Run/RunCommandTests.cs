@@ -32,8 +32,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             MSBuildArgs.FromOtherArgs([]),
             applicationArgs: applicationArgs ?? [],
             readCodeFromStdin: false,
-            environmentVariables: new Dictionary<string, string>(),
-            msbuildRestoreProperties: new(new Dictionary<string, string>()));
+            environmentVariables: new Dictionary<string, string>());
 
     [Fact]
     public void EnvironmentVariableExpansion_Project()
