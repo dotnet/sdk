@@ -190,29 +190,49 @@ internal class ToolPackageInstance : IToolPackage
 
                     if (availableFrameworks.Count > 0)
                     {
-                        var currentFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
-
                         // Find the minimum framework version required by the tool
                         var minRequiredFramework = availableFrameworks.MinBy(f => f.Version);
 
-                        // If all available frameworks require a higher version than current runtime
-                        if (minRequiredFramework != null && minRequiredFramework.Version > currentFramework.Version)
+                        if (minRequiredFramework != null)
                         {
-                            var requiredVersionString = $".NET {minRequiredFramework.Version.Major}.{minRequiredFramework.Version.Minor}";
-                            var currentVersionString = $".NET {currentFramework.Version.Major}.{currentFramework.Version.Minor}";
-
-                            var errorMessage = string.Format(
-                                CliStrings.ToolRequiresHigherDotNetVersion,
-                                packageId,
-                                requiredVersionString,
-                                currentVersionString);
-
-                            var suggestion = string.Format(
-                                CliStrings.ToolRequiresHigherDotNetVersionSuggestion,
-                                minRequiredFramework.Version.Major,
-                                currentFramework.Version.Major);
-
-                            throw new GracefulException($"{errorMessage} {suggestion}", isUserError: false);
+                            // Check if any installed runtime is compatible
+                            bool hasCompatibleRuntime = InstalledRuntimeEnumerator.IsCompatibleRuntimeAvailable(minRequiredFramework, allowRollForward: false);
+                            
+                            if (!hasCompatibleRuntime)
+                            {
+                                var requiredVersionString = $".NET {minRequiredFramework.Version.Major}.{minRequiredFramework.Version.Minor}";
+                                
+                                // Check if roll-forward would help
+                                bool rollForwardWouldHelp = InstalledRuntimeEnumerator.WouldRollForwardHelp(minRequiredFramework);
+                                
+                                string errorMessage;
+                                string suggestions;
+                                
+                                if (rollForwardWouldHelp)
+                                {
+                                    errorMessage = string.Format(
+                                        CliStrings.ToolRequiresRuntimeNotInstalledWithRollForward,
+                                        packageId,
+                                        requiredVersionString);
+                                    
+                                    suggestions = string.Format(
+                                        CliStrings.ToolRequiresRuntimeSuggestions,
+                                        requiredVersionString);
+                                }
+                                else
+                                {
+                                    errorMessage = string.Format(
+                                        CliStrings.ToolRequiresRuntimeNotInstalled,
+                                        packageId,
+                                        requiredVersionString);
+                                    
+                                    suggestions = string.Format(
+                                        CliStrings.ToolRequiresRuntimeSuggestionsNoRollForward,
+                                        requiredVersionString);
+                                }
+                                
+                                throw new GracefulException($"{errorMessage}\n\n{suggestions}", isUserError: false);
+                            }
                         }
                     }
                 }
