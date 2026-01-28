@@ -15,6 +15,30 @@ internal static class InstalledRuntimeEnumerator
     private const string NetCoreAppFrameworkName = "Microsoft.NETCore.App";
 
     /// <summary>
+    /// Checks if a tool can run with the installed runtimes by using hostfxr to resolve frameworks
+    /// </summary>
+    /// <param name="runtimeConfigPath">Path to the tool's runtimeconfig.json file</param>
+    /// <returns>True if the tool can run with installed runtimes</returns>
+    public static bool CanResolveFrameworks(string runtimeConfigPath)
+    {
+        if (!File.Exists(runtimeConfigPath))
+        {
+            return false;
+        }
+
+        try
+        {
+            var bundleProvider = new NETBundlesNativeWrapper();
+            return bundleProvider.CanResolveFrameworks(runtimeConfigPath);
+        }
+        catch
+        {
+            // If hostfxr call fails, return false
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Gets all installed .NET Core runtimes using hostfxr_get_dotnet_environment_info
     /// </summary>
     /// <returns>List of installed .NET Core runtime versions</returns>
