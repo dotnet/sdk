@@ -12,4 +12,10 @@ internal static class InfoCommandParser
         Description = Strings.InfoJsonOptionDescription,
         Arity = ArgumentArity.ZeroOrOne
     };
+
+    public static readonly Option<bool> NoListOption = new("--no-list")
+    {
+        Description = Strings.InfoNoListOptionDescription,
+        Arity = ArgumentArity.ZeroOrOne
+    };
 }

@@ -5,22 +5,30 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
 internal static class InfoCommand
 {
-    public static int Execute(bool jsonOutput)
+    public static int Execute(bool jsonOutput, bool noList = false)
     {
         var info = GetDotnetupInfo();
+        List<InstallationInfo>? installations = null;
+
+        if (!noList)
+        {
+            // --info verifies by default
+            installations = InstallationLister.GetInstallations(verify: true);
+        }
 
         if (jsonOutput)
         {
-            PrintJsonInfo(info);
+            PrintJsonInfo(info, installations);
         }
         else
         {
-            PrintHumanReadableInfo(info);
+            PrintHumanReadableInfo(info, installations);
         }
 
         return 0;
@@ -62,23 +70,31 @@ internal static class InfoCommand
         return (informationalVersion, "N/A");
     }
 
-    private static void PrintHumanReadableInfo(DotnetupInfo info)
+    private static void PrintHumanReadableInfo(DotnetupInfo info, List<InstallationInfo>? installations)
     {
         Console.WriteLine(Strings.InfoHeader);
         Console.WriteLine($" Version:      {info.Version}");
         Console.WriteLine($" Commit:       {info.Commit}");
         Console.WriteLine($" Architecture: {info.Architecture}");
         Console.WriteLine($" RID:          {info.Rid}");
+
+        if (installations is not null)
+        {
+            InstallationLister.WriteHumanReadable(Console.Out, installations);
+        }
     }
 
-    private static void PrintJsonInfo(DotnetupInfo info)
+    private static void PrintJsonInfo(DotnetupInfo info, List<InstallationInfo>? installations)
     {
-        var options = new JsonSerializerOptions
+        var fullInfo = new DotnetupFullInfo
         {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            Version = info.Version,
+            Commit = info.Commit,
+            Architecture = info.Architecture,
+            Rid = info.Rid,
+            Installations = installations
         };
-        Console.WriteLine(JsonSerializer.Serialize(info, DotnetupInfoJsonContext.Default.DotnetupInfo));
+        Console.WriteLine(JsonSerializer.Serialize(fullInfo, DotnetupInfoJsonContext.Default.DotnetupFullInfo));
     }
 }
 
@@ -90,7 +106,17 @@ internal class DotnetupInfo
     public string Rid { get; set; } = string.Empty;
 }
 
+internal class DotnetupFullInfo
+{
+    public string Version { get; set; } = string.Empty;
+    public string Commit { get; set; } = string.Empty;
+    public string Architecture { get; set; } = string.Empty;
+    public string Rid { get; set; } = string.Empty;
+    public List<InstallationInfo>? Installations { get; set; }
+}
+
 [JsonSerializable(typeof(DotnetupInfo))]
+[JsonSerializable(typeof(DotnetupFullInfo))]
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 internal partial class DotnetupInfoJsonContext : JsonSerializerContext
 {

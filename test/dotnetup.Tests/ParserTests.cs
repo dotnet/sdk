@@ -90,4 +90,18 @@ public class ParserTests
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
     }
+
+    [Fact]
+    public void Parser_ShouldHandleVersionOption()
+    {
+        // Arrange
+        var args = new[] { "--version" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
 }

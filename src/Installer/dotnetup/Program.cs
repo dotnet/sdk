@@ -17,7 +17,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
             if (parseResult.GetValue(Parser.InfoOption))
             {
                 var jsonOutput = parseResult.GetValue(InfoCommandParser.JsonOption);
-                return InfoCommand.Execute(jsonOutput);
+                var noList = parseResult.GetValue(InfoCommandParser.NoListOption);
+                return InfoCommand.Execute(jsonOutput, noList);
             }
 
             return Parser.Invoke(parseResult);

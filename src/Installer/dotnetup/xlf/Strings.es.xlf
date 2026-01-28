@@ -17,9 +17,49 @@
         <target state="new">Output information in JSON format.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InfoNoListOptionDescription">
+        <source>Skip listing installed SDKs (faster).</source>
+        <target state="new">Skip listing installed SDKs (faster).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InfoOptionDescription">
         <source>Display dotnetup information.</source>
         <target state="new">Display dotnetup information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListCommandDescription">
+        <source>List installed .NET SDKs and runtimes managed by dotnetup.</source>
+        <target state="new">List installed .NET SDKs and runtimes managed by dotnetup.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListHeader">
+        <source>Installed .NET (managed by dotnetup):</source>
+        <target state="new">Installed .NET (managed by dotnetup):</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListJsonOptionDescription">
+        <source>Output list in JSON format.</source>
+        <target state="new">Output list in JSON format.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListNoInstallations">
+        <source>(none)</source>
+        <target state="new">(none)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListTotal">
+        <source>Total</source>
+        <target state="new">Total</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListVerifyOptionDescription">
+        <source>Verify each installation exists on disk.</source>
+        <target state="new">Verify each installation exists on disk.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RootCommandDescription">
+        <source>.NET installation manager for user and local installs. Manage multiple .NET versions without requiring administrator privileges.</source>
+        <target state="new">.NET installation manager for user and local installs. Manage multiple .NET versions without requiring administrator privileges.</target>
         <note />
       </trans-unit>
     </body>

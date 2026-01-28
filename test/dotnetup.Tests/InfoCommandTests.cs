@@ -56,6 +56,21 @@ public class InfoCommandTests
     }
 
     [Fact]
+    public void Parser_ShouldParseInfoWithNoListOption()
+    {
+        // Arrange
+        var args = new[] { "--info", "--no-list" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.GetValue(Parser.InfoOption).Should().BeTrue();
+        parseResult.GetValue(InfoCommandParser.NoListOption).Should().BeTrue();
+    }
+
+    [Fact]
     public void InfoCommand_ShouldReturnZeroExitCode()
     {
         // Arrange - capture and restore stdout
@@ -65,8 +80,8 @@ public class InfoCommandTests
             using var sw = new StringWriter();
             Console.SetOut(sw);
 
-            // Act
-            var exitCode = InfoCommand.Execute(jsonOutput: false);
+            // Act - use noList: true to avoid manifest access in unit tests
+            var exitCode = InfoCommand.Execute(jsonOutput: false, noList: true);
 
             // Assert
             exitCode.Should().Be(0);
@@ -87,8 +102,8 @@ public class InfoCommandTests
             using var sw = new StringWriter();
             Console.SetOut(sw);
 
-            // Act
-            var exitCode = InfoCommand.Execute(jsonOutput: true);
+            // Act - use noList: true to avoid manifest access in unit tests
+            var exitCode = InfoCommand.Execute(jsonOutput: true, noList: true);
 
             // Assert
             exitCode.Should().Be(0);
@@ -109,8 +124,8 @@ public class InfoCommandTests
             using var sw = new StringWriter();
             Console.SetOut(sw);
 
-            // Act
-            InfoCommand.Execute(jsonOutput: false);
+            // Act - use noList: true to avoid manifest access in unit tests
+            InfoCommand.Execute(jsonOutput: false, noList: true);
             var output = sw.ToString();
 
             // Assert
@@ -119,6 +134,31 @@ public class InfoCommandTests
             output.Should().Contain("Commit:");
             output.Should().Contain("Architecture:");
             output.Should().Contain("RID:");
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+    }
+
+    [Fact]
+    public void InfoCommand_HumanReadable_WithList_ShouldIncludeListOutput()
+    {
+        // Arrange - capture and restore stdout
+        var originalOut = Console.Out;
+        try
+        {
+            using var sw = new StringWriter();
+            Console.SetOut(sw);
+
+            // Act - include list (may be empty but should show the header)
+            InfoCommand.Execute(jsonOutput: false, noList: false);
+            var output = sw.ToString();
+
+            // Assert
+            output.Should().Contain("dotnetup Information:");
+            output.Should().Contain("Installed .NET (managed by dotnetup):");
+            output.Should().Contain("Total:");
         }
         finally
         {
@@ -136,8 +176,8 @@ public class InfoCommandTests
             using var sw = new StringWriter();
             Console.SetOut(sw);
 
-            // Act
-            InfoCommand.Execute(jsonOutput: true);
+            // Act - use noList: true to avoid manifest access in unit tests
+            InfoCommand.Execute(jsonOutput: true, noList: true);
             var output = sw.ToString();
 
             // Assert - should be valid JSON
@@ -160,8 +200,8 @@ public class InfoCommandTests
             using var sw = new StringWriter();
             Console.SetOut(sw);
 
-            // Act
-            InfoCommand.Execute(jsonOutput: true);
+            // Act - use noList: true to avoid manifest access in unit tests
+            InfoCommand.Execute(jsonOutput: true, noList: true);
             var output = sw.ToString();
 
             // Assert
@@ -180,6 +220,33 @@ public class InfoCommandTests
     }
 
     [Fact]
+    public void InfoCommand_Json_WithList_ShouldContainInstallationsProperty()
+    {
+        // Arrange - capture and restore stdout
+        var originalOut = Console.Out;
+        try
+        {
+            using var sw = new StringWriter();
+            Console.SetOut(sw);
+
+            // Act - include list
+            InfoCommand.Execute(jsonOutput: true, noList: false);
+            var output = sw.ToString();
+
+            // Assert
+            using var doc = JsonDocument.Parse(output);
+            var root = doc.RootElement;
+
+            root.TryGetProperty("installations", out var installations).Should().BeTrue();
+            installations.ValueKind.Should().Be(JsonValueKind.Array);
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+    }
+
+    [Fact]
     public void InfoCommand_Json_ArchitectureShouldBeLowercase()
     {
         // Arrange - capture and restore stdout
@@ -189,8 +256,8 @@ public class InfoCommandTests
             using var sw = new StringWriter();
             Console.SetOut(sw);
 
-            // Act
-            InfoCommand.Execute(jsonOutput: true);
+            // Act - use noList: true to avoid manifest access in unit tests
+            InfoCommand.Execute(jsonOutput: true, noList: true);
             var output = sw.ToString();
 
             // Assert
@@ -216,8 +283,8 @@ public class InfoCommandTests
             using var sw = new StringWriter();
             Console.SetOut(sw);
 
-            // Act
-            InfoCommand.Execute(jsonOutput: true);
+            // Act - use noList: true to avoid manifest access in unit tests
+            InfoCommand.Execute(jsonOutput: true, noList: true);
             var output = sw.ToString();
 
             // Assert

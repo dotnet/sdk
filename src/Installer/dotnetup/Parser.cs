@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
@@ -39,6 +40,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
 
         private static RootCommand RootCommand { get; } = ConfigureCommandLine(new()
         {
+            Description = Strings.RootCommandDescription,
             Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
         });
 
@@ -46,12 +48,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
         {
             rootCommand.Options.Add(InfoOption);
             rootCommand.Options.Add(InfoCommandParser.JsonOption);
+            rootCommand.Options.Add(InfoCommandParser.NoListOption);
 
             rootCommand.Subcommands.Add(SdkCommandParser.GetCommand());
             rootCommand.Subcommands.Add(SdkInstallCommandParser.GetRootInstallCommand());
             rootCommand.Subcommands.Add(SdkUpdateCommandParser.GetRootUpdateCommand());
             rootCommand.Subcommands.Add(ElevatedAdminPathCommandParser.GetCommand());
             rootCommand.Subcommands.Add(DefaultInstallCommandParser.GetCommand());
+            rootCommand.Subcommands.Add(ListCommandParser.GetCommand());
 
             return rootCommand;
         }
