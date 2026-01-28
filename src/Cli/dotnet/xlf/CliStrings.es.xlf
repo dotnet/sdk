@@ -1063,6 +1063,11 @@ El valor predeterminado es "false." Sin embargo, cuando el destino es .NET 7 o i
         <target state="translated">Debe especificar al menos una referencia para quitarla.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallWithRollForwardPrompt">
+        <source>Would you like to install the tool with --allow-roll-forward? (Y/N)</source>
+        <target state="new">Would you like to install the tool with --allow-roll-forward? (Y/N)</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0}: se encontró biblioteca de herramientas {1}</target>
@@ -1091,6 +1096,36 @@ El valor predeterminado es "false." Sin embargo, cuando el destino es .NET 7 o i
       <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
         <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
         <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresRuntimeNotInstalled">
+        <source>Tool '{0}' requires .NET runtime {1} which is not installed.</source>
+        <target state="new">Tool '{0}' requires .NET runtime {1} which is not installed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresRuntimeNotInstalledWithRollForward">
+        <source>Tool '{0}' requires .NET runtime {1} which is not installed. However, a compatible runtime could be used with --allow-roll-forward.</source>
+        <target state="new">Tool '{0}' requires .NET runtime {1} which is not installed. However, a compatible runtime could be used with --allow-roll-forward.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresRuntimeSuggestions">
+        <source>To install this tool, you can:
+  - Install .NET {0} or a compatible version
+  - Choose a different version of the tool that is compatible with your installed runtimes
+  - Use --allow-roll-forward to allow the tool to run on a newer runtime version</source>
+        <target state="new">To install this tool, you can:
+  - Install .NET {0} or a compatible version
+  - Choose a different version of the tool that is compatible with your installed runtimes
+  - Use --allow-roll-forward to allow the tool to run on a newer runtime version</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresRuntimeSuggestionsNoRollForward">
+        <source>To install this tool, you can:
+  - Install .NET {0} or a compatible version
+  - Choose a different version of the tool that is compatible with your installed runtimes</source>
+        <target state="new">To install this tool, you can:
+  - Install .NET {0} or a compatible version
+  - Choose a different version of the tool that is compatible with your installed runtimes</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">
