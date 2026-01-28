@@ -75,7 +75,7 @@ namespace System.Linq
 ");
         }
 
-        [Fact()]
+        [Fact]
         public async Task UnrelatedMethodsDontTrigger()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
