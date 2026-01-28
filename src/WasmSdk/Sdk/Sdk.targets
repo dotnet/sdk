@@ -21,9 +21,23 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(Configuration)' != 'Debug'">false</_WasmEnableHotReload>
     <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">true</_WasmEnableHotReload>
   </PropertyGroup>
-  <Target Name="_ImplicitlyReferenceHotReload" BeforeTargets="ProcessFrameworkReferences">
+  <!-- <Target Name="_ImplicitlyReferenceHotReload" BeforeTargets="ProcessFrameworkReferences">
     <ItemGroup Condition="'$(_WasmEnableHotReload)' == 'true'">
       <PackageReference Include="Microsoft.DotNet.HotReload.WebAssembly.Browser" Version="$(NETCoreSdkVersion)" IsImplicitlyDefined="true" />
+    </ItemGroup>
+  </Target> -->
+  <Target Name="_ImplicitlyReferenceHotReload" BeforeTargets="ResolveProjectStaticWebAssets;ProcessFrameworkReferences" Condition="'$(_WasmEnableHotReload)' == 'true'">
+    <PropertyGroup>
+      <_WasmHotReloadRoot>$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', 'hotreload'))</_WasmHotReloadRoot>
+      <_WasmHotReloadDllPath Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">net10.0</_WasmHotReloadDllPath>
+      <_WasmHotReloadDllPath Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0'))">net11.0</_WasmHotReloadDllPath>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(_WasmHotReloadDllPath)' != ''">
+      <ReferenceCopyLocalPaths Include="$([MSBuild]::NormalizePath($(_WasmHotReloadRoot), $(_WasmHotReloadDllPath), 'Microsoft.DotNet.HotReload.WebAssembly.Browser.dll'))" />
+      <Content Include="$([MSBuild]::NormalizePath($(_WasmHotReloadRoot), 'wwwroot', '**', '*.*'))" TargetPath="wwwroot\_framework\%(RecursiveDir)%(Filename)%(Extension)">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <AssetKind>Build</AssetKind>
+      </Content>
     </ItemGroup>
   </Target>
 
