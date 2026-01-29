@@ -47,6 +47,14 @@
       <Pack>true</Pack>
       <PackagePath>Sdk</PackagePath>
     </AdditionalContent>
+    <AdditionalContent Include="$(ArtifactsBinDir)\Microsoft.DotNet.HotReload.WebAssembly.Browser\$(Configuration)\**\*.*">
+      <Pack>true</Pack>
+      <PackagePath>hotreload</PackagePath>
+    </AdditionalContent>
+    <AdditionalContent Include="$(SdkSrcRoot)\BuiltInTools\HotReloadAgent.WebAssembly.Browser\wwwroot\**\*.*">
+      <Pack>true</Pack>
+      <PackagePath>hotreload\wwwroot</PackagePath>
+    </AdditionalContent>
   </ItemGroup>
 
   <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">
