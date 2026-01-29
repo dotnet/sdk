@@ -138,8 +138,8 @@
   <data name="ListJsonOptionDescription" xml:space="preserve">
     <value>Output list in JSON format.</value>
   </data>
-  <data name="ListVerifyOptionDescription" xml:space="preserve">
-    <value>Verify each installation exists on disk.</value>
+  <data name="ListNoVerifyOptionDescription" xml:space="preserve">
+    <value>Skip verifying that each installation is valid.</value>
   </data>
   <data name="ListHeader" xml:space="preserve">
     <value>Installed .NET (managed by dotnetup):</value>

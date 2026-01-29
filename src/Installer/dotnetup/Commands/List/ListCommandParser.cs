@@ -9,9 +9,9 @@ internal static class ListCommandParser
 {
     public static Option<bool> JsonOption => CommonOptions.JsonOption;
 
-    public static readonly Option<bool> VerifyOption = new("--verify")
+    public static readonly Option<bool> NoVerifyOption = new("--no-verify")
     {
-        Description = Strings.ListVerifyOptionDescription,
+        Description = Strings.ListNoVerifyOptionDescription,
         Arity = ArgumentArity.ZeroOrOne
     };
 
@@ -27,7 +27,7 @@ internal static class ListCommandParser
         Command command = new("list", Strings.ListCommandDescription);
 
         command.Options.Add(JsonOption);
-        command.Options.Add(VerifyOption);
+        command.Options.Add(NoVerifyOption);
 
         command.SetAction(parseResult => new ListCommand(parseResult).Execute());
 

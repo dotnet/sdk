@@ -13,8 +13,8 @@ dotnetup list
 # Machine-readable JSON output
 dotnetup list --json
 
-# Verify installations exist on disk
-dotnetup list --verify
+# Skip verification (faster, reads manifest only)
+dotnetup list --no-verify
 ```
 
 ## Options
@@ -22,7 +22,7 @@ dotnetup list --verify
 | Option | Description |
 |--------|-------------|
 | `--json` | Output list in JSON format |
-| `--verify` | Verify each installation exists on disk before displaying |
+| `--no-verify` | Skip verifying each installation exists on disk (faster) |
 
 ## Output Information
 
@@ -135,20 +135,20 @@ The `--json` option outputs the list in a machine-readable JSON format:
 }
 ```
 
-## Verification (`--verify`)
+## Verification (Default Behavior)
 
-By default, `dotnetup list` reads from the manifest without checking if installations still exist on disk. Use `--verify` to validate each installation:
+By default, `dotnetup list` verifies each installation exists on disk before displaying it. This ensures accuracy, especially after manual file system changes.
 
-```bash
-dotnetup list --verify
-```
-
-When verification is enabled:
+When verification is enabled (default):
 - Each installation is checked to confirm the files exist on disk
 - Invalid entries (deleted or corrupted installations) are removed from the manifest
 - Only valid installations are displayed
 
-This is slower but ensures accuracy, especially useful after manual file system changes.
+Use `--no-verify` to skip verification and read directly from the manifest (faster but may show stale entries):
+
+```bash
+dotnetup list --no-verify
+```
 
 ## Component Types
 
@@ -191,9 +191,9 @@ Write-Host "You have $sdkCount SDK(s) installed"
 dotnetup list --json | jq -r '.installations[].version'
 ```
 
-### Verify and List
+### Skip Verification for Speed
 
 ```bash
-# Useful after manually deleting .NET installations
-$ dotnetup list --verify
+# Skip verification when you trust the manifest is accurate
+$ dotnetup list --no-verify
 ```

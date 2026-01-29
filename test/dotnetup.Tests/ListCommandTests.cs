@@ -12,9 +12,9 @@ public class ListCommandTests
     [Theory]
     [InlineData(new[] { "list" }, false, false)]
     [InlineData(new[] { "list", "--json" }, true, false)]
-    [InlineData(new[] { "list", "--verify" }, false, true)]
-    [InlineData(new[] { "list", "--json", "--verify" }, true, true)]
-    public void Parser_ShouldParseListCommand(string[] args, bool expectedJson, bool expectedVerify)
+    [InlineData(new[] { "list", "--no-verify" }, false, true)]
+    [InlineData(new[] { "list", "--json", "--no-verify" }, true, true)]
+    public void Parser_ShouldParseListCommand(string[] args, bool expectedJson, bool expectedNoVerify)
     {
         // Act
         var parseResult = Parser.Parse(args);
@@ -23,7 +23,7 @@ public class ListCommandTests
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
         parseResult.GetValue(CommonOptions.JsonOption).Should().Be(expectedJson);
-        parseResult.GetValue(ListCommandParser.VerifyOption).Should().Be(expectedVerify);
+        parseResult.GetValue(ListCommandParser.NoVerifyOption).Should().Be(expectedNoVerify);
     }
 
     [Fact]

@@ -12,17 +12,17 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 internal class ListCommand : CommandBase
 {
     private readonly bool _jsonOutput;
-    private readonly bool _verify;
+    private readonly bool _skipVerification;
 
     public ListCommand(ParseResult parseResult) : base(parseResult)
     {
         _jsonOutput = parseResult.GetValue(CommonOptions.JsonOption);
-        _verify = parseResult.GetValue(ListCommandParser.VerifyOption);
+        _skipVerification = parseResult.GetValue(ListCommandParser.NoVerifyOption);
     }
 
     public override int Execute()
     {
-        var installations = InstallationLister.GetInstallations(_verify);
+        var installations = InstallationLister.GetInstallations(verify: !_skipVerification);
 
         if (_jsonOutput)
         {

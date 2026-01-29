@@ -6,14 +6,15 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
 internal static class InfoCommand
 {
-    public static int Execute(bool jsonOutput, bool noList = false)
+    public static int Execute(bool jsonOutput, bool noList = false, TextWriter? output = null)
     {
+        output ??= Console.Out;
+
         var info = GetDotnetupInfo();
         List<InstallationInfo>? installations = null;
 
@@ -25,11 +26,11 @@ internal static class InfoCommand
 
         if (jsonOutput)
         {
-            PrintJsonInfo(info, installations);
+            PrintJsonInfo(output, info, installations);
         }
         else
         {
-            PrintHumanReadableInfo(info, installations);
+            PrintHumanReadableInfo(output, info, installations);
         }
 
         return 0;
@@ -71,21 +72,21 @@ internal static class InfoCommand
         return (informationalVersion, "N/A");
     }
 
-    private static void PrintHumanReadableInfo(DotnetupInfo info, List<InstallationInfo>? installations)
+    private static void PrintHumanReadableInfo(TextWriter output, DotnetupInfo info, List<InstallationInfo>? installations)
     {
-        SpectreAnsiConsole.WriteLine(Strings.InfoHeader);
-        SpectreAnsiConsole.WriteLine($" Version:      {info.Version}");
-        SpectreAnsiConsole.WriteLine($" Commit:       {info.Commit}");
-        SpectreAnsiConsole.WriteLine($" Architecture: {info.Architecture}");
-        SpectreAnsiConsole.WriteLine($" RID:          {info.Rid}");
+        output.WriteLine(Strings.InfoHeader);
+        output.WriteLine($" Version:      {info.Version}");
+        output.WriteLine($" Commit:       {info.Commit}");
+        output.WriteLine($" Architecture: {info.Architecture}");
+        output.WriteLine($" RID:          {info.Rid}");
 
         if (installations is not null)
         {
-            InstallationLister.WriteHumanReadable(Console.Out, installations);
+            InstallationLister.WriteHumanReadable(output, installations);
         }
     }
 
-    private static void PrintJsonInfo(DotnetupInfo info, List<InstallationInfo>? installations)
+    private static void PrintJsonInfo(TextWriter output, DotnetupInfo info, List<InstallationInfo>? installations)
     {
         var fullInfo = new DotnetupFullInfo
         {
@@ -95,7 +96,7 @@ internal static class InfoCommand
             Rid = info.Rid,
             Installations = installations
         };
-        Console.WriteLine(JsonSerializer.Serialize(fullInfo, DotnetupInfoJsonContext.Default.DotnetupFullInfo));
+        output.WriteLine(JsonSerializer.Serialize(fullInfo, DotnetupInfoJsonContext.Default.DotnetupFullInfo));
     }
 }
 
