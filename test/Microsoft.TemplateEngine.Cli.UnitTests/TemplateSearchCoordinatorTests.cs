@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search foo");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -120,7 +120,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search foo --framework netcoreapp2.0");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -164,7 +164,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search foo --tfm netcoreapp2.0");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -203,7 +203,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search bar --language F#");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -247,7 +247,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --author {commandAuthor}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -288,7 +288,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --type {commandType}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
@@ -331,7 +331,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --package {commandPackage}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
@@ -379,7 +379,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --tag {commandTag}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -421,7 +421,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search bar --language VB");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
@@ -458,7 +458,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search --unknown");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 

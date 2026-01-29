@@ -12,23 +12,13 @@ namespace Microsoft.DotNet.Cli.Commands.Solution;
 
 internal static class SolutionCommandParser
 {
-    private static readonly SolutionCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(SolutionCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static SolutionCommandDefinition CreateCommand()
-    {
-        var command = new SolutionCommandDefinition();
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
         command.AddCommand.SetAction(parseResult => new SolutionAddCommand(parseResult).Execute());
         command.ListCommand.SetAction(parseResult => new SolutionListCommand(parseResult).Execute());
         command.MigrateCommand.SetAction(parseResult => new SolutionMigrateCommand(parseResult).Execute());
         command.RemoveCommand.SetAction(parseResult => new SolutionRemoveCommand(parseResult).Execute());
-
-        return command;
     }
 }

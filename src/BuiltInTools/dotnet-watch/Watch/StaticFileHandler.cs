@@ -1,0 +1,79 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
+
+namespace Microsoft.DotNet.Watch
+{
+    internal sealed class StaticFileHandler(ILogger logger, ProjectNodeMap projectMap, BrowserRefreshServerFactory browserConnector)
+    {
+        public async ValueTask<bool> HandleFileChangesAsync(IReadOnlyList<ChangedFile> files, CancellationToken cancellationToken)
+        {
+            var allFilesHandled = true;
+            var refreshRequests = new Dictionary<BrowserRefreshServer, List<string>>();
+            var projectsWithoutRefreshServer = new HashSet<ProjectGraphNode>();
+
+            for (int i = 0; i < files.Count; i++)
+            {
+                var file = files[i].Item;
+
+                if (file.StaticWebAssetRelativeUrl is null)
+                {
+                    allFilesHandled = false;
+                    continue;
+                }
+
+                logger.LogDebug("Handling file change event for static content {FilePath}.", file.FilePath);
+
+                foreach (var containingProjectPath in file.ContainingProjectPaths)
+                {
+                    if (!projectMap.Map.TryGetValue(containingProjectPath, out var projectNodes))
+                    {
+                        // Shouldn't happen.
+                        logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);
+                        return allFilesHandled;
+                    }
+
+                    foreach (var projectNode in projectNodes)
+                    {
+                        if (browserConnector.TryGetRefreshServer(projectNode, out var refreshServer))
+                        {
+                            if (!refreshRequests.TryGetValue(refreshServer, out var filesPerServer))
+                            {
+                                logger.LogDebug("[{ProjectName}] Refreshing browser.", projectNode.GetDisplayName());
+                                refreshRequests.Add(refreshServer, filesPerServer = []);
+                            }
+
+                            filesPerServer.Add(StaticWebAsset.WebRoot + "/" + file.StaticWebAssetRelativeUrl);
+                        }
+                        else if (projectsWithoutRefreshServer.Add(projectNode))
+                        {
+                            logger.LogDebug("[{ProjectName}] No refresh server.", projectNode.GetDisplayName());
+                        }
+                    }
+                }
+            }
+
+            if (refreshRequests.Count == 0)
+            {
+                return allFilesHandled;
+            }
+
+            var tasks = refreshRequests.Select(request => request.Key.UpdateStaticAssetsAsync(request.Value, cancellationToken).AsTask());
+
+            await Task.WhenAll(tasks).WaitAsync(cancellationToken);
+
+            logger.Log(MessageDescriptor.StaticAssetsReloaded);
+
+            return allFilesHandled;
+        }
+
+        private readonly struct UpdateStaticFileMessage
+        {
+            public string Type => "UpdateStaticFile";
+            public string Path { get; init; }
+        }
+    }
+}
