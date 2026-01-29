@@ -381,5 +381,79 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             publishDirectory.Should().HaveFile("appdata.txt");
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "appdata.txt")).Should().Be("Application data");
         }
+
+        [Fact]
+        public void It_publishes_content_from_imported_targets_with_correct_path()
+        {
+            // This test verifies that Content items introduced from imported .targets files
+            // (where DefiningProjectDirectory differs from MSBuildProjectDirectory) are
+            // published with the correct project-relative path and do not escape the publish directory.
+
+            var testProject = new TestProject()
+            {
+                Name = "PublishImportedContent",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var projectDirectory = Path.Combine(testAsset.Path, testProject.Name);
+
+            // Create a subdirectory for the imported targets file
+            var importsDir = Path.Combine(projectDirectory, "imports");
+            Directory.CreateDirectory(importsDir);
+
+            // Create the content file in the imports directory
+            var contentFile = Path.Combine(importsDir, "imported-content.txt");
+            File.WriteAllText(contentFile, "Content from imported targets");
+
+            // Create an imported .targets file that adds Content items with IfDifferent metadata
+            // This simulates the scenario where DefiningProjectDirectory differs from MSBuildProjectDirectory
+            var importedTargetsFile = Path.Combine(importsDir, "ImportedContent.targets");
+            File.WriteAllText(importedTargetsFile, @"<Project>
+  <ItemGroup>
+    <Content Include=""$(MSBuildThisFileDirectory)imported-content.txt"" CopyToPublishDirectory=""IfDifferent"" />
+  </ItemGroup>
+</Project>");
+
+            // Update the main project file to import the targets
+            var projectFile = Path.Combine(projectDirectory, $"{testProject.Name}.csproj");
+            var projectContent = File.ReadAllText(projectFile);
+            projectContent = projectContent.Replace("</Project>", @"
+  <Import Project=""imports\ImportedContent.targets"" />
+</Project>");
+            File.WriteAllText(projectFile, projectContent);
+
+            var publishCommand = new PublishCommand(testAsset);
+            var publishResult = publishCommand.Execute();
+
+            publishResult.Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks);
+
+            // The content file should be published with a simple filename, not with path segments
+            // that could escape the publish directory
+            publishDirectory.Should().HaveFile("imported-content.txt");
+
+            // Verify the content is correct
+            var publishedContentPath = Path.Combine(publishDirectory.FullName, "imported-content.txt");
+            File.ReadAllText(publishedContentPath).Should().Be("Content from imported targets");
+
+            // Ensure no files with '..' in path were created (would indicate path escape)
+            var allFiles = Directory.GetFiles(publishDirectory.FullName, "*", SearchOption.AllDirectories);
+            foreach (var file in allFiles)
+            {
+                var relativePath = Path.GetRelativePath(publishDirectory.FullName, file);
+                relativePath.Should().NotContain("..", $"File '{file}' appears to escape the publish directory");
+            }
+
+            // Ensure the file is not published to a parent directory
+            var parentDir = Directory.GetParent(publishDirectory.FullName);
+            var escapedPath = Path.Combine(parentDir.FullName, "imported-content.txt");
+            File.Exists(escapedPath).Should().BeFalse("Content file should not escape to parent directory");
+        }
     }
 }
