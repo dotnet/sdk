@@ -48,8 +48,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ListNoVerifyOptionDescription">
-        <source>Skip verifying each installation exists on disk.</source>
-        <target state="new">Skip verifying each installation exists on disk.</target>
+        <source>Skip verifying that each installation is valid.</source>
+        <target state="new">Skip verifying that each installation is valid.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListTotal">

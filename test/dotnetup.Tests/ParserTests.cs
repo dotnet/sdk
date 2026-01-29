@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
 using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -107,20 +106,28 @@ public class ParserTests
     }
 
     [Fact]
-    public void Parser_Version_ShouldMatchAssemblyVersion()
+    public void Parser_Version_ShouldBeDotnetupVersion()
     {
-        // Get the expected version from the assembly
-        var assembly = typeof(Program).Assembly;
-        var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        // Parser.Version should return the dotnetup assembly version, not any other assembly
+        var version = Parser.Version;
 
-        // Capture --version output
-        using var capture = new Utilities.ConsoleOutputCapture();
-        var parseResult = Parser.Parse(new[] { "--version" });
-        var result = Parser.Invoke(parseResult);
+        // Should be a valid version format (not "unknown")
+        version.Should().NotBe("unknown");
+        version.Should().NotBeNullOrEmpty();
+    }
 
-        var output = capture.GetOutput().Trim();
+    [Fact]
+    public void DotnetupProcess_Version_ShouldOutputExpectedVersion()
+    {
+        // Run dotnetup --version as a process
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "--version" }, 
+            captureOutput: true);
 
-        // The output should exactly match the informational version
-        output.Should().Be(informationalVersion);
+        // Should succeed
+        exitCode.Should().Be(0);
+
+        // Output should match Parser.Version
+        output.Trim().Should().Be(Parser.Version);
     }
 }

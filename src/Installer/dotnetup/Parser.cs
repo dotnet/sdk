@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.Reflection;
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
@@ -43,6 +44,12 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
             Description = Strings.RootCommandDescription,
             Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
         });
+
+        /// <summary>
+        /// Gets the version string from the dotnetup assembly.
+        /// </summary>
+        public static string Version { get; } = typeof(Parser).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
 
         private static RootCommand ConfigureCommandLine(RootCommand rootCommand)
         {
