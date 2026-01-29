@@ -50,9 +50,9 @@ dotnetup Information:
 Installed .NET (managed by dotnetup):
 
   C:\Users\user\.dotnet
-    SDK          9.0.304              (x64)
-    SDK          10.0.100             (x64)
-    Runtime      9.0.5                (x64)
+    SDK                 9.0.304      (x64)
+    SDK                 10.0.100     (x64)
+    Microsoft.NETCore.App  9.0.5     (x64)
 
 Total: 3
 ```
