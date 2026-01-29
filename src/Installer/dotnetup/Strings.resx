@@ -135,9 +135,6 @@
   <data name="ListCommandDescription" xml:space="preserve">
     <value>List installed .NET SDKs and runtimes managed by dotnetup.</value>
   </data>
-  <data name="ListJsonOptionDescription" xml:space="preserve">
-    <value>Output list in JSON format.</value>
-  </data>
   <data name="ListNoVerifyOptionDescription" xml:space="preserve">
     <value>Skip verifying that each installation is valid.</value>
   </data>
