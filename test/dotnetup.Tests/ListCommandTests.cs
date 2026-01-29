@@ -99,7 +99,7 @@ public class ListCommandTests
     public void InstallationLister_WriteJson_ShouldContainExpectedStructure()
     {
         // Arrange - use secure temp subdirectory
-        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        using var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
         var testInstallRoot = tempDir.FullName;
         var installations = new List<InstallationInfo>
         {
