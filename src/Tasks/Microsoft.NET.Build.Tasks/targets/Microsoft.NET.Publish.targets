@@ -834,8 +834,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <!-- Preserve existing TargetPath if already set, otherwise compute it -->
         <TargetPath Condition="'%(Content.TargetPath)' != ''">%(Content.TargetPath)</TargetPath>
         <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' != ''">%(Content.Link)</TargetPath>
-        <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' == '' and '%(Content.DefiningProjectDirectory)' != '' and '%(Content.DefiningProjectFullPath)' != ''">$([MSBuild]::MakeRelative(%(Content.DefiningProjectDirectory), %(Content.FullPath)))</TargetPath>
-        <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' == '' and ('%(Content.DefiningProjectDirectory)' == '' or '%(Content.DefiningProjectFullPath)' == '')">$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(Content.FullPath)))</TargetPath>
+        <!-- Use MSBuildProjectDirectory as the base for relative path computation. DefiningProjectDirectory can point to sdk targets folder and lead to unexpected paths. -->
+        <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' == ''">$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(Content.FullPath)))</TargetPath>
       </_ContentWithPublishMetadata>
       
       <ContentWithTargetPath Include="@(_ContentWithPublishMetadata)" />
