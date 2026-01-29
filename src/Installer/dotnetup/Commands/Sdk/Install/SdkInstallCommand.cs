@@ -29,6 +29,9 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     public override int Execute()
     {
+        // Initialize the release library's HttpClient with a custom user-agent to differentiate library calls from dnup calls
+        ReleaseLibraryInitializer.Initialize();
+
         var globalJsonInfo = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
         var currentDotnetInstallRoot = _dotnetInstaller.GetConfiguredInstallType();
