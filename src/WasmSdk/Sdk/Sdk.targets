@@ -42,7 +42,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       SourceId="$(PackageId)"
       SourceType="Discovered"
-      ContentRoot="$(MSBuildProjectDirectory)\wwwroot\"
+      ContentRoot="$(_WasmHotReloadRoot)\wwwroot\"
       BasePath="$(StaticWebAssetBasePath)"
       AssetKind="Build"
       AssetTraitName="JSModule"
