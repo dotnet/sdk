@@ -54,8 +54,8 @@ internal static class ReleaseLibraryInitializer
                     // Set user-agent to identify library calls, including version
                     var informationalVersion = typeof(ReleaseLibraryInitializer).Assembly
                         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-                    string userAgent = informationalVersion == null 
-                        ? "dotnetup-library" 
+                    string userAgent = informationalVersion == null
+                        ? "dotnetup-library"
                         : $"dotnetup-library/{informationalVersion}";
 
                     httpClient.DefaultRequestHeaders.UserAgent.Clear();

@@ -223,10 +223,10 @@ internal class DotnetArchiveDownloader : IDisposable
             {
                 // Verify the cached file's hash
                 VerifyFileHash(cachedFilePath, expectedHash);
-                
+
                 // Copy from cache to destination
                 File.Copy(cachedFilePath, destinationPath, overwrite: true);
-                
+
                 // Report 100% progress immediately since we're using cache
                 progress?.Report(new DownloadProgress(100, 100));
                 return;

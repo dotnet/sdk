@@ -94,13 +94,13 @@ internal class DownloadCache
     {
         Uri uri = new Uri(downloadUrl);
         string fileName = Path.GetFileName(uri.LocalPath);
-        
+
         // Fallback to a default name if we can't extract a filename
         if (string.IsNullOrEmpty(fileName))
         {
             fileName = "download.dat";
         }
-        
+
         return fileName;
     }
 
