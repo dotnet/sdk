@@ -57,26 +57,33 @@ public class ListCommandTests
     public void InstallationLister_WriteHumanReadable_WithInstallations_ShouldShowDetails()
     {
         // Arrange - use secure temp subdirectory
-        using var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
-        var testInstallRoot = Path.Combine(tempDir.FullName, ".dotnet");
-        var installations = new List<InstallationInfo>
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        try
         {
-            new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" },
-            new() { Component = "runtime", Version = "9.0.0", InstallRoot = testInstallRoot, Architecture = "x64" }
-        };
-        using var sw = new StringWriter();
+            var testInstallRoot = Path.Combine(tempDir.FullName, ".dotnet");
+            var installations = new List<InstallationInfo>
+            {
+                new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" },
+                new() { Component = "runtime", Version = "9.0.0", InstallRoot = testInstallRoot, Architecture = "x64" }
+            };
+            using var sw = new StringWriter();
 
-        // Act
-        InstallationLister.WriteHumanReadable(sw, installations);
-        var output = sw.ToString();
+            // Act
+            InstallationLister.WriteHumanReadable(sw, installations);
+            var output = sw.ToString();
 
-        // Assert - should use full display names like dotnet --list-runtimes
-        output.Should().Contain(".NET SDK");
-        output.Should().Contain("9.0.100");
-        output.Should().Contain("Microsoft.NETCore.App");
-        output.Should().Contain("9.0.0");
-        output.Should().Contain(testInstallRoot);
-        output.Should().Contain("Total: 2");
+            // Assert - should use full display names like dotnet --list-runtimes
+            output.Should().Contain(".NET SDK");
+            output.Should().Contain("9.0.100");
+            output.Should().Contain("Microsoft.NETCore.App");
+            output.Should().Contain("9.0.0");
+            output.Should().Contain(testInstallRoot);
+            output.Should().Contain("Total: 2");
+        }
+        finally
+        {
+            tempDir.Delete(recursive: true);
+        }
     }
 
     [Fact]
@@ -99,32 +106,39 @@ public class ListCommandTests
     public void InstallationLister_WriteJson_ShouldContainExpectedStructure()
     {
         // Arrange - use secure temp subdirectory
-        using var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
-        var testInstallRoot = tempDir.FullName;
-        var installations = new List<InstallationInfo>
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        try
         {
-            new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" }
-        };
-        using var sw = new StringWriter();
+            var testInstallRoot = tempDir.FullName;
+            var installations = new List<InstallationInfo>
+            {
+                new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" }
+            };
+            using var sw = new StringWriter();
 
-        // Act
-        InstallationLister.WriteJson(sw, installations);
-        var output = sw.ToString();
+            // Act
+            InstallationLister.WriteJson(sw, installations);
+            var output = sw.ToString();
 
-        // Assert
-        using var doc = JsonDocument.Parse(output);
-        var root = doc.RootElement;
+            // Assert
+            using var doc = JsonDocument.Parse(output);
+            var root = doc.RootElement;
 
-        root.TryGetProperty("installations", out var installationsArray).Should().BeTrue();
-        installationsArray.GetArrayLength().Should().Be(1);
-        root.TryGetProperty("total", out var total).Should().BeTrue();
-        total.GetInt32().Should().Be(1);
+            root.TryGetProperty("installations", out var installationsArray).Should().BeTrue();
+            installationsArray.GetArrayLength().Should().Be(1);
+            root.TryGetProperty("total", out var total).Should().BeTrue();
+            total.GetInt32().Should().Be(1);
 
-        var firstInstall = installationsArray[0];
-        firstInstall.GetProperty("component").GetString().Should().Be("sdk");
-        firstInstall.GetProperty("version").GetString().Should().Be("9.0.100");
-        firstInstall.GetProperty("installRoot").GetString().Should().Be(testInstallRoot);
-        firstInstall.GetProperty("architecture").GetString().Should().Be("x64");
+            var firstInstall = installationsArray[0];
+            firstInstall.GetProperty("component").GetString().Should().Be("sdk");
+            firstInstall.GetProperty("version").GetString().Should().Be("9.0.100");
+            firstInstall.GetProperty("installRoot").GetString().Should().Be(testInstallRoot);
+            firstInstall.GetProperty("architecture").GetString().Should().Be("x64");
+        }
+        finally
+        {
+            tempDir.Delete(recursive: true);
+        }
     }
 
     [Fact]
