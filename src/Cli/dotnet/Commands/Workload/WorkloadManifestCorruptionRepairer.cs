@@ -71,7 +71,7 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
             return;
         }
 
-        if (!provider?.HasMissingManifests(workloadSet) ?? true)
+        if (provider == null || !provider.HasMissingManifests(workloadSet))
         {
             return;
         }
@@ -84,8 +84,6 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
         _reporter.WriteLine($"Repairing workload set {workloadSet.Version}...");
         CliTransaction.RunNew(context => RepairCorruptWorkloadSet(context, workloadSet));
     }
-
-
 
     private void RepairCorruptWorkloadSet(ITransactionContext context, WorkloadSet workloadSet)
     {
