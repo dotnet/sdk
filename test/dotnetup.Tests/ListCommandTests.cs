@@ -57,7 +57,7 @@ public class ListCommandTests
     public void InstallationLister_WriteHumanReadable_WithInstallations_ShouldShowDetails()
     {
         // Arrange - use secure temp subdirectory
-        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        using var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
         var testInstallRoot = Path.Combine(tempDir.FullName, ".dotnet");
         var installations = new List<InstallationInfo>
         {
