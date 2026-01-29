@@ -388,6 +388,10 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             // This test verifies that Content items introduced from imported .targets files
             // (where DefiningProjectDirectory differs from MSBuildProjectDirectory) are
             // published with the correct project-relative path and do not escape the publish directory.
+            // 
+            // The bug scenario: when a .targets file OUTSIDE the project directory adds a Content item,
+            // using DefiningProjectDirectory to compute the relative path can result in paths with '..'
+            // segments that escape the publish directory.
 
             var testProject = new TestProject()
             {
@@ -402,28 +406,31 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
 
             var projectDirectory = Path.Combine(testAsset.Path, testProject.Name);
 
-            // Create a subdirectory for the imported targets file
-            var importsDir = Path.Combine(projectDirectory, "imports");
-            Directory.CreateDirectory(importsDir);
+            // Create the imported targets file OUTSIDE the project directory (sibling folder)
+            // This is the key difference - DefiningProjectDirectory will be different from MSBuildProjectDirectory
+            var externalImportsDir = Path.Combine(testAsset.Path, "ExternalImports");
+            Directory.CreateDirectory(externalImportsDir);
 
-            // Create the content file in the imports directory
-            var contentFile = Path.Combine(importsDir, "imported-content.txt");
-            File.WriteAllText(contentFile, "Content from imported targets");
+            // Create the content file in the project directory (where we want it to be published from)
+            var contentFile = Path.Combine(projectDirectory, "project-content.txt");
+            File.WriteAllText(contentFile, "Content defined by external targets");
 
-            // Create an imported .targets file that adds Content items with IfDifferent metadata
-            // This simulates the scenario where DefiningProjectDirectory differs from MSBuildProjectDirectory
-            var importedTargetsFile = Path.Combine(importsDir, "ImportedContent.targets");
-            File.WriteAllText(importedTargetsFile, @"<Project>
+            // Create an imported .targets file OUTSIDE the project that adds a Content item
+            // pointing to a file in the project directory. The issue is that DefiningProjectDirectory
+            // will be ExternalImports/, not the project directory.
+            var importedTargetsFile = Path.Combine(externalImportsDir, "ImportedContent.targets");
+            File.WriteAllText(importedTargetsFile, $@"<Project>
   <ItemGroup>
-    <Content Include=""$(MSBuildThisFileDirectory)imported-content.txt"" CopyToPublishDirectory=""IfDifferent"" />
+    <!-- This Content item points to a file in the main project directory, but is defined in external .targets -->
+    <Content Include=""$(MSBuildProjectDirectory)\project-content.txt"" CopyToPublishDirectory=""IfDifferent"" />
   </ItemGroup>
 </Project>");
 
-            // Update the main project file to import the targets
+            // Update the main project file to import the external targets
             var projectFile = Path.Combine(projectDirectory, $"{testProject.Name}.csproj");
             var projectContent = File.ReadAllText(projectFile);
             projectContent = projectContent.Replace("</Project>", @"
-  <Import Project=""imports\ImportedContent.targets"" />
+  <Import Project=""..\ExternalImports\ImportedContent.targets"" />
 </Project>");
             File.WriteAllText(projectFile, projectContent);
 
@@ -435,25 +442,18 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             var publishDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks);
 
             // The content file should be published with a simple filename, not with path segments
-            // that could escape the publish directory
-            publishDirectory.Should().HaveFile("imported-content.txt");
+            // that could escape the publish directory (e.g., "..\PublishImportedContent\project-content.txt")
+            publishDirectory.Should().HaveFile("project-content.txt");
 
             // Verify the content is correct
-            var publishedContentPath = Path.Combine(publishDirectory.FullName, "imported-content.txt");
-            File.ReadAllText(publishedContentPath).Should().Be("Content from imported targets");
+            var publishedContentPath = Path.Combine(publishDirectory.FullName, "project-content.txt");
+            File.ReadAllText(publishedContentPath).Should().Be("Content defined by external targets");
 
-            // Ensure no files with '..' in path were created (would indicate path escape)
-            var allFiles = Directory.GetFiles(publishDirectory.FullName, "*", SearchOption.AllDirectories);
-            foreach (var file in allFiles)
-            {
-                var relativePath = Path.GetRelativePath(publishDirectory.FullName, file);
-                relativePath.Should().NotContain("..", $"File '{file}' appears to escape the publish directory");
-            }
-
-            // Ensure the file is not published to a parent directory
+            // Ensure no files escaped to parent directories
             var parentDir = Directory.GetParent(publishDirectory.FullName);
-            var escapedPath = Path.Combine(parentDir.FullName, "imported-content.txt");
-            File.Exists(escapedPath).Should().BeFalse("Content file should not escape to parent directory");
+            var potentialEscapedFiles = Directory.GetFiles(parentDir.FullName, "project-content.txt", SearchOption.AllDirectories)
+                .Where(f => !f.StartsWith(publishDirectory.FullName));
+            potentialEscapedFiles.Should().BeEmpty("Content file should not escape to directories outside publish folder");
         }
     }
 }
