@@ -23,15 +23,12 @@
         "version": "0.2.0",
         "configurations": [
             {
-                "name": "Launch dotnetup (Default)",
+                "name": "Launch dotnetup",
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build",
                 "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
-                "args": [
-                    "sdk",
-                    "install"
-                ],
+                "args": "${input:dotnetupArgs}",
                 "cwd": "${workspaceFolder:installer}/dotnetup",
                 "console": "integratedTerminal",
                 "stopAtEntry": false,
@@ -89,15 +86,15 @@
         "compounds": [],
         "inputs": [
             {
+                "id": "dotnetupArgs",
+                "type": "promptString",
+                "description": "Command line arguments (e.g., --info, sdk install latest)",
+                "default": "--info"
+            },
+            {
                 "id": "testName",
                 "type": "promptString",
                 "description": "Enter test name or partial test name to debug (e.g., 'InstallChannelVersionTest', 'Install', etc.)"
-            },
-            {
-                "id": "commandLineArgs",
-                "type": "promptString",
-                "description": "Command line arguments for dotnetup (e.g., 'sdk install 9.0', 'runtime install lts', '--help')",
-                "default": "sdk install"
             }
         ]
     },

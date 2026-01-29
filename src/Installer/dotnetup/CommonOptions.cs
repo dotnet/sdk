@@ -23,6 +23,12 @@ internal class CommonOptions
         Arity = ArgumentArity.ZeroOrOne
     };
 
+    public static Option<bool> JsonOption = new("--json")
+    {
+        Description = Strings.InfoJsonOptionDescription,
+        Arity = ArgumentArity.ZeroOrOne
+    };
+
     private static bool IsCIEnvironmentOrRedirected() =>
         new Cli.Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 }
