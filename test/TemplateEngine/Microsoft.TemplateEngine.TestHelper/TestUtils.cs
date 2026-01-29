@@ -100,19 +100,19 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 {
                     if (attempt + 1 == count)
                     {
-                        throw ex;
+                        throw;
                     }
 
                     if (ex is AggregateException agEx)
                     {
                         if (!agEx.InnerExceptions.Any(e => e is TEx))
                         {
-                            throw ex;
+                            throw;
                         }
                     }
                     else if (ex is not TEx)
                     {
-                        throw ex;
+                        throw;
                     }
                 }
                 await Task.Delay(interval);
