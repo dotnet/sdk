@@ -54,11 +54,14 @@ internal static class EnvironmentVariablesToMSBuild
         }
 
         string projectDirectory = Path.GetDirectoryName(projectFilePath) ?? "";
-        string objDir = string.IsNullOrEmpty(intermediateOutputPath)
+        
+        // Normalize path separators - MSBuild may return paths with backslashes on non-Windows
+        string normalized = intermediateOutputPath?.Replace('\\', Path.DirectorySeparatorChar) ?? "";
+        string objDir = string.IsNullOrEmpty(normalized)
             ? Path.Combine(projectDirectory, Constants.ObjDirectoryName)
-            : Path.IsPathRooted(intermediateOutputPath)
-                ? intermediateOutputPath
-                : Path.Combine(projectDirectory, intermediateOutputPath);
+            : Path.IsPathRooted(normalized)
+                ? normalized
+                : Path.Combine(projectDirectory, normalized);
         Directory.CreateDirectory(objDir);
 
         // Ensure we return a full path for MSBuild property usage
