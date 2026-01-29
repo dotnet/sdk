@@ -171,7 +171,6 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
                 b.Features.Add(new DefaultMetadataReferenceFeature() { References = metadataReferences });
                 b.Features.Add(new CompilationTagHelperFeature());
-                b.Features.Add(new DefaultTagHelperDescriptorProvider());
 
                 CompilerFeatures.Register(b);
             });

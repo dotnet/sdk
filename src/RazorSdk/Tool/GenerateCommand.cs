@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.Diagnostics;
-using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
@@ -190,7 +189,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             {
                 b.RegisterExtensions();
 
-                b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
+                b.Features.Add(new StaticTagHelperFeature(tagHelpers));
 
                 b.ConfigureCodeGenerationOptions(b =>
                 {
@@ -297,11 +296,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             return project;
         }
 
-        private IReadOnlyList<TagHelperDescriptor> GetTagHelpers(string tagHelperManifest)
+        private static IReadOnlyList<TagHelperDescriptor> GetTagHelpers(string tagHelperManifest)
         {
             if (!File.Exists(tagHelperManifest))
             {
-                return Array.Empty<TagHelperDescriptor>();
+                return [];
             }
 
             using (var stream = File.OpenRead(tagHelperManifest))
@@ -311,8 +310,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 var serializer = new JsonSerializer();
                 serializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
 
-                var descriptors = serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
-                return descriptors;
+                return serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
             }
         }
 
@@ -430,9 +428,9 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             public string CssScope { get; }
         }
 
-        private class StaticTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
+        private sealed class StaticTagHelperFeature(IReadOnlyList<TagHelperDescriptor> tagHelpers) : RazorEngineFeatureBase, ITagHelperFeature
         {
-            public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
+            public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; } = tagHelpers;
 
             public IReadOnlyList<TagHelperDescriptor> GetDescriptors(CancellationToken cancellationToken) => TagHelpers;
             public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => TagHelpers;

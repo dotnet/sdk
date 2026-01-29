@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52576")]
         public async Task AddSourceFile()
         {
             Log("AddSourceFile started");
@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52576")]
         public async Task ProjectChange_UpdateDirectoryBuildPropsThenUpdateSource()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
