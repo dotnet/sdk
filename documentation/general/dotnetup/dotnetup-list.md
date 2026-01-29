@@ -43,12 +43,12 @@ The default output groups installations by install root:
 Installed .NET (managed by dotnetup):
 
   C:\Users\user\.dotnet
-    SDK          9.0.304              (x64)
-    SDK          10.0.100             (x64)
+    .NET SDK     9.0.304              (x64)
+    .NET SDK     10.0.100             (x64)
     Runtime      9.0.5                (x64)
 
   C:\Program Files\dotnet
-    SDK          8.0.400              (x64)
+    .NET SDK     8.0.400              (x64)
 
 Total: 4
 ```
