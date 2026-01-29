@@ -71,14 +71,14 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     /// <summary>
     /// Returns a task that applies managed code updates to the target process.
     /// </summary>
-    /// <param name="cancellationToken">The token use to cancel creation of the apply task.</param>
+    /// <param name="cancellationToken">The token used to cancel creation of the apply task.</param>
     /// <param name="applyOperationCancellationToken">The token to be used to cancel the apply operation. Should trigger on process terminatation.</param>
     public abstract Task<Task<bool>> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken);
 
     /// <summary>
     /// Returns a task that applies static asset updates to the target process.
     /// </summary>
-    /// <param name="cancellationToken">The token use to cancel creation of the apply task.</param>
+    /// <param name="cancellationToken">The token used to cancel creation of the apply task.</param>
     /// <param name="applyOperationCancellationToken">The token to be used to cancel the apply operation. Should trigger on process terminatation.</param>
     public abstract Task<Task<bool>> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken);
 

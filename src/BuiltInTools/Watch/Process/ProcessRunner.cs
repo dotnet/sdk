@@ -383,12 +383,19 @@ namespace Microsoft.DotNet.Watch
             var signalName = force ? "SIGKILL" : "SIGTERM";
             logger.Log(MessageDescriptor.TerminatingProcess, state.ProcessId, signalName);
 
-            state.SentUnixSigKill = true;
+            if (force)
+            {
+                state.SentUnixSigKill = true;
+            }
 
             var error = ProcessUtilities.SendPosixSignal(state.ProcessId, signal: force ? ProcessUtilities.SIGKILL : ProcessUtilities.SIGTERM);
             if (error != null)
             {
-                state.SentUnixSigKill = false;
+                if (force)
+                {
+                    state.SentUnixSigKill = false;
+                }
+
                 logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);
             }
         }

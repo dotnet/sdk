@@ -34,8 +34,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.HotReload" />
 
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Utilities" />
-
-    <Compile Include="..\HotReloadClient\Utilities\ResponseFunc.cs" />
   </ItemGroup>
 
   <ItemGroup>
