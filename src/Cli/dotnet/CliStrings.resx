@@ -183,6 +183,9 @@
   <data name="SolutionAlreadyContainsProject" xml:space="preserve">
     <value>Solution {0} already contains project {1}.</value>
   </data>
+  <data name="SolutionFolderAlreadyContainsProjectWithFilename" xml:space="preserve">
+    <value>Solution folder '{0}' already contains a project with the filename '{1}'.</value>
+  </data>
   <data name="SpecifyAtLeastOneReferenceToRemove" xml:space="preserve">
     <value>You must specify at least one reference to remove.</value>
   </data>
@@ -328,6 +331,12 @@ setx PATH "%PATH%;{0}"
   </data>
   <data name="MissingToolSettingsFile" xml:space="preserve">
     <value>Settings file 'DotnetToolSettings.xml' was not found in the package.</value>
+  </data>
+  <data name="ToolRequiresHigherDotNetVersion" xml:space="preserve">
+    <value>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</value>
+  </data>
+  <data name="ToolRequiresHigherDotNetVersionSuggestion" xml:space="preserve">
+    <value>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</value>
   </data>
   <data name="ToolPackageConflictPackageId" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') is already installed.</value>

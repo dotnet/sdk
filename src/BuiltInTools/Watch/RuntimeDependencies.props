@@ -1,11 +1,13 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)TargetFrameworks.props" />
+
   <ItemGroup>
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj">
       <OutputItemType>None</OutputItemType>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
-      <TargetPath>hotreload\net6.0\Microsoft.AspNetCore.Watch.BrowserRefresh.dll</TargetPath>
+      <TargetPath>hotreload\$(MiddlewareTargetFrameworkV6)\Microsoft.AspNetCore.Watch.BrowserRefresh.dll</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 
       <!--
@@ -19,8 +21,8 @@
       <OutputItemType>None</OutputItemType>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
-      <TargetPath>hotreload\net10.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
+      <SetTargetFramework>TargetFramework=$(AgentTargetFrameworkV10)</SetTargetFramework>
+      <TargetPath>hotreload\$(AgentTargetFrameworkV10)\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Pack>false</Pack>
     </ProjectReference>
@@ -29,8 +31,8 @@
       <OutputItemType>None</OutputItemType>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SetTargetFramework>TargetFramework=net6.0</SetTargetFramework>
-      <TargetPath>hotreload\net6.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
+      <SetTargetFramework>TargetFramework=$(AgentTargetFrameworkV6)</SetTargetFramework>
+      <TargetPath>hotreload\$(AgentTargetFrameworkV6)\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Pack>false</Pack>
     </ProjectReference>

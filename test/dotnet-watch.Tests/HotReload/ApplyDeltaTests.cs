@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/52680")]
         public async Task ProjectChange_UpdateDirectoryBuildPropsThenUpdateSource()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -923,7 +923,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307" https://github.com/dotnet/aspnetcore/issues/63759
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")

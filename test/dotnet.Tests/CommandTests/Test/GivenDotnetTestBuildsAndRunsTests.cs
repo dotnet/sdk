@@ -279,7 +279,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("--minimum-expected-tests", "2",
-                                    "-c", configuration);
+                                        "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {

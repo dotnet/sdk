@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.New;
-using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.Logging;
@@ -15,9 +13,21 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal sealed partial class InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewCreateCommandDefinition definition)
-        : BaseCommand<InstantiateCommandArgs, NewCreateCommandDefinition>(hostBuilder, definition), ICustomHelp
+    internal partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs>, ICustomHelp
     {
+        internal InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
+            : base(hostBuilder, CommandDefinition.Instantiate.Command)
+        {
+        }
+
+        internal IReadOnlyList<Option> PassByOptions { get; } =
+        [
+            SharedOptions.ForceOption,
+            SharedOptions.NameOption,
+            SharedOptions.DryRunOption,
+            SharedOptions.NoUpdateCheckOption
+        ];
+
         internal static Task<NewCommandStatus> ExecuteAsync(
             NewCommandArgs newCommandArgs,
             IEngineEnvironmentSettings environmentSettings,
@@ -33,6 +43,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             HostSpecificDataLoader hostSpecificDataLoader,
             CancellationToken cancellationToken)
         {
+            using var createTemplateGroupsActivity = Activities.Source.StartActivity("create-template-groups");
             IReadOnlyList<ITemplateInfo> templates = await templatePackageManager.GetTemplatesAsync(cancellationToken).ConfigureAwait(false);
             return TemplateGroup.FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, hostSpecificDataLoader));
         }
@@ -43,6 +54,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 TemplatePackageManager templatePackageManager,
                 TemplateGroup templateGroup)
         {
+            using var getTemplateActivity = Activities.Source.StartActivity("get-template-command");
             //groups templates in the group by precedence
             foreach (IGrouping<int, CliTemplateInfo> templateGrouping in templateGroup.Templates.GroupBy(g => g.Precedence).OrderByDescending(g => g.Key))
             {
@@ -73,7 +85,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     templateGroup,
                     candidates);
             }
-            return new HashSet<TemplateCommand>();
+            return [];
         }
 
         internal static void HandleNoMatchingTemplateGroup(InstantiateCommandArgs instantiateArgs, IEnumerable<TemplateGroup> templateGroups, IReporter reporter)
@@ -163,6 +175,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
                 return await templateListCoordinator.DisplayCommandDescriptionAsync(instantiateArgs, cancellationToken).ConfigureAwait(false);
             }
+            using var createActivity = Activities.Source.StartActivity("instantiate-command");
+            createActivity?.DisplayName = $"Invoke '{instantiateArgs.ShortName}'";
 
             IEnumerable<TemplateGroup> allTemplateGroups = await GetTemplateGroupsAsync(
                 templatePackageManager,
@@ -214,7 +228,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 templates,
                 new TabularOutputSettings(
                     environmentSettings.Environment,
-                    columnsToDisplay: new[] { TabularOutputSettingsColumnNames.Type }),
+                    columnsToDisplay: new[] { TabularOutputSettings.ColumnNames.Type }),
                 reporter);
             reporter.WriteLine(HelpStrings.Hint_AmbiguousType);
             return NewCommandStatus.NotFound;
@@ -231,11 +245,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             if (candidates.Count == 1)
             {
                 TemplateCommand templateCommandToRun = candidates.Single();
-                args.NewOrInstantiateCommand.Subcommands.Add(templateCommandToRun);
-
+                args.Command.Subcommands.Add(templateCommandToRun);
+                var templateParseActivity = Activities.Source.StartActivity("reparse-for-template");
                 ParseResult updatedParseResult = args.ParseResult.RootCommandResult.Command.Parse(
                     args.ParseResult.Tokens.Select(t => t.Value).ToArray(),
                     args.ParseResult.Configuration);
+                templateParseActivity?.Stop();
                 return await candidates.Single().InvokeAsync(updatedParseResult, cancellationToken).ConfigureAwait(false);
             }
             else if (candidates.Any())
@@ -387,7 +402,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             try
             {
                 TemplateCommand command = new(
-                    args.NewOrInstantiateCommand,
+                    args.Command,
                     environmentSettings,
                     templatePackageManager,
                     templateGroup,
@@ -395,7 +410,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     validateDefaultLanguage);
 
                 System.CommandLine.Command parser = ParserFactory.CreateParser(command);
-                ParseResult parseResult = parser.Parse(args.RemainingArguments, ParserFactory.ParserConfiguration);
+                ParseResult parseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
                 return (command, parseResult);
             }
             catch (InvalidTemplateParametersException e)
@@ -415,7 +430,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             IEnumerable<string> possibleTemplates = templateGroups
                 .SelectMany(g => g.ShortNames);
 
-            bool useInstantiateCommand = instantiateArgs.NewOrInstantiateCommand is InstantiateCommand;
+            bool useInstantiateCommand = instantiateArgs.Command is InstantiateCommand;
             bool helpOption = instantiateArgs.HasHelpOption;
             IEnumerable<string> possibleTemplateMatches = TypoCorrection.GetSimilarTokens(possibleTemplates, instantiateArgs.ShortName);
 
@@ -425,8 +440,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 foreach (string possibleMatch in possibleTemplateMatches)
                 {
                     Example example = useInstantiateCommand
-                        ? Example.For<InstantiateCommand>(instantiateArgs.ParseResult).WithArguments(possibleMatch)
-                        : Example.For<NewCommand>(instantiateArgs.ParseResult).WithArguments(possibleMatch);
+                        ? Example.For<InstantiateCommand>(instantiateArgs.ParseResult).WithArgument(CommandDefinition.New.ShortNameArgument, possibleMatch)
+                        : Example.For<NewCommand>(instantiateArgs.ParseResult).WithArgument(CommandDefinition.New.ShortNameArgument, possibleMatch);
                     if (helpOption)
                     {
                         example = example.WithHelpOption();
@@ -442,7 +457,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
 
             IEnumerable<string> possibleSubcommands =
-                instantiateArgs.NewOrInstantiateCommand.Subcommands
+                instantiateArgs.Command.Subcommands
                     .Where(sc => !sc.Hidden)
                     .SelectMany(sc => new[] { sc.Name }.Concat(sc.Aliases));
 
@@ -471,7 +486,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                   Example
                       .For<NewCommand>(instantiateArgs.ParseResult)
                       .WithSubcommand<ListCommand>()
-                      .WithArguments(instantiateArgs.ShortName));
+                      .WithArgument(CommandDefinition.List.NameArgument, instantiateArgs.ShortName));
             }
             else
             {
@@ -492,7 +507,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     Example
                         .For<NewCommand>(instantiateArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithArguments(instantiateArgs.ShortName));
+                        .WithArgument(CommandDefinition.Search.NameArgument, instantiateArgs.ShortName));
             }
         }
     }
