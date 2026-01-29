@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
@@ -296,7 +297,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             return project;
         }
 
-        private static IReadOnlyList<TagHelperDescriptor> GetTagHelpers(string tagHelperManifest)
+        private static TagHelperCollection GetTagHelpers(string tagHelperManifest)
         {
             if (!File.Exists(tagHelperManifest))
             {
@@ -310,7 +311,9 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 var serializer = new JsonSerializer();
                 serializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
 
-                return serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
+                var tagHelpers = serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
+
+                return TagHelperCollection.Create(tagHelpers);
             }
         }
 
@@ -428,12 +431,9 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             public string CssScope { get; }
         }
 
-        private sealed class StaticTagHelperFeature(IReadOnlyList<TagHelperDescriptor> tagHelpers) : RazorEngineFeatureBase, ITagHelperFeature
+        private sealed class StaticTagHelperFeature(TagHelperCollection tagHelpers) : RazorEngineFeatureBase, ITagHelperFeature
         {
-            public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; } = tagHelpers;
-
-            public IReadOnlyList<TagHelperDescriptor> GetDescriptors(CancellationToken cancellationToken) => TagHelpers;
-            public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => TagHelpers;
+            public TagHelperCollection GetTagHelpers(CancellationToken cancellationToken) => tagHelpers;
         }
     }
 }
