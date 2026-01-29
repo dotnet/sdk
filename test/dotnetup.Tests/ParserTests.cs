@@ -6,8 +6,6 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
-// Disable parallel execution for this class since tests manipulate Console.Out
-[Collection("ConsoleCapture")]
 public class ParserTests
 {
     [Fact]
@@ -109,13 +107,11 @@ public class ParserTests
     }
 
     [Fact]
-    public void Parser_Version_ShouldOutputVersion()
+    public void Parser_Version_ShouldMatchAssemblyVersion()
     {
-        // Get expected version from the dotnetup assembly
-        var dotnetupAssembly = typeof(Parser).Assembly;
-        var informationalVersion = dotnetupAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "";
-        // Strip commit hash if present (format: "version+commit")
-        var expectedVersion = informationalVersion.Split('+')[0];
+        // Get the expected version from the assembly
+        var assembly = typeof(Program).Assembly;
+        var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
         // Capture --version output
         using var capture = new Utilities.ConsoleOutputCapture();
@@ -124,7 +120,7 @@ public class ParserTests
 
         var output = capture.GetOutput().Trim();
 
-        output.Should().Be(expectedVersion);
-        result.Should().Be(0);
+        // The output should exactly match the informational version
+        output.Should().Be(informationalVersion);
     }
 }

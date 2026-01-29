@@ -150,4 +150,7 @@
   <data name="ListTotal" xml:space="preserve">
     <value>Total</value>
   </data>
+  <data name="RootCommandDescription" xml:space="preserve">
+    <value>.NET installation manager for user level installs.</value>
+  </data>
 </root>

@@ -40,6 +40,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
 
         private static RootCommand RootCommand { get; } = ConfigureCommandLine(new()
         {
+            Description = Strings.RootCommandDescription,
             Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
         });
 

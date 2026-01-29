@@ -197,26 +197,3 @@ dotnetup list --json | jq -r '.installations[].version'
 # Useful after manually deleting .NET installations
 $ dotnetup list --verify
 ```
-
-### Check if Specific Version is Installed
-
-```bash
-# PowerShell
-$list = dotnetup list --json | ConvertFrom-Json
-$hasVersion = $list.installations | Where-Object { $_.version -eq '10.0.100' }
-if ($hasVersion) { Write-Host "10.0.100 is installed" }
-```
-
-## Manifest Location
-
-The dotnetup manifest is stored at:
-- **Windows**: `%LOCALAPPDATA%\dotnetup\dotnetup_manifest.json`
-- **Linux/macOS**: `~/.dotnetup/dotnetup_manifest.json`
-
-The manifest can be overridden with the `DOTNET_TESTHOOK_MANIFEST_PATH` environment variable.
-
-## Related Commands
-
-- `dotnetup --info` - Display dotnetup information including installations
-- `dotnetup install` - Install a new .NET SDK
-- `dotnetup update` - Update installed .NET SDKs

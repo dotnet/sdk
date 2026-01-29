@@ -9,64 +9,21 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class ListCommandTests
 {
-    [Fact]
-    public void Parser_ShouldParseListCommand()
+    [Theory]
+    [InlineData(new[] { "list" }, false, false)]
+    [InlineData(new[] { "list", "--json" }, true, false)]
+    [InlineData(new[] { "list", "--verify" }, false, true)]
+    [InlineData(new[] { "list", "--json", "--verify" }, true, true)]
+    public void Parser_ShouldParseListCommand(string[] args, bool expectedJson, bool expectedVerify)
     {
-        // Arrange
-        var args = new[] { "list" };
-
         // Act
         var parseResult = Parser.Parse(args);
 
         // Assert
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void Parser_ShouldParseListWithJsonOption()
-    {
-        // Arrange
-        var args = new[] { "list", "--json" };
-
-        // Act
-        var parseResult = Parser.Parse(args);
-
-        // Assert
-        parseResult.Should().NotBeNull();
-        parseResult.Errors.Should().BeEmpty();
-        parseResult.GetValue(ListCommandParser.JsonOption).Should().BeTrue();
-    }
-
-    [Fact]
-    public void Parser_ShouldParseListWithVerifyOption()
-    {
-        // Arrange
-        var args = new[] { "list", "--verify" };
-
-        // Act
-        var parseResult = Parser.Parse(args);
-
-        // Assert
-        parseResult.Should().NotBeNull();
-        parseResult.Errors.Should().BeEmpty();
-        parseResult.GetValue(ListCommandParser.VerifyOption).Should().BeTrue();
-    }
-
-    [Fact]
-    public void Parser_ShouldParseListWithBothOptions()
-    {
-        // Arrange
-        var args = new[] { "list", "--json", "--verify" };
-
-        // Act
-        var parseResult = Parser.Parse(args);
-
-        // Assert
-        parseResult.Should().NotBeNull();
-        parseResult.Errors.Should().BeEmpty();
-        parseResult.GetValue(ListCommandParser.JsonOption).Should().BeTrue();
-        parseResult.GetValue(ListCommandParser.VerifyOption).Should().BeTrue();
+        parseResult.GetValue(CommonOptions.JsonOption).Should().Be(expectedJson);
+        parseResult.GetValue(ListCommandParser.VerifyOption).Should().Be(expectedVerify);
     }
 
     [Fact]
@@ -99,11 +56,13 @@ public class ListCommandTests
     [Fact]
     public void InstallationLister_WriteHumanReadable_WithInstallations_ShouldShowDetails()
     {
-        // Arrange
+        // Arrange - use secure temp subdirectory
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        var testInstallRoot = Path.Combine(tempDir.FullName, ".dotnet");
         var installations = new List<InstallationInfo>
         {
-            new() { Component = "sdk", Version = "9.0.100", InstallRoot = @"C:\Users\test\.dotnet", Architecture = "x64" },
-            new() { Component = "runtime", Version = "9.0.0", InstallRoot = @"C:\Users\test\.dotnet", Architecture = "x64" }
+            new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" },
+            new() { Component = "runtime", Version = "9.0.0", InstallRoot = testInstallRoot, Architecture = "x64" }
         };
         using var sw = new StringWriter();
 
@@ -116,7 +75,7 @@ public class ListCommandTests
         output.Should().Contain("9.0.100");
         output.Should().Contain("Microsoft.NETCore.App");
         output.Should().Contain("9.0.0");
-        output.Should().Contain(@"C:\Users\test\.dotnet");
+        output.Should().Contain(testInstallRoot);
         output.Should().Contain("Total: 2");
     }
 
@@ -139,10 +98,12 @@ public class ListCommandTests
     [Fact]
     public void InstallationLister_WriteJson_ShouldContainExpectedStructure()
     {
-        // Arrange
+        // Arrange - use secure temp subdirectory
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        var testInstallRoot = tempDir.FullName;
         var installations = new List<InstallationInfo>
         {
-            new() { Component = "sdk", Version = "9.0.100", InstallRoot = @"C:\test", Architecture = "x64" }
+            new() { Component = "sdk", Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = "x64" }
         };
         using var sw = new StringWriter();
 
@@ -162,7 +123,7 @@ public class ListCommandTests
         var firstInstall = installationsArray[0];
         firstInstall.GetProperty("component").GetString().Should().Be("sdk");
         firstInstall.GetProperty("version").GetString().Should().Be("9.0.100");
-        firstInstall.GetProperty("installRoot").GetString().Should().Be(@"C:\test");
+        firstInstall.GetProperty("installRoot").GetString().Should().Be(testInstallRoot);
         firstInstall.GetProperty("architecture").GetString().Should().Be("x64");
     }
 
