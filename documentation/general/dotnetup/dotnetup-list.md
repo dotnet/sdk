@@ -174,7 +174,7 @@ $ dotnetup list
 Installed .NET (managed by dotnetup):
 
   C:\Users\user\.dotnet
-    SDK          10.0.100             (x64)
+    .NET SDK      10.0.100             (x64)
 
 Total: 1
 ```
