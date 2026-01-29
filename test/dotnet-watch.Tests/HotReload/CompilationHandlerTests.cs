@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
 {
-    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+    [Fact]
     public async Task ReferenceOutputAssembly_False()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
