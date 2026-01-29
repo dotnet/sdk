@@ -187,16 +187,6 @@ Examples:
         <target state="translated">CONFIGURATION</target>
         <note />
       </trans-unit>
-      <trans-unit id="CouldNotFindAnyProjectInDirectory">
-        <source>Could not find any project in `{0}`.</source>
-        <target state="translated">“{0}”中找不到任何项目。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotFindProjectOrDirectory">
-        <source>Could not find project or directory `{0}`.</source>
-        <target state="translated">找不到项目或目录“{0}”。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindSolutionIn">
         <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
         <target state="translated">指定的解决方案文件 {0} 不存在，或目录中没有解决方案文件。</target>
@@ -681,11 +671,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="MoreThanOnePackagedShimAvailable">
         <source>More than one packaged shim is available: {0}.</source>
         <target state="translated">多个包装填充码可用: {0}。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MoreThanOneProjectInDirectory">
-        <source>Found more than one project in `{0}`. Specify which one to use.</source>
-        <target state="translated">在“{0}”中找到多个项目。请指定使用哪一个。</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOneSolutionInDirectory">
