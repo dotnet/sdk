@@ -10,23 +10,34 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class ReleaseLibraryInitializerTests
 {
+    private HttpClient? GetLibraryHttpClient()
+    {
+        var utilsType = Type.GetType("Microsoft.Deployment.DotNet.Releases.Utils, Microsoft.Deployment.DotNet.Releases");
+        if (utilsType == null)
+        {
+            return null;
+        }
+
+        var httpClientField = utilsType.GetField("s_httpClient", BindingFlags.Static | BindingFlags.NonPublic);
+        if (httpClientField == null)
+        {
+            return null;
+        }
+
+        return httpClientField.GetValue(null) as HttpClient;
+    }
+
     [Fact]
     public void InitializeSetsDifferentUserAgentThanDnup()
     {
-        // Arrange - Get the library's HttpClient before initialization
-        var utilsType = Type.GetType("Microsoft.Deployment.DotNet.Releases.Utils, Microsoft.Deployment.DotNet.Releases");
-        utilsType.Should().NotBeNull("Microsoft.Deployment.DotNet.Releases.Utils type should be available");
-
-        var httpClientField = utilsType!.GetField("s_httpClient", BindingFlags.Static | BindingFlags.NonPublic);
-        httpClientField.Should().NotBeNull("s_httpClient field should exist");
-
-        var httpClient = httpClientField!.GetValue(null) as HttpClient;
-        httpClient.Should().NotBeNull("HttpClient should be initialized by the library");
-
         // Act - Initialize the library with custom user-agent
+        // This is safe to call multiple times and will only execute once
         ReleaseLibraryInitializer.Initialize();
 
-        // Assert - Verify the user-agent is set to identify library calls
+        // Assert - Verify the library's HttpClient is available and has a user-agent
+        var httpClient = GetLibraryHttpClient();
+        httpClient.Should().NotBeNull("HttpClient should be initialized by the library");
+
         var userAgent = httpClient!.DefaultRequestHeaders.UserAgent.ToString();
         userAgent.Should().NotBeNullOrEmpty("User-agent should be set after initialization");
         userAgent.Should().Contain("dotnetup-library", "User-agent should identify library calls");
@@ -36,17 +47,16 @@ public class ReleaseLibraryInitializerTests
     [Fact]
     public void InitializeCanBeCalledMultipleTimes()
     {
-        // Act - Call initialize multiple times
+        // Act - Call initialize multiple times (this is safe due to the lock and _initialized flag)
         ReleaseLibraryInitializer.Initialize();
         ReleaseLibraryInitializer.Initialize();
         ReleaseLibraryInitializer.Initialize();
 
-        // Assert - No exception should be thrown
-        var utilsType = Type.GetType("Microsoft.Deployment.DotNet.Releases.Utils, Microsoft.Deployment.DotNet.Releases");
-        var httpClientField = utilsType!.GetField("s_httpClient", BindingFlags.Static | BindingFlags.NonPublic);
-        var httpClient = httpClientField!.GetValue(null) as HttpClient;
+        // Assert - No exception should be thrown and user-agent should still be set
+        var httpClient = GetLibraryHttpClient();
+        httpClient.Should().NotBeNull("HttpClient should be initialized by the library");
+
         var userAgent = httpClient!.DefaultRequestHeaders.UserAgent.ToString();
-
         userAgent.Should().Contain("dotnetup-library", "User-agent should remain set after multiple initializations");
     }
 
@@ -57,13 +67,13 @@ public class ReleaseLibraryInitializerTests
         var informationalVersion = typeof(ReleaseLibraryInitializer).Assembly
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
-        // Act
+        // Act - Initialize (this is idempotent)
         ReleaseLibraryInitializer.Initialize();
 
         // Assert
-        var utilsType = Type.GetType("Microsoft.Deployment.DotNet.Releases.Utils, Microsoft.Deployment.DotNet.Releases");
-        var httpClientField = utilsType!.GetField("s_httpClient", BindingFlags.Static | BindingFlags.NonPublic);
-        var httpClient = httpClientField!.GetValue(null) as HttpClient;
+        var httpClient = GetLibraryHttpClient();
+        httpClient.Should().NotBeNull("HttpClient should be initialized by the library");
+
         var userAgent = httpClient!.DefaultRequestHeaders.UserAgent.ToString();
 
         if (informationalVersion != null)

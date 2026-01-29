@@ -37,12 +37,14 @@ internal static class ReleaseLibraryInitializer
                 if (utilsType == null)
                 {
                     // Library not loaded or type not found - this is not fatal, just means we can't customize
+                    _initialized = true;
                     return;
                 }
 
                 var httpClientField = utilsType.GetField("s_httpClient", BindingFlags.Static | BindingFlags.NonPublic);
                 if (httpClientField == null)
                 {
+                    _initialized = true;
                     return;
                 }
 
@@ -62,10 +64,13 @@ internal static class ReleaseLibraryInitializer
 
                 _initialized = true;
             }
-            catch
+            catch (Exception ex)
             {
                 // If we can't set the user-agent, it's not critical - the library will still work
                 // Just means we can't differentiate library calls from dnup calls
+                // Log exception for diagnostic purposes
+                System.Diagnostics.Debug.WriteLine($"ReleaseLibraryInitializer: Failed to set user-agent: {ex.Message}");
+                _initialized = true;
             }
         }
     }
