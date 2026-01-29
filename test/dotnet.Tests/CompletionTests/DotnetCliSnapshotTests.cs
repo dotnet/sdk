@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli.Completions.Tests;
 
 public class DotnetCliSnapshotTests(ITestOutputHelper log) : SdkTest(log)
 {
-    [MemberData(nameof(ShellNames))]
+    [MemberData(nameof(TestCases))]
     [Theory(Skip = "https://github.com/dotnet/sdk/issues/48817")]
     public async Task VerifyCompletions(string shellName)
     {
