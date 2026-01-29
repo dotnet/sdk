@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -16,13 +17,25 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, string name)> clients, AbstractBrowserRefreshServer? browserRefreshServer) : IDisposable
+/// <summary>
+/// Facilitates Hot Reload updates across multiple clients/processes.
+/// </summary>
+/// <param name="clients">
+/// Clients that handle managed updates and static asset updates if <paramref name="useRefreshServerToApplyStaticAssets"/> is false.
+/// </param>
+/// <param name="browserRefreshServer">
+/// Browser refresh server used to communicate managed code update status and errors to the browser,
+/// and to apply static asset updates if <paramref name="useRefreshServerToApplyStaticAssets"/> is true.
+/// </param>
+/// <param name="useRefreshServerToApplyStaticAssets">
+/// True to use <paramref name="browserRefreshServer"/> to apply static asset updates (if available).
+/// False to use the <paramref name="clients"/> to apply static asset updates.
+/// </param>
+internal sealed class HotReloadClients(
+    ImmutableArray<(HotReloadClient client, string name)> clients,
+    AbstractBrowserRefreshServer? browserRefreshServer,
+    bool useRefreshServerToApplyStaticAssets) : IDisposable
 {
-    public HotReloadClients(HotReloadClient client, AbstractBrowserRefreshServer? browserRefreshServer)
-        : this([(client, "")], browserRefreshServer)
-    {
-    }
-
     /// <summary>
     /// Disposes all clients. Can occur unexpectedly whenever the process exits.
     /// </summary>
@@ -33,6 +46,16 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
             client.Dispose();
         }
     }
+
+    /// <summary>
+    /// True if Hot Reload is implemented via managed agents.
+    /// The update itself might not be managed code update, it may be a static asset update implemented via a managed agent.
+    /// </summary>
+    public bool IsManagedAgentSupported
+        => !clients.IsEmpty;
+
+    public bool UseRefreshServerToApplyStaticAssets
+        => useRefreshServerToApplyStaticAssets;
 
     public AbstractBrowserRefreshServer? BrowserRefreshServer
         => browserRefreshServer;
@@ -58,18 +81,6 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
             }
         }
     }
-
-    /// <summary>
-    /// All clients share the same loggers.
-    /// </summary>
-    public ILogger ClientLogger
-        => clients.First().client.Logger;
-
-    /// <summary>
-    /// All clients share the same loggers.
-    /// </summary>
-    public ILogger AgentLogger
-        => clients.First().client.AgentLogger;
 
     internal void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
     {
@@ -99,6 +110,12 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public async ValueTask<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
     {
+        if (!IsManagedAgentSupported)
+        {
+            // empty capabilities will cause rude edit ENC0097: NotSupportedByRuntime.
+            return [];
+        }
+
         if (clients is [var (singleClient, _)])
         {
             return await singleClient.GetUpdateCapabilitiesAsync(cancellationToken);
@@ -112,61 +129,25 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
     }
 
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    /// <param name="isInitial">True if the updates are initial updates applied automatically when a process starts.</param>
-    public async ValueTask ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, bool isInitial, CancellationToken cancellationToken)
+    public async Task<Task> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
-        var anyFailure = false;
+        // shouldn't be called if there are no clients
+        Debug.Assert(IsManagedAgentSupported);
 
-        if (clients is [var (singleClient, _)])
+        // Apply to all processes.
+        // The module the change is for does not need to be loaded to any of the processes, yet we still consider it successful if the application does not fail.
+        // In each process we store the deltas for application when/if the module is loaded to the process later.
+        // An error is only reported if the delta application fails, which would be a bug either in the runtime (applying valid delta incorrectly),
+        // the compiler (producing wrong delta), or rude edit detection (the change shouldn't have been allowed).
+
+        var applyTasks = await Task.WhenAll(clients.Select(c => c.client.ApplyManagedCodeUpdatesAsync(updates, applyOperationCancellationToken, cancellationToken)));
+
+        return CompleteApplyOperationAsync();
+
+        async Task CompleteApplyOperationAsync()
         {
-            anyFailure = await singleClient.ApplyManagedCodeUpdatesAsync(updates, isProcessSuspended, cancellationToken) == ApplyStatus.Failed;
-        }
-        else
-        {
-            // Apply to all processes.
-            // The module the change is for does not need to be loaded to any of the processes, yet we still consider it successful if the application does not fail.
-            // In each process we store the deltas for application when/if the module is loaded to the process later.
-            // An error is only reported if the delta application fails, which would be a bug either in the runtime (applying valid delta incorrectly),
-            // the compiler (producing wrong delta), or rude edit detection (the change shouldn't have been allowed).
-
-            var results = await Task.WhenAll(clients.Select(c => c.client.ApplyManagedCodeUpdatesAsync(updates, isProcessSuspended, cancellationToken)));
-
-            var index = 0;
-            foreach (var status in results)
-            {
-                var (client, name) = clients[index++];
-
-                switch (status)
-                {
-                    case ApplyStatus.Failed:
-                        anyFailure = true;
-                        break;
-
-                    case ApplyStatus.AllChangesApplied:
-                        break;
-
-                    case ApplyStatus.SomeChangesApplied:
-                        client.Logger.LogWarning("Some changes not applied to {Name} because they are not supported by the runtime.", name);
-                        break;
-
-                    case ApplyStatus.NoChangesApplied:
-                        client.Logger.LogWarning("No changes applied to {Name} because they are not supported by the runtime.", name);
-                        break;
-                }
-            }
-        }
-
-        if (!anyFailure)
-        {
-            // Only report status for updates made directly by the user, not for initial updates.
-            if (!isInitial)
-            {
-                // all clients share the same loggers, pick any:
-                var logger = clients[0].client.Logger;
-                logger.Log(LogEvents.HotReloadSucceeded);
-            }
-
-            if (browserRefreshServer != null)
+            var results = await Task.WhenAll(applyTasks);
+            if (browserRefreshServer != null && results.All(isSuccess => isSuccess))
             {
                 await browserRefreshServer.RefreshBrowserAsync(cancellationToken);
             }
@@ -176,6 +157,9 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public async ValueTask InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
     {
+        // shouldn't be called if there are no clients
+        Debug.Assert(IsManagedAgentSupported);
+
         if (clients is [var (singleClient, _)])
         {
             await singleClient.InitialUpdatesAppliedAsync(cancellationToken);
@@ -187,45 +171,45 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
     }
 
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public async Task ApplyStaticAssetUpdatesAsync(IEnumerable<StaticWebAsset> assets, CancellationToken cancellationToken)
+    public async Task<Task> ApplyStaticAssetUpdatesAsync(IEnumerable<StaticWebAsset> assets, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
-        if (browserRefreshServer != null)
+        if (useRefreshServerToApplyStaticAssets)
         {
-            await browserRefreshServer.UpdateStaticAssetsAsync(assets.Select(static a => a.RelativeUrl), cancellationToken);
+            Debug.Assert(browserRefreshServer != null);
+            return browserRefreshServer.UpdateStaticAssetsAsync(assets.Select(static a => a.RelativeUrl), applyOperationCancellationToken).AsTask();
         }
-        else
-        {
-            var updates = new List<HotReloadStaticAssetUpdate>();
 
-            foreach (var asset in assets)
+        // shouldn't be called if there are no clients
+        Debug.Assert(IsManagedAgentSupported);
+
+        var updates = new List<HotReloadStaticAssetUpdate>();
+
+        foreach (var asset in assets)
+        {
+            try
             {
-                try
-                {
-                    ClientLogger.LogDebug("Loading asset '{Url}' from '{Path}'.", asset.RelativeUrl, asset.FilePath);
-                    updates.Add(await HotReloadStaticAssetUpdate.CreateAsync(asset, cancellationToken));
-                }
-                catch (Exception e) when (e is not OperationCanceledException)
-                {
-                    ClientLogger.LogError("Failed to read file {FilePath}: {Message}", asset.FilePath, e.Message);
-                    continue;
-                }
+                updates.Add(await HotReloadStaticAssetUpdate.CreateAsync(asset, cancellationToken));
             }
-
-            await ApplyStaticAssetUpdatesAsync([.. updates], isProcessSuspended: false, cancellationToken);
+            catch (Exception e) when (e is not OperationCanceledException)
+            {
+                clients.First().client.Logger.LogError("Failed to read file {FilePath}: {Message}", asset.FilePath, e.Message);
+                continue;
+            }
         }
+
+        return await ApplyStaticAssetUpdatesAsync([.. updates], applyOperationCancellationToken, cancellationToken);
     }
 
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public async ValueTask ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
+    public async ValueTask<Task> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
-        if (clients is [var (singleClient, _)])
-        {
-            await singleClient.ApplyStaticAssetUpdatesAsync(updates, isProcessSuspended, cancellationToken);
-        }
-        else
-        {
-            await Task.WhenAll(clients.Select(c => c.client.ApplyStaticAssetUpdatesAsync(updates, isProcessSuspended, cancellationToken)));
-        }
+        // shouldn't be called if there are no clients
+        Debug.Assert(IsManagedAgentSupported);
+        Debug.Assert(!useRefreshServerToApplyStaticAssets);
+
+        var applyTasks = await Task.WhenAll(clients.Select(c => c.client.ApplyStaticAssetUpdatesAsync(updates, applyOperationCancellationToken, cancellationToken)));
+
+        return Task.WhenAll(applyTasks);
     }
 
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>

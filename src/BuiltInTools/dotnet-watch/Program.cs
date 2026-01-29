@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
 using Microsoft.Extensions.Logging;
@@ -158,8 +157,7 @@ namespace Microsoft.DotNet.Watch
         // internal for testing
         internal async Task<int> RunAsync()
         {
-            var isHotReloadEnabled = IsHotReloadEnabled();
-            var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled));
+            var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout());
 
             using var shutdownHandler = new ShutdownHandler(console, logger);
 
@@ -182,7 +180,7 @@ namespace Microsoft.DotNet.Watch
 
                 using var context = CreateContext(processRunner);
 
-                if (isHotReloadEnabled)
+                if (IsHotReloadEnabled())
                 {
                     var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
                     await watcher.WatchAsync(shutdownHandler.CancellationToken);
@@ -252,7 +250,7 @@ namespace Microsoft.DotNet.Watch
                 rootProjectOptions.ProjectPath,
                 rootProjectOptions.BuildArguments,
                 processRunner,
-                new BuildReporter(buildLogger, options.GlobalOptions, environmentOptions));
+                new BuildManager(buildLogger, options.GlobalOptions, environmentOptions));
 
             if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {
