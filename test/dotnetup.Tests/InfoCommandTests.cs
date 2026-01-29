@@ -10,9 +10,9 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class InfoCommandTests
 {
     [Fact]
-    public void Parser_ShouldParseInfoOption()
+    public void Parser_ShouldParseInfoCommand()
     {
-        // Arrange
+        // Arrange - dotnetup --info (like dotnet --info)
         var args = new[] { "--info" };
 
         // Act
@@ -20,32 +20,28 @@ public class InfoCommandTests
 
         // Assert
         parseResult.Should().NotBeNull();
-        parseResult.GetValue(Parser.InfoOption).Should().BeTrue();
-        // Note: Parser may report "Required command was not provided" error,
-        // but we handle --info before subcommand validation in Program.Main
+        parseResult.Errors.Should().BeEmpty();
     }
 
-    [Theory]
-    [InlineData("--info", "--json")]
-    [InlineData("--json", "--info")]
-    public void Parser_ShouldParseInfoWithJsonOption_OrderIndependent(string first, string second)
+    [Fact]
+    public void Parser_ShouldParseInfoCommandWithJsonOption()
     {
-        // Arrange
-        var args = new[] { first, second };
+        // Arrange - dotnetup --info --json
+        var args = new[] { "--info", "--json" };
 
         // Act
         var parseResult = Parser.Parse(args);
 
         // Assert
         parseResult.Should().NotBeNull();
-        parseResult.GetValue(Parser.InfoOption).Should().BeTrue();
+        parseResult.Errors.Should().BeEmpty();
         parseResult.GetValue(InfoCommandParser.JsonOption).Should().BeTrue();
     }
 
     [Fact]
-    public void Parser_ShouldParseInfoWithNoListOption()
+    public void Parser_ShouldParseInfoCommandWithNoListOption()
     {
-        // Arrange
+        // Arrange - dotnetup --info --no-list
         var args = new[] { "--info", "--no-list" };
 
         // Act
@@ -53,8 +49,24 @@ public class InfoCommandTests
 
         // Assert
         parseResult.Should().NotBeNull();
-        parseResult.GetValue(Parser.InfoOption).Should().BeTrue();
+        parseResult.Errors.Should().BeEmpty();
         parseResult.GetValue(InfoCommandParser.NoListOption).Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("--json")]
+    [InlineData("--no-list")]
+    public void Parser_InfoOptionsNotAvailableAtRootLevel(string option)
+    {
+        // Arrange - try to use --info options without --info (e.g., dotnetup --json)
+        var args = new[] { option };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert - should have errors since these options are only on the --info command
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().NotBeEmpty();
     }
 
     [Theory]

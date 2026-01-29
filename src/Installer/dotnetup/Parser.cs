@@ -34,12 +34,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
         public static int Invoke(ParseResult parseResult) => parseResult.Invoke(InvocationConfiguration);
         public static int Invoke(string[] args) => Invoke(Parse(args));
 
-        public static readonly Option<bool> InfoOption = new("--info")
-        {
-            Description = Strings.InfoOptionDescription,
-            Arity = ArgumentArity.Zero
-        };
-
         private static RootCommand RootCommand { get; } = ConfigureCommandLine(new()
         {
             Description = Strings.RootCommandDescription,
@@ -54,10 +48,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
 
         private static RootCommand ConfigureCommandLine(RootCommand rootCommand)
         {
-            rootCommand.Options.Add(InfoOption);
-            rootCommand.Options.Add(InfoCommandParser.JsonOption);
-            rootCommand.Options.Add(InfoCommandParser.NoListOption);
-
+            rootCommand.Subcommands.Add(InfoCommandParser.GetCommand());
             rootCommand.Subcommands.Add(SdkCommandParser.GetCommand());
             rootCommand.Subcommands.Add(SdkInstallCommandParser.GetRootInstallCommand());
             rootCommand.Subcommands.Add(SdkUpdateCommandParser.GetRootUpdateCommand());
@@ -65,17 +56,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
             rootCommand.Subcommands.Add(DefaultInstallCommandParser.GetCommand());
             rootCommand.Subcommands.Add(ListCommandParser.GetCommand());
 
-            // Handle --info at the root level (similar to dotnet --info)
             rootCommand.SetAction(parseResult =>
             {
-                if (parseResult.GetValue(InfoOption))
-                {
-                    var jsonOutput = parseResult.GetValue(InfoCommandParser.JsonOption);
-                    var noList = parseResult.GetValue(InfoCommandParser.NoListOption);
-                    return InfoCommand.Execute(jsonOutput, noList);
-                }
-
-                // No subcommand and no --info - show help
+                // No subcommand - show help
                 parseResult.InvocationConfiguration.Output.WriteLine(Strings.RootCommandDescription);
                 return 0;
             });

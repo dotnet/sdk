@@ -7,6 +7,11 @@
         <target state="new">Allows the command to stop and wait for user input or action.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InfoCommandDescription">
+        <source>Display dotnetup information.</source>
+        <target state="new">Display dotnetup information.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InfoHeader">
         <source>dotnetup Information:</source>
         <target state="new">dotnetup Information:</target>
@@ -35,11 +40,6 @@
       <trans-unit id="ListHeader">
         <source>Installed .NET (managed by dotnetup):</source>
         <target state="new">Installed .NET (managed by dotnetup):</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListJsonOptionDescription">
-        <source>Output list in JSON format.</source>
-        <target state="new">Output list in JSON format.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListNoInstallations">

@@ -123,6 +123,9 @@
   <data name="InfoOptionDescription" xml:space="preserve">
     <value>Display dotnetup information.</value>
   </data>
+  <data name="InfoCommandDescription" xml:space="preserve">
+    <value>Display dotnetup information.</value>
+  </data>
   <data name="InfoJsonOptionDescription" xml:space="preserve">
     <value>Output information in JSON format.</value>
   </data>

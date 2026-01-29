@@ -14,4 +14,28 @@ internal static class InfoCommandParser
         Description = Strings.InfoNoListOptionDescription,
         Arity = ArgumentArity.ZeroOrOne
     };
+
+    private static readonly Command InfoCommand = ConstructCommand();
+
+    public static Command GetCommand()
+    {
+        return InfoCommand;
+    }
+
+    private static Command ConstructCommand()
+    {
+        Command command = new("--info", Strings.InfoOptionDescription);
+
+        command.Options.Add(JsonOption);
+        command.Options.Add(NoListOption);
+
+        command.SetAction(parseResult =>
+        {
+            var jsonOutput = parseResult.GetValue(JsonOption);
+            var noList = parseResult.GetValue(NoListOption);
+            return Info.InfoCommand.Execute(jsonOutput, noList);
+        });
+
+        return command;
+    }
 }
