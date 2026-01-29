@@ -850,8 +850,12 @@ Copyright (c) .NET Foundation. All rights reserved.
         <!-- Preserve existing TargetPath if already set, otherwise compute it -->
         <TargetPath Condition="'%(Content.TargetPath)' != ''">%(Content.TargetPath)</TargetPath>
         <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' != ''">%(Content.Link)</TargetPath>
-        <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' == '' and '%(Content.DefiningProjectDirectory)' != '' and '%(Content.DefiningProjectFullPath)' != ''">$([MSBuild]::MakeRelative(%(Content.DefiningProjectDirectory), %(Content.FullPath)))</TargetPath>
-        <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' == '' and ('%(Content.DefiningProjectDirectory)' == '' or '%(Content.DefiningProjectFullPath)' == '')">$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(Content.FullPath)))</TargetPath>
+        <!-- Always use MSBuildProjectDirectory as the base for relative path computation.
+             This matches the behavior of the AssignTargetPath task used by AssignTargetPaths.
+             Using DefiningProjectDirectory can produce incorrect paths with ".." segments
+             when the item's DefiningProjectDirectory differs from the project directory
+             (e.g., when items are processed by SDK targets). See https://github.com/dotnet/aspnetcore/issues/65247 -->
+        <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' == ''">$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(Content.FullPath)))</TargetPath>
       </_ContentWithPublishMetadata>
       
       <ContentWithTargetPath Include="@(_ContentWithPublishMetadata)" />
