@@ -32,6 +32,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
 
         public static ParseResult Parse(string[] args) => RootCommand.Parse(args, ParserConfiguration);
         public static int Invoke(ParseResult parseResult) => parseResult.Invoke(InvocationConfiguration);
+        public static int Invoke(string[] args) => Invoke(Parse(args));
 
         public static readonly Option<bool> InfoOption = new("--info")
         {
@@ -63,6 +64,21 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
             rootCommand.Subcommands.Add(ElevatedAdminPathCommandParser.GetCommand());
             rootCommand.Subcommands.Add(DefaultInstallCommandParser.GetCommand());
             rootCommand.Subcommands.Add(ListCommandParser.GetCommand());
+
+            // Handle --info at the root level (similar to dotnet --info)
+            rootCommand.SetAction(parseResult =>
+            {
+                if (parseResult.GetValue(InfoOption))
+                {
+                    var jsonOutput = parseResult.GetValue(InfoCommandParser.JsonOption);
+                    var noList = parseResult.GetValue(InfoCommandParser.NoListOption);
+                    return InfoCommand.Execute(jsonOutput, noList);
+                }
+
+                // No subcommand and no --info - show help
+                parseResult.InvocationConfiguration.Output.WriteLine(Strings.RootCommandDescription);
+                return 0;
+            });
 
             return rootCommand;
         }

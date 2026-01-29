@@ -121,7 +121,7 @@ public class ParserTests
     {
         // Run dotnetup --version as a process
         var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
-            new[] { "--version" }, 
+            new[] { "--version" },
             captureOutput: true);
 
         // Should succeed
