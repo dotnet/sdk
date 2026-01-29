@@ -10,21 +10,11 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 
 internal static class RemoveCommandParser
 {
-    private static readonly RemoveCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(RemoveCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static RemoveCommandDefinition CreateCommand()
-    {
-        var command = new RemoveCommandDefinition();
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
         command.PackageCommand.SetAction(parseResult => new PackageRemoveCommand(parseResult).Execute());
         command.ReferenceCommand.SetAction(parseResult => new ReferenceRemoveCommand(parseResult).Execute());
-
-        return command;
     }
 }

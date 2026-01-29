@@ -29,11 +29,8 @@ internal static class NewCommandParser
 
     private const string HostIdentifier = "dotnetcli";
 
-    internal static readonly Command s_command = CreateCommand();
-
-    public static Command CreateCommand()
+    public static Command ConfigureCommand(NewCommandDefinition definition)
     {
-        var definition = new NewCommandDefinition();
         return NewCommandFactory.Create(GetEngineHost, definition);
 
         CliTemplateEngineHost GetEngineHost(ParseResult parseResult)

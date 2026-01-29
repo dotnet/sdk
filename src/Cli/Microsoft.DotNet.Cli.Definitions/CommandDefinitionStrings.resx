@@ -1491,4 +1491,7 @@ If command is specified without the argument, it lists all the template packages
   <data name="Diagnostics_OptionDescription" xml:space="preserve">
     <value>Enables diagnostic output.</value>
   </data>
+  <data name="SDKSchemaCommandDefinition" xml:space="preserve">
+    <value>Display the command schema as JSON.</value>
+  </data>
 </root>
