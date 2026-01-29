@@ -28,10 +28,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_WasmHotReloadDllPath Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0'))">net11.0</_WasmHotReloadDllPath>
     </PropertyGroup>
     <ItemGroup Condition="'$(_WasmHotReloadDllPath)' != ''">
-      <ReferenceCopyLocalPaths Include="$(_WasmHotReloadRoot)\$(_WasmHotReloadDllPath)\Microsoft.DotNet.HotReload.WebAssembly.Browser.dll" />
+      <ReferenceCopyLocalPaths Include="$(_WasmHotReloadRoot)\$(_WasmHotReloadDllPath)\Microsoft.DotNet.HotReload.WebAssembly.Browser.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+      </ReferenceCopyLocalPaths>
       <_WasmHotReloadModule Include="$(_WasmHotReloadRoot)\wwwroot\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
         <TargetPath>_framework\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </_WasmHotReloadModule>
       <_WasmHotReloadModule OriginalItemSpec="%(Identity)" />
     </ItemGroup>
@@ -41,7 +45,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
       FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       SourceId="$(PackageId)"
-      SourceType="Discovered"
+      SourceType="Computed"
       ContentRoot="$(_WasmHotReloadRoot)\wwwroot\"
       BasePath="$(StaticWebAssetBasePath)"
       AssetKind="Build"
