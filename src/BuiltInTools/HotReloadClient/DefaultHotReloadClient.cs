@@ -265,7 +265,7 @@ namespace Microsoft.DotNet.HotReload
             Debug.Assert(_pipe != null);
 
             return QueueUpdateBatch(
-                sendAndReceive: async (batchId, completionSource) =>
+                sendAndReceive: async batchId =>
                 {
                     await _pipe.WriteAsync((byte)request.Type, applyOperationCancellationToken);
                     await request.WriteAsync(_pipe, applyOperationCancellationToken);
@@ -273,7 +273,7 @@ namespace Microsoft.DotNet.HotReload
 
                     var success = await ReceiveUpdateResponseAsync(applyOperationCancellationToken);
                     Logger.Log(success ? LogEvents.UpdateBatchCompleted : LogEvents.UpdateBatchFailed, batchId);
-                    completionSource.SetResult(success);
+                    return success;
                 },
                 applyOperationCancellationToken);
         }

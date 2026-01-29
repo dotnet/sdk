@@ -125,21 +125,26 @@ namespace Microsoft.DotNet.HotReload
             // If no browser is connected the changes are not sent though.
 
             return QueueUpdateBatch(
-                sendAndReceive: (batchId, completionSource) => browserRefreshServer.SendAndReceiveAsync(
-                    request: sharedSecret => new JsonApplyManagedCodeUpdatesRequest
-                    {
-                        SharedSecret = sharedSecret,
-                        UpdateId = batchId,
-                        Deltas = deltas,
-                        ResponseLoggingLevel = (int)loggingLevel
-                    },
-                    response: new ResponseAction((value, logger) =>
-                    {
-                        var success = ReceiveUpdateResponseAsync(value, logger);
-                        Logger.Log(success ? LogEvents.UpdateBatchCompleted : LogEvents.UpdateBatchFailed, batchId);
-                        completionSource.SetResult(success);
-                    }),
-                    applyOperationCancellationToken),
+                sendAndReceive: async batchId =>
+                {
+                    var result = await browserRefreshServer.SendAndReceiveAsync(
+                        request: sharedSecret => new JsonApplyManagedCodeUpdatesRequest
+                        {
+                            SharedSecret = sharedSecret,
+                            UpdateId = batchId,
+                            Deltas = deltas,
+                            ResponseLoggingLevel = (int)loggingLevel
+                        },
+                        response: new ResponseFunc<bool>((value, logger) =>
+                        {
+                            var success = ReceiveUpdateResponse(value, logger);
+                            Logger.Log(success ? LogEvents.UpdateBatchCompleted : LogEvents.UpdateBatchFailed, batchId);
+                            return success;
+                        }),
+                        applyOperationCancellationToken);
+
+                    return result ?? false;
+                },
                 applyOperationCancellationToken);
         }
 
@@ -147,7 +152,7 @@ namespace Microsoft.DotNet.HotReload
             // static asset updates are handled by browser refresh server:
             => Task.FromResult(Task.FromResult(true));
 
-        private static bool ReceiveUpdateResponseAsync(ReadOnlySpan<byte> value, ILogger logger)
+        private static bool ReceiveUpdateResponse(ReadOnlySpan<byte> value, ILogger logger)
         {
             var data = AbstractBrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
 

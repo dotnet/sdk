@@ -118,15 +118,16 @@ namespace Microsoft.DotNet.Watch
             {
                 await applyTask;
             }
+            catch (OperationCanceledException)
+            {
+                // Do not report error.
+            }
             catch (Exception e)
             {
                 // Handle all exceptions. If one process is terminated or fails to apply changes
                 // it shouldn't prevent applying updates to other processes.
 
-                if (e is not OperationCanceledException)
-                {
-                    Clients.ClientLogger.LogError("Failed to apply updates to process {Process}: {Exception}", ProcessId, e.ToString());
-                }
+                Clients.ClientLogger.LogError("Failed to apply updates to process {Process}: {Exception}", ProcessId, e.ToString());
             }
         }
     }

@@ -69,15 +69,17 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     public abstract Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Applies managed code updates to the target process.
+    /// Returns a task that applies managed code updates to the target process.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
+    /// <param name="cancellationToken">The token use to cancel creation of the apply task.</param>
+    /// <param name="applyOperationCancellationToken">The token to be used to cancel the apply operation. Should trigger on process terminatation.</param>
     public abstract Task<Task<bool>> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Applies static asset updates to the target process.
+    /// Returns a task that applies static asset updates to the target process.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
+    /// <param name="cancellationToken">The token use to cancel creation of the apply task.</param>
+    /// <param name="applyOperationCancellationToken">The token to be used to cancel the apply operation. Should trigger on process terminatation.</param>
     public abstract Task<Task<bool>> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken);
 
     /// <summary>
@@ -136,7 +138,7 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     /// <summary>
     /// Queues a batch of updates to be applied in the target process.
     /// </summary>
-    protected Task<bool> QueueUpdateBatch(Func<int, TaskCompletionSource<bool>, ValueTask> sendAndReceive, CancellationToken applyOperationCancellationToken)
+    protected Task<bool> QueueUpdateBatch(Func<int, ValueTask<bool>> sendAndReceive, CancellationToken applyOperationCancellationToken)
     {
         var completionSource = new TaskCompletionSource<bool>();
 
@@ -154,23 +156,20 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
                 try
                 {
                     Logger.Log(LogEvents.SendingUpdateBatch, batchId);
-                    await sendAndReceive(batchId, completionSource);
+                    completionSource.SetResult(await sendAndReceive(batchId));
                 }
-                catch (Exception e)
+                catch (OperationCanceledException)
                 {
                     // Don't report an error when cancelled. The process has terminated or the host is shutting down in that case.
                     // Best effort: There is an inherent race condition due to time between the process exiting and the cancellation token triggering.
-                    if (e is OperationCanceledException)
-                    {
-                        Logger.Log(LogEvents.UpdateBatchCanceled, batchId);
-                        completionSource.SetCanceled();
-                    }
-                    else
-                    {
-                        Logger.Log(LogEvents.UpdateBatchFailedWithError, batchId, e.Message);
-                        Logger.Log(LogEvents.UpdateBatchExceptionStackTrace, batchId, e.StackTrace ?? "");
-                        completionSource.SetResult(false);
-                    }
+                    Logger.Log(LogEvents.UpdateBatchCanceled, batchId);
+                    completionSource.SetCanceled();
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(LogEvents.UpdateBatchFailedWithError, batchId, e.Message);
+                    Logger.Log(LogEvents.UpdateBatchExceptionStackTrace, batchId, e.StackTrace ?? "");
+                    completionSource.SetResult(false);
                 }
             }, applyOperationCancellationToken);
         }
