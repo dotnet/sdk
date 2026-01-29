@@ -708,11 +708,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">진단 출력을 사용합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SDKSchemaCommandDefinition">
-        <source>Display the command schema as JSON.</source>
-        <target state="translated">명령 스키마를 JSON으로 표시합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="translated">'--self-contained' 및 '--no-self-contained' 옵션은 함께 사용할 수 없습니다.</target>

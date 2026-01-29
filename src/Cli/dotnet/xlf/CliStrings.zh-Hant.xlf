@@ -708,11 +708,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">啟用診斷輸出。</target>
         <note />
       </trans-unit>
-      <trans-unit id="SDKSchemaCommandDefinition">
-        <source>Display the command schema as JSON.</source>
-        <target state="translated">以 JSON 格式顯示命令結構描述。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="translated">不能同時使用 '--self-contained' 和 '--no-self-contained' 選項。</target>

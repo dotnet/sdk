@@ -5,14 +5,11 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
-internal sealed class RunApiCommandDefinition
+internal sealed class RunApiCommandDefinition : Command
 {
-    public static Command Create()
+    public RunApiCommandDefinition()
+        : base("run-api")
     {
-        Command command = new("run-api")
-        {
-            Hidden = true,
-        };
-        return command;
+        this.Hidden = true;
     }
 }

@@ -7,6 +7,7 @@ using System.CommandLine.Parsing;
 using System.Data;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
@@ -16,8 +17,6 @@ namespace Microsoft.DotNet.Watch;
 
 internal sealed class CommandLineOptions
 {
-    public const string DefaultCommand = "run";
-
     private static readonly ImmutableArray<string> s_binaryLogOptionNames = ["-bl", "/bl", "-binaryLogger", "--binaryLogger", "/binaryLogger"];
 
     public bool List { get; init; }
@@ -38,9 +37,9 @@ internal sealed class CommandLineOptions
     /// </summary>
     public required IReadOnlyList<string> BuildArguments { get; init; }
 
-    public string? ExplicitCommand { get; init; }
+    public required string Command { get; init; }
 
-    public string Command => ExplicitCommand ?? DefaultCommand;
+    public required bool IsExplicitCommand { get; init; }
 
     public static CommandLineOptions? Parse(IReadOnlyList<string> args, ILogger logger, TextWriter output, out int errorCode)
     {
@@ -67,8 +66,7 @@ internal sealed class CommandLineOptions
         }
 
         // determine subcommand:
-        var explicitCommand = TryGetSubcommand(parseResult);
-        var command = explicitCommand ?? RunCommandParser.GetCommand();
+        var command = GetSubcommand(parseResult, out bool isExplicitCommand);
         var buildOptions = command.Options.Where(o => o.ForwardingFunction is not null);
 
         foreach (var buildOption in buildOptions)
@@ -111,7 +109,7 @@ internal sealed class CommandLineOptions
         var commandArguments = GetCommandArguments(
             parseResult,
             command,
-            explicitCommand,
+            isExplicitCommand,
             out var binLogToken,
             out var binLogPath);
 
@@ -143,7 +141,8 @@ internal sealed class CommandLineOptions
             },
 
             CommandArguments = commandArguments,
-            ExplicitCommand = explicitCommand?.Name,
+            Command = command.Name,
+            IsExplicitCommand = isExplicitCommand,
 
             ProjectPath = projectValue,
             LaunchProfileName = parseResult.GetValue(definition.LaunchProfileOption),
@@ -176,7 +175,7 @@ internal sealed class CommandLineOptions
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,
         Command command,
-        Command? explicitCommand,
+        bool isExplicitCommand,
         out string? binLogToken,
         out string? binLogPath)
     {
@@ -250,7 +249,7 @@ internal sealed class CommandLineOptions
 
             if (i < unmatchedTokensBeforeDashDash)
             {
-                if (!seenCommand && token == explicitCommand?.Name)
+                if (!seenCommand && isExplicitCommand && token == command.Name)
                 {
                     seenCommand = true;
                     continue;
@@ -293,24 +292,27 @@ internal sealed class CommandLineOptions
         // For those that do not, use the Option's Name instead.
         => optionResult.IdentifierToken?.Value ?? optionResult.Option.Name;
 
-    private static Command? TryGetSubcommand(ParseResult parseResult)
+    private static Command GetSubcommand(ParseResult parseResult, out bool isExplicit)
     {
         // Assuming that all tokens after "--" are unmatched:
         var dashDashIndex = IndexOf(parseResult.Tokens, t => t.Value == "--");
         var unmatchedTokensBeforeDashDash = parseResult.UnmatchedTokens.Count - (dashDashIndex >= 0 ? parseResult.Tokens.Count - dashDashIndex - 1 : 0);
 
-        var knownCommandsByName = Parser.Subcommands.ToDictionary(keySelector: c => c.Name, elementSelector: c => c);
+        var dotnetDefinition = new DotNetCommandDefinition();
+        var knownCommandsByName = dotnetDefinition.Subcommands.ToDictionary(keySelector: c => c.Name, elementSelector: c => c);
 
         for (int i = 0; i < unmatchedTokensBeforeDashDash; i++)
         {
             // command token can't follow "--"
             if (knownCommandsByName.TryGetValue(parseResult.UnmatchedTokens[i], out var explicitCommand))
             {
+                isExplicit = true;
                 return explicitCommand;
             }
         }
 
-        return null;
+        isExplicit = false;
+        return dotnetDefinition.RunCommand;
     }
 
     private static bool ReportErrors(ParseResult parseResult, ILogger logger)
