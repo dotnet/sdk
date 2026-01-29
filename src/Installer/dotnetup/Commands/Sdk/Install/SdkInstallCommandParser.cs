@@ -64,7 +64,7 @@ internal static class SdkInstallCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("install", "Installs .NET");
+        Command command = new("install", "Installs the .NET SDK");
 
         command.Arguments.Add(ChannelArgument);
 
