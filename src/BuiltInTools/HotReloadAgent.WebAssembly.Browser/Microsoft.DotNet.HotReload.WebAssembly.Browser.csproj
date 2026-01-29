@@ -1,7 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
+  <Import Project="..\Watch\TargetFrameworks.props"/>
 
   <PropertyGroup>
-    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <!--
+      This code may be injected into a .NET 10.0+ WebAssembly app.
+      Multi-target to ensure compatibility with both .NET 10 and .NET 11 runtimes.
+    -->
+    <TargetFrameworks>$(AgentTargetFrameworkV10);$(AgentTargetFrameworkV11)</TargetFrameworks>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <LangVersion>preview</LangVersion>
