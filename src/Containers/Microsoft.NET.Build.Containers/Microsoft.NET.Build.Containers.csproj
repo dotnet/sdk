@@ -85,7 +85,6 @@
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <Compile Remove="Tasks/CreateNewImageToolTask.cs" />
     <Compile Remove="net472Definitions.cs" />
-    <Compile Remove="VSHostObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources\Strings.Designer.cs">
