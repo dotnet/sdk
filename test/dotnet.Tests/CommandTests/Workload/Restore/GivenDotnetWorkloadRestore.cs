@@ -15,7 +15,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAreNotInspected()
     {
-        if(IsRunningInContainer())
+        if (IsRunningInContainer())
         {
             // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
             return;
@@ -38,7 +38,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAndAreTransitivelyReferencedDoNotBreakTheBuild()
     {
-        if(IsRunningInContainer())
+        if (IsRunningInContainer())
         {
             // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
             return;
