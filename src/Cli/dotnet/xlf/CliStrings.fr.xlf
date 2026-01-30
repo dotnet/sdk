@@ -2,34 +2,9 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="fr" original="../CliStrings.resx">
     <body>
-      <trans-unit id="Add">
-        <source>Add</source>
-        <target state="translated">ajouter</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AmbiguousCommandName">
         <source>Ambiguous command name: {0}</source>
         <target state="translated">Nom de commande ambigu : {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArchArgumentName">
-        <source>ARCH</source>
-        <target state="translated">ARC</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArchitectureOptionDescription">
-        <source>The target architecture.</source>
-        <target state="translated">L’architecture cible</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArtifactsPathArgumentName">
-        <source>ARTIFACTS_DIR</source>
-        <target state="translated">ARTIFACTS_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArtifactsPathOptionDescription">
-        <source>The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</source>
-        <target state="translated">Le chemin des artefacts. Toutes les sorties du projet, y compris les sorties de build, de publication et de pack, iront dans des sous-dossiers sous le chemin spécifié.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttemptingToCreateCommandSpec">
@@ -74,11 +49,6 @@
         <target state="translated">Le package ayant l'ID de package {0} est introuvable dans le fichier manifeste.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotResolveRuntimeIdentifier">
-        <source>Resolving the current runtime identifier failed.</source>
-        <target state="translated">Échec de la résolution de l’identificateur d’exécution actuel</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CannotSpecifyBothRuntimeAndArchOptions">
         <source>Specifying both the `-r|--runtime` and `-a|--arch` options is not supported.</source>
         <target state="translated">La spécification des options « -r |--Runtime » et « -a |--Arch » n’est pas prise en charge.</target>
@@ -87,65 +57,6 @@
       <trans-unit id="CannotSpecifyBothRuntimeAndOsOptions">
         <source>Specifying both the `-r|--runtime` and `-os` options is not supported.</source>
         <target state="translated">La spécification des options « -r |--Runtime » et « os » n’est pas prise en charge.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdEnvironmentVariableDescription">
-        <source>Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
-
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</source>
-        <target state="needs-review-translation">Définit la valeur d'une variable d'environnement. 
-Crée la variable si elle n'existe pas, et la remplace si elle existe. 
-Cela entraîne l'exécution forcée des tests dans un processus isolé. 
-Vous pouvez spécifier cet argument plusieurs fois pour fournir plusieurs variables.
-
-Exemples :
--e VARIABLE=abc
--e VARIABLE="valeur avec des espaces"
--e VARIABLE="valeur;séparée;par;des;points;virgules"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdEnvironmentVariableExpression">
-        <source>NAME="VALUE"</source>
-        <target state="translated">NAME="VALUE"</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTestEnvironmentVariableDescription">
-        <source>Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
-
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
-
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdVersionSuffixDescription">
-        <source>Set the value of the $(VersionSuffix) property to use when building the project.</source>
-        <target state="translated">Définissez la valeur de la propriété $(VersionSuffix) à utiliser durant la génération du projet.</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnMaxWidthMustBeGreaterThanZero">
@@ -158,34 +69,14 @@ Examples:
         <target state="translated">La commande exécutable pour "{0}" est introuvable. Le projet n'a peut-être pas été restauré, ou la restauration n'a pas fonctionné - exécutez 'dotnet restore'</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandInteractiveOptionDescription">
-        <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
-        <target state="translated">Permet à la commande de s'arrêter et d'attendre une entrée ou une action de l'utilisateur (par exemple pour effectuer une authentification).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandPrereleaseOptionDescription">
-        <source>Allows prerelease packages to be installed.</source>
-        <target state="translated">Permet d'installer les packages de préversion.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandSpecIsNull">
         <source>{0}: commandSpec is null.</source>
         <target state="translated">{0} : commandSpec a une valeur null.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommonCmdFramework">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommonFileNotFound">
         <source>File `{0}` not found.</source>
         <target state="translated">Fichier '{0}' introuvable.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigurationArgumentName">
-        <source>CONFIGURATION</source>
-        <target state="translated">CONFIGURATION</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotFindSolutionIn">
@@ -201,11 +92,6 @@ Examples:
       <trans-unit id="CouldNotFindToolRuntimeConfigFile">
         <source>{0}: Could not find runtimeconfig.json file for tool {1}</source>
         <target state="translated">{0} : le fichier runtimeconfig.json est introuvable pour l'outil {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Delete">
-        <source>Delete</source>
-        <target state="translated">supprimer</target>
         <note />
       </trans-unit>
       <trans-unit id="DepsJsonGeneratorProjectNotSet">
@@ -226,16 +112,6 @@ Examples:
       <trans-unit id="DidYouMean">
         <source>Did you mean the following command?</source>
         <target state="translated">Vouliez-vous dire la commande suivante ?</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Directory">
-        <source>Directory</source>
-        <target state="translated">Répertoire</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DisableBuildServersOptionDescription">
-        <source>Force the command to ignore any persistent build servers.</source>
-        <target state="translated">Forcez la commande à ignorer tous les serveurs de build persistants.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoesNotExist">
@@ -358,11 +234,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Dans la mesure où vous venez d'installer le kit SDK .NET, vous devez rouvrir la fenêtre d'invite de commandes avant d'exécuter l'outil que vous avez installé.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Error">
-        <source>Error</source>
-        <target state="translated">Erreur</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Error_NU1302_HttpSourceUsed">
         <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">Vous exécutez l'opération « installation d’outils » avec une source « HTTP » : {0}. NuGet nécessite des sources HTTPS. Pour utiliser une source HTTP, vous devez définir explicitement « allowInsecureConnections » sur true dans votre fichier NuGet.Config. Reportez-vous à https://aka.ms/nuget-https-everywhere pour plus d’informations.</target>
@@ -465,16 +336,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Entrée 'commands' manquante.</target>
         <note />
       </trans-unit>
-      <trans-unit id="File">
-        <source>File</source>
-        <target state="translated">fichier</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FileArgumentDescription">
-        <source>The file-based app to operate on.</source>
-        <target state="translated">Application basée sur des fichiers sur laquelle effectuer des opérations.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FormatVersionIsHigher">
         <source>Format version is higher than supported. This tool may not be supported in this SDK version. Update your SDK.</source>
         <target state="translated">Version de format supérieure à la version prise en charge. Cet outil risque de ne pas être pris en charge dans cette version de SDK. Mettez à jour votre SDK.</target>
@@ -498,16 +359,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="FoundToolLockFile">
         <source>{0}: found tool lockfile at : {1}</source>
         <target state="translated">{0} : fichier de verrouillage d'outil trouvé sur : {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkArgumentName">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkDependentOptionDescription">
-        <source>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</source>
-        <target state="translated">Publiez votre application en tant qu'application dépendante du framework. Un runtime .NET compatible doit être installé sur la machine cible pour exécuter votre application.</target>
         <note />
       </trans-unit>
       <trans-unit id="GeneratingDepsJson">
@@ -549,11 +400,6 @@ setx PATH "%PATH%;{0}"
 {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidProject">
-        <source>Invalid project `{0}`.</source>
-        <target state="translated">Projet '{0}' non valide.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InvalidProjectWithExceptionMessage">
         <source>Invalid project `{0}`. {1}.</source>
         <target state="translated">Projet non valide : '{0}'. {1}.</target>
@@ -569,11 +415,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Solution non valide '{0}'. {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidVersion">
-        <source>Invalid version string: {0}</source>
-        <target state="translated">Chaîne de version non valide : {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
         <source>{0} is not found in NuGet feeds {1}.</source>
         <target state="translated">{0} est introuvable dans les flux NuGet {1}.</target>
@@ -584,24 +425,9 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Erreur d'analyse Json dans le fichier {0} : {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="LevelArgumentName">
-        <source>LEVEL</source>
-        <target state="translated">LEVEL</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Library">
-        <source>Library</source>
-        <target state="translated">Bibliothèque</target>
-        <note />
-      </trans-unit>
       <trans-unit id="LibraryNotFoundInLockFile">
         <source>{0}: library not found in lock file.</source>
         <target state="translated">{0} : bibliothèque introuvable dans le fichier de verrouillage.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="List">
-        <source>List</source>
-        <target state="translated">Répertorier</target>
         <note />
       </trans-unit>
       <trans-unit id="LookingForPreferCliRuntimeFile">
@@ -694,11 +520,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Exécutez "dotnet tool restore" pour rendre la commande "{0}" disponible.</target>
         <note />
       </trans-unit>
-      <trans-unit id="New">
-        <source>New</source>
-        <target state="translated">Nouveau</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoProjectsFound">
         <source>No projects found in the solution.</source>
         <target state="translated">Aucun projet trouvé dans la solution.</target>
@@ -707,11 +528,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="NoReferencesFound">
         <source>There are no {0} references in project {1}.</source>
         <target state="translated">Il n'existe aucune référence {0} dans le projet {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NoRestoreDescription">
-        <source>Do not restore the project before building.</source>
-        <target state="translated">Ne restaurez pas le projet avant la génération.</target>
         <note />
       </trans-unit>
       <trans-unit id="NonRetriableNugetSearchFailure">
@@ -738,20 +554,10 @@ setx PATH "%PATH%;{0}"
 {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="OSArgumentName">
-        <source>OS</source>
-        <target state="translated">Système d'exploitation</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
         <target state="translated">Vous ne pouvez spécifier qu’un seul projet à la fois à l’aide de l’option -p.</target>
         <note>{Locked="-p"}</note>
-      </trans-unit>
-      <trans-unit id="OperatingSystemOptionDescription">
-        <source>The target operating system.</source>
-        <target state="translated">Le système d'exploitation cible</target>
-        <note />
       </trans-unit>
       <trans-unit id="P2P">
         <source>Project to Project</source>
@@ -763,30 +569,10 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Vous ne pouvez empaqueter qu’un seul fichier .nuspec à la fois</target>
         <note />
       </trans-unit>
-      <trans-unit id="Package">
-        <source>Package</source>
-        <target state="translated">Package</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageIdentityArgumentDescription">
-        <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
-        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
-        <source>Package reference id and version must not be null.</source>
-        <target state="translated">L’ID et la version de référence du package ne doivent pas être nuls.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackageIdentityArgumentVersionOptionConflict">
         <source>Cannot specify --version when the package argument already contains a version.</source>
         <target state="translated">Impossible de spécifier --version lorsque l’argument de package contient déjà une version.</target>
         <note>{Locked="--version"}</note>
-      </trans-unit>
-      <trans-unit id="PackageReference">
-        <source>Package reference</source>
-        <target state="translated">Référence de package</target>
-        <note />
       </trans-unit>
       <trans-unit id="PackageVersionDescriptionDefault">
         <source>A version of {0} of package {1}</source>
@@ -811,11 +597,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="PackageVersionDescriptionForVersionWithUpperBound">
         <source>A version less than {0} of package {1}</source>
         <target state="translated">Une version inférieure à {0} du package {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Project">
-        <source>Project</source>
-        <target state="translated">Projet</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectAddedToTheSolution">
@@ -870,21 +651,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Projet '{0}' introuvable dans la solution.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectOrFileArgumentDescription">
-        <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
-        <target state="translated">Application basée sur des fichiers C# ou fichier projet sur laquelle effectuer des opérations. Si aucun fichier n’est spécifié, la commande recherche un fichier projet dans le répertoire actuel.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectOrFileArgumentName">
-        <source>PROJECT | FILE</source>
-        <target state="translated">FICHIER | PROJET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectReference">
-        <source>Project reference</source>
-        <target state="translated">Référence de projet</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProjectReferenceCouldNotBeFound">
         <source>Project reference `{0}` could not be found.</source>
         <target state="translated">La référence de projet '{0}' est introuvable.</target>
@@ -900,11 +666,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Référence de projet '{0}' supprimée.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectRemoved">
-        <source>Project `{0}` removed from solution.</source>
-        <target state="translated">Projet '{0}' retiré de la solution.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProjectRemovedFromTheSolution">
         <source>Project `{0}` removed from the solution.</source>
         <target state="translated">Projet '{0}' retiré de la solution.</target>
@@ -915,19 +676,9 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Serveur de builds Razor</target>
         <note />
       </trans-unit>
-      <trans-unit id="Reference">
-        <source>Reference</source>
-        <target state="translated">Référence</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReferenceAddedToTheProject">
         <source>Reference `{0}` added to the project.</source>
         <target state="translated">Référence '{0}' ajoutée au projet.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Remove">
-        <source>Remove</source>
-        <target state="translated">Supprimer</target>
         <note />
       </trans-unit>
       <trans-unit id="RequiredCommandNotPassed">
@@ -952,32 +703,15 @@ setx PATH "%PATH%;{0}"
     RequestUrl : {0}. ReasonPhrase : {1}. StatusCode : {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RuntimeIdentifierArgumentName">
-        <source>RUNTIME_IDENTIFIER</source>
-        <target state="translated">RUNTIME_IDENTIFIER</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SDKDiagnosticsCommandDefinition">
         <source>Enable diagnostic output.</source>
         <target state="translated">Activez la sortie des diagnostics.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SDKSchemaCommandDefinition">
-        <source>Display the command schema as JSON.</source>
-        <target state="translated">Affichez le schéma de commande au format JSON.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="translated">Les options '--self-contained' et '--no-self-contained' ne peuvent pas être utilisées ensemble.</target>
         <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
-      </trans-unit>
-      <trans-unit id="SelfContainedOptionDescription">
-        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">Publiez le runtime .NET avec votre application afin que le runtime n’ait pas besoin d’être installé sur l’ordinateur cible.
-La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou une version antérieure, la valeur par défaut est « true » si un identificateur d’exécution est spécifié.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ShellShimConflict">
         <source>Command '{0}' conflicts with an existing command from another tool.</source>
@@ -997,11 +731,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
       <trans-unit id="ShutdownCommandFailed">
         <source>The shutdown command failed: {0}</source>
         <target state="translated">Échec de la commande d'arrêt : {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Solution">
-        <source>Solution</source>
-        <target state="translated">Solution</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionAlreadyContainsProject">
@@ -1024,29 +753,9 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
         <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionOrProjectArgumentDescription">
-        <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
-        <target state="translated">Fichier projet ou solution à utiliser. Si vous ne spécifiez pas de fichier, la commande en recherche un dans le répertoire actuel.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
         <source>PROJECT | SOLUTION</source>
         <target state="translated">PROJECT | SOLUTION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SolutionOrProjectOrFileArgumentDescription">
-        <source>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</source>
-        <target state="translated">Le fichier projet ou solution ou fichier C# (programme basé sur un fichier) à utiliser. Si aucun fichier n'est spécifié, la commande recherche un projet ou une solution dans le répertoire actuel.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SolutionOrProjectOrFileArgumentName">
-        <source>PROJECT | SOLUTION | FILE</source>
-        <target state="translated">PROJECT | SOLUTION | FICHIER</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOne">
-        <source>Specify at least one {0}.</source>
-        <target state="translated">Spécifiez au moins un {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyAtLeastOneProjectToAdd">
@@ -1134,11 +843,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
         <target state="translated">L’outil ne prend pas en charge l’architecture ou le système d’exploitation actuel ({0}). Runtimes pris en charge : {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="Type">
-        <source>Type</source>
-        <target state="translated">Type</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnableToCheckCertificateChainPolicy">
         <source>The requested certificate chain policy could not be checked: {0}</source>
         <target state="translated">Impossible de vérifier la stratégie de chaîne de certificats demandée : {0}</target>
@@ -1152,11 +856,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
       <trans-unit id="UnableToGenerateDepsJson">
         <source>Unable to generate deps.json, it may have been already generated.  You can specify the "-d" option option after "dotnet" for diagnostic output (for example, "dotnet -d &lt;toolname&gt;": {0}</source>
         <target state="translated">Impossible de générer deps.json, il a peut-être déjà été généré.  Vous pouvez spécifier l'option "-d" après "dotnet" pour une sortie de diagnostic (par exemple, "dotnet -d &lt;toolname&gt;" : {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnableToLocateDotnetMultiplexer">
-        <source>Unable to locate dotnet multiplexer</source>
-        <target state="translated">Le multiplexeur dotnet est introuvable</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
@@ -1174,24 +873,9 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
         <target state="translated">Le projet '{0}' correspond à un type de projet inconnu. Il ne peut pas être ajouté au fichier solution. Contactez le fournisseur de votre SDK pour obtenir de l'aide.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Update">
-        <source>Update</source>
-        <target state="translated">Mettre à jour</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VBCSCompilerServer">
         <source>VB/C# compiler server</source>
         <target state="translated">Serveur de compilation VB/C#</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Value">
-        <source>Value</source>
-        <target state="translated">Valeur</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbosityOptionDescription">
-        <source>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</source>
-        <target state="translated">Définissez le niveau de verbosité MSBuild. Les valeurs autorisées sont q[uiet], m[inimal], n[ormal], d[etailed] et diag[nostic].</target>
         <note />
       </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
@@ -1209,20 +893,10 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
         <target state="translated">La version {0} est non valide.</target>
         <note />
       </trans-unit>
-      <trans-unit id="VersionSuffixArgumentName">
-        <source>VERSION_SUFFIX</source>
-        <target state="translated">VERSION_SUFFIX</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadIntegrityCheckError">
         <source>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</source>
         <target state="translated">Un problème s’est produit lors de la vérification des charges de travail. Pour plus d’informations, exécutez « dotnet workload update ».</target>
         <note>{Locked="dotnet workload update"}</note>
-      </trans-unit>
-      <trans-unit id="YesOptionDescription">
-        <source>Accept all confirmation prompts using "yes."</source>
-        <target state="translated">Acceptez toutes les invites de confirmation en utilisant « oui ».</target>
-        <note />
       </trans-unit>
     </body>
   </file>
