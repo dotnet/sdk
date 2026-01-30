@@ -9,6 +9,22 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class InfoCommandTests
 {
+    private static InfoCommand CreateInfoCommand(bool jsonOutput, bool noList, TextWriter output)
+    {
+        var args = new List<string> { "--info" };
+        if (jsonOutput) args.Add("--json");
+        if (noList) args.Add("--no-list");
+        
+        var parseResult = Parser.Parse(args.ToArray());
+        return new InfoCommand(parseResult, jsonOutput, noList, output);
+    }
+
+    private static int ExecuteInfoCommand(bool jsonOutput, bool noList, TextWriter output)
+    {
+        var command = CreateInfoCommand(jsonOutput, noList, output);
+        return command.Execute();
+    }
+
     [Fact]
     public void Parser_ShouldParseInfoCommand()
     {
@@ -78,7 +94,7 @@ public class InfoCommandTests
         using var sw = new StringWriter();
 
         // Act - use noList: true to avoid manifest access in unit tests
-        var exitCode = InfoCommand.Execute(jsonOutput: jsonOutput, noList: true, output: sw);
+        var exitCode = ExecuteInfoCommand(jsonOutput: jsonOutput, noList: true, output: sw);
 
         // Assert
         exitCode.Should().Be(0);
@@ -91,7 +107,7 @@ public class InfoCommandTests
         using var sw = new StringWriter();
 
         // Act - use noList: true to avoid manifest access in unit tests
-        InfoCommand.Execute(jsonOutput: false, noList: true, output: sw);
+        ExecuteInfoCommand(jsonOutput: false, noList: true, output: sw);
         var output = sw.ToString();
 
         // Assert
@@ -109,7 +125,7 @@ public class InfoCommandTests
         using var sw = new StringWriter();
 
         // Act - include list (may be empty but should show the header)
-        InfoCommand.Execute(jsonOutput: false, noList: false, output: sw);
+        ExecuteInfoCommand(jsonOutput: false, noList: false, output: sw);
         var output = sw.ToString();
 
         // Assert
@@ -125,7 +141,7 @@ public class InfoCommandTests
         using var sw = new StringWriter();
 
         // Act - use noList: true to avoid manifest access in unit tests
-        InfoCommand.Execute(jsonOutput: true, noList: true, output: sw);
+        ExecuteInfoCommand(jsonOutput: true, noList: true, output: sw);
         var output = sw.ToString();
 
         // Assert - should be valid JSON
@@ -140,7 +156,7 @@ public class InfoCommandTests
         using var sw = new StringWriter();
 
         // Act - use noList: true to avoid manifest access in unit tests
-        InfoCommand.Execute(jsonOutput: true, noList: true, output: sw);
+        ExecuteInfoCommand(jsonOutput: true, noList: true, output: sw);
         var output = sw.ToString();
 
         // Assert
@@ -160,7 +176,7 @@ public class InfoCommandTests
         using var sw = new StringWriter();
 
         // Act - include list
-        InfoCommand.Execute(jsonOutput: true, noList: false, output: sw);
+        ExecuteInfoCommand(jsonOutput: true, noList: false, output: sw);
         var output = sw.ToString();
 
         // Assert

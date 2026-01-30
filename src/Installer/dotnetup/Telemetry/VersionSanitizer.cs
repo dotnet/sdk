@@ -27,10 +27,14 @@ public static partial class VersionSanitizer
     /// Regex pattern for valid version formats (without prerelease suffix):
     /// - Major only: 8, 9, 10
     /// - Major.Minor: 8.0, 9.0, 10.0
-    /// - Feature band: 8.0.1xx, 9.0.3xx, 10.0.1xx
+    /// - Feature band wildcard: 8.0.1xx, 9.0.3xx, 10.0.1xx (single digit + xx)
+    /// - Single digit wildcard: 10.0.10x, 10.0.20x (two digits + single x)
     /// - Specific version: 8.0.100, 9.0.304
+    /// Note: Patch versions are max 3 digits (100-999), so wildcards are constrained:
+    ///   - Nxx pattern: single digit (1-9) + xx for feature bands (100-999)
+    ///   - NNx pattern: two digits (10-99) + single x for narrower ranges (100-999)
     /// </summary>
-    [GeneratedRegex(@"^(\d{1,2})(\.\d{1,2})?(\.\d{1,3}(xx)?)?$")]
+    [GeneratedRegex(@"^(\d{1,2})(\.\d{1,2})?(\.\d{1,3}|\.\d{1}xx|\.\d{2}x)?$")]
     private static partial Regex BaseVersionPatternRegex();
 
     /// <summary>
