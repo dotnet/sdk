@@ -21,7 +21,7 @@ namespace EndToEnd.Tests
         [InlineData("10.0.22621.0", "34")]
         public void ItCanBuildAndRun(string targetPlatformVersion, string packageVersion = "")
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset("UseCswinrt", identifier: targetPlatformVersion)
                 .WithSource();
 

@@ -24,7 +24,7 @@ namespace Microsoft.NET.Restore.Tests
 
             toolProject.DotNetCliToolReferences.Add(new TestPackageReference(obsoletePackageId, "99.99.99", null));
 
-            TestAsset toolProjectInstance = _testAssetsManager.CreateTestProject(toolProject, identifier: toolProject.Name)
+            TestAsset toolProjectInstance = TestAssetsManager.CreateTestProject(toolProject, identifier: toolProject.Name)
                 .WithProjectChanges(project =>
                 {
                     XNamespace ns = project.Root.Name.Namespace;

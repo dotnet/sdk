@@ -168,7 +168,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
 
         private StorageService CreateStorageService([CallerMemberName] string testName = null)
         {
-            string tempPath = Path.Combine(_testAssetsManager.CreateTestDirectory("TestStorageService", identifier: testName).Path, Path.GetTempFileName());
+            string tempPath = Path.Combine(TestAssetsManager.CreateTestDirectory("TestStorageService", identifier: testName).Path, Path.GetTempFileName());
             StorageService storageService = new();
             storageService.Init(tempPath);
             return storageService;

@@ -19,7 +19,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         private TestAsset SetupAndRestoreTestAsset([CallerMemberName] string callingMethod = "")
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("PortableToolWithP2P", callingMethod)
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -82,7 +82,7 @@ namespace Microsoft.NET.ToolPack.Tests
         {
             Console.WriteLine(generatePackageOnBuild.ToString() + packAsTool.ToString());
 
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: generatePackageOnBuild.ToString() + packAsTool.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>

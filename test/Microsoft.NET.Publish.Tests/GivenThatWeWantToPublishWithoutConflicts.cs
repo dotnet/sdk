@@ -27,7 +27,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.PackageReferences.Add(new TestPackageReference(reference, "4.3.0"));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore", "2.1.4"));
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name), targetFramework, "ResolvedFileToPublish", GetValuesCommand.ValueType.Item)
             {
@@ -67,7 +67,7 @@ namespace Microsoft.NET.Publish.Tests
             // runtime package. Without _HandleFileConflictsForPublish this would be caught when by the bundler when publishing single file, but a normal publish would succeed with double writes.
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.TestPlatform.CLI", "16.5.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: shouldPublishSingleFile.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: shouldPublishSingleFile.ToString());
             var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name), targetFramework, "ResolvedFileToPublish", GetValuesCommand.ValueType.Item)
             {
                 DependsOnTargets = "Publish"

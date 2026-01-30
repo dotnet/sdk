@@ -196,7 +196,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
 
         private string GetTemporaryPath([CallerMemberName] string callingMethod = null)
         {
-            return _testAssetsManager.CreateTestDirectory(callingMethod).Path;
+            return TestAssetsManager.CreateTestDirectory(callingMethod).Path;
         }
     }
 }

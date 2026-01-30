@@ -51,7 +51,7 @@ namespace EndToEnd.Tests
                 MinorVersion = minorVersion,
             };
 
-            var _testInstance = testProjectCreator.Create(_testAssetsManager);
+            var _testInstance = testProjectCreator.Create(TestAssetsManager);
 
             //  Get the resolved version of .NET Core
             new RestoreCommand(_testInstance)

@@ -12,7 +12,7 @@ namespace EndToEnd.Tests
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             new DotnetNewCommand(Log, "console", "--no-restore")
@@ -54,7 +54,7 @@ namespace EndToEnd.Tests
         [Fact]
         public void ItCanRunAnAppUsingTheWebSdk()
         {
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             new DotnetNewCommand(Log, "console", "--no-restore")
@@ -86,7 +86,7 @@ namespace EndToEnd.Tests
         [InlineData("current", false)]
         public void ItCanPublishArm64Winforms(string targetFramework, bool selfContained)
         {
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             string[] newArgs = [
@@ -125,7 +125,7 @@ namespace EndToEnd.Tests
         [InlineData("current", false)]
         public void ItCanPublishArm64Wpf(string targetFramework, bool selfContained)
         {
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             string[] newArgs = [
@@ -222,7 +222,7 @@ namespace EndToEnd.Tests
         [InlineData("sln")]
         public void ItCanCreateItemTemplate(string templateName)
         {
-            var directory = _testAssetsManager.CreateTestDirectory(identifier: templateName);
+            var directory = TestAssetsManager.CreateTestDirectory(identifier: templateName);
             string projectDirectory = directory.Path;
 
             string newArgs = $"{templateName}";
@@ -493,7 +493,7 @@ namespace EndToEnd.Tests
             {
                 identifier += $"({itemName})";
             }
-            var directory = _testAssetsManager.CreateTestDirectory(identifier: identifier);
+            var directory = TestAssetsManager.CreateTestDirectory(identifier: identifier);
             string projectDirectory = directory.Path;
 
             string[] newArgs = [

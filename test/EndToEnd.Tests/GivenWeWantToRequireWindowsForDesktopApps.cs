@@ -20,7 +20,7 @@ namespace EndToEnd.Tests
             testProjectCreator.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
             testProjectCreator.AdditionalProperties["OutputType"] = "exe";
 
-            var testInstance = testProjectCreator.Create(_testAssetsManager);
+            var testInstance = testProjectCreator.Create(TestAssetsManager);
 
             new DotnetBuildCommand(testInstance)
                 .Execute().Should().Pass();
@@ -59,7 +59,7 @@ namespace EndToEnd.Tests
                 target.Name = ns + target.Name.LocalName;
                 project.Root.Add(target);
             }
-            var testInstance = testProjectCreator.Create(_testAssetsManager)
+            var testInstance = testProjectCreator.Create(TestAssetsManager)
                 .WithProjectChanges(overrideLastRuntimeFrameworkVersionToExistingOlderVersion);
 
             new PublishCommand(testInstance)

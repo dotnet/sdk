@@ -721,7 +721,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var surrogate = char.ConvertFromUtf32(int.Parse("2A601", NumberStyles.HexNumber));
             string nonAscii = "ab Ṱ̺̺̕o 田中さん åä," + surrogate;
 
-            var root = _testAssetsManager.CreateTestDirectory(testName: nonAscii, identifier: "root");
+            var root = TestAssetsManager.CreateTestDirectory(testName: nonAscii, identifier: "root");
             var reporter = new BufferedReporter();
             var fileSystem = new FileSystemWrapper();
             var store = new ToolPackageStoreAndQuery(new DirectoryPath(root.Path));
@@ -874,7 +874,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 [CallerMemberName] string callingMethod = "",
                 string identiifer = null)
         {
-            var root = new DirectoryPath(_testAssetsManager.CreateTestDirectory(callingMethod, identifier: useMock.ToString() + identiifer).Path);
+            var root = new DirectoryPath(TestAssetsManager.CreateTestDirectory(callingMethod, identifier: useMock.ToString() + identiifer).Path);
             var reporter = new BufferedReporter();
 
             IFileSystem fileSystem;
@@ -970,7 +970,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void GivenAToolWithHigherFrameworkItShowsAppropriateErrorMessage()
         {
             // Create a mock tool package with net99.0 framework to simulate a tool requiring a higher .NET version
-            var testDir = _testAssetsManager.CreateTestDirectory();
+            var testDir = TestAssetsManager.CreateTestDirectory();
             var fileSystem = new FileSystemWrapper();
             var packageId = new PackageId("test.tool.higher.framework");
             var packageVersion = new NuGetVersion("1.0.0");
