@@ -11,6 +11,45 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// This source is listened to by dotnetup's DotnetupTelemetry when running via CLI,
 /// and can be subscribed to by other consumers via ActivityListener.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Library consumers can hook into installation telemetry by subscribing to this ActivitySource.
+/// The following activities are emitted:
+/// </para>
+/// <list type="bullet">
+///   <item><term>download</term><description>SDK/runtime archive download. Tags: download.version, download.url, download.bytes, download.from_cache</description></item>
+///   <item><term>extract</term><description>Archive extraction. Tags: download.version</description></item>
+/// </list>
+/// <para>
+/// Example usage:
+/// </para>
+/// <code>
+/// using var listener = new ActivityListener
+/// {
+///     ShouldListenTo = source => source.Name == "Microsoft.Dotnet.Installation",
+///     Sample = (ref ActivityCreationOptions&lt;ActivityContext&gt; _) => ActivitySamplingResult.AllDataAndRecorded,
+///     ActivityStarted = activity =>
+///     {
+///         // Add custom tags (e.g., your tool's name)
+///         activity.SetTag("caller", "my-custom-tool");
+///     },
+///     ActivityStopped = activity =>
+///     {
+///         // Export to your telemetry system
+///         Console.WriteLine($"{activity.DisplayName}: {activity.Duration.TotalMilliseconds}ms");
+///     }
+/// };
+/// ActivitySource.AddActivityListener(listener);
+/// 
+/// // Now use the library - activities will be captured
+/// var installer = InstallerFactory.Create(progressTarget);
+/// installer.Install(root, InstallComponent.Sdk, version);
+/// </code>
+/// <para>
+/// When activities originate from dotnetup CLI, they include the tag <c>caller=dotnetup</c>.
+/// Library consumers can use this to distinguish CLI-originated vs direct library calls.
+/// </para>
+/// </remarks>
 internal static class InstallationActivitySource
 {
     /// <summary>

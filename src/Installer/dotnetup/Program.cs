@@ -14,6 +14,9 @@ internal class DotnetupProgram
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
 
+        // Show first-run telemetry notice if needed
+        FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
+
         // Start root activity for the entire process
         using var rootActivity = DotnetupTelemetry.Instance.Enabled
             ? DotnetupTelemetry.CommandSource.StartActivity("dotnetup", ActivityKind.Internal)

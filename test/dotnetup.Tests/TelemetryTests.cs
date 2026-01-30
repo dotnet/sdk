@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Xunit;
 
@@ -17,7 +18,7 @@ public class TelemetryCommonPropertiesTests
 
         Assert.Equal(hash1, hash2);
     }
-
+ 
     [Fact]
     public void Hash_DifferentInputs_ProduceDifferentOutputs()
     {
@@ -265,5 +266,113 @@ public class DotnetupTelemetryTests
             DotnetupTelemetry.Instance.RecordException(null, new Exception("test")));
 
         Assert.Null(exception);
+    }
+}
+
+public class LibraryActivityTagTests
+{
+    [Fact]
+    public void NonUpdatingProgressTarget_SetsCallerTagOnActivity()
+    {
+        var capturedActivities = new List<System.Diagnostics.Activity>();
+
+        using var listener = new System.Diagnostics.ActivityListener
+        {
+            ShouldListenTo = source => source.Name == "Microsoft.Dotnet.Installation",
+            Sample = (ref System.Diagnostics.ActivityCreationOptions<System.Diagnostics.ActivityContext> _) =>
+                System.Diagnostics.ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => capturedActivities.Add(activity)
+        };
+        System.Diagnostics.ActivitySource.AddActivityListener(listener);
+
+        // Capture console output to avoid test noise
+        var originalOut = Console.Out;
+        Console.SetOut(TextWriter.Null);
+        try
+        {
+            // Use the progress target to create an activity
+            var progressTarget = new NonUpdatingProgressTarget();
+            using var reporter = progressTarget.CreateProgressReporter();
+            var task = reporter.AddTask("test-activity", "Test Description", 100);
+            task.Value = 100;
+            // Disposing the reporter will stop/dispose the activities
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+
+        // Verify the activity was captured and has the caller tag
+        Assert.Single(capturedActivities);
+        var activity = capturedActivities[0];
+        Assert.Equal("dotnetup", activity.GetTagItem("caller")?.ToString());
+    }
+}
+
+public class FirstRunNoticeTests
+{
+    [Fact]
+    public void IsFirstRun_ReturnsTrueWhenSentinelDoesNotExist()
+    {
+        // Clean up any existing sentinel for this test
+        var sentinelDir = GetSentinelDirectory();
+        var sentinelPath = Path.Combine(sentinelDir, ".dotnetup-telemetry-notice");
+
+        if (File.Exists(sentinelPath))
+        {
+            File.Delete(sentinelPath);
+        }
+
+        Assert.True(FirstRunNotice.IsFirstRun());
+    }
+
+    [Fact]
+    public void ShowIfFirstRun_CreatesSentinelFile()
+    {
+        // Clean up any existing sentinel for this test
+        var sentinelDir = GetSentinelDirectory();
+        var sentinelPath = Path.Combine(sentinelDir, ".dotnetup-telemetry-notice");
+
+        if (File.Exists(sentinelPath))
+        {
+            File.Delete(sentinelPath);
+        }
+
+        // Simulate first run with telemetry enabled
+        FirstRunNotice.ShowIfFirstRun(telemetryEnabled: true);
+
+        // Sentinel should now exist
+        Assert.True(File.Exists(sentinelPath));
+
+        // Subsequent calls should not be "first run"
+        Assert.False(FirstRunNotice.IsFirstRun());
+    }
+
+    [Fact]
+    public void ShowIfFirstRun_DoesNotCreateSentinel_WhenTelemetryDisabled()
+    {
+        // Clean up any existing sentinel for this test
+        var sentinelDir = GetSentinelDirectory();
+        var sentinelPath = Path.Combine(sentinelDir, ".dotnetup-telemetry-notice");
+
+        if (File.Exists(sentinelPath))
+        {
+            File.Delete(sentinelPath);
+        }
+
+        // Simulate first run with telemetry disabled
+        FirstRunNotice.ShowIfFirstRun(telemetryEnabled: false);
+
+        // Sentinel should NOT be created (user has opted out)
+        Assert.False(File.Exists(sentinelPath));
+    }
+
+    private static string GetSentinelDirectory()
+    {
+        var baseDir = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+            : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+        return Path.Combine(baseDir, ".dotnetup");
     }
 }

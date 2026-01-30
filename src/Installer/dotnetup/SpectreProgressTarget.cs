@@ -3,6 +3,8 @@
 
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using OpenTelemetry.Trace;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -39,6 +41,8 @@ public class SpectreProgressTarget : IProgressTarget
         public IProgressTask AddTask(string activityName, string description, double maxValue)
         {
             var activity = InstallationActivitySource.ActivitySource.StartActivity(activityName, ActivityKind.Internal);
+            // Tag library activities so consumers know they came from dotnetup CLI
+            activity?.SetTag("caller", "dotnetup");
             var task = new ProgressTaskImpl(_progressContext.AddTask(description, maxValue: maxValue), activity);
             _tasks.Add(task);
             return task;
@@ -89,13 +93,39 @@ public class SpectreProgressTarget : IProgressTarget
         public void RecordError(Exception ex)
         {
             if (_activity == null) return;
+            
+            // Use ErrorCodeMapper for rich error metadata (same as command-level telemetry)
+            var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
+            
             _activity.SetStatus(ActivityStatusCode.Error, ex.Message);
-            _activity.SetTag("error.type", ex.GetType().Name);
-            _activity.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            _activity.SetTag("error.type", errorInfo.ErrorType);
+            
+            if (errorInfo.StatusCode.HasValue)
             {
-                { "exception.type", ex.GetType().FullName },
-                { "exception.message", ex.Message }
-            }));
+                _activity.SetTag("error.http_status", errorInfo.StatusCode.Value);
+            }
+
+            if (errorInfo.HResult.HasValue)
+            {
+                _activity.SetTag("error.hresult", errorInfo.HResult.Value);
+            }
+
+            if (errorInfo.Details is not null)
+            {
+                _activity.SetTag("error.details", errorInfo.Details);
+            }
+
+            if (errorInfo.SourceLocation is not null)
+            {
+                _activity.SetTag("error.source_location", errorInfo.SourceLocation);
+            }
+
+            if (errorInfo.ExceptionChain is not null)
+            {
+                _activity.SetTag("error.exception_chain", errorInfo.ExceptionChain);
+            }
+
+            _activity.RecordException(ex);
         }
 
         public void Complete()
