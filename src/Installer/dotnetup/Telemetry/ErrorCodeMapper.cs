@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 /// <summary>
 /// Error info extracted from an exception for telemetry.
 /// </summary>
-/// <param name="ErrorType">The exception type name.</param>
+/// <param name="ErrorType">The error type/code for telemetry.</param>
 /// <param name="StatusCode">HTTP status code if applicable.</param>
 /// <param name="HResult">Win32 HResult if applicable.</param>
 /// <param name="Details">Additional context like file path.</param>
@@ -36,25 +37,57 @@ public static class ErrorCodeMapper
             return GetErrorInfo(aggEx.InnerExceptions[0]);
         }
 
-        var typeName = ex.GetType().Name;
+        // If it's a plain Exception wrapper, use the inner exception for better error type
+        if (ex.GetType() == typeof(Exception) && ex.InnerException is not null)
+        {
+            return GetErrorInfo(ex.InnerException);
+        }
 
         return ex switch
         {
+            // DotnetInstallException has specific error codes
+            DotnetInstallException installEx => new ExceptionErrorInfo(
+                installEx.ErrorCode.ToString(),
+                Details: installEx.Version),
+
             HttpRequestException httpEx => new ExceptionErrorInfo(
-                typeName,
+                httpEx.StatusCode.HasValue ? $"Http{(int)httpEx.StatusCode}" : "HttpRequestException",
                 StatusCode: (int?)httpEx.StatusCode),
 
             // FileNotFoundException before IOException (it derives from IOException)
             FileNotFoundException fnfEx => new ExceptionErrorInfo(
-                typeName,
+                "FileNotFound",
                 HResult: fnfEx.HResult,
                 Details: fnfEx.FileName is not null ? "file_specified" : null),
 
-            IOException ioEx => new ExceptionErrorInfo(
-                typeName,
-                HResult: ioEx.HResult),
+            UnauthorizedAccessException => new ExceptionErrorInfo("PermissionDenied"),
 
-            _ => new ExceptionErrorInfo(typeName)
+            DirectoryNotFoundException => new ExceptionErrorInfo("DirectoryNotFound"),
+
+            IOException ioEx => MapIOException(ioEx),
+
+            OperationCanceledException => new ExceptionErrorInfo("Cancelled"),
+
+            ArgumentException argEx => new ExceptionErrorInfo(
+                "InvalidArgument",
+                Details: argEx.ParamName),
+
+            _ => new ExceptionErrorInfo(ex.GetType().Name)
+        };
+    }
+
+    private static ExceptionErrorInfo MapIOException(IOException ioEx)
+    {
+        // Check for common HResult values
+        const int ERROR_DISK_FULL = unchecked((int)0x80070070);
+        const int ERROR_HANDLE_DISK_FULL = unchecked((int)0x80070027);
+        const int ERROR_ACCESS_DENIED = unchecked((int)0x80070005);
+
+        return ioEx.HResult switch
+        {
+            ERROR_DISK_FULL or ERROR_HANDLE_DISK_FULL => new ExceptionErrorInfo("DiskFull", HResult: ioEx.HResult),
+            ERROR_ACCESS_DENIED => new ExceptionErrorInfo("PermissionDenied", HResult: ioEx.HResult),
+            _ => new ExceptionErrorInfo("IOException", HResult: ioEx.HResult)
         };
     }
 }
