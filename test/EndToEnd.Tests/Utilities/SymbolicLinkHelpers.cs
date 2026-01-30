@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.InteropServices;
+
 namespace EndToEnd.Tests.Utilities;
 
 /// <summary>
@@ -15,43 +17,53 @@ internal static class SymbolicLinkHelpers
     public const int MinExpectedDeduplicatedLinks = 100;
 
     /// <summary>
-    /// Extracts a tar.gz archive to a directory using system tar command.
-    /// Uses system tar for simplicity.
+    /// Extracts a tar archive to a directory using system tar command.
+    /// Auto-detects compression format (.gz, .xz, .zst, etc.).
     /// </summary>
-    /// <param name="tarGzPath">Path to the .tar.gz file to extract.</param>
+    /// <param name="tarPath">Path to the tar archive to extract.</param>
     /// <param name="destinationDirectory">Directory to extract files into.</param>
     /// <param name="log">Test output logger.</param>
-    public static void ExtractTarGz(string tarGzPath, string destinationDirectory, ITestOutputHelper log)
-    {
+    public static void ExtractTar(string tarPath, string destinationDirectory, ITestOutputHelper log) =>
         new RunExeCommand(log, "tar")
-            .Execute("-xzf", tarGzPath, "-C", destinationDirectory)
+            .Execute("-xf", tarPath, "-C", destinationDirectory)
             .Should().Pass();
-    }
 
     /// <summary>
-    /// Extracts an installer package to a temporary directory, verifies symbolic links, and cleans up.
+    /// Verifies that an installer package preserves symbolic links. Handles platform checking,
+    /// artifact discovery, extraction, and symlink validation.
     /// </summary>
-    /// <param name="installerFile">Path to the installer file.</param>
-    /// <param name="packageType">Type of package (e.g., "deb", "rpm", "pkg") for logging.</param>
-    /// <param name="extractPackage">Action that extracts the package contents to the provided temp directory.</param>
+    /// <param name="requiredPlatform">The platform this test should run on (e.g., OSPlatform.Linux).</param>
+    /// <param name="filePattern">The file pattern to search for (e.g., "dotnet-sdk-*.deb").</param>
+    /// <param name="excludeSubstrings">Substrings to exclude from filenames when finding artifacts.</param>
+    /// <param name="extractPackage">Action that extracts the package. Receives (installerPath, tempDir).</param>
+    /// <param name="testAssetsManager">Test assets manager for creating temp directories.</param>
     /// <param name="log">Test output logger.</param>
-    public static void VerifyPackageSymlinks(string installerFile, string packageType, Action<string> extractPackage, ITestOutputHelper log)
+    public static void VerifyInstallerSymlinks(
+        OSPlatform requiredPlatform,
+        string filePattern,
+        string[] excludeSubstrings,
+        Action<string, string> extractPackage,
+        TestAssetsManager testAssetsManager,
+        ITestOutputHelper log)
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"{packageType}-test-{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
+        if (!RuntimeInformation.IsOSPlatform(requiredPlatform))
+        {
+            log.WriteLine($"SKIPPED: Test requires {requiredPlatform} but running on {RuntimeInformation.OSDescription}");
+            return;
+        }
 
-        try
+        if (!TestContext.FindOptionalSdkAcquisitionArtifact(filePattern, excludeSubstrings, out string? installerPath))
         {
-            extractPackage(tempDir);
-            VerifyDirectoryHasRelativeSymlinks(tempDir, log, $"{packageType} package");
+            log.WriteLine($"SKIPPED: No artifact matching '{filePattern}' found in shipping packages directory");
+            return;
         }
-        finally
-        {
-            if (Directory.Exists(tempDir))
-            {
-                Directory.Delete(tempDir, recursive: true);
-            }
-        }
+
+        log.WriteLine($"Validating: {Path.GetFileName(installerPath)}");
+        var packageType = Path.GetExtension(installerPath!).TrimStart('.');
+        var tempDir = testAssetsManager.CreateTestDirectory(packageType).Path;
+
+        extractPackage(installerPath!, tempDir);
+        VerifyDirectoryHasRelativeSymlinks(tempDir, log, packageType);
     }
 
     /// <summary>
@@ -59,7 +71,7 @@ internal static class SymbolicLinkHelpers
     /// </summary>
     /// <param name="directory">The directory to check for symbolic links.</param>
     /// <param name="log">Test output logger.</param>
-    /// <param name="contextName">Name of the context being tested (for error messages, e.g., "deb package", "archive").</param>
+    /// <param name="contextName">Name of the context being tested (for error messages, e.g., "deb", "archive").</param>
     public static void VerifyDirectoryHasRelativeSymlinks(string directory, ITestOutputHelper log, string contextName)
     {
         // Find all symbolic links in the directory
