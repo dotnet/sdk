@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using System.Net.Sockets;
 using Moq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
@@ -687,5 +688,34 @@ public class RegistryTests : IDisposable
 
         public string GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions)
             => throw new NotImplementedException();
+
+        public bool TryGetEnvironmentVariable(string name, [NotNullWhen(true)] out string? value) => _environmentVariables.TryGetValue(name, out value);
+        public bool TryGetEnvironmentVariableAsBool(string name, [NotNullWhen(true)] out bool value)
+        {
+            if (TryGetEnvironmentVariable(name, out string? strValue) && bool.TryParse(strValue, out bool boolValue))
+            {
+                value = boolValue;
+                return true;
+            }
+            else
+            {
+                value = false;
+                return false;
+            }
+        }
+
+        public bool TryGetEnvironmentVariableAsInt(string name, [NotNullWhen(true)] out int value)
+        {
+            if (TryGetEnvironmentVariable(name, out string? strValue) && int.TryParse(strValue, out int intValue))
+            {
+                value = intValue;
+                return true;
+            }
+            else
+            {
+                value = 0;
+                return false;
+            }
+        }
     }
 }

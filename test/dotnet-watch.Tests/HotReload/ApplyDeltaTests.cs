@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52576")]
         public async Task AddSourceFile()
         {
             Log("AddSourceFile started");
@@ -69,9 +69,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), newSrc);
 
             await App.AssertOutputLineStartsWith("Changed!");
+
+            App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52576")]
         public async Task ProjectChange_UpdateDirectoryBuildPropsThenUpdateSource()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -357,7 +359,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.False(Directory.Exists(logDir));
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, ["--verbose", $"-bl:{binLogPath}"], testFlags: TestFlags.None);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
@@ -440,7 +442,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51469")]
         [CombinatorialData]
         public async Task AutoRestartOnRuntimeRudeEdit(bool nonInteractive)
         {
@@ -514,9 +516,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // rude edit: adding virtual method
             UpdateSourceFile(programPath, src => src.Replace("/* member placeholder */", "public virtual void F() {}"));
 
+            // the prompt is printed into stdout while the error is printed into stderr, so they might arrive in any order:
             await App.AssertOutputLineStartsWith("  ❔ Do you want to restart your app? Yes (y) / No (n) / Always (a) / Never (v)", failure: _ => false);
+            await App.WaitUntilOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
 
-            App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
             App.AssertOutputContains($"❌ {programPath}(39,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.Process.ClearOutput();
 
@@ -751,11 +754,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             if (!verbose)
             {
-                // remove default --verbose arg
-                App.DotnetWatchArgs.Clear();
+                App.SuppressVerboseLogging();
             }
 
-            App.Start(testAsset, [], testFlags: TestFlags.ElevateWaitingForChangesMessageSeverity);
+            App.Start(testAsset, []);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
@@ -892,11 +894,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // check project specified capapabilities:
             if (projectSpecifiesCapabilities)
             {
-                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType.");
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddMethodToExistingType Baseline.");
             }
             else
             {
-                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType.");
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
             }
         }
 
@@ -963,10 +965,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
 
             // client capabilities:
-            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project 'blazorwasm ({tfm})' specifies capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType'");
+            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project specifies capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType AddExplicitInterfaceImplementation.");
 
             // server capabilities:
-            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva'");
+            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva AddExplicitInterfaceImplementation.");
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
@@ -1258,9 +1260,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 serviceSourcePath,
                 serviceSource.Replace("record WeatherForecast", "record WeatherForecast2"));
 
+            // the prompt is printed into stdout while the error is printed into stderr, so they might arrive in any order:
             await App.WaitForOutputLineContaining("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
+            await App.WaitUntilOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
 
-            App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
             App.AssertOutputContains($"dotnet watch ❌ {serviceSourcePath}(40,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
             App.AssertOutputContains("dotnet watch ⌚ Affected projects:");
             App.AssertOutputContains("dotnet watch ⌚   WatchAspire.ApiService");

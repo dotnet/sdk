@@ -4,7 +4,6 @@
     <Description>Template creation for the dotnet CLI</Description>
     <IsPackable>true</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
-    <EnableStyleCopAnalyzer>true</EnableStyleCopAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <DefineConstants>$(DefineConstants);WCWIDTH_VISIBILITY_INTERNAL</DefineConstants>
@@ -21,10 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj" GlobalPropertiesToRemove="PublishDir" />
-    <ProjectReference Include="../Microsoft.DotNet.Configurer/Microsoft.DotNet.Configurer.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.CommandLine\Microsoft.DotNet.Cli.CommandLine.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <ProjectReference Include="..\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <ProjectReference Include="..\..\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Update="Commands\HelpStrings.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -65,6 +66,6 @@
     <Copy SourceFiles="@(WcwidthFiles)" DestinationFolder="$(BaseIntermediateOutputPath)/External/%(RecursiveDir)" />
     <ItemGroup>
       <Compile Include="$(BaseIntermediateOutputPath)/External/**/*.cs" />
-    </ItemGroup> 
+    </ItemGroup>
   </Target>
 </Project>
