@@ -7,15 +7,16 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.Parse;
 
 internal static class ParseCommandParser
 {
-    private static readonly Command Command = SetAction(ParseCommandDefinition.Create());
+    private static readonly ParseCommandDefinition Command = SetAction();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetAction(Command command)
+    private static ParseCommandDefinition SetAction()
     {
+        var command = new ParseCommandDefinition();
         command.SetAction(ParseCommand.Run);
         return command;
     }

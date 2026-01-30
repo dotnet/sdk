@@ -5,19 +5,14 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 
-internal static class InternalReportInstallSuccessCommandDefinition
+internal sealed class InternalReportInstallSuccessCommandDefinition : Command
 {
-    public static readonly Argument<string> Argument = new("internal-reportinstallsuccess-arg");
+    public readonly Argument<string> Argument = new("internal-reportinstallsuccess-arg");
 
-    public static Command Create()
+    public InternalReportInstallSuccessCommandDefinition()
+        : base("internal-reportinstallsuccess")
     {
-        Command command = new("internal-reportinstallsuccess")
-        {
-            Hidden = true
-        };
-
-        command.Arguments.Add(Argument);
-
-        return command;
+        Hidden = true;
+        Arguments.Add(Argument);
     }
 }
