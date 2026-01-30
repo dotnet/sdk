@@ -68,8 +68,12 @@ namespace Microsoft.NET.TestFramework
         public static string FindSdkAcquisitionArtifact(string filePattern)
         {
             string? shippingDir = Current.ShippingPackagesDirectory;
-            var files = Directory.GetFiles(shippingDir!, filePattern);
+            if (string.IsNullOrEmpty(shippingDir))
+            {
+                throw new InvalidOperationException("ShippingPackagesDirectory must be set in the current TestContext before calling FindSdkAcquisitionArtifact.");
+            }
 
+            var files = Directory.GetFiles(shippingDir, filePattern);
             if (files.Length != 1)
             {
                 throw new InvalidOperationException(
