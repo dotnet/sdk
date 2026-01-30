@@ -19,6 +19,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IProgressTarget _progressTarget;
     private string scratchDownloadDirectory;
     private string? _archivePath;
+    private int _extractedFileCount;
 
     public DotnetArchiveExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, IProgressTarget progressTarget)
     {
@@ -30,40 +31,49 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Prepare()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
-
         using var archiveDownloader = new DotnetArchiveDownloader();
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
-        using (var progressReporter = _progressTarget.CreateProgressReporter())
+        using var progressReporter = _progressTarget.CreateProgressReporter();
+        var downloadTask = progressReporter.AddTask("download", $"Downloading .NET SDK {_resolvedVersion}", 100);
+        downloadTask.SetTag("download.component", _request.Component.ToString());
+        downloadTask.SetTag("download.version", _resolvedVersion.ToString());
+
+        var reporter = new DownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
+
+        try
         {
-            var downloadTask = progressReporter.AddTask($"Downloading .NET SDK {_resolvedVersion}", 100);
-            var reporter = new DownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
-
-            try
-            {
-                archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
-            }
-
+            archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter, downloadTask);
             downloadTask.Value = 100;
+            downloadTask.Complete();
+        }
+        catch (Exception ex)
+        {
+            downloadTask.RecordError(ex);
+            throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
         }
     }
+
     public void Commit()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
+        using var progressReporter = _progressTarget.CreateProgressReporter();
+        var installTask = progressReporter.AddTask("extract", $"Installing .NET SDK {_resolvedVersion}", maxValue: 100);
+        installTask.SetTag("extract.component", _request.Component.ToString());
+        installTask.SetTag("extract.version", _resolvedVersion.ToString());
 
-        using (var progressReporter = _progressTarget.CreateProgressReporter())
+        try
         {
-            var installTask = progressReporter.AddTask($"Installing .NET SDK {_resolvedVersion}", maxValue: 100);
-
             // Extract archive directly to target directory with special handling for muxer
             ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
             installTask.Value = installTask.MaxValue;
+            installTask.SetTag("extract.file_count", _extractedFileCount);
+            installTask.Complete();
+        }
+        catch (Exception ex)
+        {
+            installTask.RecordError(ex);
+            throw;
         }
     }
 
@@ -283,6 +293,7 @@ internal class DotnetArchiveExtractor : IDisposable
         using var outStream = File.Create(destPath);
         entry.DataStream?.CopyTo(outStream);
         installTask?.Value += 1;
+        _extractedFileCount++;
     }
 
     /// <summary>
@@ -332,6 +343,7 @@ internal class DotnetArchiveExtractor : IDisposable
         Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
         entry.ExtractToFile(destPath, overwrite: true);
         installTask?.Value += 1;
+        _extractedFileCount++;
     }
 
     public void Dispose()

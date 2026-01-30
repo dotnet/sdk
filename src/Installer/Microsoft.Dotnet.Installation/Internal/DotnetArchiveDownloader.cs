@@ -196,11 +196,17 @@ internal class DotnetArchiveDownloader : IDisposable
     /// Downloads the archive for the specified installation and verifies its hash.
     /// Checks the download cache first to avoid re-downloading.
     /// </summary>
-    /// <param name="install">The .NET installation details</param>
+    /// <param name="installRequest">The .NET installation request details</param>
+    /// <param name="resolvedVersion">The resolved version to download</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    /// <returns>True if download and verification were successful, false otherwise</returns>
-    public void DownloadArchiveWithVerification(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    /// <param name="telemetryTask">Optional progress task for telemetry tags</param>
+    public void DownloadArchiveWithVerification(
+        DotnetInstallRequest installRequest,
+        ReleaseVersion resolvedVersion,
+        string destinationPath,
+        IProgress<DownloadProgress>? progress = null,
+        IProgressTask? telemetryTask = null)
     {
         var targetFile = _releaseManifest.FindReleaseFile(installRequest, resolvedVersion);
         string? downloadUrl = targetFile?.Address.ToString();
@@ -215,6 +221,9 @@ internal class DotnetArchiveDownloader : IDisposable
             throw new ArgumentException($"{nameof(downloadUrl)} cannot be null or empty");
         }
 
+        // Set download URL domain for telemetry
+        telemetryTask?.SetTag("download.url_domain", GetDomain(downloadUrl));
+
         // Check the cache first
         string? cachedFilePath = _downloadCache.GetCachedFilePath(downloadUrl);
         if (cachedFilePath != null)
@@ -223,12 +232,16 @@ internal class DotnetArchiveDownloader : IDisposable
             {
                 // Verify the cached file's hash
                 VerifyFileHash(cachedFilePath, expectedHash);
-                
+
                 // Copy from cache to destination
                 File.Copy(cachedFilePath, destinationPath, overwrite: true);
-                
+
                 // Report 100% progress immediately since we're using cache
                 progress?.Report(new DownloadProgress(100, 100));
+
+                var cachedFileInfo = new FileInfo(cachedFilePath);
+                telemetryTask?.SetTag("download.bytes", cachedFileInfo.Length);
+                telemetryTask?.SetTag("download.from_cache", true);
                 return;
             }
             catch
@@ -243,6 +256,10 @@ internal class DotnetArchiveDownloader : IDisposable
         // Verify the downloaded file
         VerifyFileHash(destinationPath, expectedHash);
 
+        var fileInfo = new FileInfo(destinationPath);
+        telemetryTask?.SetTag("download.bytes", fileInfo.Length);
+        telemetryTask?.SetTag("download.from_cache", false);
+
         // Add the verified file to the cache
         try
         {
@@ -251,6 +268,18 @@ internal class DotnetArchiveDownloader : IDisposable
         catch
         {
             // Ignore errors adding to cache - it's not critical
+        }
+    }
+
+    private static string GetDomain(string url)
+    {
+        try
+        {
+            return new Uri(url).Host;
+        }
+        catch
+        {
+            return "unknown";
         }
     }
 
