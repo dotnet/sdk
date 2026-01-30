@@ -13,7 +13,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void WhenDuplicatesExistItCreatesHardLinks()
     {
-        var layoutDir = CreateTempDirectory();
+        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
 
         var content = "duplicate assembly content";
         var file1 = Path.Combine(layoutDir, "assembly1.dll");
@@ -51,7 +51,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void WhenDuplicatesExistItCreatesSymbolicLinks()
     {
-        var layoutDir = CreateTempDirectory();
+        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
 
         var content = "duplicate assembly content";
         var file1 = Path.Combine(layoutDir, "assembly1.dll");
@@ -80,7 +80,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void ItSelectsMasterByDepthThenAlphabetically()
     {
-        var layoutDir = CreateTempDirectory();
+        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
         var subDir1 = Path.Combine(layoutDir, "sub1");
         var subDir2 = Path.Combine(layoutDir, "sub2");
         var subSubDir = Path.Combine(subDir1, "nested");
@@ -121,7 +121,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void ItOnlyDeduplicatesAssemblies()
     {
-        var layoutDir = CreateTempDirectory();
+        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
 
         var content = "shared content";
 
@@ -182,7 +182,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void ItHandlesMultipleDuplicateGroups()
     {
-        var layoutDir = CreateTempDirectory();
+        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
 
         // Group 1: duplicates with content A
         var contentA = "content A";
@@ -224,7 +224,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void ItCreatesRelativeSymbolicLinks()
     {
-        var layoutDir = CreateTempDirectory();
+        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
         var subDir = Path.Combine(layoutDir, "subdir");
         Directory.CreateDirectory(subDir);
 
@@ -265,13 +265,6 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
             BuildEngine = new MockBuildEngine()
         };
         return task;
-    }
-
-    private static string CreateTempDirectory()
-    {
-        var tempDir = Path.Combine(Path.GetTempPath(), "DeduplicateTests_" + Guid.NewGuid().ToString());
-        Directory.CreateDirectory(tempDir);
-        return tempDir;
     }
 
     private static long GetInode(string filePath)
