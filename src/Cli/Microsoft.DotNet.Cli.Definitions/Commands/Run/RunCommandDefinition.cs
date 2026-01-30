@@ -60,18 +60,6 @@ internal sealed class RunCommandDefinition : Command
         Arity = ArgumentArity.Zero
     };
 
-    public readonly Option<string> DeviceOption = new("--device")
-    {
-        Description = CliCommandStrings.CommandOptionDeviceDescription,
-        HelpName = CliCommandStrings.CommandOptionDeviceHelpName
-    };
-
-    public readonly Option<bool> ListDevicesOption = new("--list-devices")
-    {
-        Description = CliCommandStrings.CommandOptionListDevicesDescription,
-        Arity = ArgumentArity.Zero
-    };
-
     public const string NoBuildOptionName = "--no-build";
 
     public readonly Option<bool> NoBuildOption = new(NoBuildOptionName)
