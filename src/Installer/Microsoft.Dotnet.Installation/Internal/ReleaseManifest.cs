@@ -29,13 +29,32 @@ internal class ReleaseManifest
         try
         {
             var productCollection = GetReleasesIndex();
-            var product = FindProduct(productCollection, resolvedVersion) ?? throw new InvalidOperationException($"No product found for version {resolvedVersion}");
-            var release = FindRelease(product, resolvedVersion, installRequest.Component) ?? throw new InvalidOperationException($"No release found for version {resolvedVersion}");
+            var product = FindProduct(productCollection, resolvedVersion) 
+                ?? throw new DotnetInstallException(
+                    DotnetInstallErrorCode.VersionNotFound,
+                    $"No product found for version {resolvedVersion}",
+                    version: resolvedVersion.ToString(),
+                    component: installRequest.Component.ToString());
+            var release = FindRelease(product, resolvedVersion, installRequest.Component) 
+                ?? throw new DotnetInstallException(
+                    DotnetInstallErrorCode.ReleaseNotFound,
+                    $"No release found for version {resolvedVersion}",
+                    version: resolvedVersion.ToString(),
+                    component: installRequest.Component.ToString());
             return FindMatchingFile(release, installRequest, resolvedVersion);
+        }
+        catch (DotnetInstallException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to find an available release for install {installRequest} : ${ex.Message}", ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.Unknown,
+                $"Failed to find an available release for install {installRequest}: {ex.Message}",
+                ex,
+                version: resolvedVersion.ToString(),
+                component: installRequest.Component.ToString());
         }
     }
 
