@@ -13,7 +13,7 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = 
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var result = Parser.Parse(["dotnet", "clean", ..args]);
+        var result = Parser.Parse(["dotnet", "clean", .. args]);
         return FromParseResult(result, msbuildPath);
     }
 
