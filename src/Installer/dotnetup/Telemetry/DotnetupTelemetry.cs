@@ -160,6 +160,21 @@ public sealed class DotnetupTelemetry : IDisposable
             activity.SetTag("error.hresult", errorInfo.HResult.Value);
         }
 
+        if (errorInfo.Details is not null)
+        {
+            activity.SetTag("error.details", errorInfo.Details);
+        }
+
+        if (errorInfo.SourceLocation is not null)
+        {
+            activity.SetTag("error.source_location", errorInfo.SourceLocation);
+        }
+
+        if (errorInfo.ExceptionChain is not null)
+        {
+            activity.SetTag("error.exception_chain", errorInfo.ExceptionChain);
+        }
+
         activity.RecordException(ex);
     }
 
@@ -227,9 +242,17 @@ public sealed class DotnetupTelemetry : IDisposable
     /// <summary>
     /// Flushes any pending telemetry.
     /// </summary>
-    public void Flush()
+    /// <param name="timeoutMilliseconds">Maximum time to wait for flush (default 5 seconds).</param>
+    public void Flush(int timeoutMilliseconds = 5000)
     {
-        _tracerProvider?.ForceFlush();
+        try
+        {
+            _tracerProvider?.ForceFlush(timeoutMilliseconds);
+        }
+        catch
+        {
+            // Never let telemetry flush failures crash the app
+        }
     }
 
     /// <summary>

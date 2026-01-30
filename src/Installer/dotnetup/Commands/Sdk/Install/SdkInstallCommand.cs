@@ -31,7 +31,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     protected override int ExecuteCore()
     {
-        // Record the requested version with PII sanitization
+        // Record the raw requested version with PII sanitization (for backwards compatibility)
         RecordRequestedVersion(_versionOrChannel);
 
         var globalJsonInfo = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
@@ -104,16 +104,19 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         }
 
         string? resolvedChannel = null;
+        string requestSource;
 
         if (channelFromGlobalJson is not null)
         {
             SpectreAnsiConsole.WriteLine($".NET SDK {channelFromGlobalJson} will be installed since {globalJsonInfo?.GlobalJsonPath} specifies that version.");
 
             resolvedChannel = channelFromGlobalJson;
+            requestSource = "default-globaljson";
         }
         else if (_versionOrChannel is not null)
         {
             resolvedChannel = _versionOrChannel;
+            requestSource = "explicit";
         }
         else
         {
@@ -126,12 +129,18 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 resolvedChannel = SpectreAnsiConsole.Prompt(
                     new TextPrompt<string>("Which channel of the .NET SDK do you want to install?")
                         .DefaultValue(ChannelVersionResolver.LatestChannel));
+                // User selected interactively, treat as explicit
+                requestSource = "explicit";
             }
             else
             {
                 resolvedChannel = ChannelVersionResolver.LatestChannel; // Default to latest if no channel is specified
+                requestSource = "default-latest";
             }
         }
+
+        // Record the request source and the resolved requested value
+        RecordRequestSource(requestSource, resolvedChannel);
 
         bool? resolvedSetDefaultInstall = _setDefaultInstall;
 

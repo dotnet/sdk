@@ -29,13 +29,13 @@ internal class ReleaseManifest
         try
         {
             var productCollection = GetReleasesIndex();
-            var product = FindProduct(productCollection, resolvedVersion) 
+            var product = FindProduct(productCollection, resolvedVersion)
                 ?? throw new DotnetInstallException(
                     DotnetInstallErrorCode.VersionNotFound,
                     $"No product found for version {resolvedVersion}",
                     version: resolvedVersion.ToString(),
                     component: installRequest.Component.ToString());
-            var release = FindRelease(product, resolvedVersion, installRequest.Component) 
+            var release = FindRelease(product, resolvedVersion, installRequest.Component)
                 ?? throw new DotnetInstallException(
                     DotnetInstallErrorCode.ReleaseNotFound,
                     $"No release found for version {resolvedVersion}",

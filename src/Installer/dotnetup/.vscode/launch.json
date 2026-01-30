@@ -10,7 +10,11 @@
             "args": "${input:commandLineArgs}",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
-            "stopAtEntry": false
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_CLI_TELEMETRY_OPTOUT": "",
+                "DOTNETUP_DEV_BUILD": "1"
+            }
         },
         {
             "name": ".NET Core Attach",

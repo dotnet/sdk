@@ -16,6 +16,12 @@ internal static class TelemetryCommonProperties
 {
     private static readonly Lazy<string> s_deviceId = new(GetDeviceId);
     private static readonly Lazy<bool> s_isCIEnvironment = new(DetectCIEnvironment);
+    private static readonly Lazy<bool> s_isDevBuild = new(DetectDevBuild);
+
+    /// <summary>
+    /// Environment variable to mark telemetry as coming from a dev build.
+    /// </summary>
+    private const string DevBuildEnvVar = "DOTNETUP_DEV_BUILD";
 
     /// <summary>
     /// Gets common attributes for the OpenTelemetry resource.
@@ -30,7 +36,8 @@ internal static class TelemetryCommonProperties
             ["os.version"] = Environment.OSVersion.VersionString,
             ["process.arch"] = RuntimeInformation.ProcessArchitecture.ToString(),
             ["ci.detected"] = s_isCIEnvironment.Value,
-            ["dotnetup.version"] = GetVersion()
+            ["dotnetup.version"] = GetVersion(),
+            ["dev.build"] = s_isDevBuild.Value
         };
     }
 
@@ -100,6 +107,19 @@ internal static class TelemetryCommonProperties
         {
             return false;
         }
+    }
+
+    private static bool DetectDevBuild()
+    {
+        // Debug builds are always considered dev builds
+#if DEBUG
+        return true;
+#else
+        // Check for DOTNETUP_DEV_BUILD environment variable (for release builds in dev scenarios)
+        var devBuildValue = Environment.GetEnvironmentVariable(DevBuildEnvVar);
+        return string.Equals(devBuildValue, "1", StringComparison.Ordinal) ||
+               string.Equals(devBuildValue, "true", StringComparison.OrdinalIgnoreCase);
+#endif
     }
 
     private static string GetVersion()
