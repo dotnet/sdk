@@ -93,7 +93,6 @@ internal sealed class WorkloadManifestCorruptionRepairer : IWorkloadManifestCorr
         {
             _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context);
         }
-
     }
 
     [MemberNotNull(nameof(_packageDownloader))]
