@@ -25,7 +25,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_WasmHotReloadRoot>$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', 'hotreload'))</_WasmHotReloadRoot>
       <_WasmHotReloadDllPath Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">net10.0</_WasmHotReloadDllPath>
-      <_WasmHotReloadDllPath Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0'))">net11.0</_WasmHotReloadDllPath>
     </PropertyGroup>
     <ItemGroup Condition="'$(_WasmHotReloadDllPath)' != ''">
       <ReferenceCopyLocalPaths Include="$(_WasmHotReloadRoot)\$(_WasmHotReloadDllPath)\Microsoft.DotNet.HotReload.WebAssembly.Browser.dll">

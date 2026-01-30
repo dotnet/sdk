@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
   <PropertyGroup>
     <WasmSdkRoot>$(RepoRoot)\src\WasmSdk\</WasmSdkRoot>
@@ -35,10 +35,17 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+    <!-- We are not using the assembly anywhere -->
+    <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BuiltInTools\HotReloadAgent.WebAssembly.Browser\Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <PrivateAssets>all</PrivateAssets>
+      <Pack>true</Pack>
+      <PackagePath>hotreload</PackagePath>
+    </ProjectReference>
     <AdditionalContent Include="$(WasmSdkRoot)targets\**\*.*">
       <Pack>true</Pack>
       <PackagePath>targets</PackagePath>
@@ -46,10 +53,6 @@
     <AdditionalContent Include="$(WasmSdkRoot)Sdk\**\*.*">
       <Pack>true</Pack>
       <PackagePath>Sdk</PackagePath>
-    </AdditionalContent>
-    <AdditionalContent Include="$(ArtifactsBinDir)\Microsoft.DotNet.HotReload.WebAssembly.Browser\$(Configuration)\**\*.*">
-      <Pack>true</Pack>
-      <PackagePath>hotreload</PackagePath>
     </AdditionalContent>
     <AdditionalContent Include="$(SdkSrcRoot)\BuiltInTools\HotReloadAgent.WebAssembly.Browser\wwwroot\**\*.*">
       <Pack>true</Pack>
