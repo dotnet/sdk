@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CliConstants.HelpOptionKey, TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CliConstants.HelpOptionKey, TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -72,22 +72,18 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CliConstants.HelpOptionKey, TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, "-c", configuration);
 
             // Parse the help output to extract option names
             var helpOutput = result.StdOut;
 
-            // Check for specific options we care about
-            string outputOptionName = MicrosoftTestingPlatformOptions.OutputOption.Name; // --output
-            string noAnsiOptionName = MicrosoftTestingPlatformOptions.NoAnsiOption.Name; // --no-ansi
-
             // Count occurrences of each option in the help output
-            int outputOptionCount = CountOptionOccurrences(helpOutput!, outputOptionName);
-            int noAnsiOptionCount = CountOptionOccurrences(helpOutput!, noAnsiOptionName);
+            int outputOptionCount = CountOptionOccurrences(helpOutput!, "--output");
+            int noAnsiOptionCount = CountOptionOccurrences(helpOutput!, "--no-ansi");
 
             // Assert that each option appears only once
-            outputOptionCount.Should().Be(1, $"Option '{outputOptionName}' should not appear more than once in help output");
-            noAnsiOptionCount.Should().Be(1, $"Option '{noAnsiOptionName}' should not appear more than once in help output");
+            outputOptionCount.Should().Be(1, $"Option '--output' should not appear more than once in help output");
+            noAnsiOptionCount.Should().Be(1, $"Option '--no-ansi' should not appear more than once in help output");
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }

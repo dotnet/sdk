@@ -106,17 +106,18 @@ internal abstract class RunApiInput
                 launchProfile: null,
                 noLaunchProfile: false,
                 noLaunchProfileArguments: false,
+                device: null,
+                listDevices: false,
                 noRestore: false,
                 noCache: false,
                 interactive: false,
                 msbuildArgs: msbuildArgs,
                 applicationArgs: [],
                 readCodeFromStdin: false,
-                environmentVariables: ReadOnlyDictionary<string, string>.Empty,
-                msbuildRestoreProperties: ReadOnlyDictionary<string, string>.Empty);
+                environmentVariables: ReadOnlyDictionary<string, string>.Empty);
 
             var result = runCommand.ReadLaunchProfileSettings();
-            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null);
+            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, logger: null);
 
             return new RunApiOutput.RunCommand
             {

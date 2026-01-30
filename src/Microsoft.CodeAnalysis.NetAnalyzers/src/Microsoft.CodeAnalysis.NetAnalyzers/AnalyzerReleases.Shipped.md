@@ -362,3 +362,16 @@ CA2262 | Usage | Info | ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorr
 CA2263 | Usage | Info | PreferGenericOverloadsAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2263)
 CA2264 | Usage | Warning | DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2264)
 CA2265 | Usage | Warning | DoNotCompareSpanToNullAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2265)
+
+## Release 10.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+CA1873 | Performance | Info | AvoidPotentiallyExpensiveCallWhenLoggingAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1873)
+CA1874 | Performance | Info | UseRegexMembers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1874)
+CA1875 | Performance | Info | UseRegexMembers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1875)
+CA2023 | Reliability | Warning | LoggerMessageDefineAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2023)
+CA2024 | Reliability | Warning | DoNotUseEndOfStreamInAsyncMethods, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2024)
+CA2025 | Reliability | Disabled | DoNotPassDisposablesIntoUnawaitedTasksAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2025)

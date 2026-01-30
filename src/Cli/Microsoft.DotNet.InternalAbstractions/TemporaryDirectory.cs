@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.InternalAbstractions
 
         public TemporaryDirectory()
         {
-            DirectoryPath = Path.Combine(PathUtilities.CreateTempSubdirectory());
+            DirectoryPath = Path.Combine(CreateSubdirectory());
         }
 
         public void Dispose()
@@ -24,6 +24,17 @@ namespace Microsoft.DotNet.InternalAbstractions
             {
                 // Ignore failures here.
             }
+        }
+
+        public static string CreateSubdirectory()
+        {
+#if NETFRAMEWORK
+            string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(path);
+            return path;
+#else
+            return Directory.CreateTempSubdirectory().FullName;
+#endif
         }
     }
 }

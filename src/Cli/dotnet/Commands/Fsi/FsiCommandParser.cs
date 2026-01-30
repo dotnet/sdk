@@ -7,16 +7,8 @@ namespace Microsoft.DotNet.Cli.Commands.Fsi;
 
 internal static class FsiCommandParser
 {
-    private static readonly Command Command = SetAction(FsiCommandDefinition.Create());
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(FsiCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static Command SetAction(Command command)
-    {
-        command.SetAction((parseResult) => FsiCommand.Run(parseResult.GetValue(FsiCommandDefinition.Arguments)));
-        return command;
+        command.SetAction(parseResult => FsiCommand.Run(parseResult.GetValue(command.Arguments) ?? []));
     }
 }

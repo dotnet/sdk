@@ -26,13 +26,14 @@ public class InternalReportInstallSuccessCommand
 
     public static void ProcessInputAndSendTelemetry(string[] args, ITelemetry telemetry)
     {
-        var result = Parser.Parse(["dotnet", "internal-reportinstallsuccess", ..args]);
+        var result = Parser.Parse(["dotnet", "internal-reportinstallsuccess", .. args]);
         ProcessInputAndSendTelemetry(result, telemetry);
     }
 
     public static void ProcessInputAndSendTelemetry(ParseResult result, ITelemetry telemetry)
     {
-        var exeName = Path.GetFileName(result.GetValue(InternalReportInstallSuccessCommandDefinition.Argument));
+        var definition = (InternalReportInstallSuccessCommandDefinition)result.CommandResult.Command;
+        var exeName = Path.GetFileName(result.GetValue(definition.Argument));
 
         var filter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
         foreach (var e in filter.Filter(new InstallerSuccessReport(exeName)))

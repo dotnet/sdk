@@ -10,12 +10,18 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 
-internal class SolutionMigrateCommand(
-    ParseResult parseResult,
-    IReporter reporter = null) : CommandBase(parseResult)
+internal sealed class SolutionMigrateCommand : CommandBase<SolutionMigrateCommandDefinition>
 {
-    private readonly string _slnFileOrDirectory = parseResult.GetValue(SolutionCommandDefinition.SlnArgument);
-    private readonly IReporter _reporter = reporter ?? Reporter.Output;
+    private readonly string _slnFileOrDirectory;
+    private readonly IReporter _reporter;
+
+    public SolutionMigrateCommand(ParseResult parseResult, IReporter reporter = null)
+        : base(parseResult)
+    {
+        _slnFileOrDirectory = parseResult.GetValue(Definition.Parent.SlnArgument);
+        _reporter = reporter ?? Reporter.Output;
+    }
+
 
     public override int Execute()
     {
@@ -29,7 +35,9 @@ internal class SolutionMigrateCommand(
         {
             ConvertToSlnxAsync(slnFileFullPath, slnxFileFullPath, CancellationToken.None).Wait();
             return 0;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             throw new GracefulException(ex.Message, ex);
         }
     }

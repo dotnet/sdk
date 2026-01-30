@@ -11,23 +11,23 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Remove;
 
-internal class SolutionRemoveCommand : CommandBase
+internal sealed class SolutionRemoveCommand : CommandBase<SolutionRemoveCommandDefinition>
 {
     private readonly string _fileOrDirectory;
     private readonly IReadOnlyCollection<string> _projects;
 
-    public SolutionRemoveCommand(ParseResult parseResult) : base(parseResult)
+    public SolutionRemoveCommand(ParseResult parseResult)
+        : base(parseResult)
     {
-        _fileOrDirectory = parseResult.GetValue(SolutionCommandDefinition.SlnArgument);
-
-        _projects = (parseResult.GetValue(SolutionRemoveCommandDefinition.ProjectPathArgument) ?? []).ToList().AsReadOnly();
+        _fileOrDirectory = parseResult.GetValue(Definition.Parent.SlnArgument);
+        _projects = [.. parseResult.GetValue(Definition.ProjectPathArgument) ?? []];
 
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Remove);
     }
 
     public override int Execute()
     {
-        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
+        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
         if (_projects.Count == 0)
         {
             throw new GracefulException(CliStrings.SpecifyAtLeastOneProjectToRemove);
@@ -43,7 +43,15 @@ internal class SolutionRemoveCommand : CommandBase
                         ? MsbuildProject.GetProjectFileFromDirectory(p)
                         : p));
 
-            RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+            // Check if we're working with a solution filter file
+            if (solutionFileFullPath.HasExtension(SlnfFileHelper.SlnfExtension))
+            {
+                RemoveProjectsFromSolutionFilter(solutionFileFullPath, relativeProjectPaths);
+            }
+            else
+            {
+                RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+            }
             return 0;
         }
         catch (Exception ex) when (ex is not GracefulException)
@@ -124,10 +132,41 @@ internal class SolutionRemoveCommand : CommandBase
             {
                 solution.RemoveFolder(folder);
                 // After removal, adjust index and continue to avoid skipping folders after removal
-                i--; 
+                i--;
             }
         }
 
         await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
+    }
+
+    private static void RemoveProjectsFromSolutionFilter(string slnfFileFullPath, IEnumerable<string> projectPaths)
+    {
+        // Load the filtered solution to get the parent solution path and existing projects
+        SolutionModel filteredSolution = SlnFileFactory.CreateFromFilteredSolutionFile(slnfFileFullPath);
+        string parentSolutionPath = filteredSolution.Description!; // The parent solution path is stored in Description
+
+        // Get existing projects in the filter
+        // Use case-insensitive comparer on Windows for file path comparison
+        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();
+
+        // Remove specified projects
+        foreach (var projectPath in projectPaths)
+        {
+            // Normalize the path to be relative to parent solution
+            string normalizedPath = projectPath;
+
+            // Try to find and remove the project
+            if (existingProjects.Remove(normalizedPath))
+            {
+                Reporter.Output.WriteLine(CliStrings.ProjectRemovedFromTheSolution, normalizedPath);
+            }
+            else
+            {
+                Reporter.Output.WriteLine(CliStrings.ProjectNotFoundInTheSolution, normalizedPath);
+            }
+        }
+
+        // Save updated filter
+        SlnfFileHelper.SaveSolutionFilter(slnfFileFullPath, parentSolutionPath, existingProjects.OrderBy(p => p));
     }
 }
