@@ -36,8 +36,7 @@
   <UsingTask TaskName="DeduplicateAssembliesWithLinks"
              Condition="'$(MSBuildRuntimeType)' == 'Core'"
              AssemblyFile="$(SdkTasksAssembly)"
-             TaskFactory="TaskHostFactory"
-             Runtime="NET" />
+             TaskFactory="TaskHostFactory" />
 
   <!-- Tasks from the Arcade SDK -->
   <UsingTask TaskName="DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" />
