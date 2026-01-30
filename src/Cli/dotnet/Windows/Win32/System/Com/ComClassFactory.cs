@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Windows.Win32.Foundation;
 
 namespace Windows.Win32.System.Com;
@@ -12,22 +13,42 @@ internal sealed unsafe class ComClassFactory : IDisposable
 {
     private readonly IClassFactory* _classFactory;
 
+
     /// <summary>
     ///  Creates a class factory for a registered COM class with the given class ID.
     /// </summary>
-    public ComClassFactory(Guid classId)
+    private ComClassFactory(IClassFactory* classFactory) => _classFactory = classFactory;
+
+    /// <inheritdoc cref="TryCreate(Guid, out ComClassFactory?, out HRESULT)"/>
+    public static bool TryCreate(Guid classId, out ComClassFactory? factory)
+        => TryCreate(classId, out factory, out _);
+
+    /// <summary>
+    ///  Attempts to create a class factory for the given class ID.
+    /// </summary>
+    /// <param name="classId">The guid of the class to create (CLSID).</param>
+    /// <param name="result"></param>The result of <see cref="PInvoke.CoGetClassObject"/>.</param>
+    /// <returns><see langword="true"/> when the factory was successfully created.</returns>
+    public static bool TryCreate(Guid classId, [NotNullWhen(true)] out ComClassFactory? factory, out HRESULT result)
     {
         IClassFactory* classFactory;
         Guid iid = IClassFactory.IID_Guid;
 
-        PInvoke.CoGetClassObject(
+        result = PInvoke.CoGetClassObject(
             &classId,
             CLSCTX.CLSCTX_INPROC_SERVER,
             (void*)null,
             &iid,
-            (void**)&classFactory).ThrowOnFailure();
+            (void**)&classFactory);
 
-        _classFactory = classFactory;
+        if (result.Failed || classFactory is null)
+        {
+            factory = null;
+            return false;
+        }
+
+        factory = new ComClassFactory(classFactory);
+        return true;
     }
 
     /// <summary>
