@@ -10,6 +10,31 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 internal class ChannelVersionResolver
 {
+    /// <summary>
+    /// Channel keyword for the latest stable release.
+    /// </summary>
+    public const string LatestChannel = "latest";
+
+    /// <summary>
+    /// Channel keyword for the latest preview release.
+    /// </summary>
+    public const string PreviewChannel = "preview";
+
+    /// <summary>
+    /// Channel keyword for the latest Long Term Support (LTS) release.
+    /// </summary>
+    public const string LtsChannel = "lts";
+
+    /// <summary>
+    /// Channel keyword for the latest Standard Term Support (STS) release.
+    /// </summary>
+    public const string StsChannel = "sts";
+
+    /// <summary>
+    /// Known channel keywords that are always valid.
+    /// </summary>
+    public static readonly IReadOnlyList<string> KnownChannelKeywords = [LatestChannel, PreviewChannel, LtsChannel, StsChannel];
+
     private ReleaseManifest _releaseManifest = new();
 
     public ChannelVersionResolver()
@@ -25,7 +50,7 @@ internal class ChannelVersionResolver
     public IEnumerable<string> GetSupportedChannels()
     {
         var productIndex = _releaseManifest.GetReleasesIndex();
-        return ["latest", "preview", "lts", "sts",
+        return [..KnownChannelKeywords,
             ..productIndex
                 .Where(p => p.IsSupported)
                 .OrderByDescending(p => p.LatestReleaseVersion)
@@ -92,18 +117,18 @@ internal class ChannelVersionResolver
     /// <returns>Latest fully specified version string, or null if not found</returns>
     public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
     {
-        if (string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) || string.Equals(channel.Name, "sts", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase) || string.Equals(channel.Name, StsChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var releaseType = string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase) ? ReleaseType.LTS : ReleaseType.STS;
+            var releaseType = string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase) ? ReleaseType.LTS : ReleaseType.STS;
             var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestVersionByReleaseType(productIndex, releaseType, component);
         }
-        else if (string.Equals(channel.Name, "preview", StringComparison.OrdinalIgnoreCase))
+        else if (string.Equals(channel.Name, PreviewChannel, StringComparison.OrdinalIgnoreCase))
         {
             var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestPreviewVersion(productIndex, component);
         }
-        else if (string.Equals(channel.Name, "latest", StringComparison.OrdinalIgnoreCase))
+        else if (string.Equals(channel.Name, LatestChannel, StringComparison.OrdinalIgnoreCase))
         {
             var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestActiveVersion(productIndex, component);

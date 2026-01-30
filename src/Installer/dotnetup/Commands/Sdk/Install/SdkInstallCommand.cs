@@ -31,6 +31,9 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     protected override int ExecuteCore()
     {
+        // Record the requested version with PII sanitization
+        RecordRequestedVersion(_versionOrChannel);
+
         var globalJsonInfo = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
         var currentDotnetInstallRoot = _dotnetInstaller.GetConfiguredInstallType();
@@ -47,6 +50,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             {
                 //  TODO: Add parameter to override error
                 Console.Error.WriteLine($"Error: The install path specified in global.json ({installPathFromGlobalJson}) does not match the install path provided ({_installPath}).");
+                RecordFailure("path_mismatch", $"global.json path ({installPathFromGlobalJson}) != provided path ({_installPath})");
                 return 1;
             }
 
@@ -121,11 +125,11 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
                 resolvedChannel = SpectreAnsiConsole.Prompt(
                     new TextPrompt<string>("Which channel of the .NET SDK do you want to install?")
-                        .DefaultValue("latest"));
+                        .DefaultValue(ChannelVersionResolver.LatestChannel));
             }
             else
             {
-                resolvedChannel = "latest"; // Default to latest if no channel is specified
+                resolvedChannel = ChannelVersionResolver.LatestChannel; // Default to latest if no channel is specified
             }
         }
 
@@ -260,6 +264,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         if (mainInstall == null)
         {
             SpectreAnsiConsole.MarkupLine($"[red]Failed to install .NET SDK {resolvedVersion}[/]");
+            RecordFailure("install_failed", $"Failed to install SDK {resolvedVersion}");
             return 1;
         }
         SpectreAnsiConsole.MarkupLine($"[green]Installed .NET SDK {mainInstall.Version}, available via {mainInstall.InstallRoot}[/]");
