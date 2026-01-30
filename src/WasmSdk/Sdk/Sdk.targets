@@ -16,22 +16,21 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition="'$(RuntimeIdentifier)' == 'wasi-wasm' and '$(_WasmSdkImportsMicrosoftNetSdk)' == 'true'" />
 
   <PropertyGroup>
-    <!-- Implicit HotReload package reference for .NET 10+ if not explicitly turned off -->
     <_WasmEnableHotReload>$(WasmEnableHotReload)</_WasmEnableHotReload>
     <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(Configuration)' != 'Debug'">false</_WasmEnableHotReload>
     <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">true</_WasmEnableHotReload>
   </PropertyGroup>
-  <Target Name="_ImplicitlyReferenceHotReload" BeforeTargets="ResolveProjectStaticWebAssets" AfterTargets="ResolveStaticWebAssetsConfiguration" Condition="'$(_WasmEnableHotReload)' == 'true'">
+  <Target Name="_WasmImplicitlyReferenceHotReload" BeforeTargets="ResolveProjectStaticWebAssets" AfterTargets="ResolveStaticWebAssetsConfiguration" Condition="'$(_WasmEnableHotReload)' == 'true'">
     <PropertyGroup>
-      <_WasmHotReloadRoot>$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', 'hotreload'))</_WasmHotReloadRoot>
-      <_WasmHotReloadDllPath Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">net10.0</_WasmHotReloadDllPath>
+      <_WasmHotReloadTfm Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">net10.0</_WasmHotReloadTfm>
+      <_WasmHotReloadPath Condition="'$(_WasmHotReloadTfm)' != ''">$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', 'hotreload', $(_WasmHotReloadTfm)))</_WasmHotReloadPath>
     </PropertyGroup>
-    <ItemGroup Condition="'$(_WasmHotReloadDllPath)' != ''">
-      <ReferenceCopyLocalPaths Include="$(_WasmHotReloadRoot)\$(_WasmHotReloadDllPath)\Microsoft.DotNet.HotReload.WebAssembly.Browser.dll">
+    <ItemGroup Condition="'$(_WasmHotReloadPath)' != ''">
+      <ReferenceCopyLocalPaths Include="$(_WasmHotReloadPath)\Microsoft.DotNet.HotReload.WebAssembly.Browser.dll">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </ReferenceCopyLocalPaths>
-      <_WasmHotReloadModule Include="$(_WasmHotReloadRoot)\$(_WasmHotReloadDllPath)\wwwroot\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
+      <_WasmHotReloadModule Include="$(_WasmHotReloadPath)\wwwroot\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
         <TargetPath>_framework\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
@@ -45,19 +44,20 @@ Copyright (c) .NET Foundation. All rights reserved.
       FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       SourceId="$(PackageId)"
       SourceType="Computed"
-      ContentRoot="$(_WasmHotReloadRoot)\$(_WasmHotReloadDllPath)\wwwroot\"
+      ContentRoot="$(_WasmHotReloadPath)\wwwroot\"
       BasePath="$(StaticWebAssetBasePath)"
       AssetKind="Build"
       AssetTraitName="JSModule"
       AssetTraitValue="JSLibraryModule"
-      PropertyOverrides="AssetTraitName;AssetTraitValue">
+      PropertyOverrides="AssetTraitName;AssetTraitValue"
+      Condition="'$(_WasmHotReloadPath)' != ''">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
         <Output TaskParameter="Assets" ItemName="_WasmHotReloadModuleStaticWebAsset" />
     </DefineStaticWebAssets>
     <DefineStaticWebAssetEndpoints
       CandidateAssets="@(_WasmHotReloadModuleStaticWebAsset)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
-    >
+      Condition="'$(_WasmHotReloadPath)' != ''">
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
   </Target>
