@@ -3972,7 +3972,7 @@ Pokud chcete zobrazit hodnotu, zadejte odpovídající volbu příkazového řá
       </trans-unit>
       <trans-unit id="WorkloadSetHasMissingManifests">
         <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
-        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <target state="translated">Ve verzi sady úloh {0} chybí manifesty, které pravděpodobně odstranila správa balíčků. Pokud chcete tento problém vyřešit, spusťte příkaz dotnet workload repair.</target>
         <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
