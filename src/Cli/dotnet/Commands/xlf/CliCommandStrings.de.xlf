@@ -2212,11 +2212,6 @@ und die zugehörigen Paket-IDs für installierte Tools über den Befehl
         <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
         <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
-        <target state="translated">Eine Workloadversion zum Anzeigen oder mindestens eine Workload und deren Versionen, die mit dem Zeichen "@" verknüpft sind.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>
         <target state="translated">Installationsquelle</target>
