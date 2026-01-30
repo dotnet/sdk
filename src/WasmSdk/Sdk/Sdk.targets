@@ -26,11 +26,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_WasmHotReloadPath Condition="'$(_WasmHotReloadTfm)' != ''">$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', 'hotreload', $(_WasmHotReloadTfm)))</_WasmHotReloadPath>
     </PropertyGroup>
     <ItemGroup Condition="'$(_WasmHotReloadPath)' != ''">
-      <ReferenceCopyLocalPaths Include="$(_WasmHotReloadPath)\Microsoft.DotNet.HotReload.WebAssembly.Browser.dll">
+      <ReferenceCopyLocalPaths Include="$(_WasmHotReloadPath)Microsoft.DotNet.HotReload.WebAssembly.Browser.dll">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </ReferenceCopyLocalPaths>
-      <_WasmHotReloadModule Include="$(_WasmHotReloadPath)\wwwroot\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
+      <_WasmHotReloadModule Include="$(_WasmHotReloadPath)wwwroot\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
         <TargetPath>_framework\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
