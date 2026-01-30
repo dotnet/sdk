@@ -27,7 +27,9 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private InstallRootManager? _installRootManager;
     private InstallRootManager InstallRootManager => _installRootManager ??= new InstallRootManager(_dotnetInstaller);
 
-    public override int Execute()
+    protected override string GetCommandName() => "sdk/install";
+
+    protected override int ExecuteCore()
     {
         var globalJsonInfo = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
 

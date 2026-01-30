@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\CIEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\DevDeviceIDGetter.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\EnvironmentDetectionRule.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\ICIEnvironmentDetector.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\Env.cs" LinkBase="Shared" />
@@ -38,6 +39,10 @@
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Spectre.Console" />
+    <!-- Telemetry packages (AOT compatible) -->
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" />
   </ItemGroup>
 
   <ItemGroup>

@@ -24,7 +24,9 @@ internal class ElevatedAdminPathCommand : CommandBase
         File.AppendAllText(_outputFile, message + Environment.NewLine);
     }
 
-    public override int Execute()
+    protected override string GetCommandName() => "elevatedadminpath";
+
+    protected override int ExecuteCore()
     {
         // This command only works on Windows
         if (!OperatingSystem.IsWindows())

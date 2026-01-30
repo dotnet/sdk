@@ -16,7 +16,9 @@ internal class DefaultInstallCommand : CommandBase
         _installRootManager = new InstallRootManager(dotnetInstaller);
     }
 
-    public override int Execute()
+    protected override string GetCommandName() => "defaultinstall";
+
+    protected override int ExecuteCore()
     {
         return _installType.ToLowerInvariant() switch
         {
