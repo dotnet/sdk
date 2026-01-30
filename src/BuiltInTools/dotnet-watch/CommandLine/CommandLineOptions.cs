@@ -5,11 +5,11 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
-using System.Diagnostics;
-using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -42,65 +42,15 @@ internal sealed class CommandLineOptions
 
     public string Command => ExplicitCommand ?? DefaultCommand;
 
-    // this option is referenced from inner logic and so needs to be reference-able
-    public static Option<bool> NonInteractiveOption = new Option<bool>("--non-interactive") { Description = Resources.Help_NonInteractive, Arity = ArgumentArity.Zero };
-
     public static CommandLineOptions? Parse(IReadOnlyList<string> args, ILogger logger, TextWriter output, out int errorCode)
     {
-        // dotnet watch specific options:
-        var quietOption = new Option<bool>("--quiet", "-q") { Description = Resources.Help_Quiet, Arity = ArgumentArity.Zero };
-        var verboseOption = new Option<bool>("--verbose") { Description = Resources.Help_Verbose, Arity = ArgumentArity.Zero };
-        var listOption = new Option<bool>("--list") { Description = Resources.Help_List, Arity = ArgumentArity.Zero };
-        var noHotReloadOption = new Option<bool>("--no-hot-reload") { Description = Resources.Help_NoHotReload, Arity = ArgumentArity.Zero };
-
-        verboseOption.Validators.Add(v =>
-        {
-            if (v.GetValue(quietOption) && v.GetValue(verboseOption))
-            {
-                v.AddError(Resources.Error_QuietAndVerboseSpecified);
-            }
-        });
-
-        Option[] watchOptions =
-        [
-            quietOption,
-            verboseOption,
-            listOption,
-            noHotReloadOption,
-            NonInteractiveOption
-        ];
-
-        // Options we need to know about that are passed through to the subcommand:
-        var shortProjectOption = new Option<string>("-p") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var longProjectOption = new Option<string>("--project") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var launchProfileOption = new Option<string>("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var noLaunchProfileOption = new Option<bool>("--no-launch-profile") { Hidden = true, Arity = ArgumentArity.Zero };
-
-        var rootCommand = new RootCommand(Resources.Help)
-        {
-            Directives = { new EnvironmentVariablesDirective() },
-        };
-
-        foreach (var watchOption in watchOptions)
-        {
-            rootCommand.Options.Add(watchOption);
-        }
-
-        rootCommand.Options.Add(longProjectOption);
-        rootCommand.Options.Add(shortProjectOption);
-        rootCommand.Options.Add(launchProfileOption);
-        rootCommand.Options.Add(noLaunchProfileOption);
-
-        // We process all tokens that do not match any of the above options
-        // to find the subcommand (the first unmatched token preceding "--")
-        // and all its options and arguments.
-        rootCommand.TreatUnmatchedTokensAsErrors = false;
+        var definition = new DotnetWatchCommandDefinition();
 
         // We parse the command line outside of the action since the action
         // might not be invoked in presence of unmatched tokens.
         // We just need to know if the root command was invoked to handle --help.
         var rootCommandInvoked = false;
-        rootCommand.SetAction(parseResult => rootCommandInvoked = true);
+        definition.SetAction(parseResult => rootCommandInvoked = true);
 
         ParserConfiguration parseConfig = new()
         {
@@ -109,7 +59,7 @@ internal sealed class CommandLineOptions
         };
 
         // parse without forwarded options first:
-        var parseResult = rootCommand.Parse(args, parseConfig);
+        var parseResult = definition.Parse(args, parseConfig);
         if (ReportErrors(parseResult, logger))
         {
             errorCode = 1;
@@ -119,15 +69,15 @@ internal sealed class CommandLineOptions
         // determine subcommand:
         var explicitCommand = TryGetSubcommand(parseResult);
         var command = explicitCommand ?? RunCommandParser.GetCommand();
-        var buildOptions = command.Options.Where(o => o is IForwardedOption);
+        var buildOptions = command.Options.Where(o => o.ForwardingFunction is not null);
 
         foreach (var buildOption in buildOptions)
         {
-            rootCommand.Options.Add(buildOption);
+            definition.Options.Add(buildOption);
         }
 
         // reparse with forwarded options:
-        parseResult = rootCommand.Parse(args, parseConfig);
+        parseResult = definition.Parse(args, parseConfig);
         if (ReportErrors(parseResult, logger))
         {
             errorCode = 1;
@@ -147,10 +97,10 @@ internal sealed class CommandLineOptions
             return null;
         }
 
-        var projectValue = parseResult.GetValue(longProjectOption);
+        var projectValue = parseResult.GetValue(definition.LongProjectOption);
         if (string.IsNullOrEmpty(projectValue))
         {
-            var projectShortValue = parseResult.GetValue(shortProjectOption);
+            var projectShortValue = parseResult.GetValue(definition.ShortProjectOption);
             if (!string.IsNullOrEmpty(projectShortValue))
             {
                 logger.LogWarning(Resources.Warning_ProjectAbbreviationDeprecated);
@@ -158,10 +108,15 @@ internal sealed class CommandLineOptions
             }
         }
 
-        var commandArguments = GetCommandArguments(parseResult, watchOptions, explicitCommand, out var binLogToken, out var binLogPath);
+        var commandArguments = GetCommandArguments(
+            parseResult,
+            command,
+            explicitCommand,
+            out var binLogToken,
+            out var binLogPath);
 
         // We assume that forwarded options, if any, are intended for dotnet build.
-        var buildArguments = buildOptions.Select(option => ((IForwardedOption)option).GetForwardingFunction()(parseResult)).SelectMany(args => args).ToList();
+        var buildArguments = buildOptions.Select(option => option.ForwardingFunction!(parseResult)).SelectMany(args => args).ToList();
 
         if (binLogToken != null)
         {
@@ -170,15 +125,20 @@ internal sealed class CommandLineOptions
 
         var targetFrameworkOption = (Option<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
 
+        var logLevel = parseResult.GetValue(definition.VerboseOption)
+            ? LogLevel.Debug
+            : parseResult.GetValue(definition.QuietOption)
+            ? LogLevel.Warning
+            : LogLevel.Information;
+
         return new()
         {
-            List = parseResult.GetValue(listOption),
+            List = parseResult.GetValue(definition.ListOption),
             GlobalOptions = new()
             {
-                Quiet = parseResult.GetValue(quietOption),
-                NoHotReload = parseResult.GetValue(noHotReloadOption),
-                NonInteractive = parseResult.GetValue(NonInteractiveOption),
-                Verbose = parseResult.GetValue(verboseOption),
+                LogLevel = logLevel,
+                NoHotReload = parseResult.GetValue(definition.NoHotReloadOption),
+                NonInteractive = parseResult.GetValue(definition.NonInteractiveOption),
                 BinaryLogPath = ParseBinaryLogFilePath(binLogPath),
             },
 
@@ -186,8 +146,8 @@ internal sealed class CommandLineOptions
             ExplicitCommand = explicitCommand?.Name,
 
             ProjectPath = projectValue,
-            LaunchProfileName = parseResult.GetValue(launchProfileOption),
-            NoLaunchProfile = parseResult.GetValue(noLaunchProfileOption),
+            LaunchProfileName = parseResult.GetValue(definition.LaunchProfileOption),
+            NoLaunchProfile = parseResult.GetValue(definition.NoLaunchProfileOption),
             BuildArguments = buildArguments,
             TargetFramework = targetFrameworkOption != null ? parseResult.GetValue(targetFrameworkOption) : null,
         };
@@ -215,11 +175,13 @@ internal sealed class CommandLineOptions
 
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,
-        IReadOnlyList<Option> watchOptions,
+        Command command,
         Command? explicitCommand,
         out string? binLogToken,
         out string? binLogPath)
     {
+        var definition = (DotnetWatchCommandDefinition)parseResult.CommandResult.Command;
+
         var arguments = new List<string>();
         binLogToken = null;
         binLogPath = null;
@@ -228,33 +190,49 @@ internal sealed class CommandLineOptions
         {
             var optionResult = (OptionResult)child;
 
-            // skip watch options:
-            if (!watchOptions.Contains(optionResult.Option))
+            // skip watch specific option:
+            if (definition.IsWatchOption(optionResult.Option))
             {
-                if (optionResult.Option.Name.Equals("--interactive", StringComparison.Ordinal) && parseResult.GetValue(NonInteractiveOption))
+                continue;
+            }
+            
+            // forward forwardable option if the subcommand supports it:
+            if (!command.Options.Any(option => option.Name == optionResult.Option.Name))
+            {
+                // pass project as an argument to commands that do not have --project option but accept project as an argument:
+                if (command is BuildCommandDefinition or TestCommandDefinition.VSTest &&
+                    (optionResult.Option == definition.ShortProjectOption || optionResult.Option == definition.LongProjectOption) &&
+                    parseResult.GetValue((Option<string>)optionResult.Option) is { } projectPath)
                 {
-                    // skip forwarding the interactive token (which may be computed by default) when users pass --non-interactive to watch itself
-                    continue;
+                    arguments.Add(projectPath);
                 }
 
-                // skip Option<bool> zero-arity options with an implicit optionresult - these weren't actually specified by the user:
-                if (optionResult.Option is Option<bool> boolOpt && boolOpt.Arity.Equals(ArgumentArity.Zero) && optionResult.Implicit)
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                var optionNameToForward = GetOptionNameToForward(optionResult);
-                if (optionResult.Tokens.Count == 0 && !optionResult.Implicit)
+            // skip forwarding the interactive token (which may be computed by default) when users pass --non-interactive to watch itself
+            if (optionResult.Option == definition.NonInteractiveOption && parseResult.GetValue(definition.NonInteractiveOption))
+            {
+                continue;
+            }
+
+            // skip Option<bool> zero-arity options with an implicit optionresult - these weren't actually specified by the user:
+            if (optionResult.Option is Option<bool> boolOpt && boolOpt.Arity.Equals(ArgumentArity.Zero) && optionResult.Implicit)
+            {
+                continue;
+            }
+
+            var optionNameToForward = GetOptionNameToForward(optionResult);
+            if (optionResult.Tokens.Count == 0 && !optionResult.Implicit)
+            {
+                arguments.Add(optionNameToForward);
+            }
+            else
+            {
+                foreach (var token in optionResult.Tokens)
                 {
                     arguments.Add(optionNameToForward);
-                }
-                else
-                {
-                    foreach (var token in optionResult.Tokens)
-                    {
-                        arguments.Add(optionNameToForward);
-                        arguments.Add(token.Value);
-                    }
+                    arguments.Add(token.Value);
                 }
             }
         }
@@ -377,22 +355,4 @@ internal sealed class CommandLineOptions
             BuildArguments = BuildArguments,
             TargetFramework = TargetFramework,
         };
-
-    // Parses name=value pairs passed to --property. Skips invalid input.
-    public static IEnumerable<(string key, string value)> ParseBuildProperties(IEnumerable<string> arguments)
-        => from argument in arguments
-           let colon = argument.IndexOf(':')
-           where colon >= 0 && argument[0..colon] is "--property" or "-property" or "/property" or "/p" or "-p" or "--p"
-           let eq = argument.IndexOf('=', colon)
-           where eq >= 0
-           let name = argument[(colon + 1)..eq].Trim()
-           let value = argument[(eq + 1)..]
-           where name is not []
-           select (name, value);
-
-    /// <summary>
-    /// Returns true if the command executes the code of the target project.
-    /// </summary>
-    public static bool IsCodeExecutionCommand(string commandName)
-        => commandName is "run" or "test";
 }
