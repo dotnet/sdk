@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -9,28 +10,40 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
-internal static class InfoCommand
+internal class InfoCommand : CommandBase
 {
-    public static int Execute(bool jsonOutput, bool noList = false, TextWriter? output = null)
-    {
-        output ??= Console.Out;
+    private readonly bool _jsonOutput;
+    private readonly bool _noList;
+    private readonly TextWriter _output;
 
+    public InfoCommand(ParseResult parseResult, bool jsonOutput, bool noList = false, TextWriter? output = null)
+        : base(parseResult)
+    {
+        _jsonOutput = jsonOutput;
+        _noList = noList;
+        _output = output ?? Console.Out;
+    }
+
+    protected override string GetCommandName() => "info";
+
+    protected override int ExecuteCore()
+    {
         var info = GetDotnetupInfo();
         List<InstallationInfo>? installations = null;
 
-        if (!noList)
+        if (!_noList)
         {
             // --info verifies by default
             installations = InstallationLister.GetInstallations(verify: true);
         }
 
-        if (jsonOutput)
+        if (_jsonOutput)
         {
-            PrintJsonInfo(output, info, installations);
+            PrintJsonInfo(_output, info, installations);
         }
         else
         {
-            PrintHumanReadableInfo(output, info, installations);
+            PrintHumanReadableInfo(_output, info, installations);
         }
 
         return 0;

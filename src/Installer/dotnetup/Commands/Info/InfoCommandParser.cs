@@ -33,7 +33,7 @@ internal static class InfoCommandParser
         {
             var jsonOutput = parseResult.GetValue(JsonOption);
             var noList = parseResult.GetValue(NoListOption);
-            return Info.InfoCommand.Execute(jsonOutput, noList);
+            return new InfoCommand(parseResult, jsonOutput, noList).Execute();
         });
 
         return command;
