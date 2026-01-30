@@ -40,6 +40,18 @@ public enum DotnetInstallErrorCode
 
     /// <summary>Disk space issue.</summary>
     DiskFull,
+
+    /// <summary>Failed to fetch the releases manifest from Microsoft servers.</summary>
+    ManifestFetchFailed,
+
+    /// <summary>Failed to parse the releases manifest (invalid JSON or schema).</summary>
+    ManifestParseFailed,
+
+    /// <summary>The archive file is corrupted or truncated.</summary>
+    ArchiveCorrupted,
+
+    /// <summary>Another installation process is already running.</summary>
+    InstallationLocked,
 }
 
 /// <summary>

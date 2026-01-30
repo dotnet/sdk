@@ -372,14 +372,15 @@ public class ErrorCodeMapperTests
     }
 
     [Fact]
-    public void GetErrorInfo_IOException_SharingViolation_IsUserError()
+    public void GetErrorInfo_IOException_SharingViolation_IsProductError()
     {
         // HResult for ERROR_SHARING_VIOLATION (0x80070020 = -2147024864)
+        // Could be our mutex/lock issue
         var ex = new IOException("File in use", unchecked((int)0x80070020));
 
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
-        Assert.Equal(ErrorCategory.User, info.Category);
+        Assert.Equal(ErrorCategory.Product, info.Category);
     }
 
     [Fact]

@@ -259,19 +259,19 @@ public static class ErrorCodeMapper
             // User environment issues - we can't control these
             "DiskFull" => ErrorCategory.User,
             "PermissionDenied" => ErrorCategory.User,
-            "SharingViolation" => ErrorCategory.User,       // File in use by another process
-            "LockViolation" => ErrorCategory.User,          // File locked
-            "PathTooLong" => ErrorCategory.User,            // User's path is too long
             "InvalidPath" => ErrorCategory.User,            // User specified invalid path
             "PathNotFound" => ErrorCategory.User,           // User's directory doesn't exist
             "NetworkPathNotFound" => ErrorCategory.User,    // Network issue
             "NetworkNameDeleted" => ErrorCategory.User,     // Network issue
             "DeviceFailure" => ErrorCategory.User,          // Hardware issue
-            "SemaphoreTimeout" => ErrorCategory.User,       // System resource contention
-            "AlreadyExists" => ErrorCategory.User,          // User already has file
-            "FileExists" => ErrorCategory.User,             // User already has file
 
-            // Product issues - we should handle these better
+            // Product issues - we should handle these gracefully
+            "SharingViolation" => ErrorCategory.Product,    // Could be our mutex/lock issue
+            "LockViolation" => ErrorCategory.Product,       // Could be our mutex/lock issue
+            "PathTooLong" => ErrorCategory.Product,         // We control the install path
+            "SemaphoreTimeout" => ErrorCategory.Product,    // Could be our concurrency issue
+            "AlreadyExists" => ErrorCategory.Product,       // We should handle existing files gracefully
+            "FileExists" => ErrorCategory.Product,          // We should handle existing files gracefully
             "FileNotFound" => ErrorCategory.Product,        // Our code referenced missing file
             "GeneralFailure" => ErrorCategory.Product,      // Unknown IO error
             "InvalidParameter" => ErrorCategory.Product,    // Our code passed bad params
