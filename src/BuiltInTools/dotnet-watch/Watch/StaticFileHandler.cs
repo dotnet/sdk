@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,7 @@ namespace Microsoft.DotNet.Watch
     {
         public async ValueTask<bool> HandleFileChangesAsync(IReadOnlyList<ChangedFile> files, CancellationToken cancellationToken)
         {
+            var stopwatch = Stopwatch.StartNew();
             var allFilesHandled = true;
             var refreshRequests = new Dictionary<BrowserRefreshServer, List<string>>();
             var projectsWithoutRefreshServer = new HashSet<ProjectGraphNode>();
@@ -65,7 +67,7 @@ namespace Microsoft.DotNet.Watch
 
             await Task.WhenAll(tasks).WaitAsync(cancellationToken);
 
-            logger.Log(MessageDescriptor.StaticAssetsReloaded);
+            logger.Log(MessageDescriptor.StaticAssetsChangesApplied, stopwatch.ElapsedMilliseconds);
 
             return allFilesHandled;
         }
