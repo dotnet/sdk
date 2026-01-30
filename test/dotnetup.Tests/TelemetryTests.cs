@@ -18,7 +18,7 @@ public class TelemetryCommonPropertiesTests
 
         Assert.Equal(hash1, hash2);
     }
- 
+
     [Fact]
     public void Hash_DifferentInputs_ProduceDifferentOutputs()
     {

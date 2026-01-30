@@ -79,13 +79,13 @@ public class NonUpdatingProgressTarget : IProgressTarget
         public void RecordError(Exception ex)
         {
             if (_activity == null) return;
-            
+
             // Use ErrorCodeMapper for rich error metadata (same as command-level telemetry)
             var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-            
+
             _activity.SetStatus(ActivityStatusCode.Error, ex.Message);
             _activity.SetTag("error.type", errorInfo.ErrorType);
-            
+
             if (errorInfo.StatusCode.HasValue)
             {
                 _activity.SetTag("error.http_status", errorInfo.StatusCode.Value);

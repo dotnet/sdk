@@ -40,7 +40,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 ///     }
 /// };
 /// ActivitySource.AddActivityListener(listener);
-/// 
+///
 /// // Now use the library - activities will be captured
 /// var installer = InstallerFactory.Create(progressTarget);
 /// installer.Install(root, InstallComponent.Sdk, version);

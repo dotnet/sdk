@@ -149,6 +149,7 @@ public sealed class DotnetupTelemetry : IDisposable
         activity.SetStatus(ActivityStatusCode.Error, ex.Message);
         activity.SetTag("error.type", errorInfo.ErrorType);
         activity.SetTag("error.code", errorCode ?? errorInfo.ErrorType);
+        activity.SetTag("error.category", errorInfo.Category.ToString().ToLowerInvariant());
 
         if (errorInfo.StatusCode.HasValue)
         {
@@ -200,7 +201,12 @@ public sealed class DotnetupTelemetry : IDisposable
             return;
         }
 
-        activity.SetTag("session.id", _sessionId);
+        // Add common properties to each span for App Insights customDimensions
+        foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(_sessionId))
+        {
+            activity.SetTag(attr.Key, attr.Value?.ToString());
+        }
+        activity.SetTag("caller", "dotnetup");
 
         if (properties != null)
         {

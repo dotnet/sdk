@@ -10,9 +10,29 @@ using Microsoft.Dotnet.Installation;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 /// <summary>
+/// Categorizes errors for telemetry purposes.
+/// </summary>
+public enum ErrorCategory
+{
+    /// <summary>
+    /// Product errors - issues we can take action on (bugs, crashes, server issues).
+    /// These count against product quality metrics.
+    /// </summary>
+    Product,
+
+    /// <summary>
+    /// User errors - issues caused by user input or environment we can't control.
+    /// Examples: invalid version, disk full, network timeout, permission denied.
+    /// These are tracked separately and don't count against success rate.
+    /// </summary>
+    User
+}
+
+/// <summary>
 /// Error info extracted from an exception for telemetry.
 /// </summary>
 /// <param name="ErrorType">The error type/code for telemetry.</param>
+/// <param name="Category">Whether this is a product or user error.</param>
 /// <param name="StatusCode">HTTP status code if applicable.</param>
 /// <param name="HResult">Win32 HResult if applicable.</param>
 /// <param name="Details">Additional context (no PII - sanitized values only).</param>
@@ -20,6 +40,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 /// <param name="ExceptionChain">Chain of exception types for wrapped exceptions.</param>
 public sealed record ExceptionErrorInfo(
     string ErrorType,
+    ErrorCategory Category = ErrorCategory.Product,
     int? StatusCode = null,
     int? HResult = null,
     string? Details = null,
@@ -56,69 +77,141 @@ public static class ErrorCodeMapper
 
         return ex switch
         {
-            // DotnetInstallException has specific error codes
+            // DotnetInstallException has specific error codes - categorize by error code
             DotnetInstallException installEx => new ExceptionErrorInfo(
                 installEx.ErrorCode.ToString(),
+                Category: GetInstallErrorCategory(installEx.ErrorCode),
                 Details: installEx.Version,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
+            // HTTP errors: 4xx client errors are often user issues, 5xx are product/server issues
             HttpRequestException httpEx => new ExceptionErrorInfo(
                 httpEx.StatusCode.HasValue ? $"Http{(int)httpEx.StatusCode}" : "HttpRequestException",
+                Category: GetHttpErrorCategory(httpEx.StatusCode),
                 StatusCode: (int?)httpEx.StatusCode,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
             // FileNotFoundException before IOException (it derives from IOException)
+            // Could be user error (wrong path) or product error (our code referenced wrong file)
+            // Default to product since we should handle missing files gracefully
             FileNotFoundException fnfEx => new ExceptionErrorInfo(
                 "FileNotFound",
+                Category: ErrorCategory.Product,
                 HResult: fnfEx.HResult,
                 Details: fnfEx.FileName is not null ? "file_specified" : null,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
+            // Permission denied - user environment issue (needs elevation or different permissions)
             UnauthorizedAccessException => new ExceptionErrorInfo(
                 "PermissionDenied",
+                Category: ErrorCategory.User,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
+            // Directory not found - could be user specified bad path
             DirectoryNotFoundException => new ExceptionErrorInfo(
                 "DirectoryNotFound",
+                Category: ErrorCategory.User,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
             IOException ioEx => MapIOException(ioEx, sourceLocation, exceptionChain),
 
+            // User cancelled the operation
             OperationCanceledException => new ExceptionErrorInfo(
                 "Cancelled",
+                Category: ErrorCategory.User,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
+            // Invalid argument - user provided bad input
             ArgumentException argEx => new ExceptionErrorInfo(
                 "InvalidArgument",
+                Category: ErrorCategory.User,
                 Details: argEx.ParamName,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
+            // Invalid operation - usually a bug in our code
             InvalidOperationException => new ExceptionErrorInfo(
                 "InvalidOperation",
+                Category: ErrorCategory.Product,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
+            // Not supported - could be user trying unsupported scenario
             NotSupportedException => new ExceptionErrorInfo(
                 "NotSupported",
+                Category: ErrorCategory.User,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
+            // Timeout - network/environment issue outside our control
             TimeoutException => new ExceptionErrorInfo(
                 "Timeout",
+                Category: ErrorCategory.User,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
+            // Unknown exceptions default to product (fail-safe - we should handle known cases)
             _ => new ExceptionErrorInfo(
                 ex.GetType().Name,
+                Category: ErrorCategory.Product,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain)
+        };
+    }
+
+    /// <summary>
+    /// Gets the error category for a DotnetInstallErrorCode.
+    /// </summary>
+    private static ErrorCategory GetInstallErrorCategory(DotnetInstallErrorCode errorCode)
+    {
+        return errorCode switch
+        {
+            // User errors - bad input or environment issues
+            DotnetInstallErrorCode.VersionNotFound => ErrorCategory.User,      // User typed invalid version
+            DotnetInstallErrorCode.ReleaseNotFound => ErrorCategory.User,      // User requested non-existent release
+            DotnetInstallErrorCode.InvalidChannel => ErrorCategory.User,       // User provided bad channel format
+            DotnetInstallErrorCode.PermissionDenied => ErrorCategory.User,     // User needs to elevate/fix permissions
+            DotnetInstallErrorCode.DiskFull => ErrorCategory.User,             // User's disk is full
+            DotnetInstallErrorCode.NetworkError => ErrorCategory.User,         // User's network issue
+
+            // Product errors - issues we can take action on
+            DotnetInstallErrorCode.NoMatchingFile => ErrorCategory.Product,    // Our manifest/logic issue
+            DotnetInstallErrorCode.DownloadFailed => ErrorCategory.Product,    // Server or download logic issue
+            DotnetInstallErrorCode.HashMismatch => ErrorCategory.Product,      // Corrupted download or server issue
+            DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,  // Our extraction code issue
+            DotnetInstallErrorCode.Unknown => ErrorCategory.Product,           // Unknown = assume product issue
+
+            _ => ErrorCategory.Product  // Default to product for new codes
+        };
+    }
+
+    /// <summary>
+    /// Gets the error category for an HTTP status code.
+    /// </summary>
+    private static ErrorCategory GetHttpErrorCategory(HttpStatusCode? statusCode)
+    {
+        if (!statusCode.HasValue)
+        {
+            // No status code usually means network failure - user environment
+            return ErrorCategory.User;
+        }
+
+        var code = (int)statusCode.Value;
+        return code switch
+        {
+            >= 500 => ErrorCategory.Product,  // 5xx server errors - our infrastructure
+            404 => ErrorCategory.User,        // Not found - likely user requested invalid resource
+            403 => ErrorCategory.User,        // Forbidden - user environment/permission issue
+            401 => ErrorCategory.User,        // Unauthorized - user auth issue
+            408 => ErrorCategory.User,        // Request timeout - user network
+            429 => ErrorCategory.User,        // Too many requests - user hitting rate limits
+            _ => ErrorCategory.Product        // Other 4xx - likely our bug (bad request format, etc.)
         };
     }
 
@@ -126,6 +219,7 @@ public static class ErrorCodeMapper
     {
         string errorType;
         string? details;
+        ErrorCategory category;
 
         // On Windows, use Win32Exception to get the readable error message
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && ioEx.HResult != 0)
@@ -137,19 +231,54 @@ public static class ErrorCodeMapper
 
             // Derive a short error type from the HResult
             errorType = GetWindowsErrorType(ioEx.HResult);
+            category = GetIOErrorCategory(errorType);
         }
         else
         {
             // On non-Windows or if no HResult, use our mapping
             (errorType, details) = GetErrorTypeFromHResult(ioEx.HResult);
+            category = GetIOErrorCategory(errorType);
         }
 
         return new ExceptionErrorInfo(
             errorType,
+            Category: category,
             HResult: ioEx.HResult,
             Details: details,
             SourceLocation: sourceLocation,
             ExceptionChain: exceptionChain);
+    }
+
+    /// <summary>
+    /// Gets the error category for an IO error type.
+    /// </summary>
+    private static ErrorCategory GetIOErrorCategory(string errorType)
+    {
+        return errorType switch
+        {
+            // User environment issues - we can't control these
+            "DiskFull" => ErrorCategory.User,
+            "PermissionDenied" => ErrorCategory.User,
+            "SharingViolation" => ErrorCategory.User,       // File in use by another process
+            "LockViolation" => ErrorCategory.User,          // File locked
+            "PathTooLong" => ErrorCategory.User,            // User's path is too long
+            "InvalidPath" => ErrorCategory.User,            // User specified invalid path
+            "PathNotFound" => ErrorCategory.User,           // User's directory doesn't exist
+            "NetworkPathNotFound" => ErrorCategory.User,    // Network issue
+            "NetworkNameDeleted" => ErrorCategory.User,     // Network issue
+            "DeviceFailure" => ErrorCategory.User,          // Hardware issue
+            "SemaphoreTimeout" => ErrorCategory.User,       // System resource contention
+            "AlreadyExists" => ErrorCategory.User,          // User already has file
+            "FileExists" => ErrorCategory.User,             // User already has file
+
+            // Product issues - we should handle these better
+            "FileNotFound" => ErrorCategory.Product,        // Our code referenced missing file
+            "GeneralFailure" => ErrorCategory.Product,      // Unknown IO error
+            "InvalidParameter" => ErrorCategory.Product,    // Our code passed bad params
+            "IOException" => ErrorCategory.Product,         // Generic IO - assume product
+
+            _ => ErrorCategory.Product                      // Unknown - assume product
+        };
     }
 
     /// <summary>

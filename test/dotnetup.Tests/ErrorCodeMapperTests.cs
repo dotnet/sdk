@@ -4,6 +4,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Xunit;
 
@@ -275,5 +276,145 @@ public class ErrorCodeMapperTests
         {
             Assert.Equal("ERROR_ALREADY_EXISTS", info.Details);
         }
+    }
+
+    // Error category tests
+    [Theory]
+    [InlineData(DotnetInstallErrorCode.VersionNotFound, ErrorCategory.User)]
+    [InlineData(DotnetInstallErrorCode.ReleaseNotFound, ErrorCategory.User)]
+    [InlineData(DotnetInstallErrorCode.InvalidChannel, ErrorCategory.User)]
+    [InlineData(DotnetInstallErrorCode.PermissionDenied, ErrorCategory.User)]
+    [InlineData(DotnetInstallErrorCode.DiskFull, ErrorCategory.User)]
+    [InlineData(DotnetInstallErrorCode.NetworkError, ErrorCategory.User)]
+    [InlineData(DotnetInstallErrorCode.NoMatchingFile, ErrorCategory.Product)]
+    [InlineData(DotnetInstallErrorCode.DownloadFailed, ErrorCategory.Product)]
+    [InlineData(DotnetInstallErrorCode.HashMismatch, ErrorCategory.Product)]
+    [InlineData(DotnetInstallErrorCode.ExtractionFailed, ErrorCategory.Product)]
+    [InlineData(DotnetInstallErrorCode.Unknown, ErrorCategory.Product)]
+    public void GetErrorInfo_DotnetInstallException_HasCorrectCategory(DotnetInstallErrorCode errorCode, ErrorCategory expectedCategory)
+    {
+        var ex = new DotnetInstallException(errorCode, "Test message");
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(expectedCategory, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_UnauthorizedAccessException_IsUserError()
+    {
+        var ex = new UnauthorizedAccessException("Access denied");
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.User, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_TimeoutException_IsUserError()
+    {
+        var ex = new TimeoutException("Operation timed out");
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.User, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_ArgumentException_IsUserError()
+    {
+        var ex = new ArgumentException("Invalid argument", "testParam");
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.User, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_OperationCanceledException_IsUserError()
+    {
+        var ex = new OperationCanceledException("Cancelled by user");
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.User, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_InvalidOperationException_IsProductError()
+    {
+        var ex = new InvalidOperationException("Invalid state");
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.Product, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_UnknownException_DefaultsToProductError()
+    {
+        var ex = new CustomTestException("Test");
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.Product, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_IOException_DiskFull_IsUserError()
+    {
+        // HResult for ERROR_DISK_FULL (0x80070070 = -2147024784)
+        var ex = new IOException("Disk full", unchecked((int)0x80070070));
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.User, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_IOException_SharingViolation_IsUserError()
+    {
+        // HResult for ERROR_SHARING_VIOLATION (0x80070020 = -2147024864)
+        var ex = new IOException("File in use", unchecked((int)0x80070020));
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.User, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_HttpRequestException_5xx_IsProductError()
+    {
+        var ex = new HttpRequestException("Server error", null, System.Net.HttpStatusCode.InternalServerError);
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.Product, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_HttpRequestException_404_IsUserError()
+    {
+        var ex = new HttpRequestException("Not found", null, System.Net.HttpStatusCode.NotFound);
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.User, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_HttpRequestException_NoStatusCode_IsUserError()
+    {
+        // No status code typically means network connectivity issue
+        var ex = new HttpRequestException("Network error");
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.User, info.Category);
+    }
+
+    private class CustomTestException : Exception
+    {
+        public CustomTestException(string message) : base(message) { }
     }
 }
