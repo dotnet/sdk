@@ -17,6 +17,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Strong naming deprecated on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>
+
+    <!-- Ignore checking for OS API compatibility as we aren't targeting just the Windows platform  -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -63,8 +66,9 @@
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="all" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
     <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
