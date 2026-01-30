@@ -6,7 +6,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(ResolverTargetFramework);net472</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
