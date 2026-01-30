@@ -2207,6 +2207,11 @@ et les ID de package correspondants aux outils installés, utilisez la commande
         <target state="translated">La version de charge de travail {0}, qui a été spécifiée dans {1}, est introuvable. Exécutez « dotnet workload restore » pour installer cette version de charge de travail.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>
         <target state="translated">Source de l’installation</target>
