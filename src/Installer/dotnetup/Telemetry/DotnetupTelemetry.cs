@@ -117,7 +117,15 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         var activity = CommandSource.StartActivity($"command/{commandName}", ActivityKind.Internal);
-        activity?.SetTag("command.name", commandName);
+        if (activity != null)
+        {
+            activity.SetTag("command.name", commandName);
+            // Add common properties to each span for App Insights customDimensions
+            foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(_sessionId))
+            {
+                activity.SetTag(attr.Key, attr.Value?.ToString());
+            }
+        }
         activity?.SetTag("caller", "dotnetup");
         activity?.SetTag("session.id", _sessionId);
         return activity;

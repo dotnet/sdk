@@ -40,46 +40,16 @@ public abstract class CommandBase
 
             stopwatch.Stop();
             _commandActivity?.SetTag("exit.code", exitCode);
+            _commandActivity?.SetTag("duration_ms", stopwatch.Elapsed.TotalMilliseconds);
             _commandActivity?.SetStatus(exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-
-            // Post completion event for metrics
-            DotnetupTelemetry.Instance.PostEvent("command/completed", new Dictionary<string, string>
-            {
-                ["command"] = commandName,
-                ["exit_code"] = exitCode.ToString(),
-                ["success"] = (exitCode == 0).ToString()
-            }, new Dictionary<string, double>
-            {
-                ["duration_ms"] = stopwatch.Elapsed.TotalMilliseconds
-            });
 
             return exitCode;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
+            _commandActivity?.SetTag("duration_ms", stopwatch.Elapsed.TotalMilliseconds);
             DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
-
-            // Post failure event
-            var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-            var props = new Dictionary<string, string>
-            {
-                ["command"] = commandName,
-                ["error_type"] = errorInfo.ErrorType
-            };
-            if (errorInfo.StatusCode.HasValue)
-            {
-                props["http_status"] = errorInfo.StatusCode.Value.ToString();
-            }
-            if (errorInfo.HResult.HasValue)
-            {
-                props["hresult"] = errorInfo.HResult.Value.ToString();
-            }
-            DotnetupTelemetry.Instance.PostEvent("command/failed", props, new Dictionary<string, double>
-            {
-                ["duration_ms"] = stopwatch.Elapsed.TotalMilliseconds
-            });
-
             throw;
         }
         finally
@@ -114,5 +84,31 @@ public abstract class CommandBase
     protected void SetCommandTag(string key, object? value)
     {
         _commandActivity?.SetTag(key, value);
+    }
+
+    /// <summary>
+    /// Records a failure reason without throwing an exception.
+    /// Use this when returning a non-zero exit code to capture the error context.
+    /// </summary>
+    /// <param name="reason">A short error reason code (e.g., "path_mismatch", "download_failed").</param>
+    /// <param name="message">Optional detailed error message.</param>
+    protected void RecordFailure(string reason, string? message = null)
+    {
+        _commandActivity?.SetTag("error.type", reason);
+        if (message != null)
+        {
+            _commandActivity?.SetTag("error.message", message);
+        }
+    }
+
+    /// <summary>
+    /// Records the requested version/channel with PII sanitization.
+    /// Only known safe patterns are passed through; unknown patterns are replaced with "invalid".
+    /// </summary>
+    /// <param name="versionOrChannel">The raw version or channel string from user input.</param>
+    protected void RecordRequestedVersion(string? versionOrChannel)
+    {
+        var sanitized = VersionSanitizer.Sanitize(versionOrChannel);
+        _commandActivity?.SetTag("sdk.requested_version", sanitized);
     }
 }
