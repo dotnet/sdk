@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -37,8 +38,11 @@ internal class InstallerOrchestratorSingleton
 
         if (versionToInstall == null)
         {
-            Console.WriteLine($"\nCould not resolve version for channel '{installRequest.Channel.Name}'.");
-            return new InstallResult(null, WasAlreadyInstalled: false);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.VersionNotFound,
+                $"Could not resolve version for channel '{installRequest.Channel.Name}'. The channel may be invalid or unsupported.",
+                version: installRequest.Channel.Name,
+                component: installRequest.Component.ToString());
         }
 
         DotnetInstall install = new(

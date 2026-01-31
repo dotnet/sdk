@@ -60,7 +60,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             {
                 //  TODO: Add parameter to override error
                 Console.Error.WriteLine($"Error: The install path specified in global.json ({installPathFromGlobalJson}) does not match the install path provided ({_installPath}).");
-                RecordFailure("path_mismatch", $"global.json path ({installPathFromGlobalJson}) != provided path ({_installPath})");
+                RecordFailure("path_mismatch", $"global.json path ({installPathFromGlobalJson}) != provided path ({_installPath})", category: "user");
                 return 1;
             }
 
@@ -294,7 +294,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         if (installResult.Install == null)
         {
             SpectreAnsiConsole.MarkupLine($"[red]Failed to install .NET SDK {resolvedVersion}[/]");
-            RecordFailure("install_failed", $"Failed to install SDK {resolvedVersion}");
+            RecordFailure("install_failed", $"Failed to install SDK {resolvedVersion}", category: "product");
             return 1;
         }
 

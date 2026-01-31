@@ -95,9 +95,11 @@ public abstract class CommandBase
     /// </summary>
     /// <param name="reason">A short error reason code (e.g., "path_mismatch", "download_failed").</param>
     /// <param name="message">Optional detailed error message.</param>
-    protected void RecordFailure(string reason, string? message = null)
+    /// <param name="category">Error category: "user" for input/environment issues, "product" for bugs (default).</param>
+    protected void RecordFailure(string reason, string? message = null, string category = "product")
     {
         _commandActivity?.SetTag("error.type", reason);
+        _commandActivity?.SetTag("error.category", category);
         if (message != null)
         {
             _commandActivity?.SetTag("error.message", message);
