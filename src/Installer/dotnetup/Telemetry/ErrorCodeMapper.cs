@@ -185,6 +185,10 @@ public static class ErrorCodeMapper
             DotnetInstallErrorCode.DownloadFailed => ErrorCategory.Product,    // Server or download logic issue
             DotnetInstallErrorCode.HashMismatch => ErrorCategory.Product,      // Corrupted download or server issue
             DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,  // Our extraction code issue
+            DotnetInstallErrorCode.ManifestFetchFailed => ErrorCategory.Product, // Server unreachable or CDN issue
+            DotnetInstallErrorCode.ManifestParseFailed => ErrorCategory.Product, // Bad manifest or our parsing bug
+            DotnetInstallErrorCode.ArchiveCorrupted => ErrorCategory.Product,  // Bad archive from server or download
+            DotnetInstallErrorCode.InstallationLocked => ErrorCategory.Product, // Our locking mechanism issue
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,           // Unknown = assume product issue
 
             _ => ErrorCategory.Product  // Default to product for new codes

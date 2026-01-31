@@ -125,14 +125,14 @@ public class DotnetInstallManager : IDotnetInstallManager
             new InstallRequestOptions()
         );
 
-        DotnetInstall? newInstall = InstallerOrchestratorSingleton.Instance.Install(request);
-        if (newInstall == null)
+        var installResult = InstallerOrchestratorSingleton.Instance.Install(request);
+        if (installResult.Install == null)
         {
             throw new Exception($"Failed to install .NET SDK {channnel.Name}");
         }
         else
         {
-            Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {newInstall.Version}, available via {newInstall.InstallRoot}[/]");
+            Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
         }
     }
 

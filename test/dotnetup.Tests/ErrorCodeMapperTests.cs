@@ -290,6 +290,10 @@ public class ErrorCodeMapperTests
     [InlineData(DotnetInstallErrorCode.DownloadFailed, ErrorCategory.Product)]
     [InlineData(DotnetInstallErrorCode.HashMismatch, ErrorCategory.Product)]
     [InlineData(DotnetInstallErrorCode.ExtractionFailed, ErrorCategory.Product)]
+    [InlineData(DotnetInstallErrorCode.ManifestFetchFailed, ErrorCategory.Product)]
+    [InlineData(DotnetInstallErrorCode.ManifestParseFailed, ErrorCategory.Product)]
+    [InlineData(DotnetInstallErrorCode.ArchiveCorrupted, ErrorCategory.Product)]
+    [InlineData(DotnetInstallErrorCode.InstallationLocked, ErrorCategory.Product)]
     [InlineData(DotnetInstallErrorCode.Unknown, ErrorCategory.Product)]
     public void GetErrorInfo_DotnetInstallException_HasCorrectCategory(DotnetInstallErrorCode errorCode, ErrorCategory expectedCategory)
     {

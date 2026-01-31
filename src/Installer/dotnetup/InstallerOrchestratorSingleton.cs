@@ -9,6 +9,13 @@ using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
+/// <summary>
+/// Result of an installation operation.
+/// </summary>
+/// <param name="Install">The DotnetInstall, or null if installation failed.</param>
+/// <param name="WasAlreadyInstalled">True if the SDK was already installed and no work was done.</param>
+internal sealed record InstallResult(DotnetInstall? Install, bool WasAlreadyInstalled);
+
 internal class InstallerOrchestratorSingleton
 {
     private static readonly InstallerOrchestratorSingleton _instance = new();
@@ -21,8 +28,8 @@ internal class InstallerOrchestratorSingleton
 
     private ScopedMutex modifyInstallStateMutex() => new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
-    // Returns null on failure, DotnetInstall on success
-    public DotnetInstall? Install(DotnetInstallRequest installRequest, bool noProgress = false)
+    // Returns InstallResult with Install=null on failure, or Install=DotnetInstall on success
+    public InstallResult Install(DotnetInstallRequest installRequest, bool noProgress = false)
     {
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
         ReleaseManifest releaseManifest = new();
@@ -31,7 +38,7 @@ internal class InstallerOrchestratorSingleton
         if (versionToInstall == null)
         {
             Console.WriteLine($"\nCould not resolve version for channel '{installRequest.Channel.Name}'.");
-            return null;
+            return new InstallResult(null, WasAlreadyInstalled: false);
         }
 
         DotnetInstall install = new(
@@ -48,7 +55,7 @@ internal class InstallerOrchestratorSingleton
             if (InstallAlreadyExists(install, customManifestPath))
             {
                 Console.WriteLine($"\n.NET SDK {versionToInstall} is already installed, skipping installation.");
-                return install;
+                return new InstallResult(install, WasAlreadyInstalled: true);
             }
         }
 
@@ -62,7 +69,7 @@ internal class InstallerOrchestratorSingleton
         {
             if (InstallAlreadyExists(install, customManifestPath))
             {
-                return install;
+                return new InstallResult(install, WasAlreadyInstalled: true);
             }
 
             installer.Commit();
@@ -75,11 +82,11 @@ internal class InstallerOrchestratorSingleton
             }
             else
             {
-                return null;
+                return new InstallResult(null, WasAlreadyInstalled: false);
             }
         }
 
-        return install;
+        return new InstallResult(install, WasAlreadyInstalled: false);
     }
 
     /// <summary>

@@ -265,18 +265,20 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         SpectreAnsiConsole.MarkupLineInterpolated($"Installing .NET SDK [blue]{resolvedVersion}[/] to [blue]{resolvedInstallPath}[/]...");
 
-        DotnetInstall? mainInstall;
-
         // Pass the _noProgress flag to the InstallerOrchestratorSingleton
         // The orchestrator will handle installation with or without progress based on the flag
-        mainInstall = InstallerOrchestratorSingleton.Instance.Install(installRequest, _noProgress);
-        if (mainInstall == null)
+        var installResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, _noProgress);
+        if (installResult.Install == null)
         {
             SpectreAnsiConsole.MarkupLine($"[red]Failed to install .NET SDK {resolvedVersion}[/]");
             RecordFailure("install_failed", $"Failed to install SDK {resolvedVersion}");
             return 1;
         }
-        SpectreAnsiConsole.MarkupLine($"[green]Installed .NET SDK {mainInstall.Version}, available via {mainInstall.InstallRoot}[/]");
+
+        // Record installation outcome for telemetry
+        SetCommandTag("install.result", installResult.WasAlreadyInstalled ? "already_installed" : "installed");
+
+        SpectreAnsiConsole.MarkupLine($"[green]Installed .NET SDK {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
 
         // Install any additional versions
         foreach (var additionalVersion in additionalVersionsToInstall)
@@ -292,14 +294,14 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 });
 
             // Install the additional version with the same progress settings as the main installation
-            DotnetInstall? additionalInstall = InstallerOrchestratorSingleton.Instance.Install(additionalRequest);
-            if (additionalInstall == null)
+            var additionalResult = InstallerOrchestratorSingleton.Instance.Install(additionalRequest);
+            if (additionalResult.Install == null)
             {
                 SpectreAnsiConsole.MarkupLine($"[red]Failed to install additional .NET SDK {additionalVersion}[/]");
             }
             else
             {
-                SpectreAnsiConsole.MarkupLine($"[green]Installed additional .NET SDK {additionalInstall.Version}, available via {additionalInstall.InstallRoot}[/]");
+                SpectreAnsiConsole.MarkupLine($"[green]Installed additional .NET SDK {additionalResult.Install.Version}, available via {additionalResult.Install.InstallRoot}[/]");
             }
         }
 

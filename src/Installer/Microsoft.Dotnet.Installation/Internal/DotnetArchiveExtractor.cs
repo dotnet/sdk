@@ -7,6 +7,7 @@ using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -48,10 +49,29 @@ internal class DotnetArchiveExtractor : IDisposable
             downloadTask.Value = 100;
             downloadTask.Complete();
         }
+        catch (DotnetInstallException)
+        {
+            throw;
+        }
+        catch (HttpRequestException ex)
+        {
+            downloadTask.RecordError(ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.DownloadFailed,
+                $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
         catch (Exception ex)
         {
             downloadTask.RecordError(ex);
-            throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.DownloadFailed,
+                $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
         }
     }
 
@@ -70,10 +90,30 @@ internal class DotnetArchiveExtractor : IDisposable
             installTask.SetTag("extract.file_count", _extractedFileCount);
             installTask.Complete();
         }
+        catch (DotnetInstallException)
+        {
+            throw;
+        }
+        catch (InvalidDataException ex)
+        {
+            // Archive is corrupted (invalid zip/tar format)
+            installTask.RecordError(ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ArchiveCorrupted,
+                $"Archive is corrupted or truncated for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
         catch (Exception ex)
         {
             installTask.RecordError(ex);
-            throw;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ExtractionFailed,
+                $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
         }
     }
 

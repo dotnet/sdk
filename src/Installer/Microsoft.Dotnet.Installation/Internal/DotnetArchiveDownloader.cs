@@ -209,16 +209,34 @@ internal class DotnetArchiveDownloader : IDisposable
         IProgressTask? telemetryTask = null)
     {
         var targetFile = _releaseManifest.FindReleaseFile(installRequest, resolvedVersion);
-        string? downloadUrl = targetFile?.Address.ToString();
-        string? expectedHash = targetFile?.Hash.ToString();
+
+        if (targetFile == null)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.NoMatchingFile,
+                $"No matching file found for {installRequest.Component} version {resolvedVersion} on {installRequest.InstallRoot.Architecture}",
+                version: resolvedVersion.ToString(),
+                component: installRequest.Component.ToString());
+        }
+
+        string? downloadUrl = targetFile.Address.ToString();
+        string? expectedHash = targetFile.Hash.ToString();
 
         if (string.IsNullOrEmpty(expectedHash))
         {
-            throw new ArgumentException($"{nameof(expectedHash)} cannot be null or empty");
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"No hash found in manifest for {resolvedVersion}",
+                version: resolvedVersion.ToString(),
+                component: installRequest.Component.ToString());
         }
         if (string.IsNullOrEmpty(downloadUrl))
         {
-            throw new ArgumentException($"{nameof(downloadUrl)} cannot be null or empty");
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"No download URL found in manifest for {resolvedVersion}",
+                version: resolvedVersion.ToString(),
+                component: installRequest.Component.ToString());
         }
 
         // Set download URL domain for telemetry
@@ -314,7 +332,9 @@ internal class DotnetArchiveDownloader : IDisposable
         string actualHash = ComputeFileHash(filePath);
         if (!string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
         {
-            throw new Exception($"File hash mismatch. Expected: {expectedHash}, Actual: {actualHash}");
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.HashMismatch,
+                $"File hash mismatch. Expected: {expectedHash}, Actual: {actualHash}");
         }
     }
 

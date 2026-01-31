@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Net.Http;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 
@@ -46,6 +47,24 @@ internal class ReleaseManifest
         catch (DotnetInstallException)
         {
             throw;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestFetchFailed,
+                $"Failed to fetch release manifest: {ex.Message}",
+                ex,
+                version: resolvedVersion.ToString(),
+                component: installRequest.Component.ToString());
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"Failed to parse release manifest: {ex.Message}",
+                ex,
+                version: resolvedVersion.ToString(),
+                component: installRequest.Component.ToString());
         }
         catch (Exception ex)
         {
