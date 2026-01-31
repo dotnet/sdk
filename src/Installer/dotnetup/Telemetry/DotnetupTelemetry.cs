@@ -146,7 +146,9 @@ public sealed class DotnetupTelemetry : IDisposable
 
         var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
 
-        activity.SetStatus(ActivityStatusCode.Error, ex.Message);
+        // Don't pass ex.Message to SetStatus - it can contain PII (paths, user input, etc.)
+        // Use the error type as the status description instead
+        activity.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
         activity.SetTag("error.type", errorInfo.ErrorType);
         activity.SetTag("error.code", errorCode ?? errorInfo.ErrorType);
         activity.SetTag("error.category", errorInfo.Category.ToString().ToLowerInvariant());
@@ -176,7 +178,10 @@ public sealed class DotnetupTelemetry : IDisposable
             activity.SetTag("error.exception_chain", errorInfo.ExceptionChain);
         }
 
-        activity.RecordException(ex);
+        // NOTE: We intentionally do NOT call activity.RecordException(ex) because:
+        // 1. Exception messages can contain PII (file paths, user input, etc.)
+        // 2. Stack traces contain internal implementation details
+        // 3. We capture all relevant info via sanitized tags above
     }
 
     /// <summary>

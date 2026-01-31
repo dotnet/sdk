@@ -38,10 +38,12 @@ internal class InstallerOrchestratorSingleton
 
         if (versionToInstall == null)
         {
+            // Don't pass raw user input to exception - it goes to telemetry
+            // Just report that the version couldn't be resolved
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.VersionNotFound,
-                $"Could not resolve version for channel '{installRequest.Channel.Name}'. The channel may be invalid or unsupported.",
-                version: installRequest.Channel.Name,
+                $"Could not resolve version for the specified channel. The channel may be invalid or unsupported.",
+                version: null, // Don't include user input in telemetry
                 component: installRequest.Component.ToString());
         }
 

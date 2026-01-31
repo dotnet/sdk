@@ -93,13 +93,15 @@ public class SpectreProgressTarget : IProgressTarget
         public void RecordError(Exception ex)
         {
             if (_activity == null) return;
-            
+
             // Use ErrorCodeMapper for rich error metadata (same as command-level telemetry)
             var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-            
-            _activity.SetStatus(ActivityStatusCode.Error, ex.Message);
+
+            // Don't pass ex.Message - it can contain PII (paths, user input)
+            _activity.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
             _activity.SetTag("error.type", errorInfo.ErrorType);
-            
+            _activity.SetTag("error.category", errorInfo.Category.ToString().ToLowerInvariant());
+
             if (errorInfo.StatusCode.HasValue)
             {
                 _activity.SetTag("error.http_status", errorInfo.StatusCode.Value);
@@ -125,7 +127,8 @@ public class SpectreProgressTarget : IProgressTarget
                 _activity.SetTag("error.exception_chain", errorInfo.ExceptionChain);
             }
 
-            _activity.RecordException(ex);
+            // NOTE: We intentionally do NOT call _activity.RecordException(ex)
+            // because exception messages/stacks can contain PII
         }
 
         public void Complete()

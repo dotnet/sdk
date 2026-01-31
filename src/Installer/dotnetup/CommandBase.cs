@@ -51,8 +51,7 @@ public abstract class CommandBase
             _commandActivity?.SetTag("duration_ms", stopwatch.Elapsed.TotalMilliseconds);
             _commandActivity?.SetTag("exit.code", 1);
             DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
-            // Activity status is set inside RecordException, but explicitly set it here too
-            _commandActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            // Status is already set inside RecordException with error type (no PII)
             throw;
         }
         finally

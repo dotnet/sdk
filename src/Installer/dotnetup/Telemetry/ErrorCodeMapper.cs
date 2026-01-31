@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Runtime.InteropServices;
 using Microsoft.Dotnet.Installation;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
@@ -78,10 +79,11 @@ public static class ErrorCodeMapper
         return ex switch
         {
             // DotnetInstallException has specific error codes - categorize by error code
+            // Sanitize the version to prevent PII leakage (user could have typed anything)
             DotnetInstallException installEx => new ExceptionErrorInfo(
                 installEx.ErrorCode.ToString(),
                 Category: GetInstallErrorCategory(installEx.ErrorCode),
-                Details: installEx.Version,
+                Details: installEx.Version is not null ? VersionSanitizer.Sanitize(installEx.Version) : null,
                 SourceLocation: sourceLocation,
                 ExceptionChain: exceptionChain),
 
@@ -227,17 +229,18 @@ public static class ErrorCodeMapper
         string? details;
         ErrorCategory category;
 
-        // On Windows, use Win32Exception to get the readable error message
+        // On Windows, use HResult to derive error type
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && ioEx.HResult != 0)
         {
             // Extract the Win32 error code from HResult (lower 16 bits)
             var win32ErrorCode = ioEx.HResult & 0xFFFF;
-            var win32Ex = new Win32Exception(win32ErrorCode);
-            details = win32Ex.Message;
 
             // Derive a short error type from the HResult
             errorType = GetWindowsErrorType(ioEx.HResult);
             category = GetIOErrorCategory(errorType);
+            // Don't use win32Ex.Message - it can contain paths/PII
+            // Just use the error code for details
+            details = $"win32_error_{win32ErrorCode}";
         }
         else
         {
