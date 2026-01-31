@@ -52,6 +52,12 @@ public enum DotnetInstallErrorCode
 
     /// <summary>Another installation process is already running.</summary>
     InstallationLocked,
+
+    /// <summary>Failed to read/write the dotnetup installation manifest.</summary>
+    LocalManifestError,
+
+    /// <summary>The dotnetup installation manifest is corrupted.</summary>
+    LocalManifestCorrupted,
 }
 
 /// <summary>

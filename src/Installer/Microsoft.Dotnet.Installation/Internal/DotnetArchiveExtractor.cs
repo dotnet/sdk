@@ -170,6 +170,7 @@ internal class DotnetArchiveExtractor : IDisposable
                         File.Delete(muxerTargetPath);
                     }
                     File.Move(muxerTempPath, muxerTargetPath);
+                    installTask?.SetTag("muxer.action", "kept_existing");
                 }
                 else
                 {
@@ -178,7 +179,14 @@ internal class DotnetArchiveExtractor : IDisposable
                     {
                         File.Delete(muxerTempPath);
                     }
+                    installTask?.SetTag("muxer.action", "updated");
+                    installTask?.SetTag("muxer.previous_version", existingMuxerVersion?.ToString() ?? "unknown");
+                    installTask?.SetTag("muxer.new_version", newMuxerVersion?.ToString() ?? "unknown");
                 }
+            }
+            else if (!hadExistingMuxer)
+            {
+                installTask?.SetTag("muxer.action", "new_install");
             }
         }
         catch

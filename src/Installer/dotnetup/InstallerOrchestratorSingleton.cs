@@ -52,6 +52,12 @@ internal class InstallerOrchestratorSingleton
         // read write mutex only for manifest?
         using (var finalizeLock = modifyInstallStateMutex())
         {
+            if (!finalizeLock.HasHandle)
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.InstallationLocked,
+                    $"Could not acquire installation lock. Another dotnetup or installation process may be running.");
+            }
             if (InstallAlreadyExists(install, customManifestPath))
             {
                 Console.WriteLine($"\n.NET SDK {versionToInstall} is already installed, skipping installation.");
@@ -67,6 +73,12 @@ internal class InstallerOrchestratorSingleton
         // Extract and commit the install to the directory
         using (var finalizeLock = modifyInstallStateMutex())
         {
+            if (!finalizeLock.HasHandle)
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.InstallationLocked,
+                    $"Could not acquire installation lock. Another dotnetup or installation process may be running.");
+            }
             if (InstallAlreadyExists(install, customManifestPath))
             {
                 return new InstallResult(install, WasAlreadyInstalled: true);

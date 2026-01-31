@@ -294,6 +294,8 @@ public class ErrorCodeMapperTests
     [InlineData(DotnetInstallErrorCode.ManifestParseFailed, ErrorCategory.Product)]
     [InlineData(DotnetInstallErrorCode.ArchiveCorrupted, ErrorCategory.Product)]
     [InlineData(DotnetInstallErrorCode.InstallationLocked, ErrorCategory.Product)]
+    [InlineData(DotnetInstallErrorCode.LocalManifestError, ErrorCategory.Product)]
+    [InlineData(DotnetInstallErrorCode.LocalManifestCorrupted, ErrorCategory.Product)]
     [InlineData(DotnetInstallErrorCode.Unknown, ErrorCategory.Product)]
     public void GetErrorInfo_DotnetInstallException_HasCorrectCategory(DotnetInstallErrorCode errorCode, ErrorCategory expectedCategory)
     {

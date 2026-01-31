@@ -189,6 +189,8 @@ public static class ErrorCodeMapper
             DotnetInstallErrorCode.ManifestParseFailed => ErrorCategory.Product, // Bad manifest or our parsing bug
             DotnetInstallErrorCode.ArchiveCorrupted => ErrorCategory.Product,  // Bad archive from server or download
             DotnetInstallErrorCode.InstallationLocked => ErrorCategory.Product, // Our locking mechanism issue
+            DotnetInstallErrorCode.LocalManifestError => ErrorCategory.Product, // File system issue with our manifest
+            DotnetInstallErrorCode.LocalManifestCorrupted => ErrorCategory.Product, // Our manifest is corrupt - we should handle
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,           // Unknown = assume product issue
 
             _ => ErrorCategory.Product  // Default to product for new codes

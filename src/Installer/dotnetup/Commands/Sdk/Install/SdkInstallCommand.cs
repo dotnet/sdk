@@ -34,11 +34,21 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         // Record the raw requested version with PII sanitization (for backwards compatibility)
         RecordRequestedVersion(_versionOrChannel);
 
+        // Track if user explicitly specified install path via -d option
+        SetCommandTag("install.path_explicit", _installPath is not null);
+
         var globalJsonInfo = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
+
+        // Track if global.json was present in the project
+        SetCommandTag("install.has_global_json", globalJsonInfo?.GlobalJsonPath is not null);
 
         var currentDotnetInstallRoot = _dotnetInstaller.GetConfiguredInstallType();
 
+        // Track the current install configuration state
+        SetCommandTag("install.existing_install_type", currentDotnetInstallRoot?.InstallType.ToString() ?? "none");
+
         string? resolvedInstallPath = null;
+        string installPathSource = "default"; // Track how install path was determined
 
         string? installPathFromGlobalJson = null;
         if (globalJsonInfo?.GlobalJsonPath is not null)
@@ -55,17 +65,20 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             }
 
             resolvedInstallPath = installPathFromGlobalJson;
+            installPathSource = "global_json";
         }
 
-        if (resolvedInstallPath == null)
+        if (resolvedInstallPath == null && _installPath is not null)
         {
             resolvedInstallPath = _installPath;
+            installPathSource = "explicit";  // User specified -d / --install-path
         }
 
         if (resolvedInstallPath == null && currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
         {
             //  If a user installation is already set up, we don't need to prompt for the install path
             resolvedInstallPath = currentDotnetInstallRoot.Path;
+            installPathSource = "existing_user_install";
         }
 
         if (resolvedInstallPath == null)
@@ -75,13 +88,19 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 resolvedInstallPath = SpectreAnsiConsole.Prompt(
                     new TextPrompt<string>("Where should we install the .NET SDK to?)")
                         .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
+                installPathSource = "interactive_prompt";
             }
             else
             {
                 //  If no install path is specified, use the default install path
                 resolvedInstallPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
+                installPathSource = "default";
             }
         }
+
+        // Record install path source and type classification
+        SetCommandTag("install.path_source", installPathSource);
+        SetCommandTag("install.path_type", ClassifyInstallPath(resolvedInstallPath));
 
         string? channelFromGlobalJson = null;
         if (globalJsonInfo?.GlobalJsonPath is not null)
@@ -240,6 +259,9 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         if (resolvedSetDefaultInstall == true && currentDotnetInstallRoot?.InstallType == InstallType.Admin)
         {
+            // Track admin-to-user migration scenario
+            SetCommandTag("install.migrating_from_admin", true);
+
             if (_interactive)
             {
                 var latestAdminVersion = _dotnetInstaller.GetLatestInstalledAdminVersion();
@@ -252,6 +274,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                         defaultValue: true))
                     {
                         additionalVersionsToInstall.Add(latestAdminVersion);
+                        SetCommandTag("install.admin_version_copied", true);
                     }
                 }
             }
@@ -332,4 +355,57 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         return Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_CHANNEL");
     }
 
-}
+    /// <summary>
+    /// Classifies the install path for telemetry (no PII - just the type).
+    /// </summary>
+    private static string ClassifyInstallPath(string path)
+    {
+        var fullPath = Path.GetFullPath(path);
+
+        if (OperatingSystem.IsWindows())
+        {
+            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
+            // Check if user is trying to install to a system path (Program Files)
+            if (!string.IsNullOrEmpty(programFiles) && fullPath.StartsWith(programFiles, StringComparison.OrdinalIgnoreCase))
+            {
+                return "system_programfiles";
+            }
+            if (!string.IsNullOrEmpty(programFilesX86) && fullPath.StartsWith(programFilesX86, StringComparison.OrdinalIgnoreCase))
+            {
+                return "system_programfiles_x86";
+            }
+
+            // Check if it's in user profile
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (!string.IsNullOrEmpty(userProfile) && fullPath.StartsWith(userProfile, StringComparison.OrdinalIgnoreCase))
+            {
+                return "user_profile";
+            }
+
+            // Check if it's in local app data (default location)
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            if (!string.IsNullOrEmpty(localAppData) && fullPath.StartsWith(localAppData, StringComparison.OrdinalIgnoreCase))
+            {
+                return "local_appdata";
+            }
+        }
+        else
+        {
+            // Unix-like systems
+            if (fullPath.StartsWith("/usr/", StringComparison.Ordinal) ||
+                fullPath.StartsWith("/opt/", StringComparison.Ordinal))
+            {
+                return "system_path";
+            }
+
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (!string.IsNullOrEmpty(home) && fullPath.StartsWith(home, StringComparison.Ordinal))
+            {
+                return "user_home";
+            }
+        }
+
+        return "other";
+    }}

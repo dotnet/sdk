@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -70,7 +71,19 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         AssertHasFinalizationMutex();
         EnsureManifestExists();
 
-        var json = File.ReadAllText(ManifestPath);
+        string json;
+        try
+        {
+            json = File.ReadAllText(ManifestPath);
+        }
+        catch (IOException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.LocalManifestError,
+                $"Failed to read dotnetup manifest at {ManifestPath}: {ex.Message}",
+                ex);
+        }
+
         try
         {
             var installs = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.ListDotnetInstall);
@@ -90,7 +103,10 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
         catch (JsonException ex)
         {
-            throw new InvalidOperationException($"The dotnetup manifest is corrupt or inaccessible", ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.LocalManifestCorrupted,
+                $"The dotnetup manifest at {ManifestPath} is corrupt. Consider deleting it and re-running the install.",
+                ex);
         }
     }
 
