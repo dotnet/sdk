@@ -126,8 +126,6 @@ public class ListCommandTests
 
             root.TryGetProperty("installations", out var installationsArray).Should().BeTrue();
             installationsArray.GetArrayLength().Should().Be(1);
-            root.TryGetProperty("total", out var total).Should().BeTrue();
-            total.GetInt32().Should().Be(1);
 
             var firstInstall = installationsArray[0];
             firstInstall.GetProperty("component").GetString().Should().Be("sdk");
@@ -142,7 +140,7 @@ public class ListCommandTests
     }
 
     [Fact]
-    public void InstallationLister_WriteJson_EmptyList_ShouldHaveZeroTotal()
+    public void InstallationLister_WriteJson_EmptyList_ShouldHaveEmptyInstallations()
     {
         // Arrange
         var installations = new List<InstallationInfo>();
@@ -156,7 +154,6 @@ public class ListCommandTests
         using var doc = JsonDocument.Parse(output);
         var root = doc.RootElement;
 
-        root.GetProperty("total").GetInt32().Should().Be(0);
         root.GetProperty("installations").GetArrayLength().Should().Be(0);
     }
 }

@@ -87,8 +87,7 @@ The `--json` option outputs the list in a machine-readable JSON format:
       "installRoot": "C:\\Users\\user\\.dotnet",
       "architecture": "x64"
     }
-  ],
-  "total": 3
+  ]
 }
 ```
 
@@ -125,13 +124,9 @@ The `--json` option outputs the list in a machine-readable JSON format:
         },
         "required": ["component", "version", "installRoot", "architecture"]
       }
-    },
-    "total": {
-      "type": "integer",
-      "description": "Total number of installations"
     }
   },
-  "required": ["installations", "total"]
+  "required": ["installations"]
 }
 ```
 

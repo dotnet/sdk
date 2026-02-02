@@ -117,7 +117,8 @@ internal class DotnetupFullInfo
     public List<InstallationInfo>? Installations { get; set; }
 }
 
-[JsonSerializable(typeof(DotnetupInfo))]
+// Note: DotnetupInfo is not serialized directly (only DotnetupFullInfo is),
+// so we don't need it in the JSON context
 [JsonSerializable(typeof(DotnetupFullInfo))]
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 internal partial class DotnetupInfoJsonContext : JsonSerializerContext
