@@ -12,12 +12,12 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 
 internal class ListCommand : CommandBase
 {
-    private readonly bool _jsonOutput;
+    private readonly OutputFormat _format;
     private readonly bool _skipVerification;
 
     public ListCommand(ParseResult parseResult) : base(parseResult)
     {
-        _jsonOutput = parseResult.GetValue(CommonOptions.JsonOption);
+        _format = parseResult.GetValue(CommonOptions.FormatOption);
         _skipVerification = parseResult.GetValue(ListCommandParser.NoVerifyOption);
     }
 
@@ -25,7 +25,7 @@ internal class ListCommand : CommandBase
     {
         var installations = InstallationLister.GetInstallations(verify: !_skipVerification);
 
-        if (_jsonOutput)
+        if (_format == OutputFormat.Json)
         {
             InstallationLister.WriteJson(Console.Out, installations);
         }

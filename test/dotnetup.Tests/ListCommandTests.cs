@@ -10,11 +10,11 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class ListCommandTests
 {
     [Theory]
-    [InlineData(new[] { "list" }, false, false)]
-    [InlineData(new[] { "list", "--json" }, true, false)]
-    [InlineData(new[] { "list", "--no-verify" }, false, true)]
-    [InlineData(new[] { "list", "--json", "--no-verify" }, true, true)]
-    public void Parser_ShouldParseListCommand(string[] args, bool expectedJson, bool expectedNoVerify)
+    [InlineData(new[] { "list" }, OutputFormat.Text, false)]
+    [InlineData(new[] { "list", "--format", "json" }, OutputFormat.Json, false)]
+    [InlineData(new[] { "list", "--no-verify" }, OutputFormat.Text, true)]
+    [InlineData(new[] { "list", "--format", "json", "--no-verify" }, OutputFormat.Json, true)]
+    public void Parser_ShouldParseListCommand(string[] args, OutputFormat expectedFormat, bool expectedNoVerify)
     {
         // Act
         var parseResult = Parser.Parse(args);
@@ -22,7 +22,7 @@ public class ListCommandTests
         // Assert
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
-        parseResult.GetValue(CommonOptions.JsonOption).Should().Be(expectedJson);
+        parseResult.GetValue(CommonOptions.FormatOption).Should().Be(expectedFormat);
         parseResult.GetValue(ListCommandParser.NoVerifyOption).Should().Be(expectedNoVerify);
     }
 

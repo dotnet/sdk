@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 
 internal static class ListCommandParser
 {
-    public static Option<bool> JsonOption => CommonOptions.JsonOption;
+    public static Option<OutputFormat> FormatOption => CommonOptions.FormatOption;
 
     public static readonly Option<bool> NoVerifyOption = new("--no-verify")
     {
@@ -26,7 +26,7 @@ internal static class ListCommandParser
     {
         Command command = new("list", Strings.ListCommandDescription);
 
-        command.Options.Add(JsonOption);
+        command.Options.Add(FormatOption);
         command.Options.Add(NoVerifyOption);
 
         command.SetAction(parseResult => new ListCommand(parseResult).Execute());

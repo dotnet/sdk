@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
 internal static class InfoCommand
 {
-    public static int Execute(bool jsonOutput, bool noList = false, TextWriter? output = null)
+    public static int Execute(OutputFormat format, bool noList = false, TextWriter? output = null)
     {
         output ??= Console.Out;
 
@@ -24,7 +24,7 @@ internal static class InfoCommand
             installations = InstallationLister.GetInstallations(verify: true);
         }
 
-        if (jsonOutput)
+        if (format == OutputFormat.Json)
         {
             PrintJsonInfo(output, info, installations);
         }
