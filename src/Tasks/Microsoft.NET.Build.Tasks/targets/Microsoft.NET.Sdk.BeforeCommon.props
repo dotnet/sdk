@@ -15,8 +15,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETCoreSdkBundledVersionsProps>$(MSBuildThisFileDirectory)..\..\..\Microsoft.NETCoreSdk.BundledVersions.props</NETCoreSdkBundledVersionsProps>
   </PropertyGroup>
 
-  <!-- Import bundled version information that needs to be availble before the Common.props / D.B.props import
+  <!-- Import bundled version information that needs to be available before the Common.props / D.B.props import
        in order for users to be able to reference it. -->
-  <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="Exists('$(NETCoreSdkBundledVersionsProps)')" /> 
+  <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="'$(NetCoreSdkRoot)' == '' and Exists('$(NETCoreSdkBundledVersionsProps)')" /> 
 
 </Project>
