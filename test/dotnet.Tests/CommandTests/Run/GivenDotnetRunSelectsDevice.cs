@@ -451,7 +451,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         string buildBinlogPath = Path.Combine(testInstance.Path, "msbuild.binlog");
         string runBinlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
 
-        // Run with EnableRuntimeEnvironmentVariableSupport=false to disable the capability
+        // Run with EnableRuntimeEnvironmentVariableSupport=false to opt out of the capability
         var result = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
             .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId,
