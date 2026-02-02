@@ -138,7 +138,12 @@ internal class InstallationInfo
     public string Architecture { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets the display name for this component as shown by dotnet --list-runtimes (e.g., "Microsoft.NETCore.App").
+    /// Gets the official framework name for JSON output (e.g., "Microsoft.NETCore.App").
+    /// </summary>
+    public string FrameworkName => ParseComponent().GetFrameworkName();
+
+    /// <summary>
+    /// Gets the human-readable display name for this component (e.g., "dotnet (runtime)").
     /// Not serialized to JSON.
     /// </summary>
     [JsonIgnore]

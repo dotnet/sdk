@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
@@ -75,10 +76,23 @@ internal static class InfoCommand
     private static void PrintHumanReadableInfo(TextWriter output, DotnetupInfo info, List<InstallationInfo>? installations)
     {
         output.WriteLine(Strings.InfoHeader);
-        output.WriteLine($" Version:      {info.Version}");
-        output.WriteLine($" Commit:       {info.Commit}");
-        output.WriteLine($" Architecture: {info.Architecture}");
-        output.WriteLine($" RID:          {info.Rid}");
+
+        // Create an AnsiConsole that writes to our TextWriter
+        var console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Out = new AnsiConsoleOutput(output)
+        });
+
+        var grid = new Grid();
+        grid.AddColumn(new GridColumn().PadLeft(1).PadRight(1).NoWrap());
+        grid.AddColumn(new GridColumn().NoWrap());
+
+        grid.AddRow("Version:", info.Version);
+        grid.AddRow("Commit:", info.Commit);
+        grid.AddRow("Architecture:", info.Architecture);
+        grid.AddRow("RID:", info.Rid);
+
+        console.Write(grid);
 
         if (installations is not null)
         {

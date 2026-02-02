@@ -72,10 +72,10 @@ public class ListCommandTests
             InstallationLister.WriteHumanReadable(sw, installations);
             var output = sw.ToString();
 
-            // Assert - should use full display names like dotnet --list-runtimes
+            // Assert - should use shorter, punchier display names per @baronfel's suggestion
             output.Should().Contain(".NET SDK");
             output.Should().Contain("9.0.100");
-            output.Should().Contain("Microsoft.NETCore.App");
+            output.Should().Contain("dotnet (runtime)");
             output.Should().Contain("9.0.0");
             output.Should().Contain(testInstallRoot);
             output.Should().Contain("Total: 2");
