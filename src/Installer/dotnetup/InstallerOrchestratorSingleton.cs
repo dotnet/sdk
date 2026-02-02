@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -70,9 +72,11 @@ internal class InstallerOrchestratorSingleton
         {
             if (!finalizeLock.HasHandle)
             {
-                throw new DotnetInstallException(
-                    DotnetInstallErrorCode.InstallationLocked,
-                    $"Could not acquire installation lock. Another dotnetup or installation process may be running.");
+                // Log for telemetry but don't block - we may risk clobber but prefer UX over safety here
+                // See: https://github.com/dotnet/sdk/issues/52789 for tracking
+                Activity.Current?.SetTag("install.mutex_lock_failed", true);
+                Activity.Current?.SetTag("install.mutex_lock_phase", "pre_check");
+                Console.Error.WriteLine("Warning: Could not acquire installation lock. Another dotnetup process may be running. Proceeding anyway.");
             }
             if (InstallAlreadyExists(install, customManifestPath))
             {
@@ -91,9 +95,11 @@ internal class InstallerOrchestratorSingleton
         {
             if (!finalizeLock.HasHandle)
             {
-                throw new DotnetInstallException(
-                    DotnetInstallErrorCode.InstallationLocked,
-                    $"Could not acquire installation lock. Another dotnetup or installation process may be running.");
+                // Log for telemetry but don't block - we may risk clobber but prefer UX over safety here
+                // See: https://github.com/dotnet/sdk/issues/52789 for tracking
+                Activity.Current?.SetTag("install.mutex_lock_failed", true);
+                Activity.Current?.SetTag("install.mutex_lock_phase", "commit");
+                Console.Error.WriteLine("Warning: Could not acquire installation lock. Another dotnetup process may be running. Proceeding anyway.");
             }
             if (InstallAlreadyExists(install, customManifestPath))
             {
