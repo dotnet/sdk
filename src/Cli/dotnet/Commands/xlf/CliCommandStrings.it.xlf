@@ -3972,7 +3972,7 @@ Per visualizzare un valore, specifica l'opzione della riga di comando corrispond
       </trans-unit>
       <trans-unit id="WorkloadSetHasMissingManifests">
         <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
-        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <target state="translated">Nella versione {0} del set di carichi di lavoro mancano alcuni file manifesto, probabilmente rimossi da Gestione pacchetti. Eseguire "dotnet workload repair" per risolvere il problema.</target>
         <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
