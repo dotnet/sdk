@@ -159,9 +159,8 @@ internal static class FileLevelDirectiveHelpers
                 if (CSharpDirective.Parse(context) is { } directive)
                 {
                     // If the directive is already present, report an error.
-                    if (deduplicated.ContainsKey(directive))
+                    if (deduplicated.TryGetValue(directive, out var existingDirective))
                     {
-                        var existingDirective = deduplicated[directive];
                         var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
                         reportError(sourceFile, directive.Info.Span, string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
                     }
