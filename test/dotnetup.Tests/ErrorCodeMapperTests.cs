@@ -22,10 +22,10 @@ public class ErrorCodeMapperTests
 
         Assert.Equal("DiskFull", info.ErrorType);
         Assert.Equal(unchecked((int)0x80070070), info.HResult);
-        // On Windows, we get the readable message from Win32Exception
+        // Details contain the win32 error code for PII safety
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            Assert.Contains("not enough space", info.Details, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("win32_error_112", info.Details); // ERROR_DISK_FULL = 112
         }
         else
         {
@@ -42,11 +42,10 @@ public class ErrorCodeMapperTests
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
         Assert.Equal("SharingViolation", info.ErrorType);
-        // On Windows, we get the readable message
+        // Details contain the win32 error code
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            Assert.NotNull(info.Details);
-            Assert.NotEmpty(info.Details!);
+            Assert.Equal("win32_error_32", info.Details); // ERROR_SHARING_VIOLATION = 32
         }
         else
         {
@@ -62,10 +61,10 @@ public class ErrorCodeMapperTests
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
         Assert.Equal("PathTooLong", info.ErrorType);
-        // On Windows, we get the readable message
+        // Details contain the win32 error code for PII safety
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            Assert.Contains("too long", info.Details, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("win32_error_206", info.Details); // ERROR_FILENAME_EXCED_RANGE = 206
         }
         else
         {
@@ -196,10 +195,10 @@ public class ErrorCodeMapperTests
 
         Assert.Equal("DiskFull", info.ErrorType);
         Assert.Equal(unchecked((int)0x80070070), info.HResult);
-        // On Windows, we get the readable message from Win32Exception
+        // Details contain the win32 error code for PII safety
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            Assert.Contains("not enough space", info.Details, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("win32_error_112", info.Details); // ERROR_DISK_FULL = 112
         }
         else
         {
@@ -246,10 +245,10 @@ public class ErrorCodeMapperTests
         var info = ErrorCodeMapper.GetErrorInfo(ex);
 
         Assert.Equal("NetworkPathNotFound", info.ErrorType);
-        // On Windows, we get the readable message
+        // Details contain the win32 error code for PII safety
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            Assert.Contains("network path", info.Details, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("win32_error_53", info.Details); // ERROR_BAD_NETPATH = 53
         }
         else
         {
@@ -267,10 +266,10 @@ public class ErrorCodeMapperTests
 
         Assert.Equal("AlreadyExists", info.ErrorType);
         Assert.Equal(unchecked((int)0x800700B7), info.HResult);
-        // On Windows, we get the readable message
+        // Details contain the win32 error code for PII safety
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            Assert.Contains("already exists", info.Details, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("win32_error_183", info.Details); // ERROR_ALREADY_EXISTS = 183
         }
         else
         {

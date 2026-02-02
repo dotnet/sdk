@@ -36,8 +36,7 @@
                     "moduleLoad": false
                 },
                 "env": {
-                    "DOTNETUP_DEV_BUILD": "1",
-                    "DOTNET_CLI_TELEMETRY_OPTOUT": "0"
+                    "DOTNETUP_DEV_BUILD": "1"
                 }
             },
             {

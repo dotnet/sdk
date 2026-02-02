@@ -96,39 +96,7 @@ public class SpectreProgressTarget : IProgressTarget
 
             // Use ErrorCodeMapper for rich error metadata (same as command-level telemetry)
             var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-
-            // Don't pass ex.Message - it can contain PII (paths, user input)
-            _activity.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
-            _activity.SetTag("error.type", errorInfo.ErrorType);
-            _activity.SetTag("error.category", errorInfo.Category.ToString().ToLowerInvariant());
-
-            if (errorInfo.StatusCode.HasValue)
-            {
-                _activity.SetTag("error.http_status", errorInfo.StatusCode.Value);
-            }
-
-            if (errorInfo.HResult.HasValue)
-            {
-                _activity.SetTag("error.hresult", errorInfo.HResult.Value);
-            }
-
-            if (errorInfo.Details is not null)
-            {
-                _activity.SetTag("error.details", errorInfo.Details);
-            }
-
-            if (errorInfo.SourceLocation is not null)
-            {
-                _activity.SetTag("error.source_location", errorInfo.SourceLocation);
-            }
-
-            if (errorInfo.ExceptionChain is not null)
-            {
-                _activity.SetTag("error.exception_chain", errorInfo.ExceptionChain);
-            }
-
-            // NOTE: We intentionally do NOT call _activity.RecordException(ex)
-            // because exception messages/stacks can contain PII
+            ErrorCodeMapper.ApplyErrorTags(_activity, errorInfo);
         }
 
         public void Complete()

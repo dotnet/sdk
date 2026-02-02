@@ -54,6 +54,41 @@ public sealed record ExceptionErrorInfo(
 public static class ErrorCodeMapper
 {
     /// <summary>
+    /// Applies error info tags to an activity. This centralizes the tag-setting logic
+    /// to avoid code duplication across progress targets and telemetry classes.
+    /// </summary>
+    /// <param name="activity">The activity to tag (can be null).</param>
+    /// <param name="errorInfo">The error info to apply.</param>
+    /// <param name="errorCode">Optional error code override.</param>
+    public static void ApplyErrorTags(Activity? activity, ExceptionErrorInfo errorInfo, string? errorCode = null)
+    {
+        if (activity is null) return;
+
+        activity.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
+        activity.SetTag("error.type", errorInfo.ErrorType);
+        if (errorCode is not null)
+        {
+            activity.SetTag("error.code", errorCode);
+        }
+        activity.SetTag("error.category", errorInfo.Category.ToString().ToLowerInvariant());
+
+        // Use pattern matching to set optional tags only if they have values
+        if (errorInfo is { StatusCode: { } statusCode })
+            activity.SetTag("error.http_status", statusCode);
+        if (errorInfo is { HResult: { } hResult })
+            activity.SetTag("error.hresult", hResult);
+        if (errorInfo is { Details: { } details })
+            activity.SetTag("error.details", details);
+        if (errorInfo is { SourceLocation: { } sourceLocation })
+            activity.SetTag("error.source_location", sourceLocation);
+        if (errorInfo is { ExceptionChain: { } exceptionChain })
+            activity.SetTag("error.exception_chain", exceptionChain);
+
+        // NOTE: We intentionally do NOT call activity.RecordException(ex)
+        // because exception messages/stacks can contain PII
+    }
+
+    /// <summary>
     /// Extracts error info from an exception.
     /// </summary>
     /// <param name="ex">The exception to analyze.</param>

@@ -125,7 +125,7 @@ public class DotnetInstallManager : IDotnetInstallManager
             new InstallRequestOptions()
         );
 
-        var installResult = InstallerOrchestratorSingleton.Instance.Install(request);
+        InstallResult installResult = InstallerOrchestratorSingleton.Instance.Install(request);
         if (installResult.Install == null)
         {
             throw new Exception($"Failed to install .NET SDK {channnel.Name}");

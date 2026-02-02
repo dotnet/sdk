@@ -315,10 +315,9 @@ public class FirstRunNoticeTests
     public void IsFirstRun_ReturnsTrueWhenSentinelDoesNotExist()
     {
         // Clean up any existing sentinel for this test
-        var sentinelDir = GetSentinelDirectory();
-        var sentinelPath = Path.Combine(sentinelDir, ".dotnetup-telemetry-notice");
+        var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
 
-        if (File.Exists(sentinelPath))
+        if (!string.IsNullOrEmpty(sentinelPath) && File.Exists(sentinelPath))
         {
             File.Delete(sentinelPath);
         }
@@ -330,8 +329,8 @@ public class FirstRunNoticeTests
     public void ShowIfFirstRun_CreatesSentinelFile()
     {
         // Clean up any existing sentinel for this test
-        var sentinelDir = GetSentinelDirectory();
-        var sentinelPath = Path.Combine(sentinelDir, ".dotnetup-telemetry-notice");
+        var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
+        Assert.NotNull(sentinelPath);
 
         if (File.Exists(sentinelPath))
         {
@@ -352,8 +351,8 @@ public class FirstRunNoticeTests
     public void ShowIfFirstRun_DoesNotCreateSentinel_WhenTelemetryDisabled()
     {
         // Clean up any existing sentinel for this test
-        var sentinelDir = GetSentinelDirectory();
-        var sentinelPath = Path.Combine(sentinelDir, ".dotnetup-telemetry-notice");
+        var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
+        Assert.NotNull(sentinelPath);
 
         if (File.Exists(sentinelPath))
         {
@@ -365,14 +364,5 @@ public class FirstRunNoticeTests
 
         // Sentinel should NOT be created (user has opted out)
         Assert.False(File.Exists(sentinelPath));
-    }
-
-    private static string GetSentinelDirectory()
-    {
-        var baseDir = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-            : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-        return Path.Combine(baseDir, ".dotnetup");
     }
 }
