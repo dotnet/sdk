@@ -2215,7 +2215,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="WorkloadSetHasMissingManifests">
         <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
-        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <target state="translated">В версии набора рабочих нагрузок {0} отсутствуют манифесты, которые, вероятно, были удалены при управлении пакетами. Чтобы устранить эту проблему, выполните команду "dotnet workload repair".</target>
         <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
