@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
-using System.Runtime.InteropServices;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 /// <summary>
@@ -12,9 +9,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 /// </summary>
 internal static class FirstRunNotice
 {
-    private const string SentinelFileName = ".dotnetup-telemetry-notice";
-    private const string TelemetryDocsUrl = "https://aka.ms/dotnetup-telemetry";
-
     /// <summary>
     /// Shows the first-run telemetry notice if this is the first time dotnetup is run
     /// and telemetry is enabled. Creates a sentinel file to prevent future notices.
@@ -28,7 +22,7 @@ internal static class FirstRunNotice
             return;
         }
 
-        var sentinelPath = GetSentinelPath();
+        var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
         if (string.IsNullOrEmpty(sentinelPath))
         {
             return;
@@ -52,7 +46,7 @@ internal static class FirstRunNotice
     /// </summary>
     public static bool IsFirstRun()
     {
-        var sentinelPath = GetSentinelPath();
+        var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
         return !string.IsNullOrEmpty(sentinelPath) && !File.Exists(sentinelPath);
     }
 
@@ -64,43 +58,14 @@ internal static class FirstRunNotice
         Console.WriteLine();
     }
 
-    private static string? GetSentinelPath()
-    {
-        try
-        {
-            // Use the same location as dotnetup's data directory
-            var baseDir = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-                : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-            if (string.IsNullOrEmpty(baseDir))
-            {
-                return null;
-            }
-
-            var dotnetupDir = Path.Combine(baseDir, ".dotnetup");
-            return Path.Combine(dotnetupDir, SentinelFileName);
-        }
-        catch
-        {
-            // If we can't determine the path, skip the notice
-            return null;
-        }
-    }
-
     private static void CreateSentinel(string sentinelPath)
     {
         try
         {
-            var directory = Path.GetDirectoryName(sentinelPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
+            DotnetupPaths.EnsureDataDirectoryExists();
 
             // Write version info to the sentinel for debugging purposes
-            var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
-            File.WriteAllText(sentinelPath, $"dotnetup telemetry notice shown: {DateTime.UtcNow:O}\nVersion: {version}\n");
+            File.WriteAllText(sentinelPath, $"dotnetup telemetry notice shown: {DateTime.UtcNow:O}\nVersion: {BuildInfo.Version}\nCommit: {BuildInfo.CommitSha}\n");
         }
         catch
         {
