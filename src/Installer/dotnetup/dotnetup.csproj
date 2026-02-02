@@ -12,7 +12,7 @@
     <NoWarn>$(NoWarn);CS8002</NoWarn>
 
     <!-- dotnetup versioning -->
-    <VersionPrefix>0.0.1</VersionPrefix>
+    <VersionPrefix>0.1.1</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
   </PropertyGroup>
 
