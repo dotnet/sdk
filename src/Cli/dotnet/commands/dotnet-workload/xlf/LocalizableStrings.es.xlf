@@ -22,6 +22,11 @@
         <target state="translated">No hay cargas de trabajo instaladas para mostrar.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShouldInstallAWorkloadSet">
+        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
+        <target state="translated">Las cargas de trabajo están configuradas para instalarse y actualizarse con versiones de carga de trabajo, pero no se encontró ninguna. Ejecute "dotnet workload restore" para instalar una versión de carga de trabajo.</target>
+        <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
       <trans-unit id="SkipSignCheckInvalidOption">
         <source>Unable to bypass signature verification. The specified option conflicts with a global policy.</source>
         <target state="translated">No se puede omitir la comprobación de firma. La opción especificada entra en conflicto con una directiva global.</target>
@@ -66,6 +71,11 @@
         <source>Manifest Path</source>
         <target state="translated">Ruta de acceso del manifiesto</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
+        <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
+        <target state="translated">No se encontró la versión de carga de trabajo {0}, que se especificó en {1}. Ejecuta "dotnet workload restore" para instalar esta versión de carga de trabajo.</target>
+        <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>
