@@ -62,6 +62,11 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         {
             json = File.ReadAllText(ManifestPath);
         }
+        catch (FileNotFoundException)
+        {
+            // Manifest doesn't exist yet - return empty list
+            return [];
+        }
         catch (IOException ex)
         {
             throw new DotnetInstallException(

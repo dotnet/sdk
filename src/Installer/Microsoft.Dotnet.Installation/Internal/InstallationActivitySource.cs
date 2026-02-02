@@ -13,6 +13,19 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// </summary>
 /// <remarks>
 /// <para>
+/// <strong>Important:</strong> If you use this library and collect telemetry, you are responsible
+/// for complying with the .NET SDK telemetry policy. This includes:
+/// </para>
+/// <list type="bullet">
+///   <item><description>Displaying a first-run notice to users explaining what data is collected</description></item>
+///   <item><description>Honoring the <c>DOTNET_CLI_TELEMETRY_OPTOUT</c> environment variable</description></item>
+///   <item><description>Providing documentation about your telemetry practices</description></item>
+/// </list>
+/// <para>
+/// See the .NET SDK telemetry documentation for guidance:
+/// https://learn.microsoft.com/dotnet/core/tools/telemetry
+/// </para>
+/// <para>
 /// Library consumers can hook into installation telemetry by subscribing to this ActivitySource.
 /// The following activities are emitted:
 /// </para>
@@ -21,33 +34,12 @@ namespace Microsoft.Dotnet.Installation.Internal;
 ///   <item><term>extract</term><description>Archive extraction. Tags: download.version</description></item>
 /// </list>
 /// <para>
-/// Example usage:
-/// </para>
-/// <code>
-/// using var listener = new ActivityListener
-/// {
-///     ShouldListenTo = source => source.Name == "Microsoft.Dotnet.Installation",
-///     Sample = (ref ActivityCreationOptions&lt;ActivityContext&gt; _) => ActivitySamplingResult.AllDataAndRecorded,
-///     ActivityStarted = activity =>
-///     {
-///         // Add custom tags (e.g., your tool's name)
-///         activity.SetTag("caller", "my-custom-tool");
-///     },
-///     ActivityStopped = activity =>
-///     {
-///         // Export to your telemetry system
-///         Console.WriteLine($"{activity.DisplayName}: {activity.Duration.TotalMilliseconds}ms");
-///     }
-/// };
-/// ActivitySource.AddActivityListener(listener);
-///
-/// // Now use the library - activities will be captured
-/// var installer = InstallerFactory.Create(progressTarget);
-/// installer.Install(root, InstallComponent.Sdk, version);
-/// </code>
-/// <para>
 /// When activities originate from dotnetup CLI, they include the tag <c>caller=dotnetup</c>.
 /// Library consumers can use this to distinguish CLI-originated vs direct library calls.
+/// </para>
+/// <para>
+/// For a working example of how to integrate with this ActivitySource, see the
+/// TelemetryIntegrationDemo project in test/dotnetup.Tests/TestAssets/.
 /// </para>
 /// </remarks>
 internal static class InstallationActivitySource

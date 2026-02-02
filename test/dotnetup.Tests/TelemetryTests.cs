@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Xunit;
 
@@ -364,5 +366,67 @@ public class FirstRunNoticeTests
 
         // Sentinel should NOT be created (user has opted out)
         Assert.False(File.Exists(sentinelPath));
+    }
+}
+
+/// <summary>
+/// Tests for ActivitySource integration - verifies that library consumers can hook into telemetry
+/// using the pattern demonstrated in TelemetryIntegrationDemo.
+/// </summary>
+public class ActivitySourceIntegrationTests
+{
+    private const string InstallationActivitySourceName = "Microsoft.Dotnet.Installation";
+
+    [Fact]
+    public void ActivityListener_CanCaptureActivities_FromInstallationActivitySource()
+    {
+        // Arrange - set up listener like the demo shows
+        var capturedActivities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == InstallationActivitySourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => capturedActivities.Add(activity)
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        // Act - create an activity using the library's ActivitySource
+        using (var activity = InstallationActivitySource.ActivitySource.StartActivity("test-activity"))
+        {
+            activity?.SetTag("test.key", "test-value");
+        }
+
+        // Assert
+        Assert.Single(capturedActivities);
+        Assert.Equal("test-activity", capturedActivities[0].DisplayName);
+        Assert.Contains(capturedActivities[0].Tags, t => t.Key == "test.key" && t.Value == "test-value");
+    }
+
+    [Fact]
+    public void NonUpdatingProgressTarget_SetsCallerTag_ToDotnetup()
+    {
+        // Arrange - set up listener to capture activities
+        var capturedActivities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == InstallationActivitySourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => capturedActivities.Add(activity)
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        // Act - use NonUpdatingProgressTarget which sets caller=dotnetup
+        var progressTarget = new NonUpdatingProgressTarget();
+        using (var reporter = progressTarget.CreateProgressReporter())
+        {
+            var task = reporter.AddTask("download", "Test download task", 100);
+            task.Value = 100;
+            task.Complete();
+        }
+
+        // Assert - verify caller tag is set to dotnetup
+        Assert.Single(capturedActivities);
+        var callerTag = capturedActivities[0].Tags.FirstOrDefault(t => t.Key == "caller");
+        Assert.Equal("dotnetup", callerTag.Value);
     }
 }
