@@ -29,6 +29,8 @@
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\DevDeviceIDGetter.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\EnvironmentDetectionRule.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\ICIEnvironmentDetector.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\ILLMEnvironmentDetector.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\LLMEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\Env.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\EnvironmentProvider.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\Extensions\CollectionsExtensions.cs" LinkBase="Shared" />

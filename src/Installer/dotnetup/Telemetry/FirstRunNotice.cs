@@ -10,6 +10,11 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 internal static class FirstRunNotice
 {
     /// <summary>
+    /// Environment variable to suppress the first-run notice (same as .NET SDK).
+    /// </summary>
+    private const string NoLogoEnvironmentVariable = "DOTNET_NOLOGO";
+
+    /// <summary>
     /// Shows the first-run telemetry notice if this is the first time dotnetup is run
     /// and telemetry is enabled. Creates a sentinel file to prevent future notices.
     /// </summary>
@@ -18,6 +23,12 @@ internal static class FirstRunNotice
     {
         // Don't show notice if telemetry is disabled - user has already opted out
         if (!telemetryEnabled)
+        {
+            return;
+        }
+
+        // Respect DOTNET_NOLOGO to suppress notice (same behavior as .NET SDK)
+        if (IsNoLogoSet())
         {
             return;
         }
@@ -42,6 +53,16 @@ internal static class FirstRunNotice
     }
 
     /// <summary>
+    /// Checks if DOTNET_NOLOGO is set to suppress the first-run notice.
+    /// </summary>
+    private static bool IsNoLogoSet()
+    {
+        var value = Environment.GetEnvironmentVariable(NoLogoEnvironmentVariable);
+        return string.Equals(value, "1", StringComparison.Ordinal) ||
+               string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
     /// Checks if this is the first run (sentinel doesn't exist).
     /// </summary>
     public static bool IsFirstRun()
@@ -52,10 +73,11 @@ internal static class FirstRunNotice
 
     private static void ShowNotice()
     {
-        // Keep it brief - link to docs for full details
-        Console.WriteLine();
-        Console.WriteLine(Strings.TelemetryNotice);
-        Console.WriteLine();
+        // Write to stderr, consistent with .NET SDK behavior
+        // See: https://learn.microsoft.com/dotnet/core/compatibility/sdk/10.0/dotnet-cli-stderr-output
+        Console.Error.WriteLine();
+        Console.Error.WriteLine(Strings.TelemetryNotice);
+        Console.Error.WriteLine();
     }
 
     private static void CreateSentinel(string sentinelPath)

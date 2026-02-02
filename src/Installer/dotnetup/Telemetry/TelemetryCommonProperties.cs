@@ -16,6 +16,7 @@ internal static class TelemetryCommonProperties
 {
     private static readonly Lazy<string> s_deviceId = new(GetDeviceId);
     private static readonly Lazy<bool> s_isCIEnvironment = new(DetectCIEnvironment);
+    private static readonly Lazy<string?> s_llmEnvironment = new(DetectLLMEnvironment);
     private static readonly Lazy<bool> s_isDevBuild = new(DetectDevBuild);
 
     /// <summary>
@@ -28,7 +29,7 @@ internal static class TelemetryCommonProperties
     /// </summary>
     public static IEnumerable<KeyValuePair<string, object>> GetCommonAttributes(string sessionId)
     {
-        return new Dictionary<string, object>
+        var attributes = new Dictionary<string, object>
         {
             ["session.id"] = sessionId,
             ["device.id"] = s_deviceId.Value,
@@ -39,6 +40,15 @@ internal static class TelemetryCommonProperties
             ["dotnetup.version"] = GetVersion(),
             ["dev.build"] = s_isDevBuild.Value
         };
+
+        // Add LLM environment if detected (same detection as .NET SDK)
+        var llmEnv = s_llmEnvironment.Value;
+        if (!string.IsNullOrEmpty(llmEnv))
+        {
+            attributes["llm.agent"] = llmEnv;
+        }
+
+        return attributes;
     }
 
     /// <summary>
@@ -106,6 +116,20 @@ internal static class TelemetryCommonProperties
         catch
         {
             return false;
+        }
+    }
+
+    private static string? DetectLLMEnvironment()
+    {
+        try
+        {
+            // Reuse the SDK's LLM/agent detection
+            var detector = new LLMEnvironmentDetectorForTelemetry();
+            return detector.GetLLMEnvironment();
+        }
+        catch
+        {
+            return null;
         }
     }
 
