@@ -46,6 +46,9 @@ namespace Microsoft.DotNet.Watch
 
                 var environmentOptions = EnvironmentOptions.FromEnvironment(processPath);
 
+                // msbuild tasks depend on host path variable:
+                Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetHostPath, environmentOptions.MuxerPath);
+
                 var program = TryCreate(
                     args,
                     new PhysicalConsole(environmentOptions.TestFlags),
@@ -155,8 +158,7 @@ namespace Microsoft.DotNet.Watch
         // internal for testing
         internal async Task<int> RunAsync()
         {
-            var isHotReloadEnabled = IsHotReloadEnabled();
-            var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled));
+            var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout());
 
             using var shutdownHandler = new ShutdownHandler(console, logger);
 
@@ -179,7 +181,7 @@ namespace Microsoft.DotNet.Watch
 
                 using var context = CreateContext(processRunner);
 
-                if (isHotReloadEnabled)
+                if (IsHotReloadEnabled())
                 {
                     var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
                     await watcher.WatchAsync(shutdownHandler.CancellationToken);
