@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
@@ -51,38 +51,13 @@ internal class InfoCommand : CommandBase
 
     private static DotnetupInfo GetDotnetupInfo()
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
-
-        // InformationalVersion format is typically "version+commitsha" when SourceLink is enabled
-        var (version, commit) = ParseInformationalVersion(informationalVersion);
-
         return new DotnetupInfo
         {
-            Version = version,
-            Commit = commit,
+            Version = BuildInfo.Version,
+            Commit = BuildInfo.CommitSha,
             Architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(),
             Rid = RuntimeInformation.RuntimeIdentifier
         };
-    }
-
-    private static (string Version, string Commit) ParseInformationalVersion(string informationalVersion)
-    {
-        // Format: "1.0.0+abc123d" or just "1.0.0"
-        var plusIndex = informationalVersion.IndexOf('+');
-        if (plusIndex > 0)
-        {
-            var version = informationalVersion.Substring(0, plusIndex);
-            var commit = informationalVersion.Substring(plusIndex + 1);
-            // Truncate commit to 7 characters for display (git's standard short SHA)
-            if (commit.Length > 7)
-            {
-                commit = commit.Substring(0, 7);
-            }
-            return (version, commit);
-        }
-
-        return (informationalVersion, "N/A");
     }
 
     private static void PrintHumanReadableInfo(TextWriter output, DotnetupInfo info, List<InstallationInfo>? installations)

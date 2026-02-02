@@ -361,13 +361,13 @@ public static class ErrorCodeMapper
     /// <summary>
     /// Gets a safe source location from the stack trace - finds the first frame from our assemblies.
     /// This is typically the code in dotnetup that called into BCL/external code that threw.
-    /// No file paths or line numbers that could contain user info.
+    /// No file paths that could contain user info. Line numbers from our code are included as they are not PII.
     /// </summary>
     private static string? GetSafeSourceLocation(Exception ex)
     {
         try
         {
-            var stackTrace = new StackTrace(ex, fNeedFileInfo: false);
+            var stackTrace = new StackTrace(ex, fNeedFileInfo: true);
             var frames = stackTrace.GetFrames();
 
             if (frames == null || frames.Length == 0)
@@ -401,12 +401,20 @@ public static class ErrorCodeMapper
                     // Extract just the type name (last part after the last dot, before any generic params)
                     var typeName = ExtractTypeName(declaringType);
 
-                    // Return "TypeName.MethodName" - no paths, no line numbers
-                    return $"{typeName}.{methodInfo.Name}";
+                    // Include line number for our code (not PII), but never file paths
+                    // Also include commit SHA so line numbers can be correlated to source
+                    var lineNumber = frame.GetFileLineNumber();
+                    var location = $"{typeName}.{methodInfo.Name}";
+                    if (lineNumber > 0)
+                    {
+                        location += $":{lineNumber}";
+                    }
+                    return location;
                 }
             }
 
             // If we didn't find our code, return the throw site as a fallback
+            // This code is managed by dotnetup and not the library so we expect the throwsite to only be our own dependent code we call into
             return throwSite;
         }
         catch
