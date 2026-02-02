@@ -213,6 +213,54 @@ public class VersionSanitizerTelemetryTests
     }
 }
 
+public class UrlSanitizerTests
+{
+    [Theory]
+    [InlineData("https://download.visualstudio.microsoft.com/download/pr/123/file.zip", "download.visualstudio.microsoft.com")]
+    [InlineData("https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.100/dotnet-sdk.zip", "builds.dotnet.microsoft.com")]
+    [InlineData("https://ci.dot.net/job/123/artifact.zip", "ci.dot.net")]
+    [InlineData("https://dotnetcli.blob.core.windows.net/dotnet/Sdk/9.0.100/dotnet-sdk.zip", "dotnetcli.blob.core.windows.net")]
+    [InlineData("https://dotnetcli.azureedge.net/dotnet/Sdk/9.0.100/dotnet-sdk.zip", "dotnetcli.azureedge.net")]
+    public void SanitizeDomain_KnownDomains_ReturnsDomain(string url, string expectedDomain)
+    {
+        var result = UrlSanitizer.SanitizeDomain(url);
+
+        Assert.Equal(expectedDomain, result);
+    }
+
+    [Theory]
+    [InlineData("https://my-private-mirror.company.com/dotnet/sdk.zip")]
+    [InlineData("https://internal.corp.net/artifacts/dotnet-sdk.zip")]
+    [InlineData("https://192.168.1.100/dotnet/sdk.zip")]
+    [InlineData("file:///C:/Users/someone/Downloads/sdk.zip")]
+    public void SanitizeDomain_UnknownDomains_ReturnsUnknown(string url)
+    {
+        var result = UrlSanitizer.SanitizeDomain(url);
+
+        Assert.Equal("unknown", result);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("not-a-url")]
+    [InlineData("ftp://")]
+    public void SanitizeDomain_InvalidUrls_ReturnsUnknown(string? url)
+    {
+        var result = UrlSanitizer.SanitizeDomain(url);
+
+        Assert.Equal("unknown", result);
+    }
+
+    [Fact]
+    public void KnownDownloadDomains_ContainsExpectedDomains()
+    {
+        Assert.Contains("download.visualstudio.microsoft.com", UrlSanitizer.KnownDownloadDomains);
+        Assert.Contains("builds.dotnet.microsoft.com", UrlSanitizer.KnownDownloadDomains);
+        Assert.Contains("ci.dot.net", UrlSanitizer.KnownDownloadDomains);
+    }
+}
+
 public class DotnetupTelemetryTests
 {
     [Fact]

@@ -239,8 +239,8 @@ internal class DotnetArchiveDownloader : IDisposable
                 component: installRequest.Component.ToString());
         }
 
-        // Set download URL domain for telemetry
-        telemetryTask?.SetTag("download.url_domain", GetDomain(downloadUrl));
+        // Set download URL for telemetry (caller is responsible for sanitization)
+        telemetryTask?.SetTag("download.url", downloadUrl);
 
         // Check the cache first
         string? cachedFilePath = _downloadCache.GetCachedFilePath(downloadUrl);
@@ -286,48 +286,6 @@ internal class DotnetArchiveDownloader : IDisposable
         catch
         {
             // Ignore errors adding to cache - it's not critical
-        }
-    }
-
-    /// <summary>
-    /// Known .NET download domains used for telemetry filtering.
-    /// Only domains in this list are reported; unknown domains are reported as "unknown".
-    /// This prevents potential PII leakage if a user has configured a custom/private mirror.
-    /// </summary>
-    /// <remarks>
-    /// See: https://github.com/dotnet/vscode-dotnet-runtime/blob/main/vscode-dotnet-runtime-library/src/Acquisition/GlobalInstallerResolver.ts
-    /// </remarks>
-    private static readonly string[] KnownDownloadDomains =
-    [
-        "download.visualstudio.microsoft.com",
-        "builds.dotnet.microsoft.com",
-        "ci.dot.net",
-        "dotnetcli.blob.core.windows.net",
-        "dotnetcli.azureedge.net"  // Legacy CDN, may still be referenced
-    ];
-
-    /// <summary>
-    /// Gets the domain from a URL for telemetry purposes.
-    /// Returns "unknown" for unrecognized domains to prevent PII leakage from custom mirrors.
-    /// </summary>
-    private static string GetDomain(string url)
-    {
-        try
-        {
-            var host = new Uri(url).Host;
-            // Only report known .NET download domains; filter out custom mirrors
-            foreach (var knownDomain in KnownDownloadDomains)
-            {
-                if (host.Equals(knownDomain, StringComparison.OrdinalIgnoreCase))
-                {
-                    return host;
-                }
-            }
-            return "unknown";
-        }
-        catch
-        {
-            return "unknown";
         }
     }
 
