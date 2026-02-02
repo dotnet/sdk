@@ -32,17 +32,27 @@ internal class InstallerOrchestratorSingleton
     // Returns InstallResult with Install=null on failure, or Install=DotnetInstall on success
     public InstallResult Install(DotnetInstallRequest installRequest, bool noProgress = false)
     {
+        // Validate channel format before attempting resolution
+        if (!ChannelVersionResolver.IsValidChannelFormat(installRequest.Channel.Name))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InvalidChannel,
+                $"'{installRequest.Channel.Name}' is not a valid .NET version or channel. " +
+                $"Use a version like '9.0', '9.0.100', or a channel keyword: {string.Join(", ", ChannelVersionResolver.KnownChannelKeywords)}.",
+                version: null, // Don't include user input in telemetry
+                component: installRequest.Component.ToString());
+        }
+
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
         ReleaseManifest releaseManifest = new();
         ReleaseVersion? versionToInstall = new ChannelVersionResolver(releaseManifest).Resolve(installRequest);
 
         if (versionToInstall == null)
         {
-            // Don't pass raw user input to exception - it goes to telemetry
-            // Just report that the version couldn't be resolved
+            // Channel format was valid, but the version doesn't exist
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.VersionNotFound,
-                $"Could not resolve version for the specified channel. The channel may be invalid or unsupported.",
+                $"Could not find .NET version '{installRequest.Channel.Name}'. The version may not exist or may not be supported.",
                 version: null, // Don't include user input in telemetry
                 component: installRequest.Component.ToString());
         }

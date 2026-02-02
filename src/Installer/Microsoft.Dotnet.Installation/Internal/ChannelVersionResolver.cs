@@ -35,6 +35,12 @@ internal class ChannelVersionResolver
     /// </summary>
     public static readonly IReadOnlyList<string> KnownChannelKeywords = [LatestChannel, PreviewChannel, LtsChannel, StsChannel];
 
+    /// <summary>
+    /// Maximum reasonable major version number. .NET versions are currently single-digit;
+    /// anything above 99 is clearly invalid input (e.g., typos, random numbers).
+    /// </summary>
+    internal const int MaxReasonableMajorVersion = 99;
+
     private ReleaseManifest _releaseManifest = new();
 
     public ChannelVersionResolver()
@@ -75,6 +81,61 @@ internal class ChannelVersionResolver
     public ReleaseVersion? Resolve(DotnetInstallRequest installRequest)
     {
         return GetLatestVersionForChannel(installRequest.Channel, installRequest.Component);
+    }
+
+    /// <summary>
+    /// Checks if a channel string looks like a valid .NET version/channel format.
+    /// This is a preliminary validation before attempting resolution.
+    /// </summary>
+    /// <param name="channel">The channel string to validate</param>
+    /// <returns>True if the format appears valid, false if clearly invalid</returns>
+    public static bool IsValidChannelFormat(string channel)
+    {
+        if (string.IsNullOrWhiteSpace(channel))
+        {
+            return false;
+        }
+
+        // Known keywords are always valid
+        if (KnownChannelKeywords.Any(k => string.Equals(k, channel, StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        // Try to parse as a version-like string
+        var parts = channel.Split('.');
+        if (parts.Length == 0 || parts.Length > 4)
+        {
+            return false;
+        }
+
+        // First part must be a valid major version
+        if (!int.TryParse(parts[0], out var major) || major < 0 || major > MaxReasonableMajorVersion)
+        {
+            return false;
+        }
+
+        // If there are more parts, validate them
+        if (parts.Length >= 2)
+        {
+            if (!int.TryParse(parts[1], out var minor) || minor < 0)
+            {
+                return false;
+            }
+        }
+
+        if (parts.Length >= 3)
+        {
+            var patch = parts[2];
+            // Allow feature band pattern (e.g., "1xx", "100") or patch number
+            var normalizedPatch = patch.Replace("x", "").Replace("X", "");
+            if (normalizedPatch.Length > 0 && !int.TryParse(normalizedPatch, out _))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>

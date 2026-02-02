@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -44,6 +46,16 @@ public abstract class CommandBase
             _commandActivity?.SetStatus(exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
 
             return exitCode;
+        }
+        catch (DotnetInstallException ex)
+        {
+            // Known installation errors - print a clean user-friendly message
+            stopwatch.Stop();
+            _commandActivity?.SetTag("duration_ms", stopwatch.Elapsed.TotalMilliseconds);
+            _commandActivity?.SetTag("exit.code", 1);
+            DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
+            AnsiConsole.MarkupLine($"[red]Error: {ex.Message.EscapeMarkup()}[/]");
+            return 1;
         }
         catch (Exception ex)
         {
