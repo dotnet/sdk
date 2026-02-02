@@ -186,7 +186,7 @@ public class RunCommand
                     Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
                 }
 
-                EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out projectBuilder, selector?.IntermediateOutputPath, selector?.UseRuntimeEnvironmentVariableItems ?? false);
+                EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out projectBuilder, selector?.IntermediateOutputPath, selector?.HasRuntimeEnvironmentVariableSupport ?? false);
             }
             else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
             {
@@ -472,7 +472,7 @@ public class RunCommand
         return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, LaunchProfile);
     }
 
-    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? projectBuilder, string? intermediateOutputPath, bool useRuntimeEnvironmentVariableItems)
+    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? projectBuilder, string? intermediateOutputPath, bool hasRuntimeEnvironmentVariableSupport)
     {
         int buildResult;
         if (EntryPointFileFullPath is not null)
@@ -493,7 +493,7 @@ public class RunCommand
             // Create temporary props file for environment variables only if the project has opted in.
             // This avoids invalidating incremental builds for projects that don't consume the items.
             // Use IntermediateOutputPath from earlier project evaluation (via RunCommandSelector), defaulting to "obj" if not available.
-            string? envPropsFile = useRuntimeEnvironmentVariableItems
+            string? envPropsFile = hasRuntimeEnvironmentVariableSupport
                 ? EnvironmentVariablesToMSBuild.CreatePropsFile(ProjectFileFullPath, EnvironmentVariables, intermediateOutputPath)
                 : null;
             try
@@ -682,8 +682,9 @@ public class RunCommand
 
         static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, IReadOnlyDictionary<string, string> environmentVariables)
         {
-            // Only add environment variables as MSBuild items if the project has opted in
-            if (string.Equals(project.GetPropertyValue(Constants.UseRuntimeEnvironmentVariableItems), "true", StringComparison.OrdinalIgnoreCase))
+            // Only add environment variables as MSBuild items if the project has opted in via capability
+            if (project.GetItems(Constants.ProjectCapability)
+                .Any(item => string.Equals(item.EvaluatedInclude, Constants.RuntimeEnvironmentVariableSupport, StringComparison.OrdinalIgnoreCase)))
             {
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }

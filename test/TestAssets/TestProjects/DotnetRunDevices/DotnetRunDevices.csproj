@@ -3,14 +3,17 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net9.0;$(CurrentTargetFramework)</TargetFrameworks>
-    <!-- Opt in to receiving environment variables as @(RuntimeEnvironmentVariable) items from dotnet run -e -->
-    <UseRuntimeEnvironmentVariableItems>true</UseRuntimeEnvironmentVariableItems>
     <!-- Disable default items to avoid glob expansion failures on macOS with long paths.
          Globs like **/*.cs and **/*.resx fail to expand and become literal filenames,
          causing CS2021/CS2001 and MSB3552 errors respectively.
          See https://github.com/dotnet/msbuild/issues/12546 -->
     <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
+
+  <!-- Opt in to receiving environment variables as @(RuntimeEnvironmentVariable) items from dotnet run -e -->
+  <ItemGroup Condition="'$(EnableRuntimeEnvironmentVariableSupport)' != 'false'">
+    <ProjectCapability Include="RuntimeEnvironmentVariableSupport" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="Program.cs" />

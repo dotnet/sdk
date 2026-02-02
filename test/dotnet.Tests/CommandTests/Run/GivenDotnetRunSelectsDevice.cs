@@ -451,12 +451,12 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         string buildBinlogPath = Path.Combine(testInstance.Path, "msbuild.binlog");
         string runBinlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
 
-        // Run with UseRuntimeEnvironmentVariableItems=false to simulate no opt-in
+        // Run with EnableRuntimeEnvironmentVariableSupport=false to disable the capability
         var result = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
             .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--device", deviceId,
                      "-e", "FOO=BAR", "-e", "ANOTHER=VALUE",
-                     "-p:UseRuntimeEnvironmentVariableItems=false",
+                     "-p:EnableRuntimeEnvironmentVariableSupport=false",
                      "-bl");
 
         result.Should().Pass();

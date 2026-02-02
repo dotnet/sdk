@@ -61,13 +61,14 @@ internal sealed class RunCommandSelector : IDisposable
     /// When true, 'dotnet run -e' will pass environment variables as @(RuntimeEnvironmentVariable) items
     /// via CustomBeforeMicrosoftCommonProps.
     /// </summary>
-    public bool UseRuntimeEnvironmentVariableItems
+    public bool HasRuntimeEnvironmentVariableSupport
     {
         get
         {
             if (OpenProjectIfNeeded(out var projectInstance))
             {
-                return string.Equals(projectInstance.GetPropertyValue(Constants.UseRuntimeEnvironmentVariableItems), "true", StringComparison.OrdinalIgnoreCase);
+                return projectInstance.GetItems(Constants.ProjectCapability)
+                    .Any(item => string.Equals(item.EvaluatedInclude, Constants.RuntimeEnvironmentVariableSupport, StringComparison.OrdinalIgnoreCase));
             }
             return false;
         }
@@ -527,7 +528,7 @@ internal sealed class RunCommandSelector : IDisposable
         }
 
         // Add environment variables as items before building the target, only if opted in
-        if (UseRuntimeEnvironmentVariableItems)
+        if (HasRuntimeEnvironmentVariableSupport)
         {
             EnvironmentVariablesToMSBuild.AddAsItems(projectInstance, _environmentVariables);
         }
