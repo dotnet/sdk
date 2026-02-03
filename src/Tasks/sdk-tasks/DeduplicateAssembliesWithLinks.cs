@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Build.Tasks;
 
 /// <summary>
 /// Deduplicates assemblies (.dll and .exe files) in a directory by replacing duplicates with links (hard or symbolic).
-/// Assemblies are grouped by content hash, and a deterministic "master" file is selected (closest to root, alphabetically
+/// Assemblies are grouped by content hash, and a deterministic "primary" file is selected (closest to root, alphabetically
 /// first) which duplicates are linked to. Text-based files (config, json, xml, etc.) are not deduplicated.
 /// </summary>
 public sealed class DeduplicateAssembliesWithLinks : Task
@@ -104,22 +104,22 @@ public sealed class DeduplicateAssembliesWithLinks : Task
             // Sort deterministically: by depth (ascending), then alphabetically
             var sorted = group.OrderBy(f => f.Depth).ThenBy(f => f.Path).ToList();
 
-            // First file is the "master"
-            var master = sorted[0];
+            // First file is the "primary" - all duplicates will link to it
+            var primary = sorted[0];
             var duplicates = sorted.Skip(1).ToList();
 
             foreach (var duplicate in duplicates)
             {
                 try
                 {
-                    CreateLink(duplicate.Path, master.Path);
+                    CreateLink(duplicate.Path, primary.Path);
                     totalFilesDeduped++;
                     totalBytesSaved += duplicate.Size;
-                    Log.LogMessage(MessageImportance.Low, $"  Linked: {duplicate.Path} -> {master.Path}");
+                    Log.LogMessage(MessageImportance.Low, $"  Linked: {duplicate.Path} -> {primary.Path}");
                 }
                 catch (Exception ex)
                 {
-                    Log.LogError($"Failed to create {LinkType} from '{duplicate.Path}' to '{master.Path}': {ex.Message}");
+                    Log.LogError($"Failed to create {LinkType} from '{duplicate.Path}' to '{primary.Path}': {ex.Message}");
                     hasErrors = true;
                 }
             }
@@ -131,20 +131,20 @@ public sealed class DeduplicateAssembliesWithLinks : Task
         return !hasErrors;
     }
 
-    private void CreateLink(string duplicateFilePath, string masterFilePath)
+    private void CreateLink(string duplicateFilePath, string primaryFilePath)
     {
         // Delete the duplicate file before creating the link
         File.Delete(duplicateFilePath);
 
         if (UseHardLinks)
         {
-            File.CreateHardLink(duplicateFilePath, masterFilePath);
+            File.CreateHardLink(duplicateFilePath, primaryFilePath);
         }
         else
         {
             // Create relative symlink so it works when directory is moved/archived
             var duplicateDirectory = Path.GetDirectoryName(duplicateFilePath)!;
-            var relativePath = Path.GetRelativePath(duplicateDirectory, masterFilePath);
+            var relativePath = Path.GetRelativePath(duplicateDirectory, primaryFilePath);
             File.CreateSymbolicLink(duplicateFilePath, relativePath);
         }
     }

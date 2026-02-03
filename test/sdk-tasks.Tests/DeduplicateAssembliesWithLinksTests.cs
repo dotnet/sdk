@@ -109,13 +109,13 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
 
         result.Should().BeTrue();
 
-        // The master should be the one at root level that's alphabetically first (a.dll)
+        // The primary should be the one at root level that's alphabetically first (a.dll)
         // We can verify this by checking that all files are hard linked together
-        var masterInode = GetInode(rootFileA);
-        GetInode(rootFileZ).Should().Be(masterInode);
-        GetInode(sub1File).Should().Be(masterInode);
-        GetInode(sub2File).Should().Be(masterInode);
-        GetInode(nestedFile).Should().Be(masterInode);
+        var primaryInode = GetInode(rootFileA);
+        GetInode(rootFileZ).Should().Be(primaryInode);
+        GetInode(sub1File).Should().Be(primaryInode);
+        GetInode(sub2File).Should().Be(primaryInode);
+        GetInode(nestedFile).Should().Be(primaryInode);
     }
 
     [Fact]
@@ -229,7 +229,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
         Directory.CreateDirectory(subDir);
 
         var content = "duplicate content";
-        var rootFile = Path.Combine(layoutDir, "master.dll");
+        var rootFile = Path.Combine(layoutDir, "primary.dll");
         var subFile = Path.Combine(subDir, "duplicate.dll");
 
         File.WriteAllText(rootFile, content);
@@ -244,7 +244,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
         var rootInfo = new FileInfo(rootFile);
         var subInfo = new FileInfo(subFile);
 
-        // One should be a symlink (the one in subdir, since master is at root)
+        // One should be a symlink (the one in subdir, since primary is at root)
         if (subInfo.LinkTarget != null)
         {
             // Should be a relative path, not absolute
@@ -252,7 +252,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
 
             // Normalize path separators for cross-platform compatibility
             var normalizedLinkTarget = subInfo.LinkTarget.Replace('\\', '/');
-            normalizedLinkTarget.Should().Be("../master.dll");
+            normalizedLinkTarget.Should().Be("../primary.dll");
         }
     }
 
