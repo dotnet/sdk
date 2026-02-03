@@ -650,7 +650,8 @@ internal class FileBasedInstaller : IInstaller
                 // Delete all manifest directories for this feature band (except workloadsets folder)
                 foreach (var manifestDir in Directory.GetDirectories(featureBandDir))
                 {
-                    if (!manifestDir.EndsWith(SdkDirectoryWorkloadManifestProvider.WorkloadSetsFolderName, StringComparison.OrdinalIgnoreCase))
+                    string dirName = Path.GetFileName(manifestDir);
+                    if (!string.Equals(dirName, SdkDirectoryWorkloadManifestProvider.WorkloadSetsFolderName, StringComparison.OrdinalIgnoreCase))
                     {
                         Reporter.Verbose.WriteLine($"Deleting manifest directory: {manifestDir}");
                         Directory.Delete(manifestDir, true);

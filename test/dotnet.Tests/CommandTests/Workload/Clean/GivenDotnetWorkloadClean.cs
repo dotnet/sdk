@@ -159,7 +159,6 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             new DirectoryInfo(installedManifestsDir).Should().NotExist("manifest installation records should be removed");
         }
 
-
         private void InstallWorkload(string userProfileDir, string dotnetRoot, string testDirectory, WorkloadResolver workloadResolver, MockNuGetPackageDownloader nugetDownloader, string sdkBand = null)
         {
             sdkBand ??= _sdkFeatureVersion;
