@@ -298,5 +298,46 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
 
             cmd.Should().Pass();
         }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenSolutionFilterWithTrailingCommaIsPassedItListsProjects(string solutionCommand)
+        {
+            string[] expectedOutput = { $"{CliCommandStrings.ProjectsHeader}",
+                $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
+                $"{Path.Combine("App", "App.csproj")}",
+                $"{Path.Combine("Lib", "Lib.csproj")}" };
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithTrailingCommaSlnf", identifier: "GivenDotnetSlnList-TrailingComma")
+                .WithSource()
+                .Path;
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "AppWithTrailingComma.slnf", "list");
+            cmd.Should().Pass();
+            cmd.StdOut.Should().ContainAll(expectedOutput);
+        }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenSolutionFilterWithCommentsIsPassedItListsProjects(string solutionCommand)
+        {
+            string[] expectedOutput = { $"{CliCommandStrings.ProjectsHeader}",
+                $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
+                $"{Path.Combine("App", "App.csproj")}" };
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithTrailingCommaSlnf", identifier: "GivenDotnetSlnList-Comments")
+                .WithSource()
+                .Path;
+
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "AppWithComments.slnf", "list");
+            cmd.Should().Pass();
+            cmd.StdOut.Should().ContainAll(expectedOutput);
+        }
     }
 }
