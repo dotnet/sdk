@@ -165,7 +165,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             if (_option == null)
             {
                 object? option = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentSyncOptions");
-#if NET472
+#if NETFRAMEWORK
                 Type? deploymentCancelCallbackType = MSWebDeploymentAssembly.DynamicAssembly?.GetType("Microsoft.Web.Deployment.DeploymentCancelCallback");
                 object cancelCallbackDelegate = Delegate.CreateDelegate(deploymentCancelCallbackType, this, "CancelCallback");
 
@@ -179,7 +179,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             return _option;
         }
 
-#if NET472
+#if NETFRAMEWORK
         private Dictionary<string, MessageImportance>? _highImportanceEventTypes = null;
         private Dictionary<string, MessageImportance> GetHighImportanceEventTypes()
         {
@@ -203,7 +203,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             // throw new System.NotImplementedException();
             string msg = e.Message;
             Diagnostics.Trace.WriteLine("MSDeploy TraceEvent Handler is called with " + msg);
-#if NET472
+#if NETFRAMEWORK
             LogTrace(e, GetHighImportanceEventTypes());
 #endif
             //try
@@ -328,7 +328,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
     /// We create CustomBuildWithPropertiesEventArgs is for the purpose of logging verious information
     /// in a IDictionary such that the MBuild handler can handle generically.
     /// </summary>
-#if NET472
+#if NETFRAMEWORK
     [Serializable]
 #endif
     public class CustomBuildWithPropertiesEventArgs : CustomBuildEventArgs, Collections.IDictionary
@@ -446,7 +446,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         // Utility function to log all public instance property to CustomerBuildEventArgs 
         private static void AddAllPropertiesToCustomBuildWithPropertyEventArgs(ExtendedCustomBuildEventArgs cbpEventArg, object obj)
         {
-#if NET472
+#if NETFRAMEWORK
             if (obj != null)
             {
                 Type thisType = obj.GetType();
@@ -775,7 +775,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         }
         private void SetupPublishRelatedProperties(ref VSMSDeployObject dest)
         {
-#if NET472
+#if NETFRAMEWORK
             if (AllowUntrustedCertificate) 
             {
                 System.Net.ServicePointManager.ServerCertificateValidationCallback
@@ -885,7 +885,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
             finally
             {
-#if NET472
+#if NETFRAMEWORK
 
                 if (AllowUntrustedCertificate)
                     System.Net.ServicePointManager.ServerCertificateValidationCallback
@@ -1076,7 +1076,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public object? GetProperty(string propertyName)
         {
-#if NET472
+#if NETFRAMEWORK
             string lowerName = propertyName.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 #else
             string lowerName = propertyName.ToLower();

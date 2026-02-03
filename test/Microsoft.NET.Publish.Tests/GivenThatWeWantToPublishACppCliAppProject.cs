@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void It_should_fail_with_error_message()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NETCoreCppClApp")
                 .WithSource();
 

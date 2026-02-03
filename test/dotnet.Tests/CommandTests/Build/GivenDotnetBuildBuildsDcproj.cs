@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         public void ItPrintsBuildSummary()
         {
             var testAppName = "docker-compose";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .Restore(Log);
 

@@ -13,7 +13,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void LoadFromPath_CanLoadAssembly()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
 
             var loader = new TestDefaultExtensionAssemblyLoader(Path.Combine(directory.Path, "shadow"));
@@ -29,7 +29,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void LoadFromPath_DoesNotAddDuplicates_AfterLoadingByName()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
             var alphaFilePath2 = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha2.dll");
 
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void LoadFromPath_DoesNotAddDuplicates_AfterLoadingByPath()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
             var alphaFilePath2 = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha2.dll");
 
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void Load_CanLoadAssemblyByName_AfterLoadingByPath()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
 
             var loader = new TestDefaultExtensionAssemblyLoader(Path.Combine(directory.Path, "shadow"));
@@ -85,7 +85,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public void LoadFromPath_WithDependencyPathsSpecified_CanLoadAssemblyDependencies()
         {
             // Arrange
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.Path, "Alpha.dll");
             var betaFilePath = LoaderTestResources.Beta.WriteToFile(directory.Path, "Beta.dll");
             var gammaFilePath = LoaderTestResources.Gamma.WriteToFile(directory.Path, "Gamma.dll");

@@ -525,7 +525,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     [Fact]
     public void PreservesNoBomEncoding()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var tempFile = Path.Join(testInstance.Path, "test.cs");
 
         // Create a file without BOM
@@ -556,7 +556,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     [Fact]
     public void PreservesBomEncoding()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var tempFile = Path.Join(testInstance.Path, "test.cs");
 
         // Create a file with BOM
@@ -582,7 +582,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     [Fact]
     public void PreservesNonUtf8Encoding()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var tempFile = Path.Join(testInstance.Path, "test.cs");
 
         // Create a file with UTF-16 encoding (includes BOM by default)

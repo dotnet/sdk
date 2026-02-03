@@ -352,7 +352,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             if (_dotnetRoot == null)
             {
-                _testDirectory = _testAssetsManager.CreateTestDirectory(testName, identifier: identifier).Path;
+                _testDirectory = TestAssetsManager.CreateTestDirectory(testName, identifier: identifier).Path;
                 _dotnetRoot = Path.Combine(_testDirectory, "dotnet");
             }
         }
@@ -370,7 +370,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             Directory.CreateDirectory(manifestDirectory);
 
-            string manifestSourcePath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), sourceManifestName);
+            string manifestSourcePath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), sourceManifestName);
 
             File.Copy(manifestSourcePath, Path.Combine(manifestDirectory, "WorkloadManifest.json"));
         }

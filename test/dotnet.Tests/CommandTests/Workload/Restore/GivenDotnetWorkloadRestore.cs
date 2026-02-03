@@ -22,7 +22,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
         }
 
         var projectPath =
-            _testAssetsManager
+            TestAssetsManager
                 .CopyTestAsset(DcProjAssetName)
                 .WithSource()
                 .Path;
@@ -45,7 +45,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
         }
 
         var projectPath =
-            _testAssetsManager
+            TestAssetsManager
                 .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
                 .WithSource()
                 .Path;
