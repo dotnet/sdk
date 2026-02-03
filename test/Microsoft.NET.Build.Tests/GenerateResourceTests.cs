@@ -49,7 +49,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: targetFramework + isExe);
 
             var buildCommand = new BuildCommand(testAsset);

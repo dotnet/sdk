@@ -23,7 +23,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void SameAsTemplate()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var dotnetProjectConvert = Path.Join(testInstance.Path, "dotnetProjectConvert");
         Directory.CreateDirectory(dotnetProjectConvert);
@@ -89,7 +89,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [InlineData("File", "File", "Lib", "$(MSBuildProjectDirectory)/../$(LibProjectName)", "File/Project", "..{/}..{/}Lib{/}lib.csproj")]
     public void ProjectReference_RelativePaths(string workingDir, string fileDir, string libraryDir, string reference, string outputDir, string convertedReference)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var libraryDirFullPath = Path.Join(testInstance.Path, libraryDir);
         Directory.CreateDirectory(libraryDirFullPath);
@@ -150,7 +150,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact] // https://github.com/dotnet/sdk/issues/50832
     public void ProjectReference_FullPath()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var libraryDirFullPath = Path.Join(testInstance.Path, "Lib");
         Directory.CreateDirectory(libraryDirFullPath);
@@ -207,7 +207,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void ProjectReference_FullPath_WithVars()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var libraryDirFullPath = Path.Join(testInstance.Path, "Lib");
         Directory.CreateDirectory(libraryDirFullPath);
@@ -265,7 +265,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DirectoryAlreadyExists()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var directoryPath = Path.Join(testInstance.Path, "MyApp");
         Directory.CreateDirectory(directoryPath);
         File.WriteAllText(Path.Join(testInstance.Path, "MyApp.cs"), "Console.WriteLine();");
@@ -284,7 +284,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void OutputOption()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         Directory.CreateDirectory(Path.Join(testInstance.Path, "MyApp"));
         File.WriteAllText(Path.Join(testInstance.Path, "MyApp.cs"), "Console.WriteLine();");
 
@@ -308,7 +308,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void OutputOption_DirectoryAlreadyExists()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var directoryPath = Path.Join(testInstance.Path, "SomeOutput");
         Directory.CreateDirectory(directoryPath);
         File.WriteAllText(Path.Join(testInstance.Path, "MyApp.cs"), "Console.WriteLine();");
@@ -327,7 +327,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void MultipleEntryPointFiles()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), "Console.WriteLine(1);");
         File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "Console.WriteLine(2);");
 
@@ -348,7 +348,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void NoFileArgument()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         new DotnetCommand(Log, "project", "convert")
             .WithWorkingDirectory(testInstance.Path)
@@ -363,7 +363,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void NonExistentFile()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         new DotnetCommand(Log, "project", "convert", "NotHere.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -378,7 +378,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void NonCSharpFile()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var filePath = Path.Join(testInstance.Path, "Program.vb");
         File.WriteAllText(filePath, "");
 
@@ -396,7 +396,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void ExtensionCasing()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.CS"), "Console.WriteLine();");
 
         new DotnetCommand(Log, "project", "convert", "Program.CS")
@@ -418,7 +418,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [InlineData("class C;")]
     public void FileContent(string content)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), content);
 
         new DotnetCommand(Log, "project", "convert", "Program.cs")
@@ -444,7 +444,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void NestedDirectory()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var appDirectory = Path.Join(testInstance.Path, "app");
         Directory.CreateDirectory(appDirectory);
         File.WriteAllText(Path.Join(appDirectory, "Program.cs"), "Console.WriteLine();");
@@ -469,7 +469,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DefaultItems_NonDefaultSdk()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:sdk Microsoft.NET.Sdk.Web
             Console.WriteLine();
@@ -501,7 +501,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DefaultItems_MoreIncluded()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:property EnableDefaultCompileItems=true
             #:property EnableDefaultEmbeddedResourceItems=true
@@ -529,7 +529,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DefaultItems_MoreExcluded()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:property EnableDefaultItems=false
             Console.WriteLine();
@@ -558,7 +558,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DefaultItems_ExcludedViaMetadata()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:property EnableDefaultEmbeddedResourceItems=true
             #:property EnableDefaultNoneItems=true
@@ -595,7 +595,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DefaultItems_ImplicitBuildFileInDirectory()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:sdk Microsoft.NET.Sdk.Web
             Console.WriteLine(Util.GetText());
@@ -645,7 +645,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DefaultItems_ImplicitBuildFileOutsideDirectory()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var subdir = Path.Join(testInstance.Path, "subdir");
         Directory.CreateDirectory(subdir);
         File.WriteAllText(Path.Join(subdir, "Program.cs"), """
@@ -695,7 +695,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void DefaultItems_ImplicitBuildFileAndUtilOutsideDirectory()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var subdir = Path.Join(testInstance.Path, "subdir");
         Directory.CreateDirectory(subdir);
         File.WriteAllText(Path.Join(subdir, "Program.cs"), """
@@ -751,7 +751,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         bool considered = ext is "sln" or "slnx" or "csproj";
 
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:property EnableDefaultEmbeddedResourceItems=true
             #:property EnableDefaultNoneItems=true
@@ -785,7 +785,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void ProcessingFails()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var filePath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(filePath, "#:invalid");
 
@@ -806,7 +806,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void ProcessingFails_Evaluation()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var filePath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(filePath, "#:sdk Microsoft.ThisSdkDoesNotExist");
 
@@ -827,7 +827,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void ProcessingSucceeds()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var originalSource = """
             #:package Humanizer@2.14.1
             Console.WriteLine();
@@ -879,7 +879,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Theory, CombinatorialData]
     public void UserSecretsId_Overridden_ViaDirective(bool hasDirectiveBuildProps)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:property UserSecretsId=MyIdFromDirective
             Console.WriteLine();
@@ -923,7 +923,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void UserSecretsId_Overridden_ViaDirectoryBuildProps()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             Console.WriteLine();
@@ -964,7 +964,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         const string implicitValue = "$(MSBuildProjectName)-$([MSBuild]::StableStringHash($(MSBuildProjectFullPath.ToLowerInvariant()), 'Sha256'))";
 
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
             {(hasDirective ? $"#:property UserSecretsId={implicitValue}" : "")}
             Console.WriteLine();
@@ -1008,7 +1008,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void ForceOption_Off()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var filePath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(filePath, """
             #:property Prop1=1
@@ -1031,7 +1031,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void ForceOption_On()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var filePath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(filePath, """
             #:property Prop1=1
@@ -1164,7 +1164,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void Directives_DirectoryPath()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var libDir = Path.Join(testInstance.Path, "lib");
         Directory.CreateDirectory(libDir);

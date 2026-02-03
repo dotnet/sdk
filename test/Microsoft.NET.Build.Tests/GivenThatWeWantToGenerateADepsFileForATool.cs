@@ -96,7 +96,7 @@ class Program
             DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, toolProject.Name.ToLowerInvariant()));
             DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant()));
 
-            var toolProjectInstance = _testAssetsManager.CreateTestProject(toolProject, callingMethod, identifier: toolProject.Name);
+            var toolProjectInstance = TestAssetsManager.CreateTestProject(toolProject, callingMethod, identifier: toolProject.Name);
 
             NuGetConfigWriter.Write(toolProjectInstance.TestRoot);
 
@@ -117,7 +117,7 @@ class Program
                 TargetFrameworks = "netcoreapp2.0"
             };
 
-            var toolReferencerInstance = _testAssetsManager.CreateTestProject(toolReferencer, callingMethod, identifier: toolReferencer.Name)
+            var toolReferencerInstance = TestAssetsManager.CreateTestProject(toolReferencer, callingMethod, identifier: toolReferencer.Name)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;

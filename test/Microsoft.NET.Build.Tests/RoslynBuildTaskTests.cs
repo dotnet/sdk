@@ -128,7 +128,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         }
 
         configure?.Invoke(project);
-        return _testAssetsManager.CreateTestProject(project, callingMethod: callingMethod);
+        return TestAssetsManager.CreateTestProject(project, callingMethod: callingMethod);
     }
 
     private static void AddCompilersToolsetPackage(TestProject project)

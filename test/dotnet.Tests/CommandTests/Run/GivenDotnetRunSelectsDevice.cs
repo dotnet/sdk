@@ -31,7 +31,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItFailsInNonInteractiveMode_WhenMultipleDevicesAvailableAndNoneSpecified()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         var result = new DotnetCommand(Log, "run")
@@ -46,7 +46,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItListsDevicesForSpecifiedFramework()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         var result = new DotnetCommand(Log, "run")
@@ -64,7 +64,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [InlineData("test-device-2")]
     public void ItRunsDifferentDevicesInMultiTargetedApp(string deviceId)
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         new DotnetCommand(Log, "run")
@@ -77,7 +77,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItShowsErrorMessageWithAvailableDevices_InNonInteractiveMode()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         var result = new DotnetCommand(Log, "run")
@@ -94,7 +94,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItDoesNotPromptForDeviceWhenComputeAvailableDevicesTargetDoesNotExist()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset(
+        var testInstance = TestAssetsManager.CopyTestAsset(
                 "NETFrameworkReferenceNETStandard20",
                 testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
             .WithSource();
@@ -112,7 +112,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItTreatsEmptyDeviceSpecificationAsNotSpecified()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         var result = new DotnetCommand(Log, "run")
@@ -127,7 +127,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItWorksWithDevicePropertySyntax()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -141,7 +141,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItWorksWithDeviceWithoutRuntimeIdentifier()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-2";
@@ -158,7 +158,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [InlineData(false)] // non-interactive
     public void ItAutoSelectsSingleDeviceWithoutPrompting(bool interactive)
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
@@ -188,7 +188,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItCreatesBinlogWhenRequestedForDeviceSelection()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         // When /bl:device-list.binlog is specified, the verb "dotnet-run" is appended
@@ -210,7 +210,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItFailsWhenNoDevicesAreAvailable()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         var result = new DotnetCommand(Log, "run")
@@ -228,7 +228,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     public void ItDoesNotRunComputeAvailableDevicesWhenDeviceIsPreSpecified(string deviceArgPrefix)
     {
         string deviceId = "test-device-2";
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
@@ -262,7 +262,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItPromptsForTargetFrameworkEvenWhenDeviceIsSpecified()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -282,7 +282,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItCallsDeployToDeviceTargetWhenDeviceIsSpecified()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -305,7 +305,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItCallsDeployToDeviceTargetEvenWithNoBuild()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-1";
@@ -336,7 +336,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItCallsDeployToDeviceTargetWhenDeviceIsAutoSelected()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog");
@@ -361,7 +361,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     [Fact]
     public void ItPassesRuntimeIdentifierToDeployToDeviceTarget()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunDevices")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")
             .WithSource();
 
         string deviceId = "test-device-1";

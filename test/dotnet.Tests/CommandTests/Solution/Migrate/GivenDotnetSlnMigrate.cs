@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Sln.Migrate.Tests
         [InlineData("solution")]
         public void WhenSlnFileIsValidShouldGenerateValidSlnxFile(string solutionCommand)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithEmptySln")
                 .WithSource()
                 .Path;

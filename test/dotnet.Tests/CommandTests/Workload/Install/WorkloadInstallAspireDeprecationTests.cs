@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GivenOnlyAspireWorkloadItShowsDeprecationMessage()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
 
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GivenAspireWithOtherWorkloadsItShowsDeprecationAndInstallsOthers()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
 
@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GivenAspireWorkloadDeprecationMessageIsShownOnlyOnce()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
 
@@ -124,6 +124,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             deprecationLines.Should().HaveCount(1, "deprecation message should be shown exactly once");
         }
 
-        private string _manifestPath => Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+        private string _manifestPath => Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
     }
 }

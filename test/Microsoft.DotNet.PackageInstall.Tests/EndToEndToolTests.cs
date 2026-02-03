@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var toolSettings = new TestToolBuilder.TestToolSettings();
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
 
-            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             new DotnetToolCommand(Log, "install", "-g", toolSettings.ToolPackageId, "--add-source", toolPackagesPath)
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
 
-            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
 
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var toolSettings = new TestToolBuilder.TestToolSettings();
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
 
-            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             new DotnetNewCommand(Log, "tool-manifest")
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
 
-            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             new DotnetNewCommand(Log, "tool-manifest")
@@ -281,7 +281,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 $"{toolSettings.ToolPackageId}.{toolSettings.ToolPackageVersion}.nupkg",
                 $"{toolSettings.ToolPackageId}.any.{toolSettings.ToolPackageVersion}.nupkg"
                 ], "There should be two packages: one for the tool-wrapper and one for the 'any' RID");
-            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath)
@@ -309,7 +309,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 $"{toolSettings.ToolPackageId}.{toolSettings.ToolPackageVersion}.nupkg",
                 .. expectedRids.Select(rid => $"{toolSettings.ToolPackageId}.{rid}.{toolSettings.ToolPackageVersion}.nupkg"),
                 ], $"There should be { 1 + expectedRids.Count } packages: one for the tool-wrapper and one for each RID except the current RID");
-            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath)
@@ -506,7 +506,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void InstallToolWithHigherFrameworkAsGlobalToolShowsAppropriateError()
         {
             var toolPackagesPath = CreateNet99ToolPackage();
-            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             var result = new DotnetToolCommand(Log, "install", "-g", "Net99Tool", "--add-source", toolPackagesPath)
@@ -523,7 +523,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void InstallToolWithHigherFrameworkAsLocalToolShowsAppropriateError()
         {
             var toolPackagesPath = CreateNet99ToolPackage();
-            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             new DotnetNewCommand(Log, "tool-manifest")
@@ -547,7 +547,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void RunToolWithHigherFrameworkUsingDnxShowsAppropriateError()
         {
             var toolPackagesPath = CreateNet99ToolPackage();
-            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var testDirectory = TestAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
             var result = new DotnetToolCommand(Log, "exec", "Net99Tool", "--yes", "--source", toolPackagesPath)
@@ -565,7 +565,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         /// </summary>
         private string CreateNet99ToolPackage()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: "net99tool");
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: "net99tool");
             var projectDirectory = Path.Combine(testDirectory.Path, "toolproject");
             Directory.CreateDirectory(projectDirectory);
 

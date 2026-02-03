@@ -37,7 +37,7 @@ namespace Microsoft.NET.Publish.Tests
                 projectName,
                 "ClassLib");
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testProjectInstance);
             publishCommand.Execute().Should().Pass();
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.SelfContained = "True";
             testProject.AddItem("PublishReadyToRunExclude", "Include", "Classlib.dll");
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testProjectInstance);
             publishCommand.Execute().Should().Pass();
@@ -158,7 +158,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.AdditionalProperties["PublishReadyToRun"] = "True";
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testProjectInstance);
 
@@ -180,7 +180,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -253,7 +253,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["PublishReadyToRunUseCrossgen2"] = "True";
             testProject.SelfContained = "False";
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, targetFramework);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testProjectInstance.Path, testProject.Name));
             publishCommand.Execute().Should().Pass();
@@ -375,7 +375,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["PublishReadyToRunComposite"] = composite ? "True" : "False";
             testProject.SelfContained = isSelfContained ? "True" : "False";
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
 
             var publishCommand = new PublishCommand(testProjectInstance);
             publishCommand.Execute().Should().Pass();

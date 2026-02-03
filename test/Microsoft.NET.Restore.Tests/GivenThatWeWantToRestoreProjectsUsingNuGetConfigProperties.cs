@@ -111,7 +111,7 @@ namespace Microsoft.NET.Restore.Tests
 
             testProject.PackageReferences.Add(packageInNuGetFallbackFolder);
 
-            var testProjectTestAsset = _testAssetsManager.CreateTestProject(
+            var testProjectTestAsset = TestAssetsManager.CreateTestProject(
                 testProject,
                 string.Empty,
                 testProjectName);
@@ -137,7 +137,7 @@ namespace Microsoft.NET.Restore.Tests
             if (!projectInNuGetFallbackFolderPackageReference.NuGetPackageExists())
             {
                 var projectInNuGetFallbackFolderTestAsset =
-                    _testAssetsManager.CreateTestProject(projectInNuGetFallbackFolder);
+                    TestAssetsManager.CreateTestProject(projectInNuGetFallbackFolder);
                 var packageRestoreCommand = projectInNuGetFallbackFolderTestAsset.GetRestoreCommand(
                     Log,
                     relativePath: projectInNuGetFallbackFolder.Name).Execute().Should().Pass();
