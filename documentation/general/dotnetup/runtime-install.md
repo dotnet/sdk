@@ -8,7 +8,7 @@ It differs in a few ways, which we explore below.
 
 The `sdk` paths feature in [`global.json`](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json) is, in theory, not meant to inform runtime installation.
 
-Essentially, we could remove `global.json` lookup from the chain of consideration when looking up where to install dotnet. However, we suggest that installing the SDK implies the user wants debugging and other features to work based on that .NET SDK. So, we will utilize the same logic and have `global.jsons` `sdk` feature also direct the location and install lookup of the .NET runtime for `dotnetup`, to at least the extent we control. The muxer itself does not respect this, but it does respect `DOTNET_ROOT`, which we can manipulate.
+Essentially, we could remove `global.json` lookup from the chain of consideration when looking up where to install dotnet. However, we suggest that installing the SDK implies the user wants debugging and other features to work based on that .NET SDK. So, we will utilize the same logic and have `global.jsons` `sdk` feature also direct the location and install lookup of the .NET runtime for `dotnetup`, to at least the extent we control. The muxer itself does not respect this, but it does respect `DOTNET_ROOT`, which we can manipulate; admittedly, this may only be realistic for `dotnetup dotnet` or commands where we control the starting process, and we shouldn't set the entire user environment block to point to a repo specific location.
 
 ## Versions
 
