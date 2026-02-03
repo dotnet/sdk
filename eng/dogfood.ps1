@@ -26,6 +26,8 @@ function Print-Usage() {
   Write-Host "if it is set, will be used."
 }
 
+function Global:prompt {"(dogfood) PS $PWD> "} 
+
 if ($help -or (($command -ne $null) -and ($command.Contains("/help") -or $command.Contains("/?")))) {
   Print-Usage
   exit 0
@@ -45,10 +47,12 @@ try {
 
   $env:PATH = "$TestDotnetRoot;$env:Path"
   $env:DOTNET_ROOT = $TestDotnetRoot
+  $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH="0"
 
   # Avoid downloading Microsoft.Net.Sdk.Compilers.Toolset from feed
   # Locally built SDK package version is Major.Minor.0-dev, which won't be available.
   $env:BuildWithNetFrameworkHostedCompiler = $false
+  $env:DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=$true
 
   if ($command -eq $null -and $env:DOTNET_SDK_DOGFOOD_SHELL -ne $null) {
     $command = , $env:DOTNET_SDK_DOGFOOD_SHELL

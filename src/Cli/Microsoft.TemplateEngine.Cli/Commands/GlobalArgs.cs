@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public ParseResult ParseResult { get; }
 
-        CliCommand ICommandArgs.Command => Command;
+        Command ICommandArgs.Command => Command;
 
         internal bool DebugAttach { get; private set; }
 

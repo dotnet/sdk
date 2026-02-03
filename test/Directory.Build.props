@@ -1,29 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
 
   <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.tmp</DefaultItemExcludes>
+    <XUnitDesktopSettingsFile>$(MSBuildThisFileDirectory)xunit.runner.json</XUnitDesktopSettingsFile>
+    <XUnitCoreSettingsFile>$(MSBuildThisFileDirectory)xunit.runner.json</XUnitCoreSettingsFile>
   </PropertyGroup>
 
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-    <NoWarn>$(NoWarn);NU5125</NoWarn>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
 
-    <!-- Don't warn about long filenames in packages, we bundle test assets that have long paths
+    <!-- NU5125 The licenseUrl element is being replaced by the license element. -->
+    <!-- NU5123 Don't warn about long filenames in packages, we bundle test assets that have long paths
          (ie HelloWorldWithSubDirs) -->
-    <NoWarn>$(NoWarn);NU5123</NoWarn>
-    
+    <NoWarn>$(NoWarn);NU5125;NU5123</NoWarn>
+
     <GenerateProgramFile>false</GenerateProgramFile>
-    
+
     <DebugType>embedded</DebugType>
 
     <!-- Don't generate separate symbol packages for the test packages -->
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AwesomeAssertions" />
+  </ItemGroup>
 
   <!-- Global usings -->
   <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
@@ -38,7 +41,4 @@
     <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
 </Project>
