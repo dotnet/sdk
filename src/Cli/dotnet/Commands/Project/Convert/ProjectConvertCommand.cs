@@ -106,10 +106,10 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         }
 
         // Handle deletion of source file if requested.
-        bool shouldDeleteSource = _deleteSource || TryAskForDeleteSource(file);
-        if (shouldDeleteSource)
+        bool shouldDelete = _deleteSource || TryAskForDeleteSource(file);
+        if (shouldDelete)
         {
-            DeleteSourceFile(file);
+            DeleteFile(file);
         }
 
         return 0;
@@ -138,6 +138,19 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             else
             {
                 File.Copy(source, target);
+            }
+        }
+
+        void DeleteFile(string path)
+        {
+            if (_dryRun)
+            {
+                Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldDeleteSourceFile, path);
+            }
+            else
+            {
+                File.Delete(path);
+                Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertDeletedSourceFile, path);
             }
         }
 
@@ -272,30 +285,41 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
     private string? TryAskForOutputDirectory(string defaultValueRelative)
     {
-        return InteractiveConsole.Ask<string?>(
-            string.Format(CliCommandStrings.ProjectConvertAskForOutputDirectory, defaultValueRelative),
-            _parseResult,
-            (path, out result, [NotNullWhen(returnValue: false)] out error) =>
-            {
-                if (Directory.Exists(path))
-                {
-                    result = null;
-                    error = string.Format(CliCommandStrings.DirectoryAlreadyExists, Path.GetFullPath(path));
-                    return false;
-                }
+        if (!_parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
+        {
+            return null;
+        }
 
-                result = path is null ? null : Path.GetFullPath(path);
-                error = null;
-                return true;
-            },
-            out var result)
-            ? result
-            : null;
+        try
+        {
+            var prompt = new TextPrompt<string>(string.Format(CliCommandStrings.ProjectConvertAskForOutputDirectory, defaultValueRelative))
+                .AllowEmpty()
+                .Validate(path =>
+                {
+                    if (string.IsNullOrWhiteSpace(path))
+                    {
+                        return ValidationResult.Success();
+                    }
+
+                    if (Directory.Exists(path))
+                    {
+                        return ValidationResult.Error(string.Format(CliCommandStrings.DirectoryAlreadyExists, Path.GetFullPath(path)));
+                    }
+
+                    return ValidationResult.Success();
+                });
+
+            var answer = Spectre.Console.AnsiConsole.Prompt(prompt);
+            return string.IsNullOrWhiteSpace(answer) ? null : Path.GetFullPath(answer);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     private bool TryAskForDeleteSource(string sourceFile)
     {
-        // Don't ask in non-interactive mode or if --delete-source was already specified
         if (!_parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
         {
             return false;
@@ -303,7 +327,6 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
         try
         {
-            // Use Spectre.Console for a better interactive experience
             var choice = Spectre.Console.AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title($"[cyan]{Markup.Escape(string.Format(CliCommandStrings.ProjectConvertAskDeleteSource, Path.GetFileName(sourceFile)))}[/]")
@@ -314,21 +337,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         }
         catch (Exception)
         {
-            // If Spectre.Console fails (e.g., terminal doesn't support it), fall back to basic prompt
             return false;
-        }
-    }
-
-    private void DeleteSourceFile(string sourceFile)
-    {
-        if (_dryRun)
-        {
-            Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldDeleteSourceFile, sourceFile);
-        }
-        else
-        {
-            File.Delete(sourceFile);
-            Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertDeletedSourceFile, sourceFile);
         }
     }
 }
