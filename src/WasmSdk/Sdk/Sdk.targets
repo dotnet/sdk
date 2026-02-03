@@ -47,6 +47,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRoot="$(_WasmHotReloadPath)\wwwroot\"
       BasePath="$(StaticWebAssetBasePath)"
       AssetKind="Build"
+      AssetMode="CurrentProject"
       AssetTraitName="JSModule"
       AssetTraitValue="JSLibraryModule"
       PropertyOverrides="AssetTraitName;AssetTraitValue"
