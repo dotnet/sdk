@@ -166,10 +166,6 @@
       <HelixCorrelationPayload Include="$(MSBuildSdkResolverDir)">
         <Destination>r</Destination>
       </HelixCorrelationPayload>
-
-      <HelixCorrelationPayload Include="$(ArtifactsShippingPackages)">
-        <Destination>d/.nuget</Destination>
-      </HelixCorrelationPayload>
     </ItemGroup>
   </Target>
 
