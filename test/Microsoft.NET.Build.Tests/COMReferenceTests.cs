@@ -11,7 +11,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [FullMSBuildOnlyTheory()]
+        [FullMSBuildOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public void COMReferenceBuildsAndRuns(bool embedInteropTypes)

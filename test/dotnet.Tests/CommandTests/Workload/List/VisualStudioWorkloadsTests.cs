@@ -1,15 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.VisualStudio.Setup.Configuration;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Com;
+using Windows.Win32.System.Variant;
+
+#pragma warning disable CA1416 // Validate platform compatibility
 
 namespace Microsoft.DotNet.Cli.Workload.List.Tests;
 
-public class VisualStudioWorkloadsTests
+public unsafe class VisualStudioWorkloadsTests
 {
     private static readonly WorkloadResolver.WorkloadInfo[] s_workloadInfo =
     [
@@ -50,7 +54,6 @@ public class VisualStudioWorkloadsTests
     public void GetInstalledWorkloads_Basic()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
@@ -69,7 +72,9 @@ public class VisualStudioWorkloadsTests
                         ]),
                 ]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         List<KeyValuePair<string, string>> expected =
         [
@@ -80,65 +85,28 @@ public class VisualStudioWorkloadsTests
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
 
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_NoVSInstances_ReturnsEmpty()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
             new EnumSetupInstancesMock([]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         installedWorkloads.AsEnumerable().Should().BeEmpty();
-#pragma warning restore CA1416 // Validate platform compatibility
-    }
-
-    [WindowsOnlyFact]
-    public void GetInstalledWorkloads_SetupConfigurationNotRegistered_ReturnsEmpty()
-    {
-        // This test verifies that COMException with REGDB_E_CLASSNOTREG is handled gracefully
-        // when Visual Studio setup configuration COM classes are not registered (e.g., no VS installed)
-        MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
-        InstalledWorkloadsCollection installedWorkloads = new();
-
-        SetupConfigurationThrowingMock setupConfiguration = new(
-            new COMException("Class not registered", unchecked((int)0x80040154)));
-
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
-
-        installedWorkloads.AsEnumerable().Should().BeEmpty();
-#pragma warning restore CA1416 // Validate platform compatibility
-    }
-
-    [WindowsOnlyFact]
-    public void GetInstalledWorkloads_OtherCOMException_Throws()
-    {
-        // Other COM exceptions should not be swallowed
-        MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
-        InstalledWorkloadsCollection installedWorkloads = new();
-
-        SetupConfigurationThrowingMock setupConfiguration = new(
-            new COMException("Some other COM error", unchecked((int)0x80004005)));
-
-        Action act = () => VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
-
-        act.Should().Throw<COMException>().Where(e => e.ErrorCode == unchecked((int)0x80004005));
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_NoSdkPackageInstalled_ReturnsEmpty()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         // VS instance has workload packages but no SDK toolset package
@@ -154,17 +122,17 @@ public class VisualStudioWorkloadsTests
                         ]),
                 ]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         installedWorkloads.AsEnumerable().Should().BeEmpty();
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_EmptyPackageId_SkipsPackage()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
@@ -181,7 +149,8 @@ public class VisualStudioWorkloadsTests
                         ]),
                 ]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         List<KeyValuePair<string, string>> expected =
         [
@@ -189,14 +158,12 @@ public class VisualStudioWorkloadsTests
         ];
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_InvalidSdkVersion_SkipsInstance()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
@@ -212,17 +179,16 @@ public class VisualStudioWorkloadsTests
                         ]),
                 ]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         installedWorkloads.AsEnumerable().Should().BeEmpty();
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_FeatureBandMismatch_SkipsInstance()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
@@ -240,17 +206,16 @@ public class VisualStudioWorkloadsTests
         // Request workloads for a different feature band
         SdkFeatureBand requestedFeatureBand = new("10.0.100");
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfigurationScope);
 
         installedWorkloads.AsEnumerable().Should().BeEmpty();
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_FeatureBandMatch_ReturnsWorkloads()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
@@ -267,7 +232,8 @@ public class VisualStudioWorkloadsTests
 
         SdkFeatureBand requestedFeatureBand = new("10.0.100");
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfigurationScope);
 
         List<KeyValuePair<string, string>> expected =
         [
@@ -275,14 +241,12 @@ public class VisualStudioWorkloadsTests
         ];
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_NullFeatureBand_ReturnsAllWorkloads()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
@@ -298,7 +262,8 @@ public class VisualStudioWorkloadsTests
                 ]));
 
         // When sdkFeatureBand is null, all feature bands should match
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: null, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: null, setupConfiguration: setupConfigurationScope);
 
         List<KeyValuePair<string, string>> expected =
         [
@@ -306,14 +271,12 @@ public class VisualStudioWorkloadsTests
         ];
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_MultipleVSInstances_ReturnsWorkloadsFromAll()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
@@ -338,7 +301,8 @@ public class VisualStudioWorkloadsTests
 
         SdkFeatureBand requestedFeatureBand = new("10.0.100");
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfigurationScope);
 
         List<KeyValuePair<string, string>> expected =
         [
@@ -348,14 +312,12 @@ public class VisualStudioWorkloadsTests
         ];
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_MultipleVSInstances_OnlyMatchingFeatureBand()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
@@ -380,7 +342,8 @@ public class VisualStudioWorkloadsTests
 
         SdkFeatureBand requestedFeatureBand = new("10.0.100");
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfigurationScope);
 
         List<KeyValuePair<string, string>> expected =
         [
@@ -388,14 +351,12 @@ public class VisualStudioWorkloadsTests
         ];
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_NewStyleComponentId_MatchesWorkload()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         // Test the new VS 17.12+ component ID format: Microsoft.NET.Component.<workloadId>
@@ -412,7 +373,8 @@ public class VisualStudioWorkloadsTests
                         ]),
                 ]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         List<KeyValuePair<string, string>> expected =
         [
@@ -421,14 +383,12 @@ public class VisualStudioWorkloadsTests
         ];
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_UnknownPackageId_Ignored()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
@@ -445,7 +405,8 @@ public class VisualStudioWorkloadsTests
                         ]),
                 ]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         List<KeyValuePair<string, string>> expected =
         [
@@ -453,14 +414,12 @@ public class VisualStudioWorkloadsTests
         ];
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_DuplicateWorkloadInInstance_AddedOnce()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         // Same workload referenced via both old and new style component IDs
@@ -477,7 +436,8 @@ public class VisualStudioWorkloadsTests
                         ]),
                 ]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         // Should only contain one entry for maui since HashSet is used internally
         List<KeyValuePair<string, string>> expected =
@@ -486,14 +446,12 @@ public class VisualStudioWorkloadsTests
         ];
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_AllSupportedVSProducts_ReturnsWorkloads()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
@@ -524,7 +482,8 @@ public class VisualStudioWorkloadsTests
 
         SdkFeatureBand requestedFeatureBand = new("10.0.100");
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfigurationScope);
 
         List<KeyValuePair<string, string>> expected =
         [
@@ -534,14 +493,12 @@ public class VisualStudioWorkloadsTests
         ];
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_SdkBeforeWorkloads_StillMatches()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         // SDK toolset package appears before workload packages
@@ -558,7 +515,8 @@ public class VisualStudioWorkloadsTests
                         ]),
                 ]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         List<KeyValuePair<string, string>> expected =
         [
@@ -567,14 +525,12 @@ public class VisualStudioWorkloadsTests
         ];
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_NoWorkloadPackages_ReturnsEmpty()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         // VS instance has SDK but no workload packages
@@ -590,17 +546,16 @@ public class VisualStudioWorkloadsTests
                         ]),
                 ]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         installedWorkloads.AsEnumerable().Should().BeEmpty();
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_EmptyPackageList_ReturnsEmpty()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         SetupConfigurationMock setupConfiguration = new(
@@ -612,17 +567,16 @@ public class VisualStudioWorkloadsTests
                         []),
                 ]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         installedWorkloads.AsEnumerable().Should().BeEmpty();
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_WorkloadWithDashesMatchesDotNotation()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         // VS uses dots instead of dashes: maui-desktop -> maui.desktop
@@ -640,7 +594,8 @@ public class VisualStudioWorkloadsTests
                         ]),
                 ]));
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, setupConfiguration: setupConfigurationScope);
 
         List<KeyValuePair<string, string>> expected =
         [
@@ -650,14 +605,12 @@ public class VisualStudioWorkloadsTests
         ];
 
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     [WindowsOnlyFact]
     public void GetInstalledWorkloads_MultipleSdkVersions_UsesFirstMatchingFeatureBand()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
-#pragma warning disable CA1416 // Validate platform compatibility
         InstalledWorkloadsCollection installedWorkloads = new();
 
         // Instance has multiple SDK packages - first matching one determines hasMatchingSdk
@@ -676,11 +629,11 @@ public class VisualStudioWorkloadsTests
 
         SdkFeatureBand requestedFeatureBand = new("10.0.100");
 
-        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfiguration);
+        using var setupConfigurationScope = setupConfiguration.AsComScope();
+        VisualStudioWorkloads.GetInstalledWorkloads(workloadResolver, installedWorkloads, sdkFeatureBand: requestedFeatureBand, setupConfiguration: setupConfigurationScope);
 
         // Should be empty because SDK feature band doesn't match
         installedWorkloads.AsEnumerable().Should().BeEmpty();
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 
     private class MockWorkloadResolver : IWorkloadResolver
@@ -710,69 +663,136 @@ public class VisualStudioWorkloadsTests
         public WorkloadResolver.PackInfo? TryGetPackInfo(WorkloadPackId packId) => throw new NotImplementedException();
     }
 
-    public class SetupInstanceMock : ISetupInstance2
+    internal unsafe class SetupInstanceMock : ISetupInstance2.Interface
     {
         private readonly string _installationVersion;
-        private readonly ISetupPackageReference _product;
-        private readonly ISetupPackageReference[] _packages;
+        private readonly ISetupPackageReference.Interface _product;
+        private readonly ISetupPackageReference.Interface[] _packages;
 
-        public SetupInstanceMock(string installationVersion, ISetupPackageReference product, ISetupPackageReference[] packages)
+        public SetupInstanceMock(
+            string installationVersion,
+            ISetupPackageReference.Interface product,
+            ISetupPackageReference.Interface[] packages)
         {
             _installationVersion = installationVersion;
             _product = product;
             _packages = packages;
         }
 
-        public string GetInstallationVersion() => _installationVersion;
-        public ISetupPackageReference GetProduct() => _product;
-        public ISetupPackageReference[] GetPackages() => _packages;
+        HRESULT ISetupInstance2.Interface.GetInstallationVersion(BSTR* pbstrInstallationVersion)
+        {
+            if (pbstrInstallationVersion is null)
+            {
+                return HRESULT.E_POINTER;
+            }
 
+            *pbstrInstallationVersion = new BSTR(_installationVersion);
+            return HRESULT.S_OK;
+        }
 
-        public string GetInstanceId() => throw new NotImplementedException();
-        public FILETIME GetInstallDate() => throw new NotImplementedException();
-        public string GetInstallationName() => throw new NotImplementedException();
-        public string GetInstallationPath() => throw new NotImplementedException();
-        public string GetDisplayName(int lcid = 0) => throw new NotImplementedException();
-        public string GetDescription(int lcid = 0) => throw new NotImplementedException();
-        public string ResolvePath(string? pwszRelativePath = null) => throw new NotImplementedException();
-        public InstanceState GetState() => throw new NotImplementedException();
-        public string GetProductPath() => throw new NotImplementedException();
-        public ISetupErrorState GetErrors() => throw new NotImplementedException();
-        public bool IsLaunchable() => throw new NotImplementedException();
-        public bool IsComplete() => throw new NotImplementedException();
-        public ISetupPropertyStore GetProperties() => throw new NotImplementedException();
-        public string GetEnginePath() => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.GetProduct(ISetupPackageReference** ppPackage)
+        {
+            if (ppPackage is null)
+            {
+                return HRESULT.E_POINTER;
+            }
+
+            *ppPackage = (ISetupPackageReference*)Marshal.GetComInterfaceForObject(_product, typeof(ISetupPackageReference.Interface));
+            return HRESULT.S_OK;
+        }
+
+        HRESULT ISetupInstance2.Interface.GetPackages(SAFEARRAY** ppsaPackages)
+        {
+            if (ppsaPackages is null)
+            {
+                return HRESULT.E_POINTER;
+            }
+
+            SAFEARRAY* psa = PInvoke.SafeArrayCreateVector(VARENUM.VT_UNKNOWN, 0, (uint)_packages.Length);
+            if (psa is null)
+            {
+                return HRESULT.E_OUTOFMEMORY;
+            }
+
+            for (int i = 0; i < _packages.Length; i++)
+            {
+                nint pUnk = Marshal.GetComInterfaceForObject(_packages[i], typeof(ISetupPackageReference.Interface));
+                int index = i;
+                HRESULT hr = PInvoke.SafeArrayPutElement(psa, &index, (void*)pUnk);
+                Marshal.Release(pUnk);  // PutElement AddRefs internally
+                
+                if (hr.Failed)
+                {
+                    PInvoke.SafeArrayDestroy(psa);
+                    return hr;
+                }
+            }
+
+            *ppsaPackages = psa;
+            return HRESULT.S_OK;
+        }
+
+        HRESULT ISetupInstance2.Interface.GetInstanceId(BSTR* pbstrInstanceId) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.GetInstallDate(Windows.Win32.Foundation.FILETIME* pInstallDate) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.GetInstallationName(BSTR* pbstrInstallationName) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.GetInstallationPath(BSTR* pbstrInstallationPath) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.GetDisplayName(uint lcid, BSTR* pbstrDisplayName) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.GetDescription(uint lcid, BSTR* pbstrDescription) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.ResolvePath(PWSTR pwszRelativePath, BSTR* pbstrAbsolutePath) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.GetState(InstanceState* pState) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.GetProductPath(BSTR* pbstrProductPath) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.GetErrors(ISetupErrorState** ppErrorState) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.IsLaunchable(VARIANT_BOOL* pfLaunchable) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.IsComplete(VARIANT_BOOL* pfComplete) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.GetProperties(ISetupPropertyStore** ppPropertyStore) => throw new NotImplementedException();
+        HRESULT ISetupInstance2.Interface.GetEnginePath(BSTR* pbstrEnginePath) => throw new NotImplementedException();
+        HRESULT ISetupInstance.Interface.GetInstanceId(BSTR* pbstrInstanceId) => throw new NotImplementedException();
+        HRESULT ISetupInstance.Interface.GetInstallDate(Windows.Win32.Foundation.FILETIME* pInstallDate) => throw new NotImplementedException();
+        HRESULT ISetupInstance.Interface.GetInstallationName(BSTR* pbstrInstallationName) => throw new NotImplementedException();
+        HRESULT ISetupInstance.Interface.GetInstallationPath(BSTR* pbstrInstallationPath) => throw new NotImplementedException();
+        HRESULT ISetupInstance.Interface.GetInstallationVersion(BSTR* pbstrInstallationVersion) => throw new NotImplementedException();
+        HRESULT ISetupInstance.Interface.GetDisplayName(uint lcid, BSTR* pbstrDisplayName) => throw new NotImplementedException();
+        HRESULT ISetupInstance.Interface.GetDescription(uint lcid, BSTR* pbstrDescription) => throw new NotImplementedException();
+        HRESULT ISetupInstance.Interface.ResolvePath(PWSTR pwszRelativePath, BSTR* pbstrAbsolutePath) => throw new NotImplementedException();
     }
 
-    public class SetupPackageReferenceMock : ISetupPackageReference
+    public unsafe class SetupPackageReferenceMock : ISetupPackageReference.Interface
     {
         private readonly string _id;
 
-        public SetupPackageReferenceMock(string id)
-        {
-            _id = id;
-        }
+        public SetupPackageReferenceMock(string id) => _id = id;
 
         // Used while getting VS version info and packages.
         // Packages starting with "Microsoft.NetCore.Toolset." are trimmed and included. All others are matched against
         // the workload resolver's available workloads.
         public string GetId() => _id;
 
-        public string GetVersion() => throw new NotImplementedException();
-        public string GetChip() => throw new NotImplementedException();
-        public string GetLanguage() => throw new NotImplementedException();
-        public string GetBranch() => throw new NotImplementedException();
-        string ISetupPackageReference.GetType() => throw new NotImplementedException();
-        public string GetUniqueId() => throw new NotImplementedException();
-        public bool GetIsExtension() => throw new NotImplementedException();
+        HRESULT ISetupPackageReference.Interface.GetId(BSTR* pbstrId)
+        {
+            if (pbstrId is null)
+            {
+                return HRESULT.E_POINTER;
+            }
+
+            *pbstrId = new BSTR(_id);
+            return HRESULT.S_OK;
+        }
+
+        HRESULT ISetupPackageReference.Interface.GetVersion(BSTR* pbstrVersion) => throw new NotImplementedException();
+        HRESULT ISetupPackageReference.Interface.GetChip(BSTR* pbstrChip) => throw new NotImplementedException();
+        HRESULT ISetupPackageReference.Interface.GetLanguage(BSTR* pbstrLanguage) => throw new NotImplementedException();
+        HRESULT ISetupPackageReference.Interface.GetBranch(BSTR* pbstrBranch) => throw new NotImplementedException();
+        HRESULT ISetupPackageReference.Interface.GetType(BSTR* pbstrType) => throw new NotImplementedException();
+        HRESULT ISetupPackageReference.Interface.GetUniqueId(BSTR* pbstrUniqueId) => throw new NotImplementedException();
+        HRESULT ISetupPackageReference.Interface.GetIsExtension(VARIANT_BOOL* pfIsExtension) => throw new NotImplementedException();
     }
 
-    public class EnumSetupInstancesMock : IEnumSetupInstances
+    internal unsafe class EnumSetupInstancesMock : IEnumSetupInstances.Interface
     {
         private int _index;
-        private readonly ISetupInstance[] _instances;
+        private readonly ISetupInstance.Interface[] _instances;
 
-        public EnumSetupInstancesMock(ISetupInstance[] instances)
+        public EnumSetupInstancesMock(ISetupInstance.Interface[] instances)
         {
             _instances = instances;
         }
@@ -780,54 +800,75 @@ public class VisualStudioWorkloadsTests
         // Next
         // GetInstallationVersion()
         // GetProduct().GetId()
-        public void Next(int celt, ISetupInstance[] rgelt, out int pceltFetched)
+        HRESULT IEnumSetupInstances.Interface.Next(uint celt, ISetupInstance** rgelt, uint* pceltFetched)
         {
-            if (celt != 1
-                || _index >= _instances.Length
-                || rgelt.Length == 0)
+            if (rgelt is null)
             {
-                pceltFetched = 0;
-                return;
+                return HRESULT.E_POINTER;
             }
 
-            rgelt[0] = _instances[_index++];
-            pceltFetched = 1;
+            if (celt != 1)
+            {
+                *pceltFetched = 0;
+                return HRESULT.E_INVALIDARG;
+            }
+
+            if (_index >= _instances.Length)
+            {
+                if (pceltFetched is not null)
+                {
+                    // pceltFetched can be null if celt is 1
+                    *pceltFetched = 0;
+                }
+
+                return HRESULT.S_FALSE;
+            }
+
+            rgelt[0] = (ISetupInstance*)Marshal.GetComInterfaceForObject(_instances[_index++], typeof(ISetupInstance.Interface));
+            if (pceltFetched is not null)
+            {
+                // pceltFetched can be null if celt is 1
+                *pceltFetched = 1;
+            }
+
+            return HRESULT.S_OK;
         }
 
-        public void Skip(int celt) => throw new NotImplementedException();
-        public void Reset() => throw new NotImplementedException();
-        public IEnumSetupInstances Clone() => throw new NotImplementedException();
+        HRESULT IEnumSetupInstances.Interface.Skip(uint celt) => throw new NotImplementedException();
+        HRESULT IEnumSetupInstances.Interface.Reset() => throw new NotImplementedException();
+        HRESULT IEnumSetupInstances.Interface.Clone(IEnumSetupInstances** ppEnumInstances) => throw new NotImplementedException();
     }
 
-    public class SetupConfigurationMock : ISetupConfiguration2
+    internal class SetupConfigurationMock : ISetupConfiguration2.Interface
     {
-        private readonly IEnumSetupInstances _enumSetupInstances;
-        public SetupConfigurationMock(IEnumSetupInstances enumSetupInstances)
+        private readonly IEnumSetupInstances.Interface _enumSetupInstances;
+        public SetupConfigurationMock(IEnumSetupInstances.Interface enumSetupInstances)
         {
             _enumSetupInstances = enumSetupInstances;
         }
 
-        public IEnumSetupInstances EnumInstances() => _enumSetupInstances;
+        public ComScope<ISetupConfiguration2> AsComScope() =>
+            new((ISetupConfiguration2*)Marshal.GetComInterfaceForObject(this, typeof(ISetupConfiguration2.Interface)));
 
-        public IEnumSetupInstances EnumInstancesThatSupportComponents(string pwszComponentId) => throw new NotImplementedException();
-        public ISetupInstance GetInstanceForCurrentProcess() => throw new NotImplementedException();
-        public ISetupInstance GetInstanceForPath(string path) => throw new NotImplementedException();
-        public IEnumSetupInstances EnumAllInstances() => throw new NotImplementedException();
-    }
-
-    public class SetupConfigurationThrowingMock : ISetupConfiguration2
-    {
-        private readonly COMException _exception;
-        public SetupConfigurationThrowingMock(COMException exception)
+        HRESULT ISetupConfiguration2.Interface.EnumInstances(IEnumSetupInstances** ppEnumInstances)
         {
-            _exception = exception;
+            if (ppEnumInstances is null)
+            {
+                return HRESULT.E_POINTER;
+            }
+
+            *ppEnumInstances = (IEnumSetupInstances*)Marshal.GetComInterfaceForObject(_enumSetupInstances, typeof(IEnumSetupInstances.Interface));
+
+            return HRESULT.S_OK;
         }
 
-        public IEnumSetupInstances EnumInstances() => throw _exception;
-
-        public IEnumSetupInstances EnumInstancesThatSupportComponents(string pwszComponentId) => throw new NotImplementedException();
-        public ISetupInstance GetInstanceForCurrentProcess() => throw new NotImplementedException();
-        public ISetupInstance GetInstanceForPath(string path) => throw new NotImplementedException();
-        public IEnumSetupInstances EnumAllInstances() => throw new NotImplementedException();
+        HRESULT ISetupConfiguration2.Interface.GetInstanceForCurrentProcess(ISetupInstance** ppInstance) => throw new NotImplementedException();
+        HRESULT ISetupConfiguration2.Interface.GetInstanceForPath(PCWSTR path, ISetupInstance** ppInstance) => throw new NotImplementedException();
+        HRESULT ISetupConfiguration2.Interface.EnumAllInstances(IEnumSetupInstances** ppEnumInstances) => throw new NotImplementedException();
+        HRESULT ISetupConfiguration.Interface.EnumInstances(IEnumSetupInstances** ppEnumInstances) => throw new NotImplementedException();
+        HRESULT ISetupConfiguration.Interface.GetInstanceForCurrentProcess(ISetupInstance** ppInstance) => throw new NotImplementedException();
+        HRESULT ISetupConfiguration.Interface.GetInstanceForPath(PCWSTR path, ISetupInstance** ppInstance) => throw new NotImplementedException();
     }
 }
+
+#pragma warning restore CA1416 // Validate platform compatibility
