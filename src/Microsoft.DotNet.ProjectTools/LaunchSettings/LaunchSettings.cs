@@ -20,7 +20,6 @@ public static class LaunchSettings
 
     public static IEnumerable<string> SupportedProfileTypes => s_providers.Keys;
 
-
     public static string GetPropertiesLaunchSettingsPath(string directoryPath, string propertiesDirectoryName)
         => Path.Combine(directoryPath, propertiesDirectoryName, "launchSettings.json");
 

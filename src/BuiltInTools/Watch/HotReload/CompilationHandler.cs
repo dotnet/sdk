@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -23,7 +23,6 @@ namespace Microsoft.DotNet.Watch
         /// Lock to synchronize:
         /// <see cref="_runningProjects"/>
         /// <see cref="_previousUpdates"/>
-        /// <see cref="_currentAggregateCapabilities"/>
         /// </summary>
         private readonly object _runningProjectsAndUpdatesGuard = new();
 
@@ -584,7 +583,7 @@ namespace Microsoft.DotNet.Watch
         private static readonly string[] s_targets = [TargetNames.GenerateComputedBuildStaticWebAssets, TargetNames.ResolveReferencedProjectsStaticWebAssets];
 
         private static bool HasScopedCssTargets(ProjectInstance projectInstance)
-            => s_targets.All(t => projectInstance.Targets.ContainsKey(t));
+            => s_targets.All(projectInstance.Targets.ContainsKey);
 
         public async ValueTask HandleStaticAssetChangesAsync(
             IReadOnlyList<ChangedFile> files,

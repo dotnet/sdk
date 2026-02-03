@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Watch
                     }
 
                     // Cancel iteration as soon as the root process exits, so that we don't spent time loading solution, etc. when the process is already dead.
-                    rootRunningProject.ProcessExitedCancellationToken.Register(() => iterationCancellationSource.Cancel());
+                    rootRunningProject.ProcessExitedCancellationToken.Register(iterationCancellationSource.Cancel);
 
                     if (shutdownCancellationToken.IsCancellationRequested)
                     {
@@ -474,7 +474,7 @@ namespace Microsoft.DotNet.Watch
 
                                 foreach (var file in changedFiles)
                                 {
-                                    if (file.Item.ContainingProjectPaths.All(containingProjectPath => rebuiltProjectPaths.Contains(containingProjectPath)))
+                                    if (file.Item.ContainingProjectPaths.All(rebuiltProjectPaths.Contains))
                                     {
                                         newChangedFiles.Add(file);
                                     }
@@ -736,7 +736,7 @@ namespace Microsoft.DotNet.Watch
                 fileWatcher.WatchContainingDirectories([_context.RootProjectOptions.ProjectPath], includeSubdirectories: true);
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
-                    acceptChange: change => AcceptChange(change),
+                    acceptChange: AcceptChange,
                     startedWatching: () => _context.Logger.Log(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
                     cancellationToken);
             }
