@@ -87,7 +87,7 @@ namespace Microsoft.NET.Publish.Tests
         private void PublishAppWithLibraryAndRid(bool selfContained, out DirectoryInfo publishDirectory, out string runtimeIdentifier)
         {
             runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryAndRid", $"PublishAppWithLibraryAndRid{selfContained}")
                 .WithSource();
 

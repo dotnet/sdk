@@ -1,4 +1,5 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project>
+
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>
@@ -6,7 +7,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(ResolverTargetFramework);net472</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
