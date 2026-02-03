@@ -307,10 +307,10 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             var choice = Spectre.Console.AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title($"[cyan]{Markup.Escape(string.Format(CliCommandStrings.ProjectConvertAskDeleteSource, Path.GetFileName(sourceFile)))}[/]")
-                    .AddChoices(["Yes - delete the source file", "No - keep the source file"])
+                    .AddChoices([CliCommandStrings.ProjectConvertDeleteSourceChoiceYes, CliCommandStrings.ProjectConvertDeleteSourceChoiceNo])
             );
 
-            return choice.StartsWith("Yes");
+            return choice == CliCommandStrings.ProjectConvertDeleteSourceChoiceYes;
         }
         catch (Exception)
         {

@@ -1850,7 +1850,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute();
 
         result.Should().Pass();
-        result.StdOut.Should().Contain("Dry run: would delete source file");
+        result.StdOut.Should().Contain("Dry run: would delete source file: " + csFile);
 
         // Source file should still exist in dry-run mode
         File.Exists(csFile).Should().BeTrue();

@@ -861,6 +861,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Dry run: would delete source file: {0}</value>
     <comment>{0} is the source file path.</comment>
   </data>
+  <data name="ProjectConvertDeleteSourceChoiceYes" xml:space="preserve">
+    <value>Yes - delete the source file</value>
+  </data>
+  <data name="ProjectConvertDeleteSourceChoiceNo" xml:space="preserve">
+    <value>No - keep the source file</value>
+  </data>
   <data name="ProjectsHeader" xml:space="preserve">
     <value>Project(s)</value>
   </data>
