@@ -19,7 +19,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void ThrowsException_CannotFindMSBuildProjectFile()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/no_project_or_solution", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void ThrowsException_MultipleMSBuildProjectFiles()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_projects", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void ThrowsException_MultipleMSBuildSolutionFiles()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_solutions", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
@@ -58,7 +58,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void ThrowsException_SolutionAndProjectAmbiguity()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/project_and_solution", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
@@ -71,7 +71,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void FindsSolutionByFolder()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/single_solution", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 
@@ -85,7 +85,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void FindsSolutionByFilePath()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_solutions", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 
@@ -123,7 +123,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void FindsProjectByFolder()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/single_project", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 
@@ -137,7 +137,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void FindsProjectByFilePath()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_projects", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 

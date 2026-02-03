@@ -17,7 +17,7 @@ namespace Microsoft.NET.Publish.Tests
 
         private TestAsset SetupTestAsset([CallerMemberName] string callingMethod = "")
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool", callingMethod)
                 .WithSource()
                 .WithProjectChanges(project =>
