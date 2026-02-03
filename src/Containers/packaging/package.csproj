@@ -29,7 +29,7 @@
                           GlobalPropertiesToRemove="PublishDir"/>
 
         <ProjectReference Include="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
-                          SetTargetFramework="TargetFramework=$(VisualStudioTargetFramework)"
+                          SetTargetFramework="TargetFramework=$(NetFrameworkToolCurrent)"
                           OutputItemType="ContainerLibraryOutputVisualStudioTFM"
                           Condition="'$(DotNetBuildSourceOnly)' != 'true'"
                           GlobalPropertiesToRemove="PublishDir" />
@@ -50,7 +50,7 @@
     </Target>
 
     <Target Name="AddItemsForPackaging" AfterTargets="Build">
-        <MSBuild Projects="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj" Properties="TargetFramework=$(VisualStudioTargetFramework)" Targets="ResolveAssemblyReferences" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+        <MSBuild Projects="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj" Properties="TargetFramework=$(NetFrameworkToolCurrent)" Targets="ResolveAssemblyReferences" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
             <Output TaskParameter="TargetOutputs" ItemName="_AllNetFrameworkContainerTaskDependencies" />
         </MSBuild>
         <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
@@ -74,9 +74,9 @@
 
             <!-- netframework tasks -->
             <!-- dependencies -->
-            <Content Include="@(NecessaryNetFrameworkContainerTaskDependencies)" Pack="true" PackagePath="tasks/$(VisualStudioTargetFramework)/" />
+            <Content Include="@(NecessaryNetFrameworkContainerTaskDependencies)" Pack="true" PackagePath="tasks/$(NetFrameworkToolCurrent)/" />
             <!-- actual DLL  -->
-            <Content Include="@(ContainerLibraryOutputVisualStudioTFM)" Pack="true" PackagePath="tasks/$(VisualStudioTargetFramework)/" />
+            <Content Include="@(ContainerLibraryOutputVisualStudioTFM)" Pack="true" PackagePath="tasks/$(NetFrameworkToolCurrent)/" />
         </ItemGroup>
         <MSBuild Projects="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj" Properties="TargetFramework=$(TargetFramework)" Targets="ResolveAssemblyReferences">
             <Output TaskParameter="TargetOutputs" ItemName="_AllNetContainerTaskDependencies" />

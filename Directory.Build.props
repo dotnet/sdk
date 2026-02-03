@@ -47,7 +47,6 @@
     <!-- TFMs -->
     <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
     <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
-    <VisualStudioTargetFramework>$(NetFrameworkToolCurrent)</VisualStudioTargetFramework>
 
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
