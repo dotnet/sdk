@@ -39,7 +39,7 @@ internal readonly unsafe ref struct ComSafeArrayScope<T> where T : unmanaged, IC
     {
         if (value is null)
         {
-            // This ComSafeArrayScope2 is meant to receive a SAFEARRAY* from COM.
+            // This ComSafeArrayScope is meant to receive a SAFEARRAY* from COM.
             _value = (nint)value;
             return;
         }
@@ -114,7 +114,7 @@ internal readonly unsafe ref struct ComSafeArrayScope<T> where T : unmanaged, IC
     }
 
     /// <summary>
-    ///  Implicitly converts a <see cref="ComSafeArrayScope{T}{T}"/> to a pointer to a <see cref="SAFEARRAY"/> pointer.
+    ///  Implicitly converts a <see cref="ComSafeArrayScope{T}"/> to a pointer to a <see cref="SAFEARRAY"/> pointer.
     /// </summary>
     /// <param name="scope">The <see cref="ComSafeArrayScope{T}"/> to convert.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
