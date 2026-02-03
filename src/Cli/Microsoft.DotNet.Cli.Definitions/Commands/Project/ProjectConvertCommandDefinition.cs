@@ -34,6 +34,12 @@ internal sealed class ProjectConvertCommandDefinition : Command
         Arity = ArgumentArity.Zero,
     };
 
+    public readonly Option<bool> DeleteSourceOption = new("--delete-source")
+    {
+        Description = CommandDefinitionStrings.ProjectConvertDeleteSource,
+        Arity = ArgumentArity.Zero,
+    };
+
     public ProjectConvertCommandDefinition()
         : base("convert", CommandDefinitionStrings.ProjectConvertAppFullName)
     {
@@ -42,5 +48,6 @@ internal sealed class ProjectConvertCommandDefinition : Command
         Options.Add(ForceOption);
         Options.Add(InteractiveOption);
         Options.Add(DryRunOption);
+        Options.Add(DeleteSourceOption);
     }
 }

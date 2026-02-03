@@ -939,6 +939,9 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="ProjectConvertDryRun" xml:space="preserve">
     <value>Determines changes without actually modifying the file system</value>
   </data>
+  <data name="ProjectConvertDeleteSource" xml:space="preserve">
+    <value>Delete the source file after conversion</value>
+  </data>
   <data name="ProjectManifest" xml:space="preserve">
     <value>PROJECT_MANIFEST</value>
   </data>

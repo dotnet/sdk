@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
@@ -19,6 +20,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
     private readonly string? _outputDirectory;
     private readonly bool _force;
     private readonly bool _dryRun;
+    private readonly bool _deleteSource;
 
     public ProjectConvertCommand(ParseResult parseResult)
         : base(parseResult)
@@ -27,6 +29,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         _outputDirectory = parseResult.GetValue(Definition.OutputOption)?.FullName;
         _force = parseResult.GetValue(Definition.ForceOption);
         _dryRun = parseResult.GetValue(Definition.DryRunOption);
+        _deleteSource = parseResult.GetValue(Definition.DeleteSourceOption);
     }
 
     public override int Execute()
@@ -100,6 +103,13 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             string targetItemDirectory = Path.GetDirectoryName(targetItemFullPath)!;
             CreateDirectory(targetItemDirectory);
             CopyFile(item.FullPath, targetItemFullPath);
+        }
+
+        // Handle deletion of source file if requested.
+        bool shouldDeleteSource = _deleteSource || TryAskForDeleteSource(file);
+        if (shouldDeleteSource)
+        {
+            DeleteSourceFile(file);
         }
 
         return 0;
@@ -281,5 +291,44 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             out var result)
             ? result
             : null;
+    }
+
+    private bool TryAskForDeleteSource(string sourceFile)
+    {
+        // Don't ask in non-interactive mode or if --delete-source was already specified
+        if (!_parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
+        {
+            return false;
+        }
+
+        try
+        {
+            // Use Spectre.Console for a better interactive experience
+            var choice = Spectre.Console.AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"[cyan]{Markup.Escape(string.Format(CliCommandStrings.ProjectConvertAskDeleteSource, Path.GetFileName(sourceFile)))}[/]")
+                    .AddChoices(["Yes - delete the source file", "No - keep the source file"])
+            );
+
+            return choice.StartsWith("Yes");
+        }
+        catch (Exception)
+        {
+            // If Spectre.Console fails (e.g., terminal doesn't support it), fall back to basic prompt
+            return false;
+        }
+    }
+
+    private void DeleteSourceFile(string sourceFile)
+    {
+        if (_dryRun)
+        {
+            Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldDeleteSourceFile, sourceFile);
+        }
+        else
+        {
+            File.Delete(sourceFile);
+            Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertDeletedSourceFile, sourceFile);
+        }
     }
 }

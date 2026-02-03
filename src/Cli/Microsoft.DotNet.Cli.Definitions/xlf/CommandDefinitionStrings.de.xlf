@@ -1549,6 +1549,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="new">Convert a file-based program to a project-based program.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSource">
+        <source>Delete the source file after conversion</source>
+        <target state="new">Delete the source file after conversion</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="new">Determines changes without actually modifying the file system</target>
