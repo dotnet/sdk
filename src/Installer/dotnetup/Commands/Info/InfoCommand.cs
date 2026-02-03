@@ -6,18 +6,45 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
-using Spectre.Console;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
 internal class InfoCommand : CommandBase
 {
-    public static int Execute(OutputFormat format, bool noList = false, TextWriter? output = null)
+    private readonly OutputFormat _format;
+    private readonly bool _noList;
+    private readonly TextWriter _output;
+
+    /// <summary>
+    /// Constructor for use with the command-line parser.
+    /// </summary>
+    public InfoCommand(ParseResult parseResult) : base(parseResult)
     {
-        _jsonOutput = jsonOutput;
+        _format = parseResult.GetValue(InfoCommandParser.FormatOption);
+        _noList = parseResult.GetValue(InfoCommandParser.NoListOption);
+        _output = Console.Out;
+    }
+
+    /// <summary>
+    /// Constructor for testing with explicit parameters.
+    /// </summary>
+    public InfoCommand(ParseResult parseResult, OutputFormat format, bool noList, TextWriter output) : base(parseResult)
+    {
+        _format = format;
         _noList = noList;
-        _output = output ?? Console.Out;
+        _output = output;
+    }
+
+    /// <summary>
+    /// Static helper for tests to execute the command without needing a ParseResult.
+    /// </summary>
+    public static int Execute(OutputFormat format, bool noList, TextWriter output)
+    {
+        var parseResult = Parser.Parse(new[] { "--info" });
+        var command = new InfoCommand(parseResult, format, noList, output);
+        return command.Execute();
     }
 
     protected override string GetCommandName() => "info";
@@ -33,7 +60,7 @@ internal class InfoCommand : CommandBase
             installations = InstallationLister.GetInstallations(verify: true);
         }
 
-        if (format == OutputFormat.Json)
+        if (_format == OutputFormat.Json)
         {
             PrintJsonInfo(_output, info, installations);
         }
