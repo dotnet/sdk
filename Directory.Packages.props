@@ -179,6 +179,7 @@
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="PolySharp" Version="1.15.0" />
   </ItemGroup>
 
 </Project>
