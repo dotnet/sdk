@@ -9,14 +9,6 @@ namespace Microsoft.NET.Build.Containers.Tasks;
 partial class CreateNewImage
 {
     /// <summary>
-    /// The path to the folder containing `containerize.dll`.
-    /// </summary>
-    /// <remarks>
-    /// Used only for the ToolTask implementation of this task.
-    /// </remarks>
-    public string ContainerizeDirectory { get; set; }
-
-    /// <summary>
     /// The base registry to pull from.
     /// Ex: mcr.microsoft.com
     /// </summary>
@@ -40,6 +32,12 @@ partial class CreateNewImage
     /// Ex: sha256:12345...
     /// </summary>
     public string BaseImageDigest { get; set; }
+
+    [Required]
+    public ITaskItem BaseImageManifestPath { get; set; }
+
+    [Required]
+    public ITaskItem BaseImageConfigurationPath { get; set; }
 
     /// <summary>
     /// The registry to push to.
@@ -69,11 +67,11 @@ partial class CreateNewImage
     public string[] ImageTags { get; set; }
 
     /// <summary>
-    /// The directory for the build outputs to be published.
-    /// Constructed from "$(MSBuildProjectDirectory)\$(PublishDir)"
+    /// The application layer that will be the 'top' layer of the container image.
+    /// MUST have Size, Digest, and MediaType metadata.
     /// </summary>
     [Required]
-    public string PublishDirectory { get; set; }
+    public ITaskItem GeneratedApplicationLayer { get; set; }
 
     /// <summary>
     /// The working directory of the container.
@@ -130,18 +128,6 @@ partial class CreateNewImage
     public ITaskItem[] ContainerEnvironmentVariables { get; set; }
 
     /// <summary>
-    /// The RID to use to determine the host manifest if the parent container is a manifest list
-    /// </summary>
-    [Required]
-    public string ContainerRuntimeIdentifier { get; set; }
-
-    /// <summary>
-    /// The path to the runtime identifier graph file. This is used to compute RID compatibility for Image Manifest List entries.
-    /// </summary>
-    [Required]
-    public string RuntimeIdentifierGraphPath { get; set; }
-
-    /// <summary>
     /// The username or UID which is a platform-specific structure that allows specific control over which user the process run as.
     /// This acts as a default value to use when the value is not specified when creating a container.
     /// For Linux based systems, all of the following are valid: user, uid, user:group, uid:gid, uid:group, user:gid.
@@ -170,9 +156,19 @@ partial class CreateNewImage
     /// </summary>
     public string? ImageFormat { get; set; }
 
-    /// If true, the tooling will skip the publishing step.
+    public string ContentStoreRoot { get; set; }
+
+    /// <summary>
+    /// Where to write the generated manifest file.
     /// </summary>
-    public bool SkipPublishing { get; set; }
+    [Required]
+    public string GeneratedManifestPath { get; set; } = "";
+
+    /// <summary>
+    /// Where to write the generated configuration file.
+    /// </summary>
+    [Required]
+    public string GeneratedConfigurationPath { get; set; } = "";
 
     [Output]
     public string GeneratedContainerManifest { get; set; }
@@ -193,22 +189,26 @@ partial class CreateNewImage
     public ITaskItem[] GeneratedContainerNames { get; set; }
 
     [Output]
+    public ITaskItem GeneratedAppContainerConfig { get; set; }
+
+    [Output]
+    public ITaskItem GeneratedAppContainerManifest { get; set; }
+
+    [Output]
     public ITaskItem? GeneratedDigestLabel { get; set; }
 
     public CreateNewImage()
     {
-        ContainerizeDirectory = "";
-        ToolExe = "";
-        ToolPath = "";
         BaseRegistry = "";
         BaseImageName = "";
         BaseImageTag = "";
         BaseImageDigest = "";
+        BaseImageManifestPath = null!;
+        BaseImageConfigurationPath = null!;
         OutputRegistry = "";
         ArchiveOutputPath = "";
         Repository = "";
         ImageTags = Array.Empty<string>();
-        PublishDirectory = "";
         WorkingDirectory = "";
         Entrypoint = Array.Empty<ITaskItem>();
         EntrypointArgs = Array.Empty<ITaskItem>();
@@ -219,10 +219,12 @@ partial class CreateNewImage
         Labels = Array.Empty<ITaskItem>();
         ExposedPorts = Array.Empty<ITaskItem>();
         ContainerEnvironmentVariables = Array.Empty<ITaskItem>();
-        ContainerRuntimeIdentifier = "";
-        RuntimeIdentifierGraphPath = "";
         LocalRegistry = "";
         ContainerUser = "";
+        ContentStoreRoot = "";
+        GeneratedApplicationLayer = null!;
+        GenerateLabels = false;
+        GenerateDigestLabel = false;
 
         GeneratedContainerConfiguration = "";
         GeneratedContainerManifest = "";
@@ -231,10 +233,9 @@ partial class CreateNewImage
         GeneratedContainerMediaType = "";
         GeneratedContainerNames = Array.Empty<ITaskItem>();
         GeneratedDigestLabel = null;
+        GeneratedAppContainerConfig = null!;
+        GeneratedAppContainerManifest = null!;
 
-        GenerateLabels = false;
-        GenerateDigestLabel = false;
-
-        TaskResources = Resource.Manager;
+        TaskResources = Strings.ResourceManager;
     }
 }

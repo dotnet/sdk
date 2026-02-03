@@ -55,7 +55,7 @@ public class RegistryTests : IDisposable
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatProvideNoUploadSizeAttemptFullUpload));
         var repoName = "testRepo";
-        var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
+        var layerDigest = new Digest(DigestAlgorithm.sha256,"fafafafafafafafafafafafafafafafa");
         var mockLayer = new Mock<Layer>(MockBehavior.Strict);
         mockLayer
             .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[1000]));
@@ -80,7 +80,7 @@ public class RegistryTests : IDisposable
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatProvideUploadSizePrefersFullUploadWhenChunkSizeIsLowerThanContentLength));
         var repoName = "testRepo";
-        var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
+        var layerDigest = new Digest(DigestAlgorithm.sha256,"fafafafafafafafafafafafafafafafa");
         var mockLayer = new Mock<Layer>(MockBehavior.Strict);
         var chunkSizeLessThanContentLength = 10000;
         var registryUri = new Uri("https://public.ecr.aws");;
@@ -114,7 +114,7 @@ public class RegistryTests : IDisposable
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatFailAtomicUploadFallbackToChunked));
         var repoName = "testRepo";
-        var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
+        var layerDigest = new Digest(DigestAlgorithm.sha256,"fafafafafafafafafafafafafafafafa");
         var mockLayer = new Mock<Layer>(MockBehavior.Strict);
         var contentLength = 100000;
         var chunkSizeLessThanContentLength = 100000;
@@ -149,7 +149,7 @@ public class RegistryTests : IDisposable
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatFailAtomicUploadFallbackToChunked));
         var repoName = "testRepo";
-        var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
+        var layerDigest = new Digest(DigestAlgorithm.sha256,"fafafafafafafafafafafafafafafafa");
         var mockLayer = new Mock<Layer>(MockBehavior.Strict);
         var contentLength = 1000000;
         var chunkSize = 100000;
@@ -195,7 +195,7 @@ public class RegistryTests : IDisposable
         ILogger logger = loggerFactory.CreateLogger(nameof(PushAsync_Logging));
 
         var repoName = "testRepo";
-        var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
+        var layerDigest = new Digest(DigestAlgorithm.sha256,"fafafafafafafafafafafafafafafafa");
         var mockLayer = new Mock<Layer>(MockBehavior.Strict);
         mockLayer
             .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[1000]));
@@ -224,7 +224,7 @@ public class RegistryTests : IDisposable
         ILogger logger = _loggerFactory.CreateLogger(nameof(PushAsync_ForceChunkedUpload));
 
         string repoName = "testRepo";
-        string layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
+        Digest layerDigest = new(DigestAlgorithm.sha256,"fafafafafafafafafafafafafafafafa");
         Mock<Layer> mockLayer = new(MockBehavior.Strict);
         int contentLength = 1000000;
         int chunkSize = 100000;
@@ -553,7 +553,7 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RetriesOnFailure));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, new Digest(DigestAlgorithm.sha256,"testdigest1234"), 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
@@ -593,7 +593,7 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_ThrowsAfterMaxRetries));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, new Digest(DigestAlgorithm.sha256,"testdigest1234"), 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);

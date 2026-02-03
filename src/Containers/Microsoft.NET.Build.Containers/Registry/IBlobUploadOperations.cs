@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Containers;
 /// </remarks>
 internal interface IBlobUploadOperations
 {
-    public Task CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken);
+    public Task CompleteAsync(Uri uploadUri, Digest digest, CancellationToken cancellationToken);
 
     /// <summary>
     /// Check on the status of an upload operation.
@@ -24,7 +24,7 @@ internal interface IBlobUploadOperations
 
     public Task<StartUploadInformation> StartAsync(string repositoryName, CancellationToken cancellationToken);
 
-    public Task<bool> TryMountAsync(string destinationRepository, string sourceRepository, string digest, CancellationToken cancellationToken);
+    public Task<bool> TryMountAsync(string destinationRepository, string sourceRepository, Digest digest, CancellationToken cancellationToken);
 
     /// <summary>
     /// Uploads a stream of data to the registry atomically.

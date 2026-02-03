@@ -5,8 +5,8 @@ namespace Microsoft.NET.Build.Containers;
 
 internal sealed class UnableToDownloadFromRepositoryException : Exception
 {
-    public UnableToDownloadFromRepositoryException(string repository)
-        : base($"The download of the image from repository { repository } has failed.")
+    public UnableToDownloadFromRepositoryException(string repository, Exception? innerException = null)
+        : base($"The download of the image from repository {repository} has failed.", innerException)
     {
     }
 }

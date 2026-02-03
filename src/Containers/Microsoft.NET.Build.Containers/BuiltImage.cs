@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>
@@ -11,60 +14,35 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image configuration in JSON format.
     /// </summary>
-    internal required string Config { get; init; }
-
-    /// <summary>
-    /// Gets image digest.
-    /// </summary>
-    internal string? ImageDigest { get; init; }
-
-    /// <summary>
-    /// Gets image SHA.
-    /// </summary>
-    internal string? ImageSha { get; init; }
+    internal required Image Image { get; init; }
 
     /// <summary>
     /// Gets image manifest.
     /// </summary>
-    internal required string Manifest { get; init; } 
+    internal required ManifestV2 Manifest { get; init; }
 
     /// <summary>
     /// Gets manifest digest.
     /// </summary>
-    internal required string ManifestDigest { get; init; }
+    internal Digest ManifestDigest => Manifest.GetDigest();
 
     /// <summary>
     /// Gets manifest mediaType.
     /// </summary>
-    internal required string ManifestMediaType { get; init; }
+    internal string ManifestMediaType => Manifest.MediaType!;
 
     /// <summary>
     /// Gets image layers.
     /// </summary>
-    internal List<ManifestLayer>? Layers { get; init; }
+    internal List<Descriptor>? Layers => Manifest.Layers;
 
     /// <summary>
     /// Gets image OS.
     /// </summary>
-    internal string? OS { get; init; }
+    internal string? OS => Image.OS;
 
     /// <summary>
     /// Gets image architecture.
     /// </summary>
-    internal string? Architecture { get; init; }
-
-    /// <summary>
-    /// Gets layers descriptors.
-    /// </summary>
-    internal IEnumerable<Descriptor> LayerDescriptors
-    {
-        get
-        {
-            List<ManifestLayer> layersNode = Layers ?? throw new NotImplementedException("Tried to get layer information but there is no layer node?");
-            foreach (ManifestLayer layer in layersNode)
-            {
-                yield return new(layer.mediaType, layer.digest, layer.size);
-            }
-        }
-    }
+    internal string? Architecture => Image.Architecture;
 }

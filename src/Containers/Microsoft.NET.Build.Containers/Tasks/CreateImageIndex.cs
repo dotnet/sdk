@@ -15,13 +15,8 @@ namespace Microsoft.NET.Build.Containers.Tasks;
 public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-
     public void Cancel() => _cancellationTokenSource.Cancel();
-
-    public void Dispose()
-    {
-        _cancellationTokenSource.Dispose();
-    }
+    public void Dispose() => _cancellationTokenSource.Dispose();
 
     private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
@@ -68,105 +63,83 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             OutputRegistry,
             LocalRegistry);
 
-        var images = ParseImages(destinationImageReference.Kind);
+        var images = await ParseImages(GeneratedContainers, cancellationToken);
         if (Log.HasLoggedErrors)
         {
             return false;
         }
 
         var multiArchImage = CreateMultiArchImage(images, destinationImageReference.Kind);
+        using var fileStream = File.OpenWrite(GeneratedManifestPath);
+        await Json.SerializeAsync(fileStream, multiArchImage.ImageIndex, _cancellationTokenSource.Token);
 
-        GeneratedImageIndex = multiArchImage.ImageIndex;
+        GeneratedImageIndex = Json.Serialize(multiArchImage.ImageIndex);
         GeneratedArchiveOutputPath = ArchiveOutputPath;
 
         logger.LogInformation(Strings.BuildingImageIndex, destinationImageReference, string.Join(", ", images.Select(i => i.ManifestDigest)));
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
-
+        // TODO: remove this push and extract to another Task
         await ImagePublisher.PublishImageAsync(multiArchImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
-            .ConfigureAwait(false); 
+            .ConfigureAwait(false);
 
         return !Log.HasLoggedErrors;
     }
 
-    private BuiltImage[] ParseImages(DestinationImageReferenceKind destinationKind)
+    private async Task<BuiltImage[]> ParseImages(ITaskItem[] containers, CancellationToken ctok)
     {
-        var images = new BuiltImage[GeneratedContainers.Length];
+        var images = await Task.WhenAll(containers.Select(itemDescription => ParseBuiltImage(itemDescription)));
+        var validImages = images.Where(image => image is not null).Cast<BuiltImage>().ToArray()!;
+        return validImages;
 
-        for (int i = 0; i < GeneratedContainers.Length; i++)
+        async Task<BuiltImage?> ParseBuiltImage(ITaskItem itemDescription)
         {
-            var unparsedImage = GeneratedContainers[i];
+            var configFile = new FileInfo(itemDescription.GetMetadata("ConfigurationPath"));
+            var manifestFile = new FileInfo(itemDescription.GetMetadata("ManifestPath"));
 
-            string config = unparsedImage.GetMetadata("Configuration");
-            string manifestDigest = unparsedImage.GetMetadata("ManifestDigest");
-            string manifest = unparsedImage.GetMetadata("Manifest");
-            string manifestMediaType = unparsedImage.GetMetadata("ManifestMediaType");
-
-            if (string.IsNullOrEmpty(config) || string.IsNullOrEmpty(manifestDigest) || string.IsNullOrEmpty(manifest) || string.IsNullOrEmpty(manifestMediaType))
+            if (!configFile.Exists || !manifestFile.Exists)
             {
                 Log.LogError(Strings.InvalidImageMetadata);
-                break;
+                return null;
             }
 
-            (string architecture, string os) = GetArchitectureAndOsFromConfig(config);
-
-            // We don't need ImageDigest, ImageSha, Layers for remote registry, as the individual images should be pushed already
-            string? imageDigest = null;
-            string? imageSha = null;
-            List<ManifestLayer>? layers = null;
-
-            if (destinationKind == DestinationImageReferenceKind.LocalRegistry)
+            if (await GetArchitectureAndOsFromConfig(configFile, ctok) is not Image image)
             {
-                var manifestV2 = JsonSerializer.Deserialize<ManifestV2>(manifest);
-                if (manifestV2 == null)
-                {
-                    Log.LogError(Strings.InvalidImageManifest);
-                    break;
-                }
+                Log.LogError(Strings.InvalidImageConfig);
+                return null;
+            }
 
-                imageDigest = manifestV2.Config.digest;
-                imageSha = DigestUtils.GetShaFromDigest(imageDigest);
-                layers = manifestV2.Layers;
-            }     
-
-            images[i] = new BuiltImage()
+            ManifestV2 manifestV2 = (await Json.DeserializeAsync<ManifestV2>(manifestFile.OpenRead(), cancellationToken: ctok))!;
+            return new BuiltImage()
             {
-                Config = config,
-                ImageDigest = imageDigest,
-                ImageSha = imageSha,
-                Manifest = manifest,
-                ManifestDigest = manifestDigest,
-                ManifestMediaType = manifestMediaType,
-                Layers = layers,
-                OS = os,
-                Architecture = architecture
+                Image = image,
+                Manifest = manifestV2
             };
         }
-
-        return images;
     }
 
-    private (string, string) GetArchitectureAndOsFromConfig(string config)
+    private async Task<Image?> GetArchitectureAndOsFromConfig(FileInfo config, CancellationToken cTok)
     {
-        var configJson = JsonNode.Parse(config) as JsonObject;
-        if (configJson is null)
+        using var fileStream = config.OpenRead();
+        var image = await Json.DeserializeAsync<Image>(fileStream, cancellationToken: cTok);
+        if (image is null)
         {
             Log.LogError(Strings.InvalidImageConfig);
-            return (string.Empty, string.Empty);
+            return null;
         }
-        var architecture = configJson["architecture"]?.ToString();
+        var architecture = image.Architecture;
         if (architecture is null)
         {
             Log.LogError(Strings.ImageConfigMissingArchitecture);
-            return (string.Empty, string.Empty);
-        } 
-        var os = configJson["os"]?.ToString();
+            return null;
+        }
+        var os = image.OS;
         if (os is null)
         {
             Log.LogError(Strings.ImageConfigMissingOs);
-            return (string.Empty, string.Empty);
+            return null;
         }
-        return (architecture, os);
+        return image;
     }
 
     private static MultiArchImage CreateMultiArchImage(BuiltImage[] images, DestinationImageReferenceKind destinationImageKind)
@@ -177,16 +150,14 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 return new MultiArchImage()
                 {
                     // For multi-arch we publish only oci-formatted image tarballs.
-                    ImageIndex = ImageIndexGenerator.GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1),
-                    ImageIndexMediaType = SchemaTypes.OciImageIndexV1,
+                    ImageIndex = ImageIndexGenerator.GenerateDockerManifestList(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1),
                     Images = images
                 };
             case DestinationImageReferenceKind.RemoteRegistry:
-                (string imageIndex, string mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
+                var imageIndex = ImageIndexGenerator.GenerateImageIndex(images);
                 return new MultiArchImage()
                 {
                     ImageIndex = imageIndex,
-                    ImageIndexMediaType = mediaType,
                     // For remote registry we don't need individual images, as they should be pushed already
                 };
             default:

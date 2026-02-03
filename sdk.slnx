@@ -92,7 +92,7 @@
     <Project Path="src/Compatibility/GenAPI/Microsoft.DotNet.GenAPI/Microsoft.DotNet.GenAPI.csproj" />
   </Folder>
   <Folder Name="/src/Containers/">
-    <Project Path="src/Containers/containerize/containerize.csproj" />
+    <Project Path="src/Containers/CreateLayerTarball/CreateLayerTarball.csproj" />
     <Project Path="src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj" />
     <Project Path="src/Containers/packaging/package.csproj" />
   </Folder>
@@ -319,7 +319,7 @@
     <Project Path="src/Tasks/Microsoft.NET.Build.Extensions.Tasks.UnitTests/Microsoft.NET.Build.Extensions.Tasks.UnitTests.csproj" />
     <Project Path="test/ArgumentForwarding.Tests/ArgumentForwarding.Tests.csproj" />
     <Project Path="test/ArgumentsReflector/ArgumentsReflector.csproj" />
-    <Project Path="test/containerize.UnitTests/containerize.UnitTests.csproj" />
+    <Project Path="test/CreateLayerTarball.UnitTests/CreateLayerTarball.UnitTests.csproj" />
     <Project Path="test/dotnet-format.UnitTests/dotnet-format.UnitTests.csproj" />
     <Project Path="test/dotnet-MsiInstallation.Tests/dotnet-MsiInstallation.Tests.csproj" />
     <Project Path="test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj" />

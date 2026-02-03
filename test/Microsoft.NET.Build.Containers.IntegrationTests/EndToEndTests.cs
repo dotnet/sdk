@@ -19,11 +19,13 @@ public class EndToEndTests : IDisposable
 {
     private ITestOutputHelper _testOutput;
     private readonly TestLoggerFactory _loggerFactory;
+    private readonly ContentStore _store;
 
     public EndToEndTests(ITestOutputHelper testOutput)
     {
         _testOutput = testOutput;
         _loggerFactory = new TestLoggerFactory(testOutput);
+        _store = new ContentStore(new(Path.GetTempPath()));
     }
 
     public static string NewImageName([CallerMemberName] string callerMemberName = "")
@@ -42,7 +44,7 @@ public class EndToEndTests : IDisposable
         _loggerFactory.Dispose();
     }
 
-    internal static readonly string _oldFramework = "net9.0";
+    internal static readonly string _oldFramework = "net10.0";
     // CLI will not let us to target net9.0 anymore but we still need it because images for net10.0 aren't ready yet.
     // so we let it create net10.0 app, then change the target. Since we're building just small sample applications, it works.
     internal static void ChangeTargetFrameworkAfterAppCreation(string path)
@@ -55,7 +57,18 @@ public class EndToEndTests : IDisposable
         File.WriteAllText(Path.Combine(path, csprojFilename), text);
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    private static (string absolutefilePath, string relativePath)[] MakeItemsForPublishDir(string publishDir)
+    {
+        var files = Directory.GetFiles(publishDir, "*", new EnumerationOptions()
+        {
+            RecurseSubdirectories = true
+        });
+
+        return files.Select<string, (string, string)>(f => new(f, Path.GetRelativePath(publishDir, f))).ToArray();
+    }
+
+
+    [DockerAvailableFact()]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithRegistryPushAndPull));
@@ -74,9 +87,11 @@ public class EndToEndTests : IDisposable
 
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
 
-        imageBuilder.AddLayer(l);
+        Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
+
+        await imageBuilder.AddLayer(l, _store);
 
         imageBuilder.SetEntrypointAndCmd(new[] { "/app/MinimalTestApp" }, Array.Empty<string>());
 
@@ -102,7 +117,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact()]
     public async Task ApiEndToEndWithLocalLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithLocalLoad));
@@ -120,9 +135,11 @@ public class EndToEndTests : IDisposable
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
 
-        imageBuilder.AddLayer(l);
+        Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
+
+        await imageBuilder.AddLayer(l, _store);
 
         imageBuilder.SetEntrypointAndCmd(new[] { "/app/MinimalTestApp" }, Array.Empty<string>());
 
@@ -143,7 +160,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact()]
     public async Task ApiEndToEndWithArchiveWritingAndLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithArchiveWritingAndLoad));
@@ -160,10 +177,11 @@ public class EndToEndTests : IDisposable
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
 
-        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType);
+        Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
-        imageBuilder.AddLayer(l);
+        await imageBuilder.AddLayer(l, _store);
 
         imageBuilder.SetEntrypointAndCmd(new[] { "/app/MinimalTestApp" }, Array.Empty<string>());
 
@@ -193,7 +211,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact()]
     public async Task TarballsHaveCorrectStructure()
     {
         var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
@@ -246,13 +264,15 @@ public class EndToEndTests : IDisposable
         // Convert the image to an OCI image
         var ociImage = new BuiltImage
         {
-            Config = builtImage.Config,
-            ImageDigest = builtImage.ImageDigest,
-            ImageSha = builtImage.ImageSha,
-            Manifest = builtImage.Manifest,
-            ManifestDigest = builtImage.ManifestDigest,
-            ManifestMediaType = SchemaTypes.OciManifestV1,
-            Layers = builtImage.Layers
+            Image = builtImage.Image,
+            Manifest = new()
+            {
+                Config = builtImage.Manifest.Config,
+                Layers = builtImage.Manifest.Layers,
+                SchemaVersion = builtImage.Manifest.SchemaVersion,
+                MediaType = SchemaTypes.OciManifestV1,
+                KnownDigest = builtImage.Manifest.KnownDigest,
+            }
         };
 
         return ociImage;
@@ -367,7 +387,7 @@ public class EndToEndTests : IDisposable
         return publishDirectory;
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact()]
     public async Task EndToEnd_MultiProjectSolution()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution));
@@ -453,7 +473,7 @@ public class EndToEndTests : IDisposable
     /// It's safe to load the target for libraries in a multi-targeted context because libraries don't have EnableSdkContainerSupport
     /// enabled by default, so the target will be skipped.
     /// </summary>
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact()]
     public async Task EndToEnd_MultiProjectSolution_with_multitargeted_library()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution_with_multitargeted_library));
@@ -521,7 +541,7 @@ public class EndToEndTests : IDisposable
         commandResult.Should().HaveStdOutContaining("Pushed image 'webapp:latest'");
     }
 
-    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableTheory()]
     [InlineData("webapi", false)]
     [InlineData("webapi", true)]
     [InlineData("worker", false)]
@@ -695,7 +715,7 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableTheory()]
     [InlineData(DockerRegistryManager.FullyQualifiedBaseImageAspNet)]
     [InlineData(DockerRegistryManager.FullyQualifiedBaseImageAspNetDigest)]
     public void EndToEnd_NoAPI_Console(string baseImage)
@@ -778,7 +798,7 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact()]
     public void EndToEnd_SingleArch_NoRid()
     {
         // Create a new console project
@@ -813,7 +833,7 @@ public class EndToEndTests : IDisposable
     /**
     [InlineData("endtoendmultiarch-localregisty")]
     [InlineData("myteam/endtoendmultiarch-localregisty")]
-    [DockerIsAvailableAndSupportsArchTheory(Skip = "https://github.com/dotnet/sdk/issues/49502", "linux/arm64", checkContainerdStoreAvailability: true)]
+    [DockerIsAvailableAndSupportsArchTheory(, "linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_LocalRegistry(string imageName)
     {
         string tag = "1.0";
@@ -870,7 +890,7 @@ public class EndToEndTests : IDisposable
     }
     */
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact()]
     public void MultiArchStillAllowsSingleRID()
     {
         string imageName = NewImageName();
@@ -921,7 +941,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact()]
     public void MultiArchStillAllowsSingleRIDUsingJustRIDProperties()
     {
         string imageName = NewImageName();
@@ -996,7 +1016,7 @@ public class EndToEndTests : IDisposable
     /**
     [InlineData("endtoendmultiarch-archivepublishing")]
     [InlineData("myteam/endtoendmultiarch-archivepublishing")]
-    [DockerIsAvailableAndSupportsArchTheory(Skip = "https://github.com/dotnet/sdk/issues/49502", "linux/arm64", checkContainerdStoreAvailability: true)]
+    [DockerIsAvailableAndSupportsArchTheory(, "linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_ArchivePublishing(string imageName)
     {
         string tag = "1.0";
@@ -1385,7 +1405,7 @@ public class EndToEndTests : IDisposable
     [DockerSupportsArchInlineData("linux/386", "linux-x86", "/app", Skip = "There's no apphost for linux-x86 so we can't execute self-contained, and there's no .NET runtime base image for linux-x86 so we can't execute framework-dependent.")]
     [DockerSupportsArchInlineData("windows/amd64", "win-x64", "C:\\app")]
     [DockerSupportsArchInlineData("linux/amd64", "linux-x64", "/app")]
-    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49300")]
+    [DockerAvailableTheory()]
     public async Task CanPackageForAllSupportedContainerRIDs(string dockerPlatform, string rid, string workingDir)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanPackageForAllSupportedContainerRIDs));
@@ -1401,10 +1421,11 @@ public class EndToEndTests : IDisposable
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
 
-        Layer l = Layer.FromDirectory(publishDirectory, isWin ? "C:\\app" : "/app", isWin, imageBuilder.ManifestMediaType);
+        Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), isWin ? "C:\\app" : "/app", isWin, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
-        imageBuilder.AddLayer(l);
+        await imageBuilder.AddLayer(l, _store);
         imageBuilder.SetWorkingDirectory(workingDir);
 
         string[] entryPoint = DecideEntrypoint(rid, "MinimalTestApp", workingDir);
@@ -1436,7 +1457,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact()]
     public async void CheckDownloadErrorMessageWhenSourceRepositoryThrows()
     {
         var loggerFactory = new TestLoggerFactory(_testOutput);
@@ -1453,10 +1474,11 @@ public class EndToEndTests : IDisposable
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
 
-        Layer l = Layer.FromDirectory(publishDirectory, "C:\\app", true, imageBuilder.ManifestMediaType);
+        Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "C:\\app", true, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
-        imageBuilder.AddLayer(l);
+        await imageBuilder.AddLayer(l, _store);
         imageBuilder.SetWorkingDirectory("C:\\app");
 
         string[] entryPoint = DecideEntrypoint(rid, "MinimalTestApp", "C:\\app");

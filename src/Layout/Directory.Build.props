@@ -47,6 +47,7 @@
        $(TargetRid.StartsWith('haiku')) or
        $(TargetRid.StartsWith('linux-musl'))
       )">true</SkipBuildingInstallers>
+    <SkipBuildingInstallers>true</SkipBuildingInstallers>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -7,5 +7,6 @@
       "*.props": "xml",
       "*.targets": "xml",
       "*.*proj": "xml"
-    }
+    },
+    "dotnet.testWindow.useTestingPlatformProtocol": true,
 }

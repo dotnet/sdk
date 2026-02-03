@@ -24,9 +24,9 @@
   <!-- Copy to TestExecutionDirectory for using in integration tests. -->
   <Target Name="CopyDllToTestExecutionDirectory" AfterTargets="Build">
     <ItemGroup>
-      <ContainerizeFiles Include="$(ArtifactsBinDir)containerize\$(Configuration)\$(SdkTargetFramework)\**\*.*" />
+      <CreateLayerTarballFiles Include="$(ArtifactsBinDir)CreateLayerTarball\$(Configuration)\$(SdkTargetFramework)\**\*.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(ContainerizeFiles)" DestinationFiles="@(ContainerizeFiles->'$(TestLayoutDir)Container\containerize\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(CreateLayerTarballFiles)" DestinationFiles="@(CreateLayerTarballFiles->'$(TestLayoutDir)Container\CreateLayerTarball\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
 
   <!-- Copy to *.csproj for using in sanity checks integration tests. -->

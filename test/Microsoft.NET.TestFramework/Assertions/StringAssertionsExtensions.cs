@@ -18,7 +18,7 @@ namespace Microsoft.NET.TestFramework.Assertions
         /// <summary>
         /// Checks that two strings look to same to humans - if not a git-style diff will be reported.
         /// </summary>
-        /// <param name="because">Supply a non-default reason for the failure. By default, a git-style diff is reported. If you override this, the <c>diff</c> string will be added to the <paramref name="becauseArgs"/>
+        /// <param name="because">Supply a non-default reason for the failure. By default, a git-style diff is reported. If you override this, the <c>diff</c> string will be added to the end of the <paramref name="becauseArgs"/>
         /// so you can use it in your template string.</param>
         public static AndConstraint<StringAssertions> BeVisuallyEquivalentTo(
             this StringAssertions assertions,
@@ -38,7 +38,9 @@ namespace Microsoft.NET.TestFramework.Assertions
                 // diff may contain braces which will be interpreted as format items in the because string,
                 // so we need to escape them.
                 var formatSafeDiff = diff.Replace("{", "{{").Replace("}", "}}");
-                areSame.Should().Be(true, because: string.IsNullOrEmpty(because) ? $"The input strings are not visually equivalent. Diff is:\n" + formatSafeDiff : because, becauseArgs: [.. becauseArgs, formatSafeDiff]);
+                areSame.Should().Be(true,
+                    because: string.IsNullOrEmpty(because) ? $"The input strings are not visually equivalent. Diff is:\n" + formatSafeDiff : because,
+                    becauseArgs: [.. becauseArgs, formatSafeDiff]);
             }
 
             return new AndConstraint<StringAssertions>(assertions);
@@ -47,7 +49,7 @@ namespace Microsoft.NET.TestFramework.Assertions
         /// <summary>
         /// Checks that two strings look to same to humans - if not a git-style diff will be reported.
         /// </summary>
-        /// <param name="because">Supply a non-default reason for the failure. By default, a git-style diff is reported. If you override this, the <c>diff</c> string will be added to the <paramref name="becauseArgs"/>
+        /// <param name="because">Supply a non-default reason for the failure. By default, a git-style diff is reported. If you override this, the <c>diff</c> string will be added to the end of the <paramref name="becauseArgs"/>
         /// so you can use it in your template string.</param>
         public static AndConstraint<StringAssertions> BeVisuallyEquivalentToIfNotLocalized(
             this StringAssertions assertions,

@@ -20,7 +20,7 @@
     <SDKCustomXUnitProject Include="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj" />
 
     <!--containers tests end with UnitTests and IntegrationTests, therefore included manually -->
-    <SDKCustomXUnitProject Include="containerize.UnitTests\containerize.UnitTests.csproj" />
+    <SDKCustomXUnitProject Include="CreateLayerTarball.UnitTests\CreateLayerTarball.UnitTests.csproj" />
     <SDKCustomXUnitProject Include="Microsoft.NET.Build.Containers.IntegrationTests\Microsoft.NET.Build.Containers.IntegrationTests.csproj" />
 
     <SDKCustomXUnitProject Include="Microsoft.NET.Build.Containers.UnitTests\Microsoft.NET.Build.Containers.UnitTests.csproj" />

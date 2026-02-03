@@ -35,7 +35,7 @@
                           Condition="'$(DotNetBuildSourceOnly)' != 'true'"
                           GlobalPropertiesToRemove="PublishDir" />
 
-        <ProjectReference Include="../containerize/containerize.csproj"
+        <ProjectReference Include="../CreateLayerTarball/CreateLayerTarball.csproj"
                           PrivateAssets="all"
                           IncludeAssets="runtime"
                           ReferenceOutputAssembly="true"
@@ -62,16 +62,16 @@
                             ) and
                             %(_AllNet472ContainerTaskDependencies.NuGetIsFrameworkReference) != true" />
 
-            <!-- containerize folder -->
-            <Content Include="$(OutDir)containerize.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)containerize.runtimeconfig.json" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)Newtonsoft.Json.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)NuGet.*.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)Microsoft.DotNet.Cli.Utils.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)System.CommandLine.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)Valleysoft.DockerCredsProvider.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="$(OutDir)Microsoft.Extensions.*.dll" Pack="true" PackagePath="containerize/" />
-            <Content Include="@(ContainerLibraryOutput)" Pack="true" PackagePath="containerize/" />
+            <!-- CreateLayerTarball folder -->
+            <Content Include="$(OutDir)CreateLayerTarball.dll" Pack="true" PackagePath="CreateLayerTarball/" />
+            <Content Include="$(OutDir)CreateLayerTarball.runtimeconfig.json" Pack="true" PackagePath="CreateLayerTarball/" />
+            <Content Include="$(OutDir)Newtonsoft.Json.dll" Pack="true" PackagePath="CreateLayerTarball/" />
+            <Content Include="$(OutDir)NuGet.*.dll" Pack="true" PackagePath="CreateLayerTarball/" />
+            <Content Include="$(OutDir)Microsoft.DotNet.Cli.Utils.dll" Pack="true" PackagePath="CreateLayerTarball/" />
+            <Content Include="$(OutDir)System.CommandLine.dll" Pack="true" PackagePath="CreateLayerTarball/" />
+            <Content Include="$(OutDir)Valleysoft.DockerCredsProvider.dll" Pack="true" PackagePath="CreateLayerTarball/" />
+            <Content Include="$(OutDir)Microsoft.Extensions.*.dll" Pack="true" PackagePath="CreateLayerTarball/" />
+            <Content Include="@(ContainerLibraryOutput)" Pack="true" PackagePath="CreateLayerTarball/" />
 
             <!-- net472 tasks -->
             <!-- dependencies -->

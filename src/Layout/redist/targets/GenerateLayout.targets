@@ -269,8 +269,8 @@
       Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/tasks/$(SdkTargetFramework);TargetFramework=$(SdkTargetFramework)" />
     <MSBuild
       Targets="Publish"
-      Projects="$(RepoRoot)/src/Containers/containerize/containerize.csproj"
-      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/containerize"
+      Projects="$(RepoRoot)/src/Containers/CreateLayerTarball/CreateLayerTarball.csproj"
+      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/CreateLayerTarball"
       Condition="'$(OSName)' == 'win'" />
   </Target>
 

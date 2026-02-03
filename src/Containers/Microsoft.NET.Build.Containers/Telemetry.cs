@@ -15,9 +15,9 @@ internal class Telemetry
     /// <param name="LocalPullType">If the base image came from a local store of some kind, what kind of store was it?</param>
     /// <param name="RemotePushType">If the new image is being pushed to a remote registry, what kind of registry is it?</param>
     /// <param name="LocalPushType">If the new image is being stored in a local store of some kind, what kind of store is it?</param>
-    private record class PublishTelemetryContext(RegistryType? RemotePullType, LocalStorageType? LocalPullType, RegistryType? RemotePushType, LocalStorageType? LocalPushType);
-    private enum RegistryType { Azure, AWS, Google, GitHub, DockerHub, MCR, Other }
-    private enum LocalStorageType { Docker, Podman, Tarball }
+    internal record class PublishTelemetryContext(RegistryType? RemotePullType, LocalStorageType? LocalPullType, RegistryType? RemotePushType, LocalStorageType? LocalPushType);
+    internal enum RegistryType { Azure, AWS, Google, GitHub, DockerHub, MCR, Other }
+    internal enum LocalStorageType { Docker, Podman, Tarball }
 
     private readonly Microsoft.Build.Utilities.TaskLoggingHelper Log;
     private readonly PublishTelemetryContext Context;
@@ -25,9 +25,9 @@ internal class Telemetry
     internal Telemetry(
         SourceImageReference source,
         DestinationImageReference destination,
-        Microsoft.Build.Utilities.TaskLoggingHelper Log)
+        Microsoft.Build.Utilities.TaskLoggingHelper log)
     {
-        this.Log = Log;
+        Log = log;
         Context = new PublishTelemetryContext(
             source.Registry is not null ? GetRegistryType(source.Registry) : null,
             null, // we don't support local pull yet, but we may in the future
@@ -35,7 +35,13 @@ internal class Telemetry
             destination.LocalRegistry is not null ? GetLocalStorageType(destination.LocalRegistry) : null);
     }
 
-    private RegistryType GetRegistryType(Registry r)
+    internal Telemetry(PublishTelemetryContext context, Microsoft.Build.Utilities.TaskLoggingHelper log)
+    {
+        Log = log;
+        Context = context;
+    }
+
+    internal static RegistryType GetRegistryType(Registry r)
     {
         if (r.IsMcr) return RegistryType.MCR;
         if (r.IsGithubPackageRegistry) return RegistryType.GitHub;

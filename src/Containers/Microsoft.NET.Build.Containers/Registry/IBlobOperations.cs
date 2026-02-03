@@ -16,9 +16,9 @@ internal interface IBlobOperations
 {
     public IBlobUploadOperations Upload { get; }
 
-    public Task<bool> ExistsAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+    public Task<bool> ExistsAsync(string repositoryName, Digest digest, CancellationToken cancellationToken);
 
-    public Task<JsonNode> GetJsonAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+    public Task<JsonNode> GetJsonAsync(string repositoryName, Digest digest, CancellationToken cancellationToken);
 
-    public Task<Stream> GetStreamAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+    public Task<Stream> GetStreamAsync(string repositoryName, Digest digest, CancellationToken cancellationToken);
 }

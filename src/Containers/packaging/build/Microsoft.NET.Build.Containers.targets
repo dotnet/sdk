@@ -17,6 +17,7 @@
     <_ContainerIsSelfContained Condition="'$(SelfContained)' == 'true' or '$(PublishSelfContained)' == 'true'">true</_ContainerIsSelfContained>
 
     <EnableSdkContainerSupport Condition="'$(EnableSdkContainerSupport)' == '' and '$(OutputType)' != 'Library'" >true</EnableSdkContainerSupport>
+    <ContainerContentStoreRoot Condition="'$(ContainerContentStoreRoot)' == ''">$([System.IO.Path]::GetTempPath())</ContainerContentStoreRoot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -121,7 +122,8 @@
 
     <PropertyGroup>
       <ContainerGenerateLabels Condition="'$(ContainerGenerateLabels)' == ''">true</ContainerGenerateLabels>
-      <ContainerGenerateLabelsImageCreated Condition="'$(ContainerGenerateLabelsImageCreated)' == ''">true</ContainerGenerateLabelsImageCreated>
+      <!-- NOTE: this label screws up incrementality - may want to disable it by default -->
+      <ContainerGenerateLabelsImageCreated Condition="'$(ContainerGenerateLabelsImageCreated)' != 'true'">false</ContainerGenerateLabelsImageCreated>
       <ContainerGenerateLabelsImageDescription Condition="'$(ContainerGenerateLabelsImageDescription)' == ''">true</ContainerGenerateLabelsImageDescription>
       <ContainerGenerateLabelsImageAuthors Condition="'$(ContainerGenerateLabelsImageAuthors)' == ''">true</ContainerGenerateLabelsImageAuthors>
       <ContainerGenerateLabelsImageUrl Condition="'$(ContainerGenerateLabelsImageUrl)' == ''">true</ContainerGenerateLabelsImageUrl>
@@ -183,10 +185,11 @@
       _ContainerVerifySDKVersion;
       ComputeContainerConfig;
       _CheckContainersPackage;
+      _EnsureManifestsAvailable;
     </PublishContainerDependsOn>
   </PropertyGroup>
 
-  <!-- These args are relevant to container execution and are per-RID by nature. Therefore they're a direct dependency of the _PublishSingleContainer
+  <!-- These args are relevant to container execution and are per-RID by nature. Therefore they're a direct dependency of the _CreateSingleContainer
        target and not computed at the outer, multi-RID build layer. -->
   <Target Name="_ComputeContainerExecutionArgs" DependsOnTargets="_ContainerEstablishRIDNess" Condition="'$(_IsSingleRIDBuild)' == 'true'">
     <PropertyGroup>
@@ -249,29 +252,165 @@
       Text="The $(_ContainersPackageIdentity) NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to $(_ContainersPackageIdentity) because it is no longer needed." />
   </Target>
 
-  <!-- There is an implicit dependency here in that both of ComputeContainerConfig and _ComputeContainerExecutionArgs must have been run, but because we call this Target
-       in a few different ways we can't express that dependency directly here. -->
-  <Target Name="_PublishSingleContainer" Returns="@(GeneratedContainer)">
+  <!-- Uses the outputs of ComputeContainerConfig to create incrementality structures for _EnsureManifestsAreAvailable -->
+  <Target Name="_ComputeManifestInputsAndOutputs" DependsOnTargets="ComputeContainerConfig">
+    <PropertyGroup>
+      <_ContainerBaseImageManifestDataCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).ContainerManifestData</_ContainerBaseImageManifestDataCacheFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_ContainerBaseImageManifestDataCacheFile)" Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+      Lines="$(ContainerBaseRegistry);$(ContainerBaseName);$(ContainerBaseTag);$(ContainerBaseDigest)" />
+    <ItemGroup>
+      <FileWrites Include="_ContainerBaseImageManifestDataCacheFile" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Downloads the manifest jsons to the content store if necessary. If the manifest is a multi-arch manifest then the child manifests are downloaded as well. -->
+  <Target Name="_EnsureManifestsAvailable" DependsOnTargets="_ComputeManifestInputsAndOutputs;ComputeContainerConfig" >
+    <DownloadContainerManifest
+      Registry="$(ContainerBaseRegistry)"
+      Repository="$(ContainerBaseName)"
+      Tag="$(ContainerBaseTag)"
+      Digest="$(ContainerBaseDigest)"
+      ContentStore="$(ContainerContentStoreRoot)">
+      <Output TaskParameter="Manifests" ItemName="_ContainerSingleArchImageManifest" />
+      <Output TaskParameter="Configs" ItemName="_ContainerSingleArchImageManifestConfig" />
+      <Output TaskParameter="Layers" ItemName="_ContainerSingleArchImageManifestLayer" />
+    </DownloadContainerManifest>
+
+    <ItemGroup>
+      <FileWrites Include="@(_ContainerSingleArchImageManifest);@(_ContainerSingleArchImageManifestConfig);"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ComputeRidSpecificArtifactsForImage" DependsOnTargets="_EnsureManifestsAvailable">
+    <!-- Given all the manifest artifacts above, drill down to the ones relevant for this RID -->
+    <!-- Precondition: Called When RuntimeIdentifier != '' -->
+    <SelectRuntimeIdentifierSpecificItems Items="@(_ContainerSingleArchImageManifest)"
+                                          TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
+                                          RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)">
+      <Output TaskParameter="SelectedItems" ItemName="_BaseContainerThisArchManifest" />
+    </SelectRuntimeIdentifierSpecificItems>
+    <SelectRuntimeIdentifierSpecificItems Items="@(_ContainerSingleArchImageManifestConfig)"
+                                          TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
+                                          RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)">
+      <Output TaskParameter="SelectedItems" ItemName="_BaseContainerThisArchConfig" />
+    </SelectRuntimeIdentifierSpecificItems>
+    <SelectRuntimeIdentifierSpecificItems Items="@(_ContainerSingleArchImageManifestLayer)"
+                                          TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
+                                          RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)">
+      <Output TaskParameter="SelectedItems" ItemName="_BaseContainerThisArchLayer" />
+    </SelectRuntimeIdentifierSpecificItems>
+  </Target>
+
+  <Target Name="_DownloadLayers" DependsOnTargets="_ComputeRidSpecificArtifactsForImage" Inputs="@(_BaseContainerThisArchManifest)" Outputs="@(_BaseContainerThisArchLayer)">
+    <DownloadLayers Registry="$(ContainerBaseRegistry)"
+                    Repository="$(ContainerBaseName)"
+                    ContentStore="$(ContainerContentStoreRoot)"
+                    Layers="@(_BaseContainerThisArchLayer)" />
+  </Target>
+
+  <Target Name="_GenerateContainerConfigTrackingFile">
+    <PropertyGroup>
+      <_ContainerGeneratedConfigTrackingFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedContainerConfig</_ContainerGeneratedConfigTrackingFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(_ContainerGeneratedConfigTrackingFile)" Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+      Lines="
+        $(ContainerRepository);
+        @(ContainerImageTags);
+        $(ContainerWorkingDirectory);
+        @(ContainerEntrypoint);
+        @(ContainerEntrypointArgs);
+        @(ContainerAppCommand);
+        @(ContainerAppCommandArgs);
+        @(ContainerAppCommandInstruction);
+        @(ContainerDefaultArgs);
+        @(ContainerLabel->'%(Identity)=%(Value)');;
+        @(ContainerPort->'%(Identity):%(Type)');
+        @(ContainerEnvironmentVariables->'%(Identity)=%(Value)');" />
+    <ItemGroup>
+      <FileWrites Include="@(_ContainerGeneratedConfigTrackingFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CreateGeneratedContainerProperties">
+    <PropertyGroup>
+      <_ContainerGeneratedManifestPath>$(IntermediateOutputPath)container.manifest.json</_ContainerGeneratedManifestPath>
+      <_ContainerGeneratedConfigurationPath>$(IntermediateOutputPath)container.config.json</_ContainerGeneratedConfigurationPath>
+      <_ContainerGeneratedLayerPath>$(IntermediateOutputPath)container.layer.tar.gz</_ContainerGeneratedLayerPath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_GetItemsFromPublishDirForSingleContainerPublish">
+    <ItemGroup>
+      <!-- Have to do this in two phases because FullPath metadata isn't available on the Include, and we can't Update inside a Target -->
+      <_ContainerPublishItemBase Include="$(PublishDir)/**/*.*" />
+      <!-- TODO: this doesn't help us split out _kinds_ of publish content into layers. That's still a fundamental problem. -->
+      <_ContainerPublishItem Include="@(_ContainerPublishItemBase)">
+        <RelativePath>$([MSBuild]::MakeRelative($(PublishDir), %(_ContainerPublishItemBase.FullPath)))</RelativePath>
+      </_ContainerPublishItem>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CreateApplicationLayer"
+    DependsOnTargets="_GetItemsFromPublishDirForSingleContainerPublish"
+    Inputs="@(_ContainerPublishItem);$(_GenerateContainerConfigTrackingFile);@(_BaseContainerThisArchManifest)"
+    Outputs="$(_ContainerGeneratedLayerPath)"
+    Returns="@(_ContainerGeneratedApplicationLayer)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
       <DotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</DotNetHostFileName>
     </PropertyGroup>
 
-    <CreateNewImage ContainerizeDirectory="$(ContainerizeFolder)"
-                    ToolPath="$(DotNetHostDirectory)"
-                    ToolExe="$(DotNetHostFileName)"
-                    BaseRegistry="$(ContainerBaseRegistry)"
+    <PropertyGroup>
+      <_ParentImageFormat Condition="'$(ContainerImageFormat)' != ''">$(ContainerImageFormat)</_ParentImageFormat>
+      <_ParentImageFormat>%(_BaseContainerThisArchManifest.MediaType)</_ParentImageFormat>
+    </PropertyGroup>
+
+    <CreateAppLayer
+      CreateLayerTarballDirectory="$(CreateLayerTarballFolder)"
+      ToolPath="$(DotNetHostDirectory)"
+      ToolExe="$(DotNetHostFileName)"
+      PublishFiles="@(_ContainerPublishItem)"
+      ContainerRootDirectory="$(ContainerWorkingDirectory)"
+      TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
+      ParentImageFormat="$(_ParentImageFormat)"
+      ContentStoreRoot="$(ContainerContentStoreRoot)"
+      ContainerUser="$(ContainerUser)"
+      GeneratedLayerPath="$(_ContainerGeneratedLayerPath)">
+      <Output TaskParameter="GeneratedAppContainerLayer" ItemName="_ContainerGeneratedApplicationLayer" />
+    </CreateAppLayer>
+
+    <ItemGroup>
+      <FileWrites Include="$(_ContainerGeneratedLayerPath)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- There is an implicit dependency here in that both of ComputeContainerConfig and _ComputeContainerExecutionArgs must have been run, but because we call this Target
+       in a few different ways we can't express that dependency directly here. -->
+  <!-- NOTE: the apphost screws with incrementality because it's marked with CopyToPublishDirectory=Always in _ComputeNETCoreBuildOutputFiles - we should find a better way to handle that. -->
+  <Target Name="_CreateSingleContainer"
+    DependsOnTargets="_DownloadLayers;_GenerateContainerConfigTrackingFile;_CreateGeneratedContainerProperties;_CreateApplicationLayer"
+    Inputs="$(_ContainerGeneratedConfigTrackingFile);@(_BaseContainerThisArchLayer);@(_BaseContainerThisArchConfig);@(_BaseContainerThisArchManifest);@(_ContainerPublishItem);@(_ContainerGeneratedApplicationLayer)"
+    Outputs="$(_ContainerGeneratedManifestPath);$(_ContainerGeneratedConfigurationPath)"
+    Returns="@(GeneratedContainer);@(_ContainerGeneratedApplicationLayer);@(ContainerGeneratedConfig);@(ContainerGeneratedManifest)">
+
+    <CreateNewImage BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
                     BaseImageDigest="$(ContainerBaseDigest)"
+                    BaseImageManifestPath="@(_BaseContainerThisArchManifest)"
+                    BaseImageConfigurationPath="@(_BaseContainerThisArchConfig)"
+                    GeneratedApplicationLayer="@(_ContainerGeneratedApplicationLayer)"
                     ImageFormat="$(ContainerImageFormat)"
                     LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
                     ArchiveOutputPath="$(ContainerArchiveOutputPath)"
                     Repository="$(ContainerRepository)"
                     ImageTags="@(ContainerImageTags)"
-                    PublishDirectory="$(PublishDir)"
                     WorkingDirectory="$(ContainerWorkingDirectory)"
                     Entrypoint="@(ContainerEntrypoint)"
                     EntrypointArgs="@(ContainerEntrypointArgs)"
@@ -282,33 +421,95 @@
                     Labels="@(ContainerLabel)"
                     ExposedPorts="@(ContainerPort)"
                     ContainerEnvironmentVariables="@(ContainerEnvironmentVariables)"
-                    ContainerRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
                     ContainerUser="$(ContainerUser)"
-                    RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
-                    SkipPublishing="$(_SkipContainerPublishing)"
                     GenerateLabels="$(ContainerGenerateLabels)"
-                    GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
+                    GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"
+                    ContentStoreRoot="$(ContainerContentStoreRoot)"
+                    GeneratedManifestPath="$(_ContainerGeneratedManifestPath)"
+                    GeneratedConfigurationPath="$(_ContainerGeneratedConfigurationPath)" >
 
-      <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
-      <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
-      <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
-      <Output TaskParameter="GeneratedContainerMediaType" PropertyName="GeneratedContainerMediaType" />
       <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
       <Output TaskParameter="GeneratedDigestLabel" ItemName="ContainerLabel" />
+      <Output TaskParameter="GeneratedAppContainerConfig" ItemName="_ContainerGeneratedConfig" />
+      <Output TaskParameter="GeneratedAppContainerManifest" ItemName="_ContainerGeneratedManifest" />
     </CreateNewImage>
 
     <ItemGroup>
+      <ContainerGeneratedConfig Include="@(_ContainerGeneratedConfig)">
+        <RuntimeIdentifier>$(ContainerRuntimeIdentifier)</RuntimeIdentifier>
+      </ContainerGeneratedConfig>
+      <ContainerGeneratedManifest Include="@(_ContainerGeneratedManifest)">
+        <RuntimeIdentifier>$(ContainerRuntimeIdentifier)</RuntimeIdentifier>
+      </ContainerGeneratedManifest>
+
+      <!-- Track the generated files for cleanup later -->
+      <FileWrites Include="$(ContainerGeneratedManifest);$(ContainerGeneratedConfig);" />
+
       <GeneratedContainer Include="GeneratedContainer">
-        <Manifest>$(GeneratedContainerManifest)</Manifest>
-        <Configuration>$(GeneratedContainerConfiguration)</Configuration>
-        <ManifestDigest>$(GeneratedContainerDigest)</ManifestDigest>
-        <ManifestMediaType>$(GeneratedContainerMediaType)</ManifestMediaType>
+        <ManifestPath>$(_ContainerGeneratedManifestPath)</ManifestPath>
+        <ConfigurationPath>$(_ContainerGeneratedConfigurationPath)</ConfigurationPath>
+        <LayerPath>$(_ContainerGeneratedLayerPath)</LayerPath>
       </GeneratedContainer>
     </ItemGroup>
   </Target>
 
-  <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" Returns="@(GeneratedContainer)" >
+  <Target Name="_ContainerSinglePublishComputeTrackingFile">
+    <PropertyGroup>
+      <_ContainerSinglePublishTrackingFile>$(IntermediateOutputPath)container.SingleContainerPublish</_ContainerSinglePublishTrackingFile>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_PublishSingleContainer"
+      DependsOnTargets="_CreateSingleContainer;_ContainerSinglePublishComputeTrackingFile"
+      Inputs="@(_BaseContainerThisArchLayer);@(_ContainerGeneratedApplicationLayer);@(ContainerGeneratedManifest);@(ContainerGeneratedConfig)"
+      Outputs="$(_ContainerSinglePublishTrackingFile)"
+      >
+        <PushContainerToRemoteRegistry Condition="'$(ContainerRegistry)' != ''"
+          Registry="$(ContainerRegistry)"
+          Repository="$(ContainerRepository)"
+          Tags="@(ContainerImageTags)"
+          Manifest="@(ContainerGeneratedManifest)"
+          Configuration="@(ContainerGeneratedConfig)"
+          Layers="@(_BaseContainerThisArchLayer);@(_ContainerGeneratedApplicationLayer)" />
+
+        <MakeContainerTarball Condition="'$(ContainerArchiveOutputPath)' != ''"
+          ArchivePath="$(ContainerArchiveOutputPath)"
+          Repository="$(ContainerRepository)"
+          Tags="@(ContainerImageTags)"
+          Manifest="@(ContainerGeneratedManifest)"
+          Configuration="@(ContainerGeneratedConfig)"
+          Layers="@(_BaseContainerThisArchLayer);@(_ContainerGeneratedApplicationLayer)">
+          <Output TaskParameter="GeneratedArchiveFilePath" PropertyName="_GeneratedArchiveOutputPath" />
+        </MakeContainerTarball>
+
+        <PushContainerToLocal Condition="'$(LocalRegistry)' != '' or ('$(ContainerArchiveOutputPath)' == '' and '$(ContainerRegistry)' == '')"
+          LocalRegistry="$(LocalRegistry)"
+          Repository="$(ContainerRepository)"
+          Tags="@(ContainerImageTags)"
+          Manifest="@(ContainerGeneratedManifest)"
+          Configuration="@(ContainerGeneratedConfig)"
+          Layers="@(_BaseContainerThisArchLayer);@(_ContainerGeneratedApplicationLayer)" />
+
+      <!-- These are the public-facing values that should trigger a different container publish -->
+      <WriteLinesToFile
+        File="$(_ContainerSinglePublishTrackingFile)"
+        Overwrite="true"
+        WriteOnlyWhenDifferent="true"
+        Lines="
+          $(ContainerRegistry);
+          $(ContainerRepository);
+          $(LocalRegistry);
+          $(ContainerArchiveOutputPath);
+          @(ContainerImageTags->'%(Identity)');" />
+
+    <ItemGroup>
+      <FileWrites Include="@(_ContainerSinglePublishTrackingFile);$(_GeneratedArchiveOutputPath)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_ComputeMultiRidPublishDefaults">
     <PropertyGroup>
       <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon (only docker) publishing because all images are published in one tarball.-->
       <!--We don't want to skip publishing individual images in case of remote registry because the individual images should be available in the registry before image index is pushed.-->
@@ -326,7 +527,9 @@
       <!-- If we are publishing to local tarball or to local Docker, force OCI to prevent mismatches between inner images and the outer manifest -->
       <_SingleImageContainerFormat Condition="$(_SkipContainerPublishing) == 'true' ">OCI</_SingleImageContainerFormat>
     </PropertyGroup>
+  </Target>
 
+  <Target Name="_BuildMultiRidImages" DependsOnTargets="_ComputeMultiRidPublishDefaults" Returns="@(GeneratedContainer)">
     <ItemGroup>
       <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
@@ -347,7 +550,6 @@
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
           ContainerGenerateLabels=$(ContainerGenerateLabels);
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
-          _SkipContainerPublishing=$(_SkipContainerPublishing);
           ContainerImageFormat=$(_SingleImageContainerFormat);
           _IsMultiRIDBuild=false;
           _IsSingleRIDBuild=true;
@@ -356,13 +558,35 @@
       <_rids Remove ="$(_rids)" />
     </ItemGroup>
 
+    <PropertyGroup>
+      <_InnerContainerBuildTargets>Publish;_ParseItemsForPublishingSingleContainer;_ComputeContainerExecutionArgs;</_InnerContainerBuildTargets>
+      <_InnerContainerBuildTargets Condition="'$(_SkipContainerPublishing)' == 'true'">$(_InnerContainerBuildTargets);_PublishSingleContainer</_InnerContainerBuildTargets>
+      <_InnerContainerBuildTargets Condition="'$(_SkipContainerPublishing)' != 'true'">$(_InnerContainerBuildTargets);_CreateSingleContainer</_InnerContainerBuildTargets>
+    </PropertyGroup>
+
+    <!-- NOTE: not calling the publish here - it'll be orchestrated at the next step so we can push a bunch of stuff in parallel. -->
     <MSBuild
         Projects="@(_InnerBuild)"
-        Targets="Publish;_ParseItemsForPublishingSingleContainer;_ComputeContainerExecutionArgs;_PublishSingleContainer"
+        Targets="$(_InnerContainerBuildTargets)"
         BuildInParallel="$([MSBuild]::ValueOrDefault('$(ContainerPublishInParallel)', 'true'))">
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
     </MSBuild>
+  </Target>
 
+  <Target Name="_ComputeMultiArchManifestInputsAndOutputs">
+    <ItemGroup>
+      <_MultiArchManifestInputs Include="@(GeneratedContainer->'%(ManifestPath)');@(GeneratedContainer->'%(ConfigurationPath)')" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_MultiArchManifestFilePath>$(IntermediateOutputPath)multiarchcontainer.manifest</_MultiArchManifestFilePath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_CreateImageIndex"
+          DependsOnTargets="_BuildMultiRidImages;_ComputeMultiArchManifestInputsAndOutputs"
+          Inputs="@(_MultiArchManifestInputs)"
+          Outputs="$(_MultiArchManifestFilePath)"
+          Returns="@(GeneratedContainer)" >
     <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
                       GeneratedContainers="@(GeneratedContainer)"
                       LocalRegistry="$(LocalRegistry)"
@@ -373,10 +597,14 @@
                       BaseRegistry="$(ContainerBaseRegistry)"
                       BaseImageName="$(ContainerBaseName)"
                       BaseImageTag="$(ContainerBaseTag)"
-                      BaseImageDigest="$(ContainerBaseDigest)">
+                      BaseImageDigest="$(ContainerBaseDigest)"
+                      GeneratedManifestPath="$(_MultiArchManifestFilePath)">
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
     </CreateImageIndex>
+    <ItemGroup>
+      <FileWrites Include="$(_MultiArchManifestFilePath)" />
+    </ItemGroup>
   </Target>
 
   <Target Name="_ParseItemsForPublishingSingleContainer">
@@ -431,8 +659,8 @@
   Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'"
   Returns="@(GeneratedContainer)"
   >
-    <!-- Call _PublishMultiArchContainers if we are in a multi-rid build, and call _PublishSingleContainer if we are in a single-RID build -->
-    <CallTarget Condition="'$(_IsMultiRIDBuild)' == 'true' " Targets="_PublishMultiArchContainers">
+    <!-- Call _CreateImageIndex if we are in a multi-rid build, and call _CreateSingleContainer if we are in a single-RID build -->
+    <CallTarget Condition="'$(_IsMultiRIDBuild)' == 'true' " Targets="_CreateImageIndex">
       <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
     </CallTarget>
     <CallTarget Condition="'$(_IsSingleRIDBuild)' == 'true' " Targets="_PublishSingleContainer">
