@@ -25,9 +25,15 @@ Testing:
     - `dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
 - To test CLI command changes:
   - Build the redist SDK: `./build.sh` from repo root
-  - Create a dogfood environment: `source eng/dogfood.sh` 
+  - Create a dogfood environment: `source eng/dogfood.sh`
   - Test commands in the dogfood shell (e.g., `dnx --help`, `dotnet tool install --help`)
   - The dogfood script sets up PATH and environment to use the newly built SDK
+
+dotnetup:
+- When building or testing dotnetup, always use the full path to the csproj file:
+  - `dotnet build d:\sdk\src\Installer\dotnetup\dotnetup.csproj`
+  - `dotnet test d:\sdk\test\dotnetup.Tests\dotnetup.Tests.csproj`
+- Do not run `dotnet build` from within the dotnetup directory as restore may fail.
 
 Output Considerations:
 - When considering how output should look, solicit advice from baronfel.

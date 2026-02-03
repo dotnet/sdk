@@ -91,6 +91,46 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
+    [Fact]
+    public void Parser_ShouldHandleVersionOption()
+    {
+        // Arrange
+        var args = new[] { "--version" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_Version_ShouldBeDotnetupVersion()
+    {
+        // Parser.Version should return the dotnetup assembly version, not any other assembly
+        var version = Parser.Version;
+
+        // Should be a valid version format (not "unknown")
+        version.Should().NotBe("unknown");
+        version.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void DotnetupProcess_Version_ShouldOutputExpectedVersion()
+    {
+        // Run dotnetup --version as a process
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "--version" },
+            captureOutput: true);
+
+        // Should succeed
+        exitCode.Should().Be(0);
+
+        // Output should match Parser.Version
+        output.Trim().Should().Be(Parser.Version);
+    }
+
     #region Runtime Command Parser Tests
 
     [Theory]

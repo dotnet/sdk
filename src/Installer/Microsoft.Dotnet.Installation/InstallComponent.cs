@@ -11,20 +11,31 @@ public enum InstallComponent
     WindowsDesktop
 }
 
-/// <summary>
-/// Extension methods for InstallComponent.
-/// </summary>
 public static class InstallComponentExtensions
 {
     /// <summary>
-    /// Gets a user-friendly description for the install component type.
+    /// Gets the human-readable display name for the component.
+    /// Uses shorter, punchier names rather than the full Microsoft.* framework names.
     /// </summary>
-    public static string GetDescription(this InstallComponent component) => component switch
+    public static string GetDisplayName(this InstallComponent component) => component switch
     {
         InstallComponent.SDK => ".NET SDK",
-        InstallComponent.Runtime => ".NET Runtime",
-        InstallComponent.ASPNETCore => "ASP.NET Core Runtime",
-        InstallComponent.WindowsDesktop => "Windows Desktop Runtime",
-        _ => ".NET"
+        InstallComponent.Runtime => "dotnet (runtime)",
+        InstallComponent.ASPNETCore => "aspnet (runtime)",
+        InstallComponent.WindowsDesktop => "windowsdesktop (runtime)",
+        _ => component.ToString()
+    };
+
+    /// <summary>
+    /// Gets the official framework name for the component (e.g., "Microsoft.NETCore.App").
+    /// Used for JSON/machine-readable output.
+    /// </summary>
+    public static string GetFrameworkName(this InstallComponent component) => component switch
+    {
+        InstallComponent.SDK => ".NET SDK",
+        InstallComponent.Runtime => "Microsoft.NETCore.App",
+        InstallComponent.ASPNETCore => "Microsoft.AspNetCore.App",
+        InstallComponent.WindowsDesktop => "Microsoft.WindowsDesktop.App",
+        _ => component.ToString()
     };
 }

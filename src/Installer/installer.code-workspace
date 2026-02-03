@@ -23,33 +23,12 @@
         "version": "0.2.0",
         "configurations": [
             {
-                "name": "Launch dotnetup SDK install",
+                "name": "Launch dotnetup",
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build",
                 "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
-                "args": [
-                    "sdk",
-                    "install"
-                ],
-                "cwd": "${workspaceFolder:installer}/dotnetup",
-                "console": "integratedTerminal",
-                "stopAtEntry": false,
-                "logging": {
-                    "moduleLoad": false
-                }
-            },
-            {
-                "name": "Launch dotnetup Runtime install",
-                "type": "coreclr",
-                "request": "launch",
-                "preLaunchTask": "build",
-                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
-                "args": [
-                    "runtime",
-                    "install",
-                    "${input:runtimeType}"
-                ],
+                "args": "${input:dotnetupArgs}",
                 "cwd": "${workspaceFolder:installer}/dotnetup",
                 "console": "integratedTerminal",
                 "stopAtEntry": false,
@@ -107,26 +86,15 @@
         "compounds": [],
         "inputs": [
             {
-                "id": "runtimeType",
-                "type": "pickString",
-                "description": "Select runtime type to install",
-                "options": [
-                    "core",
-                    "aspnetcore",
-                    "windowsdesktop"
-                ],
-                "default": "core"
+                "id": "dotnetupArgs",
+                "type": "promptString",
+                "description": "Command line arguments (e.g., --info, sdk install latest)",
+                "default": "--info"
             },
             {
                 "id": "testName",
                 "type": "promptString",
                 "description": "Enter test name or partial test name to debug (e.g., 'InstallChannelVersionTest', 'Install', etc.)"
-            },
-            {
-                "id": "commandLineArgs",
-                "type": "promptString",
-                "description": "Command line arguments for dotnetup (e.g., 'sdk install 9.0', 'runtime install lts', '--help')",
-                "default": "sdk install"
             }
         ]
     },
