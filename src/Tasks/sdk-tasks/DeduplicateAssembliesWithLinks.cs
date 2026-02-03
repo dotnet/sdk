@@ -101,8 +101,8 @@ public sealed class DeduplicateAssembliesWithLinks : Task
 
         foreach (var group in duplicateGroups)
         {
-            // Sort deterministically: by depth (ascending), then alphabetically
-            var sorted = group.OrderBy(f => f.Depth).ThenBy(f => f.Path).ToList();
+            // Sort deterministically: by depth (ascending), then alphabetically (ordinal for reproducibility)
+            var sorted = group.OrderBy(f => f.Depth).ThenBy(f => f.Path, StringComparer.Ordinal).ToList();
 
             // First file is the "primary" - all duplicates will link to it
             var primary = sorted[0];
