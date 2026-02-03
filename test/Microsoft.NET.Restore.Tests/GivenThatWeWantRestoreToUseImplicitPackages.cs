@@ -25,7 +25,7 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "netstandard2.0",
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(project);
 
             string projectAssetsJsonPath = Path.Combine(
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "netcoreapp2.0",
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(project);
 
             string projectAssetsJsonPath = Path.Combine(

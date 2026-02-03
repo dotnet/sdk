@@ -601,7 +601,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <NetCoreRoot Condition="'%24(NetCoreRoot)' == ''">%24([MSBuild]::NormalizePath('%24(MSBuildThisFileDirectory)..\..\'))</NetCoreRoot>
-    <NetCoreSdkRoot Condition="'%24(NetCoreSdkRoot)' == ''">%24(MSBuildThisFileDirectory)</NetCoreSdkRoot>
+    <NetCoreSdkRoot>%24(MSBuildThisFileDirectory)</NetCoreSdkRoot>
     <NetCoreTargetingPackRoot Condition="'%24(NetCoreTargetingPackRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(NetCoreRoot)'))packs</NetCoreTargetingPackRoot>
     <PrunePackageDataRoot Condition="'%24(PrunePackageDataRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(MSBuildThisFileDirectory)'))PrunePackageData</PrunePackageDataRoot>
 

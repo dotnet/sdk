@@ -99,7 +99,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties["EnableWindowsTargeting"] = "true";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
                 .Execute()
@@ -119,7 +119,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["EnableWindowsTargeting"] = "true";
             testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new PublishCommand(testAsset)
                 .Execute()
@@ -145,7 +145,7 @@ namespace Microsoft.NET.Build.Tests
         [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
         public void WindowsFormsAppCanBuildOnNonWindows()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("WindowsFormsTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("WindowsFormsTestApp")
                 .WithSource();
 
             new BuildCommand(Log, testInstance.Path)
@@ -173,7 +173,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.SourceFiles.Add("App.xaml.cs", _fileUseWindowsType);
             testProject.AdditionalProperties.Add("UseWPF", "true");
 
-            var asset = _testAssetsManager.CreateTestProject(testProject);
+            var asset = TestAssetsManager.CreateTestProject(testProject);
 
             var command = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
 
@@ -201,7 +201,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("UseWPF", "true");
             testProject.AdditionalProperties.Add("TargetPlatformIdentifier", "Windows");
 
-            var asset = _testAssetsManager.CreateTestProject(testProject);
+            var asset = TestAssetsManager.CreateTestProject(testProject);
 
             var command = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
 
@@ -232,7 +232,7 @@ namespace Microsoft.NET.Build.Tests
             // Use an old projection that also supports .NET 6
             testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.38";
 
-            var asset = _testAssetsManager.CreateTestProject(testProject);
+            var asset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
 
@@ -339,7 +339,7 @@ namespace Microsoft.NET.Build.Tests
                 IsWinExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject).WithProjectChanges((project) =>
+            var testAsset = TestAssetsManager.CreateTestProject(testProject).WithProjectChanges((project) =>
             {
                 var ns = project.Root.Name.Namespace;
                 var duplicatedResolvedFileToPublish = XElement.Parse(@"
@@ -389,7 +389,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add(uiFrameworkProperty, "true");
 
-            return _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
+            return TestAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
         }
 
         private TestAsset CreateWindowsDesktopReferenceTestAsset(string projectName, string desktopFramework, string identifier, [CallerMemberName] string callingMethod = "")
@@ -405,7 +405,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.FrameworkReferences.Add(desktopFramework);
 
-            return _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
+            return TestAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
         }
 
         private readonly string _fileUseWindowsType = @"
