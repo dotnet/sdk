@@ -1631,6 +1631,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <target state="translated">Archivo .slnx {0} generado.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
+        <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
+        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
         <source>The --solution-folder and --in-root options cannot be used together; use only one of the options.</source>
         <target state="translated">Las opciones --in-root y --solution-folder no se pueden usar juntas. Utilice solo una de ellas.</target>
@@ -2206,6 +2211,11 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
         <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
         <target state="translated">No se encontró la versión de carga de trabajo {0}, que se especificó en {1}. Ejecuta "dotnet workload restore" para instalar esta versión de carga de trabajo.</target>
         <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">La versión del conjunto de cargas de trabajo {0} tiene manifiestos faltantes, probablemente eliminados por la administración de paquetes. Ejecute "dotnet workload repair" para corregir esto.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>

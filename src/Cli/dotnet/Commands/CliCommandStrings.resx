@@ -1102,6 +1102,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="SolutionFolderAndInRootMutuallyExclusive" xml:space="preserve">
     <value>The --solution-folder and --in-root options cannot be used together; use only one of the options.</value>
   </data>
+  <data name="SolutionFilterDoesNotSupportFolderOptions" xml:space="preserve">
+    <value>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</value>
+  </data>
   <data name="SolutionFolderHeader" xml:space="preserve">
     <value>Solution Folder(s)</value>
   </data>
@@ -1571,5 +1574,9 @@ Proceed?</value>
   </data>
   <data name="DurationColon" xml:space="preserve">
     <value>duration:</value>
+  </data>
+  <data name="WorkloadSetHasMissingManifests" xml:space="preserve">
+    <value>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</value>
+    <comment>{0} is the workload set version. {Locked="dotnet workload repair"}</comment>
   </data>
 </root>
