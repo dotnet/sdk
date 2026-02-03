@@ -14,7 +14,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void WhenDuplicatesExistItCreatesHardLinks()
     {
-        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
+        var layoutDir = TestAssetsManager.CreateTestDirectory().Path;
 
         var content = "duplicate assembly content";
         var file1 = Path.Combine(layoutDir, "assembly1.dll");
@@ -52,7 +52,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void WhenDuplicatesExistItCreatesSymbolicLinks()
     {
-        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
+        var layoutDir = TestAssetsManager.CreateTestDirectory().Path;
 
         var content = "duplicate assembly content";
         var file1 = Path.Combine(layoutDir, "assembly1.dll");
@@ -81,7 +81,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void ItSelectsMasterByDepthThenAlphabetically()
     {
-        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
+        var layoutDir = TestAssetsManager.CreateTestDirectory().Path;
         var subDir1 = Path.Combine(layoutDir, "sub1");
         var subDir2 = Path.Combine(layoutDir, "sub2");
         var subSubDir = Path.Combine(subDir1, "nested");
@@ -122,7 +122,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void ItOnlyDeduplicatesAssemblies()
     {
-        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
+        var layoutDir = TestAssetsManager.CreateTestDirectory().Path;
 
         var content = "shared content";
 
@@ -183,7 +183,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void ItHandlesMultipleDuplicateGroups()
     {
-        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
+        var layoutDir = TestAssetsManager.CreateTestDirectory().Path;
 
         // Group 1: duplicates with content A
         var contentA = "content A";
@@ -225,7 +225,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
     [Fact]
     public void ItCreatesRelativeSymbolicLinks()
     {
-        var layoutDir = _testAssetsManager.CreateTestDirectory().Path;
+        var layoutDir = TestAssetsManager.CreateTestDirectory().Path;
         var subDir = Path.Combine(layoutDir, "subdir");
         Directory.CreateDirectory(subDir);
 

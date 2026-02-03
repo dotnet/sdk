@@ -28,7 +28,7 @@ public class GivenSdkArchives(ITestOutputHelper log) : SdkTest(log)
 
     private string ExtractArchive(string archivePath)
     {
-        var testDir = _testAssetsManager.CreateTestDirectory();
+        var testDir = TestAssetsManager.CreateTestDirectory();
         string extractPath = Path.Combine(testDir.Path, "sdk-extracted");
         Directory.CreateDirectory(extractPath);
 
