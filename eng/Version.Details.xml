@@ -555,34 +555,34 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.26063.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.26070.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c85f9aceddaf85296e3efbc463daaa34fef5a375</Sha>
+      <Sha>9b9436a55a49bd58acb8ae95a57ad2185da26805</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.26063.2">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.26070.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c85f9aceddaf85296e3efbc463daaa34fef5a375</Sha>
+      <Sha>9b9436a55a49bd58acb8ae95a57ad2185da26805</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.26063.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.26070.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c85f9aceddaf85296e3efbc463daaa34fef5a375</Sha>
+      <Sha>9b9436a55a49bd58acb8ae95a57ad2185da26805</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="9.0.0-beta.26063.2">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="9.0.0-beta.26070.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c85f9aceddaf85296e3efbc463daaa34fef5a375</Sha>
+      <Sha>9b9436a55a49bd58acb8ae95a57ad2185da26805</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="9.0.0-beta.26063.2">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="9.0.0-beta.26070.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c85f9aceddaf85296e3efbc463daaa34fef5a375</Sha>
+      <Sha>9b9436a55a49bd58acb8ae95a57ad2185da26805</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="9.0.0-beta.26063.2">
+    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="9.0.0-beta.26070.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c85f9aceddaf85296e3efbc463daaa34fef5a375</Sha>
+      <Sha>9b9436a55a49bd58acb8ae95a57ad2185da26805</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.26063.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.26070.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c85f9aceddaf85296e3efbc463daaa34fef5a375</Sha>
+      <Sha>9b9436a55a49bd58acb8ae95a57ad2185da26805</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="9.0.12">
@@ -597,14 +597,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>e156e649f28395d9d0ee1e848225a689b59e0fd3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.25381.1">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.26071.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>0898abbb5899ef400b8372913c2320295798a687</Sha>
+      <Sha>e4cdae73d1aaad398c2915f319e3d8d8ed41a737</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.25381.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.26071.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>0898abbb5899ef400b8372913c2320295798a687</Sha>
+      <Sha>e4cdae73d1aaad398c2915f319e3d8d8ed41a737</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
