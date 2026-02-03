@@ -68,34 +68,4 @@ public static class InteractiveConsole
         string? answer,
         out TResult? result,
         [NotNullWhen(returnValue: false)] out string? error);
-
-    public static bool Ask<TResult>(
-        string question,
-        ParseResult parseResult,
-        Validator<TResult> validate,
-        out TResult? result)
-    {
-        if (!parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
-        {
-            result = default;
-            return false;
-        }
-
-        while (true)
-        {
-            Console.Write(question);
-            Console.Write(' ');
-
-            string? answer = Console.ReadLine();
-            answer = string.IsNullOrWhiteSpace(answer) ? null : answer.Trim();
-            if (!validate(answer, out result, out var error))
-            {
-                Console.WriteLine(error);
-            }
-            else
-            {
-                return true;
-            }
-        }
-    }
 }

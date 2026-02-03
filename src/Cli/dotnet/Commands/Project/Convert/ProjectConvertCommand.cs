@@ -272,10 +272,25 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
     {
         string defaultValue = Path.ChangeExtension(file, null);
         string defaultValueRelative = Path.GetRelativePath(relativeTo: Environment.CurrentDirectory, defaultValue);
-        string targetDirectory = _outputDirectory
-            ?? TryAskForOutputDirectory(defaultValueRelative)
-            ?? defaultValue;
-        if (Directory.Exists(targetDirectory))
+        
+        // If output directory is provided via CLI, use it directly
+        if (_outputDirectory != null)
+        {
+            if (Directory.Exists(_outputDirectory))
+            {
+                throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, _outputDirectory);
+            }
+            return _outputDirectory;
+        }
+        
+        // Try to ask for output directory in interactive mode
+        string? targetDirectory = TryAskForOutputDirectory(defaultValueRelative, defaultValue);
+        
+        // Use the result from interactive prompt or fall back to default
+        targetDirectory ??= defaultValue;
+        
+        // Final validation (only needed if not in interactive mode, as interactive mode validates already)
+        if (!_parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName) && Directory.Exists(targetDirectory))
         {
             throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
         }
@@ -283,7 +298,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         return targetDirectory;
     }
 
-    private string? TryAskForOutputDirectory(string defaultValueRelative)
+    private string? TryAskForOutputDirectory(string defaultValueRelative, string defaultValue)
     {
         if (!_parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
         {
@@ -296,14 +311,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 .AllowEmpty()
                 .Validate(path =>
                 {
-                    if (string.IsNullOrWhiteSpace(path))
+                    // Determine the actual path to validate
+                    string pathToValidate = string.IsNullOrWhiteSpace(path) ? defaultValue : Path.GetFullPath(path);
+                    
+                    if (Directory.Exists(pathToValidate))
                     {
-                        return ValidationResult.Success();
-                    }
-
-                    if (Directory.Exists(path))
-                    {
-                        return ValidationResult.Error(string.Format(CliCommandStrings.DirectoryAlreadyExists, Path.GetFullPath(path)));
+                        return ValidationResult.Error(string.Format(CliCommandStrings.DirectoryAlreadyExists, pathToValidate));
                     }
 
                     return ValidationResult.Success();
