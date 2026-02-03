@@ -1631,6 +1631,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">.slnx 파일 {0}이(가) 생성되었습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
+        <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
+        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
         <source>The --solution-folder and --in-root options cannot be used together; use only one of the options.</source>
         <target state="translated">--solution-folder와 --in-root 옵션을 함께 사용할 수 없습니다. 옵션을 하나만 사용하세요.</target>
@@ -2206,6 +2211,11 @@ and the corresponding package Ids for installed tools using the command
         <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
         <target state="translated">{1}에 지정된 워크로드 버전 {0}을(를) 찾을 수 없습니다. "dotnet workload restore"을 실행하여 이 워크로드 버전을 설치합니다.</target>
         <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">워크로드 집합 버전 {0}에 패키지 관리에 의해 제거될 수 있는 매니페스트가 누락되었습니다. 이 문제를 해결하려면 "dotnet workload repair"를 실행하세요.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>

@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Cli.Commands.Workload;
 internal sealed class WorkloadCommandDefinition : Command
 {
     private const string Link = "https://aka.ms/dotnet-workload";
+    public new const string Name = "workload";
 
     public Option<bool> InfoOption = new("--info")
     {
@@ -47,7 +48,7 @@ internal sealed class WorkloadCommandDefinition : Command
     public readonly WorkloadHistoryCommandDefinition HistoryCommand = new();
 
     public WorkloadCommandDefinition()
-        : base("workload", CommandDefinitionStrings.WorkloadCommandDescription)
+        : base(Name, CommandDefinitionStrings.WorkloadCommandDescription)
     {
         this.DocsLink = Link;
 
