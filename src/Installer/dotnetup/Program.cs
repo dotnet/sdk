@@ -1,5 +1,4 @@
-﻿
-using Microsoft.DotNet.Tools.Bootstrapper;
+﻿using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
@@ -11,8 +10,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
             // This is DEBUG-only and removes the --debug flag from args
             DotnetupDebugHelper.HandleDebugSwitch(ref args);
 
-            var parseResult = Parser.Parse(args);
-            return Parser.Invoke(parseResult);
+            return Parser.Invoke(args);
         }
     }
 }
