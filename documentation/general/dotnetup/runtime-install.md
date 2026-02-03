@@ -23,8 +23,9 @@ The .NET Runtime archives also include `dotnet.exe`. The host replacement logic 
 There are 3 runtime archives produced: the runtime, aspnetcore runtime, and windows desktop runtime (see [`InstallComponent`](../../../src/Installer/Microsoft.Dotnet.Installation/InstallComponent.cs)).
 
 We'll allow install with an option as follows:
-- `dotnetup runtime install aspnetcore` (or `-a`)
-- `dotnetup runtime install windowsdesktop` (or `-w`)
+- `dotnetup runtime install core` (or `-c`) - Installs the .NET Runtime only
+- `dotnetup runtime install aspnetcore` (or `-a`) - Installs the ASP.NET Core Runtime (includes core runtime)
+- `dotnetup runtime install windowsdesktop` (or `-w`) - Installs the Windows Desktop Runtime (includes core runtime)
 
 To reduce boilerplate code we will go with the option of one command. Providing no option will install all runtimes.
 
@@ -35,9 +36,67 @@ We will expand this to support `[runtime_type]@version` syntax for explicit or u
 ## Shared Resources
 
 The .NET SDK install may include the .NET Runtime.
-We chose to include the runtime install in the [`dotnetup` manifest](../../../src/Installer/dotnetup/DotnetupSharedManifest.cs) as a separate install item only when the runtime is installed individually, and not as part of the SDK install.
 
-This means uninstalling the SDK will uninstall the runtime, but only if the runtime wasn't separately requested. This is essentially a reference count in the manifest as a separate item.
+### Manifest Tracking Rules
+
+**Core runtime is tracked in the manifest if and only if:**
+1. It was explicitly installed via `dotnetup runtime install core`
+2. NOT when it comes bundled with `aspnetcore` or `windowsdesktop` archive installations
+
+This distinction is important because:
+- The ASP.NET Core archive includes `Microsoft.NETCore.App` files on disk
+- The SDK archive includes `Microsoft.NETCore.App` files on disk
+- We don't want to double-track the same runtime from multiple sources
+
+**Example manifest entries:**
+```json
+{
+  "installs": [
+    { "component": "SDK", "version": "9.0.100" },
+    { "component": "ASPNETCore", "version": "9.0.12" }
+  ]
+}
+```
+Note: Core runtime 9.0.12 exists on disk (from ASP.NET Core archive) but is NOT tracked because it wasn't explicitly installed.
+
+### Uninstall Strategy
+
+When uninstalling a runtime component, we must be careful not to delete shared files that other components depend on.
+
+**Uninstall rules for `shared/Microsoft.NETCore.App/{version}`:**
+
+1. **Check manifest for same major.minor version:**
+   - Query all manifest entries with the same major.minor (e.g., 9.0.x)
+   - Include: SDK, Runtime, ASPNETCore, WindowsDesktop components
+
+2. **SDK version correlation:**
+   - SDK 9.0.1xx typically bundles runtime 9.0.x
+   - Before deleting core runtime files, check if any SDK with matching major.minor exists
+   - If SDK exists, do NOT delete `Microsoft.NETCore.App` files
+
+3. **Delete core runtime only if:**
+   - No SDK with same major.minor exists in manifest
+   - No other runtime component (ASPNETCore) with same version exists in manifest
+   - The core runtime was explicitly uninstalled (installed via `core` option)
+
+**Uninstall rules for `shared/Microsoft.AspNetCore.App/{version}`:**
+- Safe to delete if the ASPNETCore component is being uninstalled
+- Check if any SDK with same major.minor exists (SDKs may include ASP.NET Core)
+
+**Uninstall rules for `shared/Microsoft.WindowsDesktop.App/{version}`:**
+- Safe to delete if the WindowsDesktop component is being uninstalled
+- Windows Desktop is standalone (no dependencies from SDK or other runtimes)
+
+**Example uninstall scenarios:**
+
+| Manifest State | Uninstall Command | Files Deleted |
+|----------------|-------------------|---------------|
+| SDK:9.0.100, ASPNETCore:9.0.12 | `uninstall aspnetcore 9.0` | Only `Microsoft.AspNetCore.App/9.0.12` |
+| Runtime:9.0.12, ASPNETCore:9.0.12 | `uninstall aspnetcore 9.0` | Only `Microsoft.AspNetCore.App/9.0.12` |
+| Runtime:9.0.12 (only) | `uninstall core 9.0` | `Microsoft.NETCore.App/9.0.12` and host files |
+| SDK:9.0.100 (only) | `uninstall sdk 9.0` | SDK files, but NOT runtime files (may break other apps) |
+
+This ensures uninstalling the SDK will not uninstall runtimes that are tracked in the manifest. Runtimes must be explicitly uninstalled via `dotnetup runtime uninstall`.
 
 What we will do is check `shared/{runtime-type}/{runtime-version}` and `host/fxr/{runtime-version}` in the hive location. We could also query the muxer itself (via [`HostFxrWrapper`](../../../src/Installer/Microsoft.Dotnet.Installation/Internal/HostFxrWrapper.cs)) for a more concrete answer as to if the install exists on disk.
 
