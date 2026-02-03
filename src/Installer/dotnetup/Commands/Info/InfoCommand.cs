@@ -1,37 +1,72 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
+using System.CommandLine;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
-internal static class InfoCommand
+internal class InfoCommand : CommandBase
 {
-    public static int Execute(OutputFormat format, bool noList = false, TextWriter? output = null)
-    {
-        output ??= Console.Out;
+    private readonly OutputFormat _format;
+    private readonly bool _noList;
+    private readonly TextWriter _output;
 
+    /// <summary>
+    /// Constructor for use with the command-line parser.
+    /// </summary>
+    public InfoCommand(ParseResult parseResult) : base(parseResult)
+    {
+        _format = parseResult.GetValue(InfoCommandParser.FormatOption);
+        _noList = parseResult.GetValue(InfoCommandParser.NoListOption);
+        _output = Console.Out;
+    }
+
+    /// <summary>
+    /// Constructor for testing with explicit parameters.
+    /// </summary>
+    public InfoCommand(ParseResult parseResult, OutputFormat format, bool noList, TextWriter output) : base(parseResult)
+    {
+        _format = format;
+        _noList = noList;
+        _output = output;
+    }
+
+    /// <summary>
+    /// Static helper for tests to execute the command without needing a ParseResult.
+    /// </summary>
+    public static int Execute(OutputFormat format, bool noList, TextWriter output)
+    {
+        var parseResult = Parser.Parse(new[] { "--info" });
+        var command = new InfoCommand(parseResult, format, noList, output);
+        return command.Execute();
+    }
+
+    protected override string GetCommandName() => "info";
+
+    protected override int ExecuteCore()
+    {
         var info = GetDotnetupInfo();
         List<InstallationInfo>? installations = null;
 
-        if (!noList)
+        if (!_noList)
         {
             // --info verifies by default
             installations = InstallationLister.GetInstallations(verify: true);
         }
 
-        if (format == OutputFormat.Json)
+        if (_format == OutputFormat.Json)
         {
-            PrintJsonInfo(output, info, installations);
+            PrintJsonInfo(_output, info, installations);
         }
         else
         {
-            PrintHumanReadableInfo(output, info, installations);
+            PrintHumanReadableInfo(_output, info, installations);
         }
 
         return 0;
@@ -39,38 +74,13 @@ internal static class InfoCommand
 
     private static DotnetupInfo GetDotnetupInfo()
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
-
-        // InformationalVersion format is typically "version+commitsha" when SourceLink is enabled
-        var (version, commit) = ParseInformationalVersion(informationalVersion);
-
         return new DotnetupInfo
         {
-            Version = version,
-            Commit = commit,
+            Version = BuildInfo.Version,
+            Commit = BuildInfo.CommitSha,
             Architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(),
             Rid = RuntimeInformation.RuntimeIdentifier
         };
-    }
-
-    private static (string Version, string Commit) ParseInformationalVersion(string informationalVersion)
-    {
-        // Format: "1.0.0+abc123d" or just "1.0.0"
-        var plusIndex = informationalVersion.IndexOf('+');
-        if (plusIndex > 0)
-        {
-            var version = informationalVersion.Substring(0, plusIndex);
-            var commit = informationalVersion.Substring(plusIndex + 1);
-            // Truncate commit to 7 characters for display (git's standard short SHA)
-            if (commit.Length > 7)
-            {
-                commit = commit.Substring(0, 7);
-            }
-            return (version, commit);
-        }
-
-        return (informationalVersion, "N/A");
     }
 
     private static void PrintHumanReadableInfo(TextWriter output, DotnetupInfo info, List<InstallationInfo>? installations)

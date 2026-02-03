@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine.Parsing;
 using System.Text.Json;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
@@ -9,6 +10,25 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class InfoCommandTests
 {
+    /// <summary>
+    /// Creates an InfoCommand instance with the given parameters.
+    /// </summary>
+    private static InfoCommand CreateInfoCommand(OutputFormat format, bool noList, TextWriter output)
+    {
+        // Create a minimal ParseResult for the command
+        var parseResult = Parser.Parse(new[] { "--info" });
+        return new InfoCommand(parseResult, format, noList, output);
+    }
+
+    /// <summary>
+    /// Executes the InfoCommand and returns the exit code.
+    /// </summary>
+    private static int ExecuteInfoCommand(OutputFormat format, bool noList, TextWriter output)
+    {
+        var command = CreateInfoCommand(format, noList, output);
+        return command.Execute();
+    }
+
     [Fact]
     public void Parser_ShouldParseInfoCommand()
     {

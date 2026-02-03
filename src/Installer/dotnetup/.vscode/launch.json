@@ -1,30 +1,33 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Launch dotnetup",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/../../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
-            "args": "${input:commandLineArgs}",
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal",
-            "stopAtEntry": false
-        },
-        {
-            "name": ".NET Core Attach",
-            "type": "coreclr",
-            "request": "attach",
-            "requireExactSource": false
-        }
-    ],
-    "inputs": [
-        {
-            "id": "commandLineArgs",
-            "type": "promptString",
-            "description": "Command line arguments",
-            "default": ""
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch dotnetup",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/../../../artifacts/bin/dotnetup/Debug/net10.0/dotnetup.dll",
+      "args": "${input:commandLineArgs}",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "env": {
+        "DOTNETUP_DEV_BUILD": "1"
+      }
+    },
+    {
+      "name": ".NET Core Attach",
+      "type": "coreclr",
+      "request": "attach",
+      "requireExactSource": false
+    }
+  ],
+  "inputs": [
+    {
+      "id": "commandLineArgs",
+      "type": "promptString",
+      "description": "Command line arguments",
+      "default": ""
+    }
+  ]
 }

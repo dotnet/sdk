@@ -7,6 +7,7 @@ using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -19,6 +20,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IProgressTarget _progressTarget;
     private string scratchDownloadDirectory;
     private string? _archivePath;
+    private int _extractedFileCount;
 
     public DotnetArchiveExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, IProgressTarget progressTarget)
     {
@@ -30,40 +32,88 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Prepare()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
-
         using var archiveDownloader = new DotnetArchiveDownloader();
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
-        using (var progressReporter = _progressTarget.CreateProgressReporter())
+        using var progressReporter = _progressTarget.CreateProgressReporter();
+        var downloadTask = progressReporter.AddTask("download", $"Downloading .NET SDK {_resolvedVersion}", 100);
+        downloadTask.SetTag("download.component", _request.Component.ToString());
+        downloadTask.SetTag("download.version", _resolvedVersion.ToString());
+
+        var reporter = new DownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
+
+        try
         {
-            var downloadTask = progressReporter.AddTask($"Downloading .NET SDK {_resolvedVersion}", 100);
-            var reporter = new DownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
-
-            try
-            {
-                archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
-            }
-
+            archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter, downloadTask);
             downloadTask.Value = 100;
+            downloadTask.Complete();
+        }
+        catch (DotnetInstallException)
+        {
+            throw;
+        }
+        catch (HttpRequestException ex)
+        {
+            downloadTask.RecordError(ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.DownloadFailed,
+                $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
+        catch (Exception ex)
+        {
+            downloadTask.RecordError(ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.DownloadFailed,
+                $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
         }
     }
+
     public void Commit()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
+        using var progressReporter = _progressTarget.CreateProgressReporter();
+        var installTask = progressReporter.AddTask("extract", $"Installing .NET SDK {_resolvedVersion}", maxValue: 100);
+        installTask.SetTag("extract.component", _request.Component.ToString());
+        installTask.SetTag("extract.version", _resolvedVersion.ToString());
 
-        using (var progressReporter = _progressTarget.CreateProgressReporter())
+        try
         {
-            var installTask = progressReporter.AddTask($"Installing .NET SDK {_resolvedVersion}", maxValue: 100);
-
             // Extract archive directly to target directory with special handling for muxer
             ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
             installTask.Value = installTask.MaxValue;
+            installTask.SetTag("extract.file_count", _extractedFileCount);
+            installTask.Complete();
+        }
+        catch (DotnetInstallException)
+        {
+            throw;
+        }
+        catch (InvalidDataException ex)
+        {
+            // Archive is corrupted (invalid zip/tar format)
+            installTask.RecordError(ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ArchiveCorrupted,
+                $"Archive is corrupted or truncated for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
+        catch (Exception ex)
+        {
+            installTask.RecordError(ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ExtractionFailed,
+                $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
         }
     }
 
@@ -120,6 +170,7 @@ internal class DotnetArchiveExtractor : IDisposable
                         File.Delete(muxerTargetPath);
                     }
                     File.Move(muxerTempPath, muxerTargetPath);
+                    installTask?.SetTag("muxer.action", "kept_existing");
                 }
                 else
                 {
@@ -128,7 +179,14 @@ internal class DotnetArchiveExtractor : IDisposable
                     {
                         File.Delete(muxerTempPath);
                     }
+                    installTask?.SetTag("muxer.action", "updated");
+                    installTask?.SetTag("muxer.previous_version", existingMuxerVersion?.ToString() ?? "unknown");
+                    installTask?.SetTag("muxer.new_version", newMuxerVersion?.ToString() ?? "unknown");
                 }
+            }
+            else if (!hadExistingMuxer)
+            {
+                installTask?.SetTag("muxer.action", "new_install");
             }
         }
         catch
@@ -283,6 +341,7 @@ internal class DotnetArchiveExtractor : IDisposable
         using var outStream = File.Create(destPath);
         entry.DataStream?.CopyTo(outStream);
         installTask?.Value += 1;
+        _extractedFileCount++;
     }
 
     /// <summary>
@@ -332,6 +391,7 @@ internal class DotnetArchiveExtractor : IDisposable
         Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
         entry.ExtractToFile(destPath, overwrite: true);
         installTask?.Value += 1;
+        _extractedFileCount++;
     }
 
     public void Dispose()
