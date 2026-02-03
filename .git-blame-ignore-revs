@@ -1,0 +1,13 @@
+# .git-blame-ignore-revs
+# This file contains SHAs of commits that should be ignored by git blame.
+# This file is used to ignore commits that make large formatting changes
+# that don't change the actual code behavior.
+#
+# To use this file, run:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Update dotnet-format license headers (step 2 of issue #52775)
+709e452
+
+# Run dotnet format on dotnet-format code to fix whitespace issues
+2deb472
