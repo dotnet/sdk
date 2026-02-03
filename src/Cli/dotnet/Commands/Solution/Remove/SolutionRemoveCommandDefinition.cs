@@ -5,21 +5,20 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Remove;
 
-public static class SolutionRemoveCommandDefinition
+public sealed class SolutionRemoveCommandDefinition : Command
 {
-    public const string Name = "remove";
-
-    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.RemoveProjectPathArgumentName)
+    public readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.RemoveProjectPathArgumentName)
     {
         HelpName = CliCommandStrings.RemoveProjectPathArgumentName,
         Description = CliCommandStrings.RemoveProjectPathArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static Command Create()
+    public SolutionRemoveCommandDefinition()
+        : base("remove", CliCommandStrings.RemoveAppFullName)
     {
-        Command command = new(Name, CliCommandStrings.RemoveAppFullName);
-        command.Arguments.Add(ProjectPathArgument);
-        return command;
+        Arguments.Add(ProjectPathArgument);
     }
+
+    public SolutionCommandDefinition Parent => (SolutionCommandDefinition)Parents.Single();
 }

@@ -6,24 +6,21 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
-internal static class MSBuildCommandDefinition
+internal sealed class MSBuildCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-msbuild";
+    private const string Link = "https://aka.ms/dotnet-msbuild";
 
-    public static readonly Argument<string[]> Arguments = new("arguments");
-    public static readonly Option<string[]?> TargetOption = CommonOptions.MSBuildTargetOption();
+    public new readonly Argument<string[]> Arguments = new("arguments");
+    public readonly Option<string[]?> TargetOption = CommonOptions.CreateMSBuildTargetOption();
+    public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
 
-    public static Command Create()
+    public MSBuildCommandDefinition()
+        : base("msbuild", CliCommandStrings.BuildAppFullName)
     {
-        var command = new Command("msbuild", CliCommandStrings.BuildAppFullName)
-        {
-            Arguments = { Arguments },
-            DocsLink = DocsLink,
-        };
+        this.DocsLink = Link;
+        base.Arguments.Add(Arguments);
 
-        command.Options.Add(CommonOptions.DisableBuildServersOption);
-        command.Options.Add(TargetOption);
-
-        return command;
+        Options.Add(DisableBuildServersOption);
+        Options.Add(TargetOption);
     }
 }

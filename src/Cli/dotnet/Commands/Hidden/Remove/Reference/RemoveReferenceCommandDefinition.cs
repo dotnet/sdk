@@ -6,17 +6,12 @@ using Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove.Reference;
 
-internal static class RemoveReferenceCommandDefinition
+internal sealed class RemoveReferenceCommandDefinition() : ReferenceRemoveCommandDefinitionBase(Name)
 {
-    public const string Name = "reference";
+    public new const string Name = "reference";
 
-    public static Command Create()
-    {
-        var command = new Command(Name, CliCommandStrings.ReferenceRemoveAppFullName);
+    public RemoveCommandDefinition Parent => (RemoveCommandDefinition)Parents.Single();
 
-        command.Arguments.Add(ReferenceRemoveCommandDefinition.ProjectPathArgument);
-        command.Options.Add(ReferenceRemoveCommandDefinition.FrameworkOption);
-
-        return command;
-    }
+    public override string? GetFileOrDirectory(ParseResult parseResult)
+        => parseResult.GetValue(Parent.ProjectOrFileArgument);
 }
