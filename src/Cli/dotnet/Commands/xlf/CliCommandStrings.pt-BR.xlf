@@ -1631,6 +1631,11 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <target state="translated">Arquivo .slnx {0} gerado.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
+        <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
+        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
         <source>The --solution-folder and --in-root options cannot be used together; use only one of the options.</source>
         <target state="translated">As opções --solution-folder e --in-root não podem ser usadas juntas. Use somente uma das opções.</target>
@@ -2209,7 +2214,7 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
       </trans-unit>
       <trans-unit id="WorkloadSetHasMissingManifests">
         <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
-        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <target state="translated">A versão do conjunto de cargas de trabalho {0} tem manifestos ausentes, provavelmente removidos pelo gerenciamento de pacotes. Execute "dotnet workload repair" para corrigir isso.</target>
         <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">

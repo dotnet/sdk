@@ -1631,6 +1631,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">產生的 .slnx 檔案 {0}。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
+        <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
+        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
         <source>The --solution-folder and --in-root options cannot be used together; use only one of the options.</source>
         <target state="translated">不可同時使用 --solution-folder 和 --in-root 選項; 請只使用其中一個選項。</target>
@@ -2209,7 +2214,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="WorkloadSetHasMissingManifests">
         <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
-        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <target state="translated">工作負載集合版本 {0} 缺少資訊清單，其可能已遭套件管理移除。請執行「dotnet workload repair」來修復此問題。</target>
         <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
