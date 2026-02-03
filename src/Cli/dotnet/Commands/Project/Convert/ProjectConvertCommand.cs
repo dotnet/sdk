@@ -21,6 +21,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
     private readonly bool _force;
     private readonly bool _dryRun;
     private readonly bool _deleteSource;
+    private readonly bool _interactive;
 
     public ProjectConvertCommand(ParseResult parseResult)
         : base(parseResult)
@@ -30,6 +31,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         _force = parseResult.GetValue(Definition.ForceOption);
         _dryRun = parseResult.GetValue(Definition.DryRunOption);
         _deleteSource = parseResult.GetValue(Definition.DeleteSourceOption);
+        _interactive = parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName);
     }
 
     public override int Execute()
@@ -273,24 +275,49 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         string defaultValue = Path.ChangeExtension(file, null);
         string defaultValueRelative = Path.GetRelativePath(relativeTo: Environment.CurrentDirectory, defaultValue);
         
-        // If output directory is provided via CLI, use it directly
+        string targetDirectory;
+        
+        // Use CLI-provided output directory if specified
         if (_outputDirectory != null)
         {
-            if (Directory.Exists(_outputDirectory))
+            targetDirectory = _outputDirectory;
+        }
+        // In interactive mode, prompt for output directory
+        else if (_interactive)
+        {
+            try
             {
-                throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, _outputDirectory);
+                var prompt = new TextPrompt<string>(string.Format(CliCommandStrings.ProjectConvertAskForOutputDirectory, defaultValueRelative))
+                    .AllowEmpty()
+                    .Validate(path =>
+                    {
+                        // Determine the actual path to validate
+                        string pathToValidate = string.IsNullOrWhiteSpace(path) ? defaultValue : Path.GetFullPath(path);
+                        
+                        if (Directory.Exists(pathToValidate))
+                        {
+                            return ValidationResult.Error(string.Format(CliCommandStrings.DirectoryAlreadyExists, pathToValidate));
+                        }
+
+                        return ValidationResult.Success();
+                    });
+
+                var answer = Spectre.Console.AnsiConsole.Prompt(prompt);
+                targetDirectory = string.IsNullOrWhiteSpace(answer) ? defaultValue : Path.GetFullPath(answer);
             }
-            return _outputDirectory;
+            catch (Exception)
+            {
+                targetDirectory = defaultValue;
+            }
+        }
+        // Non-interactive mode, use default
+        else
+        {
+            targetDirectory = defaultValue;
         }
         
-        // Try to ask for output directory in interactive mode
-        string? targetDirectory = TryAskForOutputDirectory(defaultValueRelative, defaultValue);
-        
-        // Use the result from interactive prompt or fall back to default
-        targetDirectory ??= defaultValue;
-        
-        // Final validation (only needed if not in interactive mode, as interactive mode validates already)
-        if (!_parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName) && Directory.Exists(targetDirectory))
+        // Validate that directory doesn't exist (except in interactive mode where we already validated)
+        if (Directory.Exists(targetDirectory))
         {
             throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
         }
@@ -298,42 +325,9 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         return targetDirectory;
     }
 
-    private string? TryAskForOutputDirectory(string defaultValueRelative, string defaultValue)
-    {
-        if (!_parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
-        {
-            return null;
-        }
-
-        try
-        {
-            var prompt = new TextPrompt<string>(string.Format(CliCommandStrings.ProjectConvertAskForOutputDirectory, defaultValueRelative))
-                .AllowEmpty()
-                .Validate(path =>
-                {
-                    // Determine the actual path to validate
-                    string pathToValidate = string.IsNullOrWhiteSpace(path) ? defaultValue : Path.GetFullPath(path);
-                    
-                    if (Directory.Exists(pathToValidate))
-                    {
-                        return ValidationResult.Error(string.Format(CliCommandStrings.DirectoryAlreadyExists, pathToValidate));
-                    }
-
-                    return ValidationResult.Success();
-                });
-
-            var answer = Spectre.Console.AnsiConsole.Prompt(prompt);
-            return string.IsNullOrWhiteSpace(answer) ? null : Path.GetFullPath(answer);
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-
     private bool TryAskForDeleteSource(string sourceFile)
     {
-        if (!_parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
+        if (!_interactive)
         {
             return false;
         }
