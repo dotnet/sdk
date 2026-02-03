@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.CommandLine;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -40,14 +41,14 @@ public class TestCommand(
             VSTestTrace.SafeWriteTrace(() => $"Argument list: '{commandLineParameters}'");
         }
 
-        // settings parameters are after -- (including --), these should not be considered by the parser
-        string[] settings = [.. args.SkipWhile(a => a != "--")];
-        // all parameters before --
-        args = [.. args.TakeWhile(a => a != "--")];
+        (args, string[] settings) = SeparateSettingsFromArgs(args);
 
         // Fix for https://github.com/Microsoft/vstest/issues/1453
         // Run dll/exe directly using the VSTestForwardingApp
-        if (ContainsBuiltTestSources(args))
+        // Note: ContainsBuiltTestSources need to know how many settings are there, to skip those from unmatched tokens
+        // When we don't have settings, we pass 0.
+        // When we have settings, we want to exclude the '--' as it doesn't end up in unmatched tokens, so we pass settings.Length - 1
+        if (ContainsBuiltTestSources(parseResult, GetSettingsCount(settings)))
         {
             return ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId);
         }
@@ -55,8 +56,30 @@ public class TestCommand(
         return ForwardToMsbuild(parseResult, settings, testSessionCorrelationId);
     }
 
+    internal /*internal for testing*/ static (string[] Args, string[] Settings) SeparateSettingsFromArgs(string[] args)
+    {
+        // settings parameters are after -- (including --), these should not be considered by the parser
+        string[] settings = [.. args.SkipWhile(a => a != "--")];
+        // all parameters before --
+        args = [.. args.TakeWhile(a => a != "--")];
+        return (args, settings);
+    }
+
+    internal /*internal for testing*/ static int GetSettingsCount(string[] settings)
+    {
+        if (settings.Length == 0)
+        {
+            return 0;
+        }
+
+        Debug.Assert(settings[0] == "--", "Settings should start with --");
+        return settings.Length - 1;
+    }
+
     private static int ForwardToMsbuild(ParseResult parseResult, string[] settings, string testSessionCorrelationId)
     {
+        var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
+
         // Workaround for https://github.com/Microsoft/vstest/issues/1503
         const string NodeWindowEnvironmentName = "MSBUILDENSURESTDOUTFORTASKPROCESSES";
         string? previousNodeWindowSetting = Environment.GetEnvironmentVariable(NodeWindowEnvironmentName);
@@ -105,7 +128,7 @@ public class TestCommand(
             int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties).Execute();
 
             // We run post processing also if execution is failed for possible partial successful result to post process.
-            exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Instance);
+            exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);
 
             return exitCode;
         }
@@ -127,6 +150,8 @@ public class TestCommand(
 
     private static int ForwardToVSTestConsole(ParseResult parseResult, string[] args, string[] settings, string testSessionCorrelationId)
     {
+        var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
+
         List<string> convertedArgs = new VSTestArgumentConverter().Convert(args, out List<string> ignoredArgs);
         if (ignoredArgs.Any())
         {
@@ -147,7 +172,7 @@ public class TestCommand(
         int exitCode = new VSTestForwardingApp(convertedArgs).Execute();
 
         // We run post processing also if execution is failed for possible partial successful result to post process.
-        exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Instance);
+        exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);
 
         return exitCode;
     }
@@ -168,6 +193,8 @@ public class TestCommand(
 
     private static TestCommand FromParseResult(ParseResult result, string[] settings, string testSessionCorrelationId, string[] additionalBuildProperties, string? msbuildPath = null)
     {
+        var definition = (TestCommandDefinition.VSTest)result.CommandResult.Command;
+
         result.ShowHelpOrErrorIfAppropriate();
 
         // Extra msbuild properties won't be parsed and so end up in the UnmatchedTokens list. In addition to those
@@ -179,17 +206,12 @@ public class TestCommand(
             : result.UnmatchedTokens;
 
         var parsedArgs =
-            result.OptionValuesToBeForwarded(TestCommandParser.GetCommand()) // all msbuild-recognized tokens
+            result.OptionValuesToBeForwarded(definition.Options) // all msbuild-recognized tokens
                 .Concat(unMatchedNonSettingsArgs); // all tokens that the test-parser doesn't explicitly track (minus the settings tokens)
 
         VSTestTrace.SafeWriteTrace(() => $"MSBuild args from forwarded options: {string.Join(", ", parsedArgs)}");
 
-        var msbuildArgs = new List<string>(additionalBuildProperties)
-        {
-            "-nologo",
-        };
-
-        msbuildArgs.AddRange(parsedArgs);
+        List<string> msbuildArgs = [.. additionalBuildProperties, .. parsedArgs];
 
         if (settings.Any())
         {
@@ -200,7 +222,7 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{runSettingsArg}\"");
         }
 
-        string? verbosityArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--verbosity")?.SingleOrDefault() ?? null;
+        string? verbosityArg = result.ForwardedOptionValues(definition, "--verbosity")?.SingleOrDefault() ?? null;
         if (verbosityArg != null)
         {
             string[] verbosity = verbosityArg.Split(':', 2);
@@ -217,14 +239,16 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestSessionCorrelationId={testSessionCorrelationId}");
         }
 
-        bool noRestore = result.GetValue(TestCommandParser.NoRestoreOption) || result.GetValue(TestCommandParser.NoBuildOption);
+        bool noRestore = result.GetValue(definition.NoRestoreOption) || result.GetValue(definition.NoBuildOption);
 
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
-            CommonOptions.PropertiesOption,
-            CommonOptions.RestorePropertiesOption,
-            TestCommandParser.VsTestTargetOption,
-            TestCommandParser.VerbosityOption);
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateRequiredMSBuildTargetOption("VSTest"),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption())
+            .CloneWithNoLogo(true);
 
         TestCommand testCommand = new(
             parsedMSBuildArgs,
@@ -232,7 +256,7 @@ public class TestCommand(
             msbuildPath);
 
         // Apply environment variables provided by the user via --environment (-e) option, if present
-        if (result.GetValue(CommonOptions.TestEnvOption) is { } environmentVariables)
+        if (result.GetValue(definition.TestEnvOption) is { } environmentVariables)
         {
             foreach (var (name, value) in environmentVariables)
             {
@@ -252,7 +276,7 @@ public class TestCommand(
         return testCommand;
     }
 
-    internal static int RunArtifactPostProcessingIfNeeded(string testSessionCorrelationId, ParseResult parseResult, FeatureFlag disableFeatureFlag)
+    internal static int RunArtifactPostProcessingIfNeeded(string testSessionCorrelationId, string? diag, FeatureFlag disableFeatureFlag)
     {
         if (disableFeatureFlag.IsSet(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
         {
@@ -271,9 +295,9 @@ public class TestCommand(
 
         var artifactsPostProcessArgs = new List<string> { "--artifactsProcessingMode-postprocess", $"--testSessionCorrelationId:{testSessionCorrelationId}" };
 
-        if (parseResult.GetResult(TestCommandParser.DiagOption) is not null)
+        if (diag != null)
         {
-            artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(TestCommandParser.DiagOption)}");
+            artifactsPostProcessArgs.Add($"--diag:{diag}");
         }
 
         try
@@ -297,10 +321,11 @@ public class TestCommand(
         }
     }
 
-    private static bool ContainsBuiltTestSources(string[] args)
+    internal /*internal for testing*/ static bool ContainsBuiltTestSources(ParseResult parseResult, int settingsLength)
     {
-        foreach (string arg in args)
+        for (int i = 0; i < parseResult.UnmatchedTokens.Count - settingsLength; i++)
         {
+            string arg = parseResult.UnmatchedTokens[i];
             if (!arg.StartsWith("-") &&
                 (arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)))
             {

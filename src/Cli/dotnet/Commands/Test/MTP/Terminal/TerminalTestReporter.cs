@@ -1,6 +1,7 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -64,36 +65,34 @@ internal sealed partial class TerminalTestReporter : IDisposable
     public TerminalTestReporter(IConsole console, TerminalTestReporterOptions options)
     {
         _options = options;
-        TestProgressStateAwareTerminal terminalWithProgress;
+        bool showProgress = _options.ShowProgress;
 
-        // When not writing to ANSI we write the progress to screen and leave it there so we don't want to write it more often than every few seconds.
-        int nonAnsiUpdateCadenceInMs = 3_000;
-        // When writing to ANSI we update the progress in place and it should look responsive so we update every half second, because we only show seconds on the screen, so it is good enough.
-        int ansiUpdateCadenceInMs = 500;
-        if (!_options.UseAnsi)
+        ITerminal terminal;
+        if (_options.AnsiMode == AnsiMode.SimpleAnsi)
         {
-            terminalWithProgress = new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), _options.ShowProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
+            // We are told externally that we are in CI, use simplified ANSI mode.
+            terminal = new SimpleAnsiTerminal(console);
+            showProgress = false;
         }
         else
         {
-            if (_options.UseCIAnsi)
+            // We are not in CI, or in CI non-compatible with simple ANSI, autodetect terminal capabilities
+            // Autodetect.
+            (bool consoleAcceptsAnsiCodes, bool _, uint? originalConsoleMode) = NativeMethods.QueryIsScreenAndTryEnableAnsiColorCodes();
+            _originalConsoleMode = originalConsoleMode;
+
+            bool useAnsi = _options.AnsiMode switch
             {
-                // We are told externally that we are in CI, use simplified ANSI mode.
-                terminalWithProgress = new TestProgressStateAwareTerminal(new SimpleAnsiTerminal(console), _options.ShowProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: nonAnsiUpdateCadenceInMs);
-            }
-            else
-            {
-                // We are not in CI, or in CI non-compatible with simple ANSI, autodetect terminal capabilities
-                // Autodetect.
-                (bool consoleAcceptsAnsiCodes, bool _, uint? originalConsoleMode) = NativeMethods.QueryIsScreenAndTryEnableAnsiColorCodes();
-                _originalConsoleMode = originalConsoleMode;
-                terminalWithProgress = consoleAcceptsAnsiCodes
-                    ? new TestProgressStateAwareTerminal(new AnsiTerminal(console, _options.BaseDirectory), _options.ShowProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: ansiUpdateCadenceInMs)
-                    : new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), _options.ShowProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
-            }
+                AnsiMode.NoAnsi => false,
+                AnsiMode.AnsiIfPossible => consoleAcceptsAnsiCodes,
+                _ => throw new UnreachableException(),
+            };
+
+            showProgress = showProgress && useAnsi;
+            terminal = useAnsi ? new AnsiTerminal(console, _options.BaseDirectory) : new NonAnsiTerminal(console);
         }
 
-        _terminalWithProgress = terminalWithProgress;
+        _terminalWithProgress = new TestProgressStateAwareTerminal(terminal, showProgress);
     }
 
     public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp, bool isRetry)
@@ -139,7 +138,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         return _assemblies.GetOrAdd(executionId, _ =>
         {
             IStopwatch sw = CreateStopwatch();
-            var assemblyRun = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw);
+            var assemblyRun = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw, _isDiscovery);
             int slotIndex = _terminalWithProgress.AddWorker(assemblyRun);
             assemblyRun.SlotIndex = slotIndex;
 
@@ -280,13 +279,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool colorizePassed = passed > 0 && _buildErrorsCount == 0 && failed == 0 && error == 0;
         bool colorizeSkipped = skipped > 0 && skipped == total && _buildErrorsCount == 0 && failed == 0 && error == 0;
 
-        string errorText = $"{SingleIndentation}error: {error}";
-        string totalText = $"{SingleIndentation}total: {total}";
-        string retriedText = $" (+{retried} retried)";
-        string failedText = $"{SingleIndentation}failed: {failed}";
-        string passedText = $"{SingleIndentation}succeeded: {passed}";
-        string skippedText = $"{SingleIndentation}skipped: {skipped}";
-        string durationText = $"{SingleIndentation}duration: ";
+        string errorText = $"{SingleIndentation}{CliCommandStrings.ErrorColon} {error}";
+        string totalText = $"{SingleIndentation}{CliCommandStrings.TotalColon} {total}";
+        string retriedText = $" (+{retried} {CliCommandStrings.Retried})";
+        string failedText = $"{SingleIndentation}{CliCommandStrings.FailedColon} {failed}";
+        string passedText = $"{SingleIndentation}{CliCommandStrings.SucceededColon} {passed}";
+        string skippedText = $"{SingleIndentation}{CliCommandStrings.SkippedColon} {skipped}";
+        string durationText = $"{SingleIndentation}{CliCommandStrings.DurationColon} ";
 
         if (error > 0)
         {
@@ -397,7 +396,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string displayName,
         string? informativeMessage,
         TestOutcome outcome,
-        TimeSpan duration,
+        TimeSpan? duration,
         FlatException[]? exceptions,
         string? expected,
         string? actual,
@@ -458,7 +457,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string displayName,
         string? informativeMessage,
         TestOutcome outcome,
-        TimeSpan duration,
+        TimeSpan? duration,
         FlatException[]? flatExceptions,
         string? expected,
         string? actual,
@@ -496,9 +495,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.ResetColor();
         terminal.Append(' ');
         terminal.Append(displayName);
-        terminal.SetColor(TerminalColor.DarkGray);
-        terminal.Append(' ');
-        AppendLongDuration(terminal, duration);
+
+        if (duration.HasValue)
+        {
+            terminal.Append(' ');
+            AppendLongDuration(terminal, duration.Value);
+        }
 
         if (!string.IsNullOrEmpty(informativeMessage))
         {
@@ -914,15 +916,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         var assemblies = _assemblies.Select(asm => asm.Value).OrderBy(a => a.Assembly).Where(a => a is not null).ToList();
 
         int totalTests = _assemblies.Values.Sum(a => a.TotalTests);
-        bool runFailed = _wasCancelled;
+        bool runFailed = _wasCancelled || totalTests < 1;
 
         foreach (TestProgressState assembly in assemblies)
         {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.DiscoveredTestsInAssembly, assembly.DiscoveredTests.Count));
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.DiscoveredTestsInAssembly, assembly.DiscoveredTestNames.Count));
             terminal.Append(" - ");
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
             terminal.AppendLine();
-            foreach ((string? displayName, string? uid) in assembly.DiscoveredTests)
+            foreach ((string? displayName, string? uid) in assembly.DiscoveredTestNames)
             {
                 if (displayName is not null)
                 {

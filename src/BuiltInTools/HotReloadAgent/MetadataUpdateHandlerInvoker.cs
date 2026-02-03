@@ -110,7 +110,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
     }
 
     /// <summary>
-    /// Invokes all registered mtadata update handlers.
+    /// Invokes all registered metadata update handlers.
     /// </summary>
     internal void MetadataUpdated(Type[] updatedTypes)
     {

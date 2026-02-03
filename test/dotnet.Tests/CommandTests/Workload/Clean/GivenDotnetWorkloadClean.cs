@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
         {
             var (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader) = Setup(userLocal, true);
 
-            const string aboveSdkFeatureBand = ToolsetInfo.NextTargetFrameworkVersion + ".100";
+            const string aboveSdkFeatureBand = ToolsetInfo.CurrentTargetFrameworkVersion + ".100";
             const string belowSdkFeatureBand = "5.0.100"; // At the time of writing this test, it would only run on 7-8.0 SDKs or above.
 
             string installRoot = userLocal ? userProfileDir : dotnetRoot;

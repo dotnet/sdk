@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
@@ -14,6 +15,9 @@ public class MSBuildForwardingApp : CommandBase
 
     private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
 
+    /// <summary>
+    /// Adds the CLI's telemetry logger to the MSBuild arguments if telemetry is enabled.
+    /// </summary>
     private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs)
     {
         if (Telemetry.Telemetry.CurrentSessionId != null)
@@ -38,17 +42,17 @@ public class MSBuildForwardingApp : CommandBase
     /// Mostly intended for quick/one-shot usage - most 'core' SDK commands should do more hands-on parsing.
     /// </summary>
     public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null) : this(
-        MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption()),
+        MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption()),
         msbuildPath)
     {
     }
 
-    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null, bool includeLogo = false)
+    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null)
     {
+        var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(ConcatTelemetryLogger(msBuildArgs));
         _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
-            ConcatTelemetryLogger(msBuildArgs),
-            msbuildPath: msbuildPath,
-            includeLogo: includeLogo);
+            modifiedMSBuildArgs,
+            msbuildPath: msbuildPath);
 
         // Add the performance log location to the environment of the target process.
         if (PerformanceLogManager.Instance != null && !string.IsNullOrEmpty(PerformanceLogManager.Instance.CurrentLogDirectory))

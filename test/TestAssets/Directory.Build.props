@@ -5,6 +5,7 @@
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.tmp</DefaultItemExcludes>
+    <NuGetAudit>false</NuGetAudit> 
   </PropertyGroup>
 
 </Project>

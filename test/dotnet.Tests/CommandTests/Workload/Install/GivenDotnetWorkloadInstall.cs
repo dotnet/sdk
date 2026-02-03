@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .HaveStdErrContaining(string.Format(CliCommandStrings.WorkloadNotRecognized, "fake"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/26624")]
+        [Fact]
         public void ItErrorUsingSkipManifestAndRollback()
         {
             var command = new DotnetCommand(Log);
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineSkipManifestAndRollback, "skip-manifest-update", "from-rollback-file"));
+                .HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineSkipManifestAndRollback, "--skip-manifest-update", "--from-rollback-file"));
         }
 
 
@@ -180,10 +180,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
-            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android" });
 
-            WorkloadInfoHelper workloadInfoHelper = new WorkloadInfoHelper(isInteractive: false, workloadResolver: workloadResolver);
-            WorkloadCommandParser.ShowWorkloadsInfo(parseResult, workloadInfoHelper: workloadInfoHelper, reporter: _reporter);
+            var workloadInfoHelper = new WorkloadInfoHelper(isInteractive: false, workloadResolver: workloadResolver);
+            workloadInfoHelper.ShowWorkloadsInfo(reporter: _reporter);
             _reporter.Lines.Should().Contain("There are no installed workloads to display.");
         }
 

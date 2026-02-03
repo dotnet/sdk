@@ -316,6 +316,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishDocumentationFiles Condition="'$(PublishDocumentationFiles)' == ''">true</PublishDocumentationFiles>
     <PublishDocumentationFile Condition="'$(PublishDocumentationFile)' == '' and '$(PublishDocumentationFiles)' == 'true'">true</PublishDocumentationFile>
     <PublishReferencesDocumentationFiles Condition="'$(PublishReferencesDocumentationFiles)' == '' and '$(PublishDocumentationFiles)' == 'true'">true</PublishReferencesDocumentationFiles>
+    <PublishReferencesSymbols Condition="'$(PublishReferencesSymbols)' == ''">true</PublishReferencesSymbols>
   </PropertyGroup>
 
   <!-- Add a project capability so that the project properties in the IDE can show the option to generate an XML documentation file without specifying the filename -->
@@ -360,6 +361,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PropertyGroup><RoslynCompilerType>Framework</RoslynCompilerType></PropertyGroup>
     </Otherwise>
   </Choose>
+
+  <!-- Warn about deprecated RoslynCompilerType=Framework -->
+  <Target Name="_CheckForDeprecatedRoslynCompilerType"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(RoslynCompilerType)' == 'Framework'">
+    <NETSdkWarning ResourceName="RoslynCompilerTypeFrameworkIsDeprecated"
+                   FormatArguments="https://aka.ms/roslyn-compiler-type-framework" />
+  </Target>
 
   <!-- NOTE: Compiler toolset packages should set the following properties on their own, hence we set them only for RoslynCompilerType being Core or Framework. -->
   <PropertyGroup Condition="'$(RoslynCompilerType)' == 'Core' or '$(RoslynCompilerType)' == 'Framework'">

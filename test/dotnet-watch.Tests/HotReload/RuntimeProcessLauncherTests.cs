@@ -3,6 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
@@ -78,6 +79,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 projectOptions,
                 new CancellationTokenSource(),
                 onOutput: null,
+                onExit: null,
                 restartOperation: startOp!,
                 cancellationToken);
 
@@ -95,7 +97,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     {
         var console = new TestConsole(Logger);
         var reporter = new TestReporter(Logger);
-        var loggerFactory = new LoggerFactory(reporter);
+        var loggerFactory = new LoggerFactory(reporter, LogLevel.Trace);
         var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory ?? testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
         var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled: true));
 
@@ -525,7 +527,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         // Terminate the process:
         Log($"Terminating process {runningProject.ProjectNode.GetDisplayName()} ...");
-        await w.Service.ProjectLauncher.TerminateProcessAsync(runningProject, CancellationToken.None);
+        await runningProject.TerminateAsync();
 
         // rude edit in A (changing assembly level attribute):
         UpdateSourceFile(serviceSourceA2, """

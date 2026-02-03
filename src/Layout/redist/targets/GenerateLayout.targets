@@ -59,6 +59,15 @@
     <Copy SourceFiles="@(RoslynFile)"
           DestinationFiles="@(RoslynFile->'$(OutputPath)Roslyn\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
+
+    <CreateAppHost AppHostSourcePath="$(NuGetPackageRoot)\microsoft.netcore.app.host.$(SharedFrameworkRid)\$(MicrosoftNETCoreAppHostPackageVersion)\runtimes\$(SharedFrameworkRid)\native\apphost$(ExeExtension)"
+                   AppHostDestinationPath="%(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
+                   AppBinaryName="%(_RoslynAppHost.Filename)%(_RoslynAppHost.Extension)"
+                   IntermediateAssembly="%(_RoslynAppHost.FullPath)"
+                   EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))" />
+    
+    <Exec Command="codesign --sign - --force --entitlements '$(MSBuildProjectDirectory)/roslyn-entitlements.plist' %(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
+          Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
   </Target>
 
   <Target Name="PublishNETAnalyzers">
@@ -210,9 +219,8 @@
 
   <Target Name="PublishTestCli">
     <PropertyGroup>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' != 'true'" >net9.0</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' == 'true'" >$(NetCurrent)</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' != 'true'" >net9.0</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework>net9.0</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</TestCliNuGetDirectoryTargetFramework>
       <TestCliNuGetDirectory>$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
     </PropertyGroup>
 
@@ -495,6 +503,7 @@
 
     <Exec Command="find $(OutputPath) -type d -exec chmod 755 {} \;" />
     <Exec Command="find $(OutputPath) -type f -exec chmod 644 {} \;" />
+    <Exec Command="chmod 755 %(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)" />
   </Target>
 
   <Target Name="DeleteSymbolsFromPublishDir" DependsOnTargets="GenerateCliRuntimeConfigurationFiles">
