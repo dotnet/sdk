@@ -3,11 +3,9 @@
 
 using System.Collections.ObjectModel;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli;
@@ -139,43 +137,34 @@ internal static class CommonOptions
         return allValues.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
-    public static Option<VerbosityOptions> CreateVerbosityOption(VerbosityOptions defaultVerbosity)
-    {
-        var option = new Option<VerbosityOptions>("--verbosity", "-v")
+    public static Option<VerbosityOptions> CreateVerbosityOption(VerbosityOptions defaultVerbosity) =>
+        new Option<VerbosityOptions>("--verbosity", "-v")
         {
             Description = CommandDefinitionStrings.VerbosityOptionDescription,
             HelpName = CommandDefinitionStrings.LevelArgumentName,
             DefaultValueFactory = _ => defaultVerbosity
-        };
-        option.Action = new ApplyVerbosityAction<VerbosityOptions>(option);
-        return option.ForwardAsSingle(o => $"--verbosity:{o}")
-            .AggregateRepeatedTokens();
-    }
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
-    public static Option<VerbosityOptions?> CreateVerbosityOption()
-    {
-        var option = new Option<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
+    public static Option<VerbosityOptions?> CreateVerbosityOption() =>
+        new Option<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CommandDefinitionStrings.VerbosityOptionDescription,
             HelpName = CommandDefinitionStrings.LevelArgumentName
-        };
-        option.Action = new ApplyVerbosityAction<VerbosityOptions?>(option);
-        return option.ForwardAsSingle(o => $"--verbosity:{o}")
-            .AggregateRepeatedTokens();
-    }
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
-    public static Option<VerbosityOptions> CreateHiddenVerbosityOption()
-    {
-        var option = new Option<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
+    public static Option<VerbosityOptions> CreateHiddenVerbosityOption() =>
+        new Option<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CommandDefinitionStrings.VerbosityOptionDescription,
             HelpName = CommandDefinitionStrings.LevelArgumentName,
             Hidden = true
-        };
-        option.Action = new ApplyVerbosityAction<VerbosityOptions>(option);
-        return option.ForwardAsSingle(o => $"--verbosity:{o}")
-            .AggregateRepeatedTokens();
-    }
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
     public const string FrameworkOptionName = "--framework";
 
@@ -385,37 +374,4 @@ internal static class CommonOptions
         Recursive = recursive,
         Arity = ArgumentArity.Zero
     };
-
-    /// <summary>
-    /// Action that sets DOTNET_CLI_CONTEXT_VERBOSE environment variable when verbosity is diagnostic.
-    /// </summary>
-    private class ApplyVerbosityAction<T> : SynchronousCommandLineAction
-    {
-        private readonly Option<T> _verbosityOption;
-
-        public ApplyVerbosityAction(Option<T> verbosityOption)
-        {
-            _verbosityOption = verbosityOption;
-        }
-
-        public override bool Terminating => false;
-
-        public override int Invoke(ParseResult parseResult)
-        {
-            var value = parseResult.GetValue(_verbosityOption);
-            
-            // Handle both VerbosityOptions and VerbosityOptions?
-            if (value is VerbosityOptions verbosity)
-            {
-                if (verbosity.IsDiagnostic())
-                {
-                    Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
-                    CommandLoggingContext.SetVerbose(true);
-                    Reporter.Reset();
-                }
-            }
-
-            return 0;
-        }
-    }
 }
