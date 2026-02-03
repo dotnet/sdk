@@ -477,7 +477,7 @@ dotnet_diagnostic.SA1204.severity = none
 dotnet_diagnostic.IDE0073.severity = none
 
 # Imported code with different license headers
-[{src/Microsoft.CodeAnalysis.NetAnalyzers,src/BuiltInTools/dotnet-format,test/dotnet-format.UnitTests}/**.cs]
+[src/Microsoft.CodeAnalysis.NetAnalyzers/**.cs]
 dotnet_diagnostic.IDE0073.severity = none
 
 # C++ Files
