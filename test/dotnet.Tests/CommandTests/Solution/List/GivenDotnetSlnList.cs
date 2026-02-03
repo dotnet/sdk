@@ -308,7 +308,7 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
                 $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
                 $"{Path.Combine("App", "App.csproj")}",
                 $"{Path.Combine("Lib", "Lib.csproj")}" };
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithTrailingCommaSlnf", identifier: "GivenDotnetSlnList-TrailingComma")
                 .WithSource()
                 .Path;
@@ -328,7 +328,7 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
             string[] expectedOutput = { $"{CliCommandStrings.ProjectsHeader}",
                 $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
                 $"{Path.Combine("App", "App.csproj")}" };
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithTrailingCommaSlnf", identifier: "GivenDotnetSlnList-Comments")
                 .WithSource()
                 .Path;
