@@ -3778,6 +3778,11 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <target state="translated">Pakiety robocze „{0}” są już zainstalowane.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadCleanAllComplete">
+        <source>Successfully removed all workload sets, manifests, and installation state.</source>
+        <target state="new">Successfully removed all workload sets, manifests, and installation state.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadCleanCommandDescription">
         <source>Removes workload components that may have been left behind from previous updates and uninstallations.</source>
         <target state="translated">Usuwa składniki obciążenia, które mogły zostać pominięte w poprzednich aktualizacjach i dezinstalacjach.</target>

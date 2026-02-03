@@ -3778,6 +3778,11 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">ワークロード '{0}' は既にインストールされています。</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadCleanAllComplete">
+        <source>Successfully removed all workload sets, manifests, and installation state.</source>
+        <target state="new">Successfully removed all workload sets, manifests, and installation state.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadCleanCommandDescription">
         <source>Removes workload components that may have been left behind from previous updates and uninstallations.</source>
         <target state="translated">以前の更新プログラムとアンインストールで取り残された可能性のあるワークロード コンポーネントを削除します。</target>

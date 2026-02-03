@@ -3778,6 +3778,11 @@ und die zugehörigen Paket-IDs für installierte Tools über den Befehl
         <target state="translated">Workloads '{0}' sind bereits installiert.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadCleanAllComplete">
+        <source>Successfully removed all workload sets, manifests, and installation state.</source>
+        <target state="new">Successfully removed all workload sets, manifests, and installation state.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadCleanCommandDescription">
         <source>Removes workload components that may have been left behind from previous updates and uninstallations.</source>
         <target state="translated">Entfernt Workloadkomponenten, die möglicherweise von vorherigen Updates und Deinstallationen zurückgelassen wurden.</target>

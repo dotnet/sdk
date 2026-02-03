@@ -3778,6 +3778,11 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">'{0}' 워크로드가 이미 설치되어 있습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadCleanAllComplete">
+        <source>Successfully removed all workload sets, manifests, and installation state.</source>
+        <target state="new">Successfully removed all workload sets, manifests, and installation state.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadCleanCommandDescription">
         <source>Removes workload components that may have been left behind from previous updates and uninstallations.</source>
         <target state="translated">이전 업데이트 및 제거에서 남아 있을 수 있는 워크로드 구성 요소를 제거합니다.</target>
