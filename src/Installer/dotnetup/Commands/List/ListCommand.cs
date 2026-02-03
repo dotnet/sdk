@@ -6,17 +6,18 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 
 internal class ListCommand : CommandBase
 {
-    private readonly bool _jsonOutput;
+    private readonly OutputFormat _format;
     private readonly bool _skipVerification;
 
     public ListCommand(ParseResult parseResult) : base(parseResult)
     {
-        _jsonOutput = parseResult.GetValue(CommonOptions.JsonOption);
+        _format = parseResult.GetValue(CommonOptions.FormatOption);
         _skipVerification = parseResult.GetValue(ListCommandParser.NoVerifyOption);
     }
 
@@ -26,7 +27,7 @@ internal class ListCommand : CommandBase
     {
         var installations = InstallationLister.GetInstallations(verify: !_skipVerification);
 
-        if (_jsonOutput)
+        if (_format == OutputFormat.Json)
         {
             InstallationLister.WriteJson(Console.Out, installations);
         }
@@ -66,9 +67,9 @@ internal static class InstallationLister
                 });
             }
         }
-        catch (Exception ex) when (ex is InvalidOperationException || ex is IOException)
+        catch (FileNotFoundException)
         {
-            // Manifest doesn't exist or is inaccessible - return empty list
+            // Manifest doesn't exist - return empty list
         }
 
         return installations;
@@ -89,13 +90,31 @@ internal static class InstallationLister
             // Group by install root for cleaner display
             var grouped = installations.GroupBy(i => i.InstallRoot);
 
+            // Create an AnsiConsole that writes to our TextWriter
+            var console = AnsiConsole.Create(new AnsiConsoleSettings
+            {
+                Out = new AnsiConsoleOutput(writer)
+            });
+
             foreach (var group in grouped)
             {
                 writer.WriteLine($"  {group.Key}");
+
+                var grid = new Grid();
+                grid.AddColumn(new GridColumn().PadLeft(4).NoWrap());
+                grid.AddColumn(new GridColumn().NoWrap());
+                grid.AddColumn(new GridColumn().NoWrap());
+
                 foreach (var install in group.OrderBy(i => i.Component).ThenBy(i => i.Version))
                 {
-                    writer.WriteLine($"    {install.ComponentDisplayName,-28} {install.Version,-20} ({install.Architecture})");
+                    grid.AddRow(
+                        install.ComponentDisplayName,
+                        install.Version,
+                        $"({install.Architecture})"
+                    );
                 }
+
+                console.Write(grid);
                 writer.WriteLine();
             }
         }
@@ -107,8 +126,7 @@ internal static class InstallationLister
     {
         var output = new InstallationListOutput
         {
-            Installations = installations,
-            Total = installations.Count
+            Installations = installations
         };
         writer.WriteLine(JsonSerializer.Serialize(output, InstallationListJsonContext.Default.InstallationListOutput));
     }
@@ -122,20 +140,24 @@ internal class InstallationInfo
     public string Architecture { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets the display name for this component as shown by dotnet --list-runtimes (e.g., "Microsoft.NETCore.App").
+    /// Gets the official framework name for JSON output (e.g., "Microsoft.NETCore.App").
+    /// </summary>
+    public string FrameworkName => ParseComponent().GetFrameworkName();
+
+    /// <summary>
+    /// Gets the human-readable display name for this component (e.g., "dotnet (runtime)").
     /// Not serialized to JSON.
     /// </summary>
     [JsonIgnore]
     public string ComponentDisplayName => ParseComponent().GetDisplayName();
 
     private InstallComponent ParseComponent() =>
-        Enum.TryParse<InstallComponent>(Component, ignoreCase: true, out var result) ? result : InstallComponent.SDK;
+        Enum.Parse<InstallComponent>(Component, ignoreCase: true);
 }
 
 internal class InstallationListOutput
 {
     public List<InstallationInfo> Installations { get; set; } = [];
-    public int Total { get; set; }
 }
 
 [JsonSerializable(typeof(InstallationListOutput))]

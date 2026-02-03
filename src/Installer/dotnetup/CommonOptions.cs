@@ -8,6 +8,17 @@ using System.Text;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
+/// <summary>
+/// Output format for commands that support structured output.
+/// </summary>
+public enum OutputFormat
+{
+    /// <summary>Human-readable text output (default).</summary>
+    Text,
+    /// <summary>Machine-readable JSON output.</summary>
+    Json
+}
+
 internal class CommonOptions
 {
     public static Option<bool> InteractiveOption = new("--interactive")
@@ -23,10 +34,15 @@ internal class CommonOptions
         Arity = ArgumentArity.ZeroOrOne
     };
 
-    public static Option<bool> JsonOption = new("--json")
+    /// <summary>
+    /// Output format option for commands that support structured output.
+    /// Consistent with dotnet CLI's --format option.
+    /// </summary>
+    public static Option<OutputFormat> FormatOption = new("--format")
     {
-        Description = Strings.InfoJsonOptionDescription,
-        Arity = ArgumentArity.ZeroOrOne
+        Description = Strings.FormatOptionDescription,
+        Arity = ArgumentArity.ExactlyOne,
+        DefaultValueFactory = _ => OutputFormat.Text
     };
 
     private static bool IsCIEnvironmentOrRedirected() =>

@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
 internal static class InfoCommandParser
 {
-    public static Option<bool> JsonOption => CommonOptions.JsonOption;
+    public static Option<OutputFormat> FormatOption => CommonOptions.FormatOption;
 
     public static readonly Option<bool> NoListOption = new("--no-list")
     {
@@ -26,14 +26,14 @@ internal static class InfoCommandParser
     {
         Command command = new("--info", Strings.InfoOptionDescription);
 
-        command.Options.Add(JsonOption);
+        command.Options.Add(FormatOption);
         command.Options.Add(NoListOption);
 
         command.SetAction(parseResult =>
         {
-            var jsonOutput = parseResult.GetValue(JsonOption);
+            var format = parseResult.GetValue(FormatOption);
             var noList = parseResult.GetValue(NoListOption);
-            var infoCommand = new Info.InfoCommand(parseResult, jsonOutput, noList);
+            var infoCommand = new Info.InfoCommand(format, noList);
             return infoCommand.Execute();
         });
 

@@ -87,8 +87,7 @@ The `--json` option outputs the list in a machine-readable JSON format:
       "installRoot": "C:\\Users\\user\\.dotnet",
       "architecture": "x64"
     }
-  ],
-  "total": 3
+  ]
 }
 ```
 
@@ -125,13 +124,9 @@ The `--json` option outputs the list in a machine-readable JSON format:
         },
         "required": ["component", "version", "installRoot", "architecture"]
       }
-    },
-    "total": {
-      "type": "integer",
-      "description": "Total number of installations"
     }
   },
-  "required": ["installations", "total"]
+  "required": ["installations"]
 }
 ```
 
@@ -155,9 +150,9 @@ dotnetup list --no-verify
 | Component | Display Name | Description |
 |-----------|--------------|-------------|
 | `sdk` | .NET SDK | .NET SDK for building applications |
-| `runtime` | Microsoft.NETCore.App | .NET Runtime (Microsoft.NETCore.App) |
-| `aspnetcore` | Microsoft.AspNetCore.App | ASP.NET Core Runtime |
-| `windowsdesktop` | Microsoft.WindowsDesktop.App | Windows Desktop Runtime (WPF/WinForms) |
+| `runtime` | dotnet (runtime) | .NET Runtime (Microsoft.NETCore.App) |
+| `aspnetcore` | aspnet (runtime) | ASP.NET Core Runtime |
+| `windowsdesktop` | windowsdesktop (runtime) | Windows Desktop Runtime (WPF/WinForms) |
 
 ## Exit Codes
 

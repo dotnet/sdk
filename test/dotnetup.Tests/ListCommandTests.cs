@@ -10,11 +10,11 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class ListCommandTests
 {
     [Theory]
-    [InlineData(new[] { "list" }, false, false)]
-    [InlineData(new[] { "list", "--json" }, true, false)]
-    [InlineData(new[] { "list", "--no-verify" }, false, true)]
-    [InlineData(new[] { "list", "--json", "--no-verify" }, true, true)]
-    public void Parser_ShouldParseListCommand(string[] args, bool expectedJson, bool expectedNoVerify)
+    [InlineData(new[] { "list" }, OutputFormat.Text, false)]
+    [InlineData(new[] { "list", "--format", "json" }, OutputFormat.Json, false)]
+    [InlineData(new[] { "list", "--no-verify" }, OutputFormat.Text, true)]
+    [InlineData(new[] { "list", "--format", "json", "--no-verify" }, OutputFormat.Json, true)]
+    public void Parser_ShouldParseListCommand(string[] args, OutputFormat expectedFormat, bool expectedNoVerify)
     {
         // Act
         var parseResult = Parser.Parse(args);
@@ -22,7 +22,7 @@ public class ListCommandTests
         // Assert
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
-        parseResult.GetValue(CommonOptions.JsonOption).Should().Be(expectedJson);
+        parseResult.GetValue(CommonOptions.FormatOption).Should().Be(expectedFormat);
         parseResult.GetValue(ListCommandParser.NoVerifyOption).Should().Be(expectedNoVerify);
     }
 
@@ -72,10 +72,10 @@ public class ListCommandTests
             InstallationLister.WriteHumanReadable(sw, installations);
             var output = sw.ToString();
 
-            // Assert - should use full display names like dotnet --list-runtimes
+            // Assert - should use shorter, punchier display names per @baronfel's suggestion
             output.Should().Contain(".NET SDK");
             output.Should().Contain("9.0.100");
-            output.Should().Contain("Microsoft.NETCore.App");
+            output.Should().Contain("dotnet (runtime)");
             output.Should().Contain("9.0.0");
             output.Should().Contain(testInstallRoot);
             output.Should().Contain("Total: 2");
@@ -126,8 +126,6 @@ public class ListCommandTests
 
             root.TryGetProperty("installations", out var installationsArray).Should().BeTrue();
             installationsArray.GetArrayLength().Should().Be(1);
-            root.TryGetProperty("total", out var total).Should().BeTrue();
-            total.GetInt32().Should().Be(1);
 
             var firstInstall = installationsArray[0];
             firstInstall.GetProperty("component").GetString().Should().Be("sdk");
@@ -142,7 +140,7 @@ public class ListCommandTests
     }
 
     [Fact]
-    public void InstallationLister_WriteJson_EmptyList_ShouldHaveZeroTotal()
+    public void InstallationLister_WriteJson_EmptyList_ShouldHaveEmptyInstallations()
     {
         // Arrange
         var installations = new List<InstallationInfo>();
@@ -156,7 +154,6 @@ public class ListCommandTests
         using var doc = JsonDocument.Parse(output);
         var root = doc.RootElement;
 
-        root.GetProperty("total").GetInt32().Should().Be(0);
         root.GetProperty("installations").GetArrayLength().Should().Be(0);
     }
 }

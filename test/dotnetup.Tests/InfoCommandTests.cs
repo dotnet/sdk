@@ -46,8 +46,8 @@ public class InfoCommandTests
     [Fact]
     public void Parser_ShouldParseInfoCommandWithJsonOption()
     {
-        // Arrange - dotnetup --info --json
-        var args = new[] { "--info", "--json" };
+        // Arrange - dotnetup --info --format json
+        var args = new[] { "--info", "--format", "json" };
 
         // Act
         var parseResult = Parser.Parse(args);
@@ -55,7 +55,7 @@ public class InfoCommandTests
         // Assert
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
-        parseResult.GetValue(InfoCommandParser.JsonOption).Should().BeTrue();
+        parseResult.GetValue(InfoCommandParser.FormatOption).Should().Be(OutputFormat.Json);
     }
 
     [Fact]
@@ -74,12 +74,13 @@ public class InfoCommandTests
     }
 
     [Theory]
-    [InlineData("--json")]
-    [InlineData("--no-list")]
-    public void Parser_InfoOptionsNotAvailableAtRootLevel(string option)
+    [InlineData("--format", "json")]
+    [InlineData("--format", "text")]
+    [InlineData("--no-list", null)]
+    public void Parser_InfoOptionsNotAvailableAtRootLevel(string option, string? value)
     {
-        // Arrange - try to use --info options without --info (e.g., dotnetup --json)
-        var args = new[] { option };
+        // Arrange - try to use --info options without --info (e.g., dotnetup --format json)
+        var args = value is null ? new[] { option } : new[] { option, value };
 
         // Act
         var parseResult = Parser.Parse(args);
@@ -90,15 +91,15 @@ public class InfoCommandTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void InfoCommand_ShouldReturnZeroExitCode(bool jsonOutput)
+    [InlineData(OutputFormat.Text)]
+    [InlineData(OutputFormat.Json)]
+    public void InfoCommand_ShouldReturnZeroExitCode(OutputFormat format)
     {
         // Arrange
         using var sw = new StringWriter();
 
         // Act - use noList: true to avoid manifest access in unit tests
-        var exitCode = ExecuteInfoCommand(jsonOutput, noList: true, sw);
+        var exitCode = InfoCommand.Execute(format: format, noList: true, output: sw);
 
         // Assert
         exitCode.Should().Be(0);
@@ -111,7 +112,7 @@ public class InfoCommandTests
         using var sw = new StringWriter();
 
         // Act - use noList: true to avoid manifest access in unit tests
-        ExecuteInfoCommand(jsonOutput: false, noList: true, sw);
+        InfoCommand.Execute(format: OutputFormat.Text, noList: true, output: sw);
         var output = sw.ToString();
 
         // Assert
@@ -129,7 +130,7 @@ public class InfoCommandTests
         using var sw = new StringWriter();
 
         // Act - include list (may be empty but should show the header)
-        ExecuteInfoCommand(jsonOutput: false, noList: false, sw);
+        InfoCommand.Execute(format: OutputFormat.Text, noList: false, output: sw);
         var output = sw.ToString();
 
         // Assert
@@ -145,7 +146,7 @@ public class InfoCommandTests
         using var sw = new StringWriter();
 
         // Act - use noList: true to avoid manifest access in unit tests
-        ExecuteInfoCommand(jsonOutput: true, noList: true, sw);
+        InfoCommand.Execute(format: OutputFormat.Json, noList: true, output: sw);
         var output = sw.ToString();
 
         // Assert - should be valid JSON
@@ -160,7 +161,7 @@ public class InfoCommandTests
         using var sw = new StringWriter();
 
         // Act - use noList: true to avoid manifest access in unit tests
-        ExecuteInfoCommand(jsonOutput: true, noList: true, sw);
+        InfoCommand.Execute(format: OutputFormat.Json, noList: true, output: sw);
         var output = sw.ToString();
 
         // Assert
@@ -180,7 +181,7 @@ public class InfoCommandTests
         using var sw = new StringWriter();
 
         // Act - include list
-        ExecuteInfoCommand(jsonOutput: true, noList: false, sw);
+        InfoCommand.Execute(format: OutputFormat.Json, noList: false, output: sw);
         var output = sw.ToString();
 
         // Assert

@@ -6,18 +6,14 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
+using Spectre.Console;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 
 internal class InfoCommand : CommandBase
 {
-    private readonly bool _jsonOutput;
-    private readonly bool _noList;
-    private readonly TextWriter _output;
-
-    public InfoCommand(ParseResult parseResult, bool jsonOutput, bool noList = false, TextWriter? output = null)
-        : base(parseResult)
+    public static int Execute(OutputFormat format, bool noList = false, TextWriter? output = null)
     {
         _jsonOutput = jsonOutput;
         _noList = noList;
@@ -37,7 +33,7 @@ internal class InfoCommand : CommandBase
             installations = InstallationLister.GetInstallations(verify: true);
         }
 
-        if (_jsonOutput)
+        if (format == OutputFormat.Json)
         {
             PrintJsonInfo(_output, info, installations);
         }
@@ -63,10 +59,23 @@ internal class InfoCommand : CommandBase
     private static void PrintHumanReadableInfo(TextWriter output, DotnetupInfo info, List<InstallationInfo>? installations)
     {
         output.WriteLine(Strings.InfoHeader);
-        output.WriteLine($" Version:      {info.Version}");
-        output.WriteLine($" Commit:       {info.Commit}");
-        output.WriteLine($" Architecture: {info.Architecture}");
-        output.WriteLine($" RID:          {info.Rid}");
+
+        // Create an AnsiConsole that writes to our TextWriter
+        var console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Out = new AnsiConsoleOutput(output)
+        });
+
+        var grid = new Grid();
+        grid.AddColumn(new GridColumn().PadLeft(1).PadRight(1).NoWrap());
+        grid.AddColumn(new GridColumn().NoWrap());
+
+        grid.AddRow("Version:", info.Version);
+        grid.AddRow("Commit:", info.Commit);
+        grid.AddRow("Architecture:", info.Architecture);
+        grid.AddRow("RID:", info.Rid);
+
+        console.Write(grid);
 
         if (installations is not null)
         {
@@ -105,7 +114,8 @@ internal class DotnetupFullInfo
     public List<InstallationInfo>? Installations { get; set; }
 }
 
-[JsonSerializable(typeof(DotnetupInfo))]
+// Note: DotnetupInfo is not serialized directly (only DotnetupFullInfo is),
+// so we don't need it in the JSON context
 [JsonSerializable(typeof(DotnetupFullInfo))]
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 internal partial class DotnetupInfoJsonContext : JsonSerializerContext
