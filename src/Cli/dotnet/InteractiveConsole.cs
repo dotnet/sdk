@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli;
@@ -63,9 +61,4 @@ public static class InteractiveConsole
                 valueKey.ToLowerInvariant().Substring(0, 1));
         }
     }
-
-    public delegate bool Validator<TResult>(
-        string? answer,
-        out TResult? result,
-        [NotNullWhen(returnValue: false)] out string? error);
 }

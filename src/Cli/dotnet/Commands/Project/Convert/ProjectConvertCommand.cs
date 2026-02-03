@@ -316,7 +316,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             targetDirectory = defaultValue;
         }
         
-        // Validate that directory doesn't exist (except in interactive mode where we already validated)
+        // Validate that directory doesn't exist
         if (Directory.Exists(targetDirectory))
         {
             throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
