@@ -4,6 +4,7 @@
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Build.Tasks;
+using Microsoft.NET.TestFramework.Commands;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
@@ -267,7 +268,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
         return task;
     }
 
-    private static long GetInode(string filePath)
+    private long GetInode(string filePath)
     {
         if (OperatingSystem.IsWindows())
         {
@@ -278,32 +279,14 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
             // Use stat to get inode number on Unix systems
             // Linux uses GNU stat: -c %i
             // macOS uses BSD stat: -f %i
-            var statFormat = OperatingSystem.IsMacOS() ? "-f %i" : "-c %i";
+            var formatFlag = OperatingSystem.IsMacOS() ? "-f" : "-c";
 
-            var process = new System.Diagnostics.Process
-            {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = "stat",
-                    Arguments = $"{statFormat} \"{filePath}\"",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-            process.Start();
-            var output = process.StandardOutput.ReadToEnd().Trim();
-            var error = process.StandardError.ReadToEnd();
-            process.WaitForExit();
+            var result = new RunExeCommand(Log, "stat")
+                .Execute(formatFlag, "%i", filePath);
 
-            if (process.ExitCode != 0 || string.IsNullOrWhiteSpace(output))
-            {
-                throw new InvalidOperationException(
-                    $"Failed to get inode for '{filePath}'. Exit code: {process.ExitCode}, Error: {error}, Output: '{output}'");
-            }
+            result.Should().Pass();
 
-            return long.Parse(output);
+            return long.Parse(result.StdOut!.Trim());
         }
     }
 
