@@ -148,19 +148,19 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Workload manifest package versions">
-    <MauiFeatureBand>10.0.100</MauiFeatureBand>
+    <MauiFeatureBand>11.0.100-preview.1</MauiFeatureBand>
 
     <!--
       Updates to any of these versions will require the updating of that package version in the
       source-build-reference-packages repo as a text-only package.
       See https://github.com/dotnet/source-build-reference-packages?tab=readme-ov-file#text-only
     -->
-    <MauiWorkloadManifestVersion>10.0.0</MauiWorkloadManifestVersion>
-    <XamarinAndroidWorkloadManifestVersion>36.1.2</XamarinAndroidWorkloadManifestVersion>
-    <XamarinIOSWorkloadManifestVersion>26.0.11017</XamarinIOSWorkloadManifestVersion>
-    <XamarinMacCatalystWorkloadManifestVersion>26.0.11017</XamarinMacCatalystWorkloadManifestVersion>
-    <XamarinMacOSWorkloadManifestVersion>26.0.11017</XamarinMacOSWorkloadManifestVersion>
-    <XamarinTvOSWorkloadManifestVersion>26.0.11017</XamarinTvOSWorkloadManifestVersion>
+    <MauiWorkloadManifestVersion>11.0.0-preview.1.26102.3</MauiWorkloadManifestVersion>
+    <XamarinAndroidWorkloadManifestVersion>36.1.99-preview.1.119</XamarinAndroidWorkloadManifestVersion>
+    <XamarinIOSWorkloadManifestVersion>26.2.11310-net11-p1</XamarinIOSWorkloadManifestVersion>
+    <XamarinMacCatalystWorkloadManifestVersion>26.2.11310-net11-p1</XamarinMacCatalystWorkloadManifestVersion>
+    <XamarinMacOSWorkloadManifestVersion>26.2.11310-net11-p1</XamarinMacOSWorkloadManifestVersion>
+    <XamarinTvOSWorkloadManifestVersion>26.2.11310-net11-p1</XamarinTvOSWorkloadManifestVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Pinned dependency">
