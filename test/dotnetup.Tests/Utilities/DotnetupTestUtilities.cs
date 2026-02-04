@@ -42,6 +42,28 @@ internal static class DotnetupTestUtilities
         => BuildArguments(InstallComponent.SDK, channel, installPath, manifestPath, disableProgress, runtimeType: null);
 
     /// <summary>
+    /// Builds command line arguments for runtime install using the new component@version syntax
+    /// </summary>
+    public static string[] BuildRuntimeArgumentsWithSpec(string componentSpec, string installPath, string? manifestPath = null, bool disableProgress = true)
+    {
+        var args = new List<string> { "runtime", "install", componentSpec };
+
+        args.AddRange(["--install-path", installPath, "--interactive", "false"]);
+
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            args.AddRange(["--manifest-path", manifestPath]);
+        }
+
+        if (disableProgress)
+        {
+            args.Add("--no-progress");
+        }
+
+        return [.. args];
+    }
+
+    /// <summary>
     /// Builds command line arguments for runtime install
     /// </summary>
     public static string[] BuildRuntimeArguments(string runtimeType, string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
@@ -66,8 +88,12 @@ internal static class DotnetupTestUtilities
         }
         else
         {
-            // Runtime install: dotnetup runtime install <type> <channel>
-            args.AddRange(["runtime", "install", runtimeType ?? "core", channel]);
+            // Runtime install: dotnetup runtime install <component@version> or dotnetup runtime install <version>
+            // Format: "runtime" defaults to core runtime, "aspnetcore@9.0" for ASP.NET Core, etc.
+            string componentSpec = runtimeType is null or "core" or "runtime"
+                ? channel  // Just version for core runtime (e.g., "9.0")
+                : $"{runtimeType}@{channel}";  // component@version for others (e.g., "aspnetcore@9.0")
+            args.AddRange(["runtime", "install", componentSpec]);
         }
 
         args.AddRange(["--install-path", installPath, "--interactive", "false"]);

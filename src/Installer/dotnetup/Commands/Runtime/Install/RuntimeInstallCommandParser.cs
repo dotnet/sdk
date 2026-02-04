@@ -8,24 +8,19 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 internal static class RuntimeInstallCommandParser
 {
     /// <summary>
-    /// The runtime type to install (core, aspnetcore, windowsdesktop on Windows).
+    /// The version/channel or component@version specification.
+    /// Examples:
+    ///   - "10.0.1" - installs core runtime version 10.0.1
+    ///   - "latest" - installs latest core runtime
+    ///   - "aspnetcore@10.0.1" - installs ASP.NET Core runtime 10.0.1
+    ///   - "windowsdesktop@9.0" - installs Windows Desktop runtime for 9.0 channel
     /// </summary>
-    public static readonly Argument<string> TypeArgument = new("type")
+    public static readonly Argument<string?> ComponentSpecArgument = new("component-spec")
     {
-        HelpName = "TYPE",
-        Description = OperatingSystem.IsWindows()
-            ? "The type of runtime to install: core, aspnetcore, or windowsdesktop"
-            : "The type of runtime to install: core or aspnetcore",
-        Arity = ArgumentArity.ExactlyOne, // eventually we'd support no type, which would install all 3 on windows, or core + aspnetcore concurrently on unix
-    };
-
-    /// <summary>
-    /// The channel or version to install.
-    /// </summary>
-    public static readonly Argument<string?> ChannelArgument = new("channel")
-    {
-        HelpName = "CHANNEL",
-        Description = "The channel of the .NET Runtime to install. For example: latest, 10, or 9.0. A specific version (for example 9.0.0) can also be specified.",
+        HelpName = "COMPONENT_SPEC",
+        Description = "The version/channel (e.g., 10.0.1, latest) or component@version (e.g., aspnetcore@10.0.1, windowsdesktop@9.0). "
+            + "When only a version is provided, the core .NET runtime is installed. "
+            + "Component types: runtime, aspnetcore" + (OperatingSystem.IsWindows() ? ", windowsdesktop" : ""),
         Arity = ArgumentArity.ZeroOrOne,
     };
 
@@ -46,8 +41,7 @@ internal static class RuntimeInstallCommandParser
     {
         Command command = new("install", "Installs a .NET Runtime");
 
-        command.Arguments.Add(TypeArgument);
-        command.Arguments.Add(ChannelArgument);
+        command.Arguments.Add(ComponentSpecArgument);
 
         command.Options.Add(InstallPathOption);
         command.Options.Add(SetDefaultInstallOption);

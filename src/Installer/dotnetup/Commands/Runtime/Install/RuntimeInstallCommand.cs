@@ -9,8 +9,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
 internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
 {
-    private readonly string _runtimeType = result.GetValue(RuntimeInstallCommandParser.TypeArgument)!;
-    private readonly string? _versionOrChannel = result.GetValue(RuntimeInstallCommandParser.ChannelArgument);
+    private readonly string? _componentSpec = result.GetValue(RuntimeInstallCommandParser.ComponentSpecArgument);
     private readonly string? _installPath = result.GetValue(RuntimeInstallCommandParser.InstallPathOption);
     private readonly bool? _setDefaultInstall = result.GetValue(RuntimeInstallCommandParser.SetDefaultInstallOption);
     private readonly string? _manifestPath = result.GetValue(RuntimeInstallCommandParser.ManifestPathOption);
@@ -25,49 +24,94 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
     /// </summary>
     private static readonly Dictionary<string, (InstallComponent Component, string Description)> RuntimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["core"] = (InstallComponent.Runtime, ".NET Runtime"),
+        ["runtime"] = (InstallComponent.Runtime, ".NET Runtime"),
         ["aspnetcore"] = (InstallComponent.ASPNETCore, "ASP.NET Core Runtime"),
         ["windowsdesktop"] = (InstallComponent.WindowsDesktop, "Windows Desktop Runtime"),
     };
 
     public override int Execute()
     {
-        if (!RuntimeTypeMap.TryGetValue(_runtimeType, out var runtimeInfo))
+        // Parse the component spec to determine runtime type and version
+        var (component, versionOrChannel, errorMessage) = ParseComponentSpec(_componentSpec);
+
+        if (errorMessage != null)
         {
-            Console.Error.WriteLine($"Error: Unknown runtime type '{_runtimeType}'. Valid types are: {string.Join(", ", GetValidRuntimeTypes())}");
+            Console.Error.WriteLine(errorMessage);
             return 1;
         }
 
         // Windows Desktop Runtime is only available on Windows
-        if (runtimeInfo.Component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
+        if (component == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
         {
             Console.Error.WriteLine("Error: Windows Desktop Runtime is only available on Windows.");
-            Console.Error.WriteLine($"Valid runtime types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
+            Console.Error.WriteLine($"Valid component types for this platform are: {string.Join(", ", GetValidRuntimeTypes())}");
             return 1;
         }
 
         // SDK versions and feature bands (like 9.0.103, 9.0.1xx) are SDK-specific and not valid for runtimes
-        if (!string.IsNullOrEmpty(_versionOrChannel) && new UpdateChannel(_versionOrChannel).IsSdkVersionOrFeatureBand())
+        if (!string.IsNullOrEmpty(versionOrChannel) && new UpdateChannel(versionOrChannel).IsSdkVersionOrFeatureBand())
         {
-            Console.Error.WriteLine($"Error: '{_versionOrChannel}' looks like an SDK version or feature band, which is not valid for runtime installations.");
+            Console.Error.WriteLine($"Error: '{versionOrChannel}' looks like an SDK version or feature band, which is not valid for runtime installations.");
             Console.Error.WriteLine("Use a version channel like '9.0', 'latest', 'lts', or a specific runtime version like '9.0.12'.");
             return 1;
         }
 
+        var runtimeInfo = RuntimeTypeMap.Values.First(v => v.Component == component);
+
         InstallWorkflow workflow = new(_dotnetInstaller, _channelVersionResolver);
 
         InstallWorkflow.InstallWorkflowOptions options = new(
-            _versionOrChannel,
+            versionOrChannel,
             _installPath,
             _setDefaultInstall,
             _manifestPath,
             _interactive,
             _noProgress,
-            runtimeInfo.Component,
+            component,
             runtimeInfo.Description);
 
         InstallWorkflow.InstallWorkflowResult workflowResult = workflow.Execute(options);
         return workflowResult.ExitCode;
+    }
+
+    /// <summary>
+    /// Parses the component specification.
+    /// Formats:
+    ///   - null or empty: defaults to latest core runtime
+    ///   - "10.0.1" or "latest": core runtime with specified version/channel
+    ///   - "aspnetcore@10.0.1": ASP.NET Core runtime with specified version
+    ///   - "windowsdesktop@9.0": Windows Desktop runtime with specified channel
+    /// </summary>
+    private static (InstallComponent Component, string? VersionOrChannel, string? ErrorMessage) ParseComponentSpec(string? spec)
+    {
+        // Default: install latest core runtime
+        if (string.IsNullOrWhiteSpace(spec))
+        {
+            return (InstallComponent.Runtime, null, null);
+        }
+
+        // Check for component@version syntax
+        int atIndex = spec.IndexOf('@');
+        if (atIndex > 0)
+        {
+            string componentName = spec[..atIndex];
+            string versionPart = spec[(atIndex + 1)..];
+
+            if (string.IsNullOrWhiteSpace(versionPart))
+            {
+                return (default, null, $"Error: Invalid component specification '{spec}'. Version is required after '@'.");
+            }
+
+            if (!RuntimeTypeMap.TryGetValue(componentName, out var runtimeInfo))
+            {
+                return (default, null, $"Error: Unknown component type '{componentName}'. Valid types are: {string.Join(", ", GetValidRuntimeTypes())}");
+            }
+
+            return (runtimeInfo.Component, versionPart, null);
+        }
+
+        // No '@' - treat as version/channel for core runtime
+        return (InstallComponent.Runtime, spec, null);
     }
 
     /// <summary>

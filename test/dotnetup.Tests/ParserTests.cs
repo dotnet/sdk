@@ -134,13 +134,15 @@ public class ParserTests
     #region Runtime Command Parser Tests
 
     [Theory]
-    [InlineData("core", "9.0")]
-    [InlineData("aspnetcore", "latest")]
-    [InlineData("windowsdesktop", "lts")]
-    public void Parser_ShouldParseRuntimeInstallCommand(string runtimeType, string channel)
+    [InlineData("9.0")]           // Version only - installs core runtime
+    [InlineData("latest")]        // Channel - installs core runtime
+    [InlineData("aspnetcore@9.0")]
+    [InlineData("windowsdesktop@lts")]
+    [InlineData("runtime@10.0.1")]
+    public void Parser_ShouldParseRuntimeInstallCommand(string componentSpec)
     {
         // Arrange
-        var args = new[] { "runtime", "install", runtimeType, channel };
+        var args = new[] { "runtime", "install", componentSpec };
 
         // Act
         var parseResult = Parser.Parse(args);
@@ -154,7 +156,7 @@ public class ParserTests
     public void Parser_ShouldParseRuntimeInstallWithOptions()
     {
         // Arrange
-        var args = new[] { "runtime", "install", "aspnetcore", "9.0", "--install-path", @"C:\dotnet", "--no-progress" };
+        var args = new[] { "runtime", "install", "aspnetcore@9.0", "--install-path", @"C:\dotnet", "--no-progress" };
 
         // Act
         var parseResult = Parser.Parse(args);
@@ -193,24 +195,24 @@ public class ParserTests
     }
 
     [Fact]
-    public void Parser_RuntimeInstallRequiresTypeArgument()
+    public void Parser_RuntimeInstallAllowsNoArgument()
     {
-        // Arrange - missing type argument
+        // Arrange - no argument is valid (will use default behavior)
         var args = new[] { "runtime", "install" };
 
         // Act
         var parseResult = Parser.Parse(args);
 
-        // Assert
+        // Assert - should parse without errors (argument is optional)
         parseResult.Should().NotBeNull();
-        parseResult.Errors.Should().NotBeEmpty("type argument is required");
+        parseResult.Errors.Should().BeEmpty("component-spec argument is optional");
     }
 
     [Fact]
     public void Parser_ShouldParseRuntimeInstallWithManifestPath()
     {
         // Arrange
-        var args = new[] { "runtime", "install", "core", "9.0", "--manifest-path", @"C:\test\manifest.json" };
+        var args = new[] { "runtime", "install", "9.0", "--manifest-path", @"C:\test\manifest.json" };
 
         // Act
         var parseResult = Parser.Parse(args);

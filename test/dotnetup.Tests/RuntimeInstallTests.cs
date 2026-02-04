@@ -69,28 +69,52 @@ public class RuntimeInstallTests
 
     #endregion
 
-    #region Component Type Mapping Tests
+    #region Component Spec Parsing Tests
 
     [Theory]
-    [InlineData("core", InstallComponent.Runtime)]
-    [InlineData("CORE", InstallComponent.Runtime)]
-    [InlineData("aspnetcore", InstallComponent.ASPNETCore)]
-    [InlineData("AspNetCore", InstallComponent.ASPNETCore)]
-    [InlineData("windowsdesktop", InstallComponent.WindowsDesktop)]
-    [InlineData("WindowsDesktop", InstallComponent.WindowsDesktop)]
-    public void ComponentTypeMapping_ValidTypes(string typeName, InstallComponent expected)
+    [InlineData(null, InstallComponent.Runtime, null)]
+    [InlineData("", InstallComponent.Runtime, null)]
+    [InlineData("10.0.1", InstallComponent.Runtime, "10.0.1")]
+    [InlineData("latest", InstallComponent.Runtime, "latest")]
+    [InlineData("9.0", InstallComponent.Runtime, "9.0")]
+    [InlineData("runtime@10.0.1", InstallComponent.Runtime, "10.0.1")]
+    [InlineData("runtime@latest", InstallComponent.Runtime, "latest")]
+    [InlineData("aspnetcore@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
+    [InlineData("aspnetcore@9.0", InstallComponent.ASPNETCore, "9.0")]
+    [InlineData("ASPNETCORE@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
+    [InlineData("windowsdesktop@10.0.1", InstallComponent.WindowsDesktop, "10.0.1")]
+    [InlineData("WindowsDesktop@9.0", InstallComponent.WindowsDesktop, "9.0")]
+    public void ComponentSpecParsing_ValidSpecs(string? spec, InstallComponent expectedComponent, string? expectedVersion)
     {
-        RuntimeInstallCommandHelper.ParseRuntimeType(typeName).Should().Be(expected);
+        var (component, version, error) = RuntimeInstallCommandHelper.ParseComponentSpec(spec);
+
+        error.Should().BeNull();
+        component.Should().Be(expectedComponent);
+        version.Should().Be(expectedVersion);
     }
 
     [Theory]
-    [InlineData("invalid")]
-    [InlineData("sdk")]
-    [InlineData("")]
-    [InlineData(null)]
-    public void ComponentTypeMapping_InvalidTypes_ReturnsNull(string? typeName)
+    [InlineData("invalid@10.0.1", "invalid")]
+    [InlineData("sdk@10.0.1", "sdk")]
+    [InlineData("unknown@latest", "unknown")]
+    public void ComponentSpecParsing_InvalidComponent_ReturnsError(string spec, string invalidComponent)
     {
-        RuntimeInstallCommandHelper.ParseRuntimeType(typeName).Should().BeNull();
+        var (_, _, error) = RuntimeInstallCommandHelper.ParseComponentSpec(spec);
+
+        error.Should().NotBeNull();
+        error.Should().Contain(invalidComponent);
+    }
+
+    [Theory]
+    [InlineData("aspnetcore@")]
+    [InlineData("runtime@")]
+    [InlineData("windowsdesktop@")]
+    public void ComponentSpecParsing_MissingVersion_ReturnsError(string spec)
+    {
+        var (_, _, error) = RuntimeInstallCommandHelper.ParseComponentSpec(spec);
+
+        error.Should().NotBeNull();
+        error.Should().Contain("Version is required");
     }
 
     #endregion
@@ -254,19 +278,23 @@ public class RuntimeInstallTests
     #region Parser Tests
 
     [Fact]
-    public void Parser_RuntimeInstallWithoutType_HasErrors()
+    public void Parser_RuntimeInstallWithoutArgs_NoErrors()
     {
+        // Now valid - installs latest core runtime
         var parseResult = Parser.Parse(["runtime", "install"]);
-        parseResult.Errors.Should().NotBeEmpty();
+        parseResult.Errors.Should().BeEmpty();
     }
 
     [Theory]
-    [InlineData("core", "9.0")]
-    [InlineData("aspnetcore", "latest")]
-    [InlineData("windowsdesktop", "lts")]
-    public void Parser_RuntimeInstallWithValidArgs_NoErrors(string runtimeType, string channel)
+    [InlineData("9.0")]
+    [InlineData("latest")]
+    [InlineData("10.0.1")]
+    [InlineData("aspnetcore@9.0")]
+    [InlineData("windowsdesktop@10.0.1")]
+    [InlineData("runtime@latest")]
+    public void Parser_RuntimeInstallWithValidComponentSpec_NoErrors(string componentSpec)
     {
-        var parseResult = Parser.Parse(["runtime", "install", runtimeType, channel]);
+        var parseResult = Parser.Parse(["runtime", "install", componentSpec]);
         parseResult.Errors.Should().BeEmpty();
     }
 
@@ -274,21 +302,51 @@ public class RuntimeInstallTests
 }
 
 /// <summary>
-/// Helper for parsing runtime types (mirrors RuntimeInstallCommand logic).
+/// Helper for parsing component specs (mirrors RuntimeInstallCommand logic).
 /// </summary>
 internal static class RuntimeInstallCommandHelper
 {
-    public static InstallComponent? ParseRuntimeType(string? runtimeType)
+    private static readonly Dictionary<string, InstallComponent> RuntimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
     {
-        if (string.IsNullOrEmpty(runtimeType))
-            return null;
+        ["runtime"] = InstallComponent.Runtime,
+        ["aspnetcore"] = InstallComponent.ASPNETCore,
+        ["windowsdesktop"] = InstallComponent.WindowsDesktop,
+    };
 
-        return runtimeType.ToLowerInvariant() switch
+    /// <summary>
+    /// Parses a component specification string.
+    /// </summary>
+    /// <param name="spec">The component specification (e.g., "10.0.1", "aspnetcore@10.0.1")</param>
+    /// <returns>Tuple of (Component, VersionOrChannel, ErrorMessage)</returns>
+    public static (InstallComponent Component, string? VersionOrChannel, string? ErrorMessage) ParseComponentSpec(string? spec)
+    {
+        // Default: install latest core runtime
+        if (string.IsNullOrWhiteSpace(spec))
         {
-            "core" => InstallComponent.Runtime,
-            "aspnetcore" => InstallComponent.ASPNETCore,
-            "windowsdesktop" => InstallComponent.WindowsDesktop,
-            _ => null
-        };
+            return (InstallComponent.Runtime, null, null);
+        }
+
+        // Check for component@version syntax
+        int atIndex = spec.IndexOf('@');
+        if (atIndex > 0)
+        {
+            string componentName = spec[..atIndex];
+            string versionPart = spec[(atIndex + 1)..];
+
+            if (string.IsNullOrWhiteSpace(versionPart))
+            {
+                return (default, null, $"Error: Invalid component specification '{spec}'. Version is required after '@'.");
+            }
+
+            if (!RuntimeTypeMap.TryGetValue(componentName, out var component))
+            {
+                return (default, null, $"Error: Unknown component type '{componentName}'.");
+            }
+
+            return (component, versionPart, null);
+        }
+
+        // No '@' - treat as version/channel for core runtime
+        return (InstallComponent.Runtime, spec, null);
     }
 }
