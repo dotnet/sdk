@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
@@ -54,6 +55,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
             rootCommand.Subcommands.Add(SdkUpdateCommandParser.GetRootUpdateCommand());
             rootCommand.Subcommands.Add(ElevatedAdminPathCommandParser.GetCommand());
             rootCommand.Subcommands.Add(DefaultInstallCommandParser.GetCommand());
+            rootCommand.Subcommands.Add(EnvCommandParser.GetCommand());
             rootCommand.Subcommands.Add(ListCommandParser.GetCommand());
 
             rootCommand.SetAction(parseResult =>
@@ -62,6 +64,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
                 parseResult.InvocationConfiguration.Output.WriteLine(Strings.RootCommandDescription);
                 return 0;
             });
+
 
             return rootCommand;
         }
