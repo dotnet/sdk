@@ -138,6 +138,7 @@
       <MSBuildSdkResolverDir>$(RepoRoot)artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>
       <HelixStage0Targz>$(RepoRoot)artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>
       <MicrosoftNETBuildExtensions>$(RepoRoot)artifacts\bin\$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MicrosoftNETBuildExtensions>
+      <ArtifactsShippingPackages>$(RepoRoot)artifacts\packages\$(Configuration)\Shipping</ArtifactsShippingPackages>
     </PropertyGroup>
 
     <TarGzFileCreateFromDirectory
@@ -165,6 +166,10 @@
 
       <HelixCorrelationPayload Include="$(MSBuildSdkResolverDir)">
         <Destination>r</Destination>
+      </HelixCorrelationPayload>
+
+      <HelixCorrelationPayload Include="$(ArtifactsShippingPackages)">
+        <Destination>d/.nuget</Destination>
       </HelixCorrelationPayload>
     </ItemGroup>
   </Target>
