@@ -5,7 +5,7 @@
       Tests code used in in-proc VS and VS Code.
       Ideally, we would target $(VisualStudioServiceTargetFramework) but Microsoft.NET.TestFramework has dependencies on $(SdkTargetFramework).
     -->
-    <TargetFrameworks>$(SdkTargetFramework);$(VisualStudioTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <OutputType Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">Exe</OutputType>
     <RootNamespace>Microsoft.DotNet.HotReload.UnitTests</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>

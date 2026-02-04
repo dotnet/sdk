@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenDuplicateSourceIsPassedIgnore()
         {
             var duplicateSource = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NuGetConfigRandomPackageSources", allowCopyIfPresent: true)
                 .WithSource();
 
@@ -605,7 +605,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithValidVersionItShouldInterpretAsNuGetExactVersion(string version)
         {
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var ridGraphPath = TestContext.GetRuntimeGraphFilePath();
 
             var toolInstallCommand = new ToolInstallGlobalOrToolPathCommand(Parser.Parse($"dotnet tool install -g {UnlistedPackageId} --version {version} --add-source {nugetSourcePath}"),
@@ -642,7 +642,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithoutValidVersionUnlistedToolItShouldThrow()
         {
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
 
             var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--add-source", nugetSourcePath)
                 .WithWorkingDirectory(testDir);
@@ -901,7 +901,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithHttpSourceViaAddSourceItShouldShowNU1302Error()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
 
             var toolInstallCommand = new DotnetCommand(Log, "tool", "install", "-g", "fake-tool", "--add-source", "http://test.example.com/nuget")
                 .WithWorkingDirectory(testDir);
@@ -917,7 +917,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithHttpSourceInNuGetConfigItShouldShowNU1302Error()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var nugetConfigPath = Path.Combine(testDir, "nuget.config");
 
             var nugetConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -944,7 +944,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithHttpSourceAndAllowInsecureConnectionsItShouldSucceed()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var nugetConfigPath = Path.Combine(testDir, "nuget.config");
 
             var nugetConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
