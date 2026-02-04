@@ -390,10 +390,9 @@ namespace Microsoft.DotNet.NativeWrapper
             {
                 localResult = new string[sdk_count];
 
-                ReadOnlySpan<PlatformString> dirs = new((void*)sdk_dirs, sdk_count);
                 for (int i = 0; i < sdk_count; i++)
                 {
-                    localResult[i] = dirs[i];
+                    localResult[i] = ((PlatformString*)sdk_dirs)[i];
                 }
             }
         }

@@ -62,22 +62,27 @@ namespace Microsoft.DotNet.NativeWrapper
 
         internal unsafe void Initialize(ref hostfxr_dotnet_environment_info info, nint _)
         {
-            ReadOnlySpan<hostfxr_dotnet_environment_framework_info> runtimes = new(info.frameworks, (int)info.framework_count);
-            List<NetRuntimeInfo> runtimeInfo = new(capacity: runtimes.Length);
+            int count = (int)info.framework_count;
+            var framework = info.frameworks;
 
-            for (var i = 0; i < runtimes.Length; i++)
+            List<NetRuntimeInfo> runtimeInfo = new(capacity: count);
+
+            for (var i = 0; i < count; i++)
             {
-                runtimeInfo.Add(new(runtimes[i].name, runtimes[i].version, runtimes[i].path));
+                runtimeInfo.Add(new(framework->name, framework->version, framework->path));
+                framework++;
             }
 
             RuntimeInfo = runtimeInfo;
 
-            ReadOnlySpan<hostfxr_dotnet_environment_sdk_info> sdks = new(info.sdks, (int)info.sdk_count);
-            List<NetSdkInfo> sdkInfo = new(capacity: sdks.Length);
+            count = (int)info.sdk_count;
+            var sdk = info.sdks;
+            List<NetSdkInfo> sdkInfo = new(count);
 
-            for (var i = 0; i < sdks.Length; i++)
+            for (var i = 0; i < count; i++)
             {
-                sdkInfo.Add(new(sdks[i].version, sdks[i].path));
+                sdkInfo.Add(new(sdk->version, sdk->path));
+                sdk++;
             }
 
             SdkInfo = sdkInfo;
