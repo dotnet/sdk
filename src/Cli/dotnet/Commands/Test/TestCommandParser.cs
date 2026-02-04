@@ -2,24 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.CommandLine;
-using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class TestCommandParser
 {
-    private static readonly TestCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(TestCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static TestCommandDefinition CreateCommand()
-    {
-        var command = TestCommandDefinition.Create();
-
-        command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RunTimesFromProjectFile);
+        command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
+        command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
+        command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RuntimesFromProjectFile);
 
         switch (command)
         {
@@ -35,8 +27,6 @@ internal static class TestCommandParser
 
             default:
                 throw new NotSupportedException();
-        };
-
-        return command;
+        }
     }
 }

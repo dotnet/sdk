@@ -3,9 +3,10 @@
 
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Cli.Commands.New;
+using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Cli.Help;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
 using Command = System.CommandLine.Command;
@@ -20,7 +21,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             if (string.IsNullOrWhiteSpace(instantiateCommandArgs.ShortName))
             {
-                WriteCustomInstantiateHelp(context, instantiateCommandArgs.Command);
+                WriteCustomInstantiateHelp(context, instantiateCommandArgs.NewOrInstantiateCommand);
                 return;
             }
 
@@ -80,7 +81,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             ShowTemplateDetailHeaders(preferredTemplate.Template, context.Output);
             //we need to show all possible short names (not just the one specified)
-            ShowUsage(instantiateCommandArgs.Command, templateGroup.ShortNames, context);
+            ShowUsage(instantiateCommandArgs.NewOrInstantiateCommand, templateGroup.ShortNames, context);
             ShowCommandOptions(templatesToShow, context);
             ShowTemplateSpecificOptions(templatesToShow, context);
             ShowHintForOtherTemplates(templateGroup, preferredTemplate.Template, instantiateCommandArgs, context.Output);
@@ -216,9 +217,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             writer.WriteLine(
                 Example
                     .For<NewCommand>(args.ParseResult)
-                    .WithArgument(CommandDefinition.New.ShortNameArgument, templateGroup.ShortNames[0])
+                    .WithArguments(templateGroup.ShortNames[0])
                     .WithHelpOption()
-                    .WithOption(SharedOptionsFactory.CreateLanguageOption(), supportedLanguages.First())
+                    .WithOption(c => c.Definition.LegacyOptions.FilterOptions.LanguageOption, supportedLanguages.First())
                     .ToString().Indent());
             writer.WriteLine();
 
@@ -251,9 +252,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             writer.WriteLine(HelpStrings.Hint_HelpForOtherTypes, string.Join(", ", supportedTypes));
             writer.WriteLine(Example
                 .For<NewCommand>(args.ParseResult)
-                .WithArgument(CommandDefinition.New.ShortNameArgument, templateGroup.ShortNames[0])
+                .WithArguments(templateGroup.ShortNames[0])
                 .WithHelpOption()
-                .WithOption(SharedOptionsFactory.CreateTypeOption(), supportedTypes.First())
+                .WithOption(c => c.Definition.LegacyOptions.FilterOptions.TypeOption, supportedTypes.First())
                 .ToString().Indent());
             writer.WriteLine();
         }
@@ -287,12 +288,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             List<Option> optionsToShow = new()
             {
-                SharedOptions.NameOption,
-                SharedOptions.OutputOption,
-                SharedOptions.DryRunOption,
-                SharedOptions.ForceOption,
-                SharedOptions.NoUpdateCheckOption,
-                SharedOptions.ProjectPathOption
+                SharedOptionsFactory.CreateNameOption(),
+                SharedOptionsFactory.CreateOutputOption(),
+                SharedOptionsFactory.CreateDryRunOption(),
+                SharedOptionsFactory.CreateForceOption(),
+                SharedOptionsFactory.CreateNoUpdateCheckOption(),
+                SharedOptionsFactory.CreateProjectOption()
             };
 
             foreach (TemplateCommand template in templatesToShow)

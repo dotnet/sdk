@@ -26,6 +26,7 @@ internal sealed class StartupHook
                                                        && !OperatingSystem.IsIOS()
                                                        && !OperatingSystem.IsTvOS()
                                                        && !OperatingSystem.IsBrowser();
+    private static readonly bool s_supportsPosixSignals = s_supportsConsoleColor;
 
 #if NET10_0_OR_GREATER
     private static PosixSignalRegistration? s_signalRegistration;
@@ -125,7 +126,7 @@ internal sealed class StartupHook
             [DllImport("kernel32.dll", SetLastError = true)]
             static extern bool SetConsoleCtrlHandler(Delegate? handler, bool add);
         }
-        else
+        else if (s_supportsPosixSignals)
         {
 #if NET10_0_OR_GREATER
             // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.

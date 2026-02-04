@@ -179,7 +179,7 @@ public class TestCommand(
 
     public static TestCommand FromArgs(string[] args, string? testSessionCorrelationId = null, string? msbuildPath = null)
     {
-        var parseResult = Parser.Parse(["dotnet", "test", ..args]);
+        var parseResult = Parser.Parse(["dotnet", "test", .. args]);
 
         // settings parameters are after -- (including --), these should not be considered by the parser
         string[] settings = [.. args.SkipWhile(a => a != "--")];
@@ -266,7 +266,8 @@ public class TestCommand(
 
 
         Dictionary<string, string> variables = VSTestForwardingApp.GetVSTestRootVariables();
-        foreach (var (rootVariableName, rootValue) in variables) {
+        foreach (var (rootVariableName, rootValue) in variables)
+        {
             testCommand.EnvironmentVariable(rootVariableName, rootValue);
             VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
         }
