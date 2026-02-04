@@ -752,7 +752,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     // * Appends a trailing directory separator at the end.
     public static string NormalizeContentRootPath(string path)
         => Path.GetFullPath(path) +
-        // We need to do .ToString because there is no EndsWith overload for chars in .NET Framework
+        // We need to do .ToString because there is no EndsWith overload for chars in .net472
         (path.EndsWith(Path.DirectorySeparatorChar.ToString()), path.EndsWith(Path.AltDirectorySeparatorChar.ToString())) switch
         {
             (true, _) => "",
@@ -1234,39 +1234,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         for (var i = 0; i < candidateAssets.Length; i++)
         {
             var candidateAsset = FromTaskItem(candidateAssets[i], validate);
-#if NETFRAMEWORK
-            if (dictionary.ContainsKey(candidateAsset.Identity))
-            {
-                // Duplicate Identity found. This is only allowed if both assets point to the same
-                // source file (e.g., HotReload module referenced by multiple WASM projects in a hosted scenario).
-                var existing = dictionary[candidateAsset.Identity];
-                if (!string.Equals(existing.OriginalItemSpec, candidateAsset.OriginalItemSpec, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new InvalidOperationException(
-                        $"Duplicate asset Identity '{candidateAsset.Identity}' with different source files: " +
-                        $"'{existing.OriginalItemSpec}' and '{candidateAsset.OriginalItemSpec}'.");
-                }
-                // Same source file - safe to ignore the duplicate
-            }
-            else
-            {
-                dictionary.Add(candidateAsset.Identity, candidateAsset);
-            }
-#else
-            if (!dictionary.TryAdd(candidateAsset.Identity, candidateAsset))
-            {
-                // Duplicate Identity found. This is only allowed if both assets point to the same
-                // source file (e.g., HotReload module referenced by multiple WASM projects in a hosted scenario).
-                var existing = dictionary[candidateAsset.Identity];
-                if (!string.Equals(existing.OriginalItemSpec, candidateAsset.OriginalItemSpec, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new InvalidOperationException(
-                        $"Duplicate asset Identity '{candidateAsset.Identity}' with different source files: " +
-                        $"'{existing.OriginalItemSpec}' and '{candidateAsset.OriginalItemSpec}'.");
-                }
-                // Same source file - safe to ignore the duplicate
-            }
-#endif
+            dictionary.Add(candidateAsset.Identity, candidateAsset);
         }
 
         return dictionary;

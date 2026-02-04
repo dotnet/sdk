@@ -158,7 +158,7 @@ public class GenerateStaticWebAssetsManifest : Task
 
         foreach (var asset in assets)
         {
-            var targetPath = asset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
+            var targetPath = asset.ComputeTargetPath("", '/');
 
             if (result.TryGetValue(targetPath, out var existing))
             {

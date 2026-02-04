@@ -24,18 +24,26 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_WasmHotReloadTfm Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">net10.0</_WasmHotReloadTfm>
       <_WasmHotReloadPath Condition="'$(_WasmHotReloadTfm)' != ''">$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', 'hotreload', $(_WasmHotReloadTfm)))</_WasmHotReloadPath>
+      <_WasmHotReloadIntermediatePath>$(IntermediateOutputPath)hotreload\</_WasmHotReloadIntermediatePath>
     </PropertyGroup>
+
+    <!-- Copy the JS module to intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->
+    <Copy
+      SourceFiles="$(_WasmHotReloadPath)wwwroot\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js"
+      DestinationFolder="$(_WasmHotReloadIntermediatePath)"
+      SkipUnchangedFiles="true"
+      Condition="'$(_WasmHotReloadPath)' != ''" />
+
     <ItemGroup Condition="'$(_WasmHotReloadPath)' != ''">
       <ReferenceCopyLocalPaths Include="$(_WasmHotReloadPath)Microsoft.DotNet.HotReload.WebAssembly.Browser.dll">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </ReferenceCopyLocalPaths>
-      <_WasmHotReloadModule Include="$(_WasmHotReloadPath)wwwroot\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
-        <TargetPath>_framework\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</TargetPath>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+      <_WasmHotReloadModule Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
+        <RelativePath>_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</RelativePath>
       </_WasmHotReloadModule>
       <_WasmHotReloadModule OriginalItemSpec="%(Identity)" />
+      <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js" />
     </ItemGroup>
 
     <DefineStaticWebAssets
@@ -44,9 +52,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       SourceId="$(PackageId)"
       SourceType="Computed"
-      ContentRoot="$(_WasmHotReloadPath)\wwwroot\"
+      ContentRoot="$(_WasmHotReloadIntermediatePath)"
       BasePath="$(StaticWebAssetBasePath)"
       AssetKind="Build"
+      AssetMode="CurrentProject"
       AssetTraitName="JSModule"
       AssetTraitValue="JSLibraryModule"
       PropertyOverrides="AssetTraitName;AssetTraitValue"
