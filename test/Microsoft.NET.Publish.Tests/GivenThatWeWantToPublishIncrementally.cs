@@ -21,7 +21,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
 
 
@@ -60,7 +60,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
                 Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{nameof(It_cleans_between_renames)}.binlog") :
@@ -105,7 +105,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
                 Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{nameof(It_cleans_between_single_file_publishes)}.binlog") :
@@ -147,7 +147,7 @@ namespace Microsoft.NET.Publish.Tests
             };
 
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             // Publish trimmed
             var publishCommand = new PublishCommand(testAsset);
@@ -178,7 +178,7 @@ namespace Microsoft.NET.Publish.Tests
         public void It_cleans_for_mvc_projects()
         {
             // Create new mvc app from template
-            var testDir = _testAssetsManager.CreateTestDirectory();
+            var testDir = TestAssetsManager.CreateTestDirectory();
             var assetName = "MVCPublishProject";
             var runtimeId = "win-x86";
             new DotnetNewCommand(Log)
@@ -223,7 +223,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var publishOutputFolder = "publishOutput";
             var publishDir = Path.Combine(testAsset.TestRoot, testProject.Name, publishOutputFolder);
@@ -258,7 +258,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var publishOutputFolder1 = "publishOutput1";
             var publishOutputFolder2 = "publishOutput2";
@@ -311,7 +311,7 @@ namespace Microsoft.NET.Publish.Tests
             };
 
             testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion(), publish: "false"));
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var publishCommand = new PublishCommand(testAsset);
             var publishDir = publishCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid).FullName;

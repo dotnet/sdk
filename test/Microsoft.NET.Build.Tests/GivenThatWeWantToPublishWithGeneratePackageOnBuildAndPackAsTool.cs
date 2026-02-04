@@ -19,7 +19,7 @@ namespace Microsoft.NET.ToolPack.Tests
         [InlineData(true, true)]
         public void It_builds_successfully(bool generatePackageOnBuild, bool packAsTool)
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: generatePackageOnBuild.ToString() + packAsTool.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>

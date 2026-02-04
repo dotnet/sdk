@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Tests
         public void ItReturnsACommandSpecWhenToolIsInAProjectRef()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Tests
         public void ItPassesDepsfileArgToHostWhenReturningACommandSpecForMSBuildProject()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Tests
         public void ItReturnsNullWhenCommandNameDoesNotExistInProjectDependenciesForMSBuildProject()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.Tests
         public void ItSetsDepsfileToOutputInCommandspecForMSBuild()
         {
             var testAsset =
-                _testAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
+                TestAssetsManager.CopyTestAsset("TestAppWithProjDepTool")
                     .WithSource();
 
             NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);

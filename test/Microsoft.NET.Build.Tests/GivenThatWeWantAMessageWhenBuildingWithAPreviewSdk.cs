@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_displays_a_preview_message_when_using_a_preview_Sdk()
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource();
 
@@ -30,7 +30,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_does_not_display_preview_message_with_explicit_opt_out()
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource();
 
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_does_not_display_preview_message_with_nowarn_opt_out()
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource();
 
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_does_not_display_a_preview_message_when_using_a_release_Sdk()
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource();
 
