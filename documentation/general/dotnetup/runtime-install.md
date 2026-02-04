@@ -4,11 +4,71 @@ Installation of .NET Runtime archives is quite similar to that of .NET SDK insta
 
 It differs in a few ways, which we explore below.
 
+## Command Syntax
+
+The runtime install command follows this syntax:
+
+```bash
+dotnetup runtime install <version_or_channel>...
+```
+
+### Basic Version Install
+
+When only a version is provided, only the core .NET runtime (`Microsoft.NETCore.App`) is installed:
+This runtime has the largest adoption / user base and there's a less distinguishable 'token' identifier.
+
+```bash
+dotnetup runtime install 10.0.1    # Installs only .NET runtime 10.0.1
+```
+
+```bash
+dotnetup runtime install  # Installs latest .NET Core Runtime (or whatever is specified in global.json)
+```
+
+### Component-Specific Install with `@` Syntax
+
+To install specific runtime components, use the `<component>@<version>` syntax:
+
+```bash
+dotnetup runtime install windowsdesktop@10.0.1    # Installs Windows Desktop runtime 10.0.1 (includes core runtime)
+dotnetup runtime install aspnetcore@9.0.10        # Installs ASP.NET Core runtime 9.0.10 (includes core runtime)
+dotnetup runtime install runtime@10.0.1           # Explicitly installs core runtime 10.0.1
+```
+
+### Component Types
+
+| Token | Component | Description |
+|-------|-----------|-------------|
+| `runtime` | Microsoft.NETCore.App | The core .NET runtime |
+| `aspnetcore` | Microsoft.AspNetCore.App | ASP.NET Core runtime (includes core runtime) |
+| `windowsdesktop` | Microsoft.WindowsDesktop.App | Windows Desktop runtime for WPF/WinForms (includes core runtime) |
+
+### Multiple Components (Future)
+
+We plan to support installing multiple components in a single command:
+
+```bash
+# Future support - not yet implemented
+dotnetup runtime install windowsdesktop@10.0.1 aspnetcore@9.0.10
+```
+
+This will install both specified components sequentially. For now, run separate install commands.
+
+### Global.json Integration (Future)
+
+We plan to support reading runtime requirements from `global.json`:
+
+```bash
+dotnetup runtime install    # Reads global.json and installs demanded runtime components
+```
+
+The `global.json` format for runtime specification is TBD, but will allow users to declaratively specify runtime dependencies for a repository.
+
 ## `global.json` handling
 
 The `sdk` paths feature in [`global.json`](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json) is, in theory, not meant to inform runtime installation.
 
-Essentially, we could remove `global.json` lookup from the chain of consideration when looking up where to install dotnet. However, we suggest that installing the SDK implies the user wants debugging and other features to work based on that .NET SDK. So, we will utilize the same logic and have `global.jsons` `sdk` feature also direct the location and install lookup of the .NET runtime for `dotnetup`, to at least the extent we control. The muxer itself does not respect this, but it does respect `DOTNET_ROOT`, which we can manipulate.
+Essentially, we could remove `global.json` lookup from the chain of consideration when looking up where to install dotnet. However, we suggest that installing the SDK implies the user wants debugging and other features to work based on that .NET SDK. So, we will utilize the same logic and have `global.jsons` `sdk` feature also direct the location and install lookup of the .NET runtime for `dotnetup`, to at least the extent we control. The muxer itself does not respect this, but it does respect `DOTNET_ROOT`, which we can manipulate; admittedly, this may only be realistic for `dotnetup dotnet` or commands where we control the starting process, and we shouldn't set the entire user environment block to point to a repo specific location.
 
 ## Versions
 
@@ -18,85 +78,41 @@ Runtime versions don't have a feature band. The version parsing handled by the [
 
 The .NET Runtime archives also include `dotnet.exe`. The host replacement logic will be the same as for the .NET SDK archives. However, we can assert that the muxer version is the same as the version of the runtime to be installed, which may reduce overhead.
 
-## Options
+## Runtime Component Selection
 
 There are 3 runtime archives produced: the runtime, aspnetcore runtime, and windows desktop runtime (see [`InstallComponent`](../../../src/Installer/Microsoft.Dotnet.Installation/InstallComponent.cs)).
 
-We'll allow install with an option as follows:
-- `dotnetup runtime install core` (or `-c`) - Installs the .NET Runtime only
-- `dotnetup runtime install aspnetcore` (or `-a`) - Installs the ASP.NET Core Runtime (includes core runtime)
-- `dotnetup runtime install windowsdesktop` (or `-w`) - Installs the Windows Desktop Runtime (includes core runtime)
+The component is specified using the `<component>@<version>` syntax described above:
 
-To reduce boilerplate code we will go with the option of one command. Providing no option will install all runtimes.
+| Command | Effect |
+|---------|--------|
+| `dotnetup runtime install 10.0.1` | Installs only the core .NET runtime 10.0.1 |
+| `dotnetup runtime install runtime@10.0.1` | Explicitly installs the core .NET runtime 10.0.1 |
+| `dotnetup runtime install aspnetcore@10.0.1` | Installs ASP.NET Core runtime 10.0.1 (includes core runtime) |
+| `dotnetup runtime install windowsdesktop@10.0.1` | Installs Windows Desktop runtime 10.0.1 (does NOT include core runtime) |
 
-We will expand this to support multiple tokens, ala `dotnetup runtime install aspnetcore windowsdesktop` to install both in the future.
+**Note:** The `--type` flag is **not** supported. Use the `<component>@<version>` syntax instead.
 
-We will expand this to support `[runtime_type]@version` syntax for explicit or unqualified versions.
+### Future: Multiple Components
+
+Support for installing multiple components in one command is planned but not yet implemented:
+
+```bash
+# Planned - not yet supported
+dotnetup runtime install windowsdesktop@10.0.1 aspnetcore@9.0.10
+```
 
 ## Shared Resources
 
 The .NET SDK install may include the .NET Runtime.
 
-### Manifest Tracking Rules
+> **Note:** Detailed manifest tracking rules and uninstall strategy will be documented separately in the manifest design document. The rules below are preliminary and subject to change.
 
-**Core runtime is tracked in the manifest if and only if:**
-1. It was explicitly installed via `dotnetup runtime install core`
-2. NOT when it comes bundled with `aspnetcore` or `windowsdesktop` archive installations
+### General Principles
 
-This distinction is important because:
-- The ASP.NET Core archive includes `Microsoft.NETCore.App` files on disk
-- The SDK archive includes `Microsoft.NETCore.App` files on disk
-- We don't want to double-track the same runtime from multiple sources
-
-**Example manifest entries:**
-```json
-{
-  "installs": [
-    { "component": "SDK", "version": "9.0.100" },
-    { "component": "ASPNETCore", "version": "9.0.12" }
-  ]
-}
-```
-Note: Core runtime 9.0.12 exists on disk (from ASP.NET Core archive) but is NOT tracked because it wasn't explicitly installed.
-
-### Uninstall Strategy
-
-When uninstalling a runtime component, we must be careful not to delete shared files that other components depend on.
-
-**Uninstall rules for `shared/Microsoft.NETCore.App/{version}`:**
-
-1. **Check manifest for same major.minor version:**
-   - Query all manifest entries with the same major.minor (e.g., 9.0.x)
-   - Include: SDK, Runtime, ASPNETCore, WindowsDesktop components
-
-2. **SDK version correlation:**
-   - SDK 9.0.1xx typically bundles runtime 9.0.x
-   - Before deleting core runtime files, check if any SDK with matching major.minor exists
-   - If SDK exists, do NOT delete `Microsoft.NETCore.App` files
-
-3. **Delete core runtime only if:**
-   - No SDK with same major.minor exists in manifest
-   - No other runtime component (ASPNETCore) with same version exists in manifest
-   - The core runtime was explicitly uninstalled (installed via `core` option)
-
-**Uninstall rules for `shared/Microsoft.AspNetCore.App/{version}`:**
-- Safe to delete if the ASPNETCore component is being uninstalled
-- Check if any SDK with same major.minor exists (SDKs may include ASP.NET Core)
-
-**Uninstall rules for `shared/Microsoft.WindowsDesktop.App/{version}`:**
-- Safe to delete if the WindowsDesktop component is being uninstalled
-- Windows Desktop is standalone (no dependencies from SDK or other runtimes)
-
-**Example uninstall scenarios:**
-
-| Manifest State | Uninstall Command | Files Deleted |
-|----------------|-------------------|---------------|
-| SDK:9.0.100, ASPNETCore:9.0.12 | `uninstall aspnetcore 9.0` | Only `Microsoft.AspNetCore.App/9.0.12` |
-| Runtime:9.0.12, ASPNETCore:9.0.12 | `uninstall aspnetcore 9.0` | Only `Microsoft.AspNetCore.App/9.0.12` |
-| Runtime:9.0.12 (only) | `uninstall core 9.0` | `Microsoft.NETCore.App/9.0.12` and host files |
-| SDK:9.0.100 (only) | `uninstall sdk 9.0` | SDK files, but NOT runtime files (may break other apps) |
-
-This ensures uninstalling the SDK will not uninstall runtimes that are tracked in the manifest. Runtimes must be explicitly uninstalled via `dotnetup runtime uninstall`.
+1. When installing `aspnetcore` runtime, the core runtime is also installed automatically (as the archives include it)
+2. Explicit user actions (install commands) are tracked in the manifest
+3. Uninstall operations should not break other installed components
 
 What we will do is check `shared/{runtime-type}/{runtime-version}` and `host/fxr/{runtime-version}` in the hive location. We could also query the muxer itself (via [`HostFxrWrapper`](../../../src/Installer/Microsoft.Dotnet.Installation/Internal/HostFxrWrapper.cs)) for a more concrete answer as to if the install exists on disk.
 
