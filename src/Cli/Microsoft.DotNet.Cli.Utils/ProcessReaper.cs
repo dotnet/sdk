@@ -93,10 +93,22 @@ internal class ProcessReaper : IDisposable
         Console.CancelKeyPress -= HandleCancelKeyPress;
     }
 
-    private static void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    private void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
         // Ignore SIGINT/SIGQUIT so that the process can handle the signal
         e.Cancel = true;
+
+        // Close Windows application gracefully (CloseMainWindow returns fails if the app doesn't have main window):
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            try
+            {
+                _process.CloseMainWindow();
+            }
+            catch
+            {
+            }
+        }
     }
 
     private static SafeWaitHandle? AssignProcessToJobObject(IntPtr process)
