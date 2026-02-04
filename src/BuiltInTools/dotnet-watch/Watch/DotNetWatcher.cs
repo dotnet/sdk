@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Watch
             ChangedFile? changedFile = null;
             var buildEvaluator = new BuildEvaluator(context);
 
-            for (var iteration = 0;;iteration++)
+            for (var iteration = 0; ; iteration++)
             {
                 if (await buildEvaluator.EvaluateAsync(changedFile, shutdownCancellationToken) is not { } evaluationResult)
                 {
@@ -59,7 +59,8 @@ namespace Microsoft.DotNet.Watch
                     {
                         [EnvironmentVariables.Names.DotnetWatch] = "1",
                         [EnvironmentVariables.Names.DotnetWatchIteration] = (iteration + 1).ToString(CultureInfo.InvariantCulture),
-                    }
+                    },
+                    OnOutput = line => context.ProcessOutputReporter.ReportOutput(line)
                 };
 
                 var browserRefreshServer = projectRootNode != null && HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel webAppModel
