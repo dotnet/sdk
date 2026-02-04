@@ -120,9 +120,12 @@ public class ParserTests
     public void DotnetupProcess_Version_ShouldOutputExpectedVersion()
     {
         // Run dotnetup --version as a process
+        // Use AppContext.BaseDirectory as working directory to avoid race conditions
+        // with other tests that may delete temp directories
         var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
             new[] { "--version" },
-            captureOutput: true);
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
 
         // Should succeed
         exitCode.Should().Be(0);
