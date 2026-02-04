@@ -284,9 +284,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
+            string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath];
             var testCommand = command == "dnx"
-                ? new DotnetCommand(Log, command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath)
-                : new DotnetToolCommand(Log, command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath);
+                ? new DotnetCommand(Log, args)
+                : new DotnetToolCommand(Log, args);
 
             testCommand
                 .WithEnvironmentVariables(homeFolder)
@@ -318,9 +319,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
+            string[] args = [command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath];
             var testCommand = command == "dnx"
-                ? new DotnetCommand(Log, command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath)
-                : new DotnetToolCommand(Log, command, toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--source", toolPackagesPath);
+                ? new DotnetCommand(Log, args)
+                : new DotnetToolCommand(Log, args);
 
             testCommand
                 .WithEnvironmentVariables(homeFolder)
