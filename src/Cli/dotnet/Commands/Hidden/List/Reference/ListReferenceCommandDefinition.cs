@@ -2,22 +2,32 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Reference.List;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 
-internal static class ListReferenceCommandDefinition
+internal sealed class ListReferenceCommandDefinition : ListReferenceCommandDefinitionBase
 {
-    public const string Name = "reference";
+    public new const string Name = "reference";
 
-    public static readonly Argument<string> Argument = new("argument") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
+    public readonly Argument<string> Argument = new("argument") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
 
-    public static Command Create()
+    public ListReferenceCommandDefinition() : base(Name)
     {
-        var command = new Command(Name, CliCommandStrings.ReferenceListAppFullName);
-
-        command.Arguments.Add(Argument);
-
-        return command;
+        Arguments.Add(Argument);
     }
+
+    public ListCommandDefinition Parent => (ListCommandDefinition)Parents.Single();
+
+    internal override string? GetFileOrDirectory(ParseResult parseResult)
+        => parseResult.GetValue(Parent.SlnOrProjectArgument);
+}
+
+internal abstract class ListReferenceCommandDefinitionBase : Command
+{
+    public ListReferenceCommandDefinitionBase(string name)
+        : base(name, CliCommandStrings.ReferenceListAppFullName)
+    {
+    }
+
+    internal abstract string? GetFileOrDirectory(ParseResult parseResult);
 }

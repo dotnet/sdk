@@ -19,12 +19,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void DiscoverTestProjectWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -42,12 +42,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void DiscoverMultipleTestProjectsWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -65,12 +65,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void DiscoverTestProjectWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithDiscoveredTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithDiscoveredTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -86,12 +86,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void DiscoverMultipleTestProjectsWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDiscoveredTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDiscoveredTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -110,13 +110,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void DiscoverProjectWithMSTestMetaPackageAndMultipleTFMsWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
             testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -132,12 +132,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void DiscoverTestProjectsWithHybridModeTestRunners_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name, TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("--list-tests", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -152,13 +152,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void DiscoverTestProjectWithCustomRunArgumentsAndTestEscaping(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestAppPrintingCommandLineArguments", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestAppPrintingCommandLineArguments", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ListTestsOption.Name,
-                                             TestCommandDefinition.ConfigurationOption.Name, configuration,
+                                    .Execute("--list-tests",
+                                             "-c", configuration,
                                              "-p:RunArguments=--hello world \"\" world2",
                                              "Another arg with spaces",
                                              "My other arg with spaces",

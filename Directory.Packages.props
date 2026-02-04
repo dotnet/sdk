@@ -1,9 +1,12 @@
 <Project>
+
   <Import Project="$(RepositoryEngineeringDir)\dependabot\Packages.props" Condition="'$(RepositoryEngineeringDir)' != ''" />
+
   <PropertyGroup>
     <!-- Using multiple feeds isn't supported by Maestro: https://github.com/dotnet/arcade/issues/14155. -->
     <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageVersion Include="Basic.CompilerLog.Util" Version="0.9.18" />
     <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)" />
@@ -18,7 +21,6 @@
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.NuGetSdkResolver" Version="$(MicrosoftBuildNuGetSdkResolverPackageVersion)" />
-
     <!-- roslyn dependencies -->
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisAnalyzerTestingVersion)" />
@@ -145,12 +147,13 @@
     <PackageVersion Include="xunit.assert" Version="$(XUnitVersion)" Condition="'$(IsTestProject)' != 'true'" />
     <PackageVersion Include="xunit.console" Version="$(XUnitVersion)" />
   </ItemGroup>
+
   <!-- Use different versions of Microsoft.Build.* depending on whether the output will be used in
        .NET Framework (VS) or only in the .NET SDK.
 
        Note: This is not abstracted in Versions.props because source-only
        modes will import a version override file after Versions.props. -->
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(TargetFramework)' != 'net472'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
     <!-- MSBuild-y stuff that runs in the CLI can always reference the latest MSBuild since
          that is what will be packaged with the .NET SDK. -->
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
@@ -163,7 +166,8 @@
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildVersion)" />
   </ItemGroup>
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(TargetFramework)' == 'net472'">
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <!-- MSBuild-y stuff that runs in VS/MSBuild.exe should reference the lagging minimum version so
          it works in that slightly-older Visual Studio. -->
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildMinimumVersion)" />
@@ -176,4 +180,5 @@
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildMinimumVersion)" />
   </ItemGroup>
+
 </Project>

@@ -274,6 +274,8 @@ dotnet_diagnostic.IDE0041.severity = warning
 dotnet_diagnostic.IDE0043.severity = warning
 # MakeLocalFunctionStatic
 dotnet_diagnostic.IDE0062.severity = warning
+# FileHeaderMismatch
+dotnet_diagnostic.IDE0073.severity = warning
 # ConvertTypeOfToNameOf
 dotnet_diagnostic.IDE0082.severity = warning
 # Remove unnecessary lambda expression
@@ -341,8 +343,6 @@ dotnet_diagnostic.CA5394.severity = warning
 dotnet_diagnostic.IDE0005.severity = warning
 # Fix formating
 dotnet_diagnostic.IDE0055.severity = warning
-# FileHeaderMismatch
-dotnet_diagnostic.IDE0073.severity = warning
 # Single line comment should begin with a space
 dotnet_diagnostic.SA1005.severity = none
 # Opening parenthesis should not be preceded by a space
@@ -471,6 +471,14 @@ dotnet_diagnostic.SA1201.severity = none
 dotnet_diagnostic.SA1202.severity = none
 # Static elements should appear before instance elements
 dotnet_diagnostic.SA1204.severity = none
+
+# Generated build output
+[artifacts/**.cs]
+dotnet_diagnostic.IDE0073.severity = none
+
+# Imported code with different license headers
+[src/Microsoft.CodeAnalysis.NetAnalyzers/**.cs]
+dotnet_diagnostic.IDE0073.severity = none
 
 # C++ Files
 [*.{cpp,h,in}]

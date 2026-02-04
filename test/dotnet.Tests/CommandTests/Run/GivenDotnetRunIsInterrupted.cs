@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItIgnoresSIGINT()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run", "-v:q")
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItPassesSIGTERMToChild()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")
@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [WindowsOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/38268")]
         public void ItTerminatesTheChildWhenKilled()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")

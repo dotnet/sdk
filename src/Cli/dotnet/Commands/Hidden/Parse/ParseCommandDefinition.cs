@@ -5,11 +5,11 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Parse;
 
-internal static class ParseCommandDefinition
+internal sealed class ParseCommandDefinition : Command
 {
-    public static Command Create()
-        => new("parse")
-        {
-            Hidden = true
-        };
+    public ParseCommandDefinition()
+        : base("parse")
+    {
+        Hidden = true;
+    }
 }

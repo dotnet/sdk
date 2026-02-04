@@ -41,8 +41,6 @@ _testhost() {
                         '-f=[The target framework to build for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '--configuration=[The configuration to use for building the project. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '-c=[The configuration to use for building the project. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
-                        '--runtime=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--version-suffix=[Set the value of the \$(VersionSuffix) property to use when building the project.]:VERSION_SUFFIX: ' \
                         '--no-restore[Do not restore the project before building.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
@@ -52,7 +50,6 @@ _testhost() {
                         '-verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                        '--debug[]' \
                         '--output=[The output directory to place built artifacts in.]:OUTPUT_DIR: ' \
                         '-o=[The output directory to place built artifacts in.]:OUTPUT_DIR: ' \
                         '--artifacts-path=[The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.]:ARTIFACTS_DIR: ' \
@@ -65,6 +62,8 @@ _testhost() {
                         '--self-contained=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--sc=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--no-self-contained[Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.]' \
+                        '--runtime=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
                         '--os=[The target operating system.]:OS: ' \
@@ -755,8 +754,6 @@ _testhost() {
                         '/nologo[Do not display the startup banner or the copyright message.]' \
                         '--framework=[The target framework to publish for. The target framework has to be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to publish for. The target framework has to be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                        '--runtime=[The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--configuration=[The configuration to publish for. The default is '\''Release'\'' for NET 8.0 projects and above, but '\''Debug'\'' for older projects.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '-c=[The configuration to publish for. The default is '\''Release'\'' for NET 8.0 projects and above, but '\''Debug'\'' for older projects.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--version-suffix=[Set the value of the \$(VersionSuffix) property to use when building the project.]:VERSION_SUFFIX: ' \
@@ -768,6 +765,8 @@ _testhost() {
                         '-verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                        '--runtime=[The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
                         '--os=[The target operating system.]:OS: ' \
@@ -867,8 +866,6 @@ _testhost() {
                         '--ignore-failed-sources[Treat package source failures as warnings.]' \
                         '--force[Force all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json.]' \
                         '-f[Force all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json.]' \
-                        '*--runtime=[The target runtime to restore packages for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '*-r=[The target runtime to restore packages for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--no-dependencies[Do not restore project-to-project references and only restore the specified project.]' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
@@ -882,6 +879,8 @@ _testhost() {
                         '--nologo[Do not display the startup banner or the copyright message.]' \
                         '-nologo[Do not display the startup banner or the copyright message.]' \
                         '/nologo[Do not display the startup banner or the copyright message.]' \
+                        '*--runtime=[The target runtime to restore packages for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '*-r=[The target runtime to restore packages for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
                         '--os=[The target operating system.]:OS: ' \
@@ -906,8 +905,6 @@ _testhost() {
                         '-c=[The configuration to run for. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--framework=[The target framework to run for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to run for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                        '--runtime=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--project=[Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.]:PROJECT_PATH: ' \
                         '--file=[The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).]:FILE_PATH: ' \
                         '--launch-profile=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
@@ -928,6 +925,8 @@ _testhost() {
                         '-verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                        '--runtime=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
                         '--os=[The target operating system.]:OS: ' \
@@ -993,7 +992,6 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '::SLN_FILE -- The solution file to operate on. If not specified, the command will search the current directory for one.: ' \
                                             && ret=0
                                         ;;
                                 esac
@@ -1078,8 +1076,6 @@ _testhost() {
                         '-c=[The configuration to use for running tests. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--framework=[The target framework to run tests for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to run tests for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                        '--runtime=[The target runtime to test for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[The target runtime to test for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--no-restore[Do not restore the project before building.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
@@ -1088,6 +1084,8 @@ _testhost() {
                         '-verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                        '--runtime=[The target runtime to test for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to test for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
                         '--os=[The target operating system.]:OS: ' \
@@ -1138,10 +1136,10 @@ _testhost() {
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '--allow-downgrade[Allow package downgrade when installing a .NET tool package.]' \
                                             '--arch=[The target architecture.]: : ' \
                                             '-a=[The target architecture.]: : ' \
                                             '--create-manifest-if-needed=[Create a tool manifest if one isn'\''t found during tool installation. For information on how manifests are located, see https\://aka.ms/dotnet/tools/create-manifest-if-needed]: :((False\:"False" True\:"True" ))' \
-                                            '--allow-downgrade[Allow package downgrade when installing a .NET tool package.]' \
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
@@ -1243,12 +1241,12 @@ _testhost() {
                                             '--configfile=[The NuGet configuration file to use.]:FILE: ' \
                                             '*--add-source=[Add an additional NuGet package source to use during installation.]:ADDSOURCE: ' \
                                             '--tool-manifest=[Path to the manifest file.]:PATH: ' \
+                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             && ret=0
@@ -1258,17 +1256,17 @@ _testhost() {
                                             '--version=[The version of the tool package to install.]:VERSION: ' \
                                             '--yes[Accept all confirmation prompts using \"yes.\"]' \
                                             '-y[Accept all confirmation prompts using \"yes.\"]' \
-                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
                                             '--prerelease[Include pre-release packages.]' \
                                             '--configfile=[The NuGet configuration file to use.]:FILE: ' \
                                             '*--source=[Replace all NuGet package sources to use during installation with these.]:SOURCE: ' \
                                             '*--add-source=[Add an additional NuGet package source to use during installation.]:ADDSOURCE: ' \
+                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
-                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':packageId -- Package reference in the form of a package identifier like '\''dotnetsay'\'' or package identifier and version separated by '\''@'\'' like '\''dotnetsay@2.1.7'\''.:->dotnet_dynamic_complete' \
@@ -1345,19 +1343,19 @@ _testhost() {
                                 case $line[1] in
                                     (install)
                                         _arguments "${_arguments_options[@]}" : \
+                                            '--temp-dir=[Specify a temporary directory for this command to download and extract NuGet packages (must be secure).]: : ' \
+                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--configfile=[The NuGet configuration file to use.]:FILE: ' \
                                             '*--source=[The NuGet package source to use during the restore. To specify multiple sources, repeat the option.]:SOURCE: ' \
                                             '*-s=[The NuGet package source to use during the restore. To specify multiple sources, repeat the option.]:SOURCE: ' \
                                             '--include-previews=[Allow prerelease workload manifests.]: :((False\:"False" True\:"True" ))' \
-                                            '--skip-manifest-update[Skip updating the workload manifests.]' \
-                                            '--temp-dir=[Specify a temporary directory for this command to download and extract NuGet packages (must be secure).]: : ' \
+                                            '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
+                                            '--skip-manifest-update[Skip updating the workload manifests.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::workloadId -- The NuGet package ID of the workload to install.: ' \
@@ -1365,20 +1363,20 @@ _testhost() {
                                         ;;
                                     (update)
                                         _arguments "${_arguments_options[@]}" : \
+                                            '--temp-dir=[Specify a temporary directory for this command to download and extract NuGet packages (must be secure).]: : ' \
+                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--configfile=[The NuGet configuration file to use.]:FILE: ' \
                                             '*--source=[The NuGet package source to use during the restore. To specify multiple sources, repeat the option.]:SOURCE: ' \
                                             '*-s=[The NuGet package source to use during the restore. To specify multiple sources, repeat the option.]:SOURCE: ' \
                                             '--include-previews=[Allow prerelease workload manifests.]: :((False\:"False" True\:"True" ))' \
-                                            '--temp-dir=[Specify a temporary directory for this command to download and extract NuGet packages (must be secure).]: : ' \
-                                            '--from-previous-sdk=[Include workloads installed with earlier SDK versions in update.]: :((False\:"False" True\:"True" ))' \
-                                            '--advertising-manifests-only[Only update advertising manifests.]' \
                                             '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '--from-previous-sdk=[Include workloads installed with earlier SDK versions in update.]: :((False\:"False" True\:"True" ))' \
+                                            '--advertising-manifests-only[Only update advertising manifests.]' \
                                             '--from-history=[Update workloads to a previous version specified by the argument. Use the '\''dotnet workload history'\'' to see available workload history records.]: : ' \
                                             '--manifests-only=[Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.]: : ' \
                                             '--help[Show command line help.]' \
@@ -1445,19 +1443,19 @@ _testhost() {
                                         ;;
                                     (restore)
                                         _arguments "${_arguments_options[@]}" : \
+                                            '--temp-dir=[Specify a temporary directory for this command to download and extract NuGet packages (must be secure).]: : ' \
+                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--configfile=[The NuGet configuration file to use.]:FILE: ' \
                                             '*--source=[The NuGet package source to use during the restore. To specify multiple sources, repeat the option.]:SOURCE: ' \
                                             '*-s=[The NuGet package source to use during the restore. To specify multiple sources, repeat the option.]:SOURCE: ' \
                                             '--include-previews=[Allow prerelease workload manifests.]: :((False\:"False" True\:"True" ))' \
-                                            '--skip-manifest-update[Skip updating the workload manifests.]' \
-                                            '--temp-dir=[Specify a temporary directory for this command to download and extract NuGet packages (must be secure).]: : ' \
+                                            '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
+                                            '--skip-manifest-update[Skip updating the workload manifests.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::PROJECT | SOLUTION -- The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.: ' \

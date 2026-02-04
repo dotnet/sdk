@@ -33,6 +33,11 @@
   <UsingTask TaskName="UpdateRuntimeConfig" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="ZipFileCreateFromDirectory" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
 
+  <UsingTask TaskName="DeduplicateAssembliesWithLinks"
+             Condition="'$(MSBuildRuntimeType)' == 'Core'"
+             AssemblyFile="$(SdkTasksAssembly)"
+             TaskFactory="TaskHostFactory" />
+
   <!-- Tasks from the Arcade SDK -->
   <UsingTask TaskName="DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" />
 

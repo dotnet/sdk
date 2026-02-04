@@ -6,21 +6,16 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Fsi;
 
-internal static class FsiCommandDefinition
+internal sealed class FsiCommandDefinition : Command
 {
-    public const string Name = "fsi";
+    private const string Link = "https://aka.ms/dotnet-fsi";
 
-    public static readonly string DocsLink = "https://aka.ms/dotnet-fsi";
+    public new readonly Argument<string[]> Arguments = new("arguments");
 
-    public static readonly Argument<string[]> Arguments = new("arguments");
-
-    public static Command Create()
+    public FsiCommandDefinition()
+        : base("fsi")
     {
-        Command command = new(Name) {
-            Arguments = { Arguments },
-            DocsLink = DocsLink,
-        };
-
-        return command;
+        this.DocsLink = Link;
+        base.Arguments.Add(Arguments);
     }
 }

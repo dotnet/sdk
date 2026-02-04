@@ -1,15 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class ConsoleInputReader(IConsole console, bool quiet, bool suppressEmojis)
+    internal sealed class ConsoleInputReader(IConsole console, LogLevel logLevel, bool suppressEmojis)
     {
         private readonly object _writeLock = new();
 
         public async Task<ConsoleKey> GetKeyAsync(string prompt, Func<ConsoleKeyInfo, bool> validateInput, CancellationToken cancellationToken)
         {
-            if (quiet)
+            if (logLevel > LogLevel.Information)
             {
                 return ConsoleKey.Escape;
             }

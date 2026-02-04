@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -56,6 +56,32 @@ namespace Microsoft.NET.TestFramework
         public string? NuGetFallbackFolder { get; set; }
 
         public string? NuGetExePath { get; set; }
+
+        public string? ShippingPackagesDirectory { get; set; }
+
+        /// <summary>
+        /// Finds a single SDK acquisition artifact (tar.gz, pkg, deb, rpm) matching the specified pattern
+        /// in the <see cref="ShippingPackagesDirectory"/>.
+        /// </summary>
+        /// <param name="filePattern">The file pattern to search for (e.g., "dotnet-sdk-*.tar.gz").</param>
+        /// <returns>The full path to the matching artifact.</returns>
+        public static string FindSdkAcquisitionArtifact(string filePattern)
+        {
+            string? shippingDir = Current.ShippingPackagesDirectory;
+            if (string.IsNullOrEmpty(shippingDir))
+            {
+                throw new InvalidOperationException("ShippingPackagesDirectory must be set in the current TestContext before calling FindSdkAcquisitionArtifact.");
+            }
+
+            var files = Directory.GetFiles(shippingDir, filePattern);
+            if (files.Length != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Expected exactly 1 file matching '{filePattern}' in {shippingDir}, but found {files.Length}.");
+            }
+
+            return files[0];
+        }
 
         public string? SdkVersion { get; set; }
 
@@ -234,6 +260,7 @@ namespace Microsoft.NET.TestFramework
                 testContext.NuGetCachePath = Path.Combine(artifactsDir, ".nuget", "packages");
 
                 testContext.TestPackages = Path.Combine(artifactsDir, "tmp", repoConfiguration, "testing", "testpackages");
+                testContext.ShippingPackagesDirectory = Path.Combine(artifactsDir, "packages", repoConfiguration, "Shipping");
             }
             else if (runAsTool)
             {
@@ -260,6 +287,15 @@ namespace Microsoft.NET.TestFramework
                 if (Directory.Exists(testPackages))
                 {
                     testContext.TestPackages = testPackages;
+                }
+            }
+
+            if (testContext.ShippingPackagesDirectory is null)
+            {
+                string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+                if (!string.IsNullOrEmpty(dotnetRoot))
+                {
+                    testContext.ShippingPackagesDirectory = Path.Combine(dotnetRoot, ".nuget");
                 }
             }
 

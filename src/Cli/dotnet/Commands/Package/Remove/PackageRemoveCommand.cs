@@ -12,18 +12,20 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 
-internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parseResult)
+internal sealed class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
+    private readonly PackageRemoveCommandDefinitionBase _definition = (PackageRemoveCommandDefinitionBase)parseResult.CommandResult.Command;
+
     public override int Execute()
     {
-        var arguments = _parseResult.GetValue(PackageRemoveCommandDefinition.CmdPackageArgument) ?? [];
+        var arguments = _parseResult.GetValue(_definition.CmdPackageArgument) ?? [];
 
         if (arguments is not [{ } packageToRemove])
         {
             throw new GracefulException(CliCommandStrings.PackageRemoveSpecifyExactlyOnePackageReference);
         }
 
-        var (fileOrDirectory, allowedAppKinds) = PackageCommandDefinition.ProcessPathOptions(_parseResult);
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_definition.FileOption, _definition.ProjectOption, projectOrFileArgument: null, _parseResult);
 
         if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
         {
@@ -60,7 +62,7 @@ internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parse
         };
 
         args.AddRange(_parseResult
-            .OptionValuesToBeForwarded(PackageRemoveCommandDefinition.Options)
+            .OptionValuesToBeForwarded(new PackageRemoveCommandDefinition())
             .SelectMany(a => a.Split(' ')));
 
         return [.. args];

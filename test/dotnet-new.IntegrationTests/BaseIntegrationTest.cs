@@ -140,7 +140,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// </summary>
         internal string PackTestNuGetPackage(ITestOutputHelper log, [CallerMemberName] string testName = "UnnamedTest")
         {
-            var testAsset = _testAssetsManager.CopyTestAsset("dotnet-new", callingMethod: testName, testAssetSubdirectory: "TestPackages").WithSource();
+            var testAsset = TestAssetsManager.CopyTestAsset("dotnet-new", callingMethod: testName, testAssetSubdirectory: "TestPackages").WithSource();
             string testProject = Path.GetFileName(DotnetNewTestTemplatePackageProjectPath);
             string testPath = testAsset.Path;
 

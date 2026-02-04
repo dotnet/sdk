@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
 
             appProject.ReferencedProjects.Add(libraryProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(appProject);
+            var testAsset = TestAssetsManager.CreateTestProject(appProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
