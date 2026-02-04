@@ -48,7 +48,8 @@ public sealed class CopyPreservingRelativeSymlinks : Task
         }
 
         // Build a set of normalized source paths for symlink target validation
-        var sourcePathSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var pathComparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var sourcePathSet = new HashSet<string>(pathComparer);
         foreach (var item in SourceFiles)
         {
             sourcePathSet.Add(Path.GetFullPath(item.ItemSpec));
