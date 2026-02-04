@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.WebTools.AspireServer.Models;
+namespace Aspire.Tools.Service;
 
 /// <summary>
 /// Response when asked for /info
