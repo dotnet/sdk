@@ -15,34 +15,43 @@ namespace Microsoft.DotNet.NativeWrapper
 
         static Interop()
         {
-            if (RunningOnWindows)
-            {
-                PreloadWindowsLibrary(Constants.HostFxr);
-            }
 #if NET
-            else
+            if (!RunningOnWindows)
             {
                 s_hostFxrPath = (string)AppContext.GetData(Constants.RuntimeProperty.HostFxrPath)!;
                 System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.ResolvingUnmanagedDll += HostFxrResolver;
             }
+#else
+            PreloadWindowsLibrary(Constants.HostFxr);
 #endif
         }
 
-        // MSBuild SDK resolvers are required to be AnyCPU, but we have a native dependency and .NETFramework does not
+#if NETFRAMEWORK
+        // MSBuild SDK resolvers are required to be AnyCPU, but we have a native dependency and .NET Framework does not
         // have a built-in facility for dynamically loading user native dlls for the appropriate platform. We therefore
         // preload the version with the correct architecture (from a corresponding sub-folder relative to us) on static
         // construction so that subsequent P/Invokes can find it.
+        //
+        // An example path this is trying to resolve (when compiled into the MSBuildSdkResolver):
+        //
+        //  C:\Program Files\Microsoft Visual Studio\18\Preview\MSBuild\Current\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver
+        //
+        // `hostfxr.dll` sits in subfolders there. This isn't necessary to do when running on .NET as the host will
+        // already be loaded in the process. Unfortunately there are no issues or pull requests tracking the original
+        // implementation of this as it was committed directly from a dev branch into main.
+
         private static void PreloadWindowsLibrary(string dllFileName)
         {
-            string? basePath = AppContext.BaseDirectory;
+            string? basePath = Path.GetDirectoryName(typeof(Interop).Assembly.Location);
             string architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
             string dllPath = Path.Combine(basePath ?? string.Empty, architecture, $"{dllFileName}.dll");
 
             // return value is intentionally ignored as we let the subsequent P/Invokes fail naturally.
             LoadLibraryExW(dllPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
         }
+#endif
 
-#if NETCOREAPP
+#if NET
         private static IntPtr HostFxrResolver(Assembly assembly, string libraryName)
         {
             if (libraryName != Constants.HostFxr)
