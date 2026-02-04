@@ -48,7 +48,7 @@
     "CombinedVersion": {
       "type": "generated",
       "generator": "regex",
-      "dataType": "string",
+      "datatype": "string",
       "replaces": "SDK_VERSION",
       "parameters": {
         "source": "CoalescedVersion",
@@ -59,6 +59,10 @@
           },
           {
             "regex": "^(\\d+\\.\\d+)$",
+            "replacement": "$1.100"
+          },
+          {
+            "regex": "^(\\d+\\.\\d+)\\.(\\d|[1-9]\\d)$",
             "replacement": "$1.100"
           }
         ]
