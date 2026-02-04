@@ -193,9 +193,8 @@ public partial class StaticWebAssetsManifest : IEquatable<StaticWebAssetsManifes
         internal static bool ShouldIncludeAssetInCurrentProject(StaticWebAsset asset, string projectMode) => IsRoot(projectMode) && !asset.IsForReferencedProjectsOnly();
 
         internal static bool ShouldIncludeAssetAsReference(StaticWebAsset asset, string projectMode) =>
-            !asset.IsForCurrentProjectOnly() && (
-                IsRoot(projectMode) && !asset.IsForReferencedProjectsOnly() ||
-                IsDefault(projectMode));
+            IsRoot(projectMode) && !asset.IsForReferencedProjectsOnly() ||
+            IsDefault(projectMode) && !asset.IsForCurrentProjectOnly();
 
     }
 

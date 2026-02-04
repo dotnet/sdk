@@ -1234,7 +1234,39 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         for (var i = 0; i < candidateAssets.Length; i++)
         {
             var candidateAsset = FromTaskItem(candidateAssets[i], validate);
-            dictionary.Add(candidateAsset.Identity, candidateAsset);
+#if NETFRAMEWORK
+            if (dictionary.ContainsKey(candidateAsset.Identity))
+            {
+                // Duplicate Identity found. This is only allowed if both assets point to the same
+                // source file (e.g., HotReload module referenced by multiple WASM projects in a hosted scenario).
+                var existing = dictionary[candidateAsset.Identity];
+                if (!string.Equals(existing.OriginalItemSpec, candidateAsset.OriginalItemSpec, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(
+                        $"Duplicate asset Identity '{candidateAsset.Identity}' with different source files: " +
+                        $"'{existing.OriginalItemSpec}' and '{candidateAsset.OriginalItemSpec}'.");
+                }
+                // Same source file - safe to ignore the duplicate
+            }
+            else
+            {
+                dictionary.Add(candidateAsset.Identity, candidateAsset);
+            }
+#else
+            if (!dictionary.TryAdd(candidateAsset.Identity, candidateAsset))
+            {
+                // Duplicate Identity found. This is only allowed if both assets point to the same
+                // source file (e.g., HotReload module referenced by multiple WASM projects in a hosted scenario).
+                var existing = dictionary[candidateAsset.Identity];
+                if (!string.Equals(existing.OriginalItemSpec, candidateAsset.OriginalItemSpec, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(
+                        $"Duplicate asset Identity '{candidateAsset.Identity}' with different source files: " +
+                        $"'{existing.OriginalItemSpec}' and '{candidateAsset.OriginalItemSpec}'.");
+                }
+                // Same source file - safe to ignore the duplicate
+            }
+#endif
         }
 
         return dictionary;
