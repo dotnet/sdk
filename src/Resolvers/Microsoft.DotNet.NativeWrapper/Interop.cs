@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.NativeWrapper
         ///  Flags that control SDK resolution behavior in <see cref="hostfxr_resolve_sdk2"/>.
         /// </summary>
         [Flags]
-        public enum hostfxr_resolve_sdk2_flags_t : int
+        internal enum hostfxr_resolve_sdk2_flags_t : int
         {
             /// <summary>
             ///  No special flags. Default resolution behavior.
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.NativeWrapper
         ///   comprehensive information about the SDK resolution process.
         ///  </para>
         /// </remarks>
-        public enum hostfxr_resolve_sdk2_result_key_t : int
+        internal enum hostfxr_resolve_sdk2_result_key_t : int
         {
             /// <summary>
             ///  The resolved SDK directory path. Only provided if resolution succeeds.
@@ -205,7 +205,7 @@ namespace Microsoft.DotNet.NativeWrapper
         ///  </para>
         /// </remarks>
         [StructLayout(LayoutKind.Sequential)]
-        public struct hostfxr_dotnet_environment_sdk_info
+        internal struct hostfxr_dotnet_environment_sdk_info
         {
             /// <summary>The size of this structure in bytes.</summary>
             public nint size;
