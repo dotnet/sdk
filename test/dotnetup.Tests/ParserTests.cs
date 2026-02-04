@@ -113,7 +113,7 @@ public class ParserTests
     {
         // Arrange
         var args = new[] { "env", "--shell", "bash", "--dotnet-install-path", "/custom/path" };
-      
+
         // Act
         var parseResult = Parser.Parse(args);
 
@@ -162,6 +162,8 @@ public class ParserTests
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
     }
+
+    [Fact]
     public void Parser_Version_ShouldBeDotnetupVersion()
     {
         // Parser.Version should return the dotnetup assembly version, not any other assembly
