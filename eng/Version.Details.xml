@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.114">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.115">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>49f403f06033a1d28efd68d72aac1aab949721ce</Sha>
+      <Sha>e99d728d09ae2e529b3e0a17b4f02896af6e70ee</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.114-servicing.26066.4">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.115-servicing.26103.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>49f403f06033a1d28efd68d72aac1aab949721ce</Sha>
+      <Sha>e99d728d09ae2e529b3e0a17b4f02896af6e70ee</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.114-servicing.26066.4">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.115-servicing.26103.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>49f403f06033a1d28efd68d72aac1aab949721ce</Sha>
+      <Sha>e99d728d09ae2e529b3e0a17b4f02896af6e70ee</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.12">
@@ -451,9 +451,9 @@
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.26055.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.26070.3">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>36e2d072b287fb211f288498b2d4553efdee7990</Sha>
+      <Sha>d968306ccb2fe6d2834ba92bbcad7cc70a8c0edc</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-rtm.1.25059.4">
