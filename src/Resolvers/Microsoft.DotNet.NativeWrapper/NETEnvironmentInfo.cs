@@ -56,28 +56,31 @@ namespace Microsoft.DotNet.NativeWrapper
 
         public NetEnvironmentInfo()
         {
-            RuntimeInfo = new List<NetRuntimeInfo>();
-            SdkInfo = new List<NetSdkInfo>();
+            RuntimeInfo = [];
+            SdkInfo = [];
         }
 
-        internal void Initialize(IntPtr info, IntPtr resultContext)
+        internal unsafe void Initialize(ref hostfxr_dotnet_environment_info info, nint _)
         {
-            var infoStruct = Marshal.PtrToStructure<hostfxr_dotnet_environment_info>(info);
-            var runtimes = new hostfxr_dotnet_environment_framework_info[infoStruct.framework_count];
-            for (var i = 0; i < (int)infoStruct.framework_count; i++)
-            {
-                var pointer = new IntPtr(infoStruct.frameworks.ToInt64() + i * Marshal.SizeOf(typeof(hostfxr_dotnet_environment_framework_info)));
-                runtimes[i] = Marshal.PtrToStructure<hostfxr_dotnet_environment_framework_info>(pointer);
-            }
-            RuntimeInfo = runtimes.Select(runtime => new NetRuntimeInfo(runtime.name, runtime.version, runtime.path));
+            ReadOnlySpan<hostfxr_dotnet_environment_framework_info> runtimes = new(info.frameworks, (int)info.framework_count);
+            List<NetRuntimeInfo> runtimeInfo = new(capacity: runtimes.Length);
 
-            var sdks = new hostfxr_dotnet_environment_sdk_info[infoStruct.sdk_count];
-            for (var i = 0; i < (int)infoStruct.sdk_count; i++)
+            for (var i = 0; i < runtimes.Length; i++)
             {
-                var pointer = new IntPtr(infoStruct.sdks.ToInt64() + i * Marshal.SizeOf(typeof(hostfxr_dotnet_environment_sdk_info)));
-                sdks[i] = Marshal.PtrToStructure<hostfxr_dotnet_environment_sdk_info>(pointer);
+                runtimeInfo.Add(new(runtimes[i].name, runtimes[i].version, runtimes[i].path));
             }
-            SdkInfo = sdks.Select(sdk => new NetSdkInfo(sdk.version, sdk.path));
+
+            RuntimeInfo = runtimeInfo;
+
+            ReadOnlySpan<hostfxr_dotnet_environment_sdk_info> sdks = new(info.sdks, (int)info.sdk_count);
+            List<NetSdkInfo> sdkInfo = new(capacity: sdks.Length);
+
+            for (var i = 0; i < sdks.Length; i++)
+            {
+                sdkInfo.Add(new(sdks[i].version, sdks[i].path));
+            }
+
+            SdkInfo = sdkInfo;
         }
     }
 }
