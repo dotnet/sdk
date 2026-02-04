@@ -122,7 +122,6 @@ The command automatically detects the current shell when the `--shell` option is
 1. **On Unix**: Reads the `$SHELL` environment variable and extracts the shell name from the path
    - Example: `/bin/bash` → `bash`
 2. **On Windows**: Defaults to PowerShell (`pwsh`)
-3. **Fallback**: If shell cannot be detected or is unsupported, defaults to `bash` for help/documentation purposes
 
 ### Security Considerations
 
