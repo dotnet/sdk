@@ -68,7 +68,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
         }
 
         var projectPath =
-            _testAssetsManager
+            TestAssetsManager
                 .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
                 .WithSource()
                 .Path;

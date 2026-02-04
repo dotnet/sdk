@@ -416,7 +416,7 @@ Options:
         [InlineData("solution", ".slnx")]
         public async Task WhenMultipleProjectsFromSameDirectoryAreAddedSolutionFolderIsNotDuplicated(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;

@@ -230,7 +230,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("AnalysisLevel", "latest");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "latestAnalysisLevelGlobalConfig");
 
             // First verify that "latest" maps to the current TFM version

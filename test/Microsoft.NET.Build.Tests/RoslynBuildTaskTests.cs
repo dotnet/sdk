@@ -93,7 +93,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     [FullMSBuildOnlyFact]
     public void UsingCscManually()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "Test.csproj"), $"""
             <Project Sdk="Microsoft.NET.Sdk">
