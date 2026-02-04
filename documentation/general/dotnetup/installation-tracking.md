@@ -40,7 +40,7 @@ A subcomponent can be identified by a relative path to a folder from the dotnet 
 
 ### Installing a component
 
-- Is there already already a matching install spec in the shared manifest?
+- Is there already a matching install spec in the shared manifest?
   - If yes, then we may want to do an update on that install spec instead of an install
 - Resolve the version of the component to install
 - If that version is not already installed:
