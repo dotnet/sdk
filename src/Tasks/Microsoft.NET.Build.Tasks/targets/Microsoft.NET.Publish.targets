@@ -411,7 +411,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </Copy>
   </Target>
-  
+
   <!--
     ============================================================
                                         _CopyResolvedFilesToPublishIfDifferent
@@ -471,7 +471,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <_ResolvedFileToPublishAlways Include="@(ResolvedFileToPublish)"
                                     Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='Always'" />
-                                    
+
       <_ResolvedFileToPublishIfDifferent Include="@(ResolvedFileToPublish)"
                                     Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='IfDifferent'" />
     </ItemGroup>
@@ -487,7 +487,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               Include="@(_ResolvedFileToPublishAlways)"
               Condition="'$(PublishSingleFile)' != 'true' or
                          '%(_ResolvedFileToPublishAlways.ExcludeFromSingleFile)'=='true'" />
-                         
+
       <_ResolvedUnbundledFileToPublishIfDifferent
               Include="@(_ResolvedFileToPublishIfDifferent)"
               Condition="'$(PublishSingleFile)' != 'true' or
@@ -823,7 +823,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectory.FullPath)' == '$(AppHostIntermediatePath)'">True</IsKeyOutput>
       </ResolvedFileToPublish>
-      
+
       <ResolvedFileToPublish Include="@(_SourceItemsToCopyToPublishDirectoryIfDifferent)">
         <RelativePath>%(_SourceItemsToCopyToPublishDirectoryIfDifferent.TargetPath)</RelativePath>
         <CopyToPublishDirectory>IfDifferent</CopyToPublishDirectory>
@@ -836,7 +836,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
     ============================================================
                                         _IncludeContentItemsWithOnlyPublishMetadata
-    
+
     Content items with CopyToPublishDirectory set but without CopyToOutputDirectory are not
     included in ContentWithTargetPath by AssignTargetPaths. This target ensures they are included
     so they can be processed by GetCopyToPublishDirectoryItems.
@@ -853,7 +853,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <!-- Use MSBuildProjectDirectory as the base for relative path computation. DefiningProjectDirectory can point to sdk targets folder and lead to unexpected paths. -->
         <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' == ''">$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(Content.FullPath)))</TargetPath>
       </_ContentWithPublishMetadata>
-      
+
       <ContentWithTargetPath Include="@(_ContentWithPublishMetadata)" />
     </ItemGroup>
   </Target>
@@ -1184,14 +1184,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <!-- Always exclude .runtimeconfig.dev.json -->
       <_BundleExcludedFiles Include="@(_FilesToBundle)"
-                            Condition="'%(_FilesToBundle.RelativePath)' != '' and $([System.String]::new('%(_FilesToBundle.RelativePath)').EndsWith('.runtimeconfig.dev.json'))" />
+                            Condition="$([MSBuild]::ValueOrDefault('%(_FilesToBundle.RelativePath)', '').EndsWith('.runtimeconfig.dev.json'))" />
 
       <!-- Exclude hostfxr and hostpolicy for .NET 5+ (they are statically linked into the apphost)
            In .NET Core 3.x, bundle processing happens in the AppHost, so these can be bundled.
            In .NET 5+, bundle processing happens in HostFxr and HostPolicy, so they cannot be bundled.
            See https://github.com/dotnet/runtime/issues/32823 -->
       <_BundleExcludedFiles Include="@(_FilesToBundle)"
-                            Condition="'$(_TargetFrameworkVersionWithoutV)' != '3.0' and '$(_TargetFrameworkVersionWithoutV)' != '3.1' and
+                            Condition=" $([MSBuild]::VersionGreaterThan($(_TargetFrameworkVersionWithoutV), '3.1' )) and
                                        (('%(_FilesToBundle.FileName)' == 'hostfxr' or '%(_FilesToBundle.FileName)' == 'libhostfxr' or '%(_FilesToBundle.FileName)' == 'hostpolicy' or '%(_FilesToBundle.FileName)' == 'libhostpolicy') and
                                         ('%(_FilesToBundle.Extension)' == '.dll' or '%(_FilesToBundle.Extension)' == '.so' or '%(_FilesToBundle.Extension)' == '.dylib'))" />
 
@@ -1213,8 +1213,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                        '%(_FilesToBundle.Extension)' != '.pdb' and
                                        '%(_FilesToBundle.AssetType)' != 'native' and
                                        '%(_FilesToBundle.AssetType)' != 'runtime' and
-                                       !$([System.String]::new('%(_FilesToBundle.RelativePath)').EndsWith('.deps.json')) and
-                                       !$([System.String]::new('%(_FilesToBundle.RelativePath)').EndsWith('.runtimeconfig.json'))" />
+                                       !$([MSBuild]::ValueOrDefault('%(_FilesToBundle.RelativePath)', '').EndsWith('.deps.json')) and
+                                       !$([MSBuild]::ValueOrDefault('%(_FilesToBundle.RelativePath)', '').EndsWith('.runtimeconfig.json'))" />
 
       <!-- Add excluded files back to ResolvedFileToPublish so they get copied to the publish directory -->
       <ResolvedFileToPublish Include="@(_BundleExcludedFiles)"/>

@@ -1128,7 +1128,7 @@ class C
             }
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [Fact]
         public void It_preserves_native_dependencies_on_subsequent_publish()
         {
             // This test validates the fix for https://github.com/dotnet/sdk/issues/52151
@@ -1165,7 +1165,7 @@ class C
 
             // Second publish (incremental - bundle should be skipped)
             publishCommand
-                .Execute(PublishSingleFile, RuntimeIdentifier, "/bl:D:\\code\\dotnet-sdk\\test\\Microsoft.NET.Publish.Tests\\publish2.binlog")
+                .Execute(PublishSingleFile, RuntimeIdentifier)
                 .Should()
                 .Pass();
 
