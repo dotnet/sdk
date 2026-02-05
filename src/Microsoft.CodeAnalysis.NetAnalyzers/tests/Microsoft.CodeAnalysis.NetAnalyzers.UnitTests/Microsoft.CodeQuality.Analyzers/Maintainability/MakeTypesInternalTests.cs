@@ -771,6 +771,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                                }
                            }
                            """,
+                TestState =
+                {
+                    OutputKind = outputKind,
+                }
                 LanguageVersion = LanguageVersion.CSharp14
             }.RunAsync();
         }
