@@ -18,7 +18,7 @@ namespace Microsoft.NET.ToolPack.Tests
         public void It_should_warn_when_using_custom_nuspec_file()
         {
             const string customNuspecFileName = "custom.nuspec";
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool", "PackToolWithCustomNuspec")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -59,7 +59,7 @@ namespace Microsoft.NET.ToolPack.Tests
         [Fact]
         public void It_should_not_warn_when_nuspec_file_is_not_specified()
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool", "PackToolWithoutCustomNuspec")
                 .WithSource();
 
