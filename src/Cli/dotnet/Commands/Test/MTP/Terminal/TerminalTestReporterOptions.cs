@@ -1,5 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -31,7 +31,8 @@ internal sealed class TerminalTestReporterOptions
     public int MinimumExpectedTests { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether we should write the progress periodically to screen. When ANSI is allowed we update the progress as often as we can. When ANSI is not allowed we update it every 3 seconds.
+    /// Gets a value indicating whether we should write the progress periodically to screen. When ANSI is allowed we update the progress as often as we can.
+    /// When ANSI is not allowed we never have progress.
     /// </summary>
     public bool ShowProgress { get; init; }
 
@@ -41,13 +42,26 @@ internal sealed class TerminalTestReporterOptions
     public bool ShowActiveTests { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether we should use ANSI escape codes or disable them. When true the capabilities of the console are autodetected.
+    /// Gets a value indicating the ANSI mode.
     /// </summary>
-    public bool UseAnsi { get; init; }
+    public AnsiMode AnsiMode { get; init; }
+}
+
+internal enum AnsiMode
+{
+    /// <summary>
+    /// Disable ANSI escape codes.
+    /// </summary>
+    NoAnsi,
 
     /// <summary>
-    /// Gets a value indicating whether we are running in compatible CI, and should use simplified ANSI renderer, which colors output, but does not move cursor.
-    /// Setting <see cref="UseAnsi"/> to false will disable this option.
+    /// Use simplified ANSI renderer, which colors output, but does not move cursor.
+    /// This is used in compatible CI environments.
     /// </summary>
-    public bool UseCIAnsi { get; init; }
+    SimpleAnsi,
+
+    /// <summary>
+    /// Enable ANSI escape codes, including cursor movement, when the capabilities of the console allow it.
+    /// </summary>
+    AnsiIfPossible,
 }

@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <CanRunTestAsTool>false</CanRunTestAsTool>
@@ -20,6 +20,7 @@
          on a valid layout. -->
     <OutputPath>$(TestHostFolder)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -79,6 +80,7 @@
   <ItemGroup>
     <PackageReference Include="Basic.CompilerLog.Util" />
     <PackageReference Include="Moq" />
+    <PackageReference Include="MSBuild.StructuredLogger" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
@@ -110,6 +112,6 @@
     <ItemGroup>
       <SnapshotFiles Include="$(MSBuildThisFileDirectory)CompletionTests\snapshots\**\*.received.*" />
     </ItemGroup>
-    <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles->Replace('received', 'verified'))" />
+    <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles-&gt;Replace('received', 'verified'))" />
   </Target>
 </Project>

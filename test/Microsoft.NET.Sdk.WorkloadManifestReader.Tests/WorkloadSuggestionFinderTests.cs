@@ -13,7 +13,7 @@ namespace ManifestReaderTests
 
         public WorkloadSuggestionFinderTests(ITestOutputHelper log) : base(log)
         {
-            ManifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            ManifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
         [Fact]

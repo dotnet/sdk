@@ -14,7 +14,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         private string SetupNuGetPackage([CallerMemberName] string callingMethod = "")
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("PortableToolWithP2P", callingMethod)
                 .WithSource();
 

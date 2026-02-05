@@ -12,6 +12,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.NET.HostModel.AppHost;
 using NuGet.Configuration;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -43,8 +44,9 @@ internal sealed partial class CSharpCompilerCommand
     private static string DotNetRootPath => field ??= Path.GetDirectoryName(Path.GetDirectoryName(SdkPath)!)!;
     private static string ClientDirectory => field ??= Path.Combine(SdkPath, "Roslyn", "bincore");
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
-    internal static string RuntimeVersion => field ??= RuntimeInformation.FrameworkDescription.Split(' ').Last();
-    private static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
+    internal static string RuntimeVersion => field ??= ComputeRuntimeVersion();
+    private static string DefaultRuntimeVersion => field ??= ComputeDefaultRuntimeVersion();
+    internal static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
 
     public required string EntryPointFileFullPath { get; init; }
     public required string ArtifactsPath { get; init; }
@@ -106,8 +108,9 @@ internal sealed partial class CSharpCompilerCommand
         // Process the response.
         var exitCode = ProcessBuildResponse(responseTask.Result, out fallbackToNormalBuild);
 
-        // Copy from obj to bin.
-        if (BuildResultFile != null &&
+        // Copy from obj to bin only if the build succeeded.
+        if (exitCode == 0 &&
+            BuildResultFile != null &&
             CSharpCommandLineParser.Default.Parse(CscArguments, BaseDirectory, sdkDirectory: null) is { OutputFileName: { } outputFileName } parsedArgs)
         {
             var objFile = new FileInfo(parsedArgs.GetOutputFilePath(outputFileName));
@@ -142,6 +145,17 @@ internal sealed partial class CSharpCompilerCommand
             {
                 case CompletedBuildResponse completed:
                     Reporter.Verbose.WriteLine("Compiler server processed compilation.");
+
+                    // Check if the compilation failed with CS0006 error (metadata file not found).
+                    // This can happen when NuGet cache is cleared and referenced DLLs (e.g., analyzers or libraries) are missing.
+                    if (completed.ReturnCode != 0 && completed.Output.Contains("error CS0006:", StringComparison.Ordinal))
+                    {
+                        Reporter.Verbose.WriteLine("CS0006 error detected in fast compilation path, falling back to full MSBuild.");
+                        Reporter.Verbose.Write(completed.Output);
+                        fallbackToNormalBuild = true;
+                        return completed.ReturnCode;
+                    }
+
                     Reporter.Output.Write(completed.Output);
                     fallbackToNormalBuild = false;
                     return completed.ReturnCode;
@@ -315,7 +329,7 @@ internal sealed partial class CSharpCompilerCommand
                     "tfm": "net{{TargetFrameworkVersion}}",
                     "framework": {
                       "name": "Microsoft.NETCore.App",
-                      "version": {{JsonSerializer.Serialize(RuntimeVersion)}}
+                      "version": {{JsonSerializer.Serialize(DefaultRuntimeVersion)}}
                     },
                     "configProperties": {
                       "EntryPointFilePath": {{JsonSerializer.Serialize(EntryPointFileFullPath)}},
@@ -416,5 +430,36 @@ internal sealed partial class CSharpCompilerCommand
 
         colonIndex = -1;
         return false;
+    }
+
+    private static string ComputeRuntimeVersion()
+    {
+        var executingRuntimeVersion = RuntimeInformation.FrameworkDescription.Split(' ').Last();
+        var executingRuntimeMajorVersion = executingRuntimeVersion.Split('.').First();
+        var tfmMajorVersion = TargetFrameworkVersion.Split('.').First();
+
+        // If the target framework is still net10.0 while the runtime is already 11.0.x, we need to force-use 10.0.x runtime.
+        if (tfmMajorVersion != executingRuntimeMajorVersion)
+        {
+            return tfmMajorVersion + ".0.0";
+        }
+
+        // Otherwise, we can use the current runtime.
+        return executingRuntimeVersion;
+    }
+
+    /// <summary>
+    /// See <c>GenerateDefaultRuntimeFrameworkVersion</c>.
+    /// </summary>
+    private static string ComputeDefaultRuntimeVersion()
+    {
+        if (NuGetVersion.TryParse(RuntimeVersion, out var version))
+        {
+            return version.IsPrerelease && version.Patch == 0 ?
+                RuntimeVersion :
+                new NuGetVersion(version.Major, version.Minor, 0).ToFullString();
+        }
+
+        return RuntimeVersion;
     }
 }

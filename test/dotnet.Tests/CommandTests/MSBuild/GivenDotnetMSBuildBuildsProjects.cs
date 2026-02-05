@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [Fact]
         public void ItRunsSpecifiedTargetsWithPropertiesCorrectly()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildBareBonesProject")
+            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildBareBonesProject")
                                         .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             const string MSBuildHelpText = " Any extra options that should be passed to MSBuild. See 'dotnet msbuild -h' for available options.";
 
-            var projectDirectory = _testAssetsManager.CreateTestDirectory(identifier: commandName);
+            var projectDirectory = TestAssetsManager.CreateTestDirectory(identifier: commandName);
             var result = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory.Path)
                 .Execute(commandName, "--help");
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
 
             // this is a workaround for https://github.com/Microsoft/msbuild/issues/1622
-            var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithUnresolvablePackageReference", identifier: propertyFormat.GetHashCode().ToString())
+            var testInstance = TestAssetsManager.CopyTestAsset("LibraryWithUnresolvablePackageReference", identifier: propertyFormat.GetHashCode().ToString())
                                         .WithSource();
 
             var root = testInstance.Path;
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             string AppArgumentsText = "Arguments passed to the application that is being run.";
 
-            var projectDirectory = _testAssetsManager.CreateTestDirectory("RunContainsAppArgumentsText");
+            var projectDirectory = TestAssetsManager.CreateTestDirectory("RunContainsAppArgumentsText");
             var result = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory.Path)
                 .Execute("run", "--help");

@@ -69,7 +69,7 @@ namespace Microsoft.NET.Pack.Tests
 
         private string PackAndGetNuspecPath(TestProject testProject, string identifier = null, Action<XDocument> xmlAction = null)
         {
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
 
             if (xmlAction != null)
             {

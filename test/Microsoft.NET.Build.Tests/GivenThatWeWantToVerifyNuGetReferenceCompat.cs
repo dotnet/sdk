@@ -62,7 +62,7 @@ namespace Microsoft.NET.Build.Tests
                     {
                         if (!dependencyPackageReference.NuGetPackageExists())
                         {
-                            var dependencyTestAsset = _testAssetsManager.CreateTestProject(
+                            var dependencyTestAsset = TestAssetsManager.CreateTestProject(
                                 dependencyProject,
                                 identifier: referencerTarget + testDescription + rawDependencyTargets);
 
@@ -100,7 +100,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             //  Create the referencing app and run the compat test
-            var referencerTestAsset = _testAssetsManager.CreateTestProject(referencerProject, ConstantStringValues.TestDirectoriesNamePrefix, referencerDirectoryNamePostfix);
+            var referencerTestAsset = TestAssetsManager.CreateTestProject(referencerProject, ConstantStringValues.TestDirectoriesNamePrefix, referencerDirectoryNamePostfix);
             var referencerRestoreCommand = referencerTestAsset.GetRestoreCommand(Log, relativePath: referencerProject.Name);
 
             List<string> referencerRestoreSources = new();
@@ -239,7 +239,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(testPackageReference);
 
-            var testProjectTestAsset = _testAssetsManager.CreateTestProject(
+            var testProjectTestAsset = TestAssetsManager.CreateTestProject(
                 testProject,
                 string.Empty,
                 $"{testProjectName}_{calleeTargetFrameworks}");
@@ -265,7 +265,7 @@ namespace Microsoft.NET.Build.Tests
             if (!packageReference.NuGetPackageExists())
             {
                 var testAsset =
-                    _testAssetsManager.CreateTestProject(
+                    TestAssetsManager.CreateTestProject(
                         project,
                         callingMethod,
                         identifier);

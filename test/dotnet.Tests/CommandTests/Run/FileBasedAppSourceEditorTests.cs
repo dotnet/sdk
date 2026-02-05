@@ -517,6 +517,95 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
+    /// <summary>
+    /// Verifies that files without UTF-8 BOM don't get one added when saved.
+    /// This is critical for shebang (#!) scripts on Unix-like systems.
+    /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
+    /// </summary>
+    [Fact]
+    public void PreservesNoBomEncoding()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var tempFile = Path.Join(testInstance.Path, "test.cs");
+
+        // Create a file without BOM
+        var content = "#!/usr/bin/env dotnet run\nConsole.WriteLine();";
+        File.WriteAllText(tempFile, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+        // Load, modify, and save
+        var sourceFile = SourceFile.Load(tempFile);
+        var editor = FileBasedAppSourceEditor.Load(sourceFile);
+        editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" });
+        editor.SourceFile.Save();
+
+        // Verify no BOM was added
+        var bytes = File.ReadAllBytes(tempFile);
+        Assert.True(bytes is not [0xEF, 0xBB, 0xBF, ..],
+            "File should not have UTF-8 BOM");
+
+        // Verify the complete file content is correct
+        var savedContent = File.ReadAllText(tempFile);
+        var expectedContent = "#!/usr/bin/env dotnet run\n\n#:package MyPackage@1.0.0\n\nConsole.WriteLine();";
+        Assert.Equal(expectedContent, savedContent);
+    }
+
+    /// <summary>
+    /// Verifies that files with UTF-8 BOM preserve it when saved.
+    /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
+    /// </summary>
+    [Fact]
+    public void PreservesBomEncoding()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var tempFile = Path.Join(testInstance.Path, "test.cs");
+
+        // Create a file with BOM
+        var content = "Console.WriteLine();";
+        File.WriteAllText(tempFile, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+        // Load, modify, and save
+        var sourceFile = SourceFile.Load(tempFile);
+        var editor = FileBasedAppSourceEditor.Load(sourceFile);
+        editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" });
+        editor.SourceFile.Save();
+
+        // Verify BOM is still present
+        var bytes = File.ReadAllBytes(tempFile);
+        Assert.True(bytes is [0xEF, 0xBB, 0xBF, ..],
+            "File should have UTF-8 BOM");
+    }
+
+    /// <summary>
+    /// Verifies that files with non-UTF-8 encodings (like UTF-16) preserve their encoding when saved.
+    /// <see href="https://github.com/dotnet/sdk/issues/52054"/>
+    /// </summary>
+    [Fact]
+    public void PreservesNonUtf8Encoding()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var tempFile = Path.Join(testInstance.Path, "test.cs");
+
+        // Create a file with UTF-16 encoding (includes BOM by default)
+        var content = "Console.WriteLine(\"UTF-16 test\");";
+        File.WriteAllText(tempFile, content, Encoding.Unicode);
+
+        // Load, modify, and save
+        var sourceFile = SourceFile.Load(tempFile);
+        var editor = FileBasedAppSourceEditor.Load(sourceFile);
+        editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" });
+        editor.SourceFile.Save();
+
+        // Verify UTF-16 BOM is still present (0xFF 0xFE for UTF-16 LE)
+        var bytes = File.ReadAllBytes(tempFile);
+        Assert.True(bytes is [0xFF, 0xFE, ..],
+            "File should have UTF-16 LE BOM");
+
+        // Verify content is still readable as UTF-16
+        var savedContent = File.ReadAllText(tempFile, Encoding.Unicode);
+        Assert.Contains("#:package MyPackage@1.0.0", savedContent);
+        Assert.Contains("Console.WriteLine", savedContent);
+    }
+
     private void Verify(
         string input,
         params ReadOnlySpan<(Action<FileBasedAppSourceEditor> action, string expectedOutput)> verify)

@@ -19,11 +19,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithFailingTestsAndFileArtifacts_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -47,10 +47,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        // Linux and macOS are being skipped. See: https://github.com/dotnet/sdk/issues/52029
+        [WindowsOnlyTheory]
         public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
 
             // Read MSTestPackageVersion from Version.Details.props and update the .csproj file
             // Search for Version.Details.props file from the current directory up to the root
@@ -60,7 +61,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute("--coverage", MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("--coverage", "-c", configuration);
 
             if (!TestContext.IsLocalized())
             {

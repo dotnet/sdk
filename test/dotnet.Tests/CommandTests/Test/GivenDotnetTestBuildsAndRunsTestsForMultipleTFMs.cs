@@ -21,13 +21,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunMultipleProjectWithDifferentTFMs_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
                 .WithSource();
             testInstance.WithTargetFramework($"{DotnetVersionHelper.GetPreviousDotnetVersion()}", "TestProject");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -61,13 +61,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunProjectWithMultipleTFMs_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
             testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -109,13 +109,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(false)]
         public void RunProjectWithMultipleTFMs_ParallelizationTest_RunInParallelShouldFail(bool testTfmsInParallel)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsParallelization", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsParallelization", Guid.NewGuid().ToString())
                 .WithSource();
             testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CommonOptions.PropertiesOption.Name, $"TestTfmsInParallel={testTfmsInParallel}");
+                                    .Execute("--property", $"TestTfmsInParallel={testTfmsInParallel}");
 
             if (testTfmsInParallel)
             {
@@ -148,15 +148,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunProjectWithMultipleTFMsWithArchOption_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
             testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
             var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
-                                    CommonOptions.ArchitectureOption.Name, arch);
+                                    .Execute("-c", configuration,
+                                    "--arch", arch);
 
             if (!TestContext.IsLocalized())
             {
@@ -177,13 +177,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunProjectWithMSTestMetaPackageAndMultipleTFMs_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
             testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
             if (!TestContext.IsLocalized())
             {

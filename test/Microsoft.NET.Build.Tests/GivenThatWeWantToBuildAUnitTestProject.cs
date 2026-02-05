@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_generates_runtime_config()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("XUnitTestProject")
                 .WithSource();
 
@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
         {
             const string targetFramework = "netcoreapp2.1";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("XUnitTestProject")
                 .WithSource();
 

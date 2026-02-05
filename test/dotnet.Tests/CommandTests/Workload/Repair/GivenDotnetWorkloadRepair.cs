@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         {
             _reporter = new BufferedReporter();
             _parseResult = Parser.Parse("dotnet workload repair");
-            _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
         [Theory]
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         public void GivenNoWorkloadsAreInstalledRepairIsNoOp(bool userLocal)
         {
             _reporter.Clear();
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         [InlineData(false)]
         public void GivenExtraPacksInstalledRepairGarbageCollects(bool userLocal)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         [InlineData(false)]
         public void GivenMissingPacksRepairFixesInstall(bool userLocal)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.CommandLine;
 using System.CommandLine.Parsing;
 
@@ -177,12 +180,16 @@ public static class ForwardedOptionExtensions
         /// <summary>
         /// Calls the forwarding functions for all options that have declared a forwarding function (via <see cref="ForwardedOptionExtensions"/>'s extension members) in the provided <see cref="ParseResult"/>.
         /// </summary>
-        /// <param name="parseResult"></param>
         /// <param name="command">If not provided, uses the <see cref="ParseResult.CommandResult" />'s <see cref="CommandResult.Command"/>.</param>
-        /// <returns></returns>
-        public IEnumerable<string> OptionValuesToBeForwarded(Command? command = null) =>
-            (command ?? parseResult.CommandResult.Command)
-                .Options
+        public IEnumerable<string> OptionValuesToBeForwarded(Command? command = null)
+            => parseResult.OptionValuesToBeForwarded((command ?? parseResult.CommandResult.Command).Options);
+
+        /// <summary>
+        /// Calls the forwarding functions for all options that have declared a forwarding function (via <see cref="ForwardedOptionExtensions"/>'s extension members) in the provided <see cref="ParseResult"/>.
+        /// </summary>
+        /// <param name="command">If not provided, uses the <see cref="ParseResult.CommandResult" />'s <see cref="CommandResult.Command"/>.</param>
+        public IEnumerable<string> OptionValuesToBeForwarded(IEnumerable<Option> options)
+            => options
                 .Select(o => o.ForwardingFunction)
                 .SelectMany(f => f is not null ? f(parseResult) : []);
 
@@ -191,9 +198,6 @@ public static class ForwardedOptionExtensions
         /// invokes its forwarding function (if any) and returns the result. If no option with that name is found, or if the option
         /// has no forwarding function, returns an empty enumeration.
         /// </summary>
-        /// <param name="command"></param>
-        /// <param name="alias"></param>
-        /// <returns></returns>
         public IEnumerable<string> ForwardedOptionValues(Command command, string alias)
         {
             var func = command.Options?

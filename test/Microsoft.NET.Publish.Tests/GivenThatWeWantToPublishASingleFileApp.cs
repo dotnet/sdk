@@ -54,7 +54,7 @@ namespace Microsoft.NET.Publish.Tests
                 projectChanges = d => { };
             }
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                .CopyTestAsset(TestProjectName, callingMethod, identifier)
                .WithSource()
                .WithProjectChanges(projectChanges);
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.AdditionalProperties.Add("SelfContained", $"{true}");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var cmd = new PublishCommand(testAsset);
 
             var singleFilePath = Path.Combine(GetPublishDirectory(cmd).FullName, $"SingleFileTest{Constants.ExeSuffix}");
@@ -164,7 +164,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = false,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -187,7 +187,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -210,7 +210,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -277,7 +277,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
 
             publishCommand
@@ -310,7 +310,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
             var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunCompositeOn, RuntimeIdentifier };
 
@@ -409,7 +409,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var publishCommand = new PublishCommand(testAsset);
 
             publishCommand
@@ -469,7 +469,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var publishCommand = new PublishCommand(testAsset);
 
             publishCommand
@@ -549,7 +549,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
             };
             testProject.AdditionalProperties.Add("SelfContained", "true");
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             // Build will create app using apphost
             var buildCommand = new BuildCommand(testAsset);
@@ -631,7 +631,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "ILLinkAnalyzerWarningsApp";
             var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
             testProject.AdditionalProperties["PublishSingleFile"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -651,7 +651,7 @@ namespace Microsoft.NET.Publish.Tests
             // unless PublishTrimmed is also set.
             testProject.AdditionalProperties["PublishSingleFile"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -667,7 +667,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "ILLinkAnalyzerWarningsApp";
             var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -697,7 +697,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["PublishSingleFile"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
             testProject.AdditionalProperties["NoWarn"] = "NETSDK1138";  // Silence warning about targeting EOL TFMs
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             var result = publishCommand.Execute(RuntimeIdentifier);
@@ -734,7 +734,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
             testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -814,7 +814,7 @@ class C
             };
             testProject.AdditionalProperties.Add("SelfContained", $"{selfContained}");
 
-            var testAsset = _testAssetsManager.CreateTestProject(
+            var testAsset = TestAssetsManager.CreateTestProject(
                 testProject,
                 identifier: targetFramework + "_" + selfContained + "_" + bundleOption);
             var publishCommand = new PublishCommand(testAsset);
@@ -858,7 +858,7 @@ class C
                 "./msbuild.binlog";
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute(PublishSingleFile, "/bl:" + binlogDestPath)
                 .Should()
@@ -889,7 +889,7 @@ class C
             };
             testProject.AdditionalProperties.Add("SelfContained", $"{selfContained}");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: selfContained.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: selfContained.ToString());
             var publishCommand = new PublishCommand(testAsset);
 
             publishCommand.Execute(PublishSingleFile, RuntimeIdentifier, IncludePdb)
@@ -912,7 +912,7 @@ class C
 
             testProject.AdditionalProperties.Add("EnableCompressionInSingleFile", "true");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
 
             publishCommand.Execute(PublishSingleFile, RuntimeIdentifier)
@@ -932,10 +932,11 @@ class C
                 IsExe = true,
             };
 
+            // SingleFile implies self-contained so we need to explicitly disable it to test this case.
             testProject.AdditionalProperties.Add("SelfContained", "false");
             testProject.AdditionalProperties.Add("EnableCompressionInSingleFile", "true");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
 
             publishCommand.Execute(PublishSingleFile, RuntimeIdentifier)
@@ -955,7 +956,7 @@ class C
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
             var singleFilePath = Path.Combine(GetPublishDirectory(publishCommand, ToolsetInfo.CurrentTargetFramework).FullName, $"SingleFileTest{Constants.ExeSuffix}");
 
@@ -986,7 +987,7 @@ class C
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
             var singleFilePath = Path.Combine(GetPublishDirectory(publishCommand, ToolsetInfo.CurrentTargetFramework).FullName, $"SingleFileTest{Constants.ExeSuffix}");
 
@@ -1018,7 +1019,7 @@ class C
             };
             testProject.AdditionalProperties.Add("SelfContained", "true");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project => VerifyPrepareForBundle(project));
 
             var publishCommand = new PublishCommand(testAsset);
@@ -1076,7 +1077,7 @@ class C
             };
             testProject.AdditionalProperties.Add("SelfContained", "true");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project => VerifyPrepareForBundle(project));
 
             var publishCommand = new PublishCommand(testAsset);
@@ -1146,7 +1147,7 @@ class C
             };
             testProject.AdditionalProperties.Add("SelfContained", "true");
 
-            var testAsset = _testAssetsManager.CreateTestProject(
+            var testAsset = TestAssetsManager.CreateTestProject(
                 testProject,
                 identifier: $"{rid}_{enableMacOSCodeSign}");
             var publishCommand = new PublishCommand(testAsset);

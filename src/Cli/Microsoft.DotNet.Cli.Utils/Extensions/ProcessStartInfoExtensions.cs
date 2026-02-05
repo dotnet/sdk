@@ -9,17 +9,14 @@ internal static class ProcessStartInfoExtensions
 {
     public static int Execute(this ProcessStartInfo startInfo)
     {
-        if (startInfo == null)
-        {
-            throw new ArgumentNullException(nameof(startInfo));
-        }
+        ArgumentNullException.ThrowIfNull(startInfo);
 
         var process = new Process
         {
             StartInfo = startInfo
         };
 
-        using (var reaper = new ProcessReaper(process))
+        using (var reaper = ProcessReaper.Create(process))
         {
             process.Start();
             reaper.NotifyProcessStarted();
@@ -43,7 +40,7 @@ internal static class ProcessStartInfoExtensions
             EnableRaisingEvents = true
         };
 
-        using (var reaper = new ProcessReaper(process))
+        using (var reaper = ProcessReaper.Create(process))
         {
             process.Start();
             reaper.NotifyProcessStarted();
