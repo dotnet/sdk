@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Cli.Commands;
 
@@ -43,8 +44,8 @@ namespace Microsoft.TemplateEngine.Cli.TemplateResolution
 
         internal static bool HasMismatchOnListFilters(this ITemplateMatchInfo templateMatchInfo)
         {
-            var supportedFilters = CommandDefinition.List.SupportedFilterOptions
-                .Select(option => FilterOptionDefinition.AllDefinitions[option.Name])
+            var supportedFilters = FilterOptions.GetAllNames(NewListCommandDefinition.HasSupportedPackageFilterOption)
+                .Select(optionName => FilterOptionDefinition.AllDefinitions[optionName])
                 .OfType<TemplateFilterOptionDefinition>()
                 .Select(f => f.MatchInfoName);
 

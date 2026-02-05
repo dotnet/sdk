@@ -425,11 +425,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">檔案 {0} 中發生 JSON 剖析錯誤: {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="LevelArgumentName">
-        <source>LEVEL</source>
-        <target state="translated">LEVEL</target>
-        <note />
-      </trans-unit>
       <trans-unit id="LibraryNotFoundInLockFile">
         <source>{0}: library not found in lock file.</source>
         <target state="translated">{0}: 鎖定檔案中找不到程式庫。</target>
@@ -711,11 +706,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="SDKDiagnosticsCommandDefinition">
         <source>Enable diagnostic output.</source>
         <target state="translated">啟用診斷輸出。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SDKSchemaCommandDefinition">
-        <source>Display the command schema as JSON.</source>
-        <target state="translated">以 JSON 格式顯示命令結構描述。</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">

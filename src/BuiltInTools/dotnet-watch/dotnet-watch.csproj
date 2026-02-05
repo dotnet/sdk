@@ -28,14 +28,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Build.Locator" />
-    <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)\src\Cli\dotnet\dotnet.csproj" />
-
+    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" />
     <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj">
       <PrivateAssets>all</PrivateAssets>
       <OutputItemType>Content</OutputItemType>

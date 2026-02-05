@@ -331,17 +331,8 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   <data name="DevCertsDefinition" xml:space="preserve">
     <value>Create and manage development certificates.</value>
   </data>
-  <data name="Diagnostics_OptionDescription" xml:space="preserve">
-    <value>Enables diagnostic output.</value>
-  </data>
   <data name="DirectoryAlreadyExists" xml:space="preserve">
     <value>The target directory already exists: '{0}'</value>
-  </data>
-  <data name="DisableProjectContextEval_OptionDescription" xml:space="preserve">
-    <value>Disables evaluating project context using MSBuild.</value>
-  </data>
-  <data name="DisableSdkTemplates_OptionDescription" xml:space="preserve">
-    <value>If present, prevents templates bundled in the SDK from being presented.</value>
   </data>
   <data name="DiscoveredTestsInAssembly" xml:space="preserve">
     <value>Discovered {0} tests in assembly</value>
@@ -932,6 +923,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="RunCommandException" xml:space="preserve">
     <value>The build failed. Fix the build errors and run again.</value>
   </data>
+  <data name="RunCommandDeployFailed" xml:space="preserve">
+    <value>Deployment to device failed. Fix any deployment errors and run again.</value>
+  </data>
   <data name="RunCommandExceptionCouldNotApplyLaunchSettings" xml:space="preserve">
     <value>The launch profile "{0}" could not be applied.
 {1}</value>
@@ -994,6 +988,30 @@ Your project targets multiple frameworks. Specify which framework to run using '
   </data>
   <data name="RunRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to run for.</value>
+  </data>
+  <data name="CommandOptionDeviceDescription" xml:space="preserve">
+    <value>The device identifier to use for running the application.</value>
+  </data>
+  <data name="CommandOptionDeviceHelpName" xml:space="preserve">
+    <value>DEVICE</value>
+  </data>
+  <data name="CommandOptionListDevicesDescription" xml:space="preserve">
+    <value>List available devices for running the application.</value>
+  </data>
+  <data name="RunCommandAvailableDevices" xml:space="preserve">
+    <value>Available devices:</value>
+  </data>
+  <data name="RunCommandNoDevicesAvailable" xml:space="preserve">
+    <value>No devices are available for this project.</value>
+  </data>
+  <data name="RunCommandSelectDevicePrompt" xml:space="preserve">
+    <value>Select a device to run on:</value>
+  </data>
+  <data name="RunCommandMoreDevicesText" xml:space="preserve">
+    <value>Move up and down to reveal more devices</value>
+  </data>
+  <data name="RunCommandExceptionUnableToRunSpecifyDevice" xml:space="preserve">
+    <value>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</value>
   </data>
   <data name="RuntimeConfigDefinition" xml:space="preserve">
     <value>Path to &lt;application&gt;.runtimeconfig.json file.</value>
@@ -1083,6 +1101,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
   </data>
   <data name="SolutionFolderAndInRootMutuallyExclusive" xml:space="preserve">
     <value>The --solution-folder and --in-root options cannot be used together; use only one of the options.</value>
+  </data>
+  <data name="SolutionFilterDoesNotSupportFolderOptions" xml:space="preserve">
+    <value>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</value>
   </data>
   <data name="SolutionFolderHeader" xml:space="preserve">
     <value>Solution Folder(s)</value>
@@ -1279,9 +1300,6 @@ and the corresponding package Ids for installed tools using the command
   </data>
   <data name="UsingLaunchSettingsFromMessage" xml:space="preserve">
     <value>Using launch settings from {0}...</value>
-  </data>
-  <data name="Verbosity_OptionDescription" xml:space="preserve">
-    <value>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</value>
   </data>
   <data name="Verified" xml:space="preserve">
     <value>Verified</value>
@@ -1556,5 +1574,9 @@ Proceed?</value>
   </data>
   <data name="DurationColon" xml:space="preserve">
     <value>duration:</value>
+  </data>
+  <data name="WorkloadSetHasMissingManifests" xml:space="preserve">
+    <value>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</value>
+    <comment>{0} is the workload set version. {Locked="dotnet workload repair"}</comment>
   </data>
 </root>

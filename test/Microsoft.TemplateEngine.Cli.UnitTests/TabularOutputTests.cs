@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine.Completions;
-using System.Reflection;
-using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Mocks;
 
@@ -325,16 +324,11 @@ Dotnet 本地...  tool-manifest
             var columnOption = SharedOptionsFactory.CreateColumnsOption();
 
             //Gets suggestions defined in column options
-            List<string?> suggestedValues = columnOption.GetCompletions(CompletionContext.Empty).Select(c => c.Label).ToList<string?>();
+            var suggestedValues = columnOption.GetCompletions(CompletionContext.Empty).Select(c => c.Label).ToList<string?>();
             suggestedValues.Sort();
 
             //Gets constants defined in TabularOutputSettings.ColumnNams
-            List<string?> columnNamesConstants = (typeof(TabularOutputSettings.ColumnNames))
-                .GetFields(BindingFlags.NonPublic | BindingFlags.Static)
-                .Where(fi => fi.IsLiteral && !fi.IsInitOnly)
-                .Select(fi => (string?)fi.GetValue(null))
-                .ToList();
-            columnNamesConstants.Sort();
+            var columnNamesConstants = typeof(TabularOutputSettingsColumnNames).GetFields().Select(fi => (string?)fi.GetValue(null)).Order();
 
             Assert.Equal(suggestedValues, columnNamesConstants);
         }

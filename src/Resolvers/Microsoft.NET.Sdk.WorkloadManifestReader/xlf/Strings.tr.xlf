@@ -142,6 +142,11 @@
         <target state="translated">'{2}' [{3}] bildirimindeki '{1}' iş akışı yeniden yönlendirmesi için '{0}' hedefi çözümlenemedi</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">İş yükü kümesi {0} sürümü, paket yönetimi tarafından kaldırılmış olabilecek eksik bildirimlere sahip. Bunu düzeltmek için "dotnet workload repair" komutunu çalıştırın.</target>
+        <note>{Locked="dotnet workload repair"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadVersionFromGlobalJsonNotFound">
         <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
         <target state="translated">{1} konumunda belirtilen {0} iş yükü sürümü bulunamadı. Bu iş yükü sürümünü yüklemek için "dotnet workload restore" komutunu çalıştırın.</target>

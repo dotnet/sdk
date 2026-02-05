@@ -13,16 +13,8 @@ namespace Microsoft.DotNet.Cli.Commands.Reference;
 
 internal static class ReferenceCommandParser
 {
-    private static readonly ReferenceCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(ReferenceCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static ReferenceCommandDefinition CreateCommand()
-    {
-        var command = new ReferenceCommandDefinition();
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
         command.AddCommand.SetAction(parseResult => new ReferenceAddCommand(parseResult).Execute());
@@ -35,7 +27,5 @@ internal static class ReferenceCommandParser
         projectPathArgument.IsDynamic = true;
 
         command.RemoveCommand.SetAction(parseResult => new ReferenceRemoveCommand(parseResult).Execute());
-
-        return command;
     }
 }

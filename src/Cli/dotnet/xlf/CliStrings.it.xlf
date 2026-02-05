@@ -425,11 +425,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Errore di analisi JSON nel file {0}: {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="LevelArgumentName">
-        <source>LEVEL</source>
-        <target state="translated">LEVEL</target>
-        <note />
-      </trans-unit>
       <trans-unit id="LibraryNotFoundInLockFile">
         <source>{0}: library not found in lock file.</source>
         <target state="translated">{0}: la libreria non è stata trovata nel file di blocco.</target>
@@ -711,11 +706,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="SDKDiagnosticsCommandDefinition">
         <source>Enable diagnostic output.</source>
         <target state="translated">Abilita l'output di diagnostica.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SDKSchemaCommandDefinition">
-        <source>Display the command schema as JSON.</source>
-        <target state="translated">Visualizza lo schema del comando in formato JSON.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">

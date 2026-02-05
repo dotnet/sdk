@@ -54,6 +54,10 @@ internal class WorkloadHistoryRecorder
     private WorkloadHistoryState GetWorkloadState()
     {
         var resolver = _workloadResolverFunc();
+        if (resolver.GetWorkloadManifestProvider() is SdkDirectoryWorkloadManifestProvider sdkProvider)
+        {
+            sdkProvider.CorruptionFailureMode = ManifestCorruptionFailureMode.Ignore;
+        }
         var currentWorkloadVersion = resolver.GetWorkloadVersion().Version;
         return new WorkloadHistoryState()
         {

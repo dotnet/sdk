@@ -8,18 +8,9 @@ namespace Microsoft.DotNet.Cli.Commands.Restore;
 
 internal static class RestoreCommandParser
 {
-    private static readonly RestoreCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(RestoreCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static RestoreCommandDefinition CreateCommand()
-    {
-        var command = new RestoreCommandDefinition();
         command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RuntimesFromProjectFile);
         command.SetAction(RestoreCommand.Run);
-        return command;
     }
 }

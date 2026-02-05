@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void VSTestCommandIncludesPropertiesOption()
         {
-            var command = TestCommandParser.GetCommand();
+            var command = TestCommandDefinition.Create();
             
             // Verify that the command includes a property option that supports the /p alias
             var propertyOption = command.Options.FirstOrDefault(o => 

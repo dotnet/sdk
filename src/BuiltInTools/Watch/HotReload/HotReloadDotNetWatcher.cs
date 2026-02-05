@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Watch
                     }
 
                     // Cancel iteration as soon as the root process exits, so that we don't spent time loading solution, etc. when the process is already dead.
-                    rootRunningProject.ProcessExitedCancellationToken.Register(() => iterationCancellationSource.Cancel());
+                    rootRunningProject.ProcessExitedCancellationToken.Register(iterationCancellationSource.Cancel);
 
                     if (shutdownCancellationToken.IsCancellationRequested)
                     {
@@ -261,7 +261,7 @@ namespace Microsoft.DotNet.Watch
                         var stopwatch = Stopwatch.StartNew();
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.StaticHandler);
-                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, evaluationResult.StaticWebAssetsManifests, iterationCancellationToken);
+                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, evaluationResult.StaticWebAssetsManifests, stopwatch, iterationCancellationToken);
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.StaticHandler);
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
@@ -378,7 +378,7 @@ namespace Microsoft.DotNet.Watch
                         // so that updated code doesn't attempt to access the dependency before it has been deployed.
                         if (!managedCodeUpdates.IsEmpty)
                         {
-                            await compilationHandler.ApplyUpdatesAsync(managedCodeUpdates, iterationCancellationToken);
+                            await compilationHandler.ApplyUpdatesAsync(managedCodeUpdates, stopwatch, iterationCancellationToken);
                         }
 
                         if (!projectsToRestart.IsEmpty)
@@ -393,8 +393,6 @@ namespace Microsoft.DotNet.Watch
 
                             _context.Logger.Log(MessageDescriptor.ProjectsRestarted, projectsToRestart.Length);
                         }
-
-                        _context.Logger.Log(MessageDescriptor.HotReloadChangeHandled, stopwatch.ElapsedMilliseconds);
 
                         async Task<ImmutableArray<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableArray<string> rebuiltProjects)
                         {
@@ -476,7 +474,7 @@ namespace Microsoft.DotNet.Watch
 
                                 foreach (var file in changedFiles)
                                 {
-                                    if (file.Item.ContainingProjectPaths.All(containingProjectPath => rebuiltProjectPaths.Contains(containingProjectPath)))
+                                    if (file.Item.ContainingProjectPaths.All(rebuiltProjectPaths.Contains))
                                     {
                                         newChangedFiles.Add(file);
                                     }
@@ -738,7 +736,7 @@ namespace Microsoft.DotNet.Watch
                 fileWatcher.WatchContainingDirectories([_context.RootProjectOptions.ProjectPath], includeSubdirectories: true);
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
-                    acceptChange: change => AcceptChange(change),
+                    acceptChange: AcceptChange,
                     startedWatching: () => _context.Logger.Log(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
                     cancellationToken);
             }

@@ -8,20 +8,11 @@ namespace Microsoft.DotNet.Cli.Commands.Build;
 
 internal static class BuildCommandParser
 {
-    private static readonly BuildCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(BuildCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static BuildCommandDefinition CreateCommand()
-    {
-        var command = new BuildCommandDefinition();
         command.SetAction(BuildCommand.Run);
         command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
         command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
         command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RuntimesFromProjectFile);
-        return command;
     }
 }

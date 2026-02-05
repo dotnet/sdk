@@ -95,5 +95,5 @@ public static class SudoEnvironmentDirectoryOverride
     }
 
     private static bool IsRunningWorkloadCommand(ParseResult parseResult) =>
-        parseResult.RootSubCommandResult() == (WorkloadCommandParser.GetCommand().Name);
+        parseResult.RootSubCommandResult() == WorkloadCommandDefinition.Name;
 }

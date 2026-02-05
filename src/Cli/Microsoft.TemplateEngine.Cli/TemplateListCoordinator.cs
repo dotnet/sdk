@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
@@ -78,7 +79,7 @@ namespace Microsoft.TemplateEngine.Cli
                        Example
                            .For<NewCommand>(args.ParseResult)
                            .WithSubcommand<SearchCommand>()
-                           .WithArgument(CommandDefinition.Search.NameArgument));
+                           .WithArgument(c => c.Definition.NameArgument));
                     Reporter.Output.WriteLine();
                     return NewCommandStatus.Success;
                 }
@@ -110,7 +111,7 @@ namespace Microsoft.TemplateEngine.Cli
                         string.Format(
                             LocalizableStrings.TemplateListCoordinator_Error_FailedConstraints,
                             resolutionResult.ContraintsMismatchGroupCount,
-                            CommandDefinition.List.IgnoreConstraintsOption.Name)
+                            NewListCommandDefinition.IgnoreConstraintsOptionName)
                         .Bold().Red());
                 }
 
@@ -123,7 +124,7 @@ namespace Microsoft.TemplateEngine.Cli
                              Example
                                  .For<NewCommand>(args.ParseResult)
                                  .WithSubcommand<SearchCommand>()
-                                 .WithArgument(CommandDefinition.Search.NameArgument));
+                                 .WithArgument(c => c.Definition.NameArgument));
                 }
                 else
                 {
@@ -131,7 +132,7 @@ namespace Microsoft.TemplateEngine.Cli
                              Example
                                  .For<NewCommand>(args.ParseResult)
                                  .WithSubcommand<SearchCommand>()
-                                 .WithArgument(CommandDefinition.Search.NameArgument, args.ListNameCriteria));
+                                 .WithArguments(args.ListNameCriteria));
                 }
                 Reporter.Error.WriteLine();
                 return NewCommandStatus.NotFound;
@@ -165,7 +166,7 @@ namespace Microsoft.TemplateEngine.Cli
             Reporter.Output.WriteCommand(
                Example
                    .For<NewCommand>(args.ParseResult)
-                   .WithArgument(CommandDefinition.New.ShortNameArgument, "console"));
+                   .WithArguments("console"));
 
             Reporter.Output.WriteLine();
 
@@ -173,7 +174,7 @@ namespace Microsoft.TemplateEngine.Cli
             Reporter.Output.WriteCommand(
               Example
                   .For<NewCommand>(args.ParseResult)
-                  .WithArgument(CommandDefinition.New.ShortNameArgument, "console")
+                  .WithArguments("console")
                   .WithHelpOption());
 
             Reporter.Output.WriteLine(LocalizableStrings.TemplateInformationCoordinator_DotnetNew_ListTemplatesHint);
@@ -188,7 +189,7 @@ namespace Microsoft.TemplateEngine.Cli
                      Example
                          .For<NewCommand>(args.ParseResult)
                          .WithSubcommand<SearchCommand>()
-                         .WithArgument(CommandDefinition.Search.NameArgument, "web"));
+                         .WithArguments("web"));
 
             Reporter.Output.WriteLine();
 

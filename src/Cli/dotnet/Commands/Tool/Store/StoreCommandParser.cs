@@ -9,18 +9,9 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Store;
 
 internal static class StoreCommandParser
 {
-    private static readonly StoreCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(StoreCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static StoreCommandDefinition CreateCommand()
-    {
-        var command = new StoreCommandDefinition();
         command.SetAction(StoreCommand.Run);
         command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
-        return command;
     }
 }
