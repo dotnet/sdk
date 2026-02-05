@@ -1,15 +1,16 @@
 # Workflow to detect new NETSDK diagnostic codes in pull requests
 #
 # This workflow automatically:
-# 1. Scans PR diffs for newly added NETSDK diagnostic codes (e.g., NETSDK1234:) in .xlf files
-# 2. Applies the 'sdk-diagnostic-docs-needed' label when new diagnostics are found
-# 3. Posts/updates a comment reminding contributors to update SDK diagnostic documentation
+# 1. Uses git diff to get changes from .xlf files only
+# 2. Scans for newly added NETSDK diagnostic codes (e.g., NETSDK1234:)
+# 3. Applies the 'sdk-diagnostic-docs-needed' label when new diagnostics are found
+# 4. Posts/updates a comment reminding contributors to update SDK diagnostic documentation
 #    in the dotnet/docs repository at docs/core/tools/sdk-errors/
 #
 # Prerequisites: The 'sdk-diagnostic-docs-needed' label must exist in the repository
 #
 # Security: Uses pull_request_target to run in the base branch context (safe for forks)
-# The workflow only analyzes diffs via GitHub API and does not execute any code from the PR.
+# The workflow checks out the base branch and fetches the PR head, but does not execute any code from the PR.
 #
 name: Detect New NETSDK Diagnostics
 
@@ -34,71 +35,45 @@ jobs:
     if: github.repository == 'dotnet/sdk'
     
     steps:
-      - name: Get PR diff
-        id: get-diff
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+      - name: Checkout base branch
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          script: |
-            const { owner, repo } = context.repo;
-            const pull_number = context.payload.pull_request.number;
-            
-            // Get the list of files changed in the PR
-            const { data: files } = await github.rest.pulls.listFiles({
-              owner,
-              repo,
-              pull_number,
-              per_page: 100
-            });
-            
-            // Get full diff for the PR
-            const { data: diff } = await github.rest.pulls.get({
-              owner,
-              repo,
-              pull_number,
-              mediaType: {
-                format: 'diff'
-              }
-            });
-            
-            return diff;
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch PR head
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-${{ github.event.pull_request.number }}
+
+      - name: Get diff from .xlf files only
+        id: get-diff
+        run: |
+          # Get diff only from .xlf files between base and PR head
+          git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} -- '*.xlf' > /tmp/xlf-diff.txt
+          # Store for next step
+          cat /tmp/xlf-diff.txt
 
       - name: Detect new NETSDK diagnostics
         id: detect
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
-        env:
-          DIFF_CONTENT: ${{ steps.get-diff.outputs.result }}
         with:
           script: |
-            const diff = process.env.DIFF_CONTENT;
+            const fs = require('fs');
+            const diff = fs.readFileSync('/tmp/xlf-diff.txt', 'utf8');
             
             // Pattern to match NETSDK diagnostic codes
             const diagnosticPattern = /NETSDK(\d{4}):/g;
             
-            // Parse diff into file chunks - split by "diff --git"
-            const diffLines = diff.split('\n');
+            // Extract only added lines from the diff (lines starting with +)
+            const addedLines = diff.split('\n').filter(line => line.startsWith('+') && !line.startsWith('+++'));
+            
+            // Find all NETSDK codes in added lines
             const diagnosticCodes = new Set();
-            
-            let currentFile = null;
-            let inXlfFile = false;
-            
-            for (const line of diffLines) {
-              // Check if this is a new file header
-              if (line.startsWith('diff --git')) {
-                currentFile = null;
-                inXlfFile = false;
-              } else if (line.startsWith('+++')) {
-                // Extract filename from +++ b/path/to/file.xlf
-                const match = line.match(/^\+\+\+ b\/(.+)$/);
-                if (match) {
-                  currentFile = match[1];
-                  inXlfFile = currentFile.endsWith('.xlf');
-                }
-              } else if (inXlfFile && line.startsWith('+') && !line.startsWith('+++')) {
-                // This is an added line in an .xlf file
-                let diagnosticMatch;
-                while ((diagnosticMatch = diagnosticPattern.exec(line)) !== null) {
-                  diagnosticCodes.add(`NETSDK${diagnosticMatch[1]}`);
-                }
+            for (const line of addedLines) {
+              let match;
+              while ((match = diagnosticPattern.exec(line)) !== null) {
+                diagnosticCodes.add(`NETSDK${match[1]}`);
               }
             }
             
