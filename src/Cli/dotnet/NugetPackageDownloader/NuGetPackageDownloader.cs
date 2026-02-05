@@ -452,7 +452,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false))
         {
             var sourceList = sources.ToList();
-            var existingUris = new HashSet<Uri>(sourceList.Select(s => s.SourceUri));
+            var existingUris = new HashSet<Uri>(sourceList.Where(s => s.SourceUri != null).Select(s => s.SourceUri));
             
             foreach (string additionalSource in packageSourceLocation.AdditionalSourceFeed)
             {
@@ -470,14 +470,17 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                     continue;
                 }
 
-                // Skip if already present
-                if (existingUris.Contains(newSource.SourceUri))
+                // Skip if already present (matches existing pattern in LoadDefaultSources)
+                if (newSource.SourceUri != null && existingUris.Contains(newSource.SourceUri))
                 {
                     continue;
                 }
 
                 sourceList.Add(newSource);
-                existingUris.Add(newSource.SourceUri);
+                if (newSource.SourceUri != null)
+                {
+                    existingUris.Add(newSource.SourceUri);
+                }
             }
             sources = sourceList;
         }
