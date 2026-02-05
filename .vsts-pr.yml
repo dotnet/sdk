@@ -9,6 +9,14 @@ pr:
     - release/*
     - internal/release/*
   paths:
+    include:
+    - eng
+    - build
+    - src
+    - test
+    - '*.yml'
+    - '*.props'
+    - '*.targets'
     exclude:
     - documentation/*
     - README.md
@@ -69,7 +77,7 @@ stages:
           name: Azure Pipelines
           vmImage: macOS-latest
           os: macOS
-        helixTargetQueue: osx.13.arm64.open
+        helixTargetQueue: osx.15.arm64.open
         macOSJobParameterSets:
         - categoryName: TestBuild
           targetArchitecture: arm64

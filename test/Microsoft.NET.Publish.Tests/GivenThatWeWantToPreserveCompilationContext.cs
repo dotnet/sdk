@@ -51,7 +51,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("System.Data.SqlClient", ToolsetInfo.GetSystemDataSqlClientPackageVersion()));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: appTargetFramework + withoutCopyingRefs);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: appTargetFramework + withoutCopyingRefs);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "LangVersion");
             getValuesCommand.Execute().Should().Pass();
@@ -165,7 +165,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var targetFramework = "netcoreapp2.0";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("CompilationContext", "PreserveCompilationContextRefs")
                 .WithSource()
                 .WithProjectChanges((path, project) =>

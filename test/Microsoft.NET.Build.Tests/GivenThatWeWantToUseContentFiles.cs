@@ -41,7 +41,7 @@ namespace {project.Name}
     }}
 }}";
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CreateTestProject(project);
 
             // First Build

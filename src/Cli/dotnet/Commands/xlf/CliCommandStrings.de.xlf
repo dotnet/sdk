@@ -92,6 +92,21 @@
         <target state="translated">.NET-Generator</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Zeigt kein Startbanner und keine Copyrightmeldung an.</target>
@@ -355,11 +370,11 @@ Wird ein Absturz erkannt, wird in "TestResults/guid/guid_Sequence.xml" eine Sequ
 
 Basierend auf den zusätzlichen Einstellungen kann auch ein Blockade- oder Absturzabbild erfasst werden.
 
-Beispiel:
+Beispiel: 
   Es wird ein Timeout für die Testausführung ausgelöst, wenn der Test länger als 1 Stunde (Standardtimeout) dauert, und es wird ein Absturzabbild erfasst, wenn der Testhost unerwartet beendet wird.
   (Für Absturzabbilder ist eine zusätzlicher Setup erforderlich, siehe unten.)
   dotnet test --blame-hang --blame-crash
-Beispiel:
+Beispiel: 
   Es wird ein Timeout für die Testausführung ausgelöst, wenn der Test mehr als 20 Minuten dauert, und es wird ein Blockadeabbild erfasst.
   dotnet test --blame-hang-timeout 20min
 </target>
@@ -725,17 +740,17 @@ Dies entspricht dem Löschen von "project.assets.json".</target>
       </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
         <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Definiert den Pfad der auszuführenden Projektdatei. Verwenden Sie den Pfad zur Projektdatei oder den Pfad zu dem Verzeichnis, das die Projektdatei enthält. Wenn keine Angabe erfolgt, wird standardmäßig das aktuelle Verzeichnis verwendet.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
         <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Definiert den Pfad des zu testenden Projekts oder der zu testenden Projektmappendatei. Verwenden Sie den Pfad zur Projektdatei oder den Pfad zu dem Verzeichnis, das die Projektdatei enthält. Wenn keine Angabe erfolgt, wird standardmäßig das aktuelle Verzeichnis verwendet.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
         <source>PROJECT_OR_SOLUTION_PATH</source>
-        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
+        <target state="translated">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -782,7 +797,7 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Definiert den Pfad der zu testenden Projektmappendatei. Verwenden Sie den Pfad zur Projektmappendatei oder den Pfad zu dem Verzeichnis, das die Projektmappendatei enthält. Wenn keine Angabe erfolgt, wird standardmäßig das aktuelle Verzeichnis verwendet.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -1051,11 +1066,6 @@ Weitere Informationen finden Sie unter https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Datum</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(Standard)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">Das Workloadmanifest {0} Version {1} wird deinstalliert...</target>
@@ -1085,11 +1095,6 @@ Weitere Informationen finden Sie unter https://aka.ms/dotnet-test/mtp.</target>
         <source>Description</source>
         <target state="translated">Beschreibung</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">Beim Lesen von „{0}“ ist ein Fehler aufgetreten: {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1191,15 +1196,6 @@ Weitere Informationen finden Sie unter https://aka.ms/dotnet-test/mtp.</target>
         <source>Downloads</source>
         <target state="translated">Downloads</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">Es gibt mehrere Startprofile mit Namen, bei denen die Groß-/Kleinschreibung beachtet wird, was nicht zulässig ist:
-{0}
-Erstellen Sie eindeutige Profilnamen.</target>
-        <note />
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1590,26 +1586,6 @@ Erstellen Sie eindeutige Profilnamen.</target>
         <source>Latest Version</source>
         <target state="translated">Aktuelle Version</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">Es ist kein Startprofil mit dem Namen "{0}" vorhanden.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">Der Startprofiltyp "{0}" wird nicht unterstützt.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">Ein Profil mit dem angegebenen Namen ist kein gültiges JSON-Objekt.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">Die Eigenschaft "Profile" des Starteigenschaftendokuments ist kein JSON-Objekt.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -2306,11 +2282,11 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
     </source>
         <target state="translated">„dotnet workload search version“ hat je nach Argument drei Funktionen:
       1. Wird kein Argument angegeben, dann wird eine Liste der zuletzt veröffentlichten Workloadversionen aus diesem Featureband ausgegeben. Akzeptiert die Option „--take“, um anzugeben, wie viele angegeben werden sollen, und „--format“, um das Format zu ändern.
-         Beispiel:
+         Beispiel: 
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
       2. Wenn eine Workloadversion als Argument angegeben wird, dann werden eine Tabelle mit verschiedenen Workloads und deren Versionen für die angegebene Workloadversion ausgegeben. Akzeptiert die Option „--format“, um das Ausgabeformat zu ändern.
-         Beispiel:
+         Beispiel: 
            dotnet workload search version 9.0.201
            Workloadmanifest-ID                               Manifest-Featureband      Manifestversion
            ------------------------------------------------------------------------------------------------
@@ -2329,7 +2305,7 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
       3. Wenn eine oder mehrere Workloads zusammen mit ihren Versionen bereitgestellt werden (indem sie mit dem @-Zeichen verbunden werden), werden die Workloadversionen, die mit den angegebenen Versionen übereinstimmen, ausgegebenen. Akzeptiert die Option „--take“, um anzugeben, wie viele angegeben werden sollen, und „--format“, um das Format zu ändern.
-         Beispiel:
+         Beispiel: 
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -2411,8 +2387,8 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">Ausgabeverzeichnis ({0}) angeben:</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="translated">Geben Sie das Ausgabeverzeichnis an (drücken Sie die EINGABETASTE, um die Standardeinstellung zu verwenden: „{0}“, das Verzeichnis darf nicht vorhanden sein):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2612,6 +2588,11 @@ Standardmäßig wird eine Framework-abhängige Anwendung veröffentlicht.</targe
         <target state="translated">Fehler beim Wiederherstellen.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">Die Wiederherstellung war nur teilweise möglich.</target>
@@ -2657,15 +2638,35 @@ Standardmäßig wird eine Framework-abhängige Anwendung veröffentlicht.</targe
         <target state="translated">.NET-Befehl "Run"</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="new">Available devices:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="translated">Verfügbare Zielframeworks:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">Buildvorgang wird ausgeführt...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">Das {0} Ziel ausführen, um zu ermitteln, dass ein Fehler bei den Ausführungsbefehlen für dieses Projekt aufgetreten ist. Beheben Sie die Fehler und Warnungen, und führen Sie dies erneut aus.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="translated">Beispiel</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2707,6 +2708,11 @@ Ein ausführbares Projekt muss ein ausführbares TFM (z. B. net5.0) und den Outp
 {1} lautet aktuell "{2}".</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</source>
@@ -2714,10 +2720,40 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches Framework ausgeführt werden soll.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="new">Move up and down to reveal more devices</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="translated">Nach oben und unten bewegen, um weitere Frameworks anzuzeigen</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="new">No devices are available for this project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Warnung NETSDK1174: Die Abkürzung von „-p“ für „--project“ ist veraltet. Verwenden Sie „--project“.</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="translated">Zum Suchen eingeben</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="new">Select a device to run on:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="translated">Wählen Sie das auszuführende Zielframework aus:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -3630,11 +3666,6 @@ und die zugehörigen Paket-IDs für installierte Tools über den Befehl
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
         <target state="translated">Der Installationsmodus der Workload wurde erfolgreich aktualisiert, um {0} zu verwenden.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Es wurde kein verwendbares Startprofil gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">

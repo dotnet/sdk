@@ -83,6 +83,9 @@ internal class ToolPackageRestorer
                         toolPackage.Command.Name));
             }
 
+            // Check for newer versions and prepare warning message
+            string warning = CheckForNewerVersion(package, configFile);
+
             return ToolRestoreResult.Success(
                 saveToCache:
                     (new RestoredCommandIdentifier(
@@ -96,7 +99,8 @@ internal class ToolPackageRestorer
                     CliCommandStrings.RestoreSuccessful,
                     package.PackageId,
                     package.Version.ToNormalizedString(),
-                    string.Join(" ", package.CommandNames)));
+                    string.Join(" ", package.CommandNames)),
+                warning: warning);
         }
         catch (ToolPackageException e)
         {
@@ -127,6 +131,44 @@ return !commandsFromManifest.Any(cmd => !commandsFromPackage.Contains(cmd)) && !
                    sampleRestoredCommandIdentifierOfThePackage,
                    out var toolCommand)
                && _fileSystem.File.Exists(toolCommand.Executable.Value);
+    }
+
+    private string CheckForNewerVersion(ToolManifestPackage package, FilePath? configFile)
+    {
+        try
+        {
+            // Use wildcard version range to get the latest version
+            var latestVersionRange = VersionRange.Parse("*");
+            
+            var (latestVersion, _) = _toolPackageDownloader.GetNuGetVersion(
+                new PackageLocation(
+                    nugetConfig: configFile,
+                    additionalFeeds: _additionalSources,
+                    sourceFeedOverrides: _overrideSources,
+                    rootConfigDirectory: package.FirstEffectDirectory),
+                package.PackageId,
+                _verbosity,
+                latestVersionRange,
+                _restoreActionConfig);
+
+            // Compare versions - only warn if there's a newer stable version or if the manifest uses prerelease
+            if (latestVersion != null && latestVersion > package.Version)
+            {
+                // If the current version is prerelease, show warning for any newer version
+                // If the current version is stable, only show warning for newer stable versions
+                if (package.Version.IsPrerelease || !latestVersion.IsPrerelease)
+                {
+                    return string.Format(CliCommandStrings.RestoreNewVersionAvailable, package.PackageId, latestVersion.ToNormalizedString());
+                }
+            }
+        }
+        catch
+        {
+            // If we can't check for newer versions, don't show a warning
+            // This could happen due to network issues, package source problems, etc.
+        }
+
+        return string.Empty;
     }
 
     private static string JoinBySpaceWithQuote(IEnumerable<object> objects)

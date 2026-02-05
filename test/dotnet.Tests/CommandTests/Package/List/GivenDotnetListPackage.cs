@@ -3,6 +3,9 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.Hidden.List;
+using Microsoft.DotNet.Cli.Commands.Hidden.List.Package;
+using Microsoft.DotNet.Cli.Commands.Package.List;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.List.Package.Tests
@@ -17,7 +20,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
         public void ItShowsCoreOutputOnMinimalVerbosity()
         {
             var testAssetName = "NewtonSoftDependentProject";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -41,7 +44,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
         public void RequestedAndResolvedVersionsMatch()
         {
             var testAssetName = "TestAppSimple";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
 
@@ -73,7 +76,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
         public void ItListsAutoReferencedPackages()
         {
             var testAssetName = "TestAppSimple";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource()
                 .WithProjectChanges(ChangeTargetFrameworkTo2_1);
@@ -106,7 +109,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
         public void ItRunOnSolution()
         {
             var sln = "TestAppWithSlnAndSolutionFolders";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(sln)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -131,7 +134,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
         public void AssetsPathExistsButNotRestored()
         {
             var testAsset = "NewtonSoftDependentProject";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -148,7 +151,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
         public void RestoresAndLists()
         {
             var testAsset = "NewtonSoftDependentProject";
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
@@ -200,7 +203,7 @@ class Program
             //  Disable package pruning so that there are still transitive dependencies to test the command
             testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var projectDirectory = Path.Combine(testAsset.Path, testProject.Name);
 
             new RestoreCommand(testAsset)
@@ -240,7 +243,7 @@ class Program
         public void ItListsValidFrameworks(string args, string shouldInclude, string shouldntInclude)
         {
             var testAssetName = "MSBuildAppWithMultipleFrameworks";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: args.GetHashCode().ToString() + shouldInclude)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -279,7 +282,7 @@ class Program
         public void ItDoesNotAcceptInvalidFramework()
         {
             var testAssetName = "MSBuildAppWithMultipleFrameworks";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -300,7 +303,7 @@ class Program
         public void ItListsFSharpProject()
         {
             var testAssetName = "FSharpTestAppSimple";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -348,7 +351,10 @@ class Program
         public void ItEnforcesOptionRules(bool throws, params string[] options)
         {
             var parseResult = Parser.Parse(["dotnet", "list", "package", ..options]);
-            Action checkRules = () => Microsoft.DotNet.Cli.Commands.Package.List.PackageListCommand.EnforceOptionRules(parseResult);
+
+            var command = Assert.IsType<ListPackageCommandDefinition>(parseResult.CommandResult.Command);
+
+            Action checkRules = () => command.EnforceOptionRules(parseResult);
 
             if (throws)
             {
@@ -365,7 +371,7 @@ class Program
         {
             // Regression test for https://github.com/dotnet/sdk/issues/19654
             var testAssetName = "TestAppSimple";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName, "C#")
                 .WithSource();
             var projectDirectory = testAsset.Path;
@@ -386,7 +392,7 @@ class Program
         public void ItRecognizesRelativePathsForAProject()
         {
             var testAssetName = "TestAppSimple";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName)
                 .WithSource();
 
@@ -409,7 +415,7 @@ class Program
         public void ItRecognizesRelativePathsForASolution()
         {
             var sln = "TestAppWithSlnAndSolutionFolders";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(sln)
                 .WithSource();
 
@@ -432,7 +438,7 @@ class Program
         public void ItRecognizesRelativePathsForASolutionFromSubFolder()
         {
             var sln = "TestAppWithSlnAndSolutionFolders";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(sln)
                 .WithSource();
 

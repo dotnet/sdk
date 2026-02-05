@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("WebApp", null)]
         public void It_resolves_requestdelegategenerator_correctly(string testAssetName, bool? isEnabled)
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -40,7 +40,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("WebApp", null)]
         public void It_resolves_configbindinggenerator_correctly(string testAssetName, bool? isEnabled)
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishAot()
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("WebApp")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -79,7 +79,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net8.0", false)]
         public void It_enables_validationsgenerator_correctly_for_TargetFramework(string targetFramework, bool expectEnabled)
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("WebApp")
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishTrimmed()
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("WebApp")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -110,7 +110,7 @@ namespace Microsoft.NET.Build.Tests
             var command = new GetValuesCommand(
                 Log,
                 asset.Path,
-                ToolsetInfo.CurrentTargetFramework,
+                targetFramework: null,
                 "Analyzer",
                 GetValuesCommand.ValueType.Item);
 
@@ -138,7 +138,7 @@ namespace Microsoft.NET.Build.Tests
             var command = new GetValuesCommand(
                 Log,
                 asset.Path,
-                ToolsetInfo.CurrentTargetFramework,
+                targetFramework: null,
                 "InterceptorsPreviewNamespaces",
                 GetValuesCommand.ValueType.Property);
 
@@ -194,7 +194,7 @@ namespace Microsoft.NET.Build.Tests
                 """;
 
             // Create a simple non-web project with ASP.NET FrameworkReference 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new BuildCommand(asset)
@@ -228,7 +228,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("F#", "AppWithLibraryFS")]
         public void It_resolves_analyzers_correctly(string language, string testAssetName)
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: language)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -280,13 +280,13 @@ namespace Microsoft.NET.Build.Tests
 
                 case "VB":
                     analyzers.Select(x => GetPackageAndPath(x)).Should().BeEquivalentTo(new[]
-                        {
-                            ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll"),
-                            ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll"),
-                            ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.Analyzers.dll"),
-                            ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.VisualBasic.Analyzers.dll"),
-                            ("microsoft.dependencyvalidation.analyzers", "0.9.0", "analyzers/dotnet/Microsoft.DependencyValidation.Analyzers.dll")
-                        }
+                            {
+                                ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll"),
+                                ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll"),
+                                ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.Analyzers.dll"),
+                                ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.VisualBasic.Analyzers.dll"),
+                                ("microsoft.dependencyvalidation.analyzers", "0.9.0", "analyzers/dotnet/Microsoft.DependencyValidation.Analyzers.dll")
+                            }
                         );
                     break;
 
@@ -323,7 +323,7 @@ namespace Microsoft.NET.Build.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             List<(string package, string version, string path)> GetAnalyzersForTargetFramework(string targetFramework)
             {

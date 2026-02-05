@@ -5,14 +5,14 @@
       Tests code used in in-proc VS and VS Code.
       Ideally, we would target $(VisualStudioServiceTargetFramework) but Microsoft.NET.TestFramework has dependencies on $(SdkTargetFramework).
     -->
-    <TargetFrameworks>$(SdkTargetFramework);$(VisualStudioTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <OutputType Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">Exe</OutputType>
     <RootNamespace>Microsoft.DotNet.HotReload.UnitTests</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\dotnet-watch.Tests\TestUtilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
+    <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
   </ItemGroup>
 
   <ItemGroup>

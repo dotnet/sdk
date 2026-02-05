@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -650,6 +651,32 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
 
                 internal class Use
+                {
+                    static int Bar()
+                    {
+                        IFoo f = new C();
+                        return f.M();
+                    }
+                }
+                ";
+
+            await TestCSAsync(Source);
+        }
+
+        [Fact]
+        [WorkItem(50328, "https://github.com/dotnet/sdk/issues/50328")]
+        public static async Task ShouldNotTrigger6()
+        {
+            const string Source = @"
+#nullable enable
+                interface IFoo
+                {
+                    int M() => 42;
+                }
+                public class C : IFoo
+                {
+                }
+                public class Use
                 {
                     static int Bar()
                     {

@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.FileSystemGlobbing;
 
@@ -16,17 +15,17 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
     private readonly TestApplicationActionQueue _actionQueue = actionQueue;
     private readonly TerminalTestReporter _output = output;
 
-    public bool RunWithTestModulesFilter(ParseResult parseResult)
+    public bool RunWithTestModulesFilter(ParseResult parseResult, string testModules)
     {
-        // If the module path pattern(s) was provided, we will use that to filter the test modules
-        string testModules = parseResult.GetValue(MicrosoftTestingPlatformOptions.TestModulesFilterOption)!;
+        var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
+        // If the module path pattern(s) was provided, we will use that to filter the test modules
         // If the root directory was provided, we will use that to search for the test modules
         // Otherwise, we will use the current directory
         string? rootDirectory = Directory.GetCurrentDirectory();
-        if (parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption))
+        if (parseResult.HasOption(definition.TestModulesRootDirectoryOption))
         {
-            rootDirectory = parseResult.GetValue(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption);
+            rootDirectory = parseResult.GetValue(definition.TestModulesRootDirectoryOption);
 
             // If the root directory is not valid, we simply return
             if (string.IsNullOrEmpty(rootDirectory) || !Directory.Exists(rootDirectory))

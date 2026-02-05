@@ -30,7 +30,7 @@
          no that we do not silently miss cross-genning some bits. When a TFM for a tool is updated,
          update its path explicitly. If all TFMs match, update DefaultToolTfm -->
     <PropertyGroup>
-      <DefaultToolTfm>net10.0</DefaultToolTfm>
+      <DefaultToolTfm>$(SdkTargetFramework)</DefaultToolTfm>
 
       <NetSdkAnalyzers>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\analyzers\</NetSdkAnalyzers>
       <NetSdkTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
@@ -66,7 +66,7 @@
       <RemainingFiles Remove="$(InstallerOutputDirectory)Sdks\**\*" />
       <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
 
-      <!-- Removing Containers as containerize .DLLs and net472 components shouldn't be crossgenned. -->
+      <!-- Removing Containers as containerize .DLLs and netframework components shouldn't be crossgenned. -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)Containers\**\*" />
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->

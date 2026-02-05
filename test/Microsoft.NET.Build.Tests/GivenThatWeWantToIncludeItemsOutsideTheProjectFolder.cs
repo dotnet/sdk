@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         public void Link_metadata_is_added_to_items_outside_the_project_folder(bool includeWithGlob, bool useLinkBase)
         {
             string identifier = (includeWithGlob ? "Globbed" : "Direct") + (useLinkBase ? "_LinkBase" : "");
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("LinkTest", "LinkTest_", identifier)
                 .WithSource()
                 .WithProjectChanges(project =>

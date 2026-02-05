@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.Sdk.WebAssembly;
@@ -562,7 +563,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "_bin", "blazorwasm.wasm")).Should().NotExist();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52429")]
         public void Build_SatelliteAssembliesAreCopiedToBuildOutput()
         {
             // Arrange
@@ -807,10 +808,10 @@ public class TestReference
                 b.runtimeOptions.Should().Contain("--jiterpreter-jit-call-enabled");
             });
 
-        private void BuildWasmMinimalAndValidateBootConfig((string name, string value)[] properties, Action<BootJsonData> validateBootConfig)
+        private void BuildWasmMinimalAndValidateBootConfig((string name, string value)[] properties, Action<BootJsonData> validateBootConfig, [CallerMemberName] string callerName = null)
         {
             var testAppName = "BlazorWasmMinimal";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: string.Join("-", properties.Select(p => p.name + p.value ?? "null")));
+            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: callerName + string.Join("-", properties.Select(p => p.name + p.value ?? "null")));
 
             foreach (var property in properties)
             {

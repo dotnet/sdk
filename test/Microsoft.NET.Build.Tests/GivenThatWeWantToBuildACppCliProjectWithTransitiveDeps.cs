@@ -48,7 +48,7 @@ namespace Microsoft.NET.Build.Tests
 
         private TestAsset BuildAsset()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCppCliLibWithTransitiveDeps")
                 .WithSource();
 

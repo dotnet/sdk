@@ -13,14 +13,14 @@ public class MSBuildCommand(
     string? msbuildPath = null
 ) : MSBuildForwardingApp(MSBuildArgs.AnalyzeMSBuildArguments(
         [.. msbuildArgs],
-        CommonOptions.PropertiesOption,
-        CommonOptions.RestorePropertiesOption,
-        MSBuildCommandParser.TargetOption,
-        CommonOptions.VerbosityOption(),
+        CommonOptions.CreatePropertyOption(),
+        CommonOptions.CreateRestorePropertyOption(),
+        CommonOptions.CreateMSBuildTargetOption(),
+        CommonOptions.CreateVerbosityOption(),
         // We set the no-logo option to false here to ensure that by default the logo is shown for this command.
         // This is different from other commands that default to hiding the logo - but this command is meant to mimic
         // the behavior of calling MSBuild directly, which shows the logo by default.
-        CommonOptions.NoLogoOption(false)
+        CommonOptions.CreateNoLogoOption(false)
     ), msbuildPath)
 {
     public static MSBuildCommand FromArgs(string[] args, string? msbuildPath = null)
@@ -31,14 +31,15 @@ public class MSBuildCommand(
 
     public static MSBuildCommand FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
-        var msbuildArgs = new List<string>();
-        msbuildArgs.AddRange(parseResult.GetValue(MSBuildCommandParser.Arguments) ?? []);
-        msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(MSBuildCommandParser.GetCommand()));
+        var definition = (MSBuildCommandDefinition)parseResult.CommandResult.Command;
 
-        MSBuildCommand command = new(
-            msbuildArgs,
+        return new MSBuildCommand(
+            msbuildArgs:
+            [
+                ..parseResult.GetValue(definition.Arguments) ?? [],
+                ..parseResult.OptionValuesToBeForwarded(definition)
+            ],
             msbuildPath: msbuildPath);
-        return command;
     }
 
     public static int Run(ParseResult parseResult)
