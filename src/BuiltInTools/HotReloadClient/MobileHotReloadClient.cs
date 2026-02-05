@@ -126,51 +126,51 @@ internal sealed class MobileHotReloadClient : HotReloadClient
     private ResponseLoggingLevel ResponseLoggingLevel
         => Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
-    public override async Task<ApplyStatus> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
+    public async override Task<Task<bool>> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
         RequireReadyForUpdates();
 
         if (_managedCodeUpdateFailedOrCancelled)
         {
             Logger.LogDebug("Previous changes failed to apply. Further changes are not applied to this process.");
-            return ApplyStatus.Failed;
+            return Task.FromResult(false);
         }
 
         var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
         if (applicableUpdates.Count == 0)
         {
             Logger.LogDebug("No updates applicable to this process");
-            return ApplyStatus.NoChangesApplied;
+            return Task.FromResult(true);
         }
 
         var request = new ManagedCodeUpdateRequest(ToRuntimeUpdates(applicableUpdates), ResponseLoggingLevel);
 
-        var success = false;
-        try
-        {
-            success = await SendAndReceiveUpdateAsync(request, isProcessSuspended, cancellationToken);
-        }
-        finally
-        {
-            if (!success)
+        // Only cancel apply operation when the process exits:
+        var updateCompletionTask = QueueUpdateBatch(
+            sendAndReceive: async batchId =>
             {
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    Logger.LogWarning("Further changes won't be applied to this process.");
-                }
+                Logger.LogDebug("Sending update batch #{UpdateId}", batchId);
+                await WriteRequestAsync(request, applyOperationCancellationToken);
+                var success = await ReceiveUpdateResponseAsync(applyOperationCancellationToken);
+                Logger.Log(success ? LogEvents.UpdateBatchCompleted : LogEvents.UpdateBatchFailed, batchId);
+                return success;
+            },
+            applyOperationCancellationToken);
 
-                _managedCodeUpdateFailedOrCancelled = true;
-            }
-        }
+        return CompleteApplyOperationAsync();
 
-        if (success)
+        async Task<bool> CompleteApplyOperationAsync()
         {
-            Logger.Log(LogEvents.UpdatesApplied, applicableUpdates.Count, updates.Length);
-        }
+            if (await updateCompletionTask)
+            {
+                return true;
+            }
 
-        return
-            !success ? ApplyStatus.Failed :
-            (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
+            Logger.LogWarning("Further changes won't be applied to this process.");
+            _managedCodeUpdateFailedOrCancelled = true;
+
+            return false;
+        }
 
         static ImmutableArray<RuntimeManagedCodeUpdate> ToRuntimeUpdates(IEnumerable<HotReloadManagedCodeUpdate> updates)
             => [.. updates.Select(static update => new RuntimeManagedCodeUpdate(update.ModuleId,
@@ -180,13 +180,11 @@ internal sealed class MobileHotReloadClient : HotReloadClient
                ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!))];
     }
 
-    public async override Task<ApplyStatus> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
+    public override async Task<Task<bool>> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
         RequireReadyForUpdates();
 
-        var appliedUpdateCount = 0;
-
-        foreach (var update in updates)
+        var completionTasks = updates.Select(update =>
         {
             var request = new StaticAssetUpdateRequest(
                 new RuntimeStaticAssetUpdate(
@@ -198,58 +196,25 @@ internal sealed class MobileHotReloadClient : HotReloadClient
 
             Logger.LogDebug("Sending static file update request for asset '{Url}'.", update.RelativePath);
 
-            var success = await SendAndReceiveUpdateAsync(request, isProcessSuspended, cancellationToken);
-            if (success)
-            {
-                appliedUpdateCount++;
-            }
-        }
+            // Only cancel apply operation when the process exits:
+            return QueueUpdateBatch(
+                sendAndReceive: async batchId =>
+                {
+                    Logger.LogDebug("Sending update batch #{UpdateId}", batchId);
+                    await WriteRequestAsync(request, applyOperationCancellationToken);
+                    var success = await ReceiveUpdateResponseAsync(applyOperationCancellationToken);
+                    Logger.Log(success ? LogEvents.UpdateBatchCompleted : LogEvents.UpdateBatchFailed, batchId);
+                    return success;
+                },
+                applyOperationCancellationToken);
+        });
 
-        Logger.Log(LogEvents.UpdatesApplied, appliedUpdateCount, updates.Length);
+        return CompleteApplyOperationAsync();
 
-        return
-            (appliedUpdateCount == 0) ? ApplyStatus.Failed :
-            (appliedUpdateCount < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
-    }
-
-    private ValueTask<bool> SendAndReceiveUpdateAsync<TRequest>(TRequest request, bool isProcessSuspended, CancellationToken cancellationToken)
-        where TRequest : IUpdateRequest
-    {
-        return SendAndReceiveUpdateAsync(
-            send: SendAndReceiveAsync,
-            isProcessSuspended,
-            suspendedResult: true,
-            cancellationToken);
-
-        async ValueTask<bool> SendAndReceiveAsync(int batchId, CancellationToken cancellationToken)
+        async Task<bool> CompleteApplyOperationAsync()
         {
-            Logger.LogDebug("Sending update batch #{UpdateId}", batchId);
-
-            try
-            {
-                await WriteRequestAsync(request, cancellationToken);
-
-                if (await ReceiveUpdateResponseAsync(cancellationToken))
-                {
-                    Logger.LogDebug("Update batch #{UpdateId} completed.", batchId);
-                    return true;
-                }
-
-                Logger.LogDebug("Update batch #{UpdateId} failed.", batchId);
-            }
-            catch (Exception e)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    Logger.LogDebug("Update batch #{UpdateId} canceled.", batchId);
-                }
-                else
-                {
-                    Logger.LogError("Update batch #{UpdateId} failed with error: {Message}", batchId, e.Message);
-                }
-            }
-
-            return false;
+            var results = await Task.WhenAll(completionTasks);
+            return results.All(isSuccess => isSuccess);
         }
     }
 
