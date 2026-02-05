@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using Windows.Win32.Foundation;
 
 namespace Windows.Win32.System.Com;
@@ -12,7 +11,6 @@ namespace Windows.Win32.System.Com;
 internal sealed unsafe class ComClassFactory : IDisposable
 {
     private readonly IClassFactory* _classFactory;
-
 
     /// <summary>
     ///  Creates a class factory for a registered COM class with the given class ID.
@@ -27,7 +25,7 @@ internal sealed unsafe class ComClassFactory : IDisposable
     ///  Attempts to create a class factory for the given class ID.
     /// </summary>
     /// <param name="classId">The guid of the class to create (CLSID).</param>
-    /// <param name="result"></param>The result of <see cref="PInvoke.CoGetClassObject"/>.</param>
+    /// <param name="result">The result of <see cref="PInvoke.CoGetClassObject"/>.</param>
     /// <returns><see langword="true"/> when the factory was successfully created.</returns>
     public static bool TryCreate(Guid classId, [NotNullWhen(true)] out ComClassFactory? factory, out HRESULT result)
     {
@@ -40,6 +38,7 @@ internal sealed unsafe class ComClassFactory : IDisposable
             (void*)null,
             &iid,
             (void**)&classFactory);
+
 
         if (result.Failed || classFactory is null)
         {

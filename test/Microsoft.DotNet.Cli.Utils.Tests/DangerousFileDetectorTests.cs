@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 string CLSID_InternetSecurityManager = "7b8a2d94-0ac9-11d1-896c-00c04fb6bfc4";
 
                 Type iismType = Type.GetTypeFromCLSID(new Guid(CLSID_InternetSecurityManager));
-                var internetSecurityManager = (IInternetSecurityManager)Activator.CreateInstance(iismType);
+                var internetSecurityManager = Activator.CreateInstance(iismType);
                 return true;
             }
             catch (COMException ex) when (ex.ErrorCode == REGDB_E_CLASSNOTREG)

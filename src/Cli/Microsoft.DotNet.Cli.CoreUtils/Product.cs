@@ -15,11 +15,10 @@ public static class Product
     static Product()
     {
         DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
-        Version = versionFile.BuildNumber ??
-                System.Diagnostics.FileVersionInfo.GetVersionInfo(
-                        typeof(Product).GetTypeInfo().Assembly.Location)
-                    .ProductVersion ??
-                string.Empty;
+        Version = versionFile.BuildNumber
+            ?? typeof(Product).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion
+            ?? string.Empty;
     }
 }
 
