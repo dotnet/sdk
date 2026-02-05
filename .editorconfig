@@ -476,10 +476,6 @@ dotnet_diagnostic.SA1204.severity = none
 [artifacts/**.cs]
 dotnet_diagnostic.IDE0073.severity = none
 
-# Imported code with different license headers
-[src/Microsoft.CodeAnalysis.NetAnalyzers/**.cs]
-dotnet_diagnostic.IDE0073.severity = none
-
 # C++ Files
 [*.{cpp,h,in}]
 curly_bracket_next_line = true

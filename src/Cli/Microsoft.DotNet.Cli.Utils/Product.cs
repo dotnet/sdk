@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Microsoft.DotNet.Cli.Utils;
@@ -14,10 +16,9 @@ public static class Product
     static Product()
     {
         DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
-        Version = versionFile.BuildNumber ??
-                System.Diagnostics.FileVersionInfo.GetVersionInfo(
-                        typeof(Product).GetTypeInfo().Assembly.Location)
-                    .ProductVersion ??
-                string.Empty;
+        Version = versionFile.BuildNumber
+            ?? typeof(Product).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion
+            ?? string.Empty;
     }
 }
