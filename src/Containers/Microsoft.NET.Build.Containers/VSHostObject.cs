@@ -73,7 +73,7 @@ internal sealed class VSHostObject(ITaskHost? hostObject, TaskLoggingHelper log)
             if (!string.IsNullOrEmpty(rawTaskItems))
             {
                 List<TaskItemDto>? dtos = JsonSerializer.Deserialize<List<TaskItemDto>>(rawTaskItems);
-                if (dtos is not null)
+                if (dtos is not null && dtos.Count > 0)
                 {
                     _log.LogMessage(MessageImportance.Low, "Successfully retrieved task items via QueryAllTaskItems.");
                     return dtos.Select(ConvertToTaskItem).ToList();
