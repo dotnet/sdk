@@ -1,3 +1,16 @@
+# Workflow to detect new NETSDK diagnostic codes in pull requests
+#
+# This workflow automatically:
+# 1. Scans PR diffs for newly added NETSDK diagnostic codes (e.g., NETSDK1234:) in .xlf files
+# 2. Applies the 'sdk-diagnostic-docs-needed' label when new diagnostics are found
+# 3. Posts/updates a comment reminding contributors to update SDK diagnostic documentation
+#    in the dotnet/docs repository at docs/core/tools/sdk-errors/
+#
+# Prerequisites: The 'sdk-diagnostic-docs-needed' label must exist in the repository
+#
+# Security: Uses pull_request_target to run in the base branch context (safe for forks)
+# The workflow only analyzes diffs via GitHub API and does not execute any code from the PR.
+#
 name: Detect New NETSDK Diagnostics
 
 on:
@@ -61,15 +74,31 @@ jobs:
             // Pattern to match NETSDK diagnostic codes
             const diagnosticPattern = /NETSDK(\d{4}):/g;
             
-            // Extract only added lines from the diff (lines starting with +)
-            const addedLines = diff.split('\n').filter(line => line.startsWith('+') && !line.startsWith('+++'));
-            
-            // Find all NETSDK codes in added lines
+            // Parse diff into file chunks - split by "diff --git"
+            const diffLines = diff.split('\n');
             const diagnosticCodes = new Set();
-            for (const line of addedLines) {
-              let match;
-              while ((match = diagnosticPattern.exec(line)) !== null) {
-                diagnosticCodes.add(`NETSDK${match[1]}`);
+            
+            let currentFile = null;
+            let inXlfFile = false;
+            
+            for (const line of diffLines) {
+              // Check if this is a new file header
+              if (line.startsWith('diff --git')) {
+                currentFile = null;
+                inXlfFile = false;
+              } else if (line.startsWith('+++')) {
+                // Extract filename from +++ b/path/to/file.xlf
+                const match = line.match(/^\+\+\+ b\/(.+)$/);
+                if (match) {
+                  currentFile = match[1];
+                  inXlfFile = currentFile.endsWith('.xlf');
+                }
+              } else if (inXlfFile && line.startsWith('+') && !line.startsWith('+++')) {
+                // This is an added line in an .xlf file
+                let diagnosticMatch;
+                while ((diagnosticMatch = diagnosticPattern.exec(line)) !== null) {
+                  diagnosticCodes.add(`NETSDK${diagnosticMatch[1]}`);
+                }
               }
             }
             
@@ -79,47 +108,12 @@ jobs:
             core.setOutput('has_diagnostics', foundDiagnostics.length > 0 ? 'true' : 'false');
             
             if (foundDiagnostics.length > 0) {
-              core.info(`Found ${foundDiagnostics.length} new NETSDK diagnostic(s): ${foundDiagnostics.join(', ')}`);
+              core.info(`Found ${foundDiagnostics.length} new NETSDK diagnostic(s) in .xlf files: ${foundDiagnostics.join(', ')}`);
             } else {
-              core.info('No new NETSDK diagnostics found in this PR.');
+              core.info('No new NETSDK diagnostics found in .xlf files in this PR.');
             }
             
             return foundDiagnostics;
-
-      - name: Create label if it doesn't exist
-        if: steps.detect.outputs.has_diagnostics == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            const labelName = 'sdk-diagnostic-docs-needed';
-            const labelColor = 'd4c5f9';
-            const labelDescription = 'This PR introduces new SDK diagnostic codes and requires documentation updates';
-            
-            try {
-              // Try to get the label
-              await github.rest.issues.getLabel({
-                owner,
-                repo,
-                name: labelName
-              });
-              core.info(`Label '${labelName}' already exists.`);
-            } catch (error) {
-              if (error.status === 404) {
-                // Label doesn't exist, create it
-                core.info(`Creating label '${labelName}'...`);
-                await github.rest.issues.createLabel({
-                  owner,
-                  repo,
-                  name: labelName,
-                  color: labelColor,
-                  description: labelDescription
-                });
-                core.info(`Label '${labelName}' created successfully.`);
-              } else {
-                throw error;
-              }
-            }
 
       - name: Add label to PR
         if: steps.detect.outputs.has_diagnostics == 'true'
