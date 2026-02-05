@@ -757,7 +757,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         }
 
         [Theory]
-        public Task ExtensionMembers_NoDiagnostic()
+        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        public Task ExtensionMembers_NoDiagnostic(OutputKind outputKind)
         {
             return new VerifyCS.Test
             {
