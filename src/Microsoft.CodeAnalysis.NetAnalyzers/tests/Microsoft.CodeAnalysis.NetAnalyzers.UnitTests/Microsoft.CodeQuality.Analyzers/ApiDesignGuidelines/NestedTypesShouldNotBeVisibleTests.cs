@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -693,6 +694,26 @@ Public Class Outer
     End Class
 End Class
 ", GetBasicCA1034ResultAt(3, 18, "Pizza"), GetBasicCA1034ResultAt(12, 37, "Builder"));
+        }
+
+        [Fact, WorkItem(51681, "https://github.com/dotnet/sdk/issues/51681")]
+        public Task CSharpNoDiagnosticExtensionMembersAsync()
+        {
+            var code = @"
+public static class E
+{
+	extension(int x)
+	{
+		public int M() => x + 1;
+	}
+}
+";
+
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                LanguageVersion = LanguageVersion.CSharp14,
+            }.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpCA1034ResultAt(int line, int column, string nestedTypeName)
