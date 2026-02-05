@@ -6,26 +6,21 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Help;
 
-internal static class HelpCommandDefinition
+internal sealed class HelpCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-help";
+    private const string Link = "https://aka.ms/dotnet-help";
 
-    public static readonly Argument<string[]> Argument = new(CliCommandStrings.CommandArgumentName)
+    public readonly Argument<string[]> Argument = new(CliCommandStrings.CommandArgumentName)
     {
         Description = CliCommandStrings.CommandArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static Command Create()
+    public HelpCommandDefinition()
+        : base("help", CliCommandStrings.HelpAppFullName)
     {
-        Command command = new("help", CliCommandStrings.HelpAppFullName)
-        {
-            DocsLink = DocsLink
-        };
-
-        command.Arguments.Add(Argument);
-
-        return command;
+        this.DocsLink = Link;
+        Arguments.Add(Argument);
     }
 }
 

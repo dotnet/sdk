@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -12,7 +12,7 @@ namespace EndToEnd.Tests
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             new DotnetNewCommand(Log, "console", "--no-restore")
@@ -54,7 +54,7 @@ namespace EndToEnd.Tests
         [Fact]
         public void ItCanRunAnAppUsingTheWebSdk()
         {
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             new DotnetNewCommand(Log, "console", "--no-restore")
@@ -86,7 +86,7 @@ namespace EndToEnd.Tests
         [InlineData("current", false)]
         public void ItCanPublishArm64Winforms(string targetFramework, bool selfContained)
         {
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             string[] newArgs = [
@@ -125,7 +125,7 @@ namespace EndToEnd.Tests
         [InlineData("current", false)]
         public void ItCanPublishArm64Wpf(string targetFramework, bool selfContained)
         {
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             string[] newArgs = [
@@ -222,7 +222,7 @@ namespace EndToEnd.Tests
         [InlineData("sln")]
         public void ItCanCreateItemTemplate(string templateName)
         {
-            var directory = _testAssetsManager.CreateTestDirectory(identifier: templateName);
+            var directory = TestAssetsManager.CreateTestDirectory(identifier: templateName);
             string projectDirectory = directory.Path;
 
             string newArgs = $"{templateName}";
@@ -405,7 +405,7 @@ namespace EndToEnd.Tests
             string dotnetFolder = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 10)
+            if (latestMajorVersion == 11)
             {
                 return $"net{latestMajorVersion}.0";
             }
@@ -493,7 +493,7 @@ namespace EndToEnd.Tests
             {
                 identifier += $"({itemName})";
             }
-            var directory = _testAssetsManager.CreateTestDirectory(identifier: identifier);
+            var directory = TestAssetsManager.CreateTestDirectory(identifier: identifier);
             string projectDirectory = directory.Path;
 
             string[] newArgs = [

@@ -117,6 +117,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             };
         }
 
+        public static Option<FileInfo> CreateOutputOption() => new("--output", "-o")
+        {
+            Description = SymbolStrings.Option_Output,
+            Required = false,
+            Arity = new ArgumentArity(1, 1)
+        };
+
         internal static Option<bool> CreateColumnsAllOption()
         {
             return new("--columns-all")

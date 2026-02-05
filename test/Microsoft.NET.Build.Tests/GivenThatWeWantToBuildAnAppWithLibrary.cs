@@ -16,7 +16,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_project_successfully()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource();
 
@@ -26,7 +26,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_project_successfully_twice()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource();
 
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_generates_satellite_assemblies()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("KitchenSink")
                 .WithSource();
 
@@ -128,7 +128,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource();
 
@@ -164,7 +164,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void An_appx_app_can_reference_a_cross_targeted_library()
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("AppxReferencingCrossTargeting")
                 .WithSource();
 

@@ -9,24 +9,25 @@ using Microsoft.DotNet.Cli.Commands.Package;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 
-internal static class RemoveCommandDefinition
+internal sealed class RemoveCommandDefinition : Command
 {
-    public const string Name = "remove";
+    public new const string Name = "remove";
 
-    public static readonly string DocsLink = "https://aka.ms/dotnet-remove";
+    private const string Link = "https://aka.ms/dotnet-remove";
 
-    public static Command Create()
+    public readonly Argument<string> ProjectOrFileArgument = PackageCommandDefinition.CreateProjectOrFileArgument();
+
+    public readonly RemovePackageCommandDefinition PackageCommand = new();
+    public readonly RemoveReferenceCommandDefinition ReferenceCommand = new();
+
+    public RemoveCommandDefinition()
+        : base(Name, CliCommandStrings.NetRemoveCommand)
     {
-        var command = new Command(Name, CliCommandStrings.NetRemoveCommand)
-        {
-            Hidden = true,
-            DocsLink = DocsLink
-        };
+        Hidden = true;
+        this.DocsLink = Link;
 
-        command.Arguments.Add(PackageCommandDefinition.ProjectOrFileArgument);
-        command.Subcommands.Add(RemovePackageCommandDefinition.Create());
-        command.Subcommands.Add(RemoveReferenceCommandDefinition.Create());
-
-        return command;
+        Arguments.Add(ProjectOrFileArgument);
+        Subcommands.Add(PackageCommand);
+        Subcommands.Add(ReferenceCommand);
     }
 }

@@ -9,17 +9,18 @@ namespace Microsoft.DotNet.Cli.Commands.BuildServer;
 
 internal static class BuildServerCommandParser
 {
-    private static readonly Command Command = SetAction(BuildServerCommandDefinition.Create());
+    private static readonly BuildServerCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetAction(Command command)
+    private static BuildServerCommandDefinition CreateCommand()
     {
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-        command.Subcommands.Single(c => c.Name == BuildServerShutdownCommandDefinition.Name).SetAction((parseResult) => new BuildServerShutdownCommand(parseResult).Execute());
+        var command = new BuildServerCommandDefinition();
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
+        command.ShutdownCommand.SetAction(parseResult => new BuildServerShutdownCommand(parseResult).Execute());
         return command;
     }
 }

@@ -5,20 +5,19 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 
-public static class SolutionListCommandDefinition
+public sealed class SolutionListCommandDefinition : Command
 {
-    public const string Name = "list";
-
-    public static readonly Option<bool> SolutionFolderOption = new("--solution-folders")
+    public readonly Option<bool> SolutionFolderOption = new("--solution-folders")
     {
         Description = CliCommandStrings.ListSolutionFoldersArgumentDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static Command Create()
+    public SolutionListCommandDefinition()
+        : base("list", CliCommandStrings.ListAppFullName)
     {
-        Command command = new(Name, CliCommandStrings.ListAppFullName);
-        command.Options.Add(SolutionFolderOption);
-        return command;
+        Options.Add(SolutionFolderOption);
     }
+
+    public SolutionCommandDefinition Parent => (SolutionCommandDefinition)Parents.Single();
 }

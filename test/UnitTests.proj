@@ -38,7 +38,6 @@
        as that validates running tests with desktop msbuild. -->
   <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
     <SDKCustomXUnitProject Include="
-      sdk-tasks.Tests\sdk-tasks.Tests.csproj;
       Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
       Microsoft.DotNet.ApiCompat.Tests\Microsoft.DotNet.ApiCompat.Tests.csproj;
       Microsoft.DotNet.ApiCompatibility.Tests\Microsoft.DotNet.ApiCompatibility.Tests.csproj;
@@ -150,7 +149,6 @@
 
     <ItemGroup>
       <HelixCorrelationPayload Include="$(HelixPayloadOnHost)">
-        <PayloadDirectory>$(HelixPayloadOnHost)</PayloadDirectory>
         <Destination>t</Destination>
       </HelixCorrelationPayload>
 
@@ -159,34 +157,18 @@
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(TestHostDotNetRoot)">
-        <PayloadDirectory>$(TestHostDotNetRoot)</PayloadDirectory>
         <Destination>d</Destination>
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Include="$(MicrosoftNETBuildExtensions)">
-        <PayloadDirectory>$(MicrosoftNETBuildExtensions)</PayloadDirectory>
         <Destination>ex</Destination>
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Include="$(MSBuildSdkResolverDir)">
-        <PayloadDirectory>$(MSBuildSdkResolverDir)</PayloadDirectory>
         <Destination>r</Destination>
       </HelixCorrelationPayload>
 
-      <HelixCorrelationPayload Include="SDKTestRunPackages.zip">
-        <PayloadDirectory>$(TestHostDotNetRoot)</PayloadDirectory>
-        <Destination>d/.nuget</Destination>
-        <Uri>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/any/sdk-test-assets/SDKTestRunPackages.zip</Uri>
-      </HelixCorrelationPayload>
-
-      <HelixCorrelationPayload Include="SDKTestRunPackages2.zip">
-        <PayloadDirectory>$(TestHostDotNetRoot)</PayloadDirectory>
-        <Destination>d/.nuget</Destination>
-        <Uri>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/any/sdk-test-assets/SDKTestRunPackages2.zip</Uri>
-      </HelixCorrelationPayload>
-
       <HelixCorrelationPayload Include="$(ArtifactsShippingPackages)">
-        <PayloadDirectory>$(ArtifactsShippingPackages)</PayloadDirectory>
         <Destination>d/.nuget</Destination>
       </HelixCorrelationPayload>
     </ItemGroup>

@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_library_successfully()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS")
                 .WithSource();
 
@@ -39,7 +39,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_library_twice_in_a_row()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS")
                 .WithSource();
 
@@ -101,7 +101,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void The_build_fails_if_nuget_restore_has_not_occurred()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS")
                 .WithSource();
 
@@ -115,7 +115,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void Restore_succeeds_even_if_the_project_extension_is_for_a_different_language()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS")
                 .WithSource();
 
@@ -141,7 +141,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("Debug-NetCore", "DEBUG_NETCORE")]
         public void It_implicitly_defines_compilation_constants_for_the_configuration(string configuration, string expectedDefine)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS", "ImplicitConfigurationConstantsFS", configuration)
                 .WithSource();
 
@@ -173,7 +173,7 @@ namespace Microsoft.NET.Build.Tests
             "NETCOREAPP2_1_OR_GREATER", "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET5_0_OR_GREATER" })]
         public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryFS", "ImplicitFrameworkConstantsFS", targetFramework)
                 .WithSource()
                 .WithProjectChanges(project =>

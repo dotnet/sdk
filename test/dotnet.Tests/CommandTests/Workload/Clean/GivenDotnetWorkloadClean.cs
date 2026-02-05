@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private (string testDirectory, string dotnetRoot, string userProfileDir, WorkloadResolver workloadResolver, MockNuGetPackageDownloader nugetDownloader) Setup(bool userLocal, bool cleanAll)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? $"userlocal-{cleanAll}" : $"default-{cleanAll}").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? $"userlocal-{cleanAll}" : $"default-{cleanAll}").Path;
             var dotnetRoot = Path.Combine(testDirectory, dotnet);
             var userProfileDir = Path.Combine(testDirectory, _profileDirectoryLeafName);
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
         public GivenDotnetWorkloadClean(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
-            _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
         [Theory]
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
         {
             var (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader) = Setup(userLocal, true);
 
-            const string aboveSdkFeatureBand = ToolsetInfo.NextTargetFrameworkVersion + ".100";
+            const string aboveSdkFeatureBand = ToolsetInfo.CurrentTargetFrameworkVersion + ".100";
             const string belowSdkFeatureBand = "5.0.100"; // At the time of writing this test, it would only run on 7-8.0 SDKs or above.
 
             string installRoot = userLocal ? userProfileDir : dotnetRoot;

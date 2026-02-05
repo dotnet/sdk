@@ -5,25 +5,21 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Complete;
 
-internal static class CompleteCommandDefinition
+internal sealed class CompleteCommandDefinition : Command
 {
-    public static readonly Argument<string> PathArgument = new("path");
+    public readonly Argument<string> PathArgument = new("path");
 
-    public static readonly Option<int?> PositionOption = new("--position")
+    public readonly Option<int?> PositionOption = new("--position")
     {
         HelpName = "command"
     };
 
-    public static Command Create()
+    public CompleteCommandDefinition()
+        : base("complete")
     {
-        Command command = new("complete")
-        {
-            Hidden = true
-        };
+        Hidden = true;
 
-        command.Arguments.Add(PathArgument);
-        command.Options.Add(PositionOption);
-
-        return command;
+        Arguments.Add(PathArgument);
+        Options.Add(PositionOption);
     }
 }

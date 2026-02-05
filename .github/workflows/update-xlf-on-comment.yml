@@ -121,11 +121,6 @@ jobs:
               return;
             }
 
-            if (pr.data.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`) {
-              core.setFailed('Pull request head branch is in a fork. Cannot update XLF files automatically.');
-              return;
-            }
-
             core.setOutput('head_ref', pr.data.head.ref);
 
   generate:

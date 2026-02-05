@@ -13,6 +13,7 @@ using Microsoft.DotNet.Cli.Commands.Pack;
 using Microsoft.DotNet.Cli.Commands.Publish;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.VSTest;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -110,32 +111,27 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["build", "publish"],
-            optionsToLog: [ BuildCommandDefinition.FrameworkOption, PublishCommandDefinition.FrameworkOption,
-                BuildCommandDefinition.RuntimeOption, PublishCommandDefinition.RuntimeOption, BuildCommandDefinition.ConfigurationOption,
-                PublishCommandDefinition.ConfigurationOption ]
+            optionsToLog: [ CommonOptions.FrameworkOptionName, TargetPlatformOptions.RuntimeOptionName, CommonOptions.ConfigurationOptionName ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["run", "clean", "test"],
-            optionsToLog: [ RunCommandDefinition.FrameworkOption, CleanCommandDefinition.FrameworkOption,
-                TestCommandDefinition.FrameworkOption, RunCommandDefinition.ConfigurationOption, CleanCommandDefinition.ConfigurationOption,
-                TestCommandDefinition.ConfigurationOption ]
+            optionsToLog: [CommonOptions.FrameworkOptionName, CommonOptions.ConfigurationOptionName]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["pack"],
-            optionsToLog: [PackCommandDefinition.ConfigurationOption]
+            optionsToLog: [CommonOptions.ConfigurationOptionName]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["vstest"],
-            optionsToLog: [ CommonOptions.TestPlatformOption,
-                CommonOptions.TestFrameworkOption, CommonOptions.TestLoggerOption ]
+            optionsToLog: [VSTestCommandDefinition.TestPlatformOptionName, VSTestCommandDefinition.TestFrameworkOptionName, VSTestCommandDefinition.TestLoggerOptionName]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
             topLevelCommandName: ["publish"],
-            optionsToLog: [PublishCommandDefinition.RuntimeOption]
+            optionsToLog: [TargetPlatformOptions.RuntimeOptionName]
         ),
         new AllowListToSendVerbSecondVerbFirstArgument(["workload", "tool", "new"]),
     ];

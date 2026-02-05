@@ -6,13 +6,13 @@ using Microsoft.DotNet.Cli.Commands.Project.Convert;
 
 namespace Microsoft.DotNet.Cli.Commands.Project;
 
-internal sealed class ProjectCommandDefinition
+internal sealed class ProjectCommandDefinition : Command
 {
-    public static Command Create()
-    {
-        Command command = new("project");
-        command.Subcommands.Add(ProjectConvertCommandDefinition.Create());
+    public readonly ProjectConvertCommandDefinition ConvertCommand = new();
 
-        return command;
+    public ProjectCommandDefinition()
+        : base("project")
+    {
+        Subcommands.Add(ConvertCommand);
     }
 }

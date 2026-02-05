@@ -15,7 +15,7 @@ namespace Microsoft.NET.Rebuild.Tests
         [Fact]
         public void It_rebuilds_with_logging_assets_message()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", "RebuildHelloWorld")
                 .WithSource()
                 .Restore(Log);

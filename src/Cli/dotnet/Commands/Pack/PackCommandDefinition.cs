@@ -9,106 +9,119 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
-internal static class PackCommandDefinition
+internal sealed class PackCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-pack";
+    private const string Link = "https://aka.ms/dotnet-pack";
 
-    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
+    public readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
         Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
+    public readonly ImplicitRestoreOptions ImplicitRestoreOptions = new(showHelp: false, useShortOptions: false);
+
+    public readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.PackCmdOutputDirDescription,
         HelpName = CliCommandStrings.PackCmdOutputDir
     }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
 
-    public static readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
+    public readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
         Description = CliCommandStrings.CmdNoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
-    public static readonly Option<bool> IncludeSymbolsOption = new Option<bool>("--include-symbols")
+    public readonly Option<bool> IncludeSymbolsOption = new Option<bool>("--include-symbols")
     {
         Description = CliCommandStrings.CmdIncludeSymbolsDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSymbols=true");
 
-    public static readonly Option<bool> IncludeSourceOption = new Option<bool>("--include-source")
+    public readonly Option<bool> IncludeSourceOption = new Option<bool>("--include-source")
     {
         Description = CliCommandStrings.CmdIncludeSourceDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSource=true");
 
-    public static readonly Option<bool> ServiceableOption = new Option<bool>("--serviceable", "-s")
+    public readonly Option<bool> ServiceableOption = new Option<bool>("--serviceable", "-s")
     {
         Description = CliCommandStrings.CmdServiceableDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:Serviceable=true");
 
-    public static readonly Option<bool> NoLogoOption = CommonOptions.NoLogoOption();
+    public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
 
-    public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+    public readonly Option<bool> NoRestoreOption = CommonOptions.CreateNoRestoreOption();
 
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
+    public readonly Option<string?> ConfigurationOption = CommonOptions.CreateConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
 
-    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
-    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandDefinition.VerbosityOption;
+    public readonly Option<string[]> TargetOption = CreateTargetOption();
 
-    public static Option<NuGetVersion> VersionOption =
-        new Option<NuGetVersion>("--version")
-        {
-            Description = CliCommandStrings.PackCmdVersionDescription,
-            HelpName = CliCommandStrings.PackCmdVersion,
-            Arity = ArgumentArity.ExactlyOne,
-            CustomParser = r =>
-            {
-                if (r.Tokens.Count == 0)
-                    return null;
-                var value = r.Tokens[0].Value;
-                if (NuGetVersion.TryParse(value, out var version))
-                    return version;
-                r.AddError(string.Format(CliStrings.InvalidVersion, value));
-                return null;
+    public readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
 
-            }
-        }.ForwardAsSingle(o => $"--property:PackageVersion={o}");
+    public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
+    public readonly Option<string> VersionSuffixOption = CommonOptions.CreateVersionSuffixOption();
+    public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
+    public readonly Option<string[]?> GetPropertyOption = CommonOptions.CreateGetPropertyOption();
+    public readonly Option<string[]?> GetItemOption = CommonOptions.CreateGetItemOption();
+    public readonly Option<string[]?> GetTargetResultOption = CommonOptions.CreateGetTargetResultOption();
+    public readonly Option<string[]?> GetResultOutputFileOption = CommonOptions.CreateGetResultOutputFileOption();
+    public readonly Option<bool> NoDependenciesOption = RestoreCommandDefinition.CreateNoDependenciesOption(showHelp: false);
+    public readonly Option<string> RuntimeOption = TargetPlatformOptions.CreateRuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription);
 
-    public static Command Create()
+    public readonly Option<NuGetVersion> VersionOption = new Option<NuGetVersion>("--version")
     {
-        var command = new Command("pack", CliCommandStrings.PackAppFullName)
+        Description = CliCommandStrings.PackCmdVersionDescription,
+        HelpName = CliCommandStrings.PackCmdVersion,
+        Arity = ArgumentArity.ExactlyOne,
+        CustomParser = r =>
         {
-            DocsLink = DocsLink
-        };
+            if (r.Tokens.Count == 0)
+                return null;
+            var value = r.Tokens[0].Value;
+            if (NuGetVersion.TryParse(value, out var version))
+                return version;
+            r.AddError(string.Format(CliStrings.InvalidVersion, value));
+            return null;
 
-        command.Arguments.Add(SlnOrProjectOrFileArgument);
-        command.Options.Add(OutputOption);
-        command.Options.Add(CommonOptions.ArtifactsPathOption);
-        command.Options.Add(NoBuildOption);
-        command.Options.Add(IncludeSymbolsOption);
-        command.Options.Add(IncludeSourceOption);
-        command.Options.Add(ServiceableOption);
-        command.Options.Add(NoLogoOption);
-        command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
-        command.Options.Add(NoRestoreOption);
-        command.Options.Add(VerbosityOption);
-        command.Options.Add(CommonOptions.VersionSuffixOption);
-        command.Options.Add(VersionOption);
-        command.Options.Add(ConfigurationOption);
-        command.Options.Add(CommonOptions.DisableBuildServersOption);
-        command.Options.Add(TargetOption);
-        command.Options.Add(CommonOptions.GetPropertyOption);
-        command.Options.Add(CommonOptions.GetItemOption);
-        command.Options.Add(CommonOptions.GetTargetResultOption);
-        command.Options.Add(CommonOptions.GetResultOutputFileOption);
+        }
+    }.ForwardAsSingle(o => $"--property:PackageVersion={o}");
 
-        // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
-        RestoreCommandDefinition.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
-        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription));
+    public PackCommandDefinition()
+        : base("pack", CliCommandStrings.PackAppFullName)
+    {
+        this.DocsLink = Link;
 
-        return command;
+        Arguments.Add(SlnOrProjectOrFileArgument);
+        Options.Add(OutputOption);
+        Options.Add(ArtifactsPathOption);
+        Options.Add(NoBuildOption);
+        Options.Add(IncludeSymbolsOption);
+        Options.Add(IncludeSourceOption);
+        Options.Add(ServiceableOption);
+        Options.Add(NoLogoOption);
+        Options.Add(InteractiveOption);
+        Options.Add(NoRestoreOption);
+        Options.Add(VerbosityOption);
+        Options.Add(VersionSuffixOption);
+        Options.Add(VersionOption);
+        Options.Add(ConfigurationOption);
+        Options.Add(DisableBuildServersOption);
+        Options.Add(TargetOption);
+        Options.Add(GetPropertyOption);
+        Options.Add(GetItemOption);
+        Options.Add(GetTargetResultOption);
+        Options.Add(GetResultOutputFileOption);
+
+        ImplicitRestoreOptions.AddTo(Options);
+
+        Options.Add(NoDependenciesOption);
+        Options.Add(RuntimeOption);
     }
+
+    public static Option<string[]> CreateTargetOption()
+        => CommonOptions.CreateRequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
 }

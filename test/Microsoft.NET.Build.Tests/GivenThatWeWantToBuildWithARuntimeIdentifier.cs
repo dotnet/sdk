@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tests
         [CoreMSBuildOnlyFact]
         public void It_fails_with_solution_level_RID()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource();
 
@@ -30,7 +30,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_succeeds_with_project_level_RID()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -61,7 +61,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeIdentifier = "won-x64"
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
                 .Execute()

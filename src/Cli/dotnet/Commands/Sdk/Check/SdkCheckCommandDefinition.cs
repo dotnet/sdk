@@ -5,10 +5,7 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
-internal static class SdkCheckCommandDefinition
+internal sealed class SdkCheckCommandDefinition()
+    : Command("check", CliCommandStrings.SdkCheckAppFullName)
 {
-    public const string Name = "check";
-
-    public static Command Create()
-        => new(Name, CliCommandStrings.SdkCheckAppFullName);
 }

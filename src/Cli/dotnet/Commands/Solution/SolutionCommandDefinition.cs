@@ -10,34 +10,33 @@ using Microsoft.DotNet.Cli.Commands.Solution.Remove;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution;
 
-internal static class SolutionCommandDefinition
+public sealed class SolutionCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-sln";
+    private const string Link = "https://aka.ms/dotnet-sln";
 
-    public static readonly string CommandName = "solution";
-    public static readonly string CommandAlias = "sln";
-    public static readonly Argument<string> SlnArgument = new Argument<string>(CliCommandStrings.SolutionArgumentName)
+    public readonly Argument<string> SlnArgument = new Argument<string>(CliCommandStrings.SolutionArgumentName)
     {
         HelpName = CliCommandStrings.SolutionArgumentName,
         Description = CliCommandStrings.SolutionArgumentDescription,
         Arity = ArgumentArity.ZeroOrOne
     }.DefaultToCurrentDirectory();
 
-    public static Command Create()
+    public readonly SolutionAddCommandDefinition AddCommand = new();
+    public readonly SolutionListCommandDefinition ListCommand = new();
+    public readonly SolutionRemoveCommandDefinition RemoveCommand = new();
+    public readonly SolutionMigrateCommandDefinition MigrateCommand = new();
+
+    public SolutionCommandDefinition()
+        : base("solution", CliCommandStrings.SolutionAppFullName)
     {
-        Command command = new(CommandName, CliCommandStrings.SolutionAppFullName)
-        {
-            DocsLink = DocsLink
-        };
+        this.DocsLink = Link;
 
-        command.Aliases.Add(CommandAlias);
+        Aliases.Add("sln");
 
-        command.Arguments.Add(SlnArgument);
-        command.Subcommands.Add(SolutionAddCommandDefinition.Create());
-        command.Subcommands.Add(SolutionListCommandDefinition.Create());
-        command.Subcommands.Add(SolutionRemoveCommandDefinition.Create());
-        command.Subcommands.Add(SolutionMigrateCommandDefinition.Create());
-
-        return command;
+        Arguments.Add(SlnArgument);
+        Subcommands.Add(AddCommand);
+        Subcommands.Add(ListCommand);
+        Subcommands.Add(RemoveCommand);
+        Subcommands.Add(MigrateCommand);
     }
 }

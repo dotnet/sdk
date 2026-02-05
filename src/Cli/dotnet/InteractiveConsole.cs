@@ -19,14 +19,14 @@ public static class InteractiveConsole
     /// <see langword="false"/> if the user declined it,
     /// <see langword="null"/> if the user could not answer because <c>--no-interactive</c> was specified.
     /// </returns>
-    public static bool? Confirm(string message, ParseResult parseResult, bool acceptEscapeForFalse)
+    public static bool? Confirm(string message, bool yesOption, bool interactiveOption, bool acceptEscapeForFalse)
     {
-        if (parseResult.GetValue(CommonOptions.YesOption))
+        if (yesOption)
         {
             return true;
         }
 
-        if (!parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
+        if (!interactiveOption)
         {
             return null;
         }

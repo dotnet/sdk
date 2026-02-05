@@ -5,14 +5,12 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 
-public static class SolutionMigrateCommandDefinition
+public sealed class SolutionMigrateCommandDefinition : Command
 {
-    public const string Name = "migrate";
-
-    public static Command Create()
+    public SolutionMigrateCommandDefinition()
+        : base("migrate", CliCommandStrings.MigrateAppFullName)
     {
-        Command command = new(Name, CliCommandStrings.MigrateAppFullName);
-        command.Arguments.Add(SolutionCommandDefinition.SlnArgument);
-        return command;
     }
+
+    public SolutionCommandDefinition Parent => (SolutionCommandDefinition)Parents.Single();
 }

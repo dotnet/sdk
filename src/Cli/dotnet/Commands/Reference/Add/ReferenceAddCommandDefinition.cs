@@ -1,19 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
-internal static class ReferenceAddCommandDefinition
+internal sealed class ReferenceAddCommandDefinition() : ReferenceAddCommandDefinitionBase(Name)
 {
-    public const string Name = "add";
+    public new const string Name = "add";
 
-    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.ReferenceAddProjectPathArgumentName)
+    public ReferenceCommandDefinition Parent => (ReferenceCommandDefinition)Parents.Single();
+
+    public override string? GetFileOrDirectory(ParseResult parseResult)
+        => parseResult.GetValue(Parent.ProjectOption);
+}
+
+internal abstract class ReferenceAddCommandDefinitionBase : Command
+{
+    public static Argument<IEnumerable<string>> CreateProjectPathArgument() => new(CliCommandStrings.ReferenceAddProjectPathArgumentName)
     {
         Description = CliCommandStrings.ReferenceAddProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
@@ -25,7 +31,7 @@ internal static class ReferenceAddCommandDefinition
         }
     };
 
-    public static readonly Option<string> FrameworkOption = new Option<string>("--framework", "-f")
+    public static Option<string> CreateFrameworkOption() => new Option<string>("--framework", "-f")
     {
         Description = CliCommandStrings.ReferenceAddCmdFrameworkDescription,
         HelpName = CliStrings.CommonCmdFramework,
@@ -33,16 +39,17 @@ internal static class ReferenceAddCommandDefinition
     }
     .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
+    public readonly Argument<IEnumerable<string>> ProjectPathArgument = CreateProjectPathArgument();
+    public readonly Option<string> FrameworkOption = CreateFrameworkOption();
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption();
 
-    public static Command Create()
+    public ReferenceAddCommandDefinitionBase(string name)
+        : base(name, CliCommandStrings.ReferenceAddAppFullName)
     {
-        Command command = new(Name, CliCommandStrings.ReferenceAddAppFullName);
-
-        command.Arguments.Add(ProjectPathArgument);
-        command.Options.Add(FrameworkOption);
-        command.Options.Add(InteractiveOption);
-
-        return command;
+        Arguments.Add(ProjectPathArgument);
+        Options.Add(FrameworkOption);
+        Options.Add(InteractiveOption);
     }
+
+    public abstract string? GetFileOrDirectory(ParseResult parseResult);
 }

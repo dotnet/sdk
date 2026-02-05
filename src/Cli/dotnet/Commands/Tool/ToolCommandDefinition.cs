@@ -14,26 +14,31 @@ using Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool;
 
-internal static class ToolCommandDefinition
+internal sealed class ToolCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-tool";
+    private const string Link = "https://aka.ms/dotnet-tool";
 
-    public static Command Create()
+    public readonly ToolInstallCommandDefinition InstallCommand = new();
+    public readonly ToolUninstallCommandDefinition UninstallCommand = new();
+    public readonly ToolUpdateCommandDefinition UpdateCommand = new();
+    public readonly ToolListCommandDefinition ListCommand = new();
+    public readonly ToolRunCommandDefinition RunCommand = new();
+    public readonly ToolSearchCommandDefinition SearchCommand = new();
+    public readonly ToolRestoreCommandDefinition RestoreCommand = new();
+    public readonly ToolExecuteCommandDefinition ExecuteCommand = new();
+
+    public ToolCommandDefinition()
+        : base("tool", CliCommandStrings.ToolCommandDescription)
     {
-        Command command = new("tool", CliCommandStrings.ToolCommandDescription)
-        {
-            DocsLink = DocsLink
-        };
+        this.DocsLink = Link;
 
-        command.Subcommands.Add(ToolInstallCommandParser.GetCommand());
-        command.Subcommands.Add(ToolUninstallCommandParser.GetCommand());
-        command.Subcommands.Add(ToolUpdateCommandParser.GetCommand());
-        command.Subcommands.Add(ToolListCommandParser.GetCommand());
-        command.Subcommands.Add(ToolRunCommandParser.GetCommand());
-        command.Subcommands.Add(ToolSearchCommandParser.GetCommand());
-        command.Subcommands.Add(ToolRestoreCommandParser.GetCommand());
-        command.Subcommands.Add(ToolExecuteCommandParser.GetCommand());
-
-        return command;
+        Subcommands.Add(InstallCommand);
+        Subcommands.Add(UninstallCommand);
+        Subcommands.Add(UpdateCommand);
+        Subcommands.Add(ListCommand);
+        Subcommands.Add(RunCommand);
+        Subcommands.Add(SearchCommand);
+        Subcommands.Add(RestoreCommand);
+        Subcommands.Add(ExecuteCommand);
     }
 }

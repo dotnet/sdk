@@ -7,15 +7,16 @@ namespace Microsoft.DotNet.Cli.Commands.Restore;
 
 internal static class RestoreCommandParser
 {
-    private static readonly Command Command = SetAction(RestoreCommandDefinition.Create());
+    private static readonly RestoreCommandDefinition Command = CreateCommand();
 
     public static Command GetCommand()
     {
         return Command;
     }
 
-    private static Command SetAction(Command command)
+    private static RestoreCommandDefinition CreateCommand()
     {
+        var command = new RestoreCommandDefinition();
         command.SetAction(RestoreCommand.Run);
         return command;
     }

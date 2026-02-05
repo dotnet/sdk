@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void It_cannot_pack_the_cppcliproject()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) => AddPackageReference(projectPath, project, "NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()))

@@ -7,18 +7,16 @@ using Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk;
 
-internal static class SdkCommandDefinition
+internal sealed class SdkCommandDefinition : Command
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-sdk";
+    private const string Link = "https://aka.ms/dotnet-sdk";
 
-    public static Command Create()
+    public readonly SdkCheckCommandDefinition CheckCommand = new();
+
+    public SdkCommandDefinition()
+        : base("sdk", CliCommandStrings.SdkAppFullName)
     {
-        Command command = new("sdk", CliCommandStrings.SdkAppFullName)
-        {
-            DocsLink = DocsLink
-        };
-        command.Subcommands.Add(SdkCheckCommandDefinition.Create());
-
-        return command;
+        this.DocsLink = Link;
+        Subcommands.Add(CheckCommand);
     }
 }

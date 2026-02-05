@@ -14,7 +14,7 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Add;
 
-internal class SolutionAddCommand : CommandBase
+internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinition>
 {
     private readonly string _fileOrDirectory;
     private readonly bool _inRoot;
@@ -37,13 +37,14 @@ internal class SolutionAddCommand : CommandBase
             && !relativePath.StartsWith(".."); // This means path is outside the solution directory
     }
 
-    public SolutionAddCommand(ParseResult parseResult) : base(parseResult)
+    public SolutionAddCommand(ParseResult parseResult)
+        : base(parseResult)
     {
-        _fileOrDirectory = parseResult.GetValue(SolutionCommandDefinition.SlnArgument)!;
-        _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SolutionAddCommandDefinition.ProjectPathArgument) ?? []);
-        _inRoot = parseResult.GetValue(SolutionAddCommandDefinition.InRootOption);
-        _solutionFolderPath = parseResult.GetValue(SolutionAddCommandDefinition.SolutionFolderOption);
-        _includeReferences = parseResult.GetValue(SolutionAddCommandDefinition.IncludeReferencesOption);
+        _fileOrDirectory = parseResult.GetValue(Definition.Parent.SlnArgument)!;
+        _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(Definition.ProjectPathArgument) ?? []);
+        _inRoot = parseResult.GetValue(Definition.InRootOption);
+        _solutionFolderPath = parseResult.GetValue(Definition.SolutionFolderOption);
+        _includeReferences = parseResult.GetValue(Definition.IncludeReferencesOption);
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
         _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
     }

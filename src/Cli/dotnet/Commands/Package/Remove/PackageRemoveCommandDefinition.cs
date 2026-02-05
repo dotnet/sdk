@@ -6,32 +6,34 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 
-internal static class PackageRemoveCommandDefinition
+internal sealed class PackageRemoveCommandDefinition : PackageRemoveCommandDefinitionBase
 {
-    public const string Name = "remove";
+    public new const string Name = "remove";
 
-    public static readonly Argument<string[]> CmdPackageArgument = new(CliCommandStrings.CmdPackage)
+    public PackageRemoveCommandDefinition()
+        : base(Name)
+    {
+        Options.Add(ProjectOption);
+        Options.Add(FileOption);
+    }
+}
+
+internal abstract class PackageRemoveCommandDefinitionBase : Command
+{
+    public readonly Argument<string[]> CmdPackageArgument = new(CliCommandStrings.CmdPackage)
     {
         Description = CliCommandStrings.PackageRemoveAppHelpText,
         Arity = ArgumentArity.OneOrMore,
     };
 
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption().ForwardIfEnabled("--interactive");
+    public readonly Option<string?> ProjectOption = PackageCommandDefinition.CreateProjectOption();
+    public readonly Option<string?> FileOption = PackageCommandDefinition.CreateFileOption();
 
-    public static readonly IEnumerable<Option> Options =
-    [
-        InteractiveOption,
-        PackageCommandDefinition.ProjectOption,
-        PackageCommandDefinition.FileOption
-    ];
-
-    public static Command Create()
+    public PackageRemoveCommandDefinitionBase(string name)
+        : base(name, CliCommandStrings.PackageRemoveAppFullName)
     {
-        var command = new Command(Name, CliCommandStrings.PackageRemoveAppFullName);
-
-        command.Arguments.Add(CmdPackageArgument);
-        command.Options.AddRange(Options);
-
-        return command;
+        Arguments.Add(CmdPackageArgument);
+        Options.Add(InteractiveOption);
     }
 }

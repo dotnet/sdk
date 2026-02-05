@@ -7,7 +7,7 @@ using System.Diagnostics.Tracing;
 namespace Microsoft.DotNet.Watch
 {
     [EventSource(Name = "HotReload")]
-    internal sealed class HotReloadEventSource : EventSource
+    internal sealed partial class HotReloadEventSource : EventSource
     {
         public enum StartType
         {

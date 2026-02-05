@@ -170,28 +170,6 @@ public static class ParseResultExtensions
         _ => parseResult.GetResult(Parser.DotnetSubCommand)?.GetValueOrDefault<string>()
     };
 
-    public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
-        (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-        parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) &&
-        parseResult.HasOption(CommonOptions.OperatingSystemOption);
-
-    public static bool UsingRunCommandShorthandProjectOption(this ParseResult parseResult)
-    {
-        if (parseResult.HasOption(RunCommandDefinition.PropertyOption) && parseResult.GetValue(RunCommandDefinition.PropertyOption)!.Any())
-        {
-            var projVals = parseResult.GetRunCommandShorthandProjectValues();
-            if (projVals?.Any() is true)
-            {
-                if (projVals.Count() != 1 || parseResult.HasOption(RunCommandDefinition.ProjectOption))
-                {
-                    throw new GracefulException(CliStrings.OnlyOneProjectAllowed);
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult)
     {
         var properties = GetRunPropertyOptions(parseResult, true);

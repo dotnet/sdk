@@ -863,7 +863,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="RoslynCompilerTypeFrameworkIsDeprecated">
         <source>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</source>
-        <target state="new">NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</target>
+        <target state="translated">NETSDK1234: RoslynCompilerType Framework je zastaralý a v budoucí verzi se odebere. Další informace najdete tady: {0}.</target>
         <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
