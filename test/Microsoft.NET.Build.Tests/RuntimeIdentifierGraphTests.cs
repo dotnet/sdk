@@ -45,7 +45,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.RecordProperties("RuntimeIdentifierGraphPath");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework + "_" + (useRidGraphValue ?? "null"));
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework + "_" + (useRidGraphValue ?? "null"));
 
             var buildCommand = new BuildCommand(testAsset);
 

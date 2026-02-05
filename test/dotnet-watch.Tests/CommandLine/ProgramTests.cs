@@ -302,7 +302,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(Path.Combine("Release", ToolsetInfo.CurrentTargetFramework, "publish"));
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+        [Fact]
         public async Task FormatCommand()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")

@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
         public void TestsFromAGivenContainerShouldRunWithExpectedOutput()
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName, identifier: "VSTestTests")
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName, identifier: "VSTestTests")
                 .WithSource()
                 .WithVersionVariables();
 
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
         public void ItShouldSetDotnetRootToLocationOfDotnetExecutable()
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
             string testAppName = "VSTestTestRunParameters";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
                             .WithSource()
                             .WithVersionVariables();
 

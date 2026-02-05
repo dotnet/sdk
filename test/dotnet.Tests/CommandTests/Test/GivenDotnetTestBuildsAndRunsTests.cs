@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithNoTests_ShouldReturnExitCodeZeroTests(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithWithRetryFeature_ShouldSucceed(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestAppSimpleWithRetry", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestAppSimpleWithRetry", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunMultipleTestProjectsWithNoTests_ShouldReturnExitCodeZeroTests(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void RunTestProjectWithTestsAndLaunchSettings_ShouldReturnExitCodeSuccess(
             [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration, bool runJson)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: $"{configuration}_{runJson}")
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: $"{configuration}_{runJson}")
                 .WithSource();
 
             var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
@@ -178,7 +178,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithTestsAndNoLaunchSettings_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: configuration)
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: configuration)
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunTestProjectWithTestsAndLaunchSettingsAndExecutableProfile()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings")
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings")
                 .WithSource();
 
             var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
@@ -228,7 +228,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithTestsAndNoLaunchSettingsArguments_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: configuration)
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: configuration)
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -248,7 +248,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunMultipleTestProjectsWithFailingTests_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -273,7 +273,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -303,7 +303,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -323,7 +323,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectsWithClassLibraryHavingIsTestProjectAndMTPProject_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("ClassLibraryWithIsTestProjectAndOtherTestProjects", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("ClassLibraryWithIsTestProjectAndOtherTestProjects", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -343,7 +343,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunOnEmptyFolder_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("EmptyFolder", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("EmptyFolder", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -363,7 +363,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunOnMultipleProjectFoldersWithoutSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectsWithoutSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultipleTestProjectsWithoutSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -383,7 +383,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunOnProjectWithSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -405,7 +405,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             [CombinatorialValues("TestProjectWithClassLibrary", "TestProjectWithClassLibraryDifferentTFMs")] string assetName,
             bool useFrameworkOption)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset(assetName, Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset(assetName, Guid.NewGuid().ToString())
                 .WithSource();
 
             string[] args = useFrameworkOption
@@ -436,7 +436,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunningWithGlobalPropertyShouldProperlyPropagate(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithConditionOnGlobalProperty", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithConditionOnGlobalProperty", Guid.NewGuid().ToString())
                 .WithSource();
             testInstance.WithTargetFramework($"{DotnetVersionHelper.GetPreviousDotnetVersion()}", "TestProject");
 
@@ -462,7 +462,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunMTPProjectWithUseAppHostFalse_ShouldWork()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectMTPWithUseAppHostFalse", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPWithUseAppHostFalse", Guid.NewGuid().ToString())
                 .WithSource();
 
             // Run test with UseAppHost=false
@@ -483,7 +483,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void RunMTPSolutionWithMinimumExpectedTests(string value, int expectedExitCode)
         {
             // The solution has two test projects. Each reports 5 tests. So, total 10 tests.
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionTestingMinimumExpectedTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionTestingMinimumExpectedTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -496,7 +496,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunMTPProjectThatCrashesWithExitCodeZero_ShouldFail()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectMTPCrash", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPCrash", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -533,7 +533,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunMTPProjectThatCrashesWithExitCodeNonZero_ShouldFail_WithSameExitCode()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectMTPCrashNonZero", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPCrashNonZero", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -564,7 +564,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Release)]
         public void RunTestProjectWithEnvVariable(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectShowingEnvVariable", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectShowingEnvVariable", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)

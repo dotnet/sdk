@@ -17,6 +17,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Strong naming deprecated on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>
+
+    <!-- Ignore checking for OS API compatibility as we aren't targeting just the Windows platform  -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,8 +30,13 @@
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\NuGetUtils.NuGet.cs" LinkBase="Common" />
-    <Compile Remove="Commands\Workload\list\VisualStudioWorkloads.cs" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
-    <Compile Remove="$(RepoRoot)\src\Cli\dotnet\Installer\Windows\Security\*.cs" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <Compile Remove="Commands\Workload\list\VisualStudioWorkloads.cs" />
+    <Compile Remove="$(RepoRoot)\src\Cli\dotnet\Installer\Windows\Security\*.cs" />
+    <Compile Remove="Windows\**" />
+    <Compile Remove="Microsoft\VisualStudio\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,8 +71,9 @@
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="all" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
     <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
