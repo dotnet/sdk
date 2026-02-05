@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -696,20 +697,23 @@ End Class
         }
 
         [Fact, WorkItem(51681, "https://github.com/dotnet/sdk/issues/51681")]
-        public async Task CSharpNoDiagnosticExtensionMembersAsync()
+        public Task CSharpNoDiagnosticExtensionMembersAsync()
         {
             var code = @"
-using System;
-
-public static class Utilities
+public static class E
 {
-	extension(string str)
+	extension(int x)
 	{
-		public bool A() => str.Contains('A', StringComparison.Ordinal);
+		public int M() => x + 1;
 	}
 }
 ";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                LanguageVersion = LanguageVersion.CSharp14,
+            }.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpCA1034ResultAt(int line, int column, string nestedTypeName)
