@@ -452,6 +452,8 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false))
         {
             var sourceList = sources.ToList();
+            var existingUris = new HashSet<Uri>(sourceList.Select(s => s.SourceUri));
+            
             foreach (string additionalSource in packageSourceLocation.AdditionalSourceFeed)
             {
                 if (string.IsNullOrWhiteSpace(additionalSource))
@@ -469,12 +471,13 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                 }
 
                 // Skip if already present
-                if (sourceList.Any(existing => existing.SourceUri == newSource.SourceUri))
+                if (existingUris.Contains(newSource.SourceUri))
                 {
                     continue;
                 }
 
                 sourceList.Add(newSource);
+                existingUris.Add(newSource.SourceUri);
             }
             sources = sourceList;
         }
