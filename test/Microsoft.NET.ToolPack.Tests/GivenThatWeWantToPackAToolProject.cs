@@ -22,7 +22,7 @@ namespace Microsoft.NET.ToolPack.Tests
         private string SetupNuGetPackage(bool multiTarget, string packageType = null, [CallerMemberName] string callingMethod = "")
         {
             string id = $"{callingMethod}-{_targetFrameworkOrFrameworks}";
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool", id)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -72,7 +72,7 @@ namespace Microsoft.NET.ToolPack.Tests
         [Fact]
         public void Given_nuget_alias_It_finds_the_entry_point_dll_and_command_name_and_put_in_setting_file()
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -310,7 +310,7 @@ namespace Microsoft.NET.ToolPack.Tests
         [Fact]
         public void Given_targetplatform_set_It_should_error()
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool")
                 .WithSource()
                 .WithTargetFramework($"{ToolsetInfo.CurrentTargetFramework}-windows");
@@ -339,7 +339,7 @@ namespace Microsoft.NET.ToolPack.Tests
             testProject.AdditionalProperties["UseAppHost"] = "false";
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var packCommand = new PackCommand(testAsset);
 

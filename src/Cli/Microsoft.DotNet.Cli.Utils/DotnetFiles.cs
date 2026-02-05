@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 
 internal static class DotnetFiles
 {
-    private static string SdkRootFolder => Path.Combine(typeof(DotnetFiles).GetTypeInfo().Assembly.Location, "..");
+    private static string SdkRootFolder => AppContext.BaseDirectory;
 
     private static readonly Lazy<DotnetVersionFile> s_versionFileObject =
         new(() => new DotnetVersionFile(VersionFile));

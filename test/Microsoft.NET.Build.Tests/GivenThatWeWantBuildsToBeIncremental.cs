@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void GenerateBuildRuntimeConfigurationFiles_runs_incrementally(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -37,7 +37,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void ResolvePackageAssets_runs_incrementally(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);

@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netstandard1.4",
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(project);
+            var testAsset = TestAssetsManager.CreateTestProject(project);
 
             string directoryBuildPropsPath = Path.Combine(testAsset.Path, "Directory.Build.props");
 

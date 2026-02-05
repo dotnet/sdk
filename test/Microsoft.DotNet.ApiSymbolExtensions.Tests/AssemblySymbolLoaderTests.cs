@@ -85,7 +85,7 @@ namespace MyNamespace
             }
         }
 
-        private TestAssetInfo GetSimpleTestAsset() => TestAssetCache.Instance.GetSimpleAsset(_testAssetsManager);
+        private TestAssetInfo GetSimpleTestAsset() => TestAssetCache.Instance.GetSimpleAsset(TestAssetsManager);
 
         [Fact]
         public void LoadAssembly_Throws()
@@ -146,7 +146,7 @@ namespace MyNamespace
 
             testProject.SourceFiles.Add("MyClass.cs", SimpleAssemblySourceContents);
             testProject.AdditionalProperties.Add("AssemblyVersion", "0.0.0.0");
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             BuildTestAsset(testAsset, out string outputDirectory)
                 .Should()
@@ -239,7 +239,7 @@ namespace MyNamespace
             };
 
             first.ReferencedProjects.Add(second);
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(first);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(first);
 
             BuildTestAsset(testAsset, out string outputDirectory)
                 .Should()

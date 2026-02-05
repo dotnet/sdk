@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFrameworkIdentifier == ".NETCoreApp" ? ToolsetInfo.CurrentTargetFramework : "netstandard2.1",
             };
 
-            TestAsset asset = _testAssetsManager
+            TestAsset asset = TestAssetsManager
                 .CreateTestProject(project, identifier: targetFrameworkIdentifier);
 
             string testDirectory = Path.Combine(asset.TestRoot, project.Name);
@@ -63,7 +63,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            TestAsset asset = _testAssetsManager.CreateTestProject(project);
+            TestAsset asset = TestAssetsManager.CreateTestProject(project);
 
             string testDirectory = Path.Combine(asset.TestRoot, project.Name);
 

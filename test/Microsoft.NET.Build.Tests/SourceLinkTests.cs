@@ -100,7 +100,7 @@ namespace Microsoft.NET.Build.Tests
             // We need to copy the test project to a directory outside of the SDK repo,
             // otherwise we would find .git directory in the SDK repo root.
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("SourceLinkTestApp", testDestinationDirectory: Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()))
                 .WithSource();
 
@@ -117,7 +117,7 @@ namespace Microsoft.NET.Build.Tests
         [RequiresMSBuildVersionFact("17.12.0")]
         public void WithNoRemoteNoCommit()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("SourceLinkTestApp")
                 .WithSource();
 
@@ -136,7 +136,7 @@ namespace Microsoft.NET.Build.Tests
         [RequiresMSBuildVersionFact("17.12.0")]
         public void WithNoRemote()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("SourceLinkTestApp")
                 .WithSource();
 
@@ -152,7 +152,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void WithRemoteOrigin_UnknownDomain()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("SourceLinkTestApp")
                 .WithSource();
 
@@ -179,7 +179,7 @@ namespace Microsoft.NET.Build.Tests
         {
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("SourceLinkTestApp", identifier: origin + multitarget.ToString())
                 .WithSource();
 
@@ -226,7 +226,7 @@ namespace Microsoft.NET.Build.Tests
         {
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("SourceLinkTestApp", identifier: multitarget.ToString())
                 .WithSource();
 
@@ -260,7 +260,7 @@ namespace Microsoft.NET.Build.Tests
         {
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("SourceLinkTestApp", identifier: multitarget.ToString())
                 .WithSource();
 
@@ -293,7 +293,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void Cpp()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource();
 
@@ -326,7 +326,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void LegacyDesktopWpf()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopWpf")
                 .WithSource();
 

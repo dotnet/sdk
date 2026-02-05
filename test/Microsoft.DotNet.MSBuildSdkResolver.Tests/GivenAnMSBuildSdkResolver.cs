@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItDoesNotFindMSBuildSdkThatIsMissingFromLocatedNETCoreSdk()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.97");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
 
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItFindsTheVersionSpecifiedInGlobalJson()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.97");
             var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.98");
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.99");
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         {
             const string version = "99.0.0";
 
-            var environment = new TestEnvironment(_testAssetsManager, identifier: solutionFilePath ?? "NULL");
+            var environment = new TestEnvironment(TestAssetsManager, identifier: solutionFilePath ?? "NULL");
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", version);
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
 
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         {
             const string version = "99.0.0";
 
-            var environment = new TestEnvironment(_testAssetsManager, identifier: $"{solutionFilePath ?? "NULL"}-{projectFilePath ?? "NULL"}");
+            var environment = new TestEnvironment(TestAssetsManager, identifier: $"{solutionFilePath ?? "NULL"}-{projectFilePath ?? "NULL"}");
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", version);
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
 
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsNullIfTheVersionFoundDoesNotSatisfyTheMinVersion()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.99");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
 
@@ -150,7 +150,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsNullWhenTheSDKRequiresAHigherVersionOfMSBuildThanAnyOneAvailable()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected =
                 environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.99", new Version(2, 0));
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
@@ -178,7 +178,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [InlineData(false)]
         public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuild(bool disallowPreviews)
         {
-            var environment = new TestEnvironment(_testAssetsManager, identifier: disallowPreviews.ToString())
+            var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString())
             {
                 DisallowPrereleaseByDefault = disallowPreviews
             };
@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             // * a different-versioned SDK that's in a different location
             // * a global.json with sdk.paths that prefers the different-versioned SDK
             // assert that when we resolve, we return the path to the different-versioned SDK's dotnet.exe
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var localSdkRoot = Path.Combine("some", "local", "dir");
             var localSdkDotnetRoot = Path.Combine(environment.TestDirectory.FullName, localSdkRoot, "dotnet");
             var ambientSdkDotnetRoot = Path.Combine(environment.GetProgramFilesDirectory(ProgramFiles.X64).FullName, "dotnet");
@@ -259,7 +259,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [InlineData(false)]
         public void ItDoesNotReturnHighestSdkAvailableThatIsCompatibleWithMSBuildWhenVersionInGlobalJsonCannotBeFoundOutsideOfVisualStudio(bool disallowPreviews)
         {
-            var environment = new TestEnvironment(_testAssetsManager, callingMethod: "ItDoesNotReturnHighest___", identifier: disallowPreviews.ToString())
+            var environment = new TestEnvironment(TestAssetsManager, callingMethod: "ItDoesNotReturnHighest___", identifier: disallowPreviews.ToString())
             {
                 DisallowPrereleaseByDefault = disallowPreviews
             };
@@ -296,7 +296,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [InlineData(false)]
         public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuildWhenVersionInGlobalJsonCannotBeFoundAndRunningInVisualStudio(bool disallowPreviews)
         {
-            var environment = new TestEnvironment(_testAssetsManager, callingMethod: "ItReturnsHighest___", identifier: disallowPreviews.ToString())
+            var environment = new TestEnvironment(TestAssetsManager, callingMethod: "ItReturnsHighest___", identifier: disallowPreviews.ToString())
             {
                 DisallowPrereleaseByDefault = disallowPreviews
             };
@@ -345,7 +345,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsNullWhenTheDefaultVSRequiredSDKVersionIsHigherThanTheSDKVersionAvailable()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected =
                 environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "1.0.1");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
@@ -367,7 +367,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsNullWhenTheTheVSRequiredSDKVersionIsHigherThanTheSDKVersionAvailable()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected =
                 environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "1.0.1");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
@@ -390,7 +390,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsTheVersionIfItIsEqualToTheMinVersionAndTheVSDefinedMinVersion()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.99");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
             environment.CreateMinimumVSDefinedSDKVersionFile("99.99.99");
@@ -412,7 +412,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsTheVersionIfItIsHigherThanTheMinVersionAndTheVSDefinedMinVersion()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "999.99.99");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
             environment.CreateMinimumVSDefinedSDKVersionFile("999.99.98");
@@ -436,7 +436,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [InlineData(false)]
         public void ItDisallowsPreviewsBasedOnDefault(bool disallowPreviewsByDefault)
         {
-            var environment = new TestEnvironment(_testAssetsManager, identifier: disallowPreviewsByDefault.ToString());
+            var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviewsByDefault.ToString());
             var rtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0");
             var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
             var expected = disallowPreviewsByDefault ? rtm : preview;
@@ -463,7 +463,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [InlineData(false)]
         public void ItDisallowsPreviewsBasedOnFile(bool disallowPreviews)
         {
-            var environment = new TestEnvironment(_testAssetsManager, identifier: disallowPreviews.ToString());
+            var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString());
             var rtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0");
             var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
             var expected = disallowPreviews ? rtm : preview;
@@ -489,7 +489,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItObservesChangesToVSSettingsFile()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var rtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0");
             var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
 
@@ -538,7 +538,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItAllowsPreviewWhenGlobalJsonHasPreviewIrrespectiveOfSetting()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var rtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0");
             var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
 
@@ -568,7 +568,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             // fix our expectations since the behavior will vary (by design) based on the current VS instance's settings.
             var vsSettings = VSSettings.Ambient;
 
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var rtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0");
             var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
             var expected = vsSettings.DisallowPrerelease() ? rtm : preview;
@@ -592,7 +592,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void GivenTemplateLocatorItCanResolveSdkVersion()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             const string sdkVersion = "99.99.97";
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", sdkVersion);
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
