@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.NativeWrapper
             return result;
         }
 
-        public static string? GetGlobalJsonState(string globalJsonStartDirectory)
+        public static unsafe string? GetGlobalJsonState(string globalJsonStartDirectory)
         {
             // We don't care about the actual SDK resolution, just the global.json information,
             // so just pass empty string as executable directory for resolution. This means that
@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.NativeWrapper
             // output going to stderr. We reset it after the call.
             Interop.hostfxr_error_writer_fn swallowErrors = new(message => { });
             nint errorWriter = Marshal.GetFunctionPointerForDelegate(swallowErrors);
-            nint previousErrorWriter = Interop.hostfxr_set_error_writer(errorWriter);
+            var previousErrorWriter = Interop.hostfxr_set_error_writer((delegate* unmanaged[Cdecl]<PlatformString, void>)errorWriter);
             try
             {
                 SdkResolutionResult result = ResolveSdk(string.Empty, globalJsonStartDirectory);

@@ -302,12 +302,12 @@ namespace Microsoft.DotNet.NativeWrapper
 #if NET
         [LibraryImport(Constants.HostFxr)]
         [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-        internal static partial nint hostfxr_set_error_writer(
+        internal static unsafe partial delegate* unmanaged[Cdecl]<PlatformString, void> hostfxr_set_error_writer(
 #else
         [DllImport(Constants.HostFxr, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern nint hostfxr_set_error_writer(
+        internal static extern unsafe delegate* unmanaged[Cdecl]<PlatformString, void>  hostfxr_set_error_writer(
 #endif
-            nint error_writer);
+            delegate* unmanaged[Cdecl]<PlatformString, void> error_writer);
 
         /// <summary>
         ///  Callback delegate for receiving SDK resolution results from <see cref="hostfxr_resolve_sdk2"/>.
