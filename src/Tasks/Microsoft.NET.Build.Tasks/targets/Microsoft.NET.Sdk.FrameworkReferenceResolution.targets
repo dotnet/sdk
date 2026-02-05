@@ -51,7 +51,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </CreateWindowsSdkKnownFrameworkReferences>
   </Target>
-  
+
   <!-- TODO: https://github.com/dotnet/sdk/issues/49917 Remove the framework based condition when the data for netcoreapp2.1 and below is fixed-->
   <!-- Package pruning is expected to be enable for all TFMs for multi-targeted projects, so still generate the pruning data when RestoreEnablePackagePruning is '' which implies a multi-targeted project. -->
   <Target Name="AddPrunePackageReferences" BeforeTargets="CollectPrunePackageReferences"
@@ -63,7 +63,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AllowMissingPrunePackageData Condition="'$(AllowMissingPrunePackageData)' == ''">false</AllowMissingPrunePackageData>
       <LoadPrunePackageDataFromNearestFramework Condition="'$(LoadPrunePackageDataFromNearestFramework)' == ''">false</LoadPrunePackageDataFromNearestFramework>
     </PropertyGroup>
-    
+
     <GetPackagesToPrune TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
                         TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
                         FrameworkReferences="@(FrameworkReference)"
@@ -74,25 +74,32 @@ Copyright (c) .NET Foundation. All rights reserved.
                         LoadPrunePackageDataFromNearestFramework="$(LoadPrunePackageDataFromNearestFramework)">
       <Output TaskParameter="PackagesToPrune" ItemName="PrunePackageReference" />
     </GetPackagesToPrune>
-    
+
   </Target>
-  
+
   <!--
     ============================================================
-                                        ProcessFrameworkReferences
+    ProcessFrameworkReferences
 
     Matches FrameworkReference items with KnownFrameworkReference items to determine the corresponding
     targeting pack and if necessary the runtime pack.  If the packs aren't available in the NetCoreTargetingPackRoot
     folder, then generate PackageDownload items in order to download the packs during restore.
 
     Also resolves app host packs in a similar fashion, and checks for duplicate FrameworkReference items.
+
+    Set UseRefactoredFrameworkReferenceResolution=false to use the original monolithic task implementation.
     ============================================================
     -->
 
-  <Target Name="ProcessFrameworkReferences" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences;CollectPackageDownloads"
+  <Target Name="ProcessFrameworkReferences"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences;CollectPackageDownloads"
           DependsOnTargets="AddWindowsSdkKnownFrameworkReferences"
           Condition="'@(FrameworkReference)' != '' Or '$(_RequiresILLinkPack)' == 'true'">
 
+    <!--
+      Check for duplicate framework references and normalize.
+      This runs AFTER BeforeTargets hooks, so properties set by external hooks are visible.
+    -->
     <CheckForDuplicateFrameworkReferences
         FrameworkReferences="@(FrameworkReference)"
         MoreInformationLink="https://aka.ms/sdkimplicitrefs">
@@ -105,6 +112,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FrameworkReference Include="@(_FrameworkReferenceToAdd)" />
     </ItemGroup>
 
+    <!-- Set default property values -->
     <PropertyGroup>
       <EnableTargetingPackDownload Condition="'$(EnableTargetingPackDownload)' == ''">true</EnableTargetingPackDownload>
       <EnableRuntimePackDownload Condition="'$(EnableRuntimePackDownload)' == ''">true</EnableRuntimePackDownload>
@@ -119,6 +127,682 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
     </ItemGroup>
 
+    <!-- ============================================================
+         BEGIN INLINED REFACTORED IMPLEMENTATION
+         All logic from _ProcessFrameworkReferencesRefactored and dependencies inlined here
+         so it executes AFTER BeforeTargets hooks.
+         ============================================================ -->
+    <PropertyGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <!-- Compute framework reference settings from _ComputeFrameworkReferenceSettings -->
+      <_DeploymentRequiresRuntimeComponents>false</_DeploymentRequiresRuntimeComponents>
+      <_DeploymentRequiresRuntimeComponents Condition="'$(SelfContained)' == 'true'">true</_DeploymentRequiresRuntimeComponents>
+      <_DeploymentRequiresRuntimeComponents Condition="'$(PublishReadyToRun)' == 'true'">true</_DeploymentRequiresRuntimeComponents>
+      <_DeploymentRequiresRuntimeComponents Condition="'$(_RequiresILLinkPack)' == 'true'">true</_DeploymentRequiresRuntimeComponents>
+
+      <!-- Normalize RuntimeIdentifier: treat 'any' as null for platform-agnostic builds -->
+      <_EffectiveRuntimeIdentifier Condition="'$(RuntimeIdentifier)' != 'any'">$(RuntimeIdentifier)</_EffectiveRuntimeIdentifier>
+
+      <!-- Determine if project is platform-specific -->
+      <_ProjectIsPlatformSpecific Condition="'$(_EffectiveRuntimeIdentifier)' != ''">true</_ProjectIsPlatformSpecific>
+    </PropertyGroup>
+
+    <!-- Filter applicable framework references from _FilterApplicableFrameworkReferences -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <!-- Filter by TFM and platform - name filtering happens in subsequent JoinItems -->
+      <_ApplicableKnownFrameworkReference Include="@(KnownFrameworkReference)"
+        Condition="$([MSBuild]::GetTargetFrameworkIdentifier('%(KnownFrameworkReference.TargetFramework)')) == '$(TargetFrameworkIdentifier)' AND
+                   $([MSBuild]::VersionEquals($([MSBuild]::GetTargetFrameworkVersion('%(KnownFrameworkReference.TargetFramework)', 2)), '$(_TargetFrameworkVersionWithoutV)')) AND
+                   ('$(TargetPlatformIdentifier)' == '' OR
+                    $([MSBuild]::GetTargetPlatformIdentifier('%(KnownFrameworkReference.TargetFramework)')) == '' OR
+                    $([MSBuild]::GetTargetPlatformIdentifier('%(KnownFrameworkReference.TargetFramework)')) == '$(TargetPlatformIdentifier)') AND
+                   ('$(TargetPlatformVersion)' == '' OR
+                    $([MSBuild]::GetTargetPlatformVersion('%(KnownFrameworkReference.TargetFramework)', 2)) == '' OR
+                    $([MSBuild]::VersionEquals($([MSBuild]::GetTargetPlatformVersion('%(KnownFrameworkReference.TargetFramework)', 2)), '$(TargetPlatformVersion)')))" />
+
+      <!-- Filter by TFM and platform - name filtering happens in subsequent JoinItems -->
+      <_ApplicableKnownRuntimePack Include="@(KnownRuntimePack)"
+        Condition="$([MSBuild]::GetTargetFrameworkIdentifier('%(KnownRuntimePack.TargetFramework)')) == '$(TargetFrameworkIdentifier)' AND
+                   $([MSBuild]::VersionEquals($([MSBuild]::GetTargetFrameworkVersion('%(KnownRuntimePack.TargetFramework)', 2)), '$(_TargetFrameworkVersionWithoutV)')) AND
+                   ('$(TargetPlatformIdentifier)' == '' OR
+                    $([MSBuild]::GetTargetPlatformIdentifier('%(KnownRuntimePack.TargetFramework)')) == '' OR
+                    $([MSBuild]::GetTargetPlatformIdentifier('%(KnownRuntimePack.TargetFramework)')) == '$(TargetPlatformIdentifier)') AND
+                   ('$(TargetPlatformVersion)' == '' OR
+                    $([MSBuild]::GetTargetPlatformVersion('%(KnownRuntimePack.TargetFramework)', 2)) == '' OR
+                    $([MSBuild]::VersionEquals($([MSBuild]::GetTargetPlatformVersion('%(KnownRuntimePack.TargetFramework)', 2)), '$(TargetPlatformVersion)')))" />
+    </ItemGroup>
+
+    <!-- Join framework references with known data - joins on Identity to filter by framework name -->
+    <JoinItems Left="@(_ApplicableKnownFrameworkReference)"
+               Right="@(FrameworkReference)"
+               LeftKey="Identity"
+               RightKey="Identity"
+               LeftMetadata="*"
+               RightMetadata="IsImplicitlyDefined;PrivateAssets;Pack"
+               ItemSpecToUse="Left"
+               Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <Output TaskParameter="JoinResult" ItemName="_JoinedFrameworkReference" />
+    </JoinItems>
+
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <!-- All of the newly-joined framework references are directly referenced -->
+      <_JoinedFrameworkReference>
+        <WasReferencedDirectly>true</WasReferencedDirectly>
+      </_JoinedFrameworkReference>
+    </ItemGroup>
+
+    <!-- Validate Windows-only frameworks from _ValidateWindowsOnlyFrameworks -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_WindowsOnlyFrameworkReference Include="@(_JoinedFrameworkReference)"
+        Condition="'%(_JoinedFrameworkReference.IsWindowsOnly)' == 'true'" />
+    </ItemGroup>
+
+    <NetSdkError Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                            '@(_WindowsOnlyFrameworkReference)' != '' AND
+                            '$(OS)' != 'Windows_NT' AND
+                            '$(EnableWindowsTargeting)' != 'true'"
+                 ResourceName="WindowsDesktopFrameworkRequiresWindows" />
+
+    <!-- Remove Windows-only frameworks from processing on non-Windows -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND '$(OS)' != 'Windows_NT' AND '$(EnableWindowsTargeting)' != 'true'">
+      <_ApplicableKnownFrameworkReference Remove="@(_ApplicableKnownFrameworkReference)"
+        Condition="'%(_ApplicableKnownFrameworkReference.IsWindowsOnly)' == 'true'" />
+      <_JoinedFrameworkReference Remove="@(_JoinedFrameworkReference)"
+        Condition="'%(_JoinedFrameworkReference.IsWindowsOnly)' == 'true'" />
+    </ItemGroup>
+
+    <!-- Select runtime packs by labels from _SelectRuntimePacksByLabels -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <!-- Add base runtime pack from framework reference itself (for unlabeled variants) -->
+      <_CandidateRuntimePack Include="@(_JoinedFrameworkReference)" KeepMetadata="RuntimePackNamePatterns;RuntimePackRuntimeIdentifiers;RuntimePackExcludedRuntimeIdentifiers;LatestRuntimeFrameworkVersion;RuntimePackLabels;IsTrimmable;RuntimePackAlwaysCopyLocal">
+        <FrameworkReferenceName>%(_JoinedFrameworkReference.Identity)</FrameworkReferenceName>
+        <RequiredRuntimePackLabels>%(_JoinedFrameworkReference.RuntimePackLabels)</RequiredRuntimePackLabels>
+      </_CandidateRuntimePack>
+    </ItemGroup>
+
+    <!-- Add labeled runtime pack variants from KnownRuntimePack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_JoinedFrameworkReference>
+        <FrameworkReferenceIdentity>%(_JoinedFrameworkReference.Identity)</FrameworkReferenceIdentity>
+        <FrameworkReferenceRuntimePackLabels>%(_JoinedFrameworkReference.RuntimePackLabels)</FrameworkReferenceRuntimePackLabels>
+      </_JoinedFrameworkReference>
+    </ItemGroup>
+
+    <JoinItems Left="@(_ApplicableKnownRuntimePack)"
+               Right="@(_JoinedFrameworkReference)"
+               LeftKey="Identity"
+               RightKey="RuntimeFrameworkName"
+               LeftMetadata="*"
+               RightMetadata="FrameworkReferenceIdentity;FrameworkReferenceRuntimePackLabels"
+               ItemSpecToUse="Left"
+               Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <Output TaskParameter="JoinResult" ItemName="_CandidateRuntimePackRaw" />
+    </JoinItems>
+
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_CandidateRuntimePack Include="@(_CandidateRuntimePackRaw)" KeepMetadata="RuntimePackNamePatterns;RuntimePackRuntimeIdentifiers;RuntimePackExcludedRuntimeIdentifiers;LatestRuntimeFrameworkVersion;RuntimePackLabels;IsTrimmable;RuntimePackAlwaysCopyLocal">
+        <FrameworkReferenceName>%(_CandidateRuntimePackRaw.FrameworkReferenceIdentity)</FrameworkReferenceName>
+        <RequiredRuntimePackLabels>%(_CandidateRuntimePackRaw.FrameworkReferenceRuntimePackLabels)</RequiredRuntimePackLabels>
+      </_CandidateRuntimePack>
+    </ItemGroup>
+
+    <!-- Filter to runtime packs where labels match (set-based equality) -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <!-- Both have no labels (empty strings) - these match -->
+      <_MatchedRuntimePack Include="@(_CandidateRuntimePack)"
+        Condition="'%(_CandidateRuntimePack.RuntimePackLabels)' == '' AND '%(_CandidateRuntimePack.RequiredRuntimePackLabels)' == ''" />
+
+      <!-- Both have labels - TODO: implement proper set equality (order-independent comparison) -->
+      <!-- For now, use simple string equality (assumes labels are in same order in SDK data) -->
+      <_MatchedRuntimePack Include="@(_CandidateRuntimePack)"
+        Condition="'%(_CandidateRuntimePack.RuntimePackLabels)' != '' AND
+                   '%(_CandidateRuntimePack.RequiredRuntimePackLabels)' != '' AND
+                   '%(_CandidateRuntimePack.RuntimePackLabels)' == '%(_CandidateRuntimePack.RequiredRuntimePackLabels)'" />
+    </ItemGroup>
+
+    <!-- Resolve runtime packs for primary RID from _ResolveRuntimePacksForPrimaryRID -->
+    <!-- Create candidate items where Identity is the RID -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
+                          '$(_EffectiveRuntimeIdentifier)' != '' AND
+                          '@(_MatchedRuntimePack)' != ''">
+      <_PrimaryRuntimePackCandidate Include="%(_MatchedRuntimePack.RuntimePackRuntimeIdentifiers)">
+        <RuntimePackNamePatterns>%(_MatchedRuntimePack.RuntimePackNamePatterns)</RuntimePackNamePatterns>
+        <FrameworkReferenceName>%(_MatchedRuntimePack.FrameworkReferenceName)</FrameworkReferenceName>
+        <LatestRuntimeFrameworkVersion>%(_MatchedRuntimePack.LatestRuntimeFrameworkVersion)</LatestRuntimeFrameworkVersion>
+        <IsTrimmable>%(_MatchedRuntimePack.IsTrimmable)</IsTrimmable>
+        <RuntimePackAlwaysCopyLocal>%(_MatchedRuntimePack.RuntimePackAlwaysCopyLocal)</RuntimePackAlwaysCopyLocal>
+      </_PrimaryRuntimePackCandidate>
+    </ItemGroup>
+
+    <!-- Select compatible runtime pack for primary RID -->
+    <SelectRuntimeIdentifierSpecificItems RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                                          TargetRuntimeIdentifier="$(_EffectiveRuntimeIdentifier)"
+                                          Items="@(_PrimaryRuntimePackCandidate)"
+                                          RuntimeIdentifierItemMetadata="Identity"
+                                          Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                                                    '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
+                                                    '$(_EffectiveRuntimeIdentifier)' != '' AND
+                                                    '@(_PrimaryRuntimePackCandidate)' != ''">
+      <Output TaskParameter="SelectedItems" ItemName="_PrimaryMatchedRuntimePackCandidate" />
+    </SelectRuntimeIdentifierSpecificItems>
+
+    <!-- Prepare intermediate runtime pack data -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
+                          '$(_EffectiveRuntimeIdentifier)' != ''">
+      <_RuntimePackWithRid Include="@(_PrimaryMatchedRuntimePackCandidate->'%(RuntimePackNamePatterns)')">
+        <MatchedRid>%(_PrimaryMatchedRuntimePackCandidate.Identity)</MatchedRid>
+        <FrameworkName>%(_PrimaryMatchedRuntimePackCandidate.FrameworkReferenceName)</FrameworkName>
+        <LatestVersion>%(_PrimaryMatchedRuntimePackCandidate.LatestRuntimeFrameworkVersion)</LatestVersion>
+        <IsTrimmable>%(_PrimaryMatchedRuntimePackCandidate.IsTrimmable)</IsTrimmable>
+        <RuntimePackAlwaysCopyLocal>%(_PrimaryMatchedRuntimePackCandidate.RuntimePackAlwaysCopyLocal)</RuntimePackAlwaysCopyLocal>
+      </_RuntimePackWithRid>
+    </ItemGroup>
+
+    <!-- Resolve runtime packs for additional RIDs from _ResolveRuntimePacksForAdditionalRIDs -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(EnableRuntimePackDownload)' == 'true' AND
+                          '$(RuntimeIdentifiers)' != ''">
+      <_AdditionalRuntimeIdentifier Include="$(RuntimeIdentifiers)" />
+      <!-- Remove primary RID if it's already processed -->
+      <_AdditionalRuntimeIdentifier Remove="$(_EffectiveRuntimeIdentifier)" />
+      <_AdditionalRuntimeIdentifier Remove="any" />
+    </ItemGroup>
+
+    <!-- Create candidate items with RuntimeIdentifier metadata for each supported RID -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(EnableRuntimePackDownload)' == 'true' AND
+                          '@(_AdditionalRuntimeIdentifier)' != '' AND
+                          '@(_MatchedRuntimePack)' != ''">
+      <!-- For each runtime pack, create items for each of its supported RIDs -->
+      <_RuntimePackCandidate Include="%(_MatchedRuntimePack.RuntimePackRuntimeIdentifiers)">
+        <RuntimePackNamePatterns>%(_MatchedRuntimePack.RuntimePackNamePatterns)</RuntimePackNamePatterns>
+        <LatestRuntimeFrameworkVersion>%(_MatchedRuntimePack.LatestRuntimeFrameworkVersion)</LatestRuntimeFrameworkVersion>
+      </_RuntimePackCandidate>
+    </ItemGroup>
+
+    <!-- For each additional RID, select compatible runtime pack candidates -->
+    <SelectRuntimeIdentifierSpecificItems RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                                          TargetRuntimeIdentifier="%(_AdditionalRuntimeIdentifier.Identity)"
+                                          Items="@(_RuntimePackCandidate)"
+                                          RuntimeIdentifierItemMetadata="Identity"
+                                          Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                                                    '$(EnableRuntimePackDownload)' == 'true' AND
+                                                    '@(_AdditionalRuntimeIdentifier)' != '' AND
+                                                    '@(_RuntimePackCandidate)' != ''">
+      <Output TaskParameter="SelectedItems" ItemName="_AdditionalMatchedRuntimePackCandidate" />
+    </SelectRuntimeIdentifierSpecificItems>
+
+    <!-- Create download items for additional RIDs -->
+    <!-- First, create intermediate items with RID substituted -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(EnableRuntimePackDownload)' == 'true' AND
+                          '@(_AdditionalMatchedRuntimePackCandidate)' != ''">
+      <_AdditionalRuntimePackWithRidSubstituted Include="$([System.String]::Copy('%(RuntimePackNamePatterns)').Replace('**RID**', '%(Identity)'))">
+        <Version>%(_AdditionalMatchedRuntimePackCandidate.LatestRuntimeFrameworkVersion)</Version>
+      </_AdditionalRuntimePackWithRidSubstituted>
+    </ItemGroup>
+
+    <!-- Add to download list -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(EnableRuntimePackDownload)' == 'true' AND
+                          '@(_AdditionalRuntimePackWithRidSubstituted)' != ''">
+      <_PackageToDownload Include="@(_AdditionalRuntimePackWithRidSubstituted)" />
+    </ItemGroup>
+
+    <!-- Resolve Crossgen2 packs from _ResolveCrossgen2Packs -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishReadyToRun)' == 'true' AND
+                          '$(PublishReadyToRunUseCrossgen2)' == 'true'">
+      <_KnownCrossgen2PackMatchingTFI Include="@(KnownCrossgen2Pack)"
+        Condition="$([MSBuild]::GetTargetFrameworkIdentifier('%(KnownCrossgen2Pack.TargetFramework)')) == '$(TargetFrameworkIdentifier)'" />
+
+      <_ApplicableCrossgen2Pack Include="@(_KnownCrossgen2PackMatchingTFI)"
+        Condition="$([MSBuild]::VersionEquals($([MSBuild]::GetTargetFrameworkVersion('%(_KnownCrossgen2PackMatchingTFI.TargetFramework)', 2)), '$(_TargetFrameworkVersionWithoutV)'))" />
+    </ItemGroup>
+
+    <!-- Create candidate items with RuntimeIdentifier metadata for each supported RID -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishReadyToRun)' == 'true' AND
+                          '$(PublishReadyToRunUseCrossgen2)' == 'true' AND
+                          '@(_ApplicableCrossgen2Pack)' != ''">
+      <_Crossgen2Candidate Include="%(_ApplicableCrossgen2Pack.Crossgen2RuntimeIdentifiers)">
+        <Crossgen2PackNamePattern>%(_ApplicableCrossgen2Pack.Crossgen2PackNamePattern)</Crossgen2PackNamePattern>
+        <Crossgen2PackVersion>%(_ApplicableCrossgen2Pack.Crossgen2PackVersion)</Crossgen2PackVersion>
+      </_Crossgen2Candidate>
+    </ItemGroup>
+
+    <!-- Select compatible Crossgen2 pack -->
+    <SelectRuntimeIdentifierSpecificItems RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                                          TargetRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
+                                          Items="@(_Crossgen2Candidate)"
+                                          RuntimeIdentifierItemMetadata="Identity"
+                                          Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                                                    '$(PublishReadyToRun)' == 'true' AND
+                                                    '$(PublishReadyToRunUseCrossgen2)' == 'true' AND
+                                                    '@(_Crossgen2Candidate)' != ''">
+      <Output TaskParameter="SelectedItems" ItemName="_SelectedCrossgen2Candidate" />
+    </SelectRuntimeIdentifierSpecificItems>
+
+    <!-- Prepare Crossgen2 pack intermediate data -->
+    <!-- First create the items with substituted RID -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishReadyToRun)' == 'true' AND
+                          '$(PublishReadyToRunUseCrossgen2)' == 'true' AND
+                          '@(_SelectedCrossgen2Candidate)' != ''">
+      <_Crossgen2Pack Include="$([System.String]::Copy('%(_SelectedCrossgen2Candidate.Crossgen2PackNamePattern)').Replace('**RID**', '%(_SelectedCrossgen2Candidate.Identity)'))">
+        <NuGetPackageVersion>%(_SelectedCrossgen2Candidate.Crossgen2PackVersion)</NuGetPackageVersion>
+        <RuntimeIdentifier>%(_SelectedCrossgen2Candidate.Identity)</RuntimeIdentifier>
+      </_Crossgen2Pack>
+    </ItemGroup>
+
+    <!-- Then add metadata that depends on Identity -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishReadyToRun)' == 'true' AND
+                          '$(PublishReadyToRunUseCrossgen2)' == 'true' AND
+                          '@(_Crossgen2Pack)' != ''">
+      <_Crossgen2Pack>
+        <NuGetPackageId>%(_Crossgen2Pack.Identity)</NuGetPackageId>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_Crossgen2Pack.Identity)\%(_Crossgen2Pack.NuGetPackageVersion)')">$(NetCoreTargetingPackRoot)\%(_Crossgen2Pack.Identity)\%(_Crossgen2Pack.NuGetPackageVersion)</PackageDirectory>
+      </_Crossgen2Pack>
+    </ItemGroup>
+
+    <!-- Resolve ILCompiler packs from _ResolveILCompilerPacks -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishAot)' == 'true'">
+      <_KnownILCompilerPackMatchingTFI Include="@(KnownILCompilerPack)"
+        Condition="$([MSBuild]::GetTargetFrameworkIdentifier('%(KnownILCompilerPack.TargetFramework)')) == '$(TargetFrameworkIdentifier)'" />
+
+      <_ApplicableILCompilerPack Include="@(_KnownILCompilerPackMatchingTFI)"
+        Condition="$([MSBuild]::VersionEquals($([MSBuild]::GetTargetFrameworkVersion('%(_KnownILCompilerPackMatchingTFI.TargetFramework)', 2)), '$(_TargetFrameworkVersionWithoutV)'))" />
+    </ItemGroup>
+
+    <!-- Create candidate items with RuntimeIdentifier metadata for each supported RID -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishAot)' == 'true' AND
+                          '@(_ApplicableILCompilerPack)' != ''">
+      <_ILCompilerCandidate Include="%(_ApplicableILCompilerPack.ILCompilerRuntimeIdentifiers)">
+        <ILCompilerPackNamePattern>%(_ApplicableILCompilerPack.ILCompilerPackNamePattern)</ILCompilerPackNamePattern>
+        <ILCompilerPackVersion>%(_ApplicableILCompilerPack.ILCompilerPackVersion)</ILCompilerPackVersion>
+      </_ILCompilerCandidate>
+    </ItemGroup>
+
+    <!-- Select compatible host ILCompiler pack -->
+    <SelectRuntimeIdentifierSpecificItems RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                                          TargetRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
+                                          Items="@(_ILCompilerCandidate)"
+                                          RuntimeIdentifierItemMetadata="Identity"
+                                          Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                                                    '$(PublishAot)' == 'true' AND
+                                                    '@(_ILCompilerCandidate)' != ''">
+      <Output TaskParameter="SelectedItems" ItemName="_SelectedILCompilerHostCandidate" />
+    </SelectRuntimeIdentifierSpecificItems>
+
+    <!-- Prepare host ILCompiler pack intermediate data -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishAot)' == 'true' AND
+                          '@(_SelectedILCompilerHostCandidate)' != ''">
+      <_HostILCompilerPack Include="$([System.String]::Copy('%(_SelectedILCompilerHostCandidate.ILCompilerPackNamePattern)').Replace('**RID**', '%(_SelectedILCompilerHostCandidate.Identity)'))">
+        <NuGetPackageId>%(_HostILCompilerPack.Identity)</NuGetPackageId>
+        <NuGetPackageVersion>%(_SelectedILCompilerHostCandidate.ILCompilerPackVersion)</NuGetPackageVersion>
+        <RuntimeIdentifier>%(_SelectedILCompilerHostCandidate.Identity)</RuntimeIdentifier>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_HostILCompilerPack.Identity)\%(_SelectedILCompilerHostCandidate.ILCompilerPackVersion)')">$(NetCoreTargetingPackRoot)\%(_HostILCompilerPack.Identity)\%(_SelectedILCompilerHostCandidate.ILCompilerPackVersion)</PackageDirectory>
+      </_HostILCompilerPack>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishAot)' == 'true'">
+      <_ILCompilerTargetRidToResolve Include="$(_EffectiveRuntimeIdentifier)" Condition="'$(_EffectiveRuntimeIdentifier)' != ''" />
+      <_ILCompilerTargetRidToResolve Include="$(RuntimeIdentifiers)" />
+      <_ILCompilerTargetRidToResolve Remove="$(NETCoreSdkRuntimeIdentifier)" /> <!-- just resolved this for the 'host', don't want duplicates -->
+      <_ILCompilerTargetRidToResolve Remove="any" />
+    </ItemGroup>
+
+    <!-- Create candidate items (reuse _ILCompilerHostCandidate if already created) -->
+
+    <!-- Select compatible target ILCompiler packs for each target RID -->
+    <SelectRuntimeIdentifierSpecificItems RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                                          TargetRuntimeIdentifier="%(_ILCompilerTargetRidToResolve.Identity)"
+                                          Items="@(_ILCompilerCandidate)"
+                                          RuntimeIdentifierItemMetadata="Identity"
+                                          Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                                                    '$(PublishAot)' == 'true' AND
+                                                    '@(_ILCompilerTargetRidToResolve)' != '' AND
+                                                    '@(_ILCompilerCandidate)' != ''">
+      <Output TaskParameter="SelectedItems" ItemName="_SelectedILCompilerTargetCandidate" />
+    </SelectRuntimeIdentifierSpecificItems>
+
+    <!-- Remove duplicates and exclude host RID -->
+    <RemoveDuplicates Inputs="@(_SelectedILCompilerTargetCandidate)"
+                      Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                                '$(PublishAot)' == 'true' AND
+                                '@(_SelectedILCompilerTargetCandidate)' != ''">
+      <Output TaskParameter="Filtered" ItemName="_UniqueILCompilerTargetCandidate" />
+    </RemoveDuplicates>
+
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishAot)' == 'true'">
+      <_DistinctILCompilerTargetCandidate Include="@(_UniqueILCompilerTargetCandidate)"
+        Condition="'%(_UniqueILCompilerTargetCandidate.Identity)' != '%(_SelectedILCompilerHostCandidate.Identity)'" />
+    </ItemGroup>
+
+    <!-- Prepare target ILCompiler pack intermediate data -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(PublishAot)' == 'true' AND
+                          '@(_DistinctILCompilerTargetCandidate)' != ''">
+      <_TargetILCompilerPack Include="$([System.String]::Copy('%(_DistinctILCompilerTargetCandidate.ILCompilerPackNamePattern)').Replace('**RID**', '%(_DistinctILCompilerTargetCandidate.Identity)'))">
+        <NuGetPackageId>%(_TargetILCompilerPack.Identity)</NuGetPackageId>
+        <NuGetPackageVersion>%(_DistinctILCompilerTargetCandidate.ILCompilerPackVersion)</NuGetPackageVersion>
+        <RuntimeIdentifier>%(_DistinctILCompilerTargetCandidate.Identity)</RuntimeIdentifier>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_TargetILCompilerPack.Identity)\%(_DistinctILCompilerTargetCandidate.ILCompilerPackVersion)')">$(NetCoreTargetingPackRoot)\%(_TargetILCompilerPack.Identity)\%(_DistinctILCompilerTargetCandidate.ILCompilerPackVersion)</PackageDirectory>
+      </_TargetILCompilerPack>
+    </ItemGroup>
+
+    <!-- Resolve ILLink pack from _ResolveILLinkPack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(_RequiresILLinkPack)' == 'true'">
+      <_KnownILLinkPackMatchingTFI Include="@(KnownILLinkPack)"
+        Condition="$([MSBuild]::GetTargetFrameworkIdentifier('%(KnownILLinkPack.TargetFramework)')) == '$(TargetFrameworkIdentifier)'" />
+
+      <_ApplicableILLinkPack Include="@(_KnownILLinkPackMatchingTFI)"
+        Condition="$([MSBuild]::VersionEquals($([MSBuild]::GetTargetFrameworkVersion('%(_KnownILLinkPackMatchingTFI.TargetFramework)', 2)), '$(_TargetFrameworkVersionWithoutV)'))" />
+    </ItemGroup>
+
+    <!-- Resolve WebAssembly SDK pack from _ResolveWebAssemblySdkPack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(UsingMicrosoftNETSdkWebAssembly)' == 'true'">
+      <_KnownWebAssemblySdkPackMatchingTFI Include="@(KnownWebAssemblySdkPack)"
+        Condition="$([MSBuild]::GetTargetFrameworkIdentifier('%(KnownWebAssemblySdkPack.TargetFramework)')) == '$(TargetFrameworkIdentifier)'" />
+
+      <_ApplicableWebAssemblySdkPack Include="@(_KnownWebAssemblySdkPackMatchingTFI)"
+        Condition="$([MSBuild]::VersionEquals($([MSBuild]::GetTargetFrameworkVersion('%(_KnownWebAssemblySdkPackMatchingTFI.TargetFramework)', 2)), '$(_TargetFrameworkVersionWithoutV)'))" />
+    </ItemGroup>
+
+    <!-- Resolve ASP.NET Core pack from _ResolveAspNetCorePack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(RequiresAspNetWebAssets)' == 'true' AND
+                          $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '10.0'))">
+      <_KnownAspNetCorePackMatchingTFI Include="@(KnownAspNetCorePack)"
+        Condition="$([MSBuild]::GetTargetFrameworkIdentifier('%(KnownAspNetCorePack.TargetFramework)')) == '$(TargetFrameworkIdentifier)'" />
+
+      <_ApplicableAspNetCorePack Include="@(_KnownAspNetCorePackMatchingTFI)"
+        Condition="$([MSBuild]::VersionEquals($([MSBuild]::GetTargetFrameworkVersion('%(_KnownAspNetCorePackMatchingTFI.TargetFramework)', 2)), '$(_TargetFrameworkVersionWithoutV)'))" />
+    </ItemGroup>
+
+    <!-- Compute known runtime identifier platforms from _CreateKnownRuntimeIdentifierPlatforms -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <!-- Get all Microsoft.NETCore.App runtime packs and framework references for this target framework -->
+      <_NetCoreAppRuntimePack Include="@(_ApplicableKnownFrameworkReference);@(_ApplicableKnownRuntimePack)"
+        Condition="'%(Identity)' == 'Microsoft.NETCore.App'" />
+
+      <!-- Split RuntimePackRuntimeIdentifiers by semicolon to create individual RID items -->
+      <_RuntimePackRid Include="%(_NetCoreAppRuntimePack.RuntimePackRuntimeIdentifiers)" />
+    </ItemGroup>
+
+    <RemoveDuplicates Inputs="@(_RuntimePackRid)"
+                      Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <Output TaskParameter="Filtered" ItemName="_DeduplicatedRuntimePackRid" />
+    </RemoveDuplicates>
+
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_DeduplicatedRuntimePackRid>
+        <Platform Condition="$([System.String]::Copy(%(_DeduplicatedRuntimePackRid.Identity)).LastIndexOf('-')) &gt; 0">$([System.String]::Copy(%(_DeduplicatedRuntimePackRid.Identity)).Substring(0, $([System.String]::Copy(%(_DeduplicatedRuntimePackRid.Identity)).LastIndexOf('-'))))</Platform>
+      </_DeduplicatedRuntimePackRid>
+
+      <!-- Extract platform from each RID (everything before last '-') -->
+      <_RuntimeIdentifierPlatform
+        Include="@(_DeduplicatedRuntimePackRid->'%(Platform)')" />
+
+      <!-- For RIDs without '-', use the whole RID as platform -->
+      <_RuntimeIdentifierPlatform Include="%(_DeduplicatedRuntimePackRid.Identity)"
+        Condition="$([System.String]::Copy('%(_DeduplicatedRuntimePackRid.Identity)').LastIndexOf('-')) &lt; 0" />
+    </ItemGroup>
+
+    <RemoveDuplicates Inputs="@(_RuntimeIdentifierPlatform)"
+                      Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <Output TaskParameter="Filtered" ItemName="_KnownRuntimeIdentifierPlatformsTemp" />
+    </RemoveDuplicates>
+
+    <!-- Prepare targeting pack intermediate data -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_TargetingPack Include="@(_JoinedFrameworkReference)" KeepMetadata="Profile;WasReferencedDirectly;TargetFramework;TargetingPackFormat;RuntimeFrameworkName;TargetingPackName;TargetingPackVersion" />
+      <_TargetingPack>
+        <NuGetPackageId>%(_TargetingPack.TargetingPackName)</NuGetPackageId>
+        <NuGetPackageVersion>%(_TargetingPack.TargetingPackVersion)</NuGetPackageVersion>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_TargetingPack.TargetingPackName)\%(_TargetingPack.TargetingPackVersion)')">$(NetCoreTargetingPackRoot)\%(_TargetingPack.TargetingPackName)\%(_TargetingPack.TargetingPackVersion)</PackageDirectory>
+      </_TargetingPack>
+      <_TargetingPack>
+        <Path>%(_TargetingPack.PackageDirectory)</Path>
+      </_TargetingPack>
+    </ItemGroup>
+
+    <!-- Build PackageConflictPreferredPackages property -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_PreferredPackage Include="%(_TargetingPack.NuGetPackageId)" />
+      <!-- Expand runtime pack patterns for all supported RIDs -->
+      <_RuntimePackPatternWithRid Include="%(_MatchedRuntimePack.RuntimePackRuntimeIdentifiers)">
+        <Pattern>%(_MatchedRuntimePack.RuntimePackNamePatterns)</Pattern>
+      </_RuntimePackPatternWithRid>
+    </ItemGroup>
+
+    <!-- Substitute RID in each pattern -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_PreferredPackage Include="$([System.String]::Copy('%(_RuntimePackPatternWithRid.Pattern)').Replace('**RID**', '%(_RuntimePackPatternWithRid.Identity)'))" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_PackageConflictPreferredPackages>@(_PreferredPackage, ';')</_PackageConflictPreferredPackages>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_TargetingPack>
+        <PackageConflictPreferredPackages>$(_PackageConflictPreferredPackages)</PackageConflictPreferredPackages>
+      </_TargetingPack>
+    </ItemGroup>
+
+    <!-- Prepare runtime pack intermediate data with complete metadata -->
+    <!-- First create items with substituted RID -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
+                          '$(_EffectiveRuntimeIdentifier)' != ''">
+      <_RuntimePack Include="$([System.String]::Copy('%(_RuntimePackWithRid.Identity)').Replace('**RID**', '%(_RuntimePackWithRid.MatchedRid)'))">
+        <FrameworkName>%(_RuntimePackWithRid.FrameworkName)</FrameworkName>
+        <IsTrimmable>%(_RuntimePackWithRid.IsTrimmable)</IsTrimmable>
+        <NuGetPackageVersion>%(_RuntimePackWithRid.LatestVersion)</NuGetPackageVersion>
+        <RuntimeIdentifier>%(_RuntimePackWithRid.MatchedRid)</RuntimeIdentifier>
+        <RuntimePackAlwaysCopyLocal Condition="'%(_RuntimePackWithRid.RuntimePackAlwaysCopyLocal)' == 'true'">true</RuntimePackAlwaysCopyLocal>
+      </_RuntimePack>
+    </ItemGroup>
+
+    <!-- Then add metadata that depends on Identity -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
+                          '$(_EffectiveRuntimeIdentifier)' != '' AND
+                          '@(_RuntimePack)' != ''">
+      <_RuntimePack>
+        <NuGetPackageId>%(_RuntimePack.Identity)</NuGetPackageId>
+        <PackageDirectory Condition="Exists('$(NetCoreTargetingPackRoot)\%(_RuntimePack.Identity)\%(_RuntimePack.NuGetPackageVersion)')">$(NetCoreTargetingPackRoot)\%(_RuntimePack.Identity)\%(_RuntimePack.NuGetPackageVersion)</PackageDirectory>
+        <Path>%(_RuntimePack.PackageDirectory)</Path>
+      </_RuntimePack>
+    </ItemGroup>
+
+    <!-- ============================================================
+         FINAL OUTPUT ITEMS CREATION
+         All outputs that match ProcessFrameworkReferences task outputs
+         ============================================================ -->
+
+    <!-- Output: RuntimeFramework -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <RuntimeFramework Include="@(_JoinedFrameworkReference)"
+        Condition="'%(_JoinedFrameworkReference.RuntimePackAlwaysCopyLocal)' != 'true' AND
+                   '%(_JoinedFrameworkReference.RuntimeFrameworkName)' != ''"
+        KeepMetadata="Profile">
+        <Version>%(_JoinedFrameworkReference.DefaultRuntimeFrameworkVersion)</Version>
+        <FrameworkName>%(_JoinedFrameworkReference.Identity)</FrameworkName>
+      </RuntimeFramework>
+    </ItemGroup>
+
+    <!-- Output: TargetingPack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <TargetingPack Include="@(_TargetingPack)" />
+    </ItemGroup>
+
+    <!-- Output: RuntimePack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <RuntimePack Include="@(_RuntimePack)" />
+    </ItemGroup>
+
+    <!-- Output: Crossgen2Pack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <Crossgen2Pack Include="@(_Crossgen2Pack)" />
+    </ItemGroup>
+
+    <!-- Output: HostILCompilerPack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <HostILCompilerPack Include="@(_HostILCompilerPack)" />
+    </ItemGroup>
+
+    <!-- Output: TargetILCompilerPack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <TargetILCompilerPack Include="@(_TargetILCompilerPack)" />
+    </ItemGroup>
+
+    <!-- Output: _ImplicitPackageReference (for ILLink pack) -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false' AND
+                          '@(_ApplicableILLinkPack)' != '' AND
+                          '$(EnableRuntimePackDownload)' == 'true'">
+      <_ImplicitPackageReference Include="@(_ApplicableILLinkPack)">
+        <Version>%(ILLinkPackVersion)</Version>
+      </_ImplicitPackageReference>
+    </ItemGroup>
+
+    <!-- Output: _KnownRuntimeIdentifierPlatformsForTargetFramework -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_KnownRuntimeIdentifierPlatformsForTargetFramework Include="@(_KnownRuntimeIdentifierPlatformsTemp)" />
+    </ItemGroup>
+
+    <!-- Output: _PackageToDownload (consolidated from all sources) -->
+
+    <!-- Targeting packs -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_TargetingPackPackage
+        Include="@(TargetingPack->'%(NuGetPackageId)')"
+        KeepDuplicates="false"
+        KeepMetadata="NuGetPackageVersion;WasReferencedDirectly;NuGetPackageId"
+        Version="%(TargetingPack.NuGetPackageVersion)"
+        Condition="'$(EnableTargetingPackDownload)' == 'true' AND ('%(TargetingPack.WasReferencedDirectly)' == 'true' OR '$(DisableTransitiveFrameworkReferenceDownloads)' != 'true')"/>
+      <_PackageToDownload Include="@(_TargetingPackPackage)" KeepMetadata="Version" />
+    </ItemGroup>
+
+    <!-- Runtime packs for primary RID -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_PackageToDownload
+        Include="@(RuntimePack)"
+        Condition="'$(_DeploymentRequiresRuntimeComponents)' == 'true' AND
+                   '$(_EffectiveRuntimeIdentifier)' != '' AND
+                   '$(EnableRuntimePackDownload)' == 'true' AND
+                   !Exists('$(NetCoreTargetingPackRoot)\%(RuntimePack.NuGetPackageId)\%(RuntimePack.NuGetPackageVersion)')">
+        <Version>%(RuntimePack.NuGetPackageVersion)</Version>
+      </_PackageToDownload>
+    </ItemGroup>
+
+    <!-- Runtime packs for additional RIDs (already added at lines 295-297) -->
+
+    <!-- Crossgen2 packs -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_PackageToDownload
+        Include="@(Crossgen2Pack)"
+        Condition="'$(PublishReadyToRun)' == 'true' AND
+                   '$(PublishReadyToRunUseCrossgen2)' == 'true' AND
+                   '$(EnableRuntimePackDownload)' == 'true' AND
+                   '@(Crossgen2Pack)' != '' AND
+                   !Exists('$(NetCoreTargetingPackRoot)\%(Crossgen2Pack.NuGetPackageId)\%(Crossgen2Pack.NuGetPackageVersion)')">
+        <Version>%(Crossgen2Pack.NuGetPackageVersion)</Version>
+      </_PackageToDownload>
+    </ItemGroup>
+
+    <!-- Host ILCompiler packs -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_PackageToDownload
+        Include="@(HostILCompilerPack)"
+        Condition="'$(PublishAot)' == 'true' AND
+                   '$(EnableRuntimePackDownload)' == 'true' AND
+                   !Exists('$(NetCoreTargetingPackRoot)\%(HostILCompilerPack.NuGetPackageId)\%(HostILCompilerPack.NuGetPackageVersion)')">
+        <Version>%(HostILCompilerPack.NuGetPackageVersion)</Version>
+      </_PackageToDownload>
+    </ItemGroup>
+
+    <!-- Target ILCompiler packs -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_PackageToDownload
+        Include="@(TargetILCompilerPack)"
+        Condition="'$(PublishAot)' == 'true' AND
+                   '$(EnableRuntimePackDownload)' == 'true' AND
+                   !Exists('$(NetCoreTargetingPackRoot)\%(TargetILCompilerPack.NuGetPackageId)\%(TargetILCompilerPack.NuGetPackageVersion)')">
+        <Version>%(TargetILCompilerPack.NuGetPackageVersion)</Version>
+      </_PackageToDownload>
+    </ItemGroup>
+
+    <!-- WebAssembly SDK pack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_PackageToDownload
+        Include="@(_ApplicableWebAssemblySdkPack)"
+        Condition="'$(UsingMicrosoftNETSdkWebAssembly)' == 'true' AND
+                   '@(_ApplicableWebAssemblySdkPack)' != '' AND
+                   '$(EnableRuntimePackDownload)' == 'true'">
+        <Version>%(_ApplicableWebAssemblySdkPack.WebAssemblySdkPackVersion)</Version>
+      </_PackageToDownload>
+    </ItemGroup>
+
+    <!-- ASP.NET Core pack -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <_PackageToDownload
+        Include="@(_ApplicableAspNetCorePack)"
+        Condition="'$(RequiresAspNetWebAssets)' == 'true' AND
+                   $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '10.0')) AND
+                   '@(_ApplicableAspNetCorePack)' != '' AND
+                   '$(EnableRuntimePackDownload)' == 'true'">
+        <Version>%(_ApplicableAspNetCorePack.AspNetCorePackVersion)</Version>
+      </_PackageToDownload>
+    </ItemGroup>
+
+    <!-- ============================================================
+         CLEANUP OF INTERMEDIATE ITEMS
+         ============================================================ -->
+    <ItemGroup Condition="'$(UseRefactoredFrameworkReferenceResolution)' != 'false'">
+      <!-- Filtering intermediate items -->
+      <_KnownFrameworkReferenceMatchingTFI Remove="@(_KnownFrameworkReferenceMatchingTFI)" />
+      <_KnownFrameworkReferenceMatchingTFV Remove="@(_KnownFrameworkReferenceMatchingTFV)" />
+      <_KnownFrameworkReferenceMatchingPlatformId Remove="@(_KnownFrameworkReferenceMatchingPlatformId)" />
+      <_KnownFrameworkReferenceMatchingTFM Remove="@(_KnownFrameworkReferenceMatchingTFM)" />
+      <_KnownRuntimePackMatchingTFI Remove="@(_KnownRuntimePackMatchingTFI)" />
+      <_KnownRuntimePackMatchingTFV Remove="@(_KnownRuntimePackMatchingTFV)" />
+      <_KnownRuntimePackMatchingPlatformId Remove="@(_KnownRuntimePackMatchingPlatformId)" />
+      <_KnownRuntimePackMatchingTFM Remove="@(_KnownRuntimePackMatchingTFM)" />
+
+      <!-- Other intermediate items -->
+      <_TargetingPack Remove="@(_TargetingPack)" />
+      <_TargetingPackPackage Remove="@(_TargetingPackPackage)" />
+      <_PreferredPackage Remove="@(_PreferredPackage)" />
+      <_RuntimePack Remove="@(_RuntimePack)" />
+      <_RuntimePackWithRid Remove="@(_RuntimePackWithRid)" />
+      <_Crossgen2Pack Remove="@(_Crossgen2Pack)" />
+      <_HostILCompilerPack Remove="@(_HostILCompilerPack)" />
+      <_TargetILCompilerPack Remove="@(_TargetILCompilerPack)" />
+      <_NetCoreAppRuntimePack Remove="@(_NetCoreAppRuntimePack)" />
+      <_RuntimePackRid Remove="@(_RuntimePackRid)" />
+      <_RuntimeIdentifierPlatform Remove="@(_RuntimeIdentifierPlatform)" />
+      <_DeduplicatedRuntimePackRid Remove="@(_DeduplicatedRuntimePackRid)" />
+      <_KnownRuntimeIdentifierPlatformsTemp Remove="@(_KnownRuntimeIdentifierPlatformsTemp)" />
+    </ItemGroup>
+
+    <!-- ============================================================
+         END INLINED REFACTORED IMPLEMENTATION
+         ============================================================ -->
+
+    <!-- ============================================================
+         BEGIN ORIGINAL TASK IMPLEMENTATION
+         ============================================================ -->
     <ProcessFrameworkReferences FrameworkReferences="@(FrameworkReference)"
                                 KnownFrameworkReferences="@(KnownFrameworkReference)"
                                 KnownRuntimePacks="@(KnownRuntimePack)"
@@ -168,7 +852,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
                                 NETCoreSdkPortableRuntimeIdentifier="$(NETCoreSdkPortableRuntimeIdentifier)"
                                 NetCoreRoot="$(NetCoreRoot)"
-                                NETCoreSdkVersion="$(NETCoreSdkVersion)">
+                                NETCoreSdkVersion="$(NETCoreSdkVersion)"
+                                Condition="'$(UseRefactoredFrameworkReferenceResolution)' == 'false'">
 
       <Output TaskParameter="PackagesToDownload" ItemName="_PackageToDownload" />
       <Output TaskParameter="RuntimeFrameworks" ItemName="RuntimeFramework" />
@@ -182,7 +867,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="KnownRuntimeIdentifierPlatforms" ItemName="_KnownRuntimeIdentifierPlatformsForTargetFramework" />
 
     </ProcessFrameworkReferences>
+    <!-- ============================================================
+         END ORIGINAL TASK IMPLEMENTATION
+         ============================================================ -->
 
+    <!-- ============================================================
+         BEGIN INLINED _ResolveAppHosts
+         ============================================================ -->
     <PropertyGroup Condition="'$(AppHostRuntimeIdentifier)' == '' And
                               ('$(UseAppHost)' == 'true' Or '$(EnableComHosting)' == 'true' Or '$(UseIJWHost)' == 'true')">
       <AppHostRuntimeIdentifier>$(RuntimeIdentifier)</AppHostRuntimeIdentifier>
@@ -212,8 +903,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="ComHost" ItemName="ComHostPack" />
       <Output TaskParameter="IjwHost" ItemName="IjwHostPack" />
       <Output TaskParameter="PackAsToolShimAppHostPacks" ItemName="PackAsToolShimAppHostPack" />
-
     </ResolveAppHosts>
+    <!-- ============================================================
+         END INLINED _ResolveAppHosts
+         ============================================================ -->
 
     <PropertyGroup Condition="'$(UsePackageDownload)' == ''">
       <UsePackageDownload Condition="'$(MSBuildRuntimeType)' == 'Core'">true</UsePackageDownload>
@@ -487,10 +1180,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Set the namespaces emitted by the ValidationsGenerator for interception when applicable (.NET 10 and above). -->
     <InterceptorsPreviewNamespaces Condition="'$(_TargetFrameworkVersionWithoutV)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '10.0'))">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Validation.Generated</InterceptorsPreviewNamespaces>
   </PropertyGroup>
-  
+
   <Target Name="ResolveOffByDefaultAnalyzers" AfterTargets="ResolveTargetingPackAssets"
           Condition="'@(FrameworkReference)' != ''">
-    
+
     <ItemGroup>
       <OffByDefaultAnalyzer Include="Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll"
                             IsEnabled="$(EnableRequestDelegateGenerator)"/>
