@@ -71,6 +71,8 @@ jobs:
             // Find all NETSDK codes in added lines
             const diagnosticCodes = new Set();
             for (const line of addedLines) {
+              // Reset regex state for each line to avoid issues with global flag
+              diagnosticPattern.lastIndex = 0;
               let match;
               while ((match = diagnosticPattern.exec(line)) !== null) {
                 diagnosticCodes.add(`NETSDK${match[1]}`);
