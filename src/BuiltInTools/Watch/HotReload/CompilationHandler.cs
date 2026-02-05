@@ -587,16 +587,14 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private static readonly string[] s_targets = [TargetNames.GenerateComputedBuildStaticWebAssets, TargetNames.ResolveReferencedProjectsStaticWebAssets];
+        private static readonly ImmutableArray<string> s_targets = [TargetNames.GenerateComputedBuildStaticWebAssets, TargetNames.ResolveReferencedProjectsStaticWebAssets];
 
         private static bool HasScopedCssTargets(ProjectInstance projectInstance)
             => s_targets.All(projectInstance.Targets.ContainsKey);
 
         public async ValueTask HandleStaticAssetChangesAsync(
             IReadOnlyList<ChangedFile> files,
-            ProjectNodeMap projectMap,
-            IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> restoredProjectInstances,
-            IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> manifests,
+            EvaluationResult evaluationResult,
             Stopwatch stopwatch,
             CancellationToken cancellationToken)
         {
@@ -615,7 +613,7 @@ namespace Microsoft.DotNet.Watch
 
                 foreach (var containingProjectPath in file.ContainingProjectPaths)
                 {
-                    if (!projectMap.Map.TryGetValue(containingProjectPath, out var containingProjectNodes))
+                    if (!evaluationResult.ProjectGraph.Map.TryGetValue(containingProjectPath, out var containingProjectNodes))
                     {
                         // Shouldn't happen.
                         Logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);
@@ -660,7 +658,7 @@ namespace Microsoft.DotNet.Watch
                                     applicationProjectFilePath: applicationProjectInstance.FullPath,
                                     containingProjectFilePath: containingProjectNode.ProjectInstance.FullPath);
 
-                                if (!manifests.TryGetValue(applicationProjectInstance.GetId(), out var manifest))
+                                if (!evaluationResult.StaticWebAssetsManifests.TryGetValue(applicationProjectInstance.GetId(), out var manifest))
                                 {
                                     // Shouldn't happen.
                                     Logger.LogWarning("[{Project}] Static web asset manifest not found.", containingProjectNode.GetDisplayName());
@@ -713,26 +711,27 @@ namespace Microsoft.DotNet.Watch
             HashSet<ProjectInstance>? failedApplicationProjectInstances = null; 
             if (projectInstancesToRegenerate.Count > 0)
             {
-                var buildReporter = new BuildReporter(_context.BuildLogger, _context.Options, _context.EnvironmentOptions);
+                Logger.LogDebug("Regenerating scoped CSS bundles.");
 
-                // Note: MSBuild only allows one build at a time in a process.
-                foreach (var projectInstanceId in projectInstancesToRegenerate)
-                {
-                    var projectInstance = restoredProjectInstances[projectInstanceId];
+                // Deep copy instances so that we don't pollute the project graph:
+                var buildRequests = projectInstancesToRegenerate
+                    .Select(instanceId => BuildRequest.Create(evaluationResult.RestoredProjectInstances[instanceId].DeepCopy(), s_targets))
+                    .ToArray();
 
-                    Logger.LogDebug("[{Project}] Regenerating scoped CSS bundle.", projectInstance.GetDisplayName());
-
-                    using var loggers = buildReporter.GetLoggers(projectInstance.FullPath, "ScopedCss");
-
-                    // Deep copy so that we don't pollute the snapshot:
-                    if (!projectInstance.DeepCopy().Build(s_targets, loggers))
+                _ = await evaluationResult.BuildManager.BuildAsync(
+                    buildRequests,
+                    onFailure: failedInstance =>
                     {
-                        loggers.ReportOutput();
+                        Logger.LogWarning("[{ProjectName}] Failed to regenerate scoped CSS bundle.", failedInstance.GetDisplayName());
 
                         failedApplicationProjectInstances ??= [];
-                        failedApplicationProjectInstances.Add(projectInstance);
-                    }
-                }
+                        failedApplicationProjectInstances.Add(failedInstance);
+
+                        // continue build
+                        return true;
+                    },
+                    operationName: "ScopedCss",
+                    cancellationToken);
             }
 
             // Creating apply tasks involves reading static assets from disk. Parallelize this IO.
@@ -852,15 +851,10 @@ namespace Microsoft.DotNet.Watch
 
         public async Task UpdateProjectConeAsync(ProjectGraph projectGraph, ProjectRepresentation project, CancellationToken cancellationToken)
         {
-            Logger.LogInformation("Loading projects ...");
-            var stopwatch = Stopwatch.StartNew();
-
             _projectInstances = CreateProjectInstanceMap(projectGraph);
 
             var solution = await Workspace.UpdateProjectConeAsync(project.ProjectGraphPath, cancellationToken);
             await SolutionUpdatedAsync(solution, "project update", cancellationToken);
-
-            Logger.LogInformation("Projects loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
         }
 
         public async Task UpdateFileContentAsync(IReadOnlyList<ChangedFile> changedFiles, CancellationToken cancellationToken)
