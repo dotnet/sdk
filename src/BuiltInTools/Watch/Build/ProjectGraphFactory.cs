@@ -23,7 +23,8 @@ internal sealed class ProjectGraphFactory
     /// </summary>
     private readonly ProjectCollection _collection;
 
-    private readonly ImmutableDictionary<string, string> _globalOptions;
+    private readonly ImmutableDictionary<string, string> _buildProperties;
+    private readonly ILogger _logger;
     private readonly ProjectRepresentation _rootProject;
 
     // Only the root project can be virtual. #:project does not support targeting other single-file projects.
@@ -32,10 +33,11 @@ internal sealed class ProjectGraphFactory
     public ProjectGraphFactory(
         ProjectRepresentation rootProject,
         string? targetFramework,
-        ImmutableDictionary<string, string> globalOptions)
+        ImmutableDictionary<string, string> buildProperties,
+        ILogger logger)
     {
         _collection = new(
-            globalProperties: globalOptions,
+            globalProperties: buildProperties,
             loggers: [],
             remoteLoggers: [],
             ToolsetDefinitionLocations.Default,
@@ -45,7 +47,8 @@ internal sealed class ProjectGraphFactory
             useAsynchronousLogging: false,
             reuseProjectRootElementCache: true);
 
-        _globalOptions = globalOptions;
+        _buildProperties = buildProperties;
+        _logger = logger;
         _rootProject = rootProject;
 
         if (rootProject.EntryPointFilePath != null)
@@ -53,6 +56,8 @@ internal sealed class ProjectGraphFactory
             _virtualRootProjectBuilder = new VirtualProjectBuilder(rootProject.EntryPointFilePath, targetFramework ?? GetProductTargetFramework());
         }
     }
+
+    public ILogger Logger => _logger;
 
     private static string GetProductTargetFramework()
     {
@@ -64,15 +69,15 @@ internal sealed class ProjectGraphFactory
     /// <summary>
     /// Tries to create a project graph by running the build evaluation phase on the <paramref name="rootProjectFile"/>.
     /// </summary>
-    public ProjectGraph? TryLoadProjectGraph(
-        ILogger logger,
-        bool projectGraphRequired,
-        CancellationToken cancellationToken)
+    public LoadedProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, CancellationToken cancellationToken)
     {
-        var entryPoint = new ProjectGraphEntryPoint(_rootProject.ProjectGraphPath, _globalOptions);
+        var entryPoint = new ProjectGraphEntryPoint(_rootProject.ProjectGraphPath, _buildProperties);
         try
         {
-            return new ProjectGraph([entryPoint], _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, logger), cancellationToken);
+            return new LoadedProjectGraph(
+                new ProjectGraph([entryPoint], _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, _logger), cancellationToken),
+                _collection,
+                _logger);
         }
         catch (ProjectCreationFailedException)
         {
@@ -84,7 +89,7 @@ internal sealed class ProjectGraphFactory
             // throw here to propagate the cancellation.
             cancellationToken.ThrowIfCancellationRequested();
 
-            logger.LogDebug("Failed to load project graph.");
+            _logger.LogDebug("Failed to load project graph.");
 
             if (e is AggregateException { InnerExceptions: var innerExceptions })
             {
@@ -105,11 +110,11 @@ internal sealed class ProjectGraphFactory
             {
                 if (projectGraphRequired)
                 {
-                    logger.LogError(e.Message);
+                    _logger.LogError(e.Message);
                 }
                 else
                 {
-                    logger.LogWarning(e.Message);
+                    _logger.LogWarning(e.Message);
                 }
             }
         }

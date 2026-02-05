@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class StaticFileHandler(ILogger logger, ProjectNodeMap projectMap, BrowserRefreshServerFactory browserConnector)
+    internal sealed class StaticFileHandler(ILogger logger, LoadedProjectGraph projectGraph, BrowserRefreshServerFactory browserConnector)
     {
         public async ValueTask<bool> HandleFileChangesAsync(IReadOnlyList<ChangedFile> files, CancellationToken cancellationToken)
         {
@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Watch
 
                 foreach (var containingProjectPath in file.ContainingProjectPaths)
                 {
-                    if (!projectMap.Map.TryGetValue(containingProjectPath, out var projectNodes))
+                    if (!projectGraph.Map.TryGetValue(containingProjectPath, out var projectNodes))
                     {
                         // Shouldn't happen.
                         logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);

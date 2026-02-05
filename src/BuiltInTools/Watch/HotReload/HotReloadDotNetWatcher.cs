@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
@@ -45,11 +46,12 @@ namespace Microsoft.DotNet.Watch
             }
 
             _designTimeBuildGraphFactory = new ProjectGraphFactory(
-                _context.RootProjectOptions.Representation,
-                _context.RootProjectOptions.TargetFramework,
-                globalOptions: EvaluationResult.GetGlobalBuildOptions(
+                context.RootProjectOptions.Representation,
+                context.RootProjectOptions.TargetFramework,
+                buildProperties: EvaluationResult.GetGlobalBuildProperties(
                     context.RootProjectOptions.BuildArguments,
-                    context.EnvironmentOptions));
+                    context.EnvironmentOptions),
+                context.Logger);
         }
 
         public async Task WatchAsync(CancellationToken shutdownCancellationToken)
@@ -103,7 +105,7 @@ namespace Microsoft.DotNet.Watch
                     // Avoid restore since the build above already restored the root project.
                     evaluationResult = await EvaluateRootProjectAsync(restore: false, iterationCancellationToken);
 
-                    var rootProject = evaluationResult.ProjectGraph.GraphRoots.Single();
+                    var rootProject = evaluationResult.ProjectGraph.Graph.GraphRoots.Single();
 
                     // use normalized MSBuild path so that we can index into the ProjectGraph
                     rootProjectOptions = rootProjectOptions with
@@ -119,9 +121,8 @@ namespace Microsoft.DotNet.Watch
                         _context.Logger.LogDebug("Using Aspire process launcher.");
                     }
 
-                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, _context.Logger);
                     compilationHandler = new CompilationHandler(_context);
-                    var projectLauncher = new ProjectLauncher(_context, projectMap, compilationHandler, iteration);
+                    var projectLauncher = new ProjectLauncher(_context, evaluationResult.ProjectGraph, compilationHandler, iteration);
                     evaluationResult.ItemExclusions.Report(_context.Logger);
 
                     runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProject, projectLauncher, rootProjectOptions);
@@ -172,7 +173,7 @@ namespace Microsoft.DotNet.Watch
                         return;
                     }
 
-                    await compilationHandler.UpdateProjectConeAsync(evaluationResult.ProjectGraph, rootProjectOptions.Representation, iterationCancellationToken);
+                    await compilationHandler.UpdateProjectConeAsync(evaluationResult.ProjectGraph.Graph, rootProjectOptions.Representation, iterationCancellationToken);
 
                     // Solution must be initialized after we load the solution but before we start watching for file changes to avoid race condition
                     // when the EnC session captures content of the file after the changes has already been made.
@@ -266,7 +267,7 @@ namespace Microsoft.DotNet.Watch
                         var stopwatch = Stopwatch.StartNew();
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.StaticHandler);
-                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, evaluationResult.RestoredProjectInstances, evaluationResult.StaticWebAssetsManifests, stopwatch, iterationCancellationToken);
+                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, evaluationResult, stopwatch, iterationCancellationToken);
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.StaticHandler);
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
@@ -376,7 +377,7 @@ namespace Microsoft.DotNet.Watch
                         // Deploy dependencies after rebuilding and before restarting.
                         if (!projectsToRedeploy.IsEmpty)
                         {
-                            DeployProjectDependencies(evaluationResult.RestoredProjectInstances.Values, projectsToRedeploy, iterationCancellationToken);
+                            await DeployProjectDependenciesAsync(evaluationResult, projectsToRedeploy, iterationCancellationToken);
                             _context.Logger.Log(MessageDescriptor.ProjectDependenciesDeployed, projectsToRedeploy.Length);
                         }
 
@@ -447,7 +448,7 @@ namespace Microsoft.DotNet.Watch
                                 // additional files/directories may have been added:
                                 evaluationResult.WatchFiles(fileWatcher);
 
-                                await compilationHandler.UpdateProjectConeAsync(evaluationResult.ProjectGraph, rootProjectOptions.Representation, iterationCancellationToken);
+                                await compilationHandler.UpdateProjectConeAsync(evaluationResult.ProjectGraph.Graph, rootProjectOptions.Representation, iterationCancellationToken);
 
                                 if (shutdownCancellationToken.IsCancellationRequested)
                                 {
@@ -656,13 +657,15 @@ namespace Microsoft.DotNet.Watch
             return false;
         }
 
-        private void DeployProjectDependencies(IEnumerable<ProjectInstance> restoredProjectInstances, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
+        private async ValueTask DeployProjectDependenciesAsync(EvaluationResult evaluationResult, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
         {
-            var projectPathSet = projectPaths.ToImmutableHashSet(PathUtilities.OSSpecificPathComparer);
-            var buildReporter = new BuildReporter(_context.Logger, _context.Options, _context.EnvironmentOptions);
-            var targetName = TargetNames.ReferenceCopyLocalPathsOutputGroup;
+            const string TargetName = TargetNames.ReferenceCopyLocalPathsOutputGroup;
 
-            foreach (var restoredProjectInstance in restoredProjectInstances)
+            var projectPathSet = projectPaths.ToImmutableHashSet(PathUtilities.OSSpecificPathComparer);
+
+            var buildRequests = new List<BuildRequest<string>>();
+
+            foreach (var (_, restoredProjectInstance) in evaluationResult.RestoredProjectInstances)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -676,7 +679,7 @@ namespace Microsoft.DotNet.Watch
                     continue;
                 }
 
-                if (!projectInstance.Targets.ContainsKey(targetName))
+                if (!projectInstance.Targets.ContainsKey(TargetName))
                 {
                     continue;
                 }
@@ -686,43 +689,70 @@ namespace Microsoft.DotNet.Watch
                     continue;
                 }
 
-                using var loggers = buildReporter.GetLoggers(projectPath, targetName);
-                if (!projectInstance.Build([targetName], loggers, out var targetOutputs))
+                buildRequests.Add(BuildRequest.Create(projectInstance, [TargetName], relativeOutputDir));
+            }
+
+            var results = await evaluationResult.BuildManager.BuildAsync(
+                buildRequests,
+                onFailure: failedInstance =>
                 {
-                    _context.Logger.LogDebug("{TargetName} target failed", targetName);
-                    loggers.ReportOutput();
+                    _context.Logger.LogDebug("[{ProjectName}] {TargetName} target failed", failedInstance.GetDisplayName(), TargetName);
+
+                    // continue build
+                    return true;
+                },
+                operationName: "DeployProjectDependencies",
+                cancellationToken);
+
+            var copyTasks = new List<Task>();
+
+            foreach (var result in results)
+            {
+                if (!result.IsSuccess)
+                {
                     continue;
                 }
 
+                var relativeOutputDir = result.Data;
+                var projectInstance = result.ProjectInstance;
+
+                var projectPath = projectInstance.FullPath;
+
                 var outputDir = Path.Combine(Path.GetDirectoryName(projectPath)!, relativeOutputDir);
 
-                foreach (var item in targetOutputs[targetName].Items)
+                foreach (var item in result.TargetResults[TargetName].Items)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
                     var sourcePath = item.ItemSpec;
                     var targetPath = Path.Combine(outputDir, item.GetMetadata(MetadataNames.TargetPath));
-                    if (!File.Exists(targetPath))
+
+                    copyTasks.Add(Task.Run(() =>
                     {
-                        _context.Logger.LogDebug("Deploying project dependency '{TargetPath}' from '{SourcePath}'", targetPath, sourcePath);
-
-                        try
+                        if (!File.Exists(targetPath))
                         {
-                            var directory = Path.GetDirectoryName(targetPath);
-                            if (directory != null)
+                            _context.Logger.LogDebug("Deploying project dependency '{TargetPath}' from '{SourcePath}'", targetPath, sourcePath);
+
+                            try
                             {
-                                Directory.CreateDirectory(directory);
-                            }
+                                var directory = Path.GetDirectoryName(targetPath);
+                                if (directory != null)
+                                {
+                                    Directory.CreateDirectory(directory);
+                                }
 
-                            File.Copy(sourcePath, targetPath, overwrite: false);
+                                File.Copy(sourcePath, targetPath, overwrite: false);
+                            }
+                            catch (Exception e)
+                            {
+                                _context.Logger.LogDebug("Copy failed: {Message}", e.Message);
+                            }
                         }
-                        catch (Exception e)
-                        {
-                            _context.Logger.LogDebug("Copy failed: {Message}", e.Message);
-                        }
-                    }
+                    }, cancellationToken));
                 }
             }
+
+            await Task.WhenAll(copyTasks);
         }
 
         private async ValueTask WaitForFileChangeBeforeRestarting(FileWatcher fileWatcher, EvaluationResult? evaluationResult, CancellationToken cancellationToken)
@@ -925,21 +955,15 @@ namespace Microsoft.DotNet.Watch
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _context.Logger.LogInformation("Evaluating projects ...");
+                _context.Logger.LogInformation("Loading projects ...");
                 var stopwatch = Stopwatch.StartNew();
 
-                var result = EvaluationResult.TryCreate(
-                    _designTimeBuildGraphFactory,
-                    _context.BuildLogger,
-                    _context.Options,
-                    _context.EnvironmentOptions,
-                    restore,
-                    cancellationToken);
-
-                _context.Logger.LogInformation("Evaluation completed in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
+                var result = await EvaluationResult.TryCreateAsync(_designTimeBuildGraphFactory, _context.Options, _context.EnvironmentOptions, restore, cancellationToken);
+                var timeDisplay = stopwatch.Elapsed.TotalSeconds.ToString("0.0");
 
                 if (result != null)
                 {
+                    _context.Logger.LogInformation("Loaded {ProjectCount} project(s) in {Time}s.", result.ProjectGraph.Graph.ProjectNodes.Count, timeDisplay);
                     return result;
                 }
 
