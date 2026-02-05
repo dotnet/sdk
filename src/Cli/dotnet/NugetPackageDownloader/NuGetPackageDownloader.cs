@@ -447,6 +447,38 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             LoadOverrideSources(packageSourceLocation) :
             LoadDefaultSources(packageId, packageSourceLocation, packageSourceMapping);
 
+        // When using override sources, additional sources should still be appended
+        if ((packageSourceLocation?.SourceFeedOverrides.Any() ?? false) && 
+            (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false))
+        {
+            var sourceList = sources.ToList();
+            foreach (string additionalSource in packageSourceLocation.AdditionalSourceFeed)
+            {
+                if (string.IsNullOrWhiteSpace(additionalSource))
+                {
+                    continue;
+                }
+
+                PackageSource newSource = new(additionalSource);
+                if (newSource.TrySourceAsUri == null)
+                {
+                    _verboseLogger.LogWarning(string.Format(
+                        CliStrings.FailedToLoadNuGetSource,
+                        additionalSource));
+                    continue;
+                }
+
+                // Skip if already present
+                if (sourceList.Any(existing => existing.SourceUri == newSource.SourceUri))
+                {
+                    continue;
+                }
+
+                sourceList.Add(newSource);
+            }
+            sources = sourceList;
+        }
+
         if (!sources.Any())
         {
             throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
