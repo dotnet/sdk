@@ -9,8 +9,14 @@ namespace Microsoft.DotNet.Build.Tasks
     /// Gets version and commit of a dependency by its name
     /// from eng/Version.Details.xml
     /// </summary>
-    public class GetDependencyInfo : Task
+    [MSBuildMultiThreadableTask]
+    public class GetDependencyInfo : Task, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment? TaskEnvironment { get; set; }
+
         [Required]
         public string VersionDetailsXmlFile { get; set; }
 
@@ -27,7 +33,12 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             try
             {
-                XDocument document = XDocument.Load(VersionDetailsXmlFile);
+                string absolutePath = TaskEnvironment?.GetAbsolutePath(VersionDetailsXmlFile) ?? VersionDetailsXmlFile;
+                XDocument document;
+                using (var stream = new FileStream(absolutePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    document = XDocument.Load(stream);
+                }
                 XElement dependency = document
                     .Element("Dependencies")?
                     .Element("ProductDependencies")?
