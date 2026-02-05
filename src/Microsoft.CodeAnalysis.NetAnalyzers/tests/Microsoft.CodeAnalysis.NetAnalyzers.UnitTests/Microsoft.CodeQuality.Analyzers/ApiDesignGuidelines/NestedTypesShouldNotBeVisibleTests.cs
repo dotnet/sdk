@@ -694,6 +694,23 @@ End Class
 ", GetBasicCA1034ResultAt(3, 18, "Pizza"), GetBasicCA1034ResultAt(12, 37, "Builder"));
         }
 
+        [Fact, WorkItem(51681, "https://github.com/dotnet/sdk/issues/51681")]
+        public async Task CSharpNoDiagnosticExtensionMembersAsync()
+        {
+            var code = @"
+using System;
+
+public static class Utilities
+{
+	extension(string str)
+	{
+		public bool A() => str.Contains('A', StringComparison.Ordinal);
+	}
+}
+";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
         private static DiagnosticResult GetCSharpCA1034ResultAt(int line, int column, string nestedTypeName)
 #pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic(NestedTypesShouldNotBeVisibleAnalyzer.DefaultRule)
