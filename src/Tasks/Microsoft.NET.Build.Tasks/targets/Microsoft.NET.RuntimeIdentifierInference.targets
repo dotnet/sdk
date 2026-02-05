@@ -343,6 +343,23 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <!--
+    Warn when PlatformTarget is explicitly set to a non-AnyCPU value for modern .NET applications.
+    PlatformTarget is a legacy setting from .NET Framework that has no effect in modern .NET.
+    The warning only fires when:
+    - TargetFrameworkIdentifier is .NETCoreApp (modern .NET)
+    - _UsingDefaultPlatformTarget is not true (user explicitly set PlatformTarget, not inferred by SDK)
+    - PlatformTarget is not empty and not AnyCPU
+  -->
+  <Target Name="_CheckForNonAnyCPUPlatformTarget"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_UsingDefaultPlatformTarget)' != 'true' and '$(PlatformTarget)' != '' and '$(PlatformTarget)' != 'AnyCPU'">
+
+    <NETSdkWarning ResourceName="PlatformTargetNotRecommendedForModernDotNet"
+                    FormatArguments="$(PlatformTarget)" />
+
+  </Target>
+
   <Target Name="_CheckForMismatchingPlatform"
           BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
           Condition="'$(RuntimeIdentifier)' != '' and '$(PlatformTarget)' != ''">
