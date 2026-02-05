@@ -1,0 +1,204 @@
+name: Detect New NETSDK Diagnostics
+
+on:
+  # Use pull_request_target for safe execution from forks
+  # This runs in the context of the base branch, not the PR head
+  pull_request_target:
+    types: [opened, synchronize]
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  detect-diagnostics:
+    name: Detect New NETSDK Diagnostic Codes
+    runs-on: ubuntu-latest
+    # Only run on the main repository, not forks
+    if: github.repository == 'dotnet/sdk'
+    
+    steps:
+      - name: Get PR diff
+        id: get-diff
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.pull_request.number;
+            
+            // Get the list of files changed in the PR
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner,
+              repo,
+              pull_number,
+              per_page: 100
+            });
+            
+            // Get full diff for the PR
+            const { data: diff } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number,
+              mediaType: {
+                format: 'diff'
+              }
+            });
+            
+            return diff;
+
+      - name: Detect new NETSDK diagnostics
+        id: detect
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          DIFF_CONTENT: ${{ steps.get-diff.outputs.result }}
+        with:
+          script: |
+            const diff = process.env.DIFF_CONTENT;
+            
+            // Pattern to match NETSDK diagnostic codes
+            const diagnosticPattern = /NETSDK(\d{4}):/g;
+            
+            // Extract only added lines from the diff (lines starting with +)
+            const addedLines = diff.split('\n').filter(line => line.startsWith('+') && !line.startsWith('+++'));
+            
+            // Find all NETSDK codes in added lines
+            const diagnosticCodes = new Set();
+            for (const line of addedLines) {
+              let match;
+              while ((match = diagnosticPattern.exec(line)) !== null) {
+                diagnosticCodes.add(`NETSDK${match[1]}`);
+              }
+            }
+            
+            const foundDiagnostics = Array.from(diagnosticCodes).sort();
+            
+            core.setOutput('found_diagnostics', foundDiagnostics.join(','));
+            core.setOutput('has_diagnostics', foundDiagnostics.length > 0 ? 'true' : 'false');
+            
+            if (foundDiagnostics.length > 0) {
+              core.info(`Found ${foundDiagnostics.length} new NETSDK diagnostic(s): ${foundDiagnostics.join(', ')}`);
+            } else {
+              core.info('No new NETSDK diagnostics found in this PR.');
+            }
+            
+            return foundDiagnostics;
+
+      - name: Create label if it doesn't exist
+        if: steps.detect.outputs.has_diagnostics == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const labelName = 'sdk-diagnostic-docs-needed';
+            const labelColor = 'd4c5f9';
+            const labelDescription = 'This PR introduces new SDK diagnostic codes and requires documentation updates';
+            
+            try {
+              // Try to get the label
+              await github.rest.issues.getLabel({
+                owner,
+                repo,
+                name: labelName
+              });
+              core.info(`Label '${labelName}' already exists.`);
+            } catch (error) {
+              if (error.status === 404) {
+                // Label doesn't exist, create it
+                core.info(`Creating label '${labelName}'...`);
+                await github.rest.issues.createLabel({
+                  owner,
+                  repo,
+                  name: labelName,
+                  color: labelColor,
+                  description: labelDescription
+                });
+                core.info(`Label '${labelName}' created successfully.`);
+              } else {
+                throw error;
+              }
+            }
+
+      - name: Add label to PR
+        if: steps.detect.outputs.has_diagnostics == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const labelName = 'sdk-diagnostic-docs-needed';
+            
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number,
+              labels: [labelName]
+            });
+            
+            core.info(`Label '${labelName}' added to PR #${issue_number}`);
+
+      - name: Post or update comment
+        if: steps.detect.outputs.has_diagnostics == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          DIAGNOSTICS: ${{ steps.detect.outputs.found_diagnostics }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const diagnostics = process.env.DIAGNOSTICS.split(',');
+            
+            // Create the comment body
+            const commentIdentifier = '<!-- netsdk-diagnostics-reminder -->';
+            const commentBody = `${commentIdentifier}
+            ## 📋 SDK Diagnostic Documentation Reminder
+            
+            This PR introduces **${diagnostics.length}** new SDK diagnostic code${diagnostics.length > 1 ? 's' : ''}:
+            ${diagnostics.map(code => `- \`${code}\``).join('\n')}
+            
+            ### Action Required
+            Please ensure that documentation for ${diagnostics.length > 1 ? 'these diagnostics' : 'this diagnostic'} is added or updated in the [dotnet/docs](https://github.com/dotnet/docs) repository at:
+            - Path: \`docs/core/tools/sdk-errors/\`
+            - Documentation: https://learn.microsoft.com/dotnet/core/tools/sdk-errors/
+            
+            Each diagnostic should have:
+            - A clear description of the error/warning
+            - Possible causes
+            - Recommended solutions
+            - Code examples where applicable
+            
+            Thank you for helping keep our documentation up to date! 🙏`;
+            
+            // Check if we already have a comment from this workflow
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number
+            });
+            
+            const existingComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes(commentIdentifier)
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+              core.info(`Updated existing comment #${existingComment.id}`);
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body: commentBody
+              });
+              core.info('Created new comment');
+            }
