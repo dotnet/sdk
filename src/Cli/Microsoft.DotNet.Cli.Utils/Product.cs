@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
@@ -16,7 +17,8 @@ public static class Product
     {
         DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
         Version = versionFile.BuildNumber
-            ?? (Environment.ProcessPath is { } processPath ? FileVersionInfo.GetVersionInfo(processPath).ProductVersion : null)
+            ?? typeof(Product).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion
             ?? string.Empty;
     }
 }
