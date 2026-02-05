@@ -242,6 +242,7 @@ namespace Microsoft.DotNet.Tests
             { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, null },
             { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, null },
             { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, null },
+            { new Dictionary<string, string> { { "CODEX_THREAD_ID", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" } }, "codex" },
             { new Dictionary<string, string>(), null },
         };
 
