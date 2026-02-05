@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         }
 
         [Fact]
-        public void WhenSdkHasNoReleasesJsonItShowsVersionCheckFailure()
+        public void WhenSdkHasNoReleasesJsonItShowsVersionCheckUnavailable()
         {
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
             // Install SDK 11.0.100 which doesn't have releases.json in the test assets

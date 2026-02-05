@@ -30,9 +30,14 @@ public class ProductCollectionProvider : IProductCollectionProvider
         {
             return product.GetReleasesAsync().Result;
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is HttpRequestException ||
+                                     ex is FileNotFoundException ||
+                                     ex is AggregateException aggregateEx && 
+                                     (aggregateEx.InnerException is HttpRequestException || 
+                                      aggregateEx.InnerException is FileNotFoundException))
         {
             // Return empty collection if releases are not available (e.g., unreleased preview versions)
+            // This handles cases where the releases.json file doesn't exist yet for a version
             return Enumerable.Empty<ProductRelease>();
         }
     }
