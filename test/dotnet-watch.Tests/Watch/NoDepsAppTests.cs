@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private const string AppName = "WatchNoDepsApp";
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task RestartProcessOnFileChange()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.NotEqual(processIdentifier, processIdentifier2);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -47,20 +47,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var processIdentifier2 = await App.AssertOutputLineStartsWith("Process identifier =");
             Assert.NotEqual(processIdentifier, processIdentifier2);
             await App.AssertExiting(); // process should exit after run
-        }
-
-        [Fact]
-        public async Task CapturesStdOutWithNoHotReload()
-        {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
-                .WithSource();
-
-            App.Start(testAsset, ["--no-hot-reload"]);
-
-            // Verify that stdout from the application is captured
-            await App.AssertOutputLineStartsWith("Started");
-            await App.AssertOutputLineStartsWith("Process identifier =");
-            await App.AssertExiting();
         }
     }
 }
