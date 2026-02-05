@@ -107,10 +107,17 @@ public class AssetToCompressTest : IDisposable
     public void TryFindInputFilePath_PrefersRelatedAsset_OverRelatedAssetOriginalItemSpec_WhenBothExist()
     {
         // Arrange - create two files to simulate the scenario where both metadata values point to existing files
+        // Make RelatedAsset newer to ensure it's preferred in the normal case
         var relatedAssetPath = Path.Combine(_testDirectory, "correct-asset.js");
         var originalItemSpecPath = Path.Combine(_testDirectory, "project-file.esproj");
-        File.WriteAllText(relatedAssetPath, "// correct JavaScript content");
+
+        // Create originalItemSpec first (older)
         File.WriteAllText(originalItemSpecPath, "<Project></Project>");
+        File.SetLastWriteTimeUtc(originalItemSpecPath, DateTime.UtcNow.AddMinutes(-5));
+
+        // Create RelatedAsset second (newer)
+        File.WriteAllText(relatedAssetPath, "// correct JavaScript content");
+        File.SetLastWriteTimeUtc(relatedAssetPath, DateTime.UtcNow);
 
         var assetToCompress = new TaskItem("test.js.gz");
         assetToCompress.SetMetadata("RelatedAsset", relatedAssetPath);
@@ -152,8 +159,14 @@ public class AssetToCompressTest : IDisposable
         var actualJsFile = Path.Combine(_testDirectory, "dist", "app.min.js");
 
         Directory.CreateDirectory(Path.GetDirectoryName(actualJsFile));
+
+        // Create esproj first (older)
         File.WriteAllText(esprojFile, "<Project Sdk=\"Microsoft.VisualStudio.JavaScript.Sdk\"></Project>");
+        File.SetLastWriteTimeUtc(esprojFile, DateTime.UtcNow.AddMinutes(-5));
+
+        // Create actual JS file second (newer)
         File.WriteAllText(actualJsFile, "// actual JavaScript content");
+        File.SetLastWriteTimeUtc(actualJsFile, DateTime.UtcNow);
 
         var assetToCompress = new TaskItem(Path.Combine(_testDirectory, "compressed", "app.min.js.gz"));
         // RelatedAsset should contain the correct path to the actual JS file
@@ -169,5 +182,93 @@ public class AssetToCompressTest : IDisposable
         fullPath.Should().Be(actualJsFile);
         fullPath.Should().NotBe(esprojFile);
         _errorMessages.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void TryFindInputFilePath_PrefersNewerFile_WhenBothFilesExistAndOriginalItemSpecIsNewer()
+    {
+        // Arrange - simulate incremental build scenario where source file (OriginalItemSpec)
+        // is newer than destination file (RelatedAsset) because the copy hasn't happened yet.
+        // This is the scenario that causes SRI integrity failures in Blazor WASM (issue #65271).
+        var destinationFile = Path.Combine(_testDirectory, "wwwroot", "_framework", "dotnet.js");
+        var sourceFile = Path.Combine(_testDirectory, "obj", "Debug", "net11.0", "dotnet.js");
+
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationFile));
+        Directory.CreateDirectory(Path.GetDirectoryName(sourceFile));
+
+        // Create destination file first (older)
+        File.WriteAllText(destinationFile, "// old content with stale fingerprints");
+        var oldTime = DateTime.UtcNow.AddMinutes(-5);
+        File.SetLastWriteTimeUtc(destinationFile, oldTime);
+
+        // Create source file second (newer) - this simulates a rebuild
+        File.WriteAllText(sourceFile, "// new content with updated fingerprints");
+        File.SetLastWriteTimeUtc(sourceFile, DateTime.UtcNow);
+
+        var assetToCompress = new TaskItem(Path.Combine(_testDirectory, "compressed", "dotnet.js.gz"));
+        assetToCompress.SetMetadata("RelatedAsset", destinationFile);
+        assetToCompress.SetMetadata("RelatedAssetOriginalItemSpec", sourceFile);
+
+        // Act
+        var result = AssetToCompress.TryFindInputFilePath(assetToCompress, _log, out var fullPath);
+
+        // Assert - should use the NEWER source file, not the stale destination
+        result.Should().BeTrue();
+        fullPath.Should().Be(sourceFile);
+        fullPath.Should().NotBe(destinationFile);
+        _errorMessages.Should().BeEmpty();
+        _logMessages.Should().Contain(m => m.Contains("newer"));
+    }
+
+    [Fact]
+    public void TryFindInputFilePath_UsesRelatedAsset_WhenBothFilesExistButRelatedAssetIsNewer()
+    {
+        // Arrange - when destination file is newer (normal case after copy), use it
+        var destinationFile = Path.Combine(_testDirectory, "wwwroot", "_framework", "script.js");
+        var sourceFile = Path.Combine(_testDirectory, "obj", "Debug", "script.js");
+
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationFile));
+        Directory.CreateDirectory(Path.GetDirectoryName(sourceFile));
+
+        // Create source file first (older)
+        File.WriteAllText(sourceFile, "// source content");
+        var oldTime = DateTime.UtcNow.AddMinutes(-5);
+        File.SetLastWriteTimeUtc(sourceFile, oldTime);
+
+        // Create destination file second (newer) - this simulates normal post-copy state
+        File.WriteAllText(destinationFile, "// destination content");
+        File.SetLastWriteTimeUtc(destinationFile, DateTime.UtcNow);
+
+        var assetToCompress = new TaskItem(Path.Combine(_testDirectory, "compressed", "script.js.gz"));
+        assetToCompress.SetMetadata("RelatedAsset", destinationFile);
+        assetToCompress.SetMetadata("RelatedAssetOriginalItemSpec", sourceFile);
+
+        // Act
+        var result = AssetToCompress.TryFindInputFilePath(assetToCompress, _log, out var fullPath);
+
+        // Assert - should use destination file since it's newer
+        result.Should().BeTrue();
+        fullPath.Should().Be(destinationFile);
+        _errorMessages.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void TryFindInputFilePath_UsesRelatedAsset_WhenBothPathsPointToSameFile()
+    {
+        // Arrange - when both paths point to the same file (case-insensitive),
+        // don't bother with timestamp comparison
+        var assetToCompress = new TaskItem("test.js.gz");
+        assetToCompress.SetMetadata("RelatedAsset", _testFilePath);
+        assetToCompress.SetMetadata("RelatedAssetOriginalItemSpec", _testFilePath.ToUpperInvariant());
+
+        // Act
+        var result = AssetToCompress.TryFindInputFilePath(assetToCompress, _log, out var fullPath);
+
+        // Assert
+        result.Should().BeTrue();
+        fullPath.Should().Be(_testFilePath);
+        _errorMessages.Should().BeEmpty();
+        // Should NOT log the "newer" message since paths are the same
+        _logMessages.Should().NotContain(m => m.Contains("newer"));
     }
 }
