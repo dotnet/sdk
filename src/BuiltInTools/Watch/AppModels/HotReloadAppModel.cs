@@ -48,8 +48,7 @@ internal abstract partial class HotReloadAppModel()
             return new WebServerAppModel(context, serverProject: projectNode);
         }
 
-        if (projectNode.IsMobilePlatform() &&
-            projectNode.ProjectInstance.Targets.ContainsKey(TargetNames.DeployHotReloadAgentConfiguration))
+        if (projectNode.IsMobilePlatform())
         {
             context.Logger.Log(MessageDescriptor.ApplicationKind_Mobile);
             return new MobileAppModel(context, projectNode);

@@ -53,8 +53,6 @@ internal sealed class EvaluationResult(ProjectGraph projectGraph, IReadOnlyDicti
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
             .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
             .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
-            // HTTP port for hot reload on mobile platforms (Android, iOS):
-            .SetItem(PropertyNames.DotNetWatchHotReloadHttpPort, environmentOptions.HotReloadHttpPort.ToString())
             // F# targets depend on host path variable:
             .SetItem("DOTNET_HOST_PATH", environmentOptions.MuxerPath);
     }

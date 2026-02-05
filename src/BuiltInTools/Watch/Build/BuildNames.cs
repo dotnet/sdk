@@ -20,12 +20,9 @@ internal static class PropertyNames
     public const string DefaultItemExcludes = nameof(DefaultItemExcludes);
     public const string CustomCollectWatchItems = nameof(CustomCollectWatchItems);
     public const string DotNetWatchBuild = nameof(DotNetWatchBuild);
-    public const string DotNetWatchHotReloadHttpPort = nameof(DotNetWatchHotReloadHttpPort);
     public const string DesignTimeBuild = nameof(DesignTimeBuild);
     public const string SkipCompilerExecution = nameof(SkipCompilerExecution);
     public const string ProvideCommandLineArgs = nameof(ProvideCommandLineArgs);
-    public const string DotNetHotReloadAgentStartupHook = nameof(DotNetHotReloadAgentStartupHook);
-    public const string DotNetHotReloadAgentEnvironment = nameof(DotNetHotReloadAgentEnvironment);
 }
 
 internal static class ItemNames
@@ -56,7 +53,6 @@ internal static class TargetNames
     public const string ResolveReferencedProjectsStaticWebAssets = nameof(ResolveReferencedProjectsStaticWebAssets);
     public const string GenerateComputedBuildStaticWebAssets = nameof(GenerateComputedBuildStaticWebAssets);
     public const string ReferenceCopyLocalPathsOutputGroup = nameof(ReferenceCopyLocalPathsOutputGroup);
-    public const string DeployHotReloadAgentConfiguration = nameof(DeployHotReloadAgentConfiguration);
 }
 
 internal static class ProjectCapability

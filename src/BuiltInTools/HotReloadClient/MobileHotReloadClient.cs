@@ -30,15 +30,17 @@ namespace Microsoft.DotNet.HotReload;
 internal sealed class MobileHotReloadClient : HotReloadClient
 {
     private readonly int _port;
+    private readonly string? _startupHookPath;
     private readonly HotReloadWebSocketServer _server;
 
     private Task<ImmutableArray<string>>? _capabilitiesTask;
     private bool _managedCodeUpdateFailedOrCancelled;
 
-    public MobileHotReloadClient(ILogger logger, ILogger agentLogger, int port)
+    public MobileHotReloadClient(ILogger logger, ILogger agentLogger, int port, string? startupHookPath = null)
         : base(logger, agentLogger)
     {
         _port = port;
+        _startupHookPath = startupHookPath;
         _server = new HotReloadWebSocketServer(logger);
     }
 
@@ -54,13 +56,19 @@ internal sealed class MobileHotReloadClient : HotReloadClient
     {
         environmentBuilder[AgentEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
 
-        // For WebSocket transport (mobile platforms), the hot reload agent is built into the app itself
-        // via the platform workload, so we don't need to inject the startup hook.
         // Set the WebSocket endpoint for the app to connect to.
         var serverUrl = _server.ServerUrl;
         if (serverUrl != null)
         {
             environmentBuilder[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint] = serverUrl;
+        }
+
+        // Pass the startup hook path as an environment variable so the workload can deploy it.
+        // This gets passed via `dotnet run -e` and becomes available as @(RuntimeEnvironmentVariable)
+        // items in MSBuild targets (build, DeployToDevice, ComputeRunArguments).
+        if (_startupHookPath != null)
+        {
+            environmentBuilder.InsertListItem(AgentEnvironmentVariables.DotNetStartupHooks, _startupHookPath, Path.PathSeparator);
         }
     }
 
