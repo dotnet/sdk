@@ -348,7 +348,8 @@ namespace Microsoft.DotNet.Watch
                 rootProjectOptions.TargetFramework,
                 rootProjectOptions.BuildArguments,
                 processRunner,
-                new BuildReporter(buildLogger, options.GlobalOptions, environmentOptions));
+                buildLogger,
+                environmentOptions);
 
             if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {
