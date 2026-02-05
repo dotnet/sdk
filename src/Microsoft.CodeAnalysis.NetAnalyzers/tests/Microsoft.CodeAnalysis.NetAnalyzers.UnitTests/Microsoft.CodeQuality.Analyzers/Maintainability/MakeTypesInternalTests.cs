@@ -763,8 +763,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             return new VerifyCS.Test
             {
                 TestCode = """
-                           public static class E
+                           internal static class E
                            {
+                               public static void Main() {}
+
                                extension(int x)
                                {
                                    public int M() => x + 1;
@@ -774,7 +776,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 TestState =
                 {
                     OutputKind = outputKind,
-                }
+                },
                 LanguageVersion = LanguageVersion.CSharp14
             }.RunAsync();
         }
