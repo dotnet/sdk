@@ -130,6 +130,38 @@ namespace Microsoft.DotNet.NativeWrapper
         [DllImport(Constants.HostFxr, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr hostfxr_set_error_writer(IntPtr error_writer);
 
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        internal struct hostfxr_initialize_parameters
+        {
+            public nuint size;
+            public string host_path;
+            public string dotnet_root;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        internal struct hostfxr_resolved_framework
+        {
+            public string requested_name;
+            public string requested_version;
+            public string resolved_name;
+            public string resolved_version;
+            public string resolved_path;
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        internal delegate void hostfxr_resolve_frameworks_result_fn(
+            IntPtr assembly_path,
+            IntPtr native_search_path,
+            nuint framework_count,
+            IntPtr frameworks);
+
+        [DllImport(Constants.HostFxr, CharSet = CharSet.Auto, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern int hostfxr_resolve_frameworks_for_runtime_config(
+            string runtime_config_path,
+            IntPtr parameters,
+            hostfxr_resolve_frameworks_result_fn callback,
+            IntPtr result_context);
+
         public static class Windows
         {
             private const CharSet UTF16 = CharSet.Unicode;

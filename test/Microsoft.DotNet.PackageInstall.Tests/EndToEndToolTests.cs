@@ -515,7 +515,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Execute();
 
             result.Should().Fail()
-                .And.HaveStdErrContaining("requires a higher version of .NET")
+                .And.HaveStdErrContaining("requires .NET runtime")
                 .And.HaveStdErrContaining(".NET 99");
         }
 
@@ -539,7 +539,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Execute();
 
             result.Should().Fail()
-                .And.HaveStdErrContaining("requires a higher version of .NET")
+                .And.HaveStdErrContaining("requires .NET runtime")
                 .And.HaveStdErrContaining(".NET 99");
         }
 
@@ -556,7 +556,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Execute();
 
             result.Should().Fail()
-                .And.HaveStdErrContaining("requires a higher version of .NET")
+                .And.HaveStdErrContaining("requires .NET runtime")
                 .And.HaveStdErrContaining(".NET 99");
         }
 
