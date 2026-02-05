@@ -24,6 +24,9 @@ internal class InstallerOrchestratorSingleton
     // Returns null on failure, DotnetInstall on success
     public DotnetInstall? Install(DotnetInstallRequest installRequest, bool noProgress = false)
     {
+        // Initialize the release library's HttpClient with a custom user-agent to differentiate library calls from dnup calls
+        ReleaseLibraryInitializer.Initialize();
+
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
         ReleaseManifest releaseManifest = new();
         ReleaseVersion? versionToInstall = new ChannelVersionResolver(releaseManifest).Resolve(installRequest);
