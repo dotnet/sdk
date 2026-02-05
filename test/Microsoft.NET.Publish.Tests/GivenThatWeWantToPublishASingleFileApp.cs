@@ -1144,7 +1144,7 @@ class C
             // Add a package with a native dependency
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Data.Sqlite", "9.0.8"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
 
             // First publish
