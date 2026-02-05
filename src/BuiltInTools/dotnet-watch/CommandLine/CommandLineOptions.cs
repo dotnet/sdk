@@ -195,7 +195,7 @@ internal sealed class CommandLineOptions
             {
                 continue;
             }
-
+            
             // forward forwardable option if the subcommand supports it:
             if (!command.Options.Any(option => option.Name == optionResult.Option.Name))
             {

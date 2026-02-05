@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(new[] { "--no-hot-reload", "--", "run", "args" }, "Argument Specified in Props,run,args")]
         [InlineData(new[] { "--", "run", "args" }, "Argument Specified in Props,run,args")]
         // if arguments specified on command line the ones from launch profile are ignored
-        [InlineData(new[] { "-lp", "P1", "--", "run", "args" }, "Argument Specified in Props,run,args")]
+        [InlineData(new[] { "-lp", "P1", "--", "run", "args" },"Argument Specified in Props,run,args")]
         // arguments specified in build file override arguments in launch profile
         [InlineData(new[] { "-lp", "P1" }, "Argument Specified in Props")]
         public async Task Arguments_HostArguments(string[] arguments, string expectedApplicationArgs)
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 "-v",
                 "minimal",
                 "--",         // the following args are application args
-                "-v",
+                "-v",         
             ]);
 
             Assert.Equal("-v", await App.AssertOutputLineStartsWith("Arguments = "));
@@ -296,7 +296,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             // evaluation affected by -c option:
             Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
-
+            
             App.AssertOutputContains("dotnet watch ⌚ Command 'publish' does not support Hot Reload.");
 
             App.AssertOutputContains(Path.Combine("Release", ToolsetInfo.CurrentTargetFramework, "publish"));

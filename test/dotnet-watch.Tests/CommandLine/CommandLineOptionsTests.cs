@@ -377,12 +377,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Theory]
         [InlineData(new[] { "--unrecognized-arg" }, new[] { "--unrecognized-arg" })]
         [InlineData(new[] { "run" }, new string[] { })]
-        [InlineData(new[] { "run", "--", "runarg" }, new[] { "--", "runarg" })]
-        [InlineData(new[] { "--verbose", "run", "runarg1", "-runarg2" }, new[] { "runarg1", "-runarg2" })]
+        [InlineData(new[] { "run", "--", "runarg" }, new[] {  "--", "runarg" })]
+        [InlineData(new[] { "--verbose", "run", "runarg1", "-runarg2" }, new[] {  "runarg1", "-runarg2" })]
         // run is after -- and therefore not parsed as a command:
-        [InlineData(new[] { "--verbose", "--", "run", "--", "runarg" }, new[] { "--", "run", "--", "runarg" })]
+        [InlineData(new[] { "--verbose", "--", "run", "--", "runarg" }, new[] {  "--", "run", "--", "runarg" })]
         // run is before -- and therefore parsed as a command:
-        [InlineData(new[] { "--verbose", "run", "--", "--", "runarg" }, new[] { "--", "--", "runarg" })]
+        [InlineData(new[] { "--verbose", "run", "--", "--", "runarg" }, new[] {  "--", "--", "runarg" })]
         public void ParsesRemainingArgs(string[] args, string[] expected)
         {
             var options = VerifyOptions(args);

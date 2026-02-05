@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
                 Logger.Log($"Test found output: '{text}'", testPath, testLine);
             }
-            else
+            else   
             {
                 Logger.Log($"Test waiting for output: '{text}'", testPath, testLine);
                 _ = await WaitForOutputLineMatching(line => line.Contains(text));

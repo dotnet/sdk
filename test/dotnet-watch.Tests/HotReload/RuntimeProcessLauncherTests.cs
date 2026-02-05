@@ -102,7 +102,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled: true));
 
         var program = Program.TryCreate(
-           TestOptions.GetCommandLineOptions(["--verbose", .. args]),
+           TestOptions.GetCommandLineOptions(["--verbose", ..args]),
            console,
            environmentOptions,
            loggerFactory,
@@ -610,7 +610,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         Log("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
-
+        
         UpdateSourceFile(path, "class C { int F() => 2; }");
 
         switch ((isExisting, isIncluded, directoryKind))

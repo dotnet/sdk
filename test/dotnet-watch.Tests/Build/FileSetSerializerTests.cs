@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class FileSetSerializerTests(ITestOutputHelper output)
 {
-    private readonly TestAssetsManager _testAssetManager = new(output);
+    private readonly TestAssetsManager _testAssetManager = new (output);
 
     private static string Serialize(MSBuildFileSetResult fileSetResult, Stream stream)
     {

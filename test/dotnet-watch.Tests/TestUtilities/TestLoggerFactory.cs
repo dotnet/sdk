@@ -12,6 +12,6 @@ internal class TestLoggerFactory(ITestOutputHelper? output = null) : ILoggerFact
     public ILogger CreateLogger(string categoryName)
         => CreateLoggerImpl?.Invoke(categoryName) ?? new TestLogger(output);
 
-    public void AddProvider(ILoggerProvider provider) { }
+    public void AddProvider(ILoggerProvider provider) {}
     public void Dispose() { }
 }

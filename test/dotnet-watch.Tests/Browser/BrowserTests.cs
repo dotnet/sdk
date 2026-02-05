@@ -51,7 +51,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         App.Process.ClearOutput();
 
         var homePagePath = Path.Combine(testAsset.Path, "RazorApp", "Components", "Pages", "Home.razor");
-
+        
         // rude edit:
         UpdateSourceFile(homePagePath, src => src.Replace("/* member placeholder */", """
             public virtual int F() => 1;

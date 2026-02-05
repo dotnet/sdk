@@ -38,7 +38,7 @@ public class AspireServiceFactoryTests
 
         var args = AspireServiceFactory.SessionManager.GetRunCommandArguments(request, hostLaunchProfile: "H");
 
-        AssertEx.SequenceEqual(["--project", "a.csproj", "--no-launch-profile"], args);
+        AssertEx.SequenceEqual(["--project", "a.csproj", "--no-launch-profile" ], args);
     }
 
     [Theory]

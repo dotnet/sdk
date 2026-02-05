@@ -14,7 +14,7 @@ public class HotReloadDotNetWatcherTests
     [InlineData(new[] { ChangeKind.Update, ChangeKind.Delete }, new[] { ChangeKind.Delete })]
     [InlineData(new[] { ChangeKind.Add, ChangeKind.Update }, new[] { ChangeKind.Add })]
     [InlineData(new[] { ChangeKind.Add, ChangeKind.Delete }, new ChangeKind[] { })]
-    [InlineData(new[] { ChangeKind.Delete, ChangeKind.Add }, new[] { ChangeKind.Update })]
+    [InlineData(new[] { ChangeKind.Delete, ChangeKind.Add}, new[] { ChangeKind.Update })]
     [InlineData(new[] { ChangeKind.Add, ChangeKind.Add }, new[] { ChangeKind.Add })]
     [InlineData(new[] { ChangeKind.Delete, ChangeKind.Delete }, new[] { ChangeKind.Delete })]
 

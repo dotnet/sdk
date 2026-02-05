@@ -17,7 +17,7 @@ public class BrowserRefreshServerTests
 
     [Theory]
     [CombinatorialData]
-    public async Task ConfigureLaunchEnvironmentAsync(LogLevel logLevel, bool enableHotReload)
+    public async Task ConfigureLaunchEnvironmentAsync(LogLevel logLevel, bool enableHotReload) 
     {
         var middlewarePath = Path.GetTempPath();
         var middlewareFileName = Path.GetFileNameWithoutExtension(middlewarePath);

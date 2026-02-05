@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Watch
             ChangedFile? changedFile = null;
             var buildEvaluator = new BuildEvaluator(context);
 
-            for (var iteration = 0; ; iteration++)
+            for (var iteration = 0;;iteration++)
             {
                 if (await buildEvaluator.EvaluateAsync(changedFile, shutdownCancellationToken) is not { } evaluationResult)
                 {
