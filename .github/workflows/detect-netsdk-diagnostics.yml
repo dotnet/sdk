@@ -21,6 +21,7 @@ on:
     types: [opened, synchronize]
     branches:
       - main
+      - release/*
 
 permissions:
   contents: read
