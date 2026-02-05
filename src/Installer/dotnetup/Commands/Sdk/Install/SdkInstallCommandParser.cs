@@ -45,6 +45,12 @@ internal static class SdkInstallCommandParser
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
     public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
 
+    public static readonly Option<bool> NoFallbackOption = new("--no-fallback")
+    {
+        Description = "Do not fall back to latest GA version when the requested channel has no releases available. Causes installation to fail instead.",
+        Arity = ArgumentArity.ZeroOrOne,
+    };
+
     private static readonly Command SdkInstallCommand = ConstructCommand();
 
     public static Command GetSdkInstallCommand()
@@ -75,6 +81,7 @@ internal static class SdkInstallCommandParser
 
         command.Options.Add(InteractiveOption);
         command.Options.Add(NoProgressOption);
+        command.Options.Add(NoFallbackOption);
 
         command.SetAction(parseResult => new SdkInstallCommand(parseResult).Execute());
 

@@ -29,4 +29,5 @@ internal record InstallRequestOptions()
 {
     // Include options such as the custom feed, manifest path, etc.
     public string? ManifestPath { get; init; }
+    public bool NoFallback { get; init; }
 }
