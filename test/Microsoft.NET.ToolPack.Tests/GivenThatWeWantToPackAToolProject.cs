@@ -381,7 +381,7 @@ namespace Microsoft.NET.ToolPack.Tests
             testProject.AdditionalProperties["ToolCommandName"] = "fddtool";
             testProject.AdditionalProperties["PublishAot"] = "true";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: "FddToolRuntimeVersion");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: "FddToolRuntimeVersion");
 
             var packCommand = new PackCommand(testAsset);
             packCommand.Execute().Should().Pass();
