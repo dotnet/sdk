@@ -30,9 +30,10 @@ public class ProductCollectionProvider : IProductCollectionProvider
         {
             return product.GetReleasesAsync().Result;
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            throw new GracefulException(string.Format(CliCommandStrings.ReleasesLibraryFailed, e.Message));
+            // Return empty collection if releases are not available (e.g., unreleased preview versions)
+            return Enumerable.Empty<ProductRelease>();
         }
     }
 }
