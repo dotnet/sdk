@@ -35,14 +35,17 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- We are not using the assembly anywhere -->
-    <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\BuiltInTools\HotReloadAgent.WebAssembly.Browser\Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <AdditionalContent Include="$(WasmSdkRoot)targets\**\*.*">
+      <Pack>true</Pack>
+      <PackagePath>targets</PackagePath>
+    </AdditionalContent>
     <AdditionalContent Include="$(WasmSdkRoot)Sdk\**\*.*">
       <Pack>true</Pack>
       <PackagePath>Sdk</PackagePath>

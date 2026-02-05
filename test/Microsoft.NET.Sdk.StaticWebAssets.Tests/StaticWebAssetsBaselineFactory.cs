@@ -302,8 +302,7 @@ public partial class StaticWebAssetsBaselineFactory
                 TemplatizeNugetPath(restorePath, fromPackage),
             var fromProject when projectPath is not null && file.StartsWith(projectPath, StringComparison.OrdinalIgnoreCase) =>
                 TemplatizeProjectPath(projectPath, fromProject, runtimeIdentifier),
-            var fromWebAssemblySdk when file.IndexOf("/Sdks/Microsoft.NET.Sdk.WebAssembly", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                file.IndexOf("\\Sdks\\Microsoft.NET.Sdk.WebAssembly", StringComparison.OrdinalIgnoreCase) >= 0 =>
+            var fromWebAssemblySdk when file.Replace('\\', '/').Contains("/Sdks/Microsoft.NET.Sdk.WebAssembly", StringComparison.OrdinalIgnoreCase) =>
                 TemplatizeWebAssemblySdkPath(fromWebAssemblySdk),
             _ =>
                 ReplaceSegments(file, (i, segments) => i switch
