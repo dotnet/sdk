@@ -411,7 +411,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </Copy>
   </Target>
-  
+
   <!--
     ============================================================
                                         _CopyResolvedFilesToPublishIfDifferent
@@ -471,7 +471,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <_ResolvedFileToPublishAlways Include="@(ResolvedFileToPublish)"
                                     Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='Always'" />
-                                    
+
       <_ResolvedFileToPublishIfDifferent Include="@(ResolvedFileToPublish)"
                                     Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='IfDifferent'" />
     </ItemGroup>
@@ -487,7 +487,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               Include="@(_ResolvedFileToPublishAlways)"
               Condition="'$(PublishSingleFile)' != 'true' or
                          '%(_ResolvedFileToPublishAlways.ExcludeFromSingleFile)'=='true'" />
-                         
+
       <_ResolvedUnbundledFileToPublishIfDifferent
               Include="@(_ResolvedFileToPublishIfDifferent)"
               Condition="'$(PublishSingleFile)' != 'true' or
@@ -823,7 +823,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectory.FullPath)' == '$(AppHostIntermediatePath)'">True</IsKeyOutput>
       </ResolvedFileToPublish>
-      
+
       <ResolvedFileToPublish Include="@(_SourceItemsToCopyToPublishDirectoryIfDifferent)">
         <RelativePath>%(_SourceItemsToCopyToPublishDirectoryIfDifferent.TargetPath)</RelativePath>
         <CopyToPublishDirectory>IfDifferent</CopyToPublishDirectory>
@@ -836,7 +836,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
     ============================================================
                                         _IncludeContentItemsWithOnlyPublishMetadata
-    
+
     Content items with CopyToPublishDirectory set but without CopyToOutputDirectory are not
     included in ContentWithTargetPath by AssignTargetPaths. This target ensures they are included
     so they can be processed by GetCopyToPublishDirectoryItems.
@@ -853,7 +853,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <!-- Use MSBuildProjectDirectory as the base for relative path computation. DefiningProjectDirectory can point to sdk targets folder and lead to unexpected paths. -->
         <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' == ''">$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(Content.FullPath)))</TargetPath>
       </_ContentWithPublishMetadata>
-      
+
       <ContentWithTargetPath Include="@(_ContentWithPublishMetadata)" />
     </ItemGroup>
   </Target>
@@ -1158,6 +1158,14 @@ Copyright (c) .NET Foundation. All rights reserved.
         DependsOnTargets="_HandleFileConflictsForPublish"
         Condition="'$(PublishSingleFile)' == 'true'">
 
+    <PropertyGroup>
+      <PublishedSingleFileName>$(AssemblyName)$(_NativeExecutableExtension)</PublishedSingleFileName>
+      <PublishedSingleFilePath>$(PublishDir)$(PublishedSingleFileName)</PublishedSingleFilePath>
+      <IncludeSymbolsInSingleFile Condition="'$(IncludeSymbolsInSingleFile)' == ''">false</IncludeSymbolsInSingleFile>
+      <IncludeAllContentForSelfExtract Condition="'$(IncludeAllContentForSelfExtract)' == ''">false</IncludeAllContentForSelfExtract>
+      <IncludeNativeLibrariesForSelfExtract Condition="'$(IncludeNativeLibrariesForSelfExtract)' == ''">$(IncludeAllContentForSelfExtract)</IncludeNativeLibrariesForSelfExtract>
+    </PropertyGroup>
+
     <ItemGroup>
       <_FilesToBundle Include="@(ResolvedFileToPublish)"
                       Condition="'%(ResolvedFileToPublish.ExcludeFromSingleFile)' != 'true'"/>
@@ -1165,10 +1173,52 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ResolvedFileToPublish Remove="@(_FilesToBundle)"/>
     </ItemGroup>
 
-    <PropertyGroup>
-      <PublishedSingleFileName>$(AssemblyName)$(_NativeExecutableExtension)</PublishedSingleFileName>
-      <PublishedSingleFilePath>$(PublishDir)$(PublishedSingleFileName)</PublishedSingleFilePath>
-    </PropertyGroup>
+    <!-- Compute which files from _FilesToBundle will be excluded from the bundle.
+         This logic mirrors what the Bundler does in Microsoft.NET.HostModel:
+         - Always exclude .runtimeconfig.dev.json
+         - For .NET 5+: exclude hostfxr and hostpolicy (statically linked into apphost)
+         - Conditionally exclude based on options:
+           * Native binaries (AssetType=native): only if IncludeNativeLibrariesForSelfExtract=true
+           * Symbols (.pdb): only if IncludeSymbolsInSingleFile=true
+           * Unknown files: only if IncludeAllContentForSelfExtract=true -->
+    <ItemGroup>
+      <!-- Always exclude .runtimeconfig.dev.json -->
+      <_BundleExcludedFiles Include="@(_FilesToBundle)"
+                            Condition="$([MSBuild]::ValueOrDefault('%(_FilesToBundle.RelativePath)', '').EndsWith('.runtimeconfig.dev.json'))" />
+
+      <!-- Exclude hostfxr and hostpolicy for .NET 5+ (they are statically linked into the apphost)
+           In .NET Core 3.x, bundle processing happens in the AppHost, so these can be bundled.
+           In .NET 5+, bundle processing happens in HostFxr and HostPolicy, so they cannot be bundled.
+           See https://github.com/dotnet/runtime/issues/32823 -->
+      <_BundleExcludedFiles Include="@(_FilesToBundle)"
+                            Condition=" $([MSBuild]::VersionGreaterThan($(_TargetFrameworkVersionWithoutV), '3.1' )) and
+                                       (('%(_FilesToBundle.FileName)' == 'hostfxr' or '%(_FilesToBundle.FileName)' == 'libhostfxr' or '%(_FilesToBundle.FileName)' == 'hostpolicy' or '%(_FilesToBundle.FileName)' == 'libhostpolicy') and
+                                        ('%(_FilesToBundle.Extension)' == '.dll' or '%(_FilesToBundle.Extension)' == '.so' or '%(_FilesToBundle.Extension)' == '.dylib'))" />
+
+      <!-- Exclude native binaries unless IncludeNativeLibrariesForSelfExtract=true -->
+      <_BundleExcludedFiles Include="@(_FilesToBundle)"
+                            Condition="'%(_FilesToBundle.AssetType)' == 'native' and '$(IncludeNativeLibrariesForSelfExtract)' != 'true'" />
+
+      <!-- Exclude symbols (.pdb) unless IncludeSymbolsInSingleFile=true -->
+      <_BundleExcludedFiles Include="@(_FilesToBundle)"
+                            Condition="'%(_FilesToBundle.Extension)' == '.pdb' and '$(IncludeSymbolsInSingleFile)' != 'true'" />
+
+      <!-- Exclude unknown file types (not assemblies, not deps.json, not runtimeconfig.json, not native, not symbols)
+           unless IncludeAllContentForSelfExtract=true.
+           We identify "unknown" files as those that don't match the known patterns. -->
+      <_BundleExcludedFiles Include="@(_FilesToBundle)"
+                            Condition="'$(IncludeAllContentForSelfExtract)' != 'true' and
+                                       '%(_FilesToBundle.Extension)' != '.dll' and
+                                       '%(_FilesToBundle.Extension)' != '.exe' and
+                                       '%(_FilesToBundle.Extension)' != '.pdb' and
+                                       '%(_FilesToBundle.AssetType)' != 'native' and
+                                       '%(_FilesToBundle.AssetType)' != 'runtime' and
+                                       !$([MSBuild]::ValueOrDefault('%(_FilesToBundle.RelativePath)', '').EndsWith('.deps.json')) and
+                                       !$([MSBuild]::ValueOrDefault('%(_FilesToBundle.RelativePath)', '').EndsWith('.runtimeconfig.json'))" />
+
+      <!-- Add excluded files back to ResolvedFileToPublish so they get copied to the publish directory -->
+      <ResolvedFileToPublish Include="@(_BundleExcludedFiles)"/>
+    </ItemGroup>
   </Target>
 
   <Target Name="PrepareForBundle"
@@ -1176,7 +1226,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(PublishSingleFile)' == 'true'">
 
     <ItemGroup>
-      <FilesToBundle Include="@(_FilesToBundle)"/>
+      <!-- FilesToBundle contains only files that will actually be bundled (excluded files removed) -->
+      <FilesToBundle Include="@(_FilesToBundle)" Exclude="@(_BundleExcludedFiles)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -1211,23 +1262,22 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
   <Target Name="GenerateSingleFileBundle"
           Condition="'$(PublishSingleFile)' == 'true' and '$(PublishAot)' != 'true'"
-          DependsOnTargets="_ComputeFilesToBundle;PrepareForBundle;_GenerateSingleFileBundleInputCache"
+          DependsOnTargets="PrepareForBundle;_GenerateSingleFileBundleInputCache"
           Inputs="@(FilesToBundle);$(_GenerateSingleFileBundlePropertyInputsCache)"
           Outputs="$(PublishedSingleFilePath)">
 
     <PropertyGroup>
       <TraceSingleFileBundler Condition="'$(TraceSingleFileBundler)' == ''">false</TraceSingleFileBundler>
-      <IncludeSymbolsInSingleFile Condition="'$(IncludeSymbolsInSingleFile)' == ''">false</IncludeSymbolsInSingleFile>
-      <IncludeAllContentForSelfExtract Condition="'$(IncludeAllContentForSelfExtract)' == ''">false</IncludeAllContentForSelfExtract>
-      <IncludeNativeLibrariesForSelfExtract Condition="'$(IncludeNativeLibrariesForSelfExtract)' == ''">$(IncludeAllContentForSelfExtract)</IncludeNativeLibrariesForSelfExtract>
       <EnableCompressionInSingleFile Condition="'$(EnableCompressionInSingleFile)' == ''">false</EnableCompressionInSingleFile>
     </PropertyGroup>
 
     <NETSdkError Condition="'$(IncludeAllContentForSelfExtract)' == 'true' And '$(IncludeNativeLibrariesForSelfExtract)' != 'true'"
                  ResourceName="CannotIncludeAllContentButNotNativeLibrariesInSingleFile" />
 
+    <!-- Bundle the files in FilesToBundle (excluded files were already filtered out by PrepareForBundle) -->
     <GenerateBundle FilesToBundle="@(FilesToBundle)"
                     AppHostName="$(PublishedSingleFileName)"
                     IncludeSymbols="$(IncludeSymbolsInSingleFile)"
@@ -1239,13 +1289,15 @@ Copyright (c) .NET Foundation. All rights reserved.
                     OutputDir="$(PublishDir)"
                     ShowDiagnosticOutput="$(TraceSingleFileBundler)"
                     EnableMacOSCodeSign="$(_EnableMacOSCodeSign)">
-      <Output TaskParameter="ExcludedFiles" ItemName="_FilesExcludedFromBundle"/>
+      <Output TaskParameter="ExcludedFiles" ItemName="_FilesExcludedFromBundleByTask"/>
     </GenerateBundle>
 
-    <ItemGroup>
-      <ResolvedFileToPublish Include="@(_FilesExcludedFromBundle)"/>
-      <!-- ResolvedFileToPublish shouldn't include PublishedSingleFilePath, since the single-file bundle is written directly to the publish directory -->
-    </ItemGroup>
+    <!-- Note: We don't add _FilesExcludedFromBundleByTask to ResolvedFileToPublish here because
+         those files should have already been added by _ComputeFilesToBundle.
+         This is a safety check to ensure the task's exclusion matches our pre-computation. -->
+    <NETSdkWarning Condition="'@(_FilesExcludedFromBundleByTask)' != ''"
+                   ResourceName="SingleFileBundleUnexpectedExclusion"
+                   FormatArguments="@(_FilesExcludedFromBundleByTask, ', ')" />
 
   </Target>
 

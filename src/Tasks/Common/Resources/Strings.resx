@@ -1014,5 +1014,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</value>
     <comment>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</comment>
   </data>
-  <!-- The latest message added is RoslynCompilerTypeFrameworkIsDeprecated. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="SingleFileBundleUnexpectedExclusion" xml:space="preserve">
+    <value>NETSDK1235: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</value>
+    <comment>{StrBegins="NETSDK1235: "}</comment>
+  </data>
+  <!-- The latest message added is SingleFileBundleUnexpectedExclusion. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
