@@ -11,7 +11,7 @@ internal delegate ValueTask ProcessExitAction(int processId, int? exitCode);
 
 internal sealed class ProjectLauncher(
     DotNetWatchContext context,
-    ProjectNodeMap projectMap,
+    LoadedProjectGraph projectGraph,
     CompilationHandler compilationHandler,
     int iteration)
 {
@@ -34,7 +34,7 @@ internal sealed class ProjectLauncher(
         RestartOperation restartOperation,
         CancellationToken cancellationToken)
     {
-        var projectNode = projectMap.TryGetProjectNode(projectOptions.Representation.ProjectGraphPath, projectOptions.TargetFramework);
+        var projectNode = projectGraph.TryGetProjectNode(projectOptions.Representation.ProjectGraphPath, projectOptions.TargetFramework);
         if (projectNode == null)
         {
             // error already reported
