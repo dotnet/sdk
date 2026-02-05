@@ -182,6 +182,11 @@
         <target state="translated">NETSDK1134: tworzenie rozwiązania z określonym identyfikatorem RuntimeIdentifier nie jest obsługiwane. Jeśli chcesz dokonać publikacji tylko dla jednego identyfikatora RID, określ identyfikator RID na poziomie projektu indywidualnego.</target>
         <note>{StrBegins="NETSDK1134: "}</note>
       </trans-unit>
+      <trans-unit id="CannotHaveSolutionLevelTargetFramework">
+        <source>NETSDK1235: The "--framework" option isn't recommended when building a solution. Specifying a solution-level framework results in all projects building for that framework, which can cause referenced projects to build multiple times and can lead to inconsistent builds.</source>
+        <target state="new">NETSDK1235: The "--framework" option isn't recommended when building a solution. Specifying a solution-level framework results in all projects building for that framework, which can cause referenced projects to build multiple times and can lead to inconsistent builds.</target>
+        <note>{StrBegins="NETSDK1235: "}{Locked="--framework"}</note>
+      </trans-unit>
       <trans-unit id="CannotHaveSupportedOSPlatformVersionHigherThanTargetPlatformVersion">
         <source>NETSDK1135: SupportedOSPlatformVersion {0} cannot be higher than TargetPlatformVersion {1}.</source>
         <target state="translated">NETSDK1135: Element SupportedOSPlatformVersion {0} nie może być większy niż element TargetPlatformVersion {1}.</target>

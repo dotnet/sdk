@@ -176,7 +176,7 @@ internal static class CommonOptions
             HelpName = CliStrings.FrameworkArgumentName,
             IsDynamic = true
         }
-        .ForwardAsSingle(o => $"--property:TargetFramework={o}")
+        .ForwardAsMany(o => [$"--property:TargetFramework={o}", "--property:_CommandLineDefinedTargetFramework=true"])
         .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
     public static Option<string> CreateArtifactsPathOption() =>
