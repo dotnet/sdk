@@ -77,6 +77,11 @@
         <target state="translated">Do výchozího člena rozhraní {0} nelze přidat klíčové slovo sealed.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotAddStatic">
+        <source>Cannot add static keyword to '{0}'.</source>
+        <target state="new">Cannot add static keyword to '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotAddVirtualToMember">
         <source>Cannot add virtual keyword to member '{0}'.</source>
         <target state="translated">Do člena {0} nelze přidat virtuální klíčové slovo.</target>
@@ -120,6 +125,11 @@
       <trans-unit id="CannotRemoveGenericConstraint">
         <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
         <target state="translated">U parametru typu {1} z(e) {2} nelze odebrat omezení {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotRemoveStatic">
+        <source>Cannot remove static keyword from '{0}'.</source>
+        <target state="new">Cannot remove static keyword from '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
