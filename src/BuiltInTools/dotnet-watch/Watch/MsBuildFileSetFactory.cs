@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watch
         public string RootProjectFile => rootProjectFile;
 
         private readonly ProjectGraphFactory _buildGraphFactory = new(
-            new ProjectRepresentation(rootProjectFile, entryPointFilePath: null),
+            [new ProjectRepresentation(rootProjectFile, entryPointFilePath: null)],
             targetFramework,
             buildProperties: BuildUtilities.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value),
             logger);

@@ -45,7 +45,7 @@ internal sealed class ProjectBuildManager(ProjectCollection collection, BuildRep
 
         var buildParameters = new BuildParameters(Collection)
         {
-            Loggers = loggers
+            Loggers = loggers,
         };
 
         manager.BeginBuild(buildParameters);

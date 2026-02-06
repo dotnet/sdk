@@ -46,12 +46,12 @@ namespace Microsoft.DotNet.Watch
             }
 
             _designTimeBuildGraphFactory = new ProjectGraphFactory(
-                context.RootProjectOptions.Representation,
+                [context.RootProjectOptions.Representation],
                 context.RootProjectOptions.TargetFramework,
                 buildProperties: EvaluationResult.GetGlobalBuildProperties(
                     context.RootProjectOptions.BuildArguments,
                     context.EnvironmentOptions),
-                context.Logger);
+                context.BuildLogger);
         }
 
         public async Task WatchAsync(CancellationToken shutdownCancellationToken)
@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Watch
                     // Evaluate the target to find out the set of files to watch.
                     // In case the app fails to start due to build or other error we can wait for these files to change.
                     // Avoid restore since the build above already restored the root project.
-                    evaluationResult = await EvaluateRootProjectAsync(restore: false, iterationCancellationToken);
+                    evaluationResult = await EvaluateProjectGraphAsync(restore: false, iterationCancellationToken);
 
                     var rootProject = evaluationResult.ProjectGraph.Graph.GraphRoots.Single();
 
@@ -443,7 +443,7 @@ namespace Microsoft.DotNet.Watch
                             if (evaluationRequired)
                             {
                                 // TODO: consider re-evaluating only affected projects instead of the whole graph.
-                                evaluationResult = await EvaluateRootProjectAsync(restore: true, iterationCancellationToken);
+                                evaluationResult = await EvaluateProjectGraphAsync(restore: true, iterationCancellationToken);
 
                                 // additional files/directories may have been added:
                                 evaluationResult.WatchFiles(fileWatcher);
@@ -949,7 +949,7 @@ namespace Microsoft.DotNet.Watch
                 };
         }
 
-        private async ValueTask<EvaluationResult> EvaluateRootProjectAsync(bool restore, CancellationToken cancellationToken)
+        private async ValueTask<EvaluationResult> EvaluateProjectGraphAsync(bool restore, CancellationToken cancellationToken)
         {
             while (true)
             {
