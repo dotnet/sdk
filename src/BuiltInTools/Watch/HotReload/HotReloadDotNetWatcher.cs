@@ -261,7 +261,7 @@ namespace Microsoft.DotNet.Watch
                         var stopwatch = Stopwatch.StartNew();
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.StaticHandler);
-                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, evaluationResult.StaticWebAssetsManifests, stopwatch, iterationCancellationToken);
+                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, evaluationResult.RestoredProjectInstances, evaluationResult.StaticWebAssetsManifests, stopwatch, iterationCancellationToken);
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.StaticHandler);
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
@@ -370,7 +370,7 @@ namespace Microsoft.DotNet.Watch
                         // Deploy dependencies after rebuilding and before restarting.
                         if (!projectsToRedeploy.IsEmpty)
                         {
-                            DeployProjectDependencies(evaluationResult.RestoredProjectInstances, projectsToRedeploy, iterationCancellationToken);
+                            DeployProjectDependencies(evaluationResult.RestoredProjectInstances.Values, projectsToRedeploy, iterationCancellationToken);
                             _context.Logger.Log(MessageDescriptor.ProjectDependenciesDeployed, projectsToRedeploy.Length);
                         }
 
@@ -650,7 +650,7 @@ namespace Microsoft.DotNet.Watch
             return false;
         }
 
-        private void DeployProjectDependencies(ImmutableArray<ProjectInstance> restoredProjectInstances, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
+        private void DeployProjectDependencies(IEnumerable<ProjectInstance> restoredProjectInstances, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
         {
             var projectPathSet = projectPaths.ToImmutableHashSet(PathUtilities.OSSpecificPathComparer);
             var buildReporter = new BuildReporter(_context.Logger, _context.Options, _context.EnvironmentOptions);

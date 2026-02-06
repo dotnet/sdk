@@ -595,12 +595,13 @@ namespace Microsoft.DotNet.Watch
         public async ValueTask HandleStaticAssetChangesAsync(
             IReadOnlyList<ChangedFile> files,
             ProjectNodeMap projectMap,
+            IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> restoredProjectInstances,
             IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> manifests,
             Stopwatch stopwatch,
             CancellationToken cancellationToken)
         {
             var assets = new Dictionary<ProjectInstance, Dictionary<string, StaticWebAsset>>();
-            var projectInstancesToRegenerate = new HashSet<ProjectInstance>();
+            var projectInstancesToRegenerate = new HashSet<ProjectInstanceId>();
 
             foreach (var changedFile in files)
             {
@@ -631,7 +632,7 @@ namespace Microsoft.DotNet.Watch
                                 continue;
                             }
 
-                            projectInstancesToRegenerate.Add(containingProjectNode.ProjectInstance);
+                            projectInstancesToRegenerate.Add(containingProjectNode.ProjectInstance.GetId());
                         }
 
                         foreach (var referencingProjectNode in containingProjectNode.GetAncestorsAndSelf())
@@ -653,7 +654,7 @@ namespace Microsoft.DotNet.Watch
                                     continue;
                                 }
 
-                                projectInstancesToRegenerate.Add(applicationProjectInstance);
+                                projectInstancesToRegenerate.Add(applicationProjectInstance.GetId());
 
                                 var bundleFileName = StaticWebAsset.GetScopedCssBundleFileName(
                                     applicationProjectFilePath: applicationProjectInstance.FullPath,
@@ -715,13 +716,15 @@ namespace Microsoft.DotNet.Watch
                 var buildReporter = new BuildReporter(_context.BuildLogger, _context.Options, _context.EnvironmentOptions);
 
                 // Note: MSBuild only allows one build at a time in a process.
-                foreach (var projectInstance in projectInstancesToRegenerate)
+                foreach (var projectInstanceId in projectInstancesToRegenerate)
                 {
+                    var projectInstance = restoredProjectInstances[projectInstanceId];
+
                     Logger.LogDebug("[{Project}] Regenerating scoped CSS bundle.", projectInstance.GetDisplayName());
 
                     using var loggers = buildReporter.GetLoggers(projectInstance.FullPath, "ScopedCss");
 
-                    // Deep copy so that we don't pollute the project graph:
+                    // Deep copy so that we don't pollute the snapshot:
                     if (!projectInstance.DeepCopy().Build(s_targets, loggers))
                     {
                         loggers.ReportOutput();

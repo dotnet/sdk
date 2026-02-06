@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Watch;
 
 internal sealed class EvaluationResult(
     ProjectGraph projectGraph,
-    ImmutableArray<ProjectInstance> restoredProjectInstances,
+    IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> restoredProjectInstances,
     IReadOnlyDictionary<string, FileItem> files,
     IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> staticWebAssetsManifests)
 {
@@ -36,7 +36,7 @@ internal sealed class EvaluationResult(
     public IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> StaticWebAssetsManifests
         => staticWebAssetsManifests;
 
-    public ImmutableArray<ProjectInstance> RestoredProjectInstances
+    public IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> RestoredProjectInstances
         => restoredProjectInstances;
 
     public void WatchFiles(FileWatcher fileWatcher)
@@ -106,7 +106,9 @@ internal sealed class EvaluationResult(
 
         // Capture the snapshot of original project instances after Restore target has been run.
         // These instances can be used to evaluate additional targets (e.g. deployment) if needed.
-        var restoredProjectInstances = projectGraph.ProjectNodesTopologicallySorted.Select(node => node.ProjectInstance.DeepCopy()).ToImmutableArray();
+        var restoredProjectInstances = projectGraph.ProjectNodes.ToDictionary(
+            keySelector: node => node.ProjectInstance.GetId(),
+            elementSelector: node => node.ProjectInstance.DeepCopy());
 
         var fileItems = new Dictionary<string, FileItem>();
         var staticWebAssetManifests = new Dictionary<ProjectInstanceId, StaticWebAssetsManifest>();
