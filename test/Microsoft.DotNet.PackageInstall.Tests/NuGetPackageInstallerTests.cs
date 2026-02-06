@@ -418,14 +418,14 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var mapping = new PackageSourceMapping(new ReadOnlyDictionary<string, IReadOnlyList<string>>(mappingRules));
             string someFeed = GetTestLocalFeedPath();
 
-            var download = async () => await _toolInstaller.DownloadPackageAsync(
+            var download = () => _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(additionalSourceFeeds: new[] { someFeed }),
                 packageSourceMapping: mapping);
             
-            var ex = await download.Should().ThrowAsync<NuGetPackageInstallerException>();
-            ex.Which.Message.Should().Contain(CliStrings.CannotUseAddSourceWithSourceMapping);
+            (await download.Should().ThrowAsync<NuGetPackageInstallerException>())
+                .Which.Message.Should().Contain(CliStrings.CannotUseAddSourceWithSourceMapping);
         }
     }
 }
