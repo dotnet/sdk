@@ -980,11 +980,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var port = TestOptions.GetTestPort();
             App.Start(testAsset, ["--urls", "http://localhost:" + port], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.MockBrowser);
 
-            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-            App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
-            App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
-            App.AssertOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
+            await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
+
             App.Process.ClearOutput();
 
             var scopedCssPath = Path.Combine(testAsset.Path, "RazorClassLibrary", "Components", "Example.razor.css");
@@ -996,7 +997,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 """;
 
             UpdateSourceFile(scopedCssPath, newCss);
-            await App.WaitForOutputLineContaining(MessageDescriptor.StaticAssetsChangesApplied);
+            await App.WaitUntilOutputContains(MessageDescriptor.StaticAssetsChangesApplied);
             await App.WaitUntilOutputContains(MessageDescriptor.NoCSharpChangesToApply);
 
             App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/RazorClassLibrary.bundle.scp.css"));
@@ -1005,7 +1006,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var cssPath = Path.Combine(testAsset.Path, "RazorApp", "wwwroot", "app.css");
             UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
 
-            await App.WaitForOutputLineContaining(MessageDescriptor.StaticAssetsChangesApplied);
+            await App.WaitUntilOutputContains(MessageDescriptor.StaticAssetsChangesApplied);
             await App.WaitUntilOutputContains(MessageDescriptor.NoCSharpChangesToApply);
 
             App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/app.css"));

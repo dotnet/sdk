@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
@@ -11,7 +12,7 @@ namespace Microsoft.DotNet.Watch;
 
 internal sealed class EvaluationResult(
     ProjectGraph projectGraph,
-    ImmutableArray<ProjectInstance> restoredProjectInstances,
+    IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> restoredProjectInstances,
     IReadOnlyDictionary<string, FileItem> files,
     IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> staticWebAssetsManifests)
 {
@@ -35,7 +36,7 @@ internal sealed class EvaluationResult(
     public IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> StaticWebAssetsManifests
         => staticWebAssetsManifests;
 
-    public ImmutableArray<ProjectInstance> RestoredProjectInstances
+    public IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> RestoredProjectInstances
         => restoredProjectInstances;
 
     public void WatchFiles(FileWatcher fileWatcher)
@@ -58,7 +59,9 @@ internal sealed class EvaluationResult(
             .SetItem(PropertyNames.DotNetWatchBuild, "true")
             .SetItem(PropertyNames.DesignTimeBuild, "true")
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
-            .SetItem(PropertyNames.ProvideCommandLineArgs, "true");
+            .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
+            // this will force CoreCompile task to execute and return command line args even if all inputs and outputs are up to date:
+            .SetItem(PropertyNames.NonExistentFile, "__NonExistentSubDir__\\__NonExistentFile__");
     }
 
     /// <summary>
@@ -103,7 +106,9 @@ internal sealed class EvaluationResult(
 
         // Capture the snapshot of original project instances after Restore target has been run.
         // These instances can be used to evaluate additional targets (e.g. deployment) if needed.
-        var restoredProjectInstances = projectGraph.ProjectNodesTopologicallySorted.Select(node => node.ProjectInstance.DeepCopy()).ToImmutableArray();
+        var restoredProjectInstances = projectGraph.ProjectNodes.ToDictionary(
+            keySelector: node => node.ProjectInstance.GetId(),
+            elementSelector: node => node.ProjectInstance.DeepCopy());
 
         var fileItems = new Dictionary<string, FileItem>();
         var staticWebAssetManifests = new Dictionary<ProjectInstanceId, StaticWebAssetsManifest>();
@@ -136,6 +141,9 @@ internal sealed class EvaluationResult(
                     return null;
                 }
             }
+
+            // command line args items should be available:
+            Debug.Assert(Path.GetExtension(projectInstance.FullPath) != ".csproj" || projectInstance.GetItems("CscCommandLineArgs").Any());
 
             var projectPath = projectInstance.FullPath;
             var projectDirectory = Path.GetDirectoryName(projectPath)!;
