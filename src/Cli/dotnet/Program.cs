@@ -75,8 +75,12 @@ public class Program
                 o.ConnectionString = Telemetry.Telemetry.ConnectionString;
                 // TODO: Remove.
                 //o.ConnectionString = "InstrumentationKey=2c4b2aec-276e-4421-95d9-3da4046d428d";
+                // TODO: Remove.
+                //o.ConnectionString = "InstrumentationKey=c176eac8-d596-4455-91b4-2eac2694e54d";
                 o.EnableLiveMetrics = false;
                 o.StorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, Telemetry.Telemetry.DefaultStorageFolderName);
+                // TODO: Remove.
+                //o.StorageDirectory = "D:\\Workspace\\TelemStore";
             })
             .AddInMemoryExporter(s_activities)
             .SetSampler(new AlwaysOnSampler())
