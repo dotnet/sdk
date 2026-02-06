@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.StaticCompletions;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
@@ -17,10 +18,11 @@ internal sealed class ReferenceRemoveCommandDefinition() : ReferenceRemoveComman
 
 internal abstract class ReferenceRemoveCommandDefinitionBase : Command
 {
-    public static Argument<IEnumerable<string>> CreateProjectPathArgument() => new(CommandDefinitionStrings.ReferenceRemoveProjectPathArgumentName)
+    public static Argument<IEnumerable<string>> CreateProjectPathArgument() => new ExtendedArgument<IEnumerable<string>>(CommandDefinitionStrings.ReferenceRemoveProjectPathArgumentName)
     {
         Description = CommandDefinitionStrings.ReferenceRemoveProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
+        IsDynamic = true,
     };
 
     public static Option<string> CreateFrameworkOption() => new("--framework", "-f")

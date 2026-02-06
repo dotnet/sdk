@@ -19,13 +19,7 @@ internal static class ReferenceCommandParser
 
         command.AddCommand.SetAction(parseResult => new ReferenceAddCommand(parseResult).Execute());
         command.AddCommand.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
-
         command.ListCommand.SetAction(parseResult => new ReferenceListCommand(parseResult).Execute());
-
-        var projectPathArgument = command.RemoveCommand.ProjectPathArgument;
-        projectPathArgument.CompletionSources.Add(CliCompletion.ProjectReferencesFromProjectFile);
-        projectPathArgument.IsDynamic = true;
-
         command.RemoveCommand.SetAction(parseResult => new ReferenceRemoveCommand(parseResult).Execute());
     }
 }
