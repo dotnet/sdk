@@ -1014,5 +1014,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</value>
     <comment>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</comment>
   </data>
-  <!-- The latest message added is RoslynCompilerTypeFrameworkIsDeprecated. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="DotnetToolDoesNotSupportCustomNuspecFile" xml:space="preserve">
+    <value>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</value>
+    <comment>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</comment>
+  </data>
+  <!-- The latest message added is DotnetToolDoesNotSupportCustomNuspecFile. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

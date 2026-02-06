@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public sealed class GenerateGlobalUsings : TaskBase
     {
         [Required]
