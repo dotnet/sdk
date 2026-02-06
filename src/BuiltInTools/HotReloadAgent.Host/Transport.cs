@@ -29,11 +29,20 @@ internal abstract class Transport(Action<string> log) : IDisposable
     private static readonly string? s_webSocketEndpoint = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint);
 
     public static Transport? TryCreate(Action<string> log, int timeoutMS = 5000)
-        => !string.IsNullOrEmpty(s_namedPipeName)
-            ? new NamedPipeTransport(s_namedPipeName, log, timeoutMS)
-            : !string.IsNullOrEmpty(s_webSocketEndpoint)
-            ? new WebSocketTransport(s_webSocketEndpoint, log, timeoutMS)
-            : null;
+    {
+        if (!string.IsNullOrEmpty(s_namedPipeName))
+        {
+            return new NamedPipeTransport(s_namedPipeName, log, timeoutMS);
+        }
+
+        if (!string.IsNullOrEmpty(s_webSocketEndpoint))
+        {
+            log($"{AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint}={s_webSocketEndpoint}");
+            return new WebSocketTransport(s_webSocketEndpoint, log, timeoutMS);
+        }
+
+        return null;
+    }
 
     protected void Log(string message)
         => log(message);
