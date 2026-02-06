@@ -13,6 +13,9 @@ indent_size = 4
 trim_trailing_whitespace = true
 spelling_exclusion_path = ./exclusion.dic
 
+[*.md]
+indent_size = 2
+
 [*.json]
 indent_size = 2
 
