@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.NativeWrapper
         /// </summary>
         public bool FailedToResolveSDKSpecifiedInGlobalJson;
 
-        internal void Initialize(Interop.hostfxr_resolve_sdk2_result_key_t key, string value)
+        internal void Initialize(Interop.hostfxr_resolve_sdk2_result_key_t key, PlatformString value)
         {
             switch (key)
             {
