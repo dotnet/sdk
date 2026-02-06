@@ -130,6 +130,13 @@ internal class InstallWorkflow
 
     private bool ExecuteInstallations(WorkflowContext context, InstallExecutor.ResolvedInstallRequest resolved)
     {
+        // Gather all user prompts before starting any downloads.
+        // Users may walk away after seeing download progress begin, expecting no more prompts.
+        var additionalVersions = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
+            resolved.ResolvedVersion,
+            context.SetDefaultInstall,
+            context.CurrentInstallRoot);
+
         var installResult = InstallExecutor.ExecuteInstall(
             resolved.Request,
             resolved.ResolvedVersion?.ToString(),
@@ -140,14 +147,6 @@ internal class InstallWorkflow
         {
             return false;
         }
-
-        // TODO: Consider moving this prompt earlier, before any downloads start.
-        // Users may walk away after seeing download progress begin, expecting no more prompts.
-        // See: https://github.com/dotnet/sdk/pull/52649#discussion_r2760412186
-        var additionalVersions = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
-            resolved.ResolvedVersion,
-            context.SetDefaultInstall,
-            context.CurrentInstallRoot);
 
         InstallExecutor.ExecuteAdditionalInstalls(
             additionalVersions,
