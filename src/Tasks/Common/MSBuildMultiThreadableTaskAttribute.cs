@@ -6,21 +6,13 @@
 // This allows us to use the attribute before the MSBuild version containing it is available.
 // See: https://github.com/dotnet/msbuild/blob/main/src/Framework/MSBuildMultiThreadableTaskAttribute.cs
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> df0771fa26 (make the polyfill conditional)
+
 // This polyfill is only needed for .NET Framework builds since the newer MSBuild packages
 // for .NET Core already include the attribute. When targeting .NET Core, we use the
 // attribute from Microsoft.Build.Framework directly.
 
 #if NETFRAMEWORK
 
-<<<<<<< HEAD
-=======
->>>>>>> a80cde34a6 (adding polyfill for the attribute)
-=======
->>>>>>> df0771fa26 (make the polyfill conditional)
 #nullable enable
 
 using System;
@@ -55,13 +47,6 @@ namespace Microsoft.Build.Framework
         }
     }
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
 
+#nullable disable
 #endif
-=======
->>>>>>> a80cde34a6 (adding polyfill for the attribute)
-=======
-
-#endif
->>>>>>> df0771fa26 (make the polyfill conditional)
