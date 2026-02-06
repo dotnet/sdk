@@ -13,10 +13,34 @@ public static class DynamicSymbolExtensions
     /// </summary>
     private static readonly Dictionary<Symbol, bool> s_dynamicSymbols = [];
 
-    extension(Symbol option)
+    extension(Option option)
     {
         /// <summary>
         /// Indicates whether this option requires a dynamic call into the dotnet process to compute completions.
+        /// </summary>
+        public bool IsDynamic
+        {
+            get
+            {
+                lock (s_guard)
+                {
+                    return s_dynamicSymbols.GetValueOrDefault(option, false);
+                }
+            }
+            set
+            {
+                lock (s_guard)
+                {
+                    s_dynamicSymbols[option] = value;
+                }
+            }
+        }
+    }
+
+    extension(Argument option)
+    {
+        /// <summary>
+        /// Indicates whether this argument requires a dynamic call into the dotnet process to compute completions.
         /// </summary>
         public bool IsDynamic
         {
