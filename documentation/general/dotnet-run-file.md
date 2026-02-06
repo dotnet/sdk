@@ -431,6 +431,6 @@ Instead of implicitly including files from the target directory, the importing c
 
 [artifacts-output]: https://learn.microsoft.com/dotnet/core/sdk/artifacts-output
 [verbose-env]: https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables#dotnet_cli_context_
-[ignored-directives]: https://github.com/dotnet/csharplang/blob/main/proposals/ignored-directives.md
+[ignored-directives]: https://github.com/dotnet/csharplang/blob/c85bbf501958fa86ee2db94b14c82ee8fd2066b9/proposals/csharp-14.0/ignored-directives.md
 [shebang]: https://en.wikipedia.org/wiki/Shebang_%28Unix%29
 [temp-guidelines]: https://github.com/dotnet/runtime/blob/d0e6ce8332a514d70b635ca4829bf863157256fe/docs/design/security/unix-tmp.md
