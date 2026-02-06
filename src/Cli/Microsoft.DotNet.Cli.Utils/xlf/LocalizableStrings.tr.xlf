@@ -12,6 +12,21 @@
         <target state="translated">Hatalı biçimlendirilmiş komut metni: '{0}'</target>
         <note />
       </trans-unit>
+      <trans-unit id="MixedInstallWarningMessageLinux">
+        <source>The dotnet executable being used is from a global install location ({0}), but the DOTNET_ROOT environment variable is set to a different location ({1}). This can cause unexpected behavior. For more information, see: {2}</source>
+        <target state="new">The dotnet executable being used is from a global install location ({0}), but the DOTNET_ROOT environment variable is set to a different location ({1}). This can cause unexpected behavior. For more information, see: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MixedInstallWarningMessageOther">
+        <source>The dotnet executable being used is from a global install location ({0}), but the DOTNET_ROOT environment variable is set to a different location ({1}). This indicates a PATH ordering problem. Please ensure that the directory containing the desired dotnet executable appears first in your PATH.</source>
+        <target state="new">The dotnet executable being used is from a global install location ({0}), but the DOTNET_ROOT environment variable is set to a different location ({1}). This indicates a PATH ordering problem. Please ensure that the directory containing the desired dotnet executable appears first in your PATH.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MixedInstallWarningTitle">
+        <source>Warning: Mixed-Mode Installation Detected</source>
+        <target state="new">Warning: Mixed-Mode Installation Detected</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommandErrorMessage">
         <source>Could not execute because the specified command or file was not found.</source>
         <target state="translated">Belirtilen komut veya dosya bulunamadığından yürütülemedi.</target>
