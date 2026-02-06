@@ -255,10 +255,15 @@ namespace Microsoft.DotNet.Tests
             { new Dictionary<string, string> { { "ROO_CODE_TASK_ID", "task456" } }, "roo" },
             { new Dictionary<string, string> { { "WINDSURF_SESSION", "session789" } }, "windsurf" },
             { new Dictionary<string, string> { { "AGENT_CLI", "true" } }, "generic_agent" },
+            // Test combinations of older tools
             { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
             { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot" },
             { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "GEMINI_CLI", "true" }, { "AGENT_CLI", "true" } }, "claude, gemini, generic_agent" },
             { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot, generic_agent" },
+            // Test combinations of newer tools
+            { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" }, { "CLINE_TASK_ID", "task123" } }, "aider, cline" },
+            { new Dictionary<string, string> { { "CODEX_CLI", "1" }, { "WINDSURF_SESSION", "session789" } }, "codex, windsurf" },
+            { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" }, { "ROO_CODE_TASK_ID", "task456" } }, "goose, roo" },
             { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, null },
             { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, null },
             { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, null },
