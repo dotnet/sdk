@@ -4,13 +4,13 @@
 #nullable disable
 
 using System.CommandLine;
+using System.Text.Json;
 using ManifestReaderTests;
+using Microsoft.DotNet.Cli.Commands.Workload.Clean;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using System.Text.Json;
-using Microsoft.DotNet.Cli.Commands.Workload.Clean;
-using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 {

@@ -8,6 +8,7 @@ namespace Microsoft.DotNet.Cli.Commands.Format;
 public sealed class FormatCommand(IEnumerable<string> argsToForward)
     : FormatForwardingApp(argsToForward)
 {
+
     public static int Run(string[] args)
     {
         DebugHelper.HandleDebugSwitch(ref args);

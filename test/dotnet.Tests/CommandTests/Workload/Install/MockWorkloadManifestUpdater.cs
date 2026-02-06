@@ -83,6 +83,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesForWorkloadSet(WorkloadSet workloadSet) => _manifestUpdates.Select(t => t.ManifestUpdate);
 
         public string GetAdvertisedWorkloadSetVersion() => _workloadSetVersion;
-        
+
     }
 }

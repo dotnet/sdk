@@ -4,24 +4,24 @@
 #nullable disable
 
 using System.CommandLine;
+using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Tool.Restore;
+using Microsoft.DotNet.Cli.ToolManifest;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using Microsoft.DotNet.Cli.ToolPackage;
-using System.Text.Json;
-using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Cli.ToolManifest;
-using Microsoft.DotNet.Cli.Commands.Tool.Restore;
-using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    public class ToolRestoreCommandTests: SdkTest
+    public class ToolRestoreCommandTests : SdkTest
     {
         private readonly IFileSystem _fileSystem;
         private readonly IToolPackageStore _toolPackageStore;
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private int _installCalledCount = 0;
 
-        public ToolRestoreCommandTests(ITestOutputHelper log): base(log)
+        public ToolRestoreCommandTests(ITestOutputHelper log) : base(log)
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
             _packageVersionWithCommandNameCollisionWithA = NuGetVersion.Parse("1.0.9");

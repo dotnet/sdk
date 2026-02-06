@@ -392,7 +392,6 @@ public class ProjectToolsCommandResolver(
             CommonOptions.CreateMSBuildTargetOption(),
             CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption());
-
         var forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(msbuildArgs, msBuildExePath);
         if (forwardingAppWithoutLogging.ExecuteMSBuildOutOfProc)
         {

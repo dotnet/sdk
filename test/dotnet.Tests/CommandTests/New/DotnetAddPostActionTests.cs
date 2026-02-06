@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
         {
             var callback = new MockAddProjectReferenceCallback();
             DotnetAddPostActionProcessor actionProcessor = new(callback.AddPackageReference, callback.AddProjectReference);
-             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath(); //Commented code throws exception
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath(); //Commented code throws exception
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
 
             const string existingProjectFolder = "ExistingProjectFolder";
@@ -231,7 +231,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
             var postAction =
                 new MockPostAction(default, default, default, default, default!)
                 {
-                    ActionId = DotnetAddPostActionProcessor.ActionProcessorId, Args = args
+                    ActionId = DotnetAddPostActionProcessor.ActionProcessorId,
+                    Args = args
                 };
 
             MockCreationEffects creationEffects = new MockCreationEffects();

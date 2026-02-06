@@ -259,7 +259,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                   string.Format(CliCommandStrings.UpdateToLowerVersion, LowerPackageVersion, HigherPackageVersion));
         }
 
-       [Fact]
+        [Fact]
         public void GivenAnExistedHigherversionInstallationWithDowngradeFlagWhenUpdateToLowerVersionItSucceeds()
         {
             CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
@@ -397,7 +397,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         fileSystem: _fileSystem,
                         reporter: _reporter,
                         feeds: _mockFeeds,
-                        downloadCallback:  () => throw new ToolConfigurationException("Simulated error")),
+                        downloadCallback: () => throw new ToolConfigurationException("Simulated error")),
                     new ToolPackageUninstallerMock(_fileSystem, _store)),
                 (_, _) => GetMockedShellShimRepository(),
                 _reporter);
@@ -450,7 +450,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             ParseResult result = Parser.Parse("dotnet tool install " + options);
 
-            return new ToolInstallGlobalOrToolPathCommand(
+                        return new ToolInstallGlobalOrToolPathCommand(
                 result,
                 (location, forwardArguments, currentWorkingDirectory) => (_store, _store, _toolPackageDownloader, new ToolPackageUninstallerMock(_fileSystem, _store)),
                 (_, _) => GetMockedShellShimRepository(),

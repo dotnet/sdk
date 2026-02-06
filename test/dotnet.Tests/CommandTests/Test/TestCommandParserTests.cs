@@ -65,9 +65,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void VSTestCommandIncludesPropertiesOption()
         {
             var command = TestCommandParser.GetCommand();
-            
+
             // Verify that the command includes a property option that supports the /p alias
-            var propertyOption = command.Options.FirstOrDefault(o => 
+            var propertyOption = command.Options.FirstOrDefault(o =>
                 o.Aliases.Contains("/p") || o.Aliases.Contains("--property"));
             
             propertyOption.Should().NotBeNull("VSTest command should include CommonOptions.CreatePropertyOption to support /p Property=Value syntax");
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             (args, string[] settings) = TestCommand.SeparateSettingsFromArgs(args);
             int settingsCount = TestCommand.GetSettingsCount(settings);
             settingsCount.Should().Be(0);
-            TestCommand.ContainsBuiltTestSources(parseResult, settingsCount).Should().Be(expectedContainsBuiltTestSource);
+                        TestCommand.ContainsBuiltTestSources(parseResult, settingsCount).Should().Be(expectedContainsBuiltTestSource);
         }
     }
 }

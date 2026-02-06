@@ -6,14 +6,14 @@
 using System.CommandLine;
 using System.Runtime.CompilerServices;
 using ManifestReaderTests;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using Microsoft.DotNet.Cli.Commands.Workload;
-using Microsoft.DotNet.Cli.Commands.Workload.Config;
-using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
