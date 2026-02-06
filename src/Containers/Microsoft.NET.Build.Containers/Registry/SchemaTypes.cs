@@ -15,4 +15,7 @@ internal class SchemaTypes
 
     internal const string DockerLayerGzip = "application/vnd.docker.image.rootfs.diff.tar.gzip";
     internal const string OciLayerGzipV1 = "application/vnd.oci.image.layer.v1.tar+gzip";
+
+    internal const string DockerLayerZstd = "application/vnd.docker.image.rootfs.diff.tar.zstd";
+    internal const string OciLayerZstdV1 = "application/vnd.oci.image.layer.v1.tar+zstd";
 }

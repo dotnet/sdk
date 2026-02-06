@@ -26,7 +26,7 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image manifest.
     /// </summary>
-    internal required string Manifest { get; init; } 
+    internal required string Manifest { get; init; }
 
     /// <summary>
     /// Gets manifest digest.
