@@ -207,6 +207,32 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             _reporter.Lines.Should().Contain(replacementString);
         }
 
+        [Fact]
+        public void WhenSdkHasNoReleasesJsonItShowsVersionCheckUnavailable()
+        {
+            var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
+            // Install SDK 99.0.100 which doesn't have releases.json in the test assets
+            var bundles = GetFakeEnvironmentInfo(new[] { "3.1.100", "5.0.100", "99.0.100" }, new[] { "3.1.0", "5.0.0" });
+
+            // This should not throw even though 99.0 doesn't have releases.json
+            new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
+
+            // Verify all SDKs are shown
+            foreach (var version in bundles.SdkInfo.Select(b => b.Version.ToString()))
+            {
+                string.Join(' ', _reporter.Lines)
+                    .Should()
+                    .Contain(version);
+            }
+
+            // The SDK without releases should show version check failure
+            string.Join(' ', _reporter.Lines)
+                .Should()
+                .Contain("99.0.100")
+                .And
+                .Contain(CliCommandStrings.VersionCheckFailure);
+        }
+
         private NetEnvironmentInfo GetFakeEnvironmentInfo(IEnumerable<string> sdkVersions, IEnumerable<string> runtimeVersions)
         {
             var sdks = sdkVersions.Select(version => new NetSdkInfo(version, string.Empty));
