@@ -8,10 +8,10 @@
     <PublishAot>true</PublishAot>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
 
-    <!-- Single file settings -->
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <DebugType>embedded</DebugType>
-    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <!-- Native AOT settings -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Skip XLF localization processing for single-file output -->
+    <EnableXlfLocalization>false</EnableXlfLocalization>
 
     <!-- Strong naming not needed on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>

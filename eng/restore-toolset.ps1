@@ -45,7 +45,7 @@ function EnsureDotnetupBuilt {
             "win-x64"
         }
 
-        & $env:DOTNET_INSTALL_DIR\dotnet publish $dotnetupProject -c Release -r $rid --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o $dotnetupOutDir
+        & $env:DOTNET_INSTALL_DIR\dotnet publish $dotnetupProject -c Release -r $rid -o $dotnetupOutDir
 
         if ($lastExitCode -ne 0) {
             throw "Failed to build dotnetup (exit code '$lastExitCode')."
