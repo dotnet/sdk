@@ -1024,11 +1024,11 @@ class Program
 
             // The actual list comes from BundledVersions.props. For testing, we conditionally add a
             // subset of the list if it isn't already defined (so running on an older version)
-            testProject.AddItem("_KnownRuntimeIdentiferPlatforms",
+            testProject.AddItem("_KnownRuntimeIdentifierPlatforms",
                 new Dictionary<string, string>()
                 {
                     { "Include", "unix" },
-                    { "Condition", "'@(_KnownRuntimeIdentiferPlatforms)'==''" }
+                    { "Condition", "'@(_KnownRuntimeIdentifierPlatforms)'==''" }
                 });
 
             if (useRidGraph.HasValue)
