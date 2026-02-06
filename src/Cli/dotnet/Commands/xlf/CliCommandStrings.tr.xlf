@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="new">Do not display the startup banner or the copyright message.</target>
+        <target state="translated">Başlangıç bandını veya telif hakkı iletisini görüntüleme.</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildConfigurationOptionDescription">
@@ -3969,6 +3969,11 @@ Bir değeri görüntülemek için, bir değer sağlamadan ilgili komut satırı 
         <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
         <target state="translated">{1} konumunda belirtilen {0} iş yükü sürümü bulunamadı. Bu iş yükü sürümünü yüklemek için "dotnet workload restore" komutunu çalıştırın.</target>
         <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">İş yükü kümesi {0} sürümü, paket yönetimi tarafından kaldırılmış olabilecek eksik bildirimlere sahip. Bunu düzeltmek için "dotnet workload repair" komutunu çalıştırın.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>

@@ -15,6 +15,7 @@ internal sealed class TestApplicationHandler
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
     private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private bool _receivedTestHostHandshake;
 
     public TestApplicationHandler(TerminalTestReporter output, TestModule module, TestOptions options)
     {
@@ -62,6 +63,7 @@ internal sealed class TestApplicationHandler
         // https://github.com/microsoft/testfx/blob/2a9a353ec2bb4ce403f72e8ba1f29e01e7cf1fd4/src/Platform/Microsoft.Testing.Platform/Hosts/CommonTestHost.cs#L87-L97
         if (hostType == "TestHost")
         {
+            _receivedTestHostHandshake = true;
             // AssemblyRunStarted counts "retry count", and writes to terminal "(Try <number-of-try>) Running tests from <assembly>"
             // So, we want to call it only for test host, and not for test host controller (or orchestrator, if in future it will handshake as well)
             // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
@@ -263,8 +265,10 @@ internal sealed class TestApplicationHandler
 
     internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
     {
-        if (_handshakeInfo.HasValue)
+        if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
         {
+            // If we received a handshake from TestHostController but not from TestHost,
+            // call HandshakeFailure instead of AssemblyRunCompleted
             _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
         }
         else

@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="new">Do not display the startup banner or the copyright message.</target>
+        <target state="translated">不顯示啟始資訊或著作權訊息。</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildConfigurationOptionDescription">
@@ -3969,6 +3969,11 @@ To display a value, specify the corresponding command-line option without provid
         <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
         <target state="translated">找不到 {1} 中指定的工作負載版本 {0}。執行 "dotnet workload restore" 以安裝此工作負載版本。</target>
         <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">工作負載集合版本 {0} 缺少資訊清單，其可能已遭套件管理移除。請執行「dotnet workload repair」來修復此問題。</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>

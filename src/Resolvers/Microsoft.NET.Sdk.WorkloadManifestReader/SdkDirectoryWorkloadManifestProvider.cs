@@ -6,6 +6,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.NET.Sdk.Localization;
+using Microsoft.DotNet.Cli.Commands;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
@@ -30,6 +31,24 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private string? _installStateFilePath;
         private bool _useManifestsFromInstallState = true;
         private bool? _globalJsonSpecifiedWorkloadSets = null;
+
+        /// <summary>
+        /// Optional hook that allows the CLI to ensure workload manifests are available (and repaired if necessary)
+        /// before this provider attempts to enumerate them.
+        /// </summary>
+        public IWorkloadManifestCorruptionRepairer? CorruptionRepairer { get; set; }
+
+        /// <summary>
+        /// Specifies how this provider should handle corrupt or missing workload manifests.
+        /// Default is <see cref="ManifestCorruptionFailureMode.Repair"/>.
+        /// </summary>
+        public ManifestCorruptionFailureMode CorruptionFailureMode { get; set; } = ManifestCorruptionFailureMode.Repair;
+
+        /// <summary>
+        /// Gets the resolved workload set, if any. This is populated during construction/refresh
+        /// and does not trigger corruption checking.
+        /// </summary>
+        public WorkloadSet? ResolvedWorkloadSet => _workloadSet;
 
         //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
         //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
@@ -247,6 +266,19 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public WorkloadVersionInfo GetWorkloadVersion()
         {
+            if (CorruptionRepairer != null)
+            {
+                CorruptionRepairer.EnsureManifestsHealthy(CorruptionFailureMode);
+            }
+            else if (_workloadSet != null && CorruptionFailureMode != ManifestCorruptionFailureMode.Ignore)
+            {
+                // No repairer attached - check for missing manifests and throw a helpful error
+                if (HasMissingManifests(_workloadSet))
+                {
+                    throw new InvalidOperationException(string.Format(Strings.WorkloadSetHasMissingManifests, _workloadSet.Version));
+                }
+            }
+
             if (_globalJsonWorkloadSetVersion != null)
             {
                 // _exceptionToThrow is set to null here if and only if the workload set is not installed.
@@ -290,6 +322,18 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
         {
+            if (CorruptionRepairer != null)
+            {
+                CorruptionRepairer.EnsureManifestsHealthy(CorruptionFailureMode);
+            }
+            else if (_workloadSet != null && CorruptionFailureMode != ManifestCorruptionFailureMode.Ignore)
+            {
+                // No repairer attached - check for missing manifests and throw a helpful error
+                if (HasMissingManifests(_workloadSet))
+                {
+                    throw new InvalidOperationException(string.Format(Strings.WorkloadSetHasMissingManifests, _workloadSet.Version));
+                }
+            }
             ThrowExceptionIfManifestsNotAvailable();
 
             //  Scan manifest directories
@@ -363,6 +407,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
                     if (manifestDirectory == null)
                     {
+                        if (CorruptionFailureMode == ManifestCorruptionFailureMode.Ignore)
+                        {
+                            continue;
+                        }
                         throw new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
                     }
                     AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
@@ -380,6 +428,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
                         if (manifestDirectory == null)
                         {
+                            if (CorruptionFailureMode == ManifestCorruptionFailureMode.Ignore)
+                            {
+                                continue;
+                            }
                             throw new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
                         }
                         AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
@@ -511,6 +563,23 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         }
 
         /// <summary>
+        /// Checks if the workload set has any manifests that are missing from disk.
+        /// This checks all manifest roots (including user-local installs).
+        /// </summary>
+        public bool HasMissingManifests(WorkloadSet workloadSet)
+        {
+            foreach (var manifestEntry in workloadSet.ManifestVersions)
+            {
+                var manifestSpecifier = new ManifestSpecifier(manifestEntry.Key, manifestEntry.Value.Version, manifestEntry.Value.FeatureBand);
+                if (GetManifestDirectoryFromSpecifier(manifestSpecifier) == null)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Returns installed workload sets that are available for this SDK (ie are in the same feature band)
         /// </summary>
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets()
@@ -538,7 +607,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
                 else
                 {
-                    //  Get workload sets for all feature bands 
+                    //  Get workload sets for all feature bands
                     foreach (var featureBandDirectory in Directory.GetDirectories(manifestRoot))
                     {
                         AddWorkloadSetsForFeatureBand(availableWorkloadSets, featureBandDirectory);
