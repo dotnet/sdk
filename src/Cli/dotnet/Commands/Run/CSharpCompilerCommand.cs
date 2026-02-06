@@ -283,6 +283,8 @@ internal sealed partial class CSharpCompilerCommand
                 """);
         }
 
+        // NOTE: MSBuild writes empty values as "property = " (with a trailing space).
+        // Use an interpolation expression to preserve the trailing space from editor trimming.
         string editorconfig = Path.Join(objDir, $"{fileNameWithoutExtension}.GeneratedMSBuildEditorConfig.editorconfig");
         if (ShouldEmit(editorconfig))
         {
@@ -291,25 +293,25 @@ internal sealed partial class CSharpCompilerCommand
                 build_property.EnableAotAnalyzer = true
                 build_property.EnableSingleFileAnalyzer = true
                 build_property.EnableTrimAnalyzer = true
-                build_property.IncludeAllContentForSelfExtract =
-                build_property.VerifyReferenceTrimCompatibility =
-                build_property.VerifyReferenceAotCompatibility =
+                build_property.IncludeAllContentForSelfExtract ={" "}
+                build_property.VerifyReferenceTrimCompatibility ={" "}
+                build_property.VerifyReferenceAotCompatibility ={" "}
                 build_property.TargetFramework = net{TargetFrameworkVersion}
                 build_property.TargetFrameworkIdentifier = .NETCoreApp
                 build_property.TargetFrameworkVersion = v{TargetFrameworkVersion}
-                build_property.TargetPlatformMinVersion =
-                build_property.UsingMicrosoftNETSdkWeb =
-                build_property.ProjectTypeGuids =
-                build_property.InvariantGlobalization =
-                build_property.PlatformNeutralAssembly =
-                build_property.EnforceExtendedAnalyzerRules =
+                build_property.TargetPlatformMinVersion ={" "}
+                build_property.UsingMicrosoftNETSdkWeb ={" "}
+                build_property.ProjectTypeGuids ={" "}
+                build_property.InvariantGlobalization ={" "}
+                build_property.PlatformNeutralAssembly ={" "}
+                build_property.EnforceExtendedAnalyzerRules ={" "}
                 build_property._SupportedPlatformList = Linux,macOS,Windows
                 build_property.RootNamespace = {fileNameWithoutExtension}
                 build_property.ProjectDir = {fileDirectory}{Path.DirectorySeparatorChar}
-                build_property.EnableComHosting =
+                build_property.EnableComHosting ={" "}
                 build_property.EnableGeneratedComInterfaceComImportInterop = false
                 build_property.EffectiveAnalysisLevelStyle = {TargetFrameworkVersion}
-                build_property.EnableCodeStyleSeverity =
+                build_property.EnableCodeStyleSeverity ={" "}
 
                 """);
         }
