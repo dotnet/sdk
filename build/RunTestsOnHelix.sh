@@ -20,7 +20,7 @@ export DOTNET_SDK_TEST_ASSETS_DIRECTORY=$TestExecutionDirectory/TestAssets
 # call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive
 
-# We downloaded a special zip of files to the .nuget folder so add that as a source
+# Add the local test packages directory as a NuGet source for this test run
 dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget add source $TestExecutionDirectory/Testpackages --configfile $TestExecutionDirectory/NuGet.config
 #Remove feeds not needed for tests
