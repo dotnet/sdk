@@ -8,6 +8,7 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
@@ -590,6 +591,14 @@ namespace Microsoft.DotNet.Watch
                     }
                     else
                     {
+                        // TODO: 
+                        // merge globs from all projects, full paths
+
+                        //var matcher = new Matcher();
+                        //matcher.AddIncludePatterns(glob.Includes);
+                        //matcher.AddExcludePatterns(glob.Excludes);
+                        //matcher.AddExcludePatterns(glob.Removes);
+
                         // TODO: https://github.com/dotnet/sdk/issues/52390
                         // Get patterns from evaluation that match Compile, AdditionalFile, AnalyzerConfigFile items.
                         // Avoid re-evaluating on addition of files that don't affect the project.

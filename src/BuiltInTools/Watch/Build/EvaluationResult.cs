@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
@@ -13,6 +14,7 @@ internal sealed class EvaluationResult(
     ProjectGraph projectGraph,
     ImmutableArray<ProjectInstance> restoredProjectInstances,
     IReadOnlyDictionary<string, FileItem> files,
+    IReadOnlyDictionary<ProjectInstanceId, ImmutableArray<GlobResult>> compilationInputItemGlobs,
     IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> staticWebAssetsManifests)
 {
     public readonly IReadOnlyDictionary<string, FileItem> Files = files;
@@ -34,6 +36,9 @@ internal sealed class EvaluationResult(
 
     public IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> StaticWebAssetsManifests
         => staticWebAssetsManifests;
+
+    public IReadOnlyDictionary<ProjectInstanceId, ImmutableArray<GlobResult>> CompilationInputItemGlobs
+        => compilationInputItemGlobs;
 
     public ImmutableArray<ProjectInstance> RestoredProjectInstances
         => restoredProjectInstances;
@@ -77,6 +82,7 @@ internal sealed class EvaluationResult(
         var projectGraph = factory.TryLoadProjectGraph(
             logger,
             projectGraphRequired: true,
+            out var projects,
             cancellationToken);
 
         if (projectGraph == null)
@@ -105,13 +111,14 @@ internal sealed class EvaluationResult(
 
         var fileItems = new Dictionary<string, FileItem>();
         var staticWebAssetManifests = new Dictionary<ProjectInstanceId, StaticWebAssetsManifest>();
+        var compilationInputItemGlobs = new Dictionary<ProjectInstanceId, ImmutableArray<GlobResult>>();
 
         // Update the project instances of the graph with design-time build results.
         // The properties and items set by DTB will be used by the Workspace to create Roslyn representation of projects.
 
-        foreach (var project in projectGraph.ProjectNodesTopologicallySorted)
+        foreach (var projectNode in projectGraph.ProjectNodesTopologicallySorted)
         {
-            var projectInstance = project.ProjectInstance;
+            var projectInstance = projectNode.ProjectInstance;
 
             // skip outer build project nodes:
             if (projectInstance.GetPropertyValue(PropertyNames.TargetFramework) == "")
@@ -135,6 +142,7 @@ internal sealed class EvaluationResult(
                 }
             }
 
+            var projectInstanceId = projectInstance.GetId();
             var projectPath = projectInstance.FullPath;
             var projectDirectory = Path.GetDirectoryName(projectPath)!;
 
@@ -142,7 +150,7 @@ internal sealed class EvaluationResult(
                 projectInstance.GetIntermediateOutputDirectory() is { } outputDir &&
                 StaticWebAssetsManifest.TryParseFile(Path.Combine(outputDir, StaticWebAsset.ManifestFileName), logger) is { } manifest)
             {
-                staticWebAssetManifests.Add(projectInstance.GetId(), manifest);
+                staticWebAssetManifests.Add(projectInstanceId, manifest);
 
                 // watch asset files, but not bundle files as they are regenarated when scoped CSS files are updated:
                 foreach (var (relativeUrl, filePath) in manifest.UrlToPathMap)
@@ -164,6 +172,9 @@ internal sealed class EvaluationResult(
                     AddFile(item.EvaluatedInclude, staticWebAssetRelativeUrl: null);
                 }
             }
+
+            var project = projects[projectInstance];
+            compilationInputItemGlobs.Add(projectInstanceId, [.. project.GetAllGlobs(ItemNames.Compile), .. project.GetAllGlobs(ItemNames.AdditionalFiles)]);
 
             // Add Watch items after other items so that we don't override properties set above.
             var items = projectInstance.GetItems(ItemNames.Compile)
@@ -198,7 +209,7 @@ internal sealed class EvaluationResult(
 
         buildReporter.ReportWatchedFiles(fileItems);
 
-        return new EvaluationResult(projectGraph, restoredProjectInstances, fileItems, staticWebAssetManifests);
+        return new EvaluationResult(projectGraph, restoredProjectInstances, fileItems, compilationInputItemGlobs, staticWebAssetManifests);
     }
 
     private static string[] GetBuildTargets(ProjectInstance projectInstance, EnvironmentOptions environmentOptions)

@@ -49,6 +49,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             projectCollection,
             VirtualProjectBuildingCommand.ThrowingReporter,
             out var projectInstance,
+            out _,
             out var evaluatedDirectives,
             validateAllDirectives: !_force);
 

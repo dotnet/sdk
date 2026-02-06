@@ -1044,13 +1044,22 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, Action<IDictionary<string, string>>? addGlobalProperties)
     {
+        var globalProperties = projectCollection.GlobalProperties;
+
+        if (addGlobalProperties != null)
+        {
+            globalProperties = new Dictionary<string, string>(globalProperties, StringComparer.OrdinalIgnoreCase);
+            addGlobalProperties(globalProperties);
+        }
+
         Builder.CreateProjectInstance(
             projectCollection,
             ThrowingReporter,
             out var project,
+            out _,
             out var evaluatedDirectives,
             Directives,
-            addGlobalProperties);
+            globalProperties);
 
         Directives = evaluatedDirectives;
 

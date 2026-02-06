@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Reflection;
 using System.Runtime.Versioning;
+using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
@@ -15,6 +16,17 @@ namespace Microsoft.DotNet.Watch;
 
 internal sealed class ProjectGraphFactory
 {
+    // Roughly matches the VS project load settings for their design time builds.
+    private const ProjectLoadSettings ProjectLoadSettings =
+        ProjectLoadSettings.RejectCircularImports |
+        ProjectLoadSettings.IgnoreEmptyImports |
+        ProjectLoadSettings.IgnoreMissingImports |
+        ProjectLoadSettings.IgnoreInvalidImports |
+        ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition |
+        ProjectLoadSettings.FailOnUnresolvedSdk |
+        // Glob evaluation requires this setting. If not present MSBuild reevaluates the project with the setting.
+        ProjectLoadSettings.RecordEvaluatedItemElements;
+
     /// <summary>
     /// Reuse <see cref="ProjectCollection"/> with XML element caching to improve performance.
     ///
@@ -67,12 +79,16 @@ internal sealed class ProjectGraphFactory
     public ProjectGraph? TryLoadProjectGraph(
         ILogger logger,
         bool projectGraphRequired,
+        out IReadOnlyDictionary<ProjectInstance, Project> projects,
         CancellationToken cancellationToken)
     {
         var entryPoint = new ProjectGraphEntryPoint(_rootProject.ProjectGraphPath, _globalOptions);
+        var projectsBuilder = new Dictionary<ProjectInstance, Project>();
+        projects = projectsBuilder;
+
         try
         {
-            return new ProjectGraph([entryPoint], _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, logger), cancellationToken);
+            return new ProjectGraph([entryPoint], _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, projectsBuilder, logger), cancellationToken);
         }
         catch (ProjectCreationFailedException)
         {
@@ -117,8 +133,11 @@ internal sealed class ProjectGraphFactory
         return null;
     }
 
-    private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection, ILogger logger)
+    private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection, Dictionary<ProjectInstance, Project> projects, ILogger logger)
     {
+        Project project;
+        ProjectInstance projectInstance;
+
         if (_virtualRootProjectBuilder != null && projectPath == _rootProject.ProjectGraphPath)
         {
             var anyError = false;
@@ -130,7 +149,8 @@ internal sealed class ProjectGraphFactory
                     anyError = true;
                     logger.LogError("{Location}: {Message}", sourceFile.GetLocationString(textSpan), message);
                 },
-                out var projectInstance,
+                out projectInstance,
+                out var projectRootElement,
                 out _);
 
             if (anyError)
@@ -138,15 +158,24 @@ internal sealed class ProjectGraphFactory
                 throw new ProjectCreationFailedException();
             }
 
-            return projectInstance;
+            project = CreateProject(projectRootElement);
+        }
+        else
+        {
+            var projectRootElement = ProjectRootElement.Open(projectPath, projectCollection, preserveFormatting: false);
+            project = CreateProject(projectRootElement);
+            projectInstance = new ProjectInstance(project, ProjectInstanceSettings.None);
         }
 
-        return new ProjectInstance(
-            projectPath,
-            globalProperties,
-            toolsVersion: "Current",
-            subToolsetVersion: null,
-            projectCollection);
+        lock (projects)
+        {
+            projects.Add(projectInstance, project);
+        }
+
+        return projectInstance;
+
+        Project CreateProject(ProjectRootElement projectRootElement)
+            => new(projectRootElement, globalProperties, toolsVersion: "Current", projectCollection, ProjectLoadSettings);
     }
 
     private sealed class ProjectCreationFailedException() : Exception();

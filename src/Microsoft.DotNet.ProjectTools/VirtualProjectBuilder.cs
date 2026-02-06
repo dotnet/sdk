@@ -161,9 +161,10 @@ internal sealed class VirtualProjectBuilder
         ProjectCollection projectCollection,
         ErrorReporter errorReporter,
         out ProjectInstance project,
+        out ProjectRootElement projectRoot,
         out ImmutableArray<CSharpDirective> evaluatedDirectives,
         ImmutableArray<CSharpDirective> directives = default,
-        Action<IDictionary<string, string>>? addGlobalProperties = null,
+        IDictionary<string, string>? globalProperties = null,
         bool validateAllDirectives = false)
     {
         if (directives.IsDefault)
@@ -171,28 +172,24 @@ internal sealed class VirtualProjectBuilder
             directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, validateAllDirectives, errorReporter);
         }
 
-        project = CreateProjectInstance(projectCollection, directives, addGlobalProperties);
+        globalProperties ??= projectCollection.GlobalProperties;
+
+        project = CreateProjectInstance(projectCollection, directives, globalProperties, out projectRoot);
 
         evaluatedDirectives = EvaluateDirectives(project, directives, EntryPointSourceFile, errorReporter);
         if (evaluatedDirectives != directives)
         {
-            project = CreateProjectInstance(projectCollection, evaluatedDirectives, addGlobalProperties);
+            project = CreateProjectInstance(projectCollection, evaluatedDirectives, globalProperties, out projectRoot);
         }
     }
 
     private ProjectInstance CreateProjectInstance(
         ProjectCollection projectCollection,
         ImmutableArray<CSharpDirective> directives,
-        Action<IDictionary<string, string>>? addGlobalProperties = null)
+        IDictionary<string, string> globalProperties,
+        out ProjectRootElement projectRoot)
     {
-        var projectRoot = CreateProjectRootElement(projectCollection);
-
-        var globalProperties = projectCollection.GlobalProperties;
-        if (addGlobalProperties is not null)
-        {
-            globalProperties = new Dictionary<string, string>(projectCollection.GlobalProperties, StringComparer.OrdinalIgnoreCase);
-            addGlobalProperties(globalProperties);
-        }
+        projectRoot = CreateProjectRootElement(projectCollection);
 
         return ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
         {
