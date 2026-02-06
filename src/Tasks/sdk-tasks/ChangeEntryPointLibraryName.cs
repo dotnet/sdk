@@ -7,8 +7,14 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
-    public class ChangeEntryPointLibraryName : Task
+    [MSBuildMultiThreadableTask]
+    public class ChangeEntryPointLibraryName : Task, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         [Required]
         public string DepsFile { get; set; }
 
@@ -17,7 +23,9 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public override bool Execute()
         {
-            PublishMutationUtilities.ChangeEntryPointLibraryName(DepsFile, NewName);
+            // Ensure the path is absolute for thread-safe file operations
+            string absoluteDepsFile = TaskEnvironment?.GetAbsolutePath(DepsFile) ?? Path.GetFullPath(DepsFile);
+            PublishMutationUtilities.ChangeEntryPointLibraryName(absoluteDepsFile, NewName);
 
             return true;
         }

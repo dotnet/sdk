@@ -6,6 +6,7 @@
 // This allows us to use the attribute before the MSBuild version containing it is available.
 // See: https://github.com/dotnet/msbuild/blob/main/src/Framework/MSBuildMultiThreadableTaskAttribute.cs
 
+
 // This polyfill is only needed for .NET Framework builds since the newer MSBuild packages
 // for .NET Core already include the attribute. When targeting .NET Core, we use the
 // attribute from Microsoft.Build.Framework directly.
@@ -47,4 +48,5 @@ namespace Microsoft.Build.Framework
     }
 }
 
+#nullable disable
 #endif

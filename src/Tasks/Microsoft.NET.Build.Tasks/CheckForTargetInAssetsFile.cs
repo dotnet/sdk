@@ -8,8 +8,14 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class CheckForTargetInAssetsFile : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class CheckForTargetInAssetsFile : TaskBase, IMultiThreadableTask
     {
+        /// <summary>
+        /// Gets or sets the task environment for thread-safe operations.
+        /// </summary>
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         public string AssetsFilePath { get; set; }
 
         [Required]
@@ -20,7 +26,9 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
+            // Ensure the path is absolute for thread-safe file operations
+            string absoluteAssetsFilePath = TaskEnvironment?.GetAbsolutePath(AssetsFilePath) ?? AssetsFilePath;
+            LockFile lockFile = new LockFileCache(this).GetLockFile(absoluteAssetsFilePath);
 
             lockFile.GetTargetAndThrowIfNotFound(TargetFramework, RuntimeIdentifier);
         }
