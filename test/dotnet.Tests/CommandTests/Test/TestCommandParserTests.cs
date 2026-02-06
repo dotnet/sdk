@@ -139,5 +139,201 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             settingsCount.Should().Be(0);
             TestCommand.ContainsBuiltTestSources(parseResult, settingsCount).Should().Be(expectedContainsBuiltTestSource);
         }
+
+        [Fact]
+        public void GetTestRunnerShouldHandleEmptyGlobalJson()
+        {
+            // Create a temporary directory with an empty global.json
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var globalJsonPath = Path.Combine(tempDir, "global.json");
+                File.WriteAllText(globalJsonPath, "");
+
+                var originalDir = Environment.CurrentDirectory;
+                try
+                {
+                    Environment.CurrentDirectory = tempDir;
+                    // Should not throw and should default to VSTest
+                    var runner = TestCommandDefinition.GetTestRunner();
+                    runner.Should().Be(TestCommandDefinition.TestRunner.VSTest);
+                }
+                finally
+                {
+                    Environment.CurrentDirectory = originalDir;
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, true);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetTestRunnerShouldHandleWhitespaceGlobalJson()
+        {
+            // Create a temporary directory with a whitespace-only global.json
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var globalJsonPath = Path.Combine(tempDir, "global.json");
+                File.WriteAllText(globalJsonPath, "   \n\t  ");
+
+                var originalDir = Environment.CurrentDirectory;
+                try
+                {
+                    Environment.CurrentDirectory = tempDir;
+                    // Should not throw and should default to VSTest
+                    var runner = TestCommandDefinition.GetTestRunner();
+                    runner.Should().Be(TestCommandDefinition.TestRunner.VSTest);
+                }
+                finally
+                {
+                    Environment.CurrentDirectory = originalDir;
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, true);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetTestRunnerShouldHandleInvalidGlobalJson()
+        {
+            // Create a temporary directory with an invalid global.json
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var globalJsonPath = Path.Combine(tempDir, "global.json");
+                File.WriteAllText(globalJsonPath, "{ invalid json ");
+
+                var originalDir = Environment.CurrentDirectory;
+                try
+                {
+                    Environment.CurrentDirectory = tempDir;
+                    // Should not throw and should default to VSTest
+                    var runner = TestCommandDefinition.GetTestRunner();
+                    runner.Should().Be(TestCommandDefinition.TestRunner.VSTest);
+                }
+                finally
+                {
+                    Environment.CurrentDirectory = originalDir;
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, true);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetTestRunnerShouldHandleValidGlobalJsonWithNoTestSection()
+        {
+            // Create a temporary directory with a valid global.json without test section
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var globalJsonPath = Path.Combine(tempDir, "global.json");
+                File.WriteAllText(globalJsonPath, @"{""sdk"": {""version"": ""8.0.100""}}");
+
+                var originalDir = Environment.CurrentDirectory;
+                try
+                {
+                    Environment.CurrentDirectory = tempDir;
+                    // Should default to VSTest when test section is missing
+                    var runner = TestCommandDefinition.GetTestRunner();
+                    runner.Should().Be(TestCommandDefinition.TestRunner.VSTest);
+                }
+                finally
+                {
+                    Environment.CurrentDirectory = originalDir;
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, true);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetTestRunnerShouldRespectVSTestRunnerInGlobalJson()
+        {
+            // Create a temporary directory with a valid global.json with VSTest runner
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var globalJsonPath = Path.Combine(tempDir, "global.json");
+                File.WriteAllText(globalJsonPath, @"{""test"": {""runner"": ""vstest""}}");
+
+                var originalDir = Environment.CurrentDirectory;
+                try
+                {
+                    Environment.CurrentDirectory = tempDir;
+                    var runner = TestCommandDefinition.GetTestRunner();
+                    runner.Should().Be(TestCommandDefinition.TestRunner.VSTest);
+                }
+                finally
+                {
+                    Environment.CurrentDirectory = originalDir;
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, true);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetTestRunnerShouldRespectMicrosoftTestingPlatformRunnerInGlobalJson()
+        {
+            // Create a temporary directory with a valid global.json with MicrosoftTestingPlatform runner
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var globalJsonPath = Path.Combine(tempDir, "global.json");
+                File.WriteAllText(globalJsonPath, @"{""test"": {""runner"": ""Microsoft.Testing.Platform""}}");
+
+                var originalDir = Environment.CurrentDirectory;
+                try
+                {
+                    Environment.CurrentDirectory = tempDir;
+                    var runner = TestCommandDefinition.GetTestRunner();
+                    runner.Should().Be(TestCommandDefinition.TestRunner.MicrosoftTestingPlatform);
+                }
+                finally
+                {
+                    Environment.CurrentDirectory = originalDir;
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, true);
+                }
+            }
+        }
     }
 }

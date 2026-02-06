@@ -38,14 +38,29 @@ internal abstract partial class TestCommandDefinition : Command
 
         string jsonText = File.ReadAllText(globalJsonPath);
 
+        // If global.json is empty or whitespace, default to VSTest
+        if (string.IsNullOrWhiteSpace(jsonText))
+        {
+            return TestRunner.VSTest;
+        }
+
         // This code path is hit exactly once during the whole life of the dotnet process.
         // So, no concern about caching JsonSerializerOptions.
-        var globalJson = JsonSerializer.Deserialize<GlobalJsonModel>(jsonText, new JsonSerializerOptions()
+        GlobalJsonModel? globalJson;
+        try
         {
-            AllowDuplicateProperties = false,
-            AllowTrailingCommas = false,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-        });
+            globalJson = JsonSerializer.Deserialize<GlobalJsonModel>(jsonText, new JsonSerializerOptions()
+            {
+                AllowDuplicateProperties = false,
+                AllowTrailingCommas = false,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+            });
+        }
+        catch (JsonException)
+        {
+            // If global.json contains invalid JSON, default to VSTest
+            return TestRunner.VSTest;
+        }
 
         var name = globalJson?.Test?.RunnerName;
 
