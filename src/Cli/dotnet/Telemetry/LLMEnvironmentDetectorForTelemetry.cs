@@ -7,9 +7,9 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
 {
     private static readonly EnvironmentDetectionRuleWithResult<string>[] _detectionRules = [
         // Claude Code
-        new EnvironmentDetectionRuleWithResult<string>("claude", new BooleanEnvironmentRule("CLAUDECODE")),
+        new EnvironmentDetectionRuleWithResult<string>("claude", new AnyPresentEnvironmentRule("CLAUDECODE")),
         // Cursor AI
-        new EnvironmentDetectionRuleWithResult<string>("cursor", new BooleanEnvironmentRule("CURSOR_EDITOR")),
+        new EnvironmentDetectionRuleWithResult<string>("cursor", new AnyPresentEnvironmentRule("CURSOR_EDITOR")),
         // Gemini
         new EnvironmentDetectionRuleWithResult<string>("gemini", new BooleanEnvironmentRule("GEMINI_CLI")),
         // GitHub Copilot
@@ -17,7 +17,7 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
         // OpenAI Codex
         new EnvironmentDetectionRuleWithResult<string>("codex", new BooleanEnvironmentRule("CODEX_THREAD_ID")),
         // (proposed) generic flag for Agentic usage
-        new EnvironmentDetectionRuleWithResult<string>("generic_agent", new BooleanEnvironmentRule("AGENT_CLI")),
+        new EnvironmentDetectionRuleWithResult<string>("generic_agent", new AnyPresentEnvironmentRule("AGENT_CLI")),
     ];
 
     /// <inheritdoc/>
