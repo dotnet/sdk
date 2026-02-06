@@ -37,7 +37,7 @@ public static class DynamicSymbolExtensions
         }
     }
 
-    extension(Argument option)
+    extension(Argument argument)
     {
         /// <summary>
         /// Indicates whether this argument requires a dynamic call into the dotnet process to compute completions.
@@ -48,14 +48,14 @@ public static class DynamicSymbolExtensions
             {
                 lock (s_guard)
                 {
-                    return s_dynamicSymbols.GetValueOrDefault(option, false);
+                    return s_dynamicSymbols.GetValueOrDefault(argument, false);
                 }
             }
             set
             {
                 lock (s_guard)
                 {
-                    s_dynamicSymbols[option] = value;
+                    s_dynamicSymbols[argument] = value;
                 }
             }
         }
