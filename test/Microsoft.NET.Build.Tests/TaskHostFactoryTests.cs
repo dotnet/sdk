@@ -49,7 +49,7 @@ namespace Microsoft.NET.Build.Tests
             projectXml.Save(projectPath);
 
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute("/t:Build;TestTaskHostFactoryWithRuntime", "/v:n")
+            buildCommand.Execute("/t:TestTaskHostFactoryWithRuntime", "/v:n")
                 .Should()
                 .Pass()
                 .And
