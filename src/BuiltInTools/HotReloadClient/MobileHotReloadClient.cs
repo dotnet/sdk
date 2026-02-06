@@ -57,11 +57,7 @@ internal sealed class MobileHotReloadClient : HotReloadClient
         environmentBuilder[AgentEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
 
         // Set the WebSocket endpoint for the app to connect to.
-        var serverUrl = _server.ServerUrl;
-        if (serverUrl != null)
-        {
-            environmentBuilder[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint] = serverUrl;
-        }
+        environmentBuilder[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint] = $"ws://localhost:{_port}";
 
         // Pass the startup hook path as an environment variable so the workload can deploy it.
         // This gets passed via `dotnet run -e` and becomes available as @(RuntimeEnvironmentVariable)
@@ -311,8 +307,6 @@ internal sealed class MobileHotReloadClient : HotReloadClient
         public HotReloadWebSocketServer(ILogger logger) : base(logger)
         {
         }
-
-        public string? ServerUrl => ServerUrls.FirstOrDefault();
 
         public async ValueTask StartServerAsync(string hostName, int port, CancellationToken cancellationToken)
         {
