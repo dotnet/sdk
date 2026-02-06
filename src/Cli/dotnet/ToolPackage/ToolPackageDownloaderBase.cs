@@ -54,7 +54,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         _currentWorkingDirectory = currentWorkingDirectory;
 
         _localToolAssetDir = new DirectoryPath(_fileSystem.Directory.CreateTemporarySubdirectory());
-        _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "RuntimeIdentifierGraph.json");
+        _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(AppContext.BaseDirectory!, "RuntimeIdentifierGraph.json");
     }
 
     protected abstract INuGetPackageDownloader CreateNuGetPackageDownloader(
