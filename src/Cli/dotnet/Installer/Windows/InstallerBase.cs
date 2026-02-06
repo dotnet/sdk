@@ -96,7 +96,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// <summary>
     /// The name of the SDK directory, e.g. 6.0.100.
     /// </summary>
-    protected static string SdkDirectory => Path.GetFileName(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+    protected static string SdkDirectory => Path.GetFileName(AppContext.BaseDirectory);
 
     /// <summary>
     /// Gets whether signatures for workload packages and installers should be verified.

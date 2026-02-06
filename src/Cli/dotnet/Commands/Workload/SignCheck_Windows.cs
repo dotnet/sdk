@@ -20,7 +20,7 @@ internal static class SignCheck
 
     private static readonly string s_WorkloadPolicyKey = @"SOFTWARE\Policies\Microsoft\dotnet\Workloads";
 
-    private static readonly string s_dotnet = Assembly.GetExecutingAssembly().Location;
+    private static readonly string s_dotnet = Environment.ProcessPath;
 
     /// <summary>
     /// Determines whether dotnet.dll is signed.

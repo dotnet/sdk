@@ -32,7 +32,7 @@ internal sealed class InstallClientElevationContext(ISynchronizingLogger logger)
             // Use the path of the current host, otherwise we risk resolving against the wrong SDK version.
             // To trigger UAC, UseShellExecute must be true and Verb must be "runas".
             ProcessStartInfo startInfo = new($@"""{Environment.ProcessPath}""",
-                    $@"""{Assembly.GetExecutingAssembly().Location}"" workload elevate")
+                    $@"""{Environment.ProcessPath}"" workload elevate")
             {
                 Verb = "runas",
                 UseShellExecute = true,

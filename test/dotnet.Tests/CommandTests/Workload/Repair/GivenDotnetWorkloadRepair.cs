@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.Text.Json;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Repair;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -88,7 +89,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             Directory.CreateDirectory(Path.GetDirectoryName(extraPackRecordPath));
             var extraPackPath = Path.Combine(installRoot, "packs", "Test.Pack.A", "1.0.0");
             Directory.CreateDirectory(extraPackPath);
-            var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(new(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, extraPackPath, "Test.Pack.A"));
+            var packRecordContents = JsonSerializer.Serialize(new WorkloadResolver.PackInfo(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, extraPackPath, "Test.Pack.A"), PackInfoJsonSerializerContext.Default.PackInfo);
             File.WriteAllText(extraPackRecordPath, packRecordContents);
 
             var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolverFactory,
