@@ -14,7 +14,6 @@ namespace Microsoft.DotNet.Watch
             Main,
             StaticHandler,
             CompilationHandler,
-            ScopedCssHandler
         }
 
         internal sealed class Keywords

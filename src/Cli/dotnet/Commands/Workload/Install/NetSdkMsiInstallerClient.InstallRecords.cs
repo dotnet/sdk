@@ -33,7 +33,7 @@ internal partial class NetSdkMsiInstallerClient
                 {
                     using RegistryKey workloadSetPackageVersionKey = workloadSetFeatureBandKey.OpenSubKey(workloadSetPackageVersion);
 
-                    string workloadSetVersion = WorkloadSetVersion.FromWorkloadSetPackageVersion(new SdkFeatureBand(workloadSetFeatureBand), workloadSetPackageVersion);
+                    string workloadSetVersion = new SdkFeatureBand(workloadSetFeatureBand).GetWorkloadSetPackageVersion(workloadSetPackageVersion);
 
                     WorkloadSetRecord record = new WorkloadSetRecord()
                     {

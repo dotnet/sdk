@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET
+
 using System.Diagnostics;
 
 namespace Microsoft.DotNet.Cli.Utils;
@@ -30,3 +32,5 @@ public static class Activities
     /// </summary>
     public const string TRACESTATE = nameof(TRACESTATE);
 }
+
+#endif

@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -618,7 +619,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     return (toolPackageStore, toolPackageStore, toolPackageDownloader, toolPackageUninstaller);
                 },
                 createShellShimRepository: _createShellShimRepository,
-                nugetPackageDownloader: new NuGetPackageDownloader(new DirectoryPath(PathUtilities.CreateTempSubdirectory()), verifySignatures: false, currentWorkingDirectory: testDir),
+                nugetPackageDownloader: new NuGetPackageDownloader(new DirectoryPath(TemporaryDirectory.CreateSubdirectory()), verifySignatures: false, currentWorkingDirectory: testDir),
                 currentWorkingDirectory: testDir,
                 verifySignatures: false);
 
