@@ -3778,6 +3778,11 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
         <target state="translated">A(s) carga(s) de trabalho '{0}' já está(ão) instalada(s).</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadCleanAllComplete">
+        <source>Successfully removed all workload sets, manifests, and installation state.</source>
+        <target state="new">Successfully removed all workload sets, manifests, and installation state.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadCleanCommandDescription">
         <source>Removes workload components that may have been left behind from previous updates and uninstallations.</source>
         <target state="translated">Remove componentes de carga de trabalho que podem ter sido deixados para trás em atualizações e desinstalações anteriores.</target>

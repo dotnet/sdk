@@ -3778,6 +3778,11 @@ příkazu „dotnet tool list“.</target>
         <target state="translated">{0} úlohy jsou už nainstalované.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadCleanAllComplete">
+        <source>Successfully removed all workload sets, manifests, and installation state.</source>
+        <target state="new">Successfully removed all workload sets, manifests, and installation state.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadCleanCommandDescription">
         <source>Removes workload components that may have been left behind from previous updates and uninstallations.</source>
         <target state="translated">Odebere součásti úloh, které mohly být pozůstatky z předchozích aktualizací a odinstalací.</target>
