@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli
         public const string PackageIdArgumentName = "packageId";
 
         public static Argument<PackageIdentityWithRange?> CreateOptionalPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
-            new(PackageIdArgumentName)
+            new ExtendedArgument<PackageIdentityWithRange?>(PackageIdArgumentName)
             {
                 Description = string.Format(CommandDefinitionStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = argumentResult => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli
             };
 
         public static Argument<PackageIdentityWithRange> CreateRequiredPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
-            new(PackageIdArgumentName)
+            new ExtendedArgument<PackageIdentityWithRange>(PackageIdArgumentName)
             {
                 Description = string.Format(CommandDefinitionStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = argumentResult => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,

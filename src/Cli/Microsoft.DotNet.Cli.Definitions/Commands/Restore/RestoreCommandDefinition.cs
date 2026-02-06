@@ -112,7 +112,7 @@ internal sealed class RestoreCommandDefinition : Command
         return $"-property:RuntimeIdentifiers={string.Join("%3B", convertedRids)}";
     }
 
-    private static Option<IEnumerable<string>> CreateRuntimeOption() => new Option<IEnumerable<string>>("--runtime", "-r")
+    private static Option<IEnumerable<string>> CreateRuntimeOption() => new ExtendedOption<IEnumerable<string>>("--runtime", "-r")
     {
         Description = CommandDefinitionStrings.CmdRuntimeOptionDescription,
         HelpName = CommandDefinitionStrings.CmdRuntimeOption,

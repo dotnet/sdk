@@ -121,7 +121,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
             yield break;
         }
 
-        if (argument.IsDynamic)
+        if (argument is IExtendedSymbol { IsDynamic: true })
         {
             // if the argument is a not-static-friendly argument, we need to call into the app for completions
             // TODO: not yet supported for powershell

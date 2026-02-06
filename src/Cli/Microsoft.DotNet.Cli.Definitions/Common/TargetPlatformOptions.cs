@@ -55,7 +55,7 @@ internal readonly struct TargetPlatformOptions
     }
 
     public static Option<string> CreateRuntimeOption(string description) =>
-        new Option<string>(RuntimeOptionName, "-r")
+        new ExtendedOption<string>(RuntimeOptionName, "-r")
         {
             HelpName = CommandDefinitionStrings.RuntimeIdentifierArgumentName,
             Description = description,

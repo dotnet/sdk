@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class CommonOptions
 {
-    public static Option<bool> CreateYesOption() => new("--yes", "-y")
+    public static Option<bool> CreateYesOption() => new ExtendedOption<bool>("--yes", "-y")
     {
         Description = CommandDefinitionStrings.YesOptionDescription,
         Arity = ArgumentArity.Zero,
@@ -169,7 +169,7 @@ internal static class CommonOptions
     public const string FrameworkOptionName = "--framework";
 
     public static Option<string> CreateFrameworkOption(string description) =>
-        new Option<string>(FrameworkOptionName, "-f")
+        new ExtendedOption<string>(FrameworkOptionName, "-f")
         {
             Description = description,
             HelpName = CommandDefinitionStrings.FrameworkArgumentName,
@@ -196,7 +196,7 @@ internal static class CommonOptions
     public const string ConfigurationOptionName = "--configuration";
 
     public static Option<string?> CreateConfigurationOption(string description) =>
-        new Option<string?>(ConfigurationOptionName, "-c")
+        new ExtendedOption<string?>(ConfigurationOptionName, "-c")
         {
             Description = description,
             HelpName = CommandDefinitionStrings.ConfigurationArgumentName,

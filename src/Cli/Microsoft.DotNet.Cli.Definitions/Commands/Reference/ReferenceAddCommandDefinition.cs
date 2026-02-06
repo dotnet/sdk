@@ -31,7 +31,7 @@ internal abstract class ReferenceAddCommandDefinitionBase : Command
         }
     };
 
-    public readonly Option<string> FrameworkOption = new("--framework", "-f")
+    public readonly Option<string> FrameworkOption = new ExtendedOption<string>("--framework", "-f")
     {
         Description = CommandDefinitionStrings.ReferenceAddCmdFrameworkDescription,
         HelpName = CommandDefinitionStrings.CommonCmdFramework,

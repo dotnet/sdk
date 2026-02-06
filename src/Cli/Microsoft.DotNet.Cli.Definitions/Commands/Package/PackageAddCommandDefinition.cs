@@ -17,7 +17,7 @@ public class PackageAddCommandDefinition() : PackageAddCommandDefinitionBase(Nam
 
 public abstract class PackageAddCommandDefinitionBase : Command
 {
-    public static Option<string> CreateVersionOption() => new Option<string>("--version", "-v")
+    public static Option<string> CreateVersionOption() => new ExtendedOption<string>("--version", "-v")
     {
         Description = CommandDefinitionStrings.CmdVersionDescription,
         HelpName = CommandDefinitionStrings.CmdVersion,
