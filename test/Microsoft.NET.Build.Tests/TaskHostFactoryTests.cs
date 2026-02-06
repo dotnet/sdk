@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: runtime);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: runtime);
             var projectDirectory = Path.Combine(testAsset.TestRoot, testProject.Name);
 
             var targetsContent = $@"
