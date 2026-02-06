@@ -391,5 +391,25 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         private static string GetTestLocalFeedPath() =>
             Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestAssetLocalNugetFeed");
+
+        [Fact]
+        public async Task RejectsAdditionalSourceFeedsWhenMappingActive()
+        {
+            var mappingRules = new Dictionary<string, IReadOnlyList<string>>
+            {
+                { "feed1", new List<string> { "PackageX.*" } }
+            };
+            var mapping = new PackageSourceMapping(new ReadOnlyDictionary<string, IReadOnlyList<string>>(mappingRules));
+            string someFeed = GetTestLocalFeedPath();
+
+            var download = async () => await _toolInstaller.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(additionalSourceFeeds: new[] { someFeed }),
+                packageSourceMapping: mapping);
+            
+            var ex = await download.Should().ThrowAsync<NuGetPackageInstallerException>();
+            ex.Which.Message.Should().Contain(CliStrings.CannotUseAddSourceWithSourceMapping);
+        }
     }
 }
