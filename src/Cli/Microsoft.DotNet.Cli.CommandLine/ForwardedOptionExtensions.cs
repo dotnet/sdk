@@ -161,7 +161,7 @@ public static class ForwardedOptionExtensions
                     s_forwardingFunctions[option] = wrapped;
                 }
             }
-            return [];
+            return option;
         }
     }
 
