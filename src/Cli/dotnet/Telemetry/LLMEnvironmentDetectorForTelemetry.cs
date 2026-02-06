@@ -27,7 +27,6 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
         var results = _detectionRules.Select(r => r.GetResult()).Where(r => r != null).ToArray();
         return results.Length > 0 ? string.Join(", ", results) : null;
     }
-}
 
     /// <inheritdoc/>
     public bool IsLLMEnvironment() => !string.IsNullOrEmpty(GetLLMEnvironment());
