@@ -60,8 +60,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotUseAddSourceWithSourceMapping">
-        <source>The --add-source option cannot be combined with package source mapping. When source mapping is configured, additional sources specified via command line are not permitted. To use a different source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</source>
-        <target state="new">The --add-source option cannot be combined with package source mapping. When source mapping is configured, additional sources specified via command line are not permitted. To use a different source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</target>
+        <source>The --add-source option cannot be combined with package source mapping. To use an additional source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</source>
+        <target state="new">The --add-source option cannot be combined with package source mapping. To use an additional source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnMaxWidthMustBeGreaterThanZero">
