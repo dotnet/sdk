@@ -232,24 +232,37 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public async Task GivenANonSignedSdkItShouldPrintMessageOnce()
         {
             BufferedReporter bufferedReporter = new();
-            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
-                new MockFirstPartyNuGetPackageSigningVerifier(),
-                _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true));
-            await nuGetPackageDownloader.DownloadPackageAsync(
-                TestPackageId,
-                new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+            
+            // Set up Reporter.Verbose to capture the message at diagnostic verbosity
+            CommandLoggingContext.SetVerbose(true);
+            Reporter.SetVerbose(bufferedReporter);
+            
+            try
+            {
+                NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
+                    new MockFirstPartyNuGetPackageSigningVerifier(),
+                    _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true));
+                await nuGetPackageDownloader.DownloadPackageAsync(
+                    TestPackageId,
+                    new NuGetVersion(TestPackageVersion),
+                    new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
 
-            // download 2 packages should only print the message once
-            string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
-                TestPackageId,
-                new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+                // download 2 packages should only print the message once
+                string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
+                    TestPackageId,
+                    new NuGetVersion(TestPackageVersion),
+                    new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
 
-            bufferedReporter.Lines.Should()
-                .ContainSingle(
-                    CliStrings.NuGetPackageSignatureVerificationSkipped);
-            File.Exists(packagePath).Should().BeTrue();
+                bufferedReporter.Lines.Should()
+                    .ContainSingle(
+                        CliStrings.NuGetPackageSignatureVerificationSkipped);
+                File.Exists(packagePath).Should().BeTrue();
+            }
+            finally
+            {
+                // Clean up Reporter settings
+                Reporter.Reset();
+            }
         }
 
         [WindowsOnlyFact]
