@@ -631,14 +631,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>e156e649f28395d9d0ee1e848225a689b59e0fd3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.26071.1">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.26105.2">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>e4cdae73d1aaad398c2915f319e3d8d8ed41a737</Sha>
+      <Sha>842418bc95557b003d439bbd7641474e9c97684a</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.26071.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.26105.2">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>e4cdae73d1aaad398c2915f319e3d8d8ed41a737</Sha>
+      <Sha>842418bc95557b003d439bbd7641474e9c97684a</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
