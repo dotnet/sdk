@@ -67,7 +67,7 @@ internal class DotnetArchiveExtractor : IDisposable
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
-        string componentDescription = _request.Component.GetDescription();
+        string componentDescription = _request.Component.GetDisplayName();
         var downloadTask = ProgressReporter.AddTask($"Downloading {componentDescription} {_resolvedVersion}", 100);
         var reporter = new DownloadProgressReporter(downloadTask, $"Downloading {componentDescription} {_resolvedVersion}");
 
@@ -86,7 +86,7 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
 
-        string componentDescription = _request.Component.GetDescription();
+        string componentDescription = _request.Component.GetDisplayName();
         var installTask = ProgressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
 
         // Extract archive directly to target directory with special handling for muxer
