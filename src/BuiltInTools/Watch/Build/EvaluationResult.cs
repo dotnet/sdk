@@ -51,10 +51,7 @@ internal sealed class EvaluationResult(ProjectGraph projectGraph, IReadOnlyDicti
             .SetItem(PropertyNames.DotNetWatchBuild, "true")
             .SetItem(PropertyNames.DesignTimeBuild, "true")
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
-            .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
-            .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
-            // F# targets depend on host path variable:
-            .SetItem("DOTNET_HOST_PATH", environmentOptions.MuxerPath);
+            .SetItem(PropertyNames.ProvideCommandLineArgs, "true");
     }
 
     /// <summary>
