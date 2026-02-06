@@ -43,9 +43,6 @@
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
-      <OutputItemType>AdditionalContent</OutputItemType>
-      <Pack>true</Pack>
-      <PackagePath>hotreload</PackagePath>
     </ProjectReference>
     <AdditionalContent Include="$(WasmSdkRoot)targets\**\*.*">
       <Pack>true</Pack>
@@ -54,6 +51,10 @@
     <AdditionalContent Include="$(WasmSdkRoot)Sdk\**\*.*">
       <Pack>true</Pack>
       <PackagePath>Sdk</PackagePath>
+    </AdditionalContent>
+    <AdditionalContent Include="$(ArtifactsBinDir)\Microsoft.DotNet.HotReload.WebAssembly.Browser\$(Configuration)\**\*.*">
+      <Pack>true</Pack>
+      <PackagePath>hotreload</PackagePath>
     </AdditionalContent>
   </ItemGroup>
 
