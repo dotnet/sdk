@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Cli
                           .SetMinimumLevel(logLevel)
                           .AddConsole(config => config.FormatterName = nameof(CliConsoleFormatter));
                       builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ConsoleFormatter, CliConsoleFormatter>());
-                      builder.Services.Configure<ConsoleFormatterOptions>(nameof(CliConsoleFormatter), config =>
+                      builder.Services.Configure<ConsoleFormatterOptions>(config =>
                       {
                           config.IncludeScopes = true;
                           config.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";
