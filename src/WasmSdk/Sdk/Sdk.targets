@@ -42,7 +42,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_WasmHotReloadModule Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
         <RelativePath>_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</RelativePath>
       </_WasmHotReloadModule>
-      <_WasmHotReloadModule OriginalItemSpec="%(Identity)" />
+      <_WasmHotReloadModule Update="@(_WasmHotReloadModule)">
+        <OriginalItemSpec>%(Identity)</OriginalItemSpec>
+      </_WasmHotReloadModule>
       <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js" />
     </ItemGroup>
 
