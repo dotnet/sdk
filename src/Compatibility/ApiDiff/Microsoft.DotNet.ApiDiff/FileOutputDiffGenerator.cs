@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.ApiSymbolExtensions;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.ApiDiff;
 
@@ -75,7 +75,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
         _afterFriendlyName = afterFriendlyName;
         _tableOfContentsTitle = tableOfContentsTitle;
         _assembliesToExclude = CollectListsFromFiles(filesWithAssembliesToExclude);
-        _attributesToExclude = filesWithAttributesToExclude != null ? CollectListsFromFiles(filesWithAttributesToExclude) : [];
+        _attributesToExclude = CollectAttributesFromFilesOrDefaults(filesWithAttributesToExclude);
         _apisToExclude = CollectListsFromFiles(filesWithApisToExclude);
         _addPartialModifier = addPartialModifier;
         _writeToDisk = writeToDisk;
@@ -178,6 +178,42 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
             foreach (FileInfo file in filesWithLists)
             {
                 // This will throw if file does not exist.
+                foreach (string line in File.ReadLines(file.FullName))
+                {
+                    if (!list.Contains(line))
+                    {
+                        // Prevent duplicates.
+                        list.Add(line);
+                    }
+                }
+            }
+        }
+
+        return [.. list.Order()];
+    }
+
+    private static string[] CollectAttributesFromFilesOrDefaults(FileInfo[]? filesWithLists)
+    {
+        // If no files are specified, use default attributes
+        if (filesWithLists == null || filesWithLists.Length == 0)
+        {
+            return [
+                "T:System.AttributeUsageAttribute",
+                "T:System.ComponentModel.EditorBrowsableAttribute",
+                "T:System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute",
+                "T:System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute",
+                "T:System.Windows.Markup.ContentWrapperAttribute",
+                "T:System.Windows.TemplatePartAttribute"
+            ];
+        }
+
+        List<string> list = [];
+
+        foreach (FileInfo file in filesWithLists)
+        {
+            // Only read files that exist, skip missing files silently
+            if (file.Exists)
+            {
                 foreach (string line in File.ReadLines(file.FullName))
                 {
                     if (!list.Contains(line))
