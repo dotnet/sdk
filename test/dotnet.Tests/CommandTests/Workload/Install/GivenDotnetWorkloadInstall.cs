@@ -602,6 +602,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Theory(Skip = "https://github.com/dotnet/sdk/issues/25175")]
         [InlineData("--verbosity:minimal")]
         [InlineData("--verbosity:normal")]
+        [InlineData("--verbosity:detailed")]
         public void HideManifestUpdatesWhenVerbosityIsMinimalOrNormal(string verbosityFlag)
         {
             var command = new DotnetCommand(Log);
@@ -616,9 +617,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         [Theory(Skip = "https://github.com/dotnet/sdk/issues/25175")]
-        [InlineData("--verbosity:detailed")]
         [InlineData("--verbosity:diagnostic")]
-        public void ShowManifestUpdatesWhenVerbosityIsDetailedOrDiagnostic(string verbosityFlag)
+        public void ShowManifestUpdatesWhenVerbosityIsDiagnostic(string verbosityFlag)
         {
             string sdkFeatureBand = "6.0.300";
 
