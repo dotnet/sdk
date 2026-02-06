@@ -29,7 +29,7 @@ public class SdkCheckCommand : CommandBase
         string dotnetRoot = null,
         string dotnetVersion = null) : base(parseResult)
     {
-        _dotnetPath = dotnetRoot ?? EnvironmentProvider.GetDotnetExeDirectory();
+        _dotnetPath = dotnetRoot ?? PathResolver.Default.DotnetRoot;
         var configFilePath = Path.Combine(_dotnetPath, "sdk", dotnetVersion ?? Product.Version, "sdk-check-config.json");
         _sdkCheckConfig = File.Exists(configFilePath) ? JsonSerializer.Deserialize<SdkCheckConfig>(File.ReadAllText(configFilePath)) : null;
         _reporter = reporter ?? Reporter.Output;

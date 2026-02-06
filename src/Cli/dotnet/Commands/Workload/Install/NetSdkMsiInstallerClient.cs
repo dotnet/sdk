@@ -366,7 +366,9 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
         VerifyPackage(msi);
 
-        string installationFolder = Path.Combine(DotNetHome, "sdk-manifests", workloadSetFeatureBand.ToString(), "workloadsets", workloadSetVersion);
+        string installationFolder = PathResolver.Default.GetWorkloadSetPath(
+            workloadSetFeatureBand.ToString(),
+            workloadSetVersion);
 
         return (msi, msiPackageId, installationFolder);
     }

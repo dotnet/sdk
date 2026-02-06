@@ -60,6 +60,6 @@ internal class ShellShimTemplateFinder(
 
     public static string GetDefaultAppHostSourceDirectory()
     {
-        return Path.Combine(AppContext.BaseDirectory, "AppHostTemplate");
+        return PathResolver.Default.GetAppHostTemplateDirectory();
     }
 }

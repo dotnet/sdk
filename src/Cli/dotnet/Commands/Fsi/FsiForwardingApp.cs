@@ -47,14 +47,15 @@ public class FsiForwardingApp(string[] arguments) : ForwardingApp(GetFsiAppPath(
     */
     private static string GetFsiAppPath()
     {
-        var dllPath = Path.Combine(AppContext.BaseDirectory, FsiDllName);
+        var pathResolver = PathResolver.Default;
+        var dllPath = pathResolver.GetFsiPath();
         if (exists(dllPath))
         {
             return dllPath;
         }
         else
         {
-            return Path.Combine(AppContext.BaseDirectory, FsiExeName);
+            return pathResolver.GetBundledToolPath(FsiExeName);
         }
     }
 }

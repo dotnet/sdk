@@ -40,8 +40,9 @@ internal sealed partial class CSharpCompilerCommand
         "link:",
     ];
 
-    private static string SdkPath => field ??= PathUtility.EnsureNoTrailingDirectorySeparator(AppContext.BaseDirectory);
-    private static string DotNetRootPath => field ??= Path.GetDirectoryName(Path.GetDirectoryName(SdkPath)!)!;
+    private static IPathResolver PathResolver => field ??= Cli.PathResolver.Default;
+    private static string SdkPath => PathResolver.SdkRoot;
+    private static string DotNetRootPath => PathResolver.DotnetRoot;
     private static string ClientDirectory => field ??= Path.Combine(SdkPath, "Roslyn", "bincore");
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
     internal static string RuntimeVersion => field ??= RuntimeInformation.FrameworkDescription.Split(' ').Last();
@@ -75,7 +76,7 @@ internal sealed partial class CSharpCompilerCommand
         PrepareAuxiliaryFiles(out string rspPath);
 
         // Ensure the compiler is launched with the correct dotnet.
-        Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
+        Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", Cli.PathResolver.Default.DotnetExecutable);
 
         // Create a request for the compiler server
         // (this is much faster than starting a csc.dll process, especially on Windows).
@@ -285,25 +286,25 @@ internal sealed partial class CSharpCompilerCommand
                 build_property.EnableAotAnalyzer = true
                 build_property.EnableSingleFileAnalyzer = true
                 build_property.EnableTrimAnalyzer = true
-                build_property.IncludeAllContentForSelfExtract = 
-                build_property.VerifyReferenceTrimCompatibility = 
-                build_property.VerifyReferenceAotCompatibility = 
+                build_property.IncludeAllContentForSelfExtract =
+                build_property.VerifyReferenceTrimCompatibility =
+                build_property.VerifyReferenceAotCompatibility =
                 build_property.TargetFramework = net{TargetFrameworkVersion}
                 build_property.TargetFrameworkIdentifier = .NETCoreApp
                 build_property.TargetFrameworkVersion = v{TargetFrameworkVersion}
-                build_property.TargetPlatformMinVersion = 
-                build_property.UsingMicrosoftNETSdkWeb = 
-                build_property.ProjectTypeGuids = 
-                build_property.InvariantGlobalization = 
-                build_property.PlatformNeutralAssembly = 
-                build_property.EnforceExtendedAnalyzerRules = 
+                build_property.TargetPlatformMinVersion =
+                build_property.UsingMicrosoftNETSdkWeb =
+                build_property.ProjectTypeGuids =
+                build_property.InvariantGlobalization =
+                build_property.PlatformNeutralAssembly =
+                build_property.EnforceExtendedAnalyzerRules =
                 build_property._SupportedPlatformList = Linux,macOS,Windows
                 build_property.RootNamespace = {fileNameWithoutExtension}
                 build_property.ProjectDir = {fileDirectory}{Path.DirectorySeparatorChar}
-                build_property.EnableComHosting = 
+                build_property.EnableComHosting =
                 build_property.EnableGeneratedComInterfaceComImportInterop = false
                 build_property.EffectiveAnalysisLevelStyle = {TargetFrameworkVersion}
-                build_property.EnableCodeStyleSeverity = 
+                build_property.EnableCodeStyleSeverity =
 
                 """);
         }

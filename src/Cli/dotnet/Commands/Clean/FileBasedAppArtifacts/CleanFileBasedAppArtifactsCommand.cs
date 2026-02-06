@@ -124,7 +124,7 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = new Muxer().MuxerPath,
+                FileName = PathResolver.Default.DotnetExecutable,
                 Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
                 [
                     CleanCommandDefinition.Name,

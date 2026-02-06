@@ -93,7 +93,7 @@ internal class ForwardingAppImplementation
         return this;
     }
 
-    private string GetHostExeName() => new Muxer().MuxerPath;
+    private string GetHostExeName() => PathResolver.Default.DotnetExecutable;
 }
 
 #endif

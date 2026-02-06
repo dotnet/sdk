@@ -32,7 +32,7 @@ public class CommandLineInfo
         Reporter.Output.WriteLine($" OS Version:  {RuntimeEnvironment.OperatingSystemVersion}");
         Reporter.Output.WriteLine($" OS Platform: {RuntimeEnvironment.OperatingSystemPlatform}");
         Reporter.Output.WriteLine($" RID:         {GetDisplayRid(versionFile)}");
-        Reporter.Output.WriteLine($" Base Path:   {AppContext.BaseDirectory}");
+        Reporter.Output.WriteLine($" Base Path:   {PathResolver.Default.SdkRoot}");
         PrintWorkloadsInfo();
     }
 
