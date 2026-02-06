@@ -262,11 +262,7 @@ namespace Microsoft.NET.ToolPack.Tests
             buildCommand.Execute().Should().Pass();
 
             var packCommand = new PackCommand(testAsset).WithWorkingDirectory(testAsset.Path) as PackCommand;
-            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot ?
-                Path.Combine(ciOutputRoot, "binlog", $"{nameof(It_contains_shim_with_no_build)}_{multiTarget}_{targetFramework}.binlog") :
-                "./msbuild.binlog";
-
-            packCommand.Execute($"/p:NoBuild=true", $"/bl:{binlogDestPath}").Should().Pass();
+            packCommand.Execute($"/p:NoBuild=true").Should().Pass();
             var nugetPackage = packCommand.GetNuGetPackage();
 
             using (var nupkgReader = new PackageArchiveReader(nugetPackage))
