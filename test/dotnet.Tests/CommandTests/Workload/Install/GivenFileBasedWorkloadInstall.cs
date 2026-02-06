@@ -283,7 +283,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 {
                     var packRecordPath = Path.Combine(installedPacksPath, pack.Id, pack.Version, sdkVersion);
                     Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath));
-                    var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(pack);
+                    var packRecordContents = JsonSerializer.Serialize(pack, PackInfoJsonSerializerContext.Default.PackInfo);
                     File.WriteAllText(packRecordPath, packRecordContents);
                     Directory.CreateDirectory(pack.Path);
                 }

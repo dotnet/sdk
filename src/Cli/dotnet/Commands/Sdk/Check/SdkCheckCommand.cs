@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
 using EnvironmentProvider = Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
@@ -29,7 +30,7 @@ public class SdkCheckCommand : CommandBase
     {
         _dotnetPath = dotnetRoot ?? EnvironmentProvider.GetDotnetExeDirectory();
         var configFilePath = Path.Combine(_dotnetPath, "sdk", dotnetVersion ?? Product.Version, "sdk-check-config.json");
-        _sdkCheckConfig = File.Exists(configFilePath) ? JsonSerializer.Deserialize<SdkCheckConfig>(File.ReadAllText(configFilePath)) : null;
+        _sdkCheckConfig = File.Exists(configFilePath) ? JsonSerializer.Deserialize(File.ReadAllText(configFilePath), SdkCheckJsonSerializerContext.Default.SdkCheckConfig) : null;
         _reporter = reporter ?? Reporter.Output;
         _netBundleProvider = bundleProvider == null ? new NETBundlesNativeWrapper() : bundleProvider;
         _productCollectionProvider = productCollectionProvider == null ? new ProductCollectionProvider() : productCollectionProvider;
@@ -89,3 +90,6 @@ internal class SdkCheckConfig
     public string ReleasesFilePath { get; set; }
     public string CommandOutputReplacementString { get; set; }
 }
+
+[JsonSerializable(typeof(SdkCheckConfig))]
+internal partial class SdkCheckJsonSerializerContext : JsonSerializerContext;

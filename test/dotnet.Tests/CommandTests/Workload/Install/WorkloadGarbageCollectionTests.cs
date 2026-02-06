@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
@@ -323,7 +324,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             //  Write pack installation record
             var packRecordPath = PackRecord(pack, sdkFeatureBand);
             Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath.FullName));
-            var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(pack);
+            var packRecordContents = JsonSerializer.Serialize(pack, PackInfoJsonSerializerContext.Default.PackInfo);
             File.WriteAllText(packRecordPath.FullName, packRecordContents);
 
             //  Create fake pack install
@@ -397,7 +398,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestProvider = new SdkDirectoryWorkloadManifestProvider(_dotnetRoot, sdkVersion, userProfileDir: null, globalJsonPath: null);
 
             var workloadResolver = WorkloadResolver.CreateForTests(manifestProvider, _dotnetRoot);
-            
+
 
             IWorkloadResolver GetResolver(string workloadSetVersion)
             {
