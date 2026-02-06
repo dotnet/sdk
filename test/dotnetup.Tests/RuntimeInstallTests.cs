@@ -7,6 +7,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Xunit;
 using Xunit.Abstractions;
@@ -86,7 +87,7 @@ public class RuntimeInstallTests
     [InlineData("WindowsDesktop@9.0", InstallComponent.WindowsDesktop, "9.0")]
     public void ComponentSpecParsing_ValidSpecs(string? spec, InstallComponent expectedComponent, string? expectedVersion)
     {
-        var (component, version, error) = RuntimeInstallCommandHelper.ParseComponentSpec(spec);
+        var (component, version, error) = RuntimeInstallCommand.ParseComponentSpec(spec);
 
         error.Should().BeNull();
         component.Should().Be(expectedComponent);
@@ -99,7 +100,7 @@ public class RuntimeInstallTests
     [InlineData("unknown@latest", "unknown")]
     public void ComponentSpecParsing_InvalidComponent_ReturnsError(string spec, string invalidComponent)
     {
-        var (_, _, error) = RuntimeInstallCommandHelper.ParseComponentSpec(spec);
+        var (_, _, error) = RuntimeInstallCommand.ParseComponentSpec(spec);
 
         error.Should().NotBeNull();
         error.Should().Contain(invalidComponent);
@@ -111,7 +112,7 @@ public class RuntimeInstallTests
     [InlineData("windowsdesktop@")]
     public void ComponentSpecParsing_MissingVersion_ReturnsError(string spec)
     {
-        var (_, _, error) = RuntimeInstallCommandHelper.ParseComponentSpec(spec);
+        var (_, _, error) = RuntimeInstallCommand.ParseComponentSpec(spec);
 
         error.Should().NotBeNull();
         error.Should().Contain("Version is required");
@@ -172,109 +173,6 @@ public class RuntimeInstallTests
 
     #endregion
 
-    #region Uninstall Strategy Tests
-
-    /// <summary>
-    /// Core runtime can be safely uninstalled only when no SDK or ASPNETCore with same major.minor exists.
-    /// </summary>
-    private static bool CanSafelyUninstallCoreRuntime(IEnumerable<DotnetInstall> installs, ReleaseVersion version)
-    {
-        int majorMinor = version.Major * 100 + version.Minor;
-        return !installs.Any(i =>
-            (i.Component == InstallComponent.SDK || i.Component == InstallComponent.ASPNETCore) &&
-            (i.Version.Major * 100 + i.Version.Minor) == majorMinor);
-    }
-
-    [Fact]
-    public void UninstallStrategy_CoreRuntime_BlockedBySdk()
-    {
-        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
-
-        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.100"), InstallComponent.SDK));
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.Runtime));
-        }
-
-        IEnumerable<DotnetInstall> installs;
-        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            installs = manifest.GetInstalledVersions().ToList();
-        }
-
-        CanSafelyUninstallCoreRuntime(installs, new ReleaseVersion("9.0.12")).Should().BeFalse();
-    }
-
-    [Fact]
-    public void UninstallStrategy_CoreRuntime_BlockedByASPNETCore()
-    {
-        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
-
-        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.ASPNETCore));
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.Runtime));
-        }
-
-        IEnumerable<DotnetInstall> installs;
-        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            installs = manifest.GetInstalledVersions().ToList();
-        }
-
-        CanSafelyUninstallCoreRuntime(installs, new ReleaseVersion("9.0.12")).Should().BeFalse();
-    }
-
-    [Fact]
-    public void UninstallStrategy_CoreRuntime_AllowedWhenNoDependencies()
-    {
-        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
-
-        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.12"), InstallComponent.Runtime));
-        }
-
-        IEnumerable<DotnetInstall> installs;
-        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            installs = manifest.GetInstalledVersions().ToList();
-        }
-
-        CanSafelyUninstallCoreRuntime(installs, new ReleaseVersion("9.0.12")).Should().BeTrue();
-    }
-
-    [Fact]
-    public void UninstallStrategy_CoreRuntime_DifferentMajorMinor_Allowed()
-    {
-        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
-
-        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("9.0.100"), InstallComponent.SDK));
-            manifest.AddInstalledVersion(new DotnetInstall(installRoot, new ReleaseVersion("10.0.2"), InstallComponent.Runtime));
-        }
-
-        IEnumerable<DotnetInstall> installs;
-        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            installs = manifest.GetInstalledVersions().ToList();
-        }
-
-        // Runtime 10.0.x can be uninstalled even with SDK 9.0.x present
-        CanSafelyUninstallCoreRuntime(installs, new ReleaseVersion("10.0.2")).Should().BeTrue();
-    }
-
-    #endregion
-
     #region Parser Tests
 
     [Fact]
@@ -299,54 +197,4 @@ public class RuntimeInstallTests
     }
 
     #endregion
-}
-
-/// <summary>
-/// Helper for parsing component specs (mirrors RuntimeInstallCommand logic).
-/// </summary>
-internal static class RuntimeInstallCommandHelper
-{
-    private static readonly Dictionary<string, InstallComponent> RuntimeTypeMap = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["runtime"] = InstallComponent.Runtime,
-        ["aspnetcore"] = InstallComponent.ASPNETCore,
-        ["windowsdesktop"] = InstallComponent.WindowsDesktop,
-    };
-
-    /// <summary>
-    /// Parses a component specification string.
-    /// </summary>
-    /// <param name="spec">The component specification (e.g., "10.0.1", "aspnetcore@10.0.1")</param>
-    /// <returns>Tuple of (Component, VersionOrChannel, ErrorMessage)</returns>
-    public static (InstallComponent Component, string? VersionOrChannel, string? ErrorMessage) ParseComponentSpec(string? spec)
-    {
-        // Default: install latest core runtime
-        if (string.IsNullOrWhiteSpace(spec))
-        {
-            return (InstallComponent.Runtime, null, null);
-        }
-
-        // Check for component@version syntax
-        int atIndex = spec.IndexOf('@');
-        if (atIndex > 0)
-        {
-            string componentName = spec[..atIndex];
-            string versionPart = spec[(atIndex + 1)..];
-
-            if (string.IsNullOrWhiteSpace(versionPart))
-            {
-                return (default, null, $"Error: Invalid component specification '{spec}'. Version is required after '@'.");
-            }
-
-            if (!RuntimeTypeMap.TryGetValue(componentName, out var component))
-            {
-                return (default, null, $"Error: Unknown component type '{componentName}'.");
-            }
-
-            return (component, versionPart, null);
-        }
-
-        // No '@' - treat as version/channel for core runtime
-        return (InstallComponent.Runtime, spec, null);
-    }
 }

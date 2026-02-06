@@ -11,6 +11,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Xunit;
 
@@ -100,9 +101,9 @@ public class InstallEndToEndTests
 
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
-        // Parse the component spec to get the channel for version resolution
-        var (_, channel) = ParseComponentSpec(componentSpec);
-        var expectedVersion = new ChannelVersionResolver().GetLatestVersionForChannel(new UpdateChannel(channel), expectedComponent);
+        // Parse the component spec to get the channel for version resolution (using production code)
+        var (_, channel, _) = RuntimeInstallCommand.ParseComponentSpec(componentSpec);
+        var expectedVersion = new ChannelVersionResolver().GetLatestVersionForChannel(new UpdateChannel(channel ?? "latest"), expectedComponent);
         expectedVersion.Should().NotBeNull($"Channel {channel} should resolve to a valid {expectedComponent} version");
         Console.WriteLine($"Component spec '{componentSpec}' resolved to version: {expectedVersion}");
 
@@ -111,20 +112,6 @@ public class InstallEndToEndTests
         exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
 
         VerifyManifestContains(testEnv, expectedComponent);
-    }
-
-    /// <summary>
-    /// Parses a component spec into (component, channel).
-    /// "9.0" -> (null, "9.0"), "aspnetcore@9.0" -> ("aspnetcore", "9.0")
-    /// </summary>
-    private static (string? component, string channel) ParseComponentSpec(string componentSpec)
-    {
-        if (componentSpec.Contains('@'))
-        {
-            var parts = componentSpec.Split('@', 2);
-            return (parts[0], parts[1]);
-        }
-        return (null, componentSpec);
     }
 
     private static void VerifyManifestContains(TestEnvironment testEnv, InstallComponent expectedComponent, Action<DotnetInstall>? additionalAssertions = null)

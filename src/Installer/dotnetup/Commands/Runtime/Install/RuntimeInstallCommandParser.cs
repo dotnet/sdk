@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
@@ -20,21 +21,15 @@ internal static class RuntimeInstallCommandParser
         HelpName = "COMPONENT_SPEC",
         Description = "The version/channel (e.g., 10.0.1, latest) or component@version (e.g., aspnetcore@10.0.1, windowsdesktop@9.0). "
             + "When only a version is provided, the core .NET runtime is installed. "
-            + "Component types: runtime, aspnetcore" + (OperatingSystem.IsWindows() ? ", windowsdesktop" : ""),
+            + "Component types: " + string.Join(", ", RuntimeInstallCommand.GetValidRuntimeTypes()),
         Arity = ArgumentArity.ZeroOrOne,
     };
 
-    public static readonly Option<string> InstallPathOption = CommonOptions.InstallPathOption;
-    public static readonly Option<bool?> SetDefaultInstallOption = CommonOptions.SetDefaultInstallOption;
-    public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
-    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
-
-    private static readonly Command RuntimeInstallCommand = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
     public static Command GetRuntimeInstallCommand()
     {
-        return RuntimeInstallCommand;
+        return Command;
     }
 
     private static Command ConstructCommand()
@@ -43,12 +38,12 @@ internal static class RuntimeInstallCommandParser
 
         command.Arguments.Add(ComponentSpecArgument);
 
-        command.Options.Add(InstallPathOption);
-        command.Options.Add(SetDefaultInstallOption);
-        command.Options.Add(ManifestPathOption);
+        command.Options.Add(CommonOptions.InstallPathOption);
+        command.Options.Add(CommonOptions.SetDefaultInstallOption);
+        command.Options.Add(CommonOptions.ManifestPathOption);
 
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(NoProgressOption);
+        command.Options.Add(CommonOptions.InteractiveOption);
+        command.Options.Add(CommonOptions.NoProgressOption);
 
         command.SetAction(parseResult => new RuntimeInstallCommand(parseResult).Execute());
 

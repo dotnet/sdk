@@ -104,7 +104,7 @@ internal class InstallWorkflow
         bool setDefaultInstall = walkthrough.ResolveSetDefaultInstall(
             currentInstallRoot,
             pathResolution.ResolvedInstallPath,
-            pathResolution.InstallPathFromGlobalJson);
+            installPathCameFromGlobalJson: pathResolution.InstallPathFromGlobalJson is not null);
 
         return new WorkflowContext(
             options,
@@ -141,6 +141,9 @@ internal class InstallWorkflow
             return false;
         }
 
+        // TODO: Consider moving this prompt earlier, before any downloads start.
+        // Users may walk away after seeing download progress begin, expecting no more prompts.
+        // See: https://github.com/dotnet/sdk/pull/52649#discussion_r2760412186
         var additionalVersions = context.Walkthrough.GetAdditionalAdminVersionsToMigrate(
             resolved.ResolvedVersion,
             context.SetDefaultInstall,
