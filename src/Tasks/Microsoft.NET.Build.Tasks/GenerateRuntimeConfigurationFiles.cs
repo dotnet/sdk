@@ -418,11 +418,8 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            // If we exhausted all retries, throw the last exception
-            if (lastException != null)
-            {
-                throw lastException;
-            }
+            // All retries exhausted, throw the last exception
+            throw lastException;
         }
     }
 }
