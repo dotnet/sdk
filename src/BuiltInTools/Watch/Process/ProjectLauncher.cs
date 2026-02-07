@@ -35,7 +35,7 @@ internal sealed class ProjectLauncher(
         RestartOperation restartOperation,
         CancellationToken cancellationToken)
     {
-        var projectNode = projectGraph.TryGetProjectNode(projectOptions.Representation.ProjectGraphPath, projectOptions.TargetFramework);
+        var projectNode = projectGraph.TryGetProjectNode(projectOptions.Representation.ProjectGraphPath, context.TargetFramework);
         if (projectNode == null)
         {
             // error already reported

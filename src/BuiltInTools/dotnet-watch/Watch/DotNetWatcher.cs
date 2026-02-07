@@ -74,7 +74,8 @@ namespace Microsoft.DotNet.Watch
 
                 if (projectRootNode != null)
                 {
-                    context.BrowserLauncher.InstallBrowserLaunchTrigger(processSpec, projectRootNode, context.RootProjectOptions, browserRefreshServer, shutdownCancellationToken);
+                    Debug.Assert(context.MainProjectOptions != null);
+                    context.BrowserLauncher.InstallBrowserLaunchTrigger(processSpec, projectRootNode, context.MainProjectOptions, browserRefreshServer, shutdownCancellationToken);
                 }
 
                 // Reset for next run

@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Watch
         private readonly object _runningProjectsAndUpdatesGuard = new();
 
         /// <summary>
-        /// Projects that have been launched and to which we apply changes. 
+        /// Projects that have been launched and to which we apply changes.
         /// </summary>
         private ImmutableDictionary<string, ImmutableArray<RunningProject>> _runningProjects = ImmutableDictionary<string, ImmutableArray<RunningProject>>.Empty;
 
@@ -61,10 +61,10 @@ namespace Microsoft.DotNet.Watch
         private ILogger Logger
             => _context.Logger;
 
-        public async ValueTask TerminateNonRootProcessesAndDispose(CancellationToken cancellationToken)
+        public async ValueTask TerminatePeripheralProcessesAndDispose(CancellationToken cancellationToken)
         {
             Logger.LogDebug("Terminating remaining child processes.");
-            await TerminateNonRootProcessesAsync(projectPaths: null, cancellationToken);
+            await TerminatePeripheralProcessesAsync(projectPaths: null, cancellationToken);
             Dispose();
         }
 
@@ -373,7 +373,7 @@ namespace Microsoft.DotNet.Watch
             // except for the root process, which will terminate later on.
             if (!updates.ProjectsToRestart.IsEmpty)
             {
-                builder.ProjectsToRestart.AddRange(await TerminateNonRootProcessesAsync(updates.ProjectsToRestart.Select(e => currentSolution.GetProject(e.Key)!.FilePath!), cancellationToken));
+                builder.ProjectsToRestart.AddRange(await TerminatePeripheralProcessesAsync(updates.ProjectsToRestart.Select(e => currentSolution.GetProject(e.Key)!.FilePath!), cancellationToken));
             }
         }
 
@@ -803,15 +803,15 @@ namespace Microsoft.DotNet.Watch
         }
 
         /// <summary>
-        /// Terminates all processes launched for non-root projects with <paramref name="projectPaths"/>,
-        /// or all running non-root project processes if <paramref name="projectPaths"/> is null.
+        /// Terminates all processes launched for peripheral projects with <paramref name="projectPaths"/>,
+        /// or all running peripheral project processes if <paramref name="projectPaths"/> is null.
         /// 
         /// Removes corresponding entries from <see cref="_runningProjects"/>.
         /// 
-        /// Does not terminate the root project.
+        /// Does not terminate the main project.
         /// </summary>
-        /// <returns>All processes (including root) to be restarted.</returns>
-        internal async ValueTask<ImmutableArray<RunningProject>> TerminateNonRootProcessesAsync(
+        /// <returns>All processes (including main) to be restarted.</returns>
+        internal async ValueTask<ImmutableArray<RunningProject>> TerminatePeripheralProcessesAsync(
             IEnumerable<string>? projectPaths, CancellationToken cancellationToken)
         {
             ImmutableArray<RunningProject> projectsToRestart = [];
@@ -826,7 +826,7 @@ namespace Microsoft.DotNet.Watch
             // Do not terminate root process at this time - it would signal the cancellation token we are currently using.
             // The process will be restarted later on.
             // Wait for all processes to exit to release their resources, so we can rebuild.
-            await Task.WhenAll(projectsToRestart.Where(p => !p.Options.IsRootProject).Select(p => p.TerminateForRestartAsync())).WaitAsync(cancellationToken);
+            await Task.WhenAll(projectsToRestart.Where(p => !p.Options.IsMainProject).Select(p => p.TerminateForRestartAsync())).WaitAsync(cancellationToken);
 
             return projectsToRestart;
         }
@@ -885,14 +885,14 @@ namespace Microsoft.DotNet.Watch
                     keySelector: static group => group.Key,
                     elementSelector: static group => group.Select(static node => node.ProjectInstance).ToImmutableArray());
 
-        public async Task UpdateProjectConeAsync(ProjectGraph projectGraph, ProjectRepresentation project, CancellationToken cancellationToken)
+        public async Task UpdateProjectGraphAsync(ProjectGraph projectGraph, CancellationToken cancellationToken)
         {
             Logger.LogInformation("Loading projects ...");
             var stopwatch = Stopwatch.StartNew();
 
             _projectInstances = CreateProjectInstanceMap(projectGraph);
 
-            var solution = await Workspace.UpdateProjectConeAsync(project.ProjectGraphPath, cancellationToken);
+            var solution = await Workspace.UpdateProjectGraphAsync([.. projectGraph.EntryPointNodes.Select(n => n.ProjectInstance.FullPath)], cancellationToken);
             await SolutionUpdatedAsync(solution, "project update", cancellationToken);
 
             Logger.LogInformation("Projects loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));

@@ -6,12 +6,11 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Channels;
 using Aspire.Tools.Service;
-using Microsoft.Build.Graph;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
+internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntimeProcessLauncherFactory
 {
     internal sealed class SessionManager : IAspireServerEvents, IRuntimeProcessLauncher
     {
@@ -30,8 +29,8 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         };
 
         private readonly ProjectLauncher _projectLauncher;
-        private readonly AspireServerService _service;
         private readonly ProjectOptions _hostProjectOptions;
+        private readonly AspireServerService _service;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -215,23 +214,16 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         }
 
         private ProjectOptions GetProjectOptions(ProjectLaunchRequest projectLaunchInfo)
-        {
-            var hostLaunchProfile = _hostProjectOptions.NoLaunchProfile ? null : _hostProjectOptions.LaunchProfileName;
-
-            return new()
+            => new()
             {
-                IsRootProject = false,
+                IsMainProject = false,
                 Representation = ProjectRepresentation.FromProjectOrEntryPointFilePath(projectLaunchInfo.ProjectPath),
                 WorkingDirectory = Path.GetDirectoryName(projectLaunchInfo.ProjectPath) ?? throw new InvalidOperationException(),
-                BuildArguments = _hostProjectOptions.BuildArguments,
                 Command = "run",
-                CommandArguments = GetRunCommandArguments(projectLaunchInfo, hostLaunchProfile),
+                CommandArguments = GetRunCommandArguments(projectLaunchInfo, _hostProjectOptions.LaunchProfileName.Value),
                 LaunchEnvironmentVariables = projectLaunchInfo.Environment?.Select(e => (e.Key, e.Value))?.ToArray() ?? [],
-                LaunchProfileName = projectLaunchInfo.LaunchProfile,
-                NoLaunchProfile = projectLaunchInfo.DisableLaunchProfile,
-                TargetFramework = _hostProjectOptions.TargetFramework,
+                LaunchProfileName = projectLaunchInfo.DisableLaunchProfile ? default : projectLaunchInfo.LaunchProfile,
             };
-        }
 
         // internal for testing
         internal static IReadOnlyList<string> GetRunCommandArguments(ProjectLaunchRequest projectLaunchInfo, string? hostLaunchProfile)
@@ -276,13 +268,9 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         }
     }
 
-    public static readonly AspireServiceFactory Instance = new();
-
     public const string AspireLogComponentName = "Aspire";
     public const string AppHostProjectCapability = ProjectCapability.Aspire;
 
-    public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)
-        => projectNode.GetCapabilities().Contains(AppHostProjectCapability)
-            ? new SessionManager(projectLauncher, hostProjectOptions)
-            : null;
+    public IRuntimeProcessLauncher Create(ProjectLauncher projectLauncher)
+        => new SessionManager(projectLauncher, hostProjectOptions);
 }

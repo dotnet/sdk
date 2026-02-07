@@ -60,16 +60,13 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     {
         var projectOptions = new ProjectOptions()
         {
-            IsRootProject = false,
+            IsMainProject = false,
             Representation = new ProjectRepresentation(projectPath, entryPointFilePath: null),
             WorkingDirectory = workingDirectory,
-            BuildArguments = [],
             Command = "run",
             CommandArguments = ["--project", projectPath],
             LaunchEnvironmentVariables = [],
-            LaunchProfileName = null,
-            NoLaunchProfile = true,
-            TargetFramework = null,
+            LaunchProfileName = default,
         };
 
         RestartOperation? startOp = null;

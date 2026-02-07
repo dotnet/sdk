@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Watch
         ILoggerFactory loggerFactory,
         ILogger logger,
         IProcessOutputReporter processOutputReporter,
-        ProjectOptions rootProjectOptions,
+        ProjectOptions mainProjectOptions,
         CommandLineOptions options,
         EnvironmentOptions environmentOptions)
     {
@@ -100,19 +100,19 @@ namespace Microsoft.DotNet.Watch
                 logger.LogDebug("Test flags: {Flags}", environmentOptions.TestFlags);
             }
 
-            var rootProjectOptions = GetProjectOptions(options, workingDirectory, logger);
-            if (rootProjectOptions == null)
+            var mainProjectOptions = GetMainProjectOptions(options, workingDirectory, logger);
+            if (mainProjectOptions == null)
             {
                 errorCode = 1;
                 return null;
             }
 
             errorCode = 0;
-            return new Program(console, loggerFactory, logger, processOutputReporter, rootProjectOptions, options, environmentOptions);
+            return new Program(console, loggerFactory, logger, processOutputReporter, mainProjectOptions, options, environmentOptions);
         }
 
         // internal for testing
-        internal static ProjectOptions? GetProjectOptions(CommandLineOptions options, string workingDirectory, ILogger logger)
+        internal static ProjectOptions? GetMainProjectOptions(CommandLineOptions options, string workingDirectory, ILogger logger)
         {
             ProjectRepresentation project;
 
@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Watch
                 return null;
             }
 
-            return options.GetProjectOptions(project, workingDirectory);
+            return options.GetMainProjectOptions(project, workingDirectory);
         }
 
         private static bool TryFindFileEntryPoint(string workingDirectory, CommandLineOptions options, ILogger logger, [NotNullWhen(true)] out string? entryPointPath)
@@ -253,7 +253,7 @@ namespace Microsoft.DotNet.Watch
 
                 if (options.List)
                 {
-                    if (rootProjectOptions.Representation.EntryPointFilePath != null)
+                    if (mainProjectOptions.Representation.EntryPointFilePath != null)
                     {
                         logger.LogError("--list does not support file-based programs");
                         return 1;
@@ -274,7 +274,7 @@ namespace Microsoft.DotNet.Watch
                     var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
                     await watcher.WatchAsync(shutdownHandler.CancellationToken);
                 }
-                else if (rootProjectOptions.Representation.EntryPointFilePath != null)
+                else if (mainProjectOptions.Representation.EntryPointFilePath != null)
                 {
                     logger.LogError("File-based programs are only supported when Hot Reload is enabled");
                     return 1;
@@ -312,7 +312,10 @@ namespace Microsoft.DotNet.Watch
                 ProcessRunner = processRunner,
                 Options = options.GlobalOptions,
                 EnvironmentOptions = environmentOptions,
-                RootProjectOptions = rootProjectOptions,
+                MainProjectOptions = mainProjectOptions,
+                RootProjects = [mainProjectOptions.Representation],
+                BuildArguments = options.BuildArguments,
+                TargetFramework = options.TargetFramework,
                 BrowserRefreshServerFactory = new BrowserRefreshServerFactory(),
                 BrowserLauncher = new BrowserLauncher(logger, processOutputReporter, environmentOptions),
             };
@@ -320,9 +323,9 @@ namespace Microsoft.DotNet.Watch
 
         private bool IsHotReloadEnabled()
         {
-            if (rootProjectOptions.Command != "run")
+            if (mainProjectOptions.Command != "run")
             {
-                logger.LogDebug("Command '{Command}' does not support Hot Reload.", rootProjectOptions.Command);
+                logger.LogDebug("Command '{Command}' does not support Hot Reload.", mainProjectOptions.Command);
                 return false;
             }
 
@@ -339,14 +342,14 @@ namespace Microsoft.DotNet.Watch
         private async Task<int> ListFilesAsync(ProcessRunner processRunner, CancellationToken cancellationToken)
         {
             // file-based programs are not supported with --list
-            Debug.Assert(rootProjectOptions.Representation.PhysicalPath != null);
+            Debug.Assert(mainProjectOptions.Representation.PhysicalPath != null);
 
             var buildLogger = loggerFactory.CreateLogger(DotNetWatchContext.BuildLogComponentName);
 
             var fileSetFactory = new MSBuildFileSetFactory(
-                rootProjectOptions.Representation.PhysicalPath,
-                rootProjectOptions.TargetFramework,
-                rootProjectOptions.BuildArguments,
+                mainProjectOptions.Representation.PhysicalPath,
+                options.TargetFramework,
+                options.BuildArguments,
                 processRunner,
                 buildLogger,
                 environmentOptions);
