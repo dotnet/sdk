@@ -5,11 +5,9 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Build;
-using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.Extensions.Logging;
 
@@ -25,8 +23,7 @@ internal sealed class CommandLineOptions
     public string? FilePath { get; init; }
     public string? ProjectPath { get; init; }
     public string? TargetFramework { get; init; }
-    public bool NoLaunchProfile { get; init; }
-    public string? LaunchProfileName { get; init; }
+    public Optional<string?> LaunchProfileName { get; init; }
 
     /// <summary>
     /// Arguments passed to <see cref="Command"/>.
@@ -130,6 +127,10 @@ internal sealed class CommandLineOptions
             ? LogLevel.Warning
             : LogLevel.Information;
 
+        var launchProfile = parseResult.GetValue(definition.NoLaunchProfileOption)
+            ? Optional<string?>.NoValue
+            : parseResult.GetValue(definition.LaunchProfileOption);
+
         return new()
         {
             List = parseResult.GetValue(definition.ListOption),
@@ -147,8 +148,7 @@ internal sealed class CommandLineOptions
 
             ProjectPath = projectValue,
             FilePath = parseResult.GetValue(definition.FileOption),
-            LaunchProfileName = parseResult.GetValue(definition.LaunchProfileOption),
-            NoLaunchProfile = parseResult.GetValue(definition.NoLaunchProfileOption),
+            LaunchProfileName = launchProfile,
             BuildArguments = buildArguments,
             TargetFramework = targetFrameworkOption != null ? parseResult.GetValue(targetFrameworkOption) : null,
         };
@@ -345,18 +345,15 @@ internal sealed class CommandLineOptions
         return -1;
     }
 
-    public ProjectOptions GetProjectOptions(ProjectRepresentation project, string workingDirectory)
+    public ProjectOptions GetMainProjectOptions(ProjectRepresentation project, string workingDirectory)
         => new()
         {
-            IsRootProject = true,
+            IsMainProject = true,
             Representation = project,
             WorkingDirectory = workingDirectory,
             Command = Command,
             CommandArguments = CommandArguments,
             LaunchEnvironmentVariables = [],
             LaunchProfileName = LaunchProfileName,
-            NoLaunchProfile = NoLaunchProfile,
-            BuildArguments = BuildArguments,
-            TargetFramework = TargetFramework,
         };
 }
