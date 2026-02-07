@@ -12,7 +12,7 @@ internal static class TestOptions
     public static int GetTestPort()
         => Interlocked.Increment(ref s_testPort);
 
-    public static readonly ProjectOptions ProjectOptions = GetProjectOptions([]);
+    public static readonly ProjectOptions ProjectOptions = GetProjectOptions(GetCommandLineOptions([]));
 
     public static EnvironmentOptions GetEnvironmentOptions(string workingDirectory = "", string muxerPath = "", TestAsset? asset = null)
         => new(workingDirectory, muxerPath, ProcessCleanupTimeout: null, IsPollingEnabled: true, TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? asset.GetWatchTestOutputPath() : "");
@@ -20,9 +20,6 @@ internal static class TestOptions
     public static CommandLineOptions GetCommandLineOptions(string[] args)
         => CommandLineOptions.Parse(args, NullLogger.Instance, TextWriter.Null, out _) ?? throw new InvalidOperationException();
 
-    public static ProjectOptions GetProjectOptions(string[]? args = null)
-    {
-        var options = GetCommandLineOptions(args ?? []);
-        return options.GetProjectOptions(new ProjectRepresentation(options.ProjectPath ?? "test.csproj", entryPointFilePath: null), workingDirectory: "");
-    }
+    public static ProjectOptions GetProjectOptions(CommandLineOptions options)
+        => options.GetMainProjectOptions(new ProjectRepresentation(options.ProjectPath ?? "test.csproj", entryPointFilePath: null), workingDirectory: "");
 }
