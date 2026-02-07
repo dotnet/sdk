@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--no-launch-profile", "run"]);
 
-            Assert.True(options.NoLaunchProfile);
+            Assert.True(!options.LaunchProfileName.HasValue);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
         }
@@ -153,7 +153,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["run", "--no-launch-profile"]);
 
-            Assert.True(options.NoLaunchProfile);
+            Assert.True(!options.LaunchProfileName.HasValue);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
         }
@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--no-launch-profile", "run", "--no-launch-profile"]);
 
-            Assert.True(options.NoLaunchProfile);
+            Assert.True(!options.LaunchProfileName.HasValue);
             Assert.Equal("run", options.Command);
             AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
         }
@@ -246,7 +246,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--", "--no-launch-profile"]);
 
-            Assert.False(options.NoLaunchProfile);
+            Assert.True(options.LaunchProfileName.HasValue);
+            Assert.Null(options.LaunchProfileName.Value);
             AssertEx.SequenceEqual(["--", "--no-launch-profile"], options.CommandArguments);
         }
 
@@ -255,7 +256,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--", "--launch-profile", "p"]);
 
-            Assert.False(options.NoLaunchProfile);
+            Assert.True(options.LaunchProfileName.HasValue);
+            Assert.Null(options.LaunchProfileName.Value);
             AssertEx.SequenceEqual(["--", "--launch-profile", "p"], options.CommandArguments);
         }
 
@@ -264,7 +266,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--", "--property", "x=1"]);
 
-            Assert.False(options.NoLaunchProfile);
+            Assert.True(options.LaunchProfileName.HasValue);
+            Assert.Null(options.LaunchProfileName.Value);
             AssertEx.SequenceEqual(["--", "--property", "x=1"], options.CommandArguments);
         }
 

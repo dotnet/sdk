@@ -29,13 +29,13 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         File.WriteAllText(projectPath, "<Project></Project>");
 
         var options = ParseOptions(["--project", projectPath]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.NotNull(result);
         Assert.Equal(projectPath, result.Representation.PhysicalPath);
         Assert.Null(result.Representation.EntryPointFilePath);
         Assert.Equal(tempDir, result.WorkingDirectory);
-        Assert.True(result.IsRootProject);
+        Assert.True(result.IsMainProject);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         File.WriteAllText(projectPath, "<Project></Project>");
 
         var options = ParseOptions([]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.NotNull(result);
         Assert.Equal(projectPath, result.Representation.PhysicalPath);
@@ -61,7 +61,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         File.WriteAllText(Path.Combine(tempDir, "App2.csproj"), "<Project></Project>");
 
         var options = ParseOptions([]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.Null(result);
         AssertEx.SequenceEqual(
@@ -75,7 +75,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         var tempDir = CreateTempDirectory();
         var projectPath = Path.Combine(tempDir, "NonExistent.csproj");
         var options = ParseOptions(["--project", projectPath]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.Null(result);
         AssertEx.SequenceEqual(
@@ -91,7 +91,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         Directory.CreateDirectory(emptyDir);
 
         var options = ParseOptions([]);
-        var result = Program.GetProjectOptions(options, emptyDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, emptyDir, _testLogger);
 
         Assert.Null(result);
         AssertEx.SequenceEqual(
@@ -109,7 +109,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         File.WriteAllText(projectPath, "<Project></Project>");
 
         var options = ParseOptions(["--project", subDir]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.NotNull(result);
         Assert.Equal(projectPath, result.Representation.PhysicalPath);
@@ -127,7 +127,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         File.WriteAllText(projectPath, "<Project></Project>");
 
         var options = ParseOptions([]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.NotNull(result);
         Assert.Equal(projectPath, result.Representation.PhysicalPath);
@@ -142,7 +142,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         File.WriteAllText(projectPath, "<Project></Project>");
 
         var options = ParseOptions([]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.Null(result);
         AssertEx.SequenceEqual(
@@ -157,7 +157,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         var invalidPath = "invalid\0path.cs";
 
         var options = ParseOptions(["--file", invalidPath]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         string message;
         try
@@ -184,7 +184,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         File.WriteAllText(csFilePath, "Console.WriteLine(\"Hello\");");
 
         var options = ParseOptions(["--file", csFilePath]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.NotNull(result);
         Assert.Equal(csFilePath, result.Representation.EntryPointFilePath);
@@ -200,7 +200,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
 
         // dotnet watch App.cs
         var options = ParseOptions([csFilePath]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.NotNull(result);
         Assert.Equal(csFilePath, result.Representation.EntryPointFilePath);
@@ -215,7 +215,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
 
         // dotnet watch App.txt
         var options = ParseOptions([filePath]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.NotNull(result);
         Assert.Equal(filePath, result.Representation.EntryPointFilePath);
@@ -231,7 +231,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         File.WriteAllText(projectPath, "<Project></Project>");
 
         var options = ParseOptions(["--project", "subdir/Test.csproj"]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.NotNull(result);
         Assert.Equal(projectPath, result.Representation.PhysicalPath);
@@ -245,7 +245,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         File.WriteAllText(csFilePath, "Console.WriteLine(\"Hello\");");
 
         var options = ParseOptions(["--file", "Script.cs"]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.NotNull(result);
         Assert.Equal(csFilePath, result.Representation.EntryPointFilePath);
@@ -261,7 +261,7 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         File.WriteAllText(csFilePath, "Console.WriteLine(\"Hello\");");
 
         var options = ParseOptions(["--file", csFilePath]);
-        var result = Program.GetProjectOptions(options, tempDir, _testLogger);
+        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
 
         Assert.NotNull(result);
         Assert.Equal(csFilePath, result.Representation.EntryPointFilePath);

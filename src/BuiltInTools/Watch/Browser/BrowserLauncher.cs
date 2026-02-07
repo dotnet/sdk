@@ -38,7 +38,7 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
 
         WebServerProcessStateObserver.Observe(projectNode, processSpec, url =>
         {
-            if (projectOptions.IsRootProject &&
+            if (projectOptions.IsMainProject &&
                 ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, key) => set.Add(key), projectNode.ProjectInstance.GetId()))
             {
                 // first build iteration of a root project:
@@ -127,7 +127,10 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
 
     private LaunchSettingsProfile GetLaunchProfile(ProjectOptions projectOptions)
     {
-        return (projectOptions.NoLaunchProfile == true
-            ? null : LaunchSettingsProfile.ReadLaunchProfile(projectOptions.Representation, projectOptions.LaunchProfileName, logger)) ?? new();
+        var profile = projectOptions.LaunchProfileName.HasValue
+            ? LaunchSettingsProfile.ReadLaunchProfile(projectOptions.Representation, projectOptions.LaunchProfileName.Value, logger)
+            : null;
+
+        return profile ?? new();
     }
 }
