@@ -20,24 +20,27 @@ namespace Microsoft.DotNet.Watch
     /// </summary>
     internal class MSBuildFileSetFactory(
         string rootProjectFile,
+        string? targetFramework,
         IEnumerable<string> buildArguments,
         ProcessRunner processRunner,
-        BuildReporter buildReporter)
+        ILogger logger,
+        EnvironmentOptions environmentOptions)
     {
         private const string TargetName = "GenerateWatchList";
         private const string WatchTargetsFileName = "DotNetWatch.targets";
 
         public string RootProjectFile => rootProjectFile;
-        private EnvironmentOptions EnvironmentOptions => buildReporter.EnvironmentOptions;
-        private ILogger Logger => buildReporter.Logger;
 
         private readonly ProjectGraphFactory _buildGraphFactory = new(
-            globalOptions: BuildUtilities.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value));
+            [new ProjectRepresentation(rootProjectFile, entryPointFilePath: null)],
+            targetFramework,
+            buildProperties: BuildUtilities.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value),
+            logger);
 
-        internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph? projectGraph)
+        internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, LoadedProjectGraph? projectGraph)
         {
             public readonly IReadOnlyDictionary<string, FileItem> Files = files;
-            public readonly ProjectGraph? ProjectGraph = projectGraph;
+            public readonly LoadedProjectGraph? ProjectGraph = projectGraph;
         }
 
         // Virtual for testing.
@@ -52,7 +55,7 @@ namespace Microsoft.DotNet.Watch
 
                 var processSpec = new ProcessSpec
                 {
-                    Executable = EnvironmentOptions.MuxerPath,
+                    Executable = environmentOptions.MuxerPath,
                     WorkingDirectory = projectDir,
                     IsUserApplication = false,
                     Arguments = arguments,
@@ -65,19 +68,19 @@ namespace Microsoft.DotNet.Watch
                     }
                 };
 
-                Logger.LogDebug("Running MSBuild target '{TargetName}' on '{Path}'", TargetName, rootProjectFile);
+                logger.LogDebug("Running MSBuild target '{TargetName}' on '{Path}'", TargetName, rootProjectFile);
 
-                var exitCode = await processRunner.RunAsync(processSpec, Logger, launchResult: null, cancellationToken);
+                var exitCode = await processRunner.RunAsync(processSpec, logger, launchResult: null, cancellationToken);
 
                 var success = exitCode == 0 && File.Exists(watchList);
 
                 if (!success)
                 {
-                    Logger.LogError("Error(s) finding watch items project file '{FileName}'.", Path.GetFileName(rootProjectFile));
-                    Logger.LogInformation("MSBuild output from target '{TargetName}':", TargetName);
+                    logger.LogError("Error(s) finding watch items project file '{FileName}'.", Path.GetFileName(rootProjectFile));
+                    logger.LogInformation("MSBuild output from target '{TargetName}':", TargetName);
                 }
 
-                BuildOutput.ReportBuildOutput(Logger, capturedOutput, success);
+                BuildOutput.ReportBuildOutput(logger, capturedOutput, success);
                 if (!success)
                 {
                     return null;
@@ -120,16 +123,16 @@ namespace Microsoft.DotNet.Watch
                     }
                 }
 
-                buildReporter.ReportWatchedFiles(fileItems);
+                BuildReporter.ReportWatchedFiles(logger, fileItems);
 #if DEBUG
                 Debug.Assert(fileItems.Values.All(f => Path.IsPathRooted(f.FilePath)), "All files should be rooted paths");
 #endif
 
                 // Load the project graph after the project has been restored:
-                ProjectGraph? projectGraph = null;
+                LoadedProjectGraph? projectGraph = null;
                 if (requireProjectGraph != null)
                 {
-                    projectGraph = _buildGraphFactory.TryLoadProjectGraph(rootProjectFile, Logger, requireProjectGraph.Value, cancellationToken);
+                    projectGraph = _buildGraphFactory.TryLoadProjectGraph(requireProjectGraph.Value, cancellationToken);
                     if (projectGraph == null && requireProjectGraph == true)
                     {
                         return null;
@@ -163,7 +166,7 @@ namespace Microsoft.DotNet.Watch
             // Set dotnet-watch reserved properties after the user specified propeties,
             // so that the former take precedence.
 
-            if (EnvironmentOptions.SuppressHandlingStaticWebAssets)
+            if (environmentOptions.SuppressHandlingStaticWebAssets)
             {
                 arguments.Add("/p:DotNetWatchContentFiles=false");
             }

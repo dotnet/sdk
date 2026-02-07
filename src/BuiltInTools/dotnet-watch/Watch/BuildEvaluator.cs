@@ -31,22 +31,34 @@ namespace Microsoft.DotNet.Watch
 
         public BuildEvaluator(DotNetWatchContext context)
         {
+            Debug.Assert(context.MainProjectOptions != null);
+
             _context = context;
             _fileSetFactory = CreateMSBuildFileSetFactory();
         }
 
+        private ProjectOptions RootProjectOptions
+            => _context.MainProjectOptions ?? throw new InvalidOperationException();
+
         protected virtual MSBuildFileSetFactory CreateMSBuildFileSetFactory()
-            => new(
-                _context.RootProjectOptions.ProjectPath,
-                _context.RootProjectOptions.BuildArguments,
+        {
+            // file-based programs only supported in Hot Reload mode:
+            Debug.Assert(RootProjectOptions.Representation.PhysicalPath != null);
+
+            return new(
+                RootProjectOptions.Representation.PhysicalPath,
+                _context.TargetFramework,
+                _context.BuildArguments,
                 _context.ProcessRunner,
-                new BuildReporter(_context.BuildLogger, _context.Options, _context.EnvironmentOptions));
+                _context.BuildLogger,
+                _context.EnvironmentOptions);
+        }
 
         public IReadOnlyList<string> GetProcessArguments(int iteration)
         {
             if (!_context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
                 iteration > 0 &&
-                _context.RootProjectOptions.IsCodeExecutionCommand)
+                _context.MainProjectOptions!.IsCodeExecutionCommand)
             {
                 if (RequiresRevaluation)
                 {
@@ -55,11 +67,11 @@ namespace Microsoft.DotNet.Watch
                 else
                 {
                     _context.Logger.LogDebug("Modifying command to use --no-restore");
-                    return [_context.RootProjectOptions.Command, "--no-restore", .. _context.RootProjectOptions.CommandArguments];
+                    return [_context.MainProjectOptions.Command, "--no-restore", .. _context.MainProjectOptions.CommandArguments];
                 }
             }
 
-            return [_context.RootProjectOptions.Command, .. _context.RootProjectOptions.CommandArguments];
+            return [RootProjectOptions.Command, "--no-restore", .. RootProjectOptions.CommandArguments];
         }
 
         public async ValueTask<MSBuildFileSetFactory.EvaluationResult> EvaluateAsync(ChangedFile? changedFile, CancellationToken cancellationToken)
@@ -101,7 +113,7 @@ namespace Microsoft.DotNet.Watch
                 }
 
                 await FileWatcher.WaitForFileChangeAsync(
-                    _fileSetFactory.RootProjectFile,
+                    [_fileSetFactory.RootProjectFile],
                     _context.Logger,
                     _context.EnvironmentOptions,
                     startedWatching: () => _context.Logger.Log(MessageDescriptor.FixBuildError),

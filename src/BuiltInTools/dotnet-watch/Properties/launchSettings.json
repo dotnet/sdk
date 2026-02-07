@@ -2,8 +2,8 @@
   "profiles": {
     "dotnet-watch": {
       "commandName": "Project",
-      "commandLineArgs": "-bl",
-      "workingDirectory": "$(RepoRoot)src\\Assets\\TestProjects\\BlazorWasmWithLibrary\\blazorwasm",
+      "commandLineArgs": "-bl --urls http://localhost:7001",
+      "workingDirectory": "E:\\sdk\\artifacts\\tmp\\Debug\\testing\\Razor_Compone---4AB6877C\\RazorApp",
       "environmentVariables": {
         "DOTNET_WATCH_DEBUG_SDK_DIRECTORY": "$(RepoRoot)artifacts\\bin\\redist\\$(Configuration)\\dotnet\\sdk\\$(Version)",
         "DCP_IDE_REQUEST_TIMEOUT_SECONDS": "100000",
