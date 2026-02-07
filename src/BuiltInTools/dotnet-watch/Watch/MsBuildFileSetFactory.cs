@@ -22,14 +22,14 @@ namespace Microsoft.DotNet.Watch
         string rootProjectFile,
         IEnumerable<string> buildArguments,
         ProcessRunner processRunner,
-        BuildReporter buildReporter)
+        BuildManager buildManager)
     {
         private const string TargetName = "GenerateWatchList";
         private const string WatchTargetsFileName = "DotNetWatch.targets";
 
         public string RootProjectFile => rootProjectFile;
-        private EnvironmentOptions EnvironmentOptions => buildReporter.EnvironmentOptions;
-        private ILogger Logger => buildReporter.Logger;
+        private EnvironmentOptions EnvironmentOptions => buildManager.EnvironmentOptions;
+        private ILogger Logger => buildManager.Logger;
 
         private readonly ProjectGraphFactory _buildGraphFactory = new(
             globalOptions: BuildUtilities.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value));
@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.Watch
                     }
                 }
 
-                buildReporter.ReportWatchedFiles(fileItems);
+                buildManager.ReportWatchedFiles(fileItems);
 #if DEBUG
                 Debug.Assert(fileItems.Values.All(f => Path.IsPathRooted(f.FilePath)), "All files should be rooted paths");
 #endif

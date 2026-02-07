@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
 using Microsoft.Extensions.Logging;
@@ -251,7 +250,7 @@ namespace Microsoft.DotNet.Watch
                 rootProjectOptions.ProjectPath,
                 rootProjectOptions.BuildArguments,
                 processRunner,
-                new BuildReporter(buildLogger, options.GlobalOptions, environmentOptions));
+                new BuildManager(buildLogger, options.GlobalOptions, environmentOptions));
 
             if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {

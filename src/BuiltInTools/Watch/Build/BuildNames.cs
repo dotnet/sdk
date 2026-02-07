@@ -22,6 +22,9 @@ internal static class PropertyNames
     public const string DesignTimeBuild = nameof(DesignTimeBuild);
     public const string SkipCompilerExecution = nameof(SkipCompilerExecution);
     public const string ProvideCommandLineArgs = nameof(ProvideCommandLineArgs);
+    public const string StartupHookSupport = nameof(StartupHookSupport);
+    public const string PublishTrimmed = nameof(PublishTrimmed);
+    public const string PublishAot = nameof(PublishAot);
 }
 
 internal static class ItemNames
