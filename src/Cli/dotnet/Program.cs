@@ -16,9 +16,11 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -65,26 +67,43 @@ public class Program
             .AddOtlpExporter()
             .Build();
 
+        var telemetryStoragePath = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_STORAGE_PATH");
+        if (string.IsNullOrWhiteSpace(telemetryStoragePath))
+        {
+            telemetryStoragePath = Telemetry.Telemetry.DefaultStorageDirectory;
+        }
         s_tracerProvider = Sdk.CreateTracerProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddSource(Activities.Source.Name)
             .AddHttpClientInstrumentation()
             .AddOtlpExporter()
-            .AddAzureMonitorTraceExporter(o =>
-            {
-                o.ConnectionString = Telemetry.Telemetry.ConnectionString;
-                // TODO: Remove.
-                //o.ConnectionString = "InstrumentationKey=2c4b2aec-276e-4421-95d9-3da4046d428d";
-                // TODO: Remove.
-                //o.ConnectionString = "InstrumentationKey=c176eac8-d596-4455-91b4-2eac2694e54d";
-                o.EnableLiveMetrics = false;
-                o.StorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, Telemetry.Telemetry.DefaultStorageFolderName);
-                // TODO: Remove.
-                //o.StorageDirectory = "D:\\Workspace\\TelemStore";
-            })
+            //.AddAzureMonitorTraceExporter(o =>
+            //{
+            //    o.ConnectionString = Telemetry.Telemetry.ConnectionString;
+            //    o.EnableLiveMetrics = false;
+            //    o.StorageDirectory = telemetryStoragePath;
+            //})
             .AddInMemoryExporter(s_activities)
             .SetSampler(new AlwaysOnSampler())
             .Build();
+
+        var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddOpenTelemetry(logging =>
+            {
+                logging.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("dotnet-cli", serviceVersion: Product.Version));
+                logging.AddOtlpExporter();
+                logging.AddAzureMonitorLogExporter(options =>
+                {
+                    options.ConnectionString = Telemetry.Telemetry.ConnectionString;
+                    options.EnableLiveMetrics = false;
+                    options.StorageDirectory = telemetryStoragePath;
+                });
+                //logging.AddInMemoryExporter(s_activities)
+            });
+        });
+        // TODO: What is the category name?
+        var logger = loggerFactory.CreateLogger("dotnet-cli");
 
         (var s_parentActivityContext, var s_activityKind) = DeriveParentActivityContextFromEnv();
         s_mainActivity = Activities.Source.CreateActivity("main", s_activityKind, s_parentActivityContext);
@@ -92,7 +111,7 @@ public class Program
         s_mainActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
         s_mainActivity?.AddTag("process.pid", Process.GetCurrentProcess().Id);
         s_mainActivity?.AddTag("process.executable.name", "dotnet");
-        TelemetryClient = InitializeTelemetry();
+        TelemetryClient = InitializeTelemetry(logger);
         TrackHostStartup(TelemetryClient, s_mainTimeStamp);
         SetupMSBuildEnvironmentInvariants();
     }
@@ -367,9 +386,9 @@ public class Program
         return null;
     }
 
-    private static ITelemetry InitializeTelemetry()
+    private static ITelemetry InitializeTelemetry(ILogger logger)
     {
-        var telemetryClient = new Telemetry.Telemetry();
+        var telemetryClient = new Telemetry.Telemetry(null, logger: logger);
         TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
         TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
 
