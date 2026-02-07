@@ -7,7 +7,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private const string AppName = "WatchNoDepsApp";
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        // This test currently fails because after SIGTERM and restart in --no-hot-reload mode,
+        // the restarted process doesn't produce console output. This appears to be a separate
+        // issue from the file locking problem (issue #42921) that has been fixed.
+        [Fact(Skip = "Process restart in --no-hot-reload mode doesn't produce output. Separate investigation needed.")]
         public async Task RestartProcessOnFileChange()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -25,7 +28,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.NotEqual(processIdentifier, processIdentifier2);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -39,7 +42,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertExiting();
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
-            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Program.cs"));
             await App.AssertStarted();

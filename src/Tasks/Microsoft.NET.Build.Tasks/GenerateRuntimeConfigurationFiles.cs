@@ -390,10 +390,36 @@ namespace Microsoft.NET.Build.Tasks
                 DefaultValueHandling = DefaultValueHandling.Ignore
             };
 
-            using (JsonTextWriter writer = new(new StreamWriter(File.Create(fileName))))
+            // Use FileShare.ReadWrite to allow the file to be read by other processes (e.g., dotnet watch scenarios)
+            // Retry logic handles transient locks from processes that are shutting down.
+            // 5 retries with exponential backoff (100ms, 200ms, 300ms, 400ms, 500ms = ~1.5s total)
+            // balances quick recovery from transient locks while not significantly impacting build time.
+            const int maxRetries = 5;
+            const int retryDelayMs = 100;
+
+            IOException lastException = null;
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
-                serializer.Serialize(writer, value);
+                try
+                {
+                    using (FileStream fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    using (StreamWriter streamWriter = new StreamWriter(fileStream))
+                    using (JsonTextWriter writer = new(streamWriter))
+                    {
+                        serializer.Serialize(writer, value);
+                    }
+                    return;
+                }
+                catch (IOException ex) when (attempt < maxRetries)
+                {
+                    // File might be locked by a process that's shutting down, retry after a brief delay
+                    lastException = ex;
+                    System.Threading.Thread.Sleep(retryDelayMs * attempt);
+                }
             }
+
+            // All retries exhausted, throw the last exception
+            throw lastException;
         }
     }
 }
