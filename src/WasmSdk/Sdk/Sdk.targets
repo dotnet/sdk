@@ -16,15 +16,60 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition="'$(RuntimeIdentifier)' == 'wasi-wasm' and '$(_WasmSdkImportsMicrosoftNetSdk)' == 'true'" />
 
   <PropertyGroup>
-    <!-- Implicit HotReload package reference for .NET 10+ if not explicitly turned off -->
     <_WasmEnableHotReload>$(WasmEnableHotReload)</_WasmEnableHotReload>
     <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(Configuration)' != 'Debug'">false</_WasmEnableHotReload>
     <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">true</_WasmEnableHotReload>
   </PropertyGroup>
-  <Target Name="_ImplicitlyReferenceHotReload" BeforeTargets="ProcessFrameworkReferences">
-    <ItemGroup Condition="'$(_WasmEnableHotReload)' == 'true'">
-      <PackageReference Include="Microsoft.DotNet.HotReload.WebAssembly.Browser" Version="$(NETCoreSdkVersion)" IsImplicitlyDefined="true" />
+  <Target Name="_WasmImplicitlyReferenceHotReload" BeforeTargets="ResolveProjectStaticWebAssets" AfterTargets="ResolveStaticWebAssetsConfiguration" Condition="'$(_WasmEnableHotReload)' == 'true'">
+    <PropertyGroup>
+      <_WasmHotReloadTfm Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">net10.0</_WasmHotReloadTfm>
+      <_WasmHotReloadPath Condition="'$(_WasmHotReloadTfm)' != ''">$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', 'hotreload', $(_WasmHotReloadTfm)))</_WasmHotReloadPath>
+      <_WasmHotReloadIntermediatePath>$(IntermediateOutputPath)hotreload\</_WasmHotReloadIntermediatePath>
+    </PropertyGroup>
+
+    <!-- Copy the JS module to intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->
+    <Copy
+      SourceFiles="$(_WasmHotReloadPath)wwwroot\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js"
+      DestinationFolder="$(_WasmHotReloadIntermediatePath)"
+      SkipUnchangedFiles="true"
+      Condition="'$(_WasmHotReloadPath)' != ''" />
+
+    <ItemGroup Condition="'$(_WasmHotReloadPath)' != ''">
+      <ReferenceCopyLocalPaths Include="$(_WasmHotReloadPath)Microsoft.DotNet.HotReload.WebAssembly.Browser.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+      </ReferenceCopyLocalPaths>
+      <_WasmHotReloadModule Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
+        <RelativePath>_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</RelativePath>
+      </_WasmHotReloadModule>
+      <_WasmHotReloadModule Update="@(_WasmHotReloadModule)">
+        <OriginalItemSpec>%(Identity)</OriginalItemSpec>
+      </_WasmHotReloadModule>
+      <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js" />
     </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_WasmHotReloadModule)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      ContentRoot="$(_WasmHotReloadIntermediatePath)"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetKind="Build"
+      AssetTraitName="JSModule"
+      AssetTraitValue="JSLibraryModule"
+      PropertyOverrides="AssetTraitName;AssetTraitValue"
+      Condition="'$(_WasmHotReloadPath)' != ''">
+        <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+        <Output TaskParameter="Assets" ItemName="_WasmHotReloadModuleStaticWebAsset" />
+    </DefineStaticWebAssets>
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_WasmHotReloadModuleStaticWebAsset)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+      Condition="'$(_WasmHotReloadPath)' != ''">
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
   </Target>
 
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
