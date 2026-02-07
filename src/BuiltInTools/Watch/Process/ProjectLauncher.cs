@@ -61,24 +61,6 @@ internal sealed class ProjectLauncher(
             return null;
         }
 
-        var processSpec = new ProcessSpec
-        {
-            Executable = EnvironmentOptions.MuxerPath,
-            IsUserApplication = true,
-            WorkingDirectory = projectOptions.WorkingDirectory,
-            OnOutput = onOutput,
-            OnExit = onExit,
-        };
-
-        // Stream output lines to the process output reporter.
-        // The reporter synchronizes the output of the process with the logger output,
-        // so that the printed lines don't interleave.
-        // Only send the output to the reporter if no custom output handler was provided (e.g. for Aspire child processes).
-        processSpec.OnOutput ??= line =>
-        {
-            context.ProcessOutputReporter.ReportOutput(context.ProcessOutputReporter.PrefixProcessOutput ? line with { Content = $"[{projectDisplayName}] {line.Content}" } : line);
-        };
-
         var environmentBuilder = new Dictionary<string, string>();
 
         // initialize with project settings:
@@ -98,6 +80,30 @@ internal sealed class ProjectLauncher(
         }
 
         clients.ConfigureLaunchEnvironment(environmentBuilder);
+
+        if (!await appModel.DeployAgent(clientLogger, environmentBuilder))
+        {
+            // error already reported
+            return null;
+        }
+
+        var processSpec = new ProcessSpec
+        {
+            Executable = EnvironmentOptions.MuxerPath,
+            IsUserApplication = true,
+            WorkingDirectory = projectOptions.WorkingDirectory,
+            OnOutput = onOutput,
+            OnExit = onExit,
+        };
+
+        // Stream output lines to the process output reporter.
+        // The reporter synchronizes the output of the process with the logger output,
+        // so that the printed lines don't interleave.
+        // Only send the output to the reporter if no custom output handler was provided (e.g. for Aspire child processes).
+        processSpec.OnOutput ??= line =>
+        {
+            context.ProcessOutputReporter.ReportOutput(context.ProcessOutputReporter.PrefixProcessOutput ? line with { Content = $"[{projectDisplayName}] {line.Content}" } : line);
+        };
 
         processSpec.Arguments = GetProcessArguments(projectOptions, environmentBuilder);
 

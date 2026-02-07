@@ -8,6 +8,7 @@ internal static class PropertyNames
     public const string TargetFramework = nameof(TargetFramework);
     public const string TargetFrameworkIdentifier = nameof(TargetFrameworkIdentifier);
     public const string TargetFrameworkMoniker = nameof(TargetFrameworkMoniker);
+    public const string TargetPlatformIdentifier = nameof(TargetPlatformIdentifier);
     public const string TargetPath = nameof(TargetPath);
     public const string EnableDefaultItems = nameof(EnableDefaultItems);
     public const string TargetFrameworks = nameof(TargetFrameworks);
@@ -40,6 +41,7 @@ internal static class MetadataNames
     public const string TargetPath = nameof(TargetPath);
     public const string AssetFile = nameof(AssetFile);
     public const string EndpointProperties = nameof(EndpointProperties);
+    public const string Value = nameof(Value);
 }
 
 internal static class TargetNames

@@ -231,6 +231,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor ApplicationKind_BlazorWebAssembly = Create("Application kind: BlazorWebAssembly.", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor ApplicationKind_WebApplication = Create("Application kind: WebApplication.", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor ApplicationKind_Default = Create("Application kind: Default.", Emoji.Default, LogLevel.Debug);
+        public static readonly MessageDescriptor ApplicationKind_Mobile = Create("Application kind: Mobile.", Emoji.Default, LogLevel.Debug);
         public static readonly MessageDescriptor WatchingFilesForChanges = Create("Watching {0} file(s) for changes", Emoji.Watch, LogLevel.Debug);
         public static readonly MessageDescriptor WatchingFilesForChanges_FilePath = Create("> {0}", Emoji.Watch, LogLevel.Trace);
         public static readonly MessageDescriptor Building = Create("Building {0} ...", Emoji.Default, LogLevel.Information);
