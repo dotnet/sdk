@@ -390,9 +390,28 @@ namespace Microsoft.NET.Build.Tasks
                 DefaultValueHandling = DefaultValueHandling.Ignore
             };
 
-            using (JsonTextWriter writer = new(new StreamWriter(File.Create(fileName))))
+            // Use FileShare.ReadWrite to allow the file to be read by other processes (e.g., dotnet watch scenarios)
+            // and retry logic to handle transient locks from processes that are shutting down
+            const int maxRetries = 5;
+            const int retryDelayMs = 100;
+
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
-                serializer.Serialize(writer, value);
+                try
+                {
+                    using (FileStream fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    using (StreamWriter streamWriter = new StreamWriter(fileStream))
+                    using (JsonTextWriter writer = new(streamWriter))
+                    {
+                        serializer.Serialize(writer, value);
+                    }
+                    return;
+                }
+                catch (IOException) when (attempt < maxRetries)
+                {
+                    // File might be locked by a process that's shutting down, retry after a brief delay
+                    System.Threading.Thread.Sleep(retryDelayMs * attempt);
+                }
             }
         }
     }

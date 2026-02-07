@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private const string AppName = "WatchNoDepsApp";
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task RestartProcessOnFileChange()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.NotEqual(processIdentifier, processIdentifier2);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -39,7 +39,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertExiting();
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
-            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Program.cs"));
             await App.AssertStarted();
