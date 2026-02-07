@@ -1,6 +1,9 @@
 {
   "version": "${WorkloadVersion}",
   "workloads": {
+    "microsoft-net-sdk-emscripten-${NetVersion}": {
+      "extends": [ "microsoft-net-sdk-emscripten" ]
+    },
     "microsoft-net-sdk-emscripten": {
       "abstract": true,
       "description": "Emscripten SDK compiler tooling for ${NetVersion}.0",

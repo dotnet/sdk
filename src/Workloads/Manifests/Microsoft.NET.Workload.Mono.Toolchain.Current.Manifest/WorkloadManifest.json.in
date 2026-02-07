@@ -4,6 +4,9 @@
     "Microsoft.NET.Workload.Emscripten.Current": "${WorkloadVersion}"
   },
   "workloads": {
+    "wasm-tools-${NetVersion}": {
+      "extends": [ "wasm-tools" ]
+    },
     "wasm-tools": {
       "description": ".NET WebAssembly build tools for ${NetVersion}.0",
       "packs": [
@@ -15,6 +18,9 @@
       "extends": [ "microsoft-net-runtime-mono-tooling", "microsoft-net-sdk-emscripten" ],
       "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-musl-x64", "linux-musl-arm64", "osx-x64", "osx-arm64" ]
     },
+    "wasm-experimental-${NetVersion}": {
+      "extends": [ "wasm-experimental" ]
+    },
     "wasm-experimental": {
       "description": ".NET WebAssembly experimental tooling for ${NetVersion}.0",
       "packs": [
@@ -23,6 +29,9 @@
       ],
       "extends": [ "wasm-tools" ],
       "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-musl-x64", "linux-musl-arm64", "osx-x64", "osx-arm64" ]
+    },
+    "wasi-experimental-${NetVersion}": {
+      "extends": [ "wasi-experimental" ]
     },
     "wasi-experimental": {
       "description": ".NET WASI experimental tooing for ${NetVersion}.0",
@@ -35,6 +44,9 @@
       "extends": [ "microsoft-net-runtime-mono-tooling" ],
       "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-musl-x64", "linux-musl-arm64", "osx-x64", "osx-arm64" ]
     },
+    "mobile-librarybuilder-${NetVersion}": {
+      "extends": [ "mobile-librarybuilder" ]
+    },
     "mobile-librarybuilder": {
       "description": "Mobile SDK for building a self-contained .NET native library in ${NetVersion}.0",
       "packs": [
@@ -42,6 +54,9 @@
       ],
       "extends": [ "microsoft-net-runtime-android-aot", "microsoft-net-runtime-ios", "microsoft-net-runtime-maccatalyst", "microsoft-net-runtime-tvos" ],
       "platforms": [ "win-x64", "win-arm64", "osx-x64", "osx-arm64" ]
+    },
+    "microsoft-net-runtime-android-${NetVersion}": {
+      "extends": [ "microsoft-net-runtime-android" ]
     },
     "microsoft-net-runtime-android": {
       "abstract": true,
@@ -55,6 +70,9 @@
       "extends": [ "microsoft-net-runtime-mono-tooling" ],
       "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64" ]
     },
+    "microsoft-net-runtime-android-aot-${NetVersion}": {
+      "extends": [ "microsoft-net-runtime-android-aot" ]
+    },
     "microsoft-net-runtime-android-aot": {
       "abstract": true,
       "description": "Android Mono AOT Workload",
@@ -67,6 +85,9 @@
       "extends": [ "microsoft-net-runtime-android" ],
       "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64" ]
     },
+    "microsoft-net-runtime-ios-${NetVersion}": {
+      "extends": [ "microsoft-net-runtime-ios" ]
+    },
     "microsoft-net-runtime-ios": {
       "abstract": true,
       "description": "iOS Mono Runtime and AOT Workload",
@@ -77,6 +98,9 @@
       ],
       "extends": [ "runtimes-ios" ],
       "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
+    },
+    "runtimes-ios-${NetVersion}": {
+      "extends": [ "runtimes-ios" ]
     },
     "runtimes-ios": {
       "abstract": true,
@@ -89,6 +113,9 @@
       "extends": [ "microsoft-net-runtime-mono-tooling" ],
       "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
     },
+    "microsoft-net-runtime-maccatalyst-${NetVersion}": {
+      "extends": [ "microsoft-net-runtime-maccatalyst" ]
+    },
     "microsoft-net-runtime-maccatalyst": {
       "abstract": true,
       "description": "MacCatalyst Mono Runtime and AOT Workload",
@@ -99,6 +126,9 @@
       "extends": [ "runtimes-maccatalyst" ],
       "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
     },
+    "runtimes-maccatalyst-${NetVersion}": {
+      "extends": [ "runtimes-maccatalyst" ]
+    },
     "runtimes-maccatalyst": {
       "abstract": true,
       "description": "MacCatalyst Mono Runtime Packs",
@@ -108,6 +138,9 @@
       ],
       "extends": [ "microsoft-net-runtime-mono-tooling" ],
       "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
+    },
+    "microsoft-net-runtime-macos-${NetVersion}": {
+      "extends": [ "microsoft-net-runtime-macos" ]
     },
     "microsoft-net-runtime-macos": {
       "abstract": true,
@@ -121,6 +154,9 @@
       "extends": [ "microsoft-net-runtime-mono-tooling" ],
       "platforms": [ "osx-arm64", "osx-x64" ]
     },
+    "microsoft-net-runtime-tvos-${NetVersion}": {
+      "extends": [ "microsoft-net-runtime-tvos" ]
+    },
     "microsoft-net-runtime-tvos": {
       "abstract": true,
       "description": "tvOS Mono Runtime and AOT Workload",
@@ -132,6 +168,9 @@
       "extends": [ "runtimes-tvos" ],
       "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
     },
+    "runtimes-tvos-${NetVersion}": {
+      "extends": [ "runtimes-tvos" ]
+    },
     "runtimes-tvos": {
       "abstract": true,
       "description": "tvOS Mono Runtime Packs",
@@ -142,6 +181,9 @@
       ],
       "extends": [ "microsoft-net-runtime-mono-tooling" ],
       "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
+    },
+    "microsoft-net-runtime-mono-tooling-${NetVersion}": {
+      "extends": [ "microsoft-net-runtime-mono-tooling" ]
     },
     "microsoft-net-runtime-mono-tooling": {
       "abstract": true,
