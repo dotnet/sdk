@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.DependencyModel.Tests;
@@ -145,6 +146,37 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             tool1.Should().BeEquivalentTo(restoredCommands[0]);
             tool2.Should().BeEquivalentTo(restoredCommands[1]);
+        }
+
+        [Fact]
+        public void GivenExecutableIdentifierItUpdatesExecutablePathOnSubsequentSave()
+        {
+            (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
+
+            NuGetFramework targetFramework = NuGetFramework.Parse(ToolsetInfo.CurrentTargetFramework);
+            string runtimeIdentifier = Constants.AnyRid;
+            PackageId packageId = new("my.toolBundle");
+            NuGetVersion nuGetVersion = NuGetVersion.Parse("1.0.2");
+            var commandName = new ToolCommandName("tool1");
+
+            var originalCommand = new ToolCommand(commandName, "dotnet", nuGetGlobalPackagesFolder.WithFile("tool1.dll"));
+            var identifier = new RestoredCommandIdentifier(packageId, nuGetVersion, targetFramework, runtimeIdentifier, commandName);
+
+            localToolsResolverCache.Save(new Dictionary<RestoredCommandIdentifier, ToolCommand>
+            {
+                [identifier] = originalCommand
+            });
+
+            DirectoryPath alternativePackagesFolder = nuGetGlobalPackagesFolder.GetParentPath().WithSubDirectories("nugetGlobalPackageLocation2");
+            var updatedCommand = new ToolCommand(commandName, "dotnet", alternativePackagesFolder.WithFile("tool1.dll"));
+
+            localToolsResolverCache.Save(new Dictionary<RestoredCommandIdentifier, ToolCommand>
+            {
+                [identifier] = updatedCommand
+            });
+
+            localToolsResolverCache.TryLoad(identifier, out ToolCommand restoredCommand).Should().BeTrue();
+            restoredCommand.Executable.Value.Should().Be(updatedCommand.Executable.Value);
         }
 
         [Fact]
