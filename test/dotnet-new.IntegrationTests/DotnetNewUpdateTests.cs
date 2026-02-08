@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CanCheckForUpdate(string testCase)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string nugetName = "TestNupkgInstallTemplate";
             string nugetVersion = "0.0.1";
-            string nugetFullName = $"{nugetName}::{nugetVersion}";
+            string nugetFullName = $"{nugetName}@{nugetVersion}";
             string nugetFileName = $"{nugetName}.{nugetVersion}.nupkg";
             string workingDirectory = CreateTemporaryFolder();
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -111,7 +111,7 @@ For details on the exit code, refer to https://aka.ms/templating-exit-codes#106"
         public void PrintInfoOnUpdateOnCreation()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -141,7 +141,7 @@ For details on the exit code, refer to https://aka.ms/templating-exit-codes#106"
         public void DoesNotPrintUpdateInfoOnCreation_WhenNoUpdateCheckOption()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -251,7 +251,7 @@ For more information, run:
         public void CanApplyUpdates(string testCase)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -287,9 +287,9 @@ For more information, run:
                 .And
                 .NotHaveStdErr()
                 .And.HaveStdOutContaining("The following template packages will be updated:")
-                .And.HaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0 was successfully uninstalled")
-                .And.NotHaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0 is already installed and will be replaced with version")
-                .And.HaveStdOutMatching($"^Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0::([\\d\\.a-z-])+ installed the following templates:\\s*$", System.Text.RegularExpressions.RegexOptions.Multiline)
+                .And.HaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0 was successfully uninstalled")
+                .And.NotHaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0 is already installed and will be replaced with version")
+                .And.HaveStdOutMatching($"^Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+ installed the following templates:\\s*$", System.Text.RegularExpressions.RegexOptions.Multiline)
                 .And.HaveStdOutContaining("console")
                 .And.HaveStdOutContaining("Console App");
         }

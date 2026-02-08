@@ -1,45 +1,53 @@
 // IMPORTANT: This file is read by the merge flow from main branch only. 
 {
     "merge-flow-configurations": {
-        // Automate opening PRs to merge cli release/8.0.1xx to 8.0.3xx
+        // Automate opening PRs to merge cli release/8.0.1xx to 8.0.4xx
         "release/8.0.1xx":{
-            "MergeToBranch": "release/8.0.3xx",
-            "ExtraSwitches": "-QuietComments"
-        },
-        // Automate opening PRs to merge cli release/8.0.3xx to 8.0.4xx
-        "release/8.0.3xx":{
             "MergeToBranch": "release/8.0.4xx",
-            "ExtraSwitches": "-QuietComments"
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Versions.props;eng/common/*"
         },
         // Automate opening PRs to merge sdk repos from release/8.0.4xx to 9.0.1xx
         "release/8.0.4xx":{
             "MergeToBranch": "release/9.0.1xx",
-            "ExtraSwitches": "-QuietComments"
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Versions.props;eng/common/*"
         },        
         // Automate opening PRs to merge sdk repos from release/9.0.1xx to release/9.0.3xx
         "release/9.0.1xx":{
             "MergeToBranch": "release/9.0.3xx",
-            "ExtraSwitches": "-QuietComments"
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Versions.props;eng/common/*"
         },
         // Automate opening PRs to merge sdk repos from release/9.0.3xx to release/10.0.1xx
         "release/9.0.3xx":{
             "MergeToBranch": "release/10.0.1xx",
-            "ExtraSwitches": "-QuietComments"
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Version.Details.props;eng/common/*;src/SourceBuild/*"
         },
         // Automate opening PRs to merge sdk repos from release/10.0.1xx to release/10.0.2xx
         "release/10.0.1xx":{
             "MergeToBranch": "release/10.0.2xx",
-            "ExtraSwitches": "-QuietComments"
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Version.Details.props;eng/common/*"
         },
-        // Automate opening PRs to merge sdk repos from release/10.0.2xx to main
+        // Automate opening PRs to merge sdk repos from release/10.0.2xx to release/10.0.3xx
         "release/10.0.2xx":{
+            "MergeToBranch": "release/10.0.3xx",
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Version.Details.props;eng/common/*"
+        },
+        // Automate opening PRs to merge sdk repos from release/10.0.3xx to main
+        "release/10.0.3xx":{
             "MergeToBranch": "main",
-            "ExtraSwitches": "-QuietComments"
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Version.Details.props;eng/common/*"
         },
         // Automate opening PRs to merge sdk repos from dnup to release/dnup
         "dnup":{
             "MergeToBranch": "release/dnup",
-            "ExtraSwitches": "-QuietComments"
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Versions.props;eng/common/*"
         }
     }
 }

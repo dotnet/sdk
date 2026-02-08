@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties["BeforeTargetFrameworkInferenceTargets"] = @"$(MSBuildProjectDirectory)\CustomTargetFramework.targets";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             File.WriteAllText(Path.Combine(testAsset.TestRoot, testProject.Name, "CustomTargetFramework.targets"), $@"
 <Project>

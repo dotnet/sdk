@@ -9,7 +9,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
 
-public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) : MSBuildForwardingApp(msbuildArgs, msbuildPath)
+public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) : MSBuildForwardingApp(msbuildArgs, msbuildPath)
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
@@ -19,21 +19,30 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
 
     public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null)
     {
+        var definition = (CleanCommandDefinition)result.CommandResult.Command;
+
         result.ShowHelpOrErrorIfAppropriate();
         return CommandFactory.CreateVirtualOrPhysicalCommand(
-            CleanCommandParser.GetCommand(),
-            CleanCommandParser.SlnOrProjectOrFileArgument,
-            static (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
-                    entryPointFileFullPath: appFilePath,
-                    msbuildArgs: msbuildArgs)
+            definition,
+            definition.SlnOrProjectOrFileArgument,
+            createVirtualCommand: static (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
+                entryPointFileFullPath: appFilePath,
+                msbuildArgs: msbuildArgs)
             {
                 NoBuild = false,
                 NoRestore = true,
                 NoCache = true,
                 NoWriteBuildMarkers = true,
             },
-            static (msbuildArgs, msbuildPath) => new CleanCommand(msbuildArgs, msbuildPath),
-            [ CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption, CleanCommandParser.VerbosityOption, CleanCommandParser.NoLogoOption],
+            createPhysicalCommand: static (msbuildArgs, msbuildPath) => new CleanCommand(msbuildArgs, msbuildPath),
+            optionsToUseWhenParsingMSBuildFlags:
+            [
+                CommonOptions.CreatePropertyOption(),
+                CommonOptions.CreateRestorePropertyOption(),
+                CleanCommandDefinition.CreateTargetOption(),
+                CommonOptions.CreateVerbosityOption(VerbosityOptions.normal),
+                CommonOptions.CreateNoLogoOption()
+            ],
             result,
             msbuildPath
         );

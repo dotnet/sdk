@@ -7,22 +7,9 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class BaseUninstallCommand : BaseCommand<UninstallCommandArgs>
+    internal abstract class BaseUninstallCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, CommandDefinition definition)
+        : BaseCommand<UninstallCommandArgs>(hostBuilder, definition)
     {
-        internal BaseUninstallCommand(
-            Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            string commandName)
-            : base(hostBuilder, commandName, SymbolStrings.Command_Uninstall_Description)
-        {
-            Arguments.Add(NameArgument);
-        }
-
-        internal static Argument<string[]> NameArgument { get; } = new("package")
-        {
-            Description = SymbolStrings.Command_Uninstall_Argument_Package,
-            Arity = new ArgumentArity(0, 99)
-        };
-
         protected override Task<NewCommandStatus> ExecuteAsync(
             UninstallCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,

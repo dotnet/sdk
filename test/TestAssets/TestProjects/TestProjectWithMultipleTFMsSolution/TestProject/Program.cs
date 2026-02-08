@@ -81,7 +81,9 @@ namespace TestProjectWithNetFM
 		{
 			Uid = "Test5",
 			DisplayName = "Test5",
+#pragma warning disable CS0618 // Type or member is obsolete
 			Properties = new PropertyBag(new CancelledTestNodeStateProperty(new Exception("this is a cancelled exception"), "")),
+#pragma warning restore CS0618 // Type or member is obsolete
 		}));
 		
 		context.Complete();

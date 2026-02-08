@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52576")]
         public async Task AddSourceFile()
         {
             Log("AddSourceFile started");
@@ -69,9 +69,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), newSrc);
 
             await App.AssertOutputLineStartsWith("Changed!");
+
+            App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/52680")]
         public async Task ProjectChange_UpdateDirectoryBuildPropsThenUpdateSource()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -357,7 +359,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.False(Directory.Exists(logDir));
 
-            App.DotnetWatchArgs.Clear();
+            App.SuppressVerboseLogging();
             App.Start(testAsset, ["--verbose", $"-bl:{binLogPath}"], testFlags: TestFlags.None);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
@@ -751,8 +753,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             if (!verbose)
             {
-                // remove default --verbose arg
-                App.DotnetWatchArgs.Clear();
+                App.SuppressVerboseLogging();
             }
 
             App.Start(testAsset, []);
@@ -892,11 +893,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // check project specified capapabilities:
             if (projectSpecifiesCapabilities)
             {
-                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType.");
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddMethodToExistingType Baseline.");
             }
             else
             {
-                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType.");
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
             }
         }
 
@@ -922,7 +923,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307" https://github.com/dotnet/aspnetcore/issues/63759
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -963,10 +964,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
 
             // client capabilities:
-            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project 'blazorwasm ({tfm})' specifies capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType'");
+            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project specifies capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType AddExplicitInterfaceImplementation.");
 
             // server capabilities:
-            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva'");
+            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva AddExplicitInterfaceImplementation.");
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759

@@ -65,7 +65,7 @@ internal static class NewCommandParser
 
     public static Command GetCommand()
     {
-        Command command = NewCommandFactory.Create(CommandName, (Func<ParseResult, CliTemplateEngineHost>)GetEngineHost);
+        Command command = NewCommandFactory.Create((Func<ParseResult, CliTemplateEngineHost>)GetEngineHost);
         command.Options.Add(s_disableSdkTemplatesOption);
         command.Options.Add(s_disableProjectContextEvaluationOption);
         command.Options.Add(s_verbosityOption);

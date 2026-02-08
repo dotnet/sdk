@@ -11,104 +11,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal partial class NewCommand : BaseCommand<NewCommandArgs>, ICustomHelp
     {
-        internal NewCommand(
-            string commandName,
-            Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, commandName, SymbolStrings.Command_New_Description)
+        internal NewCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
+            : base(hostBuilder, CommandDefinition.New.Command)
         {
             this.DocsLink = "https://aka.ms/dotnet-new";
-            TreatUnmatchedTokensAsErrors = true;
-
-            //it is important that legacy commands are built before non-legacy, as non legacy commands are building validators that rely on legacy stuff
-            BuildLegacySymbols(hostBuilder);
-
-            Add(new InstantiateCommand(this, hostBuilder));
-            Add(new InstallCommand(this, hostBuilder));
-            Add(new UninstallCommand(this, hostBuilder));
-            Add(new UpdateCommand(this, hostBuilder));
-            Add(new SearchCommand(this, hostBuilder));
-            Add(new ListCommand(this, hostBuilder));
-            Add(new AliasCommand(hostBuilder));
-            Add(new DetailsCommand(hostBuilder));
-
-            Options.Add(DebugCustomSettingsLocationOption);
-            Options.Add(DebugVirtualizeSettingsOption);
-            Options.Add(DebugAttachOption);
-            Options.Add(DebugReinitOption);
-            Options.Add(DebugRebuildCacheOption);
-            Options.Add(DebugShowConfigOption);
-
-            Options.Add(SharedOptions.OutputOption);
-            Options.Add(SharedOptions.NameOption);
-            Options.Add(SharedOptions.DryRunOption);
-            Options.Add(SharedOptions.ForceOption);
-            Options.Add(SharedOptions.NoUpdateCheckOption);
-            Options.Add(SharedOptions.ProjectPathOption);
         }
-
-        internal static Option<string?> DebugCustomSettingsLocationOption { get; } = new("--debug:custom-hive")
-        {
-            Description = SymbolStrings.Option_Debug_CustomSettings,
-            Hidden = true,
-            Recursive = true
-        };
-
-        internal static Option<bool> DebugVirtualizeSettingsOption { get; } = new("--debug:ephemeral-hive", "--debug:virtual-hive")
-        {
-            Description = SymbolStrings.Option_Debug_VirtualSettings,
-            Hidden = true,
-            Recursive = true
-        };
-
-        internal static Option<bool> DebugAttachOption { get; } = new("--debug:attach")
-        {
-            Description = SymbolStrings.Option_Debug_Attach,
-            Hidden = true,
-            Recursive = true
-        };
-
-        internal static Option<bool> DebugReinitOption { get; } = new("--debug:reinit")
-        {
-            Description = SymbolStrings.Option_Debug_Reinit,
-            Hidden = true,
-            Recursive = true
-        };
-
-        internal static Option<bool> DebugRebuildCacheOption { get; } = new("--debug:rebuild-cache", "--debug:rebuildcache")
-        {
-            Description = SymbolStrings.Option_Debug_RebuildCache,
-            Hidden = true,
-            Recursive = true
-        };
-
-        internal static Option<bool> DebugShowConfigOption { get; } = new("--debug:show-config", "--debug:showconfig")
-        {
-            Description = SymbolStrings.Option_Debug_ShowConfig,
-            Hidden = true,
-            Recursive = true
-        };
-
-        internal static Argument<string> ShortNameArgument { get; } = new("template-short-name")
-        {
-            Description = SymbolStrings.Command_Instantiate_Argument_ShortName,
-            Arity = new ArgumentArity(0, 1),
-            Hidden = true
-        };
-
-        internal static Argument<string[]> RemainingArguments { get; } = new("template-args")
-        {
-            Description = SymbolStrings.Command_Instantiate_Argument_TemplateOptions,
-            Arity = new ArgumentArity(0, 999),
-            Hidden = true
-        };
-
-        internal IReadOnlyList<Option> PassByOptions { get; } = new Option[]
-        {
-            SharedOptions.ForceOption,
-            SharedOptions.NameOption,
-            SharedOptions.DryRunOption,
-            SharedOptions.NoUpdateCheckOption
-        };
 
         protected internal override IEnumerable<CompletionItem> GetCompletions(CompletionContext context, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager)
         {

@@ -13,7 +13,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void FastPathDoesNotNeedReflection()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("MSBuildBareBonesProject")
                 .WithSource();
             var command = new MSBuildCommand(testAsset, string.Empty);
@@ -34,7 +34,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("webapp")]
         public void EnsureDotnetCommonProjectPropertyFunctionsOnFastPath(string alias)
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
 
             new DotnetNewCommand(Log, alias)
                 .WithoutCustomHive()

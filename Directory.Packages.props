@@ -1,14 +1,18 @@
 <Project>
+
   <Import Project="$(RepositoryEngineeringDir)\dependabot\Packages.props" Condition="'$(RepositoryEngineeringDir)' != ''" />
+
   <PropertyGroup>
     <!-- Using multiple feeds isn't supported by Maestro: https://github.com/dotnet/arcade/issues/14155. -->
     <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageVersion Include="Basic.CompilerLog.Util" Version="0.9.18" />
     <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)" />
-    <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <PackageVersion Include="AwesomeAssertions.Json" Version="$(AwesomeAssertionsJsonVersion)" />
+    <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
+    <PackageVersion Include="BenchmarkDotNet.Diagnostics.Windows" Version="$(BenchmarkDotNetDiagnosticsWindowsPackageVersion)" />
     <PackageVersion Include="MessagePack" Version="3.1.4" />
     <PackageVersion Include="MicroBuild.Plugins.SwixBuild.Dotnet" Version="1.1.87-gba258badda" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="$(MicrosoftApplicationInsightsPackageVersion)" />
@@ -17,7 +21,6 @@
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.NuGetSdkResolver" Version="$(MicrosoftBuildNuGetSdkResolverPackageVersion)" />
-
     <!-- roslyn dependencies -->
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisAnalyzerTestingVersion)" />
@@ -37,13 +40,12 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion)" />
-
+    <PackageVersion Include="Microsoft.CodeAnalysis.ExternalAccess.HotReload" Version="$(MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion)" />
     <!-- roslyn-sdk dependencies-->
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="1.1.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing" Version="1.1.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.CodeFix.Testing" Version="1.1.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.CodeRefactoring.Testing" Version="1.1.2" />
-
     <PackageVersion Include="Microsoft.Css.Parser" Version="$(MicrosoftCssParserVersion)" />
     <PackageVersion Include="Microsoft.DiaSymReader" Version="$(MicrosoftDiaSymReaderVersion)" />
     <PackageVersion Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" />
@@ -81,8 +83,6 @@
     <PackageVersion Include="Microsoft.TestPlatform.Build" Version="$(MicrosoftTestPlatformBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.CLI" Version="$(MicrosoftTestPlatformCLIPackageVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="17.4.16" />
-    <PackageVersion Include="Microsoft.VisualStudio.Sdk" Version="17.2.32505.173" />
-    <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.11.435" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="$(MicrosoftVisualStudioSetupConfigurationInteropVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="$(MicrosoftVisualStudioSolutionPersistenceVersion)" />
     <PackageVersion Include="Microsoft.Web.Deployment" Version="$(WebDeploymentPackageVersion)" />
@@ -115,6 +115,7 @@
     <PackageVersion Include="runtime.linux-musl-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
+    <PackageVersion Include="Spectre.Console" Version="0.54.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" />
     <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
@@ -152,7 +153,7 @@
 
        Note: This is not abstracted in Versions.props because source-only
        modes will import a version override file after Versions.props. -->
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(TargetFramework)' != 'net472'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
     <!-- MSBuild-y stuff that runs in the CLI can always reference the latest MSBuild since
          that is what will be packaged with the .NET SDK. -->
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
@@ -165,7 +166,8 @@
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildVersion)" />
   </ItemGroup>
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(TargetFramework)' == 'net472'">
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <!-- MSBuild-y stuff that runs in VS/MSBuild.exe should reference the lagging minimum version so
          it works in that slightly-older Visual Studio. -->
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildMinimumVersion)" />
@@ -177,5 +179,7 @@
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="PolySharp" Version="1.15.0" />
   </ItemGroup>
+
 </Project>

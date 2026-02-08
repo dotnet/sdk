@@ -337,7 +337,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public void CompletesNugetPackageIds()
         {
             NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
-            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string[] expected = ["Newtonsoft.Json"];
             var reporter = new BufferedReporter();
@@ -358,7 +358,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public void CompletesNugetPackageVersions()
         {
             NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
-            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string knownPackage = "Newtonsoft.Json";
             string knownVersion = "13.0.1"; // not exhaustive
@@ -380,7 +380,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public void CompletesNugetPackageVersionsWithStem()
         {
             NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
-            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string knownPackage = "Newtonsoft.Json";
             string knownVersion = "13.0"; // not exhaustive
@@ -406,7 +406,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public void CompletesNugetPackageVersionsWithPrereleaseVersionsWhenSpecified()
         {
             NuGetPackageDownloader.CliCompletionsTimeout = TimeSpan.FromDays(1);
-            var testAsset = _testAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
+            var testAsset = TestAssetsManager.CopyTestAsset("NugetCompletion").WithSource();
 
             string knownPackage = "Spectre.Console";
             string knownVersion = "0.49.1";

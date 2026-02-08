@@ -298,7 +298,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
             TemplatePackageManager templatePackageManager = A.Fake<TemplatePackageManager>();
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
             ParseResult parseResult = myCommand.Parse($" new {command}");
             var args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
             HashSet<TemplateCommand> templateCommands = InstantiateCommand.GetTemplateCommand(args, settings, A.Fake<TemplatePackageManager>(), templateGroup);

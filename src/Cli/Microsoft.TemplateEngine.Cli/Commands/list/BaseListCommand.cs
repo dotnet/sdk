@@ -7,52 +7,23 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class BaseListCommand : BaseCommand<ListCommandArgs>, IFilterableCommand, ITabularOutputCommand
+    internal abstract class BaseListCommand : BaseCommand<ListCommandArgs>, IFilterableCommand, ITabularOutputCommand
     {
-        internal static readonly IReadOnlyList<FilterOptionDefinition> SupportedFilters = new List<FilterOptionDefinition>()
-        {
-            FilterOptionDefinition.AuthorFilter,
-            FilterOptionDefinition.BaselineFilter,
-            FilterOptionDefinition.LanguageFilter,
-            FilterOptionDefinition.TypeFilter,
-            FilterOptionDefinition.TagFilter
-        };
+        private readonly CommandDefinition.List _definition;
 
         internal BaseListCommand(
-            NewCommand parentCommand,
             Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            string commandName)
-            : base(hostBuilder, commandName, SymbolStrings.Command_List_Description)
+            CommandDefinition.List definition)
+            : base(hostBuilder, definition)
         {
-            ParentCommand = parentCommand;
-            Filters = SetupFilterOptions(SupportedFilters);
-
-            Arguments.Add(NameArgument);
-            Options.Add(IgnoreConstraintsOption);
-            Options.Add(SharedOptions.OutputOption);
-            Options.Add(SharedOptions.ProjectPathOption);
-            SetupTabularOutputOptions(this);
+            _definition = definition;
         }
 
-        public virtual Option<bool> ColumnsAllOption { get; } = SharedOptionsFactory.CreateColumnsAllOption();
+        public IEnumerable<Option> FilterOptions => _definition.FilterOptions;
 
-        public virtual Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption();
+        public Option<bool> ColumnsAllOption => _definition.ColumnsAllOption;
 
-        public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters { get; protected set; }
-
-        internal static Option<bool> IgnoreConstraintsOption { get; } = new("--ignore-constraints")
-        {
-            Description = SymbolStrings.ListCommand_Option_IgnoreConstraints,
-            Arity = ArgumentArity.Zero
-        };
-
-        internal static Argument<string> NameArgument { get; } = new("template-name")
-        {
-            Description = SymbolStrings.Command_List_Argument_Name,
-            Arity = new ArgumentArity(0, 1)
-        };
-
-        internal NewCommand ParentCommand { get; }
+        public Option<string[]> ColumnsOption => _definition.ColumnsOption;
 
         protected override Task<NewCommandStatus> ExecuteAsync(
             ListCommandArgs args,
@@ -69,7 +40,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return templateListCoordinator.DisplayTemplateGroupListAsync(args, cancellationToken);
         }
 
-        protected override ListCommandArgs ParseContext(ParseResult parseResult) => new(this, parseResult);
+        protected override ListCommandArgs ParseContext(ParseResult parseResult)
+            => new(this, parseResult);
 
     }
 }

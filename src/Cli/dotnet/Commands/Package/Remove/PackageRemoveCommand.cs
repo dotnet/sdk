@@ -8,23 +8,26 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 
-internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parseResult)
+internal sealed class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
+    private readonly PackageRemoveCommandDefinitionBase _definition = (PackageRemoveCommandDefinitionBase)parseResult.CommandResult.Command;
+
     public override int Execute()
     {
-        var arguments = _parseResult.GetValue(PackageRemoveCommandParser.CmdPackageArgument) ?? [];
+        var arguments = _parseResult.GetValue(_definition.CmdPackageArgument) ?? [];
 
         if (arguments is not [{ } packageToRemove])
         {
             throw new GracefulException(CliCommandStrings.PackageRemoveSpecifyExactlyOnePackageReference);
         }
 
-        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_parseResult);
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_definition.FileOption, _definition.ProjectOption, projectOrFileArgument: null, _parseResult);
 
-        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuildingCommand.IsValidEntryPointPath(fileOrDirectory))
+        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
         {
             return ExecuteForFileBasedApp(path: fileOrDirectory, packageId: packageToRemove);
         }
@@ -34,7 +37,7 @@ internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parse
         string projectFilePath;
         if (!File.Exists(fileOrDirectory))
         {
-            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory).FullName;
+            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory);
         }
         else
         {
@@ -59,7 +62,7 @@ internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parse
         };
 
         args.AddRange(_parseResult
-            .OptionValuesToBeForwarded(PackageRemoveCommandParser.GetCommand())
+            .OptionValuesToBeForwarded(new PackageRemoveCommandDefinition())
             .SelectMany(a => a.Split(' ')));
 
         return [.. args];

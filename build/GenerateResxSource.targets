@@ -1,8 +1,13 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <PropertyGroup>
+    <CustomizeXlfSourceNamesDependsOn Condition="'$(SkipCustomizeXlfSourceNames)'!='true'">_CustomizeResourceNames</CustomizeXlfSourceNamesDependsOn>
+  </PropertyGroup>
+
   <Target Name="_CustomizeXlfSourceNames"
-          DependsOnTargets="_CustomizeResourceNames"
+          DependsOnTargets="$(CustomizeXlfSourceNamesDependsOn)"
           BeforeTargets="PrepareResourceNames;GatherXlf"
+          Condition="'$(SkipCustomizeXlfSourceNames)'!='true'"
           >
     <ItemGroup>
       <XlfSource Condition="'%(XlfSource.Namespace)' != ''">

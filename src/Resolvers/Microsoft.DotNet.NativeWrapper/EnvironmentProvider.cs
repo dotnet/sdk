@@ -70,12 +70,14 @@ namespace Microsoft.DotNet.NativeWrapper
             {
                 string? dotnetExeFromPath = GetCommandPath(Constants.DotNet);
 
+#if NET
                 if (dotnetExeFromPath != null && !Interop.RunningOnWindows)
                 {
-                    // e.g. on Linux the 'dotnet' command from PATH is a symlink so we need to
+                    // e.g. on Linux the 'dotnet' command from PATH may be a symlink so we need to
                     // resolve it to get the actual path to the binary
                     dotnetExeFromPath = Interop.Unix.realpath(dotnetExeFromPath) ?? dotnetExeFromPath;
                 }
+#endif
 
                 if (!string.IsNullOrWhiteSpace(dotnetExeFromPath))
                 {

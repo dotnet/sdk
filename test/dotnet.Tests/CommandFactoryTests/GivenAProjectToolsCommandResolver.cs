@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Tests
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
 
-            var projectDirectory = _testAssetsManager.CreateTestDirectory();
+            var projectDirectory = TestAssetsManager.CreateTestDirectory();
 
             var commandResolverArguments = new CommandResolverArguments()
             {
@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Tests
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
 
-            var testInstance = _testAssetsManager.CopyTestAsset(TestProjectName)
+            var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
             NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Tests
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
 
-            var testInstance = _testAssetsManager.CopyTestAsset(TestProjectName)
+            var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
             NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.Tests
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
 
-            var testInstance = _testAssetsManager.CopyTestAsset(TestProjectName)
+            var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
             NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
@@ -161,7 +161,7 @@ namespace Microsoft.DotNet.Tests
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
 
-            var testInstance = _testAssetsManager.CopyTestAsset(TestProjectName)
+            var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
             NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
@@ -188,7 +188,7 @@ namespace Microsoft.DotNet.Tests
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
 
-            var testInstance = _testAssetsManager.CopyTestAsset(TestProjectName)
+            var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
             NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
@@ -215,7 +215,7 @@ namespace Microsoft.DotNet.Tests
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
 
-            var testInstance = _testAssetsManager.CopyTestAsset(TestProjectName)
+            var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource()
                 .WithRepoGlobalPackages();
 
@@ -261,7 +261,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void GenerateDepsJsonMethodDoesntOverwriteWhenDepsFileAlreadyExists()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset(TestProjectName)
+            var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource()
                 .WithRepoGlobalPackages();
 
@@ -299,7 +299,7 @@ namespace Microsoft.DotNet.Tests
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
 
-            var testInstance = _testAssetsManager.CopyTestAsset(TestProjectName)
+            var testInstance = TestAssetsManager.CopyTestAsset(TestProjectName)
                 .WithSource();
 
             NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
@@ -325,7 +325,7 @@ namespace Microsoft.DotNet.Tests
         [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ItFindsToolsLocatedInTheNuGetFallbackFolder()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("AppWithFallbackFolderToolDependency")
+            var testInstance = TestAssetsManager.CopyTestAsset("AppWithFallbackFolderToolDependency")
                 .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -351,7 +351,7 @@ namespace Microsoft.DotNet.Tests
         [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ItShowsAnErrorWhenTheToolDllIsNotFound()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("AppWithFallbackFolderToolDependency")
+            var testInstance = TestAssetsManager.CopyTestAsset("AppWithFallbackFolderToolDependency")
                 .WithSource();
             var testProjectDirectory = testInstance.Path;
             var fallbackFolder = Path.Combine(testProjectDirectory, "fallbackFolder");

@@ -752,7 +752,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     // * Appends a trailing directory separator at the end.
     public static string NormalizeContentRootPath(string path)
         => Path.GetFullPath(path) +
-        // We need to do .ToString because there is no EndsWith overload for chars in .net472
+        // We need to do .ToString because there is no EndsWith overload for chars in .NET Framework
         (path.EndsWith(Path.DirectorySeparatorChar.ToString()), path.EndsWith(Path.AltDirectorySeparatorChar.ToString())) switch
         {
             (true, _) => "",

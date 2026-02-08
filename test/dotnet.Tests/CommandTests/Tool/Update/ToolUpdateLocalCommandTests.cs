@@ -25,7 +25,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
     {
         private readonly IFileSystem _fileSystem;
         private readonly string _temporaryDirectoryParent;
-        private readonly ParseResult _parseResult;
+        private readonly ParseResult _parseResultRestore;
+        private readonly ParseResult _parseResultUpdate;
         private readonly ParseResult _parseResultUpdateAll;
         private readonly BufferedReporter _reporter;
         private readonly string _temporaryDirectory;
@@ -104,11 +105,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new FakeDangerousFileDetector());
             _toolManifestEditor = new ToolManifestEditor(_fileSystem, new FakeDangerousFileDetector());
 
-            _parseResult = Parser.Parse($"dotnet tool update {_packageIdA.ToString()}");
+            _parseResultRestore = Parser.Parse($"dotnet tool restore");
+            _parseResultUpdate = Parser.Parse($"dotnet tool update {_packageIdA}");
             _parseResultUpdateAll = Parser.Parse($"dotnet tool update --all --local");
 
             _toolRestoreCommand = new ToolRestoreCommand(
-                _parseResult,
+                _parseResultRestore,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _localToolsResolverCache,
@@ -117,7 +119,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             );
 
             _defaultToolUpdateLocalCommand = new ToolUpdateLocalCommand(
-                _parseResult,
+                _parseResultUpdate,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -199,9 +201,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
             var toolUpdateCommand = new ToolUpdateCommand(
-                _parseResult,
+                _parseResultUpdate,
                 _reporter,
-                new ToolUpdateGlobalOrToolPathCommand(_parseResult),
+                new ToolUpdateGlobalOrToolPathCommand(_parseResultUpdate),
                 _defaultToolUpdateLocalCommand);
 
             toolUpdateCommand.Execute().Should().Be(0);

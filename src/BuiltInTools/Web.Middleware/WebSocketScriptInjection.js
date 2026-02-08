@@ -208,6 +208,11 @@ setTimeout(async function () {
     console.debug('Reporting Hot Reload diagnostics.');
 
     document.querySelectorAll('#dotnet-compile-error').forEach(el => el.remove());
+
+    if (diagnostics.length == 0) {
+      return;
+    }
+
     const el = document.body.appendChild(document.createElement('div'));
     el.id = 'dotnet-compile-error';
     el.setAttribute('style', 'z-index:1000000; position:fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); color:black; overflow: scroll;');

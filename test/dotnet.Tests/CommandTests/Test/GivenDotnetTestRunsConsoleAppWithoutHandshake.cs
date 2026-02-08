@@ -20,12 +20,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             // This test validates the behavior when running `dotnet test` against a console application
             // that does "nothing" and doesn't handshake with us.
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("ConsoleAppDoesNothing", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("ConsoleAppDoesNothing", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure, "dotnet test should fail with a meaningful error when run against console app without MTP handshake");
         }

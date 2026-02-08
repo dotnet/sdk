@@ -32,6 +32,8 @@ Additionally, the implicit project file has the following customizations:
 
 - `PublishAot` is set to `true`, see [`dotnet publish file.cs`](#other-commands) for more details.
 
+- `PackAsTool` is set to `true`, see [`dotnet pack file.cs`](#other-commands) for more details.
+
 - `UserSecretsId` is set to a hash of the entry point file path.
 
 - [File-level directives](#directives-for-project-metadata) are applied.
@@ -102,8 +104,14 @@ and working directory is not changed (e.g., `cd /x/ && dotnet run /y/file.cs` ru
 If a dash (`-`) is given instead of the target path (i.e., `dotnet run -`), the C# file to be executed is read from the standard input.
 In this case, the current working directory is not used to search for other files (launch profiles, other sources in case of multi-file apps);
 the compilation consists solely of the single file read from the standard input.
+However, the current working directory is still used as the working directory for building and executing the program.
+To reference projects relative to the current working directory (instead of relative to the temporary directory the file is isolated in),
+you can use something like `#:project $(MSBuildStartupDirectory)/relative/path`.
 
-`dotnet path.cs` is a shortcut for `dotnet run --file path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported).
+`dotnet path.cs` is a shortcut for `dotnet run --file path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported)
+and it is not a DLL path, built-in command, or a NuGet tool (e.g., `dotnet watch` invokes the `dotnet-watch` tool
+even if a valid `watch` file-based app exists in the current directory;
+one can use `dotnet ./watch` to run the file-based app).
 
 ### Other commands
 
@@ -112,6 +120,8 @@ Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE 
 Commands `dotnet publish file.cs` and `dotnet pack file.cs` are also supported for file-based programs.
 Note that file-based apps have implicitly set `PublishAot=true`, so publishing uses Native AOT (and building reports AOT warnings).
 To opt out, use `#:property PublishAot=false` directive in your `.cs` file.
+Additionally, file-based apps have implicitly set `PackAsTool=true` because file-based apps are usually tools;
+again, you can opt out via `#:property PackAsTool=false`.
 
 Command `dotnet clean file.cs` can be used to clean build artifacts of the file-based program.
 
@@ -247,6 +257,16 @@ The directives are processed as follows:
   If the path points to an existing directory, a project file is found inside that directory and its path is used instead
   (because `ProjectReference` items don't support directory paths).
   An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.
+
+Directive values support MSBuild variables (like `$(..)`) normally as they are translated literally and left to MSBuild engine to process.
+However, in `#:project` directives, variables might not be preserved during [grow up](#grow-up),
+because there is additional processing of those directives that makes it technically challenging to preserve variables in all cases
+(project directive values need to be resolved to be relative to the target directory
+and also to point to a project file rather than a directory).
+Note that it is not expected that variables inside the path change their meaning during the conversion,
+so for example `#:project ../$(LibName)` is translated to `<ProjectReference Include="../../$(LibName)/Lib.csproj" />` (i.e., the variable is preserved).
+However, variables at the start can change, so for example `#:project $(ProjectDir)../Lib` is translated to `<ProjectReference Include="../../Lib/Lib.csproj" />` (i.e., the variable is expanded).
+In other directives, all variables are preserved during conversion.
 
 Because these directives are limited by the C# language to only appear before the first "C# token" and any `#if`,
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols

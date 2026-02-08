@@ -12,7 +12,7 @@ namespace EndToEnd.Tests
         [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
-            string projectDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            string projectDirectory = TestAssetsManager.CreateTestDirectory().Path;
 
             string[] newArgs = ["console", "--no-restore"];
             new DotnetNewCommand(Log)
@@ -45,7 +45,7 @@ namespace EndToEnd.Tests
         [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ItCanRunToolsInACSProj()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -79,7 +79,7 @@ namespace EndToEnd.Tests
         [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ItCanRunToolsThatPrefersTheCliRuntimeEvenWhenTheToolItselfDeclaresADifferentRuntime()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
                 .WithSource()
                 .WithProjectChanges(project =>
                 {

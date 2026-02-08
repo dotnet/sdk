@@ -21,13 +21,6 @@ internal static class CommonRunHelpers
         return globalProperties;
     }
 
-    public static string GetPropertiesLaunchSettingsPath(string directoryPath, string propertiesDirectoryName)
-        => Path.Combine(directoryPath, propertiesDirectoryName, "launchSettings.json");
-
-    public static string GetFlatLaunchSettingsPath(string directoryPath, string projectNameWithoutExtension)
-        => Path.Join(directoryPath, $"{projectNameWithoutExtension}.run.json");
-
-
     /// <summary>
     /// Applies adjustments to MSBuild arguments to better suit LLM/agentic environments, if such an environment is detected.
     /// </summary>

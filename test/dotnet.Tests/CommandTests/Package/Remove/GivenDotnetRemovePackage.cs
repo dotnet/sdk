@@ -66,7 +66,7 @@ Commands:
         [Fact]
         public void WhenReferencedPackageIsPassedItGetsRemoved()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppSimple")
                 .WithSource().Path;
 
@@ -89,7 +89,7 @@ Commands:
         [Fact]
         public void FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 #:package Humanizer@2.14.1
@@ -111,7 +111,7 @@ Commands:
         [Fact]
         public void FileBasedApp_Multiple()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 #:package Humanizer@2.14.1
@@ -139,7 +139,7 @@ Commands:
         [Fact]
         public void FileBasedApp_None()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();

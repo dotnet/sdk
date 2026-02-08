@@ -1,3 +1,7 @@
+Use the instructions from the main branch if available: @dotnet/sdk/files/.github/copilot-instructions.md
+
+If the instructions from main are not available, use the following as a fallback:
+
 Coding Style and Changes:
 - Code should match the style of the file it's in.
 - Changes should be minimal to resolve a problem in a clean way.
@@ -11,6 +15,7 @@ Coding Style and Changes:
 
 Testing:
 - Large changes should always include test changes.
+- When creating new test projects in test/TestAssets/TestProjects, always use `$(CurrentTargetFramework)` for the `<TargetFramework>` property instead of hard-coding a specific version like `net8.0`.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
 - To run tests in this repo:
   - Use the repo-local dotnet instance: `./.dotnet/dotnet`

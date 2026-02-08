@@ -18,6 +18,8 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
@@ -37,10 +39,13 @@ public class Program
 
         using AutomaticEncodingRestorer _ = new();
 
-        // Setting output encoding is not available on those platforms
-        if (UILanguageOverride.OperatingSystemSupportsUtf8())
+        if (Env.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") != "1")
         {
-            Console.OutputEncoding = Encoding.UTF8;
+            // Setting output encoding is not available on those platforms
+            if (UILanguageOverride.OperatingSystemSupportsUtf8())
+            {
+                Console.OutputEncoding = Encoding.UTF8;
+            }
         }
 
         DebugHelper.HandleDebugSwitch(ref args);
@@ -306,19 +311,19 @@ public class Program
         {
             // If we didn't match any built-in commands, and a C# file path is the first argument,
             // parse as `dotnet run --file file.cs ..rest_of_args` instead.
-            if (parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
-                && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile))
+            if (parseResult.GetResult(Parser.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
+                && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value))
             {
                 List<string> otherTokens = new(parseResult.Tokens.Count - 1);
                 foreach (var token in parseResult.Tokens)
                 {
-                    if (token.Type != TokenType.Argument || token.Value != unmatchedCommandOrFile)
+                    if (token != unmatchedCommandOrFile)
                     {
                         otherTokens.Add(token.Value);
                     }
                 }
 
-                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile, .. otherTokens]);
+                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
 
                 InvokeBuiltInCommand(parseResult, out var exitCode);
                 return exitCode;
@@ -412,10 +417,12 @@ public class Program
 
         dotnetConfigurer.Configure();
 
+#if !DOT_NET_BUILD_FROM_SOURCE
         if (isDotnetBeingInvokedFromNativeInstaller && OperatingSystem.IsWindows())
         {
             DotDefaultPathCorrector.Correct();
         }
+#endif
 
         if (isFirstTimeUse && !dotnetFirstRunConfiguration.SkipWorkloadIntegrityCheck)
         {

@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CanListInstalledSources_NuGet(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "-i", "Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "-i", "Microsoft.DotNet.Web.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -140,7 +140,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CanUninstall_NuGet(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "-i", "Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "-i", "Microsoft.DotNet.Web.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -181,7 +181,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And
                 .NotHaveStdErr()
-                .And.HaveStdOutContaining($"Success: Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0 was uninstalled.");
+                .And.HaveStdOutContaining($"Success: Microsoft.DotNet.Web.ProjectTemplates.5.0@5.0.0 was uninstalled.");
 
             new DotnetNewCommand(_log, commandName)
                 .WithCustomHive(home)
@@ -225,7 +225,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And
                 .NotHaveStdErr()
-                .And.HaveStdOutMatching($"^Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0::([\\d\\.a-z-])+ was uninstalled\\.\\s*$", RegexOptions.Multiline)
+                .And.HaveStdOutMatching($"^Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+ was uninstalled\\.\\s*$", RegexOptions.Multiline)
                 .And.HaveStdOutContaining($"Success: {basicFSharp} was uninstalled.");
 
             new DotnetNewCommand(_log, "-u")
@@ -271,7 +271,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And
                 .NotHaveStdErr()
-                .And.HaveStdOutMatching($"^Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0::([\\d\\.a-z-])+ was uninstalled\\.\\s*$", RegexOptions.Multiline)
+                .And.HaveStdOutMatching($"^Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+ was uninstalled\\.\\s*$", RegexOptions.Multiline)
                 .And.HaveStdOutContaining($"Success: {basicFSharp} was uninstalled.");
 
             new DotnetNewCommand(_log, "uninstall")
@@ -294,7 +294,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CannotUninstallUnknownPackage(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Web.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -322,7 +322,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CannotUninstallByTemplateName(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -338,7 +338,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should().Fail()
                 .And.HaveStdErrContaining("The template package 'console' is not found")
                 .And.HaveStdErrContaining("The template 'console' is included to the packages:")
-                .And.HaveStdErrContaining("   Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0 (contains 2 templates)")
+                .And.HaveStdErrContaining("   Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0 (contains 2 templates)")
                 //                .And.HaveStdErrContaining("To list the templates installed in a package, use dotnet new <new option> <package name>")
                 .And.HaveStdErrContaining("To uninstall the template package use:")
                 .And.HaveStdErrContaining("   dotnet new uninstall Microsoft.DotNet.Common.ProjectTemplates.5.0");
@@ -350,7 +350,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CannotUninstallByTemplateName_ShowsAllPackages(string commandName)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -359,7 +359,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And
                 .NotHaveStdErr();
 
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.3.1::5.0.0")
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.3.1@5.0.0")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -375,8 +375,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should().Fail()
                 .And.HaveStdErrContaining("The template package 'console' is not found")
                 .And.HaveStdErrContaining("The template 'console' is included to the packages:")
-                .And.HaveStdErrContaining("   Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0 (contains 2 templates)")
-                .And.HaveStdErrContaining("   Microsoft.DotNet.Common.ProjectTemplates.3.1::5.0.0 (contains 2 templates)")
+                .And.HaveStdErrContaining("   Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0 (contains 2 templates)")
+                .And.HaveStdErrContaining("   Microsoft.DotNet.Common.ProjectTemplates.3.1@5.0.0 (contains 2 templates)")
                 .And.HaveStdErrContaining("To uninstall the template package use:")
                 .And.HaveStdErrContaining("   dotnet new uninstall Microsoft.DotNet.Common.ProjectTemplates.");
         }
