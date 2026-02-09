@@ -29,8 +29,6 @@ jobs:
   read-diff:
     name: Read .xlf Diff
     runs-on: ubuntu-latest
-    # Only run on the main repository, not forks
-    if: github.repository == 'dotnet/sdk'
     permissions:
       contents: read
     outputs:
