@@ -3,8 +3,6 @@
 
 #if NETCOREAPP
 
-using Xunit;
-
 namespace Microsoft.NET.TestFramework
 {
     public class RequiresSpecificFrameworkFactAttribute : FactAttribute

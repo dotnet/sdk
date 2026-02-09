@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
-using Microsoft.NET.TestFramework.Commands;
 
 namespace Microsoft.NET.Build.Tests
 {
