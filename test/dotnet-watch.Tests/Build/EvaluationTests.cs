@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private readonly TestAssetsManager _testAssets = new(output);
 
         private static string MuxerPath
-            => TestContext.Current.ToolsetUnderTest.DotNetHostPath;
+            => SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath;
 
         private static string InspectPath(string path, string rootDir)
             => path.Substring(rootDir.Length + 1).Replace("\\", "/");

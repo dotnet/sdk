@@ -36,7 +36,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             // Resolve the targeting pack and the target framework used to compile the test assembly.
             var sdkTargetFrameworkTargetingPackVersion = (string)AppContext.GetData("ReferenceAssemblies.SdkTargetFramework.TargetingPackVersion")!;
             var sdkTargetFrameworkTargetFramework = (string)AppContext.GetData("ReferenceAssemblies.SdkTargetFramework.TargetFramework")!;
-            var nugetConfigPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config");
+            var nugetConfigPath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config");
             ReferenceAssemblies sdkTargetFrameworkReferenceAssemblies = new(sdkTargetFrameworkTargetFramework,
                 new PackageIdentity("Microsoft.NETCore.App.Ref", sdkTargetFrameworkTargetingPackVersion),
                 Path.Combine("ref", sdkTargetFrameworkTargetFramework));

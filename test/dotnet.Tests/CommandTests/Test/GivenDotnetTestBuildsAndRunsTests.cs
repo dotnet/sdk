@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Zero tests ran")
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("(try 2)")
@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Zero tests ran")
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")
@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithEnvironmentVariable("TEST_ENV_VAR", "TestValue1")
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Using launch settings from")
@@ -255,7 +255,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
@@ -281,7 +281,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("--minimum-expected-tests", "2",
                                         "-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.ZeroTestsRan, true, configuration, "8"), result.StdOut);
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Failed, true, configuration, "2"), result.StdOut);
@@ -310,7 +310,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
             }
@@ -330,7 +330,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
             }
@@ -350,7 +350,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
@@ -370,7 +370,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
@@ -390,7 +390,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain(CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
             }
@@ -416,7 +416,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(args);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")
@@ -446,7 +446,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         "-c", configuration,
                                         "--property", "PROPERTY_TO_ENABLE_MTP=1");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")
@@ -504,7 +504,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute();
 
             result.ExitCode.Should().NotBe(ExitCodes.Success);
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 /*
                 The following exception occurred when running the test module with RunCommand 'C:\Users\ygerges\Desktop\sdk\artifacts\tmp\Debug\testing\19cefafa-91c4---0D0799BD\TestProject1\bin\Debug\net10.0\TestProject1.exe' and RunArguments ' ':
@@ -542,7 +542,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             // The test asset exits with Environment.Exit(47);
             result.ExitCode.Should().Be(47);
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().NotContain("A test session start event was received without a corresponding test session end");
 
@@ -573,7 +573,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         "-c", configuration,
                                         "--environment", "DUMMY_TEST_ENV_VAR=ENV_VAR_CMD_LINE");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Using launch settings from")
