@@ -10,8 +10,12 @@ You are investigating a GitHub issue to determine the root cause of unexpected .
 
 ## Step 1: Read the issue
 
-Use `gh issue view <number> --repo dotnet/sdk --json title,body,comments,labels` to fetch the issue details.
+Use `gh issue view` to fetch the issue details:
 
+- If you are given a full GitHub issue URL like `https://github.com/OWNER/REPO/issues/123`, extract `OWNER/REPO` and the issue number, then run:  
+  `gh issue view 123 --repo OWNER/REPO --json title,body,comments,labels`
+- If you are only given an issue number for the .NET SDK repo, assume `dotnet/sdk` as the default:  
+  `gh issue view <number> --repo dotnet/sdk --json title,body,comments,labels`
 Extract from the issue:
 - **Symptom**: What the user observes (e.g., unexpected files in output, build error, wrong behavior).
 - **Expected behavior**: What the user expected instead.
@@ -104,7 +108,7 @@ Once the binlog analysis points to specific targets, read the actual target defi
 
 ### Finding targets
 
-Use `Grep` to search for target names in the local clones of these repos. If a local clone is not available, use `gh api` or `WebFetch` to read files from GitHub directly.
+Use `grep` to search for target names in the local clones of these repos. If a local clone is not available, use `gh api` or `WebFetch` to read files from GitHub directly.
 
 When reading targets, pay attention to:
 - **`Condition` attributes** — is the target or item group conditioned on the right properties?
@@ -126,7 +130,7 @@ When you find such cross-repo interactions, read the targets from **both** repos
 Before suggesting a fix, search the codebase for how similar problems have been solved:
 
 1. **Search for analogous conditions**: If the fix is to add a condition like `Condition="'$(PublishAot)' != 'true'"`, search the targets for existing uses of that pattern to confirm it's an established convention.
-2. **Search git history**: Use `git log --all --oneline -S "SearchTerm" -- "*.targets"` to find commits that modified related targets.
+2. **Search git history**: Use `git log --all --oneline -S "SearchTerm" -- "**/*.targets"` to find commits that modified related targets.
 3. **Search for related issues/PRs**: Use `gh search issues` or `gh search prs` in the relevant repo to find prior discussions.
 4. **Check official documentation**: Use the `microsoft_docs_search` and `microsoft_docs_fetch` tools to find relevant documentation about the feature area (e.g., NativeAOT publishing, single-file deployment, satellite assembly handling).
 
