@@ -13,41 +13,70 @@ using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
+using Microsoft.Dotnet.Installation;
+
 internal class DotnetArchiveExtractor : IDisposable
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
     private readonly IProgressTarget _progressTarget;
+    private readonly IArchiveDownloader _archiveDownloader;
+    private readonly bool _shouldDisposeDownloader;
     private string scratchDownloadDirectory;
     private string? _archivePath;
     private int _extractedFileCount;
+    private IProgressReporter? _progressReporter;
 
-    public DotnetArchiveExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, IProgressTarget progressTarget)
+    public DotnetArchiveExtractor(
+        DotnetInstallRequest request,
+        ReleaseVersion resolvedVersion,
+        ReleaseManifest releaseManifest,
+        IProgressTarget progressTarget,
+        IArchiveDownloader? archiveDownloader = null)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
         _progressTarget = progressTarget;
         scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
+
+        if (archiveDownloader != null)
+        {
+            _archiveDownloader = archiveDownloader;
+            _shouldDisposeDownloader = false;
+        }
+        else
+        {
+            _archiveDownloader = new DotnetArchiveDownloader(releaseManifest);
+            _shouldDisposeDownloader = true;
+        }
     }
+
+    /// <summary>
+    /// Gets the scratch download directory path. Exposed for testing.
+    /// </summary>
+    internal string ScratchDownloadDirectory => scratchDownloadDirectory;
+
+    /// <summary>
+    /// Gets or creates the shared progress reporter for both Prepare and Commit phases.
+    /// This avoids multiple newlines from Spectre.Console Progress between phases.
+    /// </summary>
+    private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget.CreateProgressReporter();
 
     public void Prepare()
     {
-        using var archiveDownloader = new DotnetArchiveDownloader();
+        using var activity = InstallationActivitySource.ActivitySource.StartActivity("download");
+        activity?.SetTag("download.version", _resolvedVersion.ToString());
+
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
-        using var progressReporter = _progressTarget.CreateProgressReporter();
-        var downloadTask = progressReporter.AddTask("download", $"Downloading .NET SDK {_resolvedVersion}", 100);
-        downloadTask.SetTag("download.component", _request.Component.ToString());
-        downloadTask.SetTag("download.version", _resolvedVersion.ToString());
-
-        var reporter = new DownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
+        string componentDescription = _request.Component.GetDisplayName();
+        var downloadTask = ProgressReporter.AddTask($"Downloading {componentDescription} {_resolvedVersion}", 100);
+        var reporter = new DownloadProgressReporter(downloadTask, $"Downloading {componentDescription} {_resolvedVersion}");
 
         try
         {
-            archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter, downloadTask);
-            downloadTask.Value = 100;
-            downloadTask.Complete();
+            _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
         }
         catch (DotnetInstallException)
         {
@@ -55,7 +84,6 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         catch (HttpRequestException ex)
         {
-            downloadTask.RecordError(ex);
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.DownloadFailed,
                 $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
@@ -65,7 +93,6 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         catch (Exception ex)
         {
-            downloadTask.RecordError(ex);
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.DownloadFailed,
                 $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
@@ -73,22 +100,23 @@ internal class DotnetArchiveExtractor : IDisposable
                 version: _resolvedVersion.ToString(),
                 component: _request.Component.ToString());
         }
+
+        downloadTask.Value = 100;
     }
 
     public void Commit()
     {
-        using var progressReporter = _progressTarget.CreateProgressReporter();
-        var installTask = progressReporter.AddTask("extract", $"Installing .NET SDK {_resolvedVersion}", maxValue: 100);
-        installTask.SetTag("extract.component", _request.Component.ToString());
-        installTask.SetTag("extract.version", _resolvedVersion.ToString());
+        using var activity = InstallationActivitySource.ActivitySource.StartActivity("extract");
+        activity?.SetTag("download.version", _resolvedVersion.ToString());
+
+        string componentDescription = _request.Component.GetDisplayName();
+        var installTask = ProgressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
 
         try
         {
             // Extract archive directly to target directory with special handling for muxer
             ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
             installTask.Value = installTask.MaxValue;
-            installTask.SetTag("extract.file_count", _extractedFileCount);
-            installTask.Complete();
         }
         catch (DotnetInstallException)
         {
@@ -97,7 +125,6 @@ internal class DotnetArchiveExtractor : IDisposable
         catch (InvalidDataException ex)
         {
             // Archive is corrupted (invalid zip/tar format)
-            installTask.RecordError(ex);
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.ArchiveCorrupted,
                 $"Archive is corrupted or truncated for version {_resolvedVersion}: {ex.Message}",
@@ -107,7 +134,6 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         catch (Exception ex)
         {
-            installTask.RecordError(ex);
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.ExtractionFailed,
                 $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
@@ -170,6 +196,7 @@ internal class DotnetArchiveExtractor : IDisposable
                         File.Delete(muxerTargetPath);
                     }
                     File.Move(muxerTempPath, muxerTargetPath);
+                    Activity.Current?.SetTag("muxer.action", "kept_existing");
                     installTask?.SetTag("muxer.action", "kept_existing");
                 }
                 else
@@ -179,6 +206,9 @@ internal class DotnetArchiveExtractor : IDisposable
                     {
                         File.Delete(muxerTempPath);
                     }
+                    Activity.Current?.SetTag("muxer.action", "updated");
+                    Activity.Current?.SetTag("muxer.previous_version", existingMuxerVersion?.ToString() ?? "unknown");
+                    Activity.Current?.SetTag("muxer.new_version", newMuxerVersion?.ToString() ?? "unknown");
                     installTask?.SetTag("muxer.action", "updated");
                     installTask?.SetTag("muxer.previous_version", existingMuxerVersion?.ToString() ?? "unknown");
                     installTask?.SetTag("muxer.new_version", newMuxerVersion?.ToString() ?? "unknown");
@@ -186,6 +216,7 @@ internal class DotnetArchiveExtractor : IDisposable
             }
             else if (!hadExistingMuxer)
             {
+                Activity.Current?.SetTag("muxer.action", "new_install");
                 installTask?.SetTag("muxer.action", "new_install");
             }
         }
@@ -396,6 +427,27 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Dispose()
     {
+        try
+        {
+            // Dispose the progress reporter to finalize progress display
+            _progressReporter?.Dispose();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            // Dispose the archive downloader if we created it
+            if (_shouldDisposeDownloader)
+            {
+                _archiveDownloader.Dispose();
+            }
+        }
+        catch
+        {
+        }
+
         try
         {
             // Clean up temporary download directory

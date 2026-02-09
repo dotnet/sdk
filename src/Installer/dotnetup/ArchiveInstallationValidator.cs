@@ -35,6 +35,16 @@ internal class ArchiveInstallationValidator : IInstallationValidator
         string dotnetMuxerPath = Path.Combine(installRoot, DotnetupUtilities.GetDotnetExeName());
         if (!File.Exists(dotnetMuxerPath))
         {
+            // Windows Desktop archive doesn't include the muxer or core runtime.
+            // If the component layout is correct, we can still consider the install valid.
+            if (install.Component == InstallComponent.WindowsDesktop)
+            {
+                string resolvedVersionLayout = install.Version.ToString();
+                if (ValidateComponentLayout(installRoot, resolvedVersionLayout, install.Component))
+                {
+                    return true;
+                }
+            }
             return false;
         }
 
@@ -59,16 +69,36 @@ internal class ArchiveInstallationValidator : IInstallationValidator
         if (component == InstallComponent.SDK)
         {
             string sdkDirectory = Path.Combine(installRoot, "sdk", resolvedVersion);
-            return Directory.Exists(sdkDirectory);
+            return DirectoryExistsAndNotEmpty(sdkDirectory);
         }
 
         if (RuntimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker))
         {
             string runtimeDirectory = Path.Combine(installRoot, "shared", runtimeMoniker, resolvedVersion);
-            return Directory.Exists(runtimeDirectory);
+            return DirectoryExistsAndNotEmpty(runtimeDirectory);
         }
 
         return false;
+    }
+
+    private static bool DirectoryExistsAndNotEmpty(string path)
+    {
+        return Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any();
+    }
+
+    /// <summary>
+    /// Checks if the component files already exist on disk (e.g., from an SDK install that includes the runtime).
+    /// This is a lightweight check that doesn't validate the full installation integrity.
+    /// </summary>
+    public static bool ComponentFilesExist(DotnetInstall install)
+    {
+        string? installRoot = install.InstallRoot.Path;
+        if (string.IsNullOrEmpty(installRoot))
+        {
+            return false;
+        }
+
+        return ValidateComponentLayout(installRoot, install.Version.ToString(), install.Component);
     }
 
     private bool ValidateWithHostFxr(string installRoot, ReleaseVersion resolvedVersion, InstallComponent component)
@@ -90,11 +120,13 @@ internal class ArchiveInstallationValidator : IInstallationValidator
                 return false;
             }
 
-            string expectedRuntimePath = Path.Combine(installRoot, "shared", runtimeMoniker, resolvedVersion.ToString());
+            // The HostFxr returns paths like shared/Microsoft.NETCore.App (without version)
+            // but when comparing, we need to account for this
+            string expectedRuntimeBasePath = Path.Combine(installRoot, "shared", runtimeMoniker);
             return environmentInfo.RuntimeInfo.Any(runtime =>
                 string.Equals(runtime.Name, runtimeMoniker, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(runtime.Version.ToString(), resolvedVersion.ToString(), StringComparison.OrdinalIgnoreCase) &&
-                DotnetupUtilities.PathsEqual(runtime.Path, expectedRuntimePath));
+                DotnetupUtilities.PathsEqual(runtime.Path, expectedRuntimeBasePath));
         }
         catch
         {

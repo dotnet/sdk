@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,7 +21,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// <summary>
 /// Handles downloading and parsing .NET release manifests to find the correct installer/archive for a given installation.
 /// </summary>
-internal class DotnetArchiveDownloader : IDisposable
+internal class DotnetArchiveDownloader : IArchiveDownloader
 {
     private const int MaxRetryCount = 3;
     private const int RetryDelayMilliseconds = 1000;
@@ -200,13 +201,11 @@ internal class DotnetArchiveDownloader : IDisposable
     /// <param name="resolvedVersion">The resolved version to download</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    /// <param name="telemetryTask">Optional progress task for telemetry tags</param>
     public void DownloadArchiveWithVerification(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion,
         string destinationPath,
-        IProgress<DownloadProgress>? progress = null,
-        IProgressTask? telemetryTask = null)
+        IProgress<DownloadProgress>? progress = null)
     {
         var targetFile = _releaseManifest.FindReleaseFile(installRequest, resolvedVersion);
 
@@ -239,8 +238,8 @@ internal class DotnetArchiveDownloader : IDisposable
                 component: installRequest.Component.ToString());
         }
 
-        // Set download URL for telemetry (caller is responsible for sanitization)
-        telemetryTask?.SetTag("download.url", downloadUrl);
+        // Set download URL for telemetry
+        Activity.Current?.SetTag("download.url", downloadUrl);
 
         // Check the cache first
         string? cachedFilePath = _downloadCache.GetCachedFilePath(downloadUrl);
@@ -258,8 +257,8 @@ internal class DotnetArchiveDownloader : IDisposable
                 progress?.Report(new DownloadProgress(100, 100));
 
                 var cachedFileInfo = new FileInfo(cachedFilePath);
-                telemetryTask?.SetTag("download.bytes", cachedFileInfo.Length);
-                telemetryTask?.SetTag("download.from_cache", true);
+                Activity.Current?.SetTag("download.bytes", cachedFileInfo.Length);
+                Activity.Current?.SetTag("download.from_cache", true);
                 return;
             }
             catch
@@ -275,8 +274,8 @@ internal class DotnetArchiveDownloader : IDisposable
         VerifyFileHash(destinationPath, expectedHash);
 
         var fileInfo = new FileInfo(destinationPath);
-        telemetryTask?.SetTag("download.bytes", fileInfo.Length);
-        telemetryTask?.SetTag("download.from_cache", false);
+        Activity.Current?.SetTag("download.bytes", fileInfo.Length);
+        Activity.Current?.SetTag("download.from_cache", false);
 
         // Add the verified file to the cache
         try
