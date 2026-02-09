@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -25,7 +26,7 @@ internal class MuxerHandler
     private readonly string _existingMuxerBackupPath;
     private readonly bool _requireMuxerUpdate;
 
-    private Version? _preExtractionHighestRuntimeVersion;
+    private ReleaseVersion? _preExtractionHighestRuntimeVersion;
     private bool _hadExistingMuxer;
     private bool _extractedNewMuxer;
     private bool _movedExistingMuxer;
@@ -176,8 +177,9 @@ internal class MuxerHandler
 
     /// <summary>
     /// Gets the latest runtime version from the install root by checking the shared/Microsoft.NETCore.App directory.
+    /// Uses <see cref="ReleaseVersion"/> for proper semver comparison, including pre-release labels.
     /// </summary>
-    private static Version? GetLatestRuntimeVersionFromInstallRoot(string installRoot)
+    internal static ReleaseVersion? GetLatestRuntimeVersionFromInstallRoot(string installRoot)
     {
         var runtimePath = Path.Combine(installRoot, "shared", "Microsoft.NETCore.App");
         if (!Directory.Exists(runtimePath))
@@ -185,11 +187,11 @@ internal class MuxerHandler
             return null;
         }
 
-        Version? highestVersion = null;
+        ReleaseVersion? highestVersion = null;
         foreach (var dir in Directory.GetDirectories(runtimePath))
         {
             var versionString = Path.GetFileName(dir);
-            if (Version.TryParse(versionString, out Version? dirVersion))
+            if (ReleaseVersion.TryParse(versionString, out ReleaseVersion? dirVersion))
             {
                 if (highestVersion == null || dirVersion > highestVersion)
                 {

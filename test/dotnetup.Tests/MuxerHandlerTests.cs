@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using FluentAssertions;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Xunit;
 
@@ -173,6 +174,129 @@ public class MuxerHandlerTests : IDisposable
 
         // Assert - should install new muxer
         File.ReadAllText(_muxerPath).Should().Be("new-8.0");
+    }
+
+    [Fact]
+    public void PreReleaseRuntimeVersion_IsRecognized()
+    {
+        // Arrange - only a preview runtime exists
+        CreateRuntime("10.0.0-preview.5.25280.5");
+        CreateExistingMuxer("existing-10.0-preview");
+        _handler.RecordPreExtractionState();
+
+        // Install 9.0.x (lower major version)
+        CreateRuntime("9.0.32");
+        SimulateMuxerExtraction("new-9.0");
+
+        // Act
+        _handler.FinalizeAfterExtraction();
+
+        // Assert - muxer should NOT be downgraded since 10.0.0 > 9.0.32
+        File.ReadAllText(_muxerPath).Should().Be("existing-10.0-preview");
+        File.Exists(_handler.TempMuxerPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public void PreReleaseRuntimeVersion_UpgradeFromRelease()
+    {
+        // Arrange - release 9.0 runtime exists
+        CreateRuntime("9.0.32");
+        CreateExistingMuxer("existing-9.0");
+        _handler.RecordPreExtractionState();
+
+        // Install 10.0 preview (higher major version)
+        CreateRuntime("10.0.0-preview.5.25280.5");
+        SimulateMuxerExtraction("new-10.0-preview");
+
+        // Act
+        _handler.FinalizeAfterExtraction();
+
+        // Assert - muxer SHOULD be upgraded since 10.0.0 > 9.0.32
+        File.ReadAllText(_muxerPath).Should().Be("new-10.0-preview");
+    }
+
+    [Fact]
+    public void GetLatestRuntimeVersionFromInstallRoot_HandlesPreReleaseVersions()
+    {
+        // Arrange
+        CreateRuntime("9.0.32");
+        CreateRuntime("10.0.0-preview.5.25280.5");
+        CreateRuntime("8.0.15");
+
+        // Act
+        var result = MuxerHandler.GetLatestRuntimeVersionFromInstallRoot(_testDir);
+
+        // Assert - should return the full pre-release version
+        result.Should().NotBeNull();
+        result!.Major.Should().Be(10);
+        result.Minor.Should().Be(0);
+        result.Patch.Should().Be(0);
+        result.Prerelease.Should().Be("preview.5.25280.5");
+    }
+
+    [Fact]
+    public void PreReleaseRuntimeVersion_Preview5NotReplacedByPreview4()
+    {
+        // Arrange - preview 6 already installed
+        CreateRuntime("10.0.0-preview.6.25300.1");
+        CreateExistingMuxer("existing-preview6");
+        _handler.RecordPreExtractionState();
+
+        // Install preview 5 (older preview)
+        CreateRuntime("10.0.0-preview.5.25280.5");
+        SimulateMuxerExtraction("new-preview5");
+
+        // Act
+        _handler.FinalizeAfterExtraction();
+
+        // Assert - muxer should NOT be downgraded
+        File.ReadAllText(_muxerPath).Should().Be("existing-preview6");
+        File.Exists(_handler.TempMuxerPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public void PreReleaseRuntimeVersion_Preview5ReplacedByPreview6()
+    {
+        // Arrange - preview 5 already installed
+        CreateRuntime("10.0.0-preview.5.25280.5");
+        CreateExistingMuxer("existing-preview5");
+        _handler.RecordPreExtractionState();
+
+        // Install preview 6 (newer preview)
+        CreateRuntime("10.0.0-preview.6.25300.1");
+        SimulateMuxerExtraction("new-preview6");
+
+        // Act
+        _handler.FinalizeAfterExtraction();
+
+        // Assert - muxer SHOULD be upgraded
+        File.ReadAllText(_muxerPath).Should().Be("new-preview6");
+    }
+
+    [Fact]
+    public void PreReleaseRuntimeVersion_ReplacedByReleaseOfSameVersion()
+    {
+        // Arrange - preview runtime exists
+        CreateRuntime("10.0.0-preview.5.25280.5");
+        CreateExistingMuxer("existing-preview");
+        _handler.RecordPreExtractionState();
+
+        // Install GA release 10.0.0 (same major.minor.patch, no prerelease = higher precedence)
+        CreateRuntime("10.0.0");
+        SimulateMuxerExtraction("new-ga");
+
+        // Act
+        _handler.FinalizeAfterExtraction();
+
+        // Assert - GA > preview per semver, so muxer should be upgraded
+        File.ReadAllText(_muxerPath).Should().Be("new-ga");
+    }
+
+    [Fact]
+    public void GetLatestRuntimeVersionFromInstallRoot_NonexistentPath_ReturnsNull()
+    {
+        var result = MuxerHandler.GetLatestRuntimeVersionFromInstallRoot(Path.Combine(_testDir, "nonexistent"));
+        result.Should().BeNull();
     }
 
     [PlatformSpecificFact(TestPlatforms.Windows)] // File locking simulation only works on Windows; actual error handling is cross-platform

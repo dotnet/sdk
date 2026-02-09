@@ -129,7 +129,12 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <returns>The resolved destination path.</returns>
     private static string ResolveEntryDestPath(string entryName, string targetDir, MuxerHandler? muxerHandler)
     {
-        if (muxerHandler != null && entryName == muxerHandler.MuxerEntryName)
+        // Normalize entry name by stripping leading "./" prefix (common in tar archives)
+        string normalizedName = entryName.StartsWith("./", StringComparison.Ordinal)
+            ? entryName.Substring(2)
+            : entryName;
+
+        if (muxerHandler != null && normalizedName == muxerHandler.MuxerEntryName)
         {
             return muxerHandler.GetMuxerExtractionPath();
         }
