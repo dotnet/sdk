@@ -48,6 +48,10 @@ variables:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    containers:
+      licenseScanContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-source-build-test-amd64
+        options: '--memory=12g'
     pool:
       name: NetCore1ESPool-Svc-Internal
       image: 1es-ubuntu-2204
@@ -93,15 +97,21 @@ extends:
 
       - job: LicenseScan
         dependsOn: Setup
-        container:
-          image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-source-build-test-amd64
-          options: '--memory=12g'
+        container: licenseScanContainer
         pool:
           name: NetCore1ESPool-Svc-Internal
           demands: ImageOverride -equals 1es-ubuntu-2204
         timeoutInMinutes: 420
         strategy:
           matrix: $[ dependencies.Setup.outputs['GetMatrix.matrix'] ]
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            displayName: Publish BuildLogs
+            continueOnError: true
+            condition: succeededOrFailed()
+            targetPath: '$(Build.StagingDirectory)/BuildLogs'
+            artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
         steps:
 
         - script: >
@@ -146,12 +156,6 @@ extends:
           continueOnError: true
           condition: succeededOrFailed()
 
-        - publish: '$(Build.StagingDirectory)/BuildLogs'
-          artifact: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
-          displayName: Publish BuildLogs
-          continueOnError: true
-          condition: succeededOrFailed()
-
         - task: PublishTestResults@2
           displayName: Publish Test Results
           condition: succeededOrFailed()
@@ -171,7 +175,7 @@ extends:
           name: NetCore1ESPool-Svc-Internal
           demands: ImageOverride -equals 1es-ubuntu-2204
         variables:
-        - template: templates/variables/pipelines.yml
+        - template: /eng/pipelines/templates/variables/pipelines.yml@self
         steps:
 
         - script: |
@@ -181,7 +185,7 @@ extends:
           displayName: Install .NET SDK
           workingDirectory: $(Build.SourcesDirectory)
 
-        - template: templates/steps/download-pipeline-artifact.yml
+        - template: /eng/pipelines/templates/steps/download-pipeline-artifact.yml@self
           parameters:
             pipeline: $(SOURCE_BUILD_LICENSE_SCAN_PIPELINE_ID)
             buildId: $(Build.BuildId)
@@ -193,7 +197,7 @@ extends:
             find $(Pipeline.Workspace)/Artifacts -type f -exec mv {} $(Pipeline.Workspace)/Artifacts \;
           displayName: Move Artifacts to root
 
-        - template: templates/steps/create-baseline-update-pr.yml
+        - template: /eng/pipelines/templates/steps/create-baseline-update-pr.yml@self
           parameters:
             dotnetPath: $(DotNetPath)
             pipeline: license
