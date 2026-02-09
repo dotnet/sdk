@@ -58,16 +58,15 @@ internal class InstallPathResolver
         {
             installPathFromGlobalJson = globalJsonInfo.SdkPath;
 
-            // If explicit path is provided, use it (it takes precedence over global.json)
-            // If no explicit path, fall back to global.json path
-            if (explicitInstallPath is not null)
+            if (installPathFromGlobalJson is not null && explicitInstallPath is not null &&
+                !DotnetupUtilities.PathsEqual(installPathFromGlobalJson, explicitInstallPath))
             {
-                resolvedInstallPath = explicitInstallPath;
+                //  TODO: Add parameter to override error
+                error = $"Error: The install path specified in global.json ({installPathFromGlobalJson}) does not match the install path provided ({explicitInstallPath}).";
+                return null;
             }
-            else
-            {
-                resolvedInstallPath = installPathFromGlobalJson;
-            }
+
+            resolvedInstallPath = installPathFromGlobalJson;
         }
 
         if (resolvedInstallPath == null)
