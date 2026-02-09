@@ -74,10 +74,38 @@ namespace Microsoft.Build.Framework
                 throw new ArgumentException("Path must not be null or empty.", nameof(path));
             }
 
-            if (!Path.IsPathRooted(path))
+            if (!IsPathFullyQualified(path))
             {
                 throw new ArgumentException("Path must be rooted.", nameof(path));
             }
+        }
+
+        private static bool IsPathFullyQualified(string path)
+        {
+            if (!Path.IsPathRooted(path))
+            {
+                return false;
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // On Windows, reject drive-relative paths like "C:foo".
+                if (path.Length >= 2 && path[1] == ':')
+                {
+                    if (path.Length < 3)
+                    {
+                        return false;
+                    }
+
+                    char separator = path[2];
+                    if (separator != Path.DirectorySeparatorChar && separator != Path.AltDirectorySeparatorChar)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         /// <summary>

@@ -52,8 +52,20 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             ((TestDriverProxy)proxy).Initialize(projectDirectory);
 
             // Call the internal TaskEnvironment(ITaskEnvironmentDriver) constructor via reflection
-            var ctor = typeof(TaskEnvironment).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
-            return (TaskEnvironment)ctor[0].Invoke(new[] { proxy });
+            var ctor = typeof(TaskEnvironment)
+                .GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
+                .FirstOrDefault(c =>
+                {
+                    var parameters = c.GetParameters();
+                    return parameters.Length == 1 && parameters[0].ParameterType == driverInterfaceType;
+                });
+
+            if (ctor is null)
+            {
+                throw new InvalidOperationException("Could not find TaskEnvironment constructor with ITaskEnvironmentDriver parameter.");
+            }
+
+            return (TaskEnvironment)ctor.Invoke(new[] { proxy });
         }
     }
 
@@ -65,10 +77,18 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     public class TestDriverProxy : DispatchProxy
     {
         private string _projectDirectory = string.Empty;
+        private Dictionary<string, string> _environmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         internal void Initialize(string projectDirectory)
         {
             _projectDirectory = projectDirectory;
+
+            // Seed from the current process environment
+            foreach (DictionaryEntry entry in Environment.GetEnvironmentVariables())
+            {
+                if (entry.Key is string key && entry.Value is string value)
+                    _environmentVariables[key] = value;
+            }
         }
 
         protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
@@ -80,13 +100,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "get_ProjectDirectory" => new AbsolutePath(_projectDirectory),
                 "set_ProjectDirectory" => SetProjectDir(args),
                 "GetAbsolutePath" => ResolveAbsolutePath((string)args![0]!),
-                "GetEnvironmentVariable" => Environment.GetEnvironmentVariable((string)args![0]!),
+                "GetEnvironmentVariable" => DoGetEnvVar(args),
                 "GetEnvironmentVariables" => GetEnvVars(),
                 "SetEnvironmentVariable" => DoSetEnvVar(args),
                 "SetEnvironment" => DoSetEnv(args),
                 "GetProcessStartInfo" => CreateProcessStartInfo(),
                 "Dispose" => null,
-                _ => null,
+                _ => throw new NotSupportedException($"Method '{targetMethod.Name}' is not supported by {nameof(TestDriverProxy)}."),
             };
         }
 
@@ -103,43 +123,47 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             return new AbsolutePath(path, new AbsolutePath(_projectDirectory));
         }
 
-        private static IReadOnlyDictionary<string, string> GetEnvVars()
+        private object? DoGetEnvVar(object?[]? args)
         {
-            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (DictionaryEntry entry in Environment.GetEnvironmentVariables())
-            {
-                if (entry.Key is string key && entry.Value is string value)
-                    result[key] = value;
-            }
-            return result;
+            var name = (string)args![0]!;
+            return _environmentVariables.TryGetValue(name, out var value) ? value : null;
         }
 
-        private static object? DoSetEnvVar(object?[]? args)
+        private IReadOnlyDictionary<string, string> GetEnvVars()
         {
-            Environment.SetEnvironmentVariable((string)args![0]!, (string?)args[1]);
+            return new Dictionary<string, string>(_environmentVariables, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private object? DoSetEnvVar(object?[]? args)
+        {
+            var name = (string)args![0]!;
+            var value = (string?)args[1];
+            if (value == null)
+            {
+                _environmentVariables.Remove(name);
+            }
+            else
+            {
+                _environmentVariables[name] = value;
+            }
             return null;
         }
 
-        private static object? DoSetEnv(object?[]? args)
+        private object? DoSetEnv(object?[]? args)
         {
             var newEnv = (IDictionary<string, string>)args![0]!;
-            foreach (DictionaryEntry entry in Environment.GetEnvironmentVariables())
-            {
-                if (entry.Key is string key && !newEnv.ContainsKey(key))
-                    Environment.SetEnvironmentVariable(key, null);
-            }
+            _environmentVariables.Clear();
             foreach (var kvp in newEnv)
-                Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
+                _environmentVariables[kvp.Key] = kvp.Value;
             return null;
         }
 
         private ProcessStartInfo CreateProcessStartInfo()
         {
             var psi = new ProcessStartInfo { WorkingDirectory = _projectDirectory };
-            foreach (DictionaryEntry entry in Environment.GetEnvironmentVariables())
+            foreach (var kvp in _environmentVariables)
             {
-                if (entry.Key is string key && entry.Value is string value)
-                    psi.Environment[key] = value;
+                psi.Environment[kvp.Key] = kvp.Value;
             }
             return psi;
         }

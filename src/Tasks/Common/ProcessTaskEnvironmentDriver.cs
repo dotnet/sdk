@@ -24,6 +24,7 @@ namespace Microsoft.Build.Framework
     internal sealed class ProcessTaskEnvironmentDriver : ITaskEnvironmentDriver
     {
         private AbsolutePath _projectDirectory;
+        private readonly Dictionary<string, string> _environmentVariables;
 
         /// <summary>
         /// Initializes a new instance with the specified project directory.
@@ -31,6 +32,16 @@ namespace Microsoft.Build.Framework
         public ProcessTaskEnvironmentDriver(string projectDirectory)
         {
             _projectDirectory = new AbsolutePath(projectDirectory);
+
+            // Seed from the current process environment
+            _environmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (DictionaryEntry entry in Environment.GetEnvironmentVariables())
+            {
+                if (entry.Key is string key && entry.Value is string value)
+                {
+                    _environmentVariables[key] = value;
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -54,47 +65,35 @@ namespace Microsoft.Build.Framework
         /// <inheritdoc/>
         public string? GetEnvironmentVariable(string name)
         {
-            return Environment.GetEnvironmentVariable(name);
+            return _environmentVariables.TryGetValue(name, out var value) ? value : null;
         }
 
         /// <inheritdoc/>
         public IReadOnlyDictionary<string, string> GetEnvironmentVariables()
         {
-            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (DictionaryEntry entry in Environment.GetEnvironmentVariables())
-            {
-                if (entry.Key is string key && entry.Value is string value)
-                {
-                    result[key] = value;
-                }
-            }
-            return result;
+            return new Dictionary<string, string>(_environmentVariables, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc/>
         public void SetEnvironmentVariable(string name, string? value)
         {
-            Environment.SetEnvironmentVariable(name, value);
+            if (value == null)
+            {
+                _environmentVariables.Remove(name);
+            }
+            else
+            {
+                _environmentVariables[name] = value;
+            }
         }
 
         /// <inheritdoc/>
         public void SetEnvironment(IDictionary<string, string> newEnvironment)
         {
-            // Remove variables not in the new set, update others
-            foreach (DictionaryEntry entry in Environment.GetEnvironmentVariables())
-            {
-                if (entry.Key is string key)
-                {
-                    if (!newEnvironment.ContainsKey(key))
-                    {
-                        Environment.SetEnvironmentVariable(key, null);
-                    }
-                }
-            }
-
+            _environmentVariables.Clear();
             foreach (var kvp in newEnvironment)
             {
-                Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
+                _environmentVariables[kvp.Key] = kvp.Value;
             }
         }
 
@@ -106,13 +105,10 @@ namespace Microsoft.Build.Framework
                 WorkingDirectory = _projectDirectory.Value,
             };
 
-            // Populate environment from current process environment
-            foreach (DictionaryEntry entry in Environment.GetEnvironmentVariables())
+            // Populate environment from the scoped environment dictionary
+            foreach (var kvp in _environmentVariables)
             {
-                if (entry.Key is string key && entry.Value is string value)
-                {
-                    startInfo.Environment[key] = value;
-                }
+                startInfo.Environment[kvp.Key] = kvp.Value;
             }
 
             return startInfo;
