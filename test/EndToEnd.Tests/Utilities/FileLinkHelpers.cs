@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace EndToEnd.Tests.Utilities;
 
 /// <summary>
-/// Shared helpers for verifying symbolic links and extracting archives in tests.
+/// Shared helpers for verifying file links (symbolic links and hardlinks) and extracting archives in tests.
 /// </summary>
-internal static class SymbolicLinkHelpers
+internal static class FileLinkHelpers
 {
     /// <summary>
     /// Minimum number of deduplicated links expected in an SDK layout.
@@ -110,5 +111,98 @@ internal static class SymbolicLinkHelpers
 
         Assert.Empty(absoluteSymlinks);
         log.WriteLine($"Verified all {symlinkPaths.Count} symbolic links use relative paths");
+    }
+
+    /// <summary>
+    /// Verifies that a directory contains >100 hardlinked files (files with link count > 1).
+    /// Used on Windows where hardlinks are used instead of symbolic links for deduplication.
+    /// </summary>
+    /// <param name="directory">The directory to check for hardlinks.</param>
+    /// <param name="log">Test output logger.</param>
+    /// <param name="contextName">Name of the context being tested (for error messages, e.g., "archive").</param>
+    public static void VerifyDirectoryHasHardlinks(string directory, ITestOutputHelper log, string contextName)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            throw new PlatformNotSupportedException($"{nameof(VerifyDirectoryHasHardlinks)} is only supported on Windows.");
+        }
+
+        var hardlinkedFiles = new List<string>();
+
+        foreach (var filePath in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+        {
+            uint linkCount = GetFileLinkCount(filePath);
+            if (linkCount > 1)
+            {
+                hardlinkedFiles.Add(filePath);
+            }
+        }
+
+        log.WriteLine($"Found {hardlinkedFiles.Count} hardlinked files in {contextName}");
+
+        Assert.True(hardlinkedFiles.Count > MinExpectedDeduplicatedLinks,
+            $"Expected more than {MinExpectedDeduplicatedLinks} hardlinked files in {contextName}, but found only {hardlinkedFiles.Count}. " +
+            "This suggests deduplication did not run correctly.");
+
+        log.WriteLine($"Verified {hardlinkedFiles.Count} files have hardlinks (link count > 1)");
+    }
+
+    /// <summary>
+    /// Gets the number of hardlinks to a file on Windows.
+    /// </summary>
+    private static uint GetFileLinkCount(string filePath)
+    {
+        using var handle = CreateFile(
+            filePath,
+            0, // No access required, just querying info
+            FileShare.ReadWrite | FileShare.Delete,
+            IntPtr.Zero,
+            FileMode.Open,
+            FILE_FLAG_BACKUP_SEMANTICS,
+            IntPtr.Zero);
+
+        if (handle.IsInvalid)
+        {
+            return 1; // Assume single link if we can't query
+        }
+
+        if (GetFileInformationByHandle(handle, out var fileInfo))
+        {
+            return fileInfo.NumberOfLinks;
+        }
+
+        return 1; // Assume single link if query fails
+    }
+
+    private const uint FILE_FLAG_BACKUP_SEMANTICS = 0x02000000;
+
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern SafeFileHandle CreateFile(
+        string lpFileName,
+        uint dwDesiredAccess,
+        FileShare dwShareMode,
+        IntPtr lpSecurityAttributes,
+        FileMode dwCreationDisposition,
+        uint dwFlagsAndAttributes,
+        IntPtr hTemplateFile);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool GetFileInformationByHandle(
+        SafeFileHandle hFile,
+        out BY_HANDLE_FILE_INFORMATION lpFileInformation);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct BY_HANDLE_FILE_INFORMATION
+    {
+        public uint FileAttributes;
+        public System.Runtime.InteropServices.ComTypes.FILETIME CreationTime;
+        public System.Runtime.InteropServices.ComTypes.FILETIME LastAccessTime;
+        public System.Runtime.InteropServices.ComTypes.FILETIME LastWriteTime;
+        public uint VolumeSerialNumber;
+        public uint FileSizeHigh;
+        public uint FileSizeLow;
+        public uint NumberOfLinks;
+        public uint FileIndexHigh;
+        public uint FileIndexLow;
     }
 }
