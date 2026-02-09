@@ -39,8 +39,13 @@
                 {
                   "durationMs": 2592000000,
                   "displayName": "Last 30 days"
+                },
+                {
+                  "durationMs": 7776000000,
+                  "displayName": "Last 90 days"
                 }
-              ]
+              ],
+              "allowCustom": true
             },
             "label": "Time Range"
           },
