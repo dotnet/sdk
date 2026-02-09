@@ -1039,6 +1039,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true
             };
 
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
             testProject.AdditionalProperties["PublishAot"] = "true";
             
             // Add a simple program that uses a resource string
