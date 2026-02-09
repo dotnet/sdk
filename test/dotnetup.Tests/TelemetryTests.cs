@@ -319,6 +319,7 @@ public class DotnetupTelemetryTests
     }
 }
 
+[Collection("ActivitySourceTests")]
 public class LibraryActivityTagTests
 {
     [Fact]
@@ -421,6 +422,7 @@ public class FirstRunNoticeTests
 /// Tests for ActivitySource integration - verifies that library consumers can hook into telemetry
 /// using the pattern demonstrated in TelemetryIntegrationDemo.
 /// </summary>
+[Collection("ActivitySourceTests")]
 public class ActivitySourceIntegrationTests
 {
     private const string InstallationActivitySourceName = "Microsoft.Dotnet.Installation";

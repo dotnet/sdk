@@ -17,6 +17,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// <summary>
 /// Tests for DotnetArchiveExtractor, particularly error handling scenarios.
 /// </summary>
+[Collection("ActivitySourceTests")]
 public class DotnetArchiveExtractorTests
 {
     private readonly ITestOutputHelper _log;
@@ -51,8 +52,8 @@ public class DotnetArchiveExtractorTests
 
         using var extractor = new DotnetArchiveExtractor(request, version, releaseManifest, progressTarget, mockDownloader);
 
-        // Act & Assert
-        var ex = Assert.Throws<Exception>(() => extractor.Prepare());
+        // Act & Assert - Prepare wraps download failures in DotnetInstallException
+        var ex = Assert.Throws<DotnetInstallException>(() => extractor.Prepare());
         _log.WriteLine($"Exception message: {ex.Message}");
         ex.Message.Should().Contain("Failed to download");
         ex.InnerException!.Message.Should().Contain("Network error");
