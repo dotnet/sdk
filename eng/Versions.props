@@ -134,7 +134,9 @@
     <AwesomeAssertionsVersion>8.0.2</AwesomeAssertionsVersion>
     <AwesomeAssertionsJsonVersion>8.0.0</AwesomeAssertionsJsonVersion>
     <MoqPackageVersion>4.18.4</MoqPackageVersion>
-    <XunitCombinatorialVersion>1.3.2</XunitCombinatorialVersion>
+    <XunitCombinatorialVersion>2.0.24</XunitCombinatorialVersion>
+    <!-- Override arcade default (3.1.0) for MTP 2.x compatibility -->
+    <XUnitV3Version>3.2.2</XUnitV3Version>
     <MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>8.0.0-beta.23607.1</MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>
     <BenchmarkDotNetPackageVersion>0.15.6</BenchmarkDotNetPackageVersion>
     <BenchmarkDotNetDiagnosticsWindowsPackageVersion>0.14.0</BenchmarkDotNetDiagnosticsWindowsPackageVersion>

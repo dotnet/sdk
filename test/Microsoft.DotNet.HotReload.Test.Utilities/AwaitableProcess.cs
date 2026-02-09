@@ -6,7 +6,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.NET.TestFramework.Utilities;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {

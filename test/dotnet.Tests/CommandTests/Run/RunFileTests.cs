@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
@@ -17,6 +18,11 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 
 public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 {
+    // Ensure OutOfTreeBaseDirectory (and its NuGet cache warm-up) runs before any test.
+    // xUnit v3 uses hash-based test ordering which may run CSC-only tests first,
+    // before the NuGet cache has been populated with SDK dependencies like ILLink analyzers.
+    static RunFileTests() => _ = OutOfTreeBaseDirectory;
+
     private static readonly string s_program = /* lang=C#-Test */ """
         if (args.Length > 0)
         {
@@ -127,12 +133,51 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var targetNuGetConfig = Path.Join(outOfTreeBaseDirectory, "NuGet.config");
         File.Copy(sourceNuGetConfig, targetNuGetConfig, overwrite: true);
 
+        // Warm up the NuGet cache by building a simple file-based app via MSBuild.
+        // This ensures SDK dependency packages (e.g., microsoft.net.illink.tasks analyzers)
+        // are restored to the global packages folder. Without this, the first file-based app
+        // test may fall back from CSC-only mode to MSBuild mode because the ILLink analyzer
+        // DLLs are not yet present, causing tests that assert CSC-only behavior to fail.
+        WarmUpNuGetCache(outOfTreeBaseDirectory);
+
         // Check there are no implicit build files that would prevent testing optimizations.
         VirtualProjectBuildingCommand.CollectImplicitBuildFiles(new DirectoryInfo(outOfTreeBaseDirectory), [], out var exampleMSBuildFile);
         exampleMSBuildFile.Should().BeNull(because: "there should not be any implicit build files in the temp directory or its parents " +
             "so we can test optimizations that would be disabled with implicit build files present");
 
         return outOfTreeBaseDirectory;
+    }
+
+    private static void WarmUpNuGetCache(string outOfTreeBaseDirectory)
+    {
+        var warmUpDir = Path.Join(outOfTreeBaseDirectory, ".warmup");
+        Directory.CreateDirectory(warmUpDir);
+        var warmUpFile = Path.Join(warmUpDir, "WarmUp.cs");
+
+        try
+        {
+            File.WriteAllText(warmUpFile, """System.Console.Write("ok");""");
+
+            var psi = new ProcessStartInfo(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)
+            {
+                WorkingDirectory = warmUpDir,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            psi.ArgumentList.Add("build");
+            psi.ArgumentList.Add("WarmUp.cs");
+
+            using var process = Process.Start(psi)!;
+            process.StandardOutput.ReadToEndAsync();
+            process.StandardError.ReadToEndAsync();
+            process.WaitForExit((int)TimeSpan.FromMinutes(2).TotalMilliseconds);
+        }
+        finally
+        {
+            try { Directory.Delete(warmUpDir, true); } catch { }
+            try { Directory.Delete(VirtualProjectBuilder.GetArtifactsPath(warmUpFile), true); } catch { }
+        }
     }
 
     internal static string DirectiveError(string path, int line, string messageFormat, params ReadOnlySpan<object> args)

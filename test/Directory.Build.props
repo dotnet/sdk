@@ -14,9 +14,14 @@
     <!-- NU5125 The licenseUrl element is being replaced by the license element. -->
     <!-- NU5123 Don't warn about long filenames in packages, we bundle test assets that have long paths
          (ie HelloWorldWithSubDirs) -->
-    <NoWarn>$(NoWarn);NU5125;NU5123</NoWarn>
+    <!-- xUnit1051: Suppress CancellationToken suggestions - adopting Xunit.TestContext.Current.CancellationToken
+         throughout the codebase is a separate follow-up task (https://github.com/dotnet/sdk/issues/52914) -->
+    <NoWarn>$(NoWarn);NU5125;NU5123;xUnit1051</NoWarn>
 
-    <GenerateProgramFile>false</GenerateProgramFile>
+    <!-- Disable MTP runner for test/ projects. Helix runs these via vstest.console which
+         requires testhost.dll. With MTP enabled, testhost.dll is not included and the
+         test host process crashes. -->
+    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
 
     <DebugType>embedded</DebugType>
 

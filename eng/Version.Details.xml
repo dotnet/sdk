@@ -22,15 +22,15 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="11.0.100-preview.3.26152.106">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks.XunitV3" Version="11.0.100-preview.3.26152.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="11.0.100-preview.3.26152.106">
+    <Dependency Name="Microsoft.TemplateEngine.TestHelper.XunitV3" Version="11.0.100-preview.3.26152.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="11.0.100-preview.3.26152.106">
+    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3" Version="11.0.100-preview.3.26152.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>
     </Dependency>
@@ -553,7 +553,7 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="11.0.0-beta.26152.106">
+    <Dependency Name="Microsoft.DotNet.XUnitV3Extensions" Version="11.0.0-beta.26152.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5507d7a2f05bb6c073a055ead6ce1c4bbe396cda</Sha>
     </Dependency>

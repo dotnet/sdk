@@ -2,16 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
 
+[assembly: AssemblyFixture(typeof(Microsoft.DotNet.Watch.UnitTests.MSBuildFixture))]
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public static class ModuleInitializer
+/// <summary>
+/// Assembly fixture that registers MSBuild and sets up assembly resolution for dotnet-watch tests.
+/// A fixture is preferred over a [ModuleInitializer] because it doesn't get invoked for test discovery.
+/// </summary>
+public class MSBuildFixture
 {
-    [ModuleInitializer]
-    public static void Initialize()
+    public MSBuildFixture()
     {
         // Ensure that we load the msbuild binaries from redist deployment. Otherwise, msbuild might use target files
         // that do not match the implementations of the core tasks.

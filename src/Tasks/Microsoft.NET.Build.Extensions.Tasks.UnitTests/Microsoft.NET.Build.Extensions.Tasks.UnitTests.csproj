@@ -10,6 +10,11 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <EnableDefaultItems>false</EnableDefaultItems>
+    <TestRunnerName>XUnitV3</TestRunnerName>
+    <!-- Disable MTP runner for test/ projects. Helix runs these via vstest.console which
+         requires testhost.dll. With MTP enabled, testhost.dll is not included and the
+         test host process crashes. -->
+    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,7 +32,6 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Compile Include="..\..\..\test\Common\Program.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockBuildEngine.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockTaskItem.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.UnitTests\TaskEnvironmentHelper.cs" />

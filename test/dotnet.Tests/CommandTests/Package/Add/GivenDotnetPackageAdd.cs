@@ -3,7 +3,6 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Commands;
-using Xunit.Runners;
 
 namespace Microsoft.DotNet.Cli.Package.Add.Tests
 {

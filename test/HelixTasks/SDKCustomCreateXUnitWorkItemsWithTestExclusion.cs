@@ -158,7 +158,12 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
                 var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
 
-                string command = $"{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
+                // xUnit v3 tests run out-of-process: the VSTest adapter launches the AppHost executable.
+                // On POSIX, the execute bit is lost when the Helix SDK packages the payload as a zip archive,
+                // so we need to restore it before running.
+                string chmodPrefix = IsPosixShell ? $"chmod +x {Path.GetFileNameWithoutExtension(assemblyName)} && " : "";
+
+                string command = $"{chmodPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
                           $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 25m {testFilter} {enableDiagLogging} {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
