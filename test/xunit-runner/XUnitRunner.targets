@@ -4,7 +4,7 @@
     <SDKCustomXUnitPublishTargetFramework Condition="'$(SDKCustomXUnitPublishTargetFramework)' == ''">$(SdkTargetFramework)</SDKCustomXUnitPublishTargetFramework>
     <SDKCustomXUnitRuntimeTargetFramework Condition="'$(SDKCustomXUnitRuntimeTargetFramework)' == ''">$(SdkTargetFramework)</SDKCustomXUnitRuntimeTargetFramework>
 
-    <SDKCustomXUnitRunnerVersion Condition="'$(SDKCustomXUnitRunnerVersion)' == ''">2.4.1</SDKCustomXUnitRunnerVersion>
+    <SDKCustomXUnitRunnerVersion Condition="'$(SDKCustomXUnitRunnerVersion)' == ''">$(XUnitV3Version)</SDKCustomXUnitRunnerVersion>
 
     <_SDKCustomXUnitPublishTargetsPath>$(MSBuildThisFileDirectory)XUnitPublish.targets</_SDKCustomXUnitPublishTargetsPath>
 

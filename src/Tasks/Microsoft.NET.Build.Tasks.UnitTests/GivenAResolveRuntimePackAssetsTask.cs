@@ -7,7 +7,6 @@ using FluentAssertions;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.TestFramework;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {

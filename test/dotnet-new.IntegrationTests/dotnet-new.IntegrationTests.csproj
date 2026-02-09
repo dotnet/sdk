@@ -13,7 +13,7 @@
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Verify.DiffPlex" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
     <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" />

@@ -191,7 +191,7 @@ namespace Microsoft.NET.TestFramework.Commands
         public static void LogCommandResult(ITestOutputHelper log, CommandResult result)
         {
             log.WriteLine($"> {result.StartInfo.FileName} {result.StartInfo.Arguments}");
-            log.WriteLine(result.StdOut);
+            log.WriteLine(result.StdOut ?? string.Empty);
 
             if (!string.IsNullOrEmpty(result.StdErr))
             {

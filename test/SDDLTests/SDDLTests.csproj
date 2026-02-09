@@ -7,6 +7,7 @@
     <CanRunTestAsTool>false</CanRunTestAsTool>
     <IsTestProject>false</IsTestProject>
     <IsUnitTestProject>false</IsUnitTestProject>
+    <TestRunnerName></TestRunnerName>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
@@ -16,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.v3.assert" VersionOverride="$(XUnitV3Version)" />
   </ItemGroup>
 
   <!-- Global usings removal -->
