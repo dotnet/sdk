@@ -45,7 +45,7 @@ function EnsureDotnetupBuilt {
             "win-x64"
         }
 
-        & $env:DOTNET_INSTALL_DIR\dotnet publish $dotnetupProject -c Release -r $rid -o $dotnetupOutDir
+        & (Join-Path $env:DOTNET_INSTALL_DIR 'dotnet.exe') publish $dotnetupProject -c Release -r $rid -o $dotnetupOutDir
 
         if ($lastExitCode -ne 0) {
             throw "Failed to build dotnetup (exit code '$lastExitCode')."
