@@ -19,10 +19,10 @@ function InitializeCustomSDKToolset {
     # Build dotnetup if not already present (needs SDK to be installed first)
     EnsureDotnetupBuilt
 
-    InstallDotNetSharedFramework "6.0.0"
-    InstallDotNetSharedFramework "7.0.0"
-    InstallDotNetSharedFramework "8.0.0"
-    InstallDotNetSharedFramework "9.0.0"
+    InstallDotNetSharedFramework "6.0"
+    InstallDotNetSharedFramework "7.0"
+    InstallDotNetSharedFramework "8.0"
+    InstallDotNetSharedFramework "9.0"
 
     CreateBuildEnvScripts
     CreateVSShortcut
@@ -151,7 +151,7 @@ function InstallDotNetSharedFramework([string]$version) {
     if (!(Test-Path $fxDir)) {
         $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
 
-        & $dotnetupExe runtime install $version --install-path $dotnetRoot --no-progress --set-default-install false
+        & $dotnetupExe runtime install "$version" --install-path $dotnetRoot --no-progress --set-default-install false
 
         if ($lastExitCode -ne 0) {
             throw "Failed to install shared Framework $version to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
