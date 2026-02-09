@@ -23,6 +23,5 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
-    <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 </Project>

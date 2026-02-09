@@ -121,6 +121,34 @@ internal class DotnetArchiveExtractor : IDisposable
     }
 
     /// <summary>
+    /// Resolves the destination path for an archive entry, redirecting the muxer to a temp path if needed.
+    /// </summary>
+    /// <param name="entryName">The entry name/path from the archive.</param>
+    /// <param name="targetDir">The target extraction directory.</param>
+    /// <param name="muxerHandler">Optional muxer handler for redirecting muxer entries.</param>
+    /// <returns>The resolved destination path.</returns>
+    private static string ResolveEntryDestPath(string entryName, string targetDir, MuxerHandler? muxerHandler)
+    {
+        if (muxerHandler != null && entryName == muxerHandler.MuxerEntryName)
+        {
+            return muxerHandler.GetMuxerExtractionPath();
+        }
+
+        return Path.Combine(targetDir, entryName);
+    }
+
+    /// <summary>
+    /// Initializes progress tracking for extraction by setting the max value.
+    /// </summary>
+    private static void InitializeExtractionProgress(IProgressTask? installTask, long totalEntries)
+    {
+        if (installTask is not null)
+        {
+            installTask.MaxValue = totalEntries > 0 ? totalEntries : 1;
+        }
+    }
+
+    /// <summary>
     /// Extracts a tar or tar.gz archive to the target directory.
     /// </summary>
     private void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
@@ -129,16 +157,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
         try
         {
-            // Count files in tar for progress reporting
-            long totalFiles = CountTarEntries(decompressedPath);
-
-            // Set progress maximum
-            if (installTask is not null)
-            {
-                installTask.MaxValue = totalFiles > 0 ? totalFiles : 1;
-            }
-
-            // Extract files directly to target
+            InitializeExtractionProgress(installTask, CountTarEntries(decompressedPath));
             ExtractTarContents(decompressedPath, targetDir, installTask, muxerHandler);
         }
         finally
@@ -200,34 +219,17 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             if (entry.EntryType == TarEntryType.RegularFile)
             {
-                // Check if this is the muxer - redirect to temp path
-                string destPath;
-                if (muxerHandler != null && entry.Name == muxerHandler.MuxerEntryName)
-                {
-                    destPath = muxerHandler.GetMuxerExtractionPath();
-                }
-                else
-                {
-                    destPath = Path.Combine(targetDir, entry.Name);
-                }
-
+                string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
                 Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
                 using var outStream = File.Create(destPath);
                 entry.DataStream?.CopyTo(outStream);
-                installTask?.Value += 1;
             }
             else if (entry.EntryType == TarEntryType.Directory)
             {
-                // Create directory if it doesn't exist
-                var dirPath = Path.Combine(targetDir, entry.Name);
-                Directory.CreateDirectory(dirPath);
-                installTask?.Value += 1;
+                Directory.CreateDirectory(Path.Combine(targetDir, entry.Name));
             }
-            else
-            {
-                // Skip other entry types
-                installTask?.Value += 1;
-            }
+
+            installTask?.Value += 1;
         }
     }
 
@@ -236,51 +238,25 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     private void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
     {
-        long totalFiles = CountZipEntries(archivePath);
-
-        if (installTask is not null)
-        {
-            installTask.MaxValue = totalFiles > 0 ? totalFiles : 1;
-        }
-
         using var zip = ZipFile.OpenRead(archivePath);
+        InitializeExtractionProgress(installTask, zip.Entries.Count);
+
         foreach (var entry in zip.Entries)
         {
-            var fileName = Path.GetFileName(entry.FullName);
-
-            // Skip directories (we'll create them for files as needed)
-            if (string.IsNullOrEmpty(fileName))
+            // Directory entries have no file name
+            if (string.IsNullOrEmpty(Path.GetFileName(entry.FullName)))
             {
-                var dirPath = Path.Combine(targetDir, entry.FullName);
-                Directory.CreateDirectory(dirPath);
-                installTask?.Value += 1;
-                continue;
-            }
-
-            // Check if this is the muxer - redirect to temp path
-            string destPath;
-            if (muxerHandler != null && entry.FullName == muxerHandler.MuxerEntryName)
-            {
-                destPath = muxerHandler.GetMuxerExtractionPath();
+                Directory.CreateDirectory(Path.Combine(targetDir, entry.FullName));
             }
             else
             {
-                destPath = Path.Combine(targetDir, entry.FullName);
+                string destPath = ResolveEntryDestPath(entry.FullName, targetDir, muxerHandler);
+                Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+                entry.ExtractToFile(destPath, overwrite: true);
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-            entry.ExtractToFile(destPath, overwrite: true);
             installTask?.Value += 1;
         }
-    }
-
-    /// <summary>
-    /// Counts the number of entries in a zip file for progress reporting.
-    /// </summary>
-    private long CountZipEntries(string zipPath)
-    {
-        using var zip = ZipFile.OpenRead(zipPath);
-        return zip.Entries.Count;
     }
 
     public void Dispose()

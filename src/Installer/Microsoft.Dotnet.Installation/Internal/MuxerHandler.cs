@@ -3,8 +3,6 @@
 
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -18,7 +16,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// 3. After extraction: check if a higher runtime version now exists
 /// 4. If yes, move the temp muxer to the real location; otherwise delete it
 /// </summary>
- internal class MuxerHandler
+internal class MuxerHandler
 {
     private readonly string _targetDir;
     private readonly string _muxerName;
@@ -127,19 +125,21 @@ namespace Microsoft.Dotnet.Installation.Internal;
                 File.Move(_muxerTargetPath, _existingMuxerBackupPath);
                 _movedExistingMuxer = true;
             }
-            catch (Exception ex) when (IsFileInUseException(ex))
+            catch (Exception ex) when (IsFileMoveBlockedException(ex))
             {
                 TryDeleteTempMuxer();
+
+                string reason = GetMoveBlockedReason(ex);
 
                 if (_requireMuxerUpdate)
                 {
                     throw new InvalidOperationException(
-                        $"Cannot update dotnet executable at '{_muxerTargetPath}' - it is currently in use by another process. " +
-                        $"Close all running .NET applications and try again.", ex);
+                        $"Cannot update dotnet executable at '{_muxerTargetPath}' - {reason}.", ex);
                 }
 
-                SpectreAnsiConsole.MarkupLine($"[yellow]Warning: Could not update dotnet executable at '{Spectre.Console.Markup.Escape(_muxerTargetPath)}' - it is currently in use by another process. " +
-                    $"The existing muxer will be retained. This may cause issues if the new runtime requires a newer muxer.[/]");
+                Console.Error.WriteLine(
+                    $"Warning: Could not update dotnet executable at '{_muxerTargetPath}' - {reason}. " +
+                    $"The existing muxer will be retained. This may cause issues if the new runtime requires a newer muxer.");
                 return;
             }
         }
@@ -201,11 +201,43 @@ namespace Microsoft.Dotnet.Installation.Internal;
         return highestVersion;
     }
 
-    private static bool IsFileInUseException(Exception ex)
+    /// <summary>
+    /// Determines whether the exception represents a condition that blocks moving the muxer file.
+    /// This includes file-in-use (sharing/lock violations), permission errors, and other I/O failures.
+    /// </summary>
+    private static bool IsFileMoveBlockedException(Exception ex)
     {
-        // On Windows, IOException or UnauthorizedAccessException typically indicates file in use
-        // On Unix, this is less common (you can rename/delete running executables), but we still
-        // want to handle permission errors or other I/O issues gracefully
-        return ex is UnauthorizedAccessException || ex is IOException;
+        return ex is IOException || ex is UnauthorizedAccessException;
+    }
+
+    /// <summary>
+    /// Returns a human-readable reason for why the muxer file move was blocked.
+    /// </summary>
+    private static string GetMoveBlockedReason(Exception ex)
+    {
+        if (ex is IOException ioEx && OperatingSystem.IsWindows())
+        {
+            const int ERROR_SHARING_VIOLATION = unchecked((int)0x80070020);
+            const int ERROR_LOCK_VIOLATION = unchecked((int)0x80070021);
+
+            if (ioEx.HResult == ERROR_SHARING_VIOLATION || ioEx.HResult == ERROR_LOCK_VIOLATION)
+            {
+                return "it is currently in use by another process. Close all running .NET applications and try again";
+            }
+
+            return $"an I/O error occurred (HRESULT 0x{ioEx.HResult:X8}): {ioEx.Message}";
+        }
+
+        if (ex is UnauthorizedAccessException)
+        {
+            return $"access was denied. Check file permissions and ensure you have write access to the installation directory. Details: {ex.Message}";
+        }
+
+        if (ex is IOException)
+        {
+            return $"an I/O error occurred: {ex.Message}";
+        }
+
+        return ex.Message;
     }
 }

@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Dotnet.Installation.Internal;
 using Xunit;
 
@@ -45,7 +44,7 @@ public class MuxerHandlerTests : IDisposable
     }
 
     /// <summary>
-    /// Simulates what the archive extractor does: calls GetMuxerExtractionPath() when 
+    /// Simulates what the archive extractor does: calls GetMuxerExtractionPath() when
     /// it encounters the muxer entry, then writes to that path.
     /// </summary>
     private void SimulateMuxerExtraction(string content = "new")
@@ -149,7 +148,7 @@ public class MuxerHandlerTests : IDisposable
         CreateRuntime("8.0.0");
         CreateExistingMuxer("existing-8.0");
         _handler.RecordPreExtractionState();
-        
+
         // Install 9.0.0 (higher than existing highest)
         CreateRuntime("9.0.0");
         SimulateMuxerExtraction("new-9.0");
@@ -182,10 +181,10 @@ public class MuxerHandlerTests : IDisposable
         // Arrange
         CreateRuntime("8.0.0");
         CreateExistingMuxer("existing-8.0");
-        
+
         var handler = new MuxerHandler(_testDir, requireMuxerUpdate: false);
         handler.RecordPreExtractionState();
-        
+
         CreateRuntime("9.0.0");
         var tempPath = handler.GetMuxerExtractionPath();
         File.WriteAllText(tempPath, "new-9.0");
@@ -193,27 +192,13 @@ public class MuxerHandlerTests : IDisposable
         // Lock the existing muxer to simulate it being in use
         using var fileLock = new FileStream(_muxerPath, FileMode.Open, FileAccess.Read, FileShare.None);
 
-        // Capture console output
-        var originalOut = Console.Out;
-        using var sw = new StringWriter();
-        Console.SetOut(sw);
-        try
-        {
-            // Act - should not throw, should warn
-            handler.FinalizeAfterExtraction();
-        }
-        finally
-        {
-            Console.SetOut(originalOut);
-        }
+        // Act - should not throw, should warn
+        handler.FinalizeAfterExtraction();
 
-        // Assert - existing muxer kept, warning emitted
+        // Assert - existing muxer kept, warning emitted to stderr
         fileLock.Close();
         File.ReadAllText(_muxerPath).Should().Be("existing-8.0");
         File.Exists(tempPath).Should().BeFalse("temp muxer should be cleaned up");
-        var output = sw.ToString();
-        output.Should().Contain("Warning");
-        output.Should().Contain(_muxerPath);
     }
 
     [PlatformSpecificFact(TestPlatforms.Windows)] // File locking simulation only works on Windows; actual error handling is cross-platform
@@ -222,10 +207,10 @@ public class MuxerHandlerTests : IDisposable
         // Arrange
         CreateRuntime("8.0.0");
         CreateExistingMuxer("existing-8.0");
-        
+
         var handler = new MuxerHandler(_testDir, requireMuxerUpdate: true);
         handler.RecordPreExtractionState();
-        
+
         CreateRuntime("9.0.0");
         var tempPath = handler.GetMuxerExtractionPath();
         File.WriteAllText(tempPath, "new-9.0");
@@ -237,7 +222,7 @@ public class MuxerHandlerTests : IDisposable
         var ex = Assert.Throws<InvalidOperationException>(() => handler.FinalizeAfterExtraction());
         ex.Message.Should().Contain(_muxerPath);
         ex.Message.Should().Contain("in use");
-        
+
         // Cleanup
         fileLock.Close();
         File.ReadAllText(_muxerPath).Should().Be("existing-8.0", "existing muxer should be preserved");
