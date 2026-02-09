@@ -358,9 +358,69 @@
     {
       "type": 1,
       "content": {
-        "json": "## SDK Installations"
+        "json": "## Installations"
       },
       "name": "install-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"command/runtime/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend component = coalesce(tostring(customDimensions[\"install.component\"]), \"Runtime\")\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by component\n| render piechart",
+        "size": 1,
+        "title": "Runtime Type Distribution",
+        "noDataMessage": "No runtime install telemetry data yet.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "runtime-type-distribution"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\" and name endswith \"/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend path_source = coalesce(tostring(customDimensions[\"install.path_source\"]), \"unknown\")\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by path_source\n| render piechart",
+        "size": 1,
+        "title": "Install Path Source",
+        "noDataMessage": "No install path source telemetry data yet.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "install-path-source-distribution"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\" and name endswith \"/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend path_type = coalesce(tostring(customDimensions[\"install.path_type\"]), \"unknown\")\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by path_type\n| render piechart",
+        "size": 1,
+        "title": "Install Path Type",
+        "noDataMessage": "No install path type telemetry data yet.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "install-path-type-distribution"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\" and name endswith \"/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend result = coalesce(tostring(customDimensions[\"install.result\"]), iif(success == true, \"success\", \"failed\"))\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by result\n| render piechart",
+        "size": 1,
+        "title": "Install Outcome",
+        "noDataMessage": "No install outcome data yet.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "install-outcome-distribution"
     },
     {
       "type": 3,
