@@ -57,6 +57,11 @@
         <target state="translated">Auteurs</target>
         <note>Table lable</note>
       </trans-unit>
+      <trans-unit id="CmdTestNoTestProjectsFound">
+        <source>No test projects were found.</source>
+        <target state="new">No test projects were found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
         <target state="new">The device identifier to use for running the application.</target>
