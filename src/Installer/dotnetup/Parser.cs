@@ -65,7 +65,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
                 return 0;
             });
 
-
             return rootCommand;
         }
     }

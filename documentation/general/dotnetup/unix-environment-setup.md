@@ -2,11 +2,11 @@
 
 ## Overview
 
-This document describes the design for setting up the .NET environment on Unix systems (Linux and macOS) using the `dotnetup env` command. This is the first step toward enabling automatic user profile configuration for Unix as described in [issue #51582](https://github.com/dotnet/sdk/issues/51582).
+This document describes the design for setting up the .NET environment via initialization scripts using the `dotnetup env` command. This is the first step toward enabling automatic user profile configuration for Unix as described in [issue #51582](https://github.com/dotnet/sdk/issues/51582). Note that this also supports PowerShell and thus Windows, but on Windows the main method of configuring the environment will be to set environment variables which are stored in the registry instead of written by initialization scripts.
 
 ## Background
 
-The dotnetup tool manages multiple .NET installations in a local user hive (typically `~/.local/share/dotnet` on Unix systems). For .NET to be accessible from the command line, the installation directory must be:
+The dotnetup tool manages multiple .NET installations in a local user hive. For .NET to be accessible from the command line, the installation directory must be:
 1. Added to the `PATH` environment variable
 2. Set as the `DOTNET_ROOT` environment variable
 
