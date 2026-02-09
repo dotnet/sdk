@@ -41,7 +41,7 @@ internal class InstallerOrchestratorSingleton
             installRequest.Component);
 
         string? customManifestPath = installRequest.Options.ManifestPath;
-        string componentDescription = installRequest.Component.GetDescription();
+        string componentDescription = installRequest.Component.GetDisplayName();
 
         // Check if the install already exists and we don't need to do anything
         // read write mutex only for manifest?

@@ -10,6 +10,10 @@
 
     <!-- Strong naming not needed on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>
+
+    <!-- dotnetup versioning -->
+    <VersionPrefix>0.1.1</VersionPrefix>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
   </PropertyGroup>
 
   <PropertyGroup>

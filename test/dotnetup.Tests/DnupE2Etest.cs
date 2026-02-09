@@ -11,6 +11,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Xunit;
 
@@ -39,15 +40,18 @@ public class InstallEndToEndTests
     };
 
     /// <summary>
-    /// Runtime install test data: (runtimeType, channel, expectedComponent).
+    /// Runtime install test data: (componentSpec, expectedComponent).
+    /// Uses new component@version syntax:
+    /// - Plain version (e.g., "9.0") installs core runtime
+    /// - component@version (e.g., "aspnetcore@9.0") installs specific runtime
     /// </summary>
     public static IEnumerable<object[]> RuntimeChannels => new List<object[]>
     {
-        new object[] { "core", "9.0", InstallComponent.Runtime },
-        new object[] { "core", "latest", InstallComponent.Runtime },
-        new object[] { "core", "lts", InstallComponent.Runtime },
-        new object[] { "aspnetcore", "9.0", InstallComponent.ASPNETCore },
-        new object[] { "windowsdesktop", "9.0", InstallComponent.WindowsDesktop },
+        new object[] { "9.0", InstallComponent.Runtime },          // Plain version defaults to core runtime
+        new object[] { "latest", InstallComponent.Runtime },       // Channel defaults to core runtime
+        new object[] { "lts", InstallComponent.Runtime },          // Channel defaults to core runtime
+        new object[] { "aspnetcore@9.0", InstallComponent.ASPNETCore },
+        new object[] { "windowsdesktop@9.0", InstallComponent.WindowsDesktop },
     };
 
     [Theory]
@@ -87,7 +91,7 @@ public class InstallEndToEndTests
 
     [Theory]
     [MemberData(nameof(RuntimeChannels))]
-    public void RuntimeInstall(string runtimeType, string channel, InstallComponent expectedComponent)
+    public void RuntimeInstall(string componentSpec, InstallComponent expectedComponent)
     {
         // Skip Windows Desktop on non-Windows
         if (expectedComponent == InstallComponent.WindowsDesktop && !OperatingSystem.IsWindows())
@@ -97,11 +101,13 @@ public class InstallEndToEndTests
 
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
-        var expectedVersion = new ChannelVersionResolver().GetLatestVersionForChannel(new UpdateChannel(channel), expectedComponent);
-        expectedVersion.Should().NotBeNull($"Channel {channel} should resolve to a valid {runtimeType} version");
-        Console.WriteLine($"Runtime '{runtimeType}' channel '{channel}' resolved to version: {expectedVersion}");
+        // Parse the component spec to get the channel for version resolution (using production code)
+        var (_, channel, _) = RuntimeInstallCommand.ParseComponentSpec(componentSpec);
+        var expectedVersion = new ChannelVersionResolver().GetLatestVersionForChannel(new UpdateChannel(channel ?? "latest"), expectedComponent);
+        expectedVersion.Should().NotBeNull($"Channel {channel} should resolve to a valid {expectedComponent} version");
+        Console.WriteLine($"Component spec '{componentSpec}' resolved to version: {expectedVersion}");
 
-        var args = DotnetupTestUtilities.BuildRuntimeArguments(runtimeType, channel, testEnv.InstallPath, testEnv.ManifestPath);
+        var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(componentSpec, testEnv.InstallPath, testEnv.ManifestPath);
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
 
@@ -175,18 +181,18 @@ public class ReuseAndErrorTests
 {
     public static IEnumerable<object?[]> ReuseTestData => new List<object?[]>
     {
-        new object?[] { "sdk", "9.0.103", null },
-        new object?[] { "runtime", "9.0", "core" },
+        new object?[] { "sdk", "9.0.103" },
+        new object?[] { "runtime", "9.0" },  // Uses new component@version syntax (plain version = core runtime)
     };
 
     [Theory]
     [MemberData(nameof(ReuseTestData))]
-    public void Install_ReusesExistingInstall(string componentType, string channel, string? runtimeType)
+    public void Install_ReusesExistingInstall(string componentType, string channelOrSpec)
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = componentType == "sdk"
-            ? DotnetupTestUtilities.BuildSdkArguments(channel, testEnv.InstallPath, testEnv.ManifestPath)
-            : DotnetupTestUtilities.BuildRuntimeArguments(runtimeType!, channel, testEnv.InstallPath, testEnv.ManifestPath);
+            ? DotnetupTestUtilities.BuildSdkArguments(channelOrSpec, testEnv.InstallPath, testEnv.ManifestPath)
+            : DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(channelOrSpec, testEnv.InstallPath, testEnv.ManifestPath);
 
         // First install
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
@@ -202,7 +208,8 @@ public class ReuseAndErrorTests
     public void RuntimeInstall_FeatureBand_ReturnsError()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var args = DotnetupTestUtilities.BuildRuntimeArguments("core", "9.0.1xx", testEnv.InstallPath, testEnv.ManifestPath);
+        // Feature band is not valid for runtime install
+        var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec("9.0.1xx", testEnv.InstallPath, testEnv.ManifestPath);
 
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().NotBe(0, "Feature bands should not be valid for runtime installation");
@@ -211,15 +218,15 @@ public class ReuseAndErrorTests
     }
 
     [Fact]
-    public void RuntimeInstall_InvalidType_ReturnsError()
+    public void RuntimeInstall_InvalidComponent_ReturnsError()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var args = DotnetupTestUtilities.BuildRuntimeArguments("invalid", "9.0", testEnv.InstallPath, testEnv.ManifestPath);
+        // Invalid component name in component@version syntax
+        var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec("invalid@9.0", testEnv.InstallPath, testEnv.ManifestPath);
 
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
-        exitCode.Should().NotBe(0, "Invalid runtime type should return error");
-        output.Should().Contain("Unknown runtime type", "should indicate invalid runtime type");
-        output.Should().Contain("Valid types are:", "should list valid runtime types");
+        exitCode.Should().NotBe(0, "Invalid component type should return error");
+        output.Should().Contain("Unknown component type", "should indicate invalid component type");
     }
 
     [Fact]
@@ -231,7 +238,7 @@ public class ReuseAndErrorTests
         }
 
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var args = DotnetupTestUtilities.BuildRuntimeArguments("windowsdesktop", "9.0", testEnv.InstallPath, testEnv.ManifestPath);
+        var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec("windowsdesktop@9.0", testEnv.InstallPath, testEnv.ManifestPath);
 
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().NotBe(0, "Windows Desktop Runtime should not be installable on non-Windows");
@@ -239,13 +246,13 @@ public class ReuseAndErrorTests
     }
 
     [Theory]
-    [InlineData("core", InstallComponent.Runtime, true)] // SDK includes core runtime
-    [InlineData("aspnetcore", InstallComponent.ASPNETCore, true)] // SDK also includes aspnetcore runtime
-    [InlineData("windowsdesktop", InstallComponent.WindowsDesktop, true)] // SDK does include windowsdesktop (Windows only)
-    public void RuntimeInstall_AfterSdkInstall_BehavesCorrectly(string runtimeType, InstallComponent expectedComponent, bool shouldSkipDownload)
+    [InlineData("runtime@9.0", InstallComponent.Runtime, true)] // SDK includes core runtime (using explicit "runtime@version" syntax)
+    [InlineData("aspnetcore@9.0", InstallComponent.ASPNETCore, true)] // SDK also includes aspnetcore runtime
+    [InlineData("windowsdesktop@9.0", InstallComponent.WindowsDesktop, true)] // SDK does include windowsdesktop (Windows only)
+    public void RuntimeInstall_AfterSdkInstall_BehavesCorrectly(string componentSpec, InstallComponent expectedComponent, bool shouldSkipDownload)
     {
         // Windows Desktop Runtime is only available on Windows - skip this test case on non-Windows
-        if (runtimeType == "windowsdesktop" && !OperatingSystem.IsWindows())
+        if (componentSpec.StartsWith("windowsdesktop") && !OperatingSystem.IsWindows())
         {
             return;
         }
@@ -274,8 +281,8 @@ public class ReuseAndErrorTests
         installsAfterSdk.Should().NotContain(i => i.Component == expectedComponent,
             $"{expectedComponent} should not be in manifest before explicit runtime install");
 
-        // Step 2: Install runtime for same major.minor
-        var runtimeArgs = DotnetupTestUtilities.BuildRuntimeArguments(runtimeType, "9.0", testEnv.InstallPath, testEnv.ManifestPath);
+        // Step 2: Install runtime for same major.minor using component@version syntax
+        var runtimeArgs = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(componentSpec, testEnv.InstallPath, testEnv.ManifestPath);
         (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(runtimeArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"Runtime installation failed. Output:\n{output}");
 

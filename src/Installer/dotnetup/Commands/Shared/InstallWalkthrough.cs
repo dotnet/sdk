@@ -11,6 +11,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 /// <summary>
 /// Handles interactive prompts and decision-making during .NET component installation.
 /// This includes resolving channel/version, set-default-install preferences, and global.json updates.
+///
+/// Note: Install path prompting is handled by <see cref="InstallPathResolver"/> to keep path resolution
+/// logic self-contained. This class focuses on post-path-resolution decisions.
 /// </summary>
 internal class InstallWalkthrough
 {
@@ -97,7 +100,10 @@ internal class InstallWalkthrough
             // Feature bands (like 9.0.1xx) are SDK-specific, don't show them for runtimes
             bool includeFeatureBands = _options.Component == InstallComponent.SDK;
             SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', _channelVersionResolver.GetSupportedChannels(includeFeatureBands)));
-            SpectreAnsiConsole.WriteLine("You can also specify a specific version (for example 9.0.304).");
+
+            // Use appropriate version example for SDK vs Runtime
+            string versionExample = _options.Component == InstallComponent.SDK ? "9.0.304" : "9.0.12";
+            SpectreAnsiConsole.WriteLine($"You can also specify a specific version (for example {versionExample}).");
 
             return SpectreAnsiConsole.Prompt(
                 new TextPrompt<string>($"Which channel of the {_options.ComponentDescription} do you want to install?")
@@ -134,19 +140,19 @@ internal class InstallWalkthrough
     /// </summary>
     /// <param name="currentDotnetInstallRoot">The current .NET installation configuration.</param>
     /// <param name="resolvedInstallPath">The resolved installation path.</param>
-    /// <param name="installPathFromGlobalJson">Whether the install path came from global.json.</param>
+    /// <param name="installPathCameFromGlobalJson">True if the install path came from global.json, which typically means it's repo-local.</param>
     /// <returns>True if the installation should be set as default, false otherwise.</returns>
     public bool ResolveSetDefaultInstall(
         DotnetInstallRootConfiguration? currentDotnetInstallRoot,
         string resolvedInstallPath,
-        string? installPathFromGlobalJson)
+        bool installPathCameFromGlobalJson)
     {
         bool? resolvedSetDefaultInstall = _options.SetDefaultInstall;
 
         if (resolvedSetDefaultInstall == null)
         {
             //  If global.json specified an install path, we don't prompt for setting the default install path (since you probably don't want to do that for a repo-local path)
-            if (_options.Interactive && installPathFromGlobalJson == null)
+            if (_options.Interactive && !installPathCameFromGlobalJson)
             {
                 if (currentDotnetInstallRoot == null)
                 {
