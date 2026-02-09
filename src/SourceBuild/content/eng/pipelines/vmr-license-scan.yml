@@ -95,7 +95,7 @@ extends:
         dependsOn: Setup
         container:
           image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-source-build-test-amd64
-          options: '--memory=6g'
+          options: '--memory=12g'
         pool:
           name: NetCore1ESPool-Svc-Internal
           demands: ImageOverride -equals 1es-ubuntu-2204
