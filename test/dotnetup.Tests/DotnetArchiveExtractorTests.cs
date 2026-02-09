@@ -250,8 +250,8 @@ public class DotnetArchiveExtractorTests
             var readmeMode = File.GetUnixFileMode(readmePath);
 #pragma warning restore CA1416
 
-            _log.WriteLine($"dotnet mode: {dotnetMode} ({(int)dotnetMode:o})");
-            _log.WriteLine($"readme mode: {readmeMode} ({(int)readmeMode:o})");
+            _log.WriteLine($"dotnet mode: {dotnetMode} ({Convert.ToString((int)dotnetMode, 8)})");
+            _log.WriteLine($"readme mode: {readmeMode} ({Convert.ToString((int)readmeMode, 8)})");
 
             dotnetMode.Should().HaveFlag(UnixFileMode.UserExecute, "executable entry should preserve UserExecute");
             readmeMode.Should().NotHaveFlag(UnixFileMode.UserExecute, "non-executable entry should not have UserExecute");
@@ -291,7 +291,7 @@ public class DotnetArchiveExtractorTests
 #pragma warning disable CA1416 // Validate platform compatibility — test is gated by PlatformSpecificFact
             var actualMode = File.GetUnixFileMode(dirPath);
 #pragma warning restore CA1416
-            _log.WriteLine($"directory mode: {actualMode} ({(int)actualMode:o})");
+            _log.WriteLine($"directory mode: {actualMode} ({Convert.ToString((int)actualMode, 8)})");
 
             actualMode.Should().HaveFlag(UnixFileMode.UserExecute, "directory should preserve UserExecute");
             actualMode.Should().HaveFlag(UnixFileMode.UserRead);
