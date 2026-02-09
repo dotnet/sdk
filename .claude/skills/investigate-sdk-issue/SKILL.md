@@ -161,13 +161,13 @@ If there are multiple viable approaches, list them with trade-offs.>
 
 ### Link format
 
-Always link to source code on GitHub using permanent URLs to the `main` branch of the appropriate repo:
+Always link to source code on GitHub using links to the `main` branch of the appropriate repo, or permalinks to a specific commit when you need a stable reference:
 
 - dotnet/sdk: `https://github.com/dotnet/sdk/blob/main/src/Tasks/Microsoft.NET.Build.Tasks/targets/<file>#L<line>-L<line>`
 - dotnet/runtime: `https://github.com/dotnet/runtime/blob/main/src/coreclr/nativeaot/BuildIntegration/<file>#L<line>-L<line>`
 - dotnet/msbuild: `https://github.com/dotnet/msbuild/blob/main/src/<path>#L<line>-L<line>`
 
-When linking, prefer linking to line ranges that show the full target or item group, not just a single line.
+When linking, prefer linking to line ranges that show the full target or item group, not just a single line. For long-lived root-cause analyses that must remain stable as the repository evolves, use GitHub permalinks that include a specific commit SHA instead of `main`.
 
 ### Quality checklist
 
