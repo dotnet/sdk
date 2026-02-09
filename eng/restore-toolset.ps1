@@ -151,7 +151,7 @@ function InstallDotNetSharedFramework([string]$version) {
     if (!(Test-Path $fxDir)) {
         $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
 
-        & $dotnetupExe runtime install core $version --install-path $dotnetRoot --no-progress --set-default-install false
+        & $dotnetupExe runtime install $version --install-path $dotnetRoot --no-progress --set-default-install false
 
         if ($lastExitCode -ne 0) {
             throw "Failed to install shared Framework $version to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
