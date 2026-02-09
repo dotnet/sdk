@@ -579,7 +579,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       </ResolvedFileToPublish>
 
       <!-- Copy satellite assemblies. -->
-      <ResolvedFileToPublish Include="@(IntermediateSatelliteAssembliesWithTargetPath)">
+      <ResolvedFileToPublish Include="@(IntermediateSatelliteAssembliesWithTargetPath)"
+                             Condition="'$(PublishAot)' != 'true'">
         <RelativePath>%(IntermediateSatelliteAssembliesWithTargetPath.Culture)\%(Filename)%(Extension)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>

@@ -1020,6 +1020,95 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutMatching("IL2104.*'TransitiveProjectReference'");
         }
 
+        [RequiresMSBuildVersionTheory("17.12.0")]
+        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
+        public void It_does_not_publish_satellite_assemblies_with_PublishAot(string targetFramework)
+        {
+            if (targetFramework == "net7.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // 7.0 is not supported on Mac
+                return;
+            }
+
+            var projectName = "AotAppWithSatelliteAssemblies";
+            
+            var testProject = new TestProject()
+            {
+                Name = projectName,
+                TargetFrameworks = targetFramework,
+                IsExe = true
+            };
+
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            
+            // Add a simple program that uses a resource string
+            testProject.SourceFiles["Program.cs"] = @"
+using System;
+using System.Globalization;
+using System.Resources;
+
+namespace AotAppWithSatelliteAssemblies
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            CultureInfo.CurrentUICulture = new CultureInfo(""es"");
+            var resources = new ResourceManager(""AotAppWithSatelliteAssemblies.Strings"", typeof(Program).Assembly);
+            Console.WriteLine(resources.GetString(""Greeting""));
+        }
+    }
+}";
+
+            // Add default resource file
+            testProject.EmbeddedResources["Strings.resx"] = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<root>
+  <resheader name=""resmimetype""><value>text/microsoft-resx</value></resheader>
+  <resheader name=""version""><value>2.0</value></resheader>
+  <resheader name=""reader""><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name=""writer""><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name=""Greeting"" xml:space=""preserve""><value>Hello</value></data>
+</root>";
+
+            // Add Spanish satellite resource file
+            testProject.EmbeddedResources["Strings.es.resx"] = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<root>
+  <resheader name=""resmimetype""><value>text/microsoft-resx</value></resheader>
+  <resheader name=""version""><value>2.0</value></resheader>
+  <resheader name=""reader""><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name=""writer""><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name=""Greeting"" xml:space=""preserve""><value>Hola</value></data>
+</root>";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute("/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true", "/p:CheckEolTargetFramework=false")
+                .Should().Pass();
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
+
+            // Verify that satellite assembly directories do NOT exist in publish output
+            publishDirectory.Should().NotHaveSubDirectories("es");
+            
+            // Verify the satellite assembly file does NOT exist
+            var satelliteAssemblyPath = Path.Combine(publishDirectory.FullName, "es", $"{projectName}.resources.dll");
+            File.Exists(satelliteAssemblyPath).Should().BeFalse("satellite assemblies should be embedded in the native executable and not copied to publish folder");
+
+            // Verify that the native executable exists and works
+            var publishedExe = Path.Combine(publishDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}");
+            File.Exists(publishedExe).Should().BeTrue();
+            IsNativeImage(publishedExe).Should().BeTrue();
+
+            // Verify that the app still works with localized strings (they should be embedded)
+            var command = new RunExeCommand(Log, publishedExe)
+                .Execute().Should().Pass()
+                .And.HaveStdOutContaining("Hola");
+        }
+
         private void SetMetadata(XDocument project, string assemblyName, string key, string value)
         {
             var ns = project.Root.Name.Namespace;
