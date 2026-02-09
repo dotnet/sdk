@@ -102,7 +102,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
                 Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => new Dictionary<string, string>()
                 {
                     { "workloadVersion", version }
-                }), WorkloadSearchVersionsJsonContext.Default.IEnumerableDictionaryStringString));
+                }), WorkloadSearchVersionsJsonSerializerContext.Default.IEnumerableDictionaryStringString));
             }
             else
             {
@@ -123,7 +123,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
             }
             else if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
             {
-                Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v)), WorkloadSearchVersionsJsonContext.Default.IEnumerableDictionaryStringString));
+                Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v)), WorkloadSearchVersionsJsonSerializerContext.Default.IEnumerableDictionaryStringString));
             }
             else
             {
@@ -139,7 +139,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
                 Reporter.WriteLine(JsonSerializer.Serialize(new Dictionary<string, Dictionary<string, string>>()
                 {
                     { "manifestVersions", set.ToDictionaryForJson() }
-                }, WorkloadSearchVersionsJsonContext.Default.DictionaryStringDictionaryStringString));
+                }, WorkloadSearchVersionsJsonSerializerContext.Default.DictionaryStringDictionaryStringString));
             }
             else
             {
@@ -207,4 +207,4 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(IEnumerable<Dictionary<string, string>>))]
 [JsonSerializable(typeof(Dictionary<string, Dictionary<string, string>>))]
-internal partial class WorkloadSearchVersionsJsonContext : JsonSerializerContext;
+internal partial class WorkloadSearchVersionsJsonSerializerContext : JsonSerializerContext;

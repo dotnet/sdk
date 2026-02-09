@@ -23,9 +23,7 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 internal sealed partial class CSharpCompilerCommand
 {
     [JsonSerializable(typeof(string))]
-    private partial class CSharpCompilerCommandJsonSerializerContext : JsonSerializerContext
-    {
-    }
+    private partial class CSharpCompilerCommandJsonSerializerContext : JsonSerializerContext;
 
     private static readonly SearchValues<char> s_additionalShouldSurroundWithQuotes = SearchValues.Create('=', ',');
 

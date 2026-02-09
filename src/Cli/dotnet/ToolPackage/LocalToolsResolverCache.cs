@@ -50,7 +50,7 @@ internal partial class LocalToolsResolverCache : ILocalToolsResolverCache
 
                 _fileSystem.File.WriteAllText(
                     packageCacheFile,
-                    JsonSerializer.Serialize(existingCacheTable.Concat(diffedRow), LocalToolsCacheJsonContext.Default.IEnumerableCacheRow));
+                    JsonSerializer.Serialize(existingCacheTable.Concat(diffedRow), LocalToolsCacheJsonSerializerContext.Default.IEnumerableCacheRow));
             }
             else
             {
@@ -63,7 +63,7 @@ internal partial class LocalToolsResolverCache : ILocalToolsResolverCache
 
                 _fileSystem.File.WriteAllText(
                     packageCacheFile,
-                    JsonSerializer.Serialize(rowsToAdd, LocalToolsCacheJsonContext.Default.IEnumerableCacheRow));
+                    JsonSerializer.Serialize(rowsToAdd, LocalToolsCacheJsonSerializerContext.Default.IEnumerableCacheRow));
             }
         }
     }
@@ -95,7 +95,7 @@ internal partial class LocalToolsResolverCache : ILocalToolsResolverCache
         try
         {
             cacheTable =
-                JsonSerializer.Deserialize(_fileSystem.File.ReadAllText(packageCacheFile), LocalToolsCacheJsonContext.Default.CacheRowArray);
+                JsonSerializer.Deserialize(_fileSystem.File.ReadAllText(packageCacheFile), LocalToolsCacheJsonSerializerContext.Default.CacheRowArray);
         }
         catch (JsonException)
         {
@@ -192,5 +192,5 @@ internal partial class LocalToolsResolverCache : ILocalToolsResolverCache
 
     [JsonSerializable(typeof(CacheRow[]))]
     [JsonSerializable(typeof(IEnumerable<CacheRow>))]
-    private partial class LocalToolsCacheJsonContext : JsonSerializerContext;
+    private partial class LocalToolsCacheJsonSerializerContext : JsonSerializerContext;
 }

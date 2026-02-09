@@ -138,7 +138,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var installedWorkloads = _workloadRecordRepo.GetInstalledWorkloads(_sdkFeatureBand);
         var updatableWorkloads = GetUpdatableWorkloadsToAdvertise(installedWorkloads);
         var filePath = GetAdvertisingWorkloadsFilePath(_sdkFeatureBand);
-        var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray(), WorkloadManifestUpdaterJsonContext.Default.StringArray);
+        var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray(), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
         if (Directory.Exists(Path.GetDirectoryName(filePath)))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
@@ -164,7 +164,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
             var adUpdatesFile = GetAdvertisingWorkloadsFilePath(CliFolderPathCalculator.DotnetUserProfileFolderPath, featureBand);
             if (!backgroundUpdatesDisabled && File.Exists(adUpdatesFile))
             {
-                var updatableWorkloads = JsonSerializer.Deserialize(File.ReadAllText(adUpdatesFile), WorkloadManifestUpdaterJsonContext.Default.StringArray);
+                var updatableWorkloads = JsonSerializer.Deserialize(File.ReadAllText(adUpdatesFile), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
                 if (updatableWorkloads != null && updatableWorkloads.Any())
                 {
                     Console.WriteLine();
@@ -531,4 +531,4 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
 }
 
 [JsonSerializable(typeof(string[]))]
-internal partial class WorkloadManifestUpdaterJsonContext : JsonSerializerContext;
+internal partial class WorkloadManifestUpdaterJsonSerializerContext : JsonSerializerContext;

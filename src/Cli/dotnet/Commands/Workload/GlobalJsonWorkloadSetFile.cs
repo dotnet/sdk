@@ -23,7 +23,7 @@ internal class GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string 
             Dictionary<string, string> globalJsonWorkloadSetVersions;
             if (fileStream.Length > 0)
             {
-                globalJsonWorkloadSetVersions = JsonSerializer.Deserialize(fileStream, GlobalJsonWorkloadSetsJsonContext.Default.DictionaryStringString);
+                globalJsonWorkloadSetVersions = JsonSerializer.Deserialize(fileStream, GlobalJsonWorkloadSetsJsonSerializerContext.Default.DictionaryStringString);
             }
             else
             {
@@ -31,7 +31,7 @@ internal class GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string 
             }
             globalJsonWorkloadSetVersions[globalJsonPath] = workloadSetVersion;
             fileStream.Seek(0, SeekOrigin.Begin);
-            JsonSerializer.Serialize(fileStream, globalJsonWorkloadSetVersions, GlobalJsonWorkloadSetsJsonContext.Default.DictionaryStringString);
+            JsonSerializer.Serialize(fileStream, globalJsonWorkloadSetVersions, GlobalJsonWorkloadSetsJsonSerializerContext.Default.DictionaryStringString);
         }
     }
 
@@ -61,7 +61,7 @@ internal class GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string 
                 return [];
             }
 
-            var globalJsonWorkloadSetVersions = JsonSerializer.Deserialize(fileStream, GlobalJsonWorkloadSetsJsonContext.Default.DictionaryStringString);
+            var globalJsonWorkloadSetVersions = JsonSerializer.Deserialize(fileStream, GlobalJsonWorkloadSetsJsonSerializerContext.Default.DictionaryStringString);
             bool updated = false;
 
             //  Create copy of dictionary for iteration so we can modify the original in the loop
@@ -81,7 +81,7 @@ internal class GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string 
             if (updated)
             {
                 fileStream.Seek(0, SeekOrigin.Begin);
-                JsonSerializer.Serialize(fileStream, globalJsonWorkloadSetVersions, GlobalJsonWorkloadSetsJsonContext.Default.DictionaryStringString);
+                JsonSerializer.Serialize(fileStream, globalJsonWorkloadSetVersions, GlobalJsonWorkloadSetsJsonSerializerContext.Default.DictionaryStringString);
             }
 
             return globalJsonWorkloadSetVersions;
@@ -106,4 +106,4 @@ internal class GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string 
     WriteIndented = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(Dictionary<string, string>))]
-internal partial class GlobalJsonWorkloadSetsJsonContext : JsonSerializerContext;
+internal partial class GlobalJsonWorkloadSetsJsonSerializerContext : JsonSerializerContext;

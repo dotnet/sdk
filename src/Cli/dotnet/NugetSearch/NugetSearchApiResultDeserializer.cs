@@ -11,14 +11,12 @@ using Microsoft.DotNet.Cli.ToolPackage;
 
 namespace Microsoft.DotNet.Cli.NugetSearch;
 
-[JsonSerializable(typeof(NugetSearchApiContainerSerializable))]
 [JsonSourceGenerationOptions(
     AllowTrailingCommas = true,
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     Converters = [typeof(AuthorsConverter)])]
-internal partial class NugetSearchApiJsonSerializerContext : JsonSerializerContext
-{
-}
+[JsonSerializable(typeof(NugetSearchApiContainerSerializable))]
+internal partial class NugetSearchApiJsonSerializerContext : JsonSerializerContext;
 
 internal static class NugetSearchApiResultDeserializer
 {
