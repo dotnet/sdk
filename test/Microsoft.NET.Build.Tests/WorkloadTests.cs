@@ -315,7 +315,7 @@ namespace Microsoft.NET.Build.Tests
                 // Conditionally check the OS and modify the expected workloads on Linux
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    expected = "android;wasi-experimental";
+                    expected = "android;wasm-tools";
                 }
                 
                 getValuesCommand.GetValues()

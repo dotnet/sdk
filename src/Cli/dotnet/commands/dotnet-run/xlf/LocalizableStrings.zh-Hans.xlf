@@ -17,6 +17,11 @@
         <target state="translated">使用指定的框架生成和运行应用。框架必须在项目文件中指定。 </target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="translated">不要使用启动配置文件中指定的参数来运行应用程序。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
         <target state="translated">要运行的项目文件的路径(如果只有一个项目，则默认使用当前目录)。</target>
