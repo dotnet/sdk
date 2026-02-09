@@ -19,6 +19,7 @@ internal static class SdkInstallCommandParser
     public static readonly Option<string> ManifestPathOption = CommonOptions.ManifestPathOption;
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
     public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
+    public static readonly Option<bool> RequireMuxerUpdateOption = CommonOptions.RequireMuxerUpdateOption;
 
     public static readonly Option<bool?> UpdateGlobalJsonOption = new("--update-global-json")
     {
@@ -57,6 +58,7 @@ internal static class SdkInstallCommandParser
 
         command.Options.Add(InteractiveOption);
         command.Options.Add(NoProgressOption);
+        command.Options.Add(RequireMuxerUpdateOption);
 
         command.SetAction(parseResult => new SdkInstallCommand(parseResult).Execute());
 

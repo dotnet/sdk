@@ -37,13 +37,12 @@ internal static class RuntimeInstallCommandParser
         Command command = new("install", "Installs a .NET Runtime");
 
         command.Arguments.Add(ComponentSpecArgument);
-
         command.Options.Add(CommonOptions.InstallPathOption);
         command.Options.Add(CommonOptions.SetDefaultInstallOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
-
         command.Options.Add(CommonOptions.InteractiveOption);
         command.Options.Add(CommonOptions.NoProgressOption);
+        command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
 
         command.SetAction(parseResult => new RuntimeInstallCommand(parseResult).Execute());
 

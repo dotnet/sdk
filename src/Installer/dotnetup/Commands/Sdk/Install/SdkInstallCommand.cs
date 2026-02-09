@@ -17,6 +17,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly string? _manifestPath = result.GetValue(SdkInstallCommandParser.ManifestPathOption);
     private readonly bool _interactive = result.GetValue(SdkInstallCommandParser.InteractiveOption);
     private readonly bool _noProgress = result.GetValue(SdkInstallCommandParser.NoProgressOption);
+    private readonly bool _requireMuxerUpdate = result.GetValue(SdkInstallCommandParser.RequireMuxerUpdateOption);
 
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
@@ -35,7 +36,8 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             InstallComponent.SDK,
             ".NET SDK",
             _updateGlobalJson,
-            ResolveChannelFromGlobalJson);
+            ResolveChannelFromGlobalJson,
+            _requireMuxerUpdate);
 
         var result = workflow.Execute(options);
         return result.ExitCode;

@@ -64,6 +64,12 @@ internal class CommonOptions
         Description = "Custom path to the manifest file for tracking .NET installations",
     };
 
+    public static Option<bool> RequireMuxerUpdateOption = new("--require-muxer-update")
+    {
+        Description = "Fail if the muxer (dotnet executable) cannot be updated. By default, a warning is displayed but installation continues.",
+        Arity = ArgumentArity.ZeroOrOne
+    };
+
     private static bool IsCIEnvironmentOrRedirected() =>
         new Cli.Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 }
