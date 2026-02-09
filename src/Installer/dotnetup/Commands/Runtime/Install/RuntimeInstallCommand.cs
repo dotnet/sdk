@@ -70,14 +70,9 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
             _manifestPath,
             _interactive,
             _noProgress,
-<<<<<<< HEAD
-            runtimeInfo.Component,
-            runtimeInfo.Description,
-            RequireMuxerUpdate: _requireMuxerUpdate);
-=======
             component,
-            componentDescription);
->>>>>>> origin/release/dnup
+            componentDescription,
+            RequireMuxerUpdate: _requireMuxerUpdate);
 
         InstallWorkflow.InstallWorkflowResult workflowResult = workflow.Execute(options);
         return workflowResult.ExitCode;
