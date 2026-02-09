@@ -208,8 +208,9 @@ internal class DotnetArchiveExtractor : IDisposable
 
     /// <summary>
     /// Extracts the contents of a tar file to the target directory.
+    /// Exposed as internal static for testing.
     /// </summary>
-    private void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
+    internal static void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null)
     {
         using var tarStream = File.OpenRead(tarPath);
         var tarReader = new TarReader(tarStream);
@@ -221,12 +222,18 @@ internal class DotnetArchiveExtractor : IDisposable
             {
                 string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
                 Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-                using var outStream = File.Create(destPath);
-                entry.DataStream?.CopyTo(outStream);
+                // ExtractToFile handles Unix permissions automatically via entry.Mode
+                entry.ExtractToFile(destPath, overwrite: true);
             }
             else if (entry.EntryType == TarEntryType.Directory)
             {
-                Directory.CreateDirectory(Path.Combine(targetDir, entry.Name));
+                string dirPath = Path.Combine(targetDir, entry.Name);
+                Directory.CreateDirectory(dirPath);
+
+                if (entry.Mode != default && !OperatingSystem.IsWindows())
+                {
+                    File.SetUnixFileMode(dirPath, entry.Mode);
+                }
             }
 
             installTask?.Value += 1;
