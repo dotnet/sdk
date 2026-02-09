@@ -362,6 +362,8 @@ public class LibraryActivityTagTests
 
 public class FirstRunNoticeTests
 {
+    private const string NoLogoEnvVar = "DOTNET_NOLOGO";
+
     [Fact]
     public void IsFirstRun_ReturnsTrueWhenSentinelDoesNotExist()
     {
@@ -379,23 +381,34 @@ public class FirstRunNoticeTests
     [Fact]
     public void ShowIfFirstRun_CreatesSentinelFile()
     {
-        // Clean up any existing sentinel for this test
-        var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
-        Assert.NotNull(sentinelPath);
+        // Save and clear DOTNET_NOLOGO to ensure test runs the full path
+        var originalNoLogo = Environment.GetEnvironmentVariable(NoLogoEnvVar);
+        Environment.SetEnvironmentVariable(NoLogoEnvVar, null);
 
-        if (File.Exists(sentinelPath))
+        try
         {
-            File.Delete(sentinelPath);
+            // Clean up any existing sentinel for this test
+            var sentinelPath = DotnetupPaths.TelemetrySentinelPath;
+            Assert.NotNull(sentinelPath);
+
+            if (File.Exists(sentinelPath))
+            {
+                File.Delete(sentinelPath);
+            }
+
+            // Simulate first run with telemetry enabled
+            FirstRunNotice.ShowIfFirstRun(telemetryEnabled: true);
+
+            // Sentinel should now exist
+            Assert.True(File.Exists(sentinelPath));
+
+            // Subsequent calls should not be "first run"
+            Assert.False(FirstRunNotice.IsFirstRun());
         }
-
-        // Simulate first run with telemetry enabled
-        FirstRunNotice.ShowIfFirstRun(telemetryEnabled: true);
-
-        // Sentinel should now exist
-        Assert.True(File.Exists(sentinelPath));
-
-        // Subsequent calls should not be "first run"
-        Assert.False(FirstRunNotice.IsFirstRun());
+        finally
+        {
+            Environment.SetEnvironmentVariable(NoLogoEnvVar, originalNoLogo);
+        }
     }
 
     [Fact]
