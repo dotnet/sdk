@@ -21,12 +21,52 @@ function InitializeCustomSDKToolset {
 
   InitializeDotNetCli true
 
-  InstallDotNetSharedFramework "6.0.0"
-  InstallDotNetSharedFramework "7.0.0"
-  InstallDotNetSharedFramework "8.0.0"
-  InstallDotNetSharedFramework "9.0.0"
+  # Build dotnetup if not already present (needs SDK to be installed first)
+  EnsureDotnetupBuilt
+
+  InstallDotNetSharedFramework "6.0"
+  InstallDotNetSharedFramework "7.0"
+  InstallDotNetSharedFramework "8.0"
+  InstallDotNetSharedFramework "9.0"
 
   CreateBuildEnvScript
+}
+
+# Builds dotnetup if the executable doesn't exist
+function EnsureDotnetupBuilt {
+  local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local dotnetup_dir="$script_dir/dotnetup"
+  local dotnetup_exe="$dotnetup_dir/dotnetup"
+
+  if [[ ! -f "$dotnetup_exe" ]]; then
+    echo "Building dotnetup..."
+    local dotnetup_project="$repo_root/src/Installer/dotnetup/dotnetup.csproj"
+
+    # Determine RID based on OS
+    local rid
+    if [[ "$(uname)" == "Darwin" ]]; then
+      if [[ "$(uname -m)" == "arm64" ]]; then
+        rid="osx-arm64"
+      else
+        rid="osx-x64"
+      fi
+    else
+      if [[ "$(uname -m)" == "aarch64" ]]; then
+        rid="linux-arm64"
+      else
+        rid="linux-x64"
+      fi
+    fi
+
+    "$DOTNET_INSTALL_DIR/dotnet" publish "$dotnetup_project" -c Release -r "$rid" -o "$dotnetup_dir"
+
+    if [[ $? -ne 0 ]]; then
+      echo "Failed to build dotnetup."
+      ExitWithExitCode 1
+    fi
+
+    echo "dotnetup built successfully"
+  fi
 }
 
 # Installs additional shared frameworks for testing purposes
@@ -36,14 +76,14 @@ function InstallDotNetSharedFramework {
   local fx_dir="$dotnet_root/shared/Microsoft.NETCore.App/$version"
 
   if [[ ! -d "$fx_dir" ]]; then
-    GetDotNetInstallScript "$dotnet_root"
-    local install_script=$_GetDotNetInstallScript
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local dotnetup_exe="$script_dir/dotnetup/dotnetup"
 
-    bash "$install_script" --version $version --install-dir "$dotnet_root" --runtime "dotnet" --skip-non-versioned-files
+    "$dotnetup_exe" runtime install "$version" --install-path "$dotnet_root" --no-progress --set-default-install false
     local lastexitcode=$?
 
     if [[ $lastexitcode != 0 ]]; then
-      echo "Failed to install Shared Framework $version to '$dotnet_root' (exit code '$lastexitcode')."
+      echo "Failed to install Shared Framework $version to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
       ExitWithExitCode $lastexitcode
     fi
   fi
