@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -23,6 +25,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly bool _shouldDisposeDownloader;
     private string scratchDownloadDirectory;
     private string? _archivePath;
+    private int _extractedFileCount;
     private IProgressReporter? _progressReporter;
 
     public DotnetArchiveExtractor(
@@ -62,7 +65,8 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Prepare()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
+        using var activity = InstallationActivitySource.ActivitySource.StartActivity("download");
+        activity?.SetTag("download.version", _resolvedVersion.ToString());
 
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
@@ -75,23 +79,69 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
         }
+        catch (DotnetInstallException)
+        {
+            throw;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.DownloadFailed,
+                $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
         catch (Exception ex)
         {
-            throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.DownloadFailed,
+                $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
         }
 
         downloadTask.Value = 100;
     }
+
     public void Commit()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
+        using var activity = InstallationActivitySource.ActivitySource.StartActivity("extract");
+        activity?.SetTag("download.version", _resolvedVersion.ToString());
 
         string componentDescription = _request.Component.GetDisplayName();
         var installTask = ProgressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
 
-        // Extract archive directly to target directory with special handling for muxer
-        ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
-        installTask.Value = installTask.MaxValue;
+        try
+        {
+            // Extract archive directly to target directory with special handling for muxer
+            ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
+            installTask.Value = installTask.MaxValue;
+        }
+        catch (DotnetInstallException)
+        {
+            throw;
+        }
+        catch (InvalidDataException ex)
+        {
+            // Archive is corrupted (invalid zip/tar format)
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ArchiveCorrupted,
+                $"Archive is corrupted or truncated for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
+        catch (Exception ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ExtractionFailed,
+                $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
+                ex,
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
     }
 
     /// <summary>
@@ -147,6 +197,8 @@ internal class DotnetArchiveExtractor : IDisposable
                         File.Delete(muxerTargetPath);
                     }
                     File.Move(muxerTempPath, muxerTargetPath);
+                    Activity.Current?.SetTag("muxer.action", "kept_existing");
+                    installTask?.SetTag("muxer.action", "kept_existing");
                 }
                 else
                 {
@@ -155,7 +207,18 @@ internal class DotnetArchiveExtractor : IDisposable
                     {
                         File.Delete(muxerTempPath);
                     }
+                    Activity.Current?.SetTag("muxer.action", "updated");
+                    Activity.Current?.SetTag("muxer.previous_version", existingMuxerVersion?.ToString() ?? "unknown");
+                    Activity.Current?.SetTag("muxer.new_version", newMuxerVersion?.ToString() ?? "unknown");
+                    installTask?.SetTag("muxer.action", "updated");
+                    installTask?.SetTag("muxer.previous_version", existingMuxerVersion?.ToString() ?? "unknown");
+                    installTask?.SetTag("muxer.new_version", newMuxerVersion?.ToString() ?? "unknown");
                 }
+            }
+            else if (!hadExistingMuxer)
+            {
+                Activity.Current?.SetTag("muxer.action", "new_install");
+                installTask?.SetTag("muxer.action", "new_install");
             }
         }
         catch
@@ -310,6 +373,7 @@ internal class DotnetArchiveExtractor : IDisposable
         using var outStream = File.Create(destPath);
         entry.DataStream?.CopyTo(outStream);
         installTask?.Value += 1;
+        _extractedFileCount++;
     }
 
     /// <summary>
@@ -359,6 +423,7 @@ internal class DotnetArchiveExtractor : IDisposable
         Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
         entry.ExtractToFile(destPath, overwrite: true);
         installTask?.Value += 1;
+        _extractedFileCount++;
     }
 
     public void Dispose()

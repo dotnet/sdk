@@ -30,7 +30,9 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         ["windowsdesktop"] = InstallComponent.WindowsDesktop,
     };
 
-    public override int Execute()
+    protected override string GetCommandName() => "runtime/install";
+
+    protected override int ExecuteCore()
     {
         // Parse the component spec to determine runtime type and version
         var (component, versionOrChannel, errorMessage) = ParseComponentSpec(_componentSpec);
@@ -113,7 +115,7 @@ internal class RuntimeInstallCommand(ParseResult result) : CommandBase(result)
         }
 
         // No '@' - treat as version/channel for core runtime
-       return (InstallComponent.Runtime, spec, null);
+        return (InstallComponent.Runtime, spec, null);
     }
 
     /// <summary>

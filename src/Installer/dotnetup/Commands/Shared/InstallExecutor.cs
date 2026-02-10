@@ -15,7 +15,7 @@ internal class InstallExecutor
     /// <summary>
     /// Result of an installation execution.
     /// </summary>
-    public record InstallResult(bool Success, DotnetInstall? Install);
+    public record InstallResult(bool Success, DotnetInstall? Install, bool WasAlreadyInstalled = false);
 
     /// <summary>
     /// Result of creating and resolving an install request.
@@ -70,15 +70,15 @@ internal class InstallExecutor
     {
         SpectreAnsiConsole.MarkupLineInterpolated($"Installing {componentDescription} [blue]{resolvedVersion}[/] to [blue]{installRequest.InstallRoot.Path}[/]...");
 
-        var install = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
-        if (install == null)
+        var installResult = InstallerOrchestratorSingleton.Instance.Install(installRequest, noProgress);
+        if (installResult.Install == null)
         {
             SpectreAnsiConsole.MarkupLine($"[red]Failed to install {componentDescription} {resolvedVersion}[/]");
             return new InstallResult(false, null);
         }
 
-        SpectreAnsiConsole.MarkupLine($"[green]Installed {componentDescription} {install.Version}, available via {install.InstallRoot}[/]");
-        return new InstallResult(true, install);
+        SpectreAnsiConsole.MarkupLine($"[green]Installed {componentDescription} {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
+        return new InstallResult(true, installResult.Install, installResult.WasAlreadyInstalled);
     }
 
     /// <summary>
@@ -112,15 +112,15 @@ internal class InstallExecutor
                     ManifestPath = manifestPath
                 });
 
-            var additionalInstall = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
-            if (additionalInstall == null)
+            var additionalResult = InstallerOrchestratorSingleton.Instance.Install(additionalRequest, noProgress);
+            if (additionalResult.Install == null)
             {
                 SpectreAnsiConsole.MarkupLine($"[red]Failed to install additional {componentDescription} {additionalVersion}[/]");
                 allSucceeded = false;
             }
             else
             {
-                SpectreAnsiConsole.MarkupLine($"[green]Installed additional {componentDescription} {additionalInstall.Version}, available via {additionalInstall.InstallRoot}[/]");
+                SpectreAnsiConsole.MarkupLine($"[green]Installed additional {componentDescription} {additionalResult.Install.Version}, available via {additionalResult.Install.InstallRoot}[/]");
             }
         }
 
@@ -150,5 +150,114 @@ internal class InstallExecutor
     public static void DisplayComplete()
     {
         SpectreAnsiConsole.WriteLine("Complete!");
+    }
+
+    /// <summary>
+    /// Determines whether the given path is an admin/system-managed .NET install location.
+    /// These locations are managed by system package managers or OS installers and should not
+    /// be used by dotnetup for user-level installations.
+    /// </summary>
+    public static bool IsAdminInstallPath(string path)
+    {
+        var fullPath = Path.GetFullPath(path);
+
+        if (OperatingSystem.IsWindows())
+        {
+            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
+            // Check for C:\Program Files\dotnet or C:\Program Files (x86)\dotnet
+            if (!string.IsNullOrEmpty(programFiles) &&
+                fullPath.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            if (!string.IsNullOrEmpty(programFilesX86) &&
+                fullPath.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        else
+        {
+            // Standard admin/package-manager locations on Linux and macOS
+            if (fullPath.StartsWith("/usr/share/dotnet", StringComparison.Ordinal) ||
+                fullPath.StartsWith("/usr/lib/dotnet", StringComparison.Ordinal) ||
+                fullPath.StartsWith("/usr/local/share/dotnet", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Classifies the install path for telemetry (no PII - just the type of location).
+    /// When pathSource is provided, global_json paths are distinguished from other path types.
+    /// </summary>
+    /// <param name="path">The install path to classify.</param>
+    /// <param name="pathSource">How the path was determined (e.g., "global_json", "explicit"). Null to skip source-based classification.</param>
+    public static string ClassifyInstallPath(string path, string? pathSource = null)
+    {
+        var fullPath = Path.GetFullPath(path);
+
+        // Check for admin/system .NET paths first — these are the most important to distinguish
+        if (IsAdminInstallPath(path))
+        {
+            return "admin";
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
+            if (!string.IsNullOrEmpty(programFiles) && fullPath.StartsWith(programFiles, StringComparison.OrdinalIgnoreCase))
+            {
+                return "system_programfiles";
+            }
+            if (!string.IsNullOrEmpty(programFilesX86) && fullPath.StartsWith(programFilesX86, StringComparison.OrdinalIgnoreCase))
+            {
+                return "system_programfiles_x86";
+            }
+
+            // Check more-specific paths before less-specific ones:
+            // LocalApplicationData (e.g., C:\Users\x\AppData\Local) is under UserProfile (C:\Users\x)
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            if (!string.IsNullOrEmpty(localAppData) && fullPath.StartsWith(localAppData, StringComparison.OrdinalIgnoreCase))
+            {
+                return "local_appdata";
+            }
+
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (!string.IsNullOrEmpty(userProfile) && fullPath.StartsWith(userProfile, StringComparison.OrdinalIgnoreCase))
+            {
+                return "user_profile";
+            }
+        }
+        else
+        {
+            if (fullPath.StartsWith("/usr/", StringComparison.Ordinal) ||
+                fullPath.StartsWith("/opt/", StringComparison.Ordinal))
+            {
+                return "system_path";
+            }
+
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (!string.IsNullOrEmpty(home) && fullPath.StartsWith(home, StringComparison.Ordinal))
+            {
+                return "user_home";
+            }
+        }
+
+        // If the path was specified by global.json and doesn't match a well-known location,
+        // classify it as global_json rather than generic "other"
+        if (pathSource == "global_json")
+        {
+            return "global_json";
+        }
+
+        return "other";
     }
 }

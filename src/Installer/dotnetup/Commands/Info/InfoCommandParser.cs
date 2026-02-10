@@ -31,9 +31,8 @@ internal static class InfoCommandParser
 
         command.SetAction(parseResult =>
         {
-            var format = parseResult.GetValue(FormatOption);
-            var noList = parseResult.GetValue(NoListOption);
-            return Info.InfoCommand.Execute(format, noList);
+            var infoCommand = new Info.InfoCommand(parseResult);
+            return infoCommand.Execute();
         });
 
         return command;

@@ -13,7 +13,7 @@
         }
     ],
     "settings": {
-        "dotnet.defaultSolution": "dotnetup/dotnetup.csproj",
+        "dotnet.defaultSolution": "../../dotnetup.slnf",
         "csharp.debug.console": "integratedTerminal",
         "debug.terminal.clearBeforeReusing": true,
         "editor.formatOnSave": true,
@@ -34,6 +34,9 @@
                 "stopAtEntry": false,
                 "logging": {
                     "moduleLoad": false
+                },
+                "env": {
+                    "DOTNETUP_DEV_BUILD": "1"
                 }
             },
             {

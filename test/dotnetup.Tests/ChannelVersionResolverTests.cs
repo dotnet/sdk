@@ -99,6 +99,38 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
             );
         }
 
+        [Theory]
+        [InlineData("latest", true)]
+        [InlineData("preview", true)]
+        [InlineData("lts", true)]
+        [InlineData("sts", true)]
+        [InlineData("LTS", true)]  // Case insensitive
+        [InlineData("9", true)]
+        [InlineData("9.0", true)]
+        [InlineData("9.0.100", true)]
+        [InlineData("9.0.1xx", true)]
+        [InlineData("10", true)]
+        [InlineData("99", true)]  // Max reasonable major
+        [InlineData("99.0.100", true)]
+        public void IsValidChannelFormat_ValidInputs_ReturnsTrue(string channel, bool expected)
+        {
+            Assert.Equal(expected, ChannelVersionResolver.IsValidChannelFormat(channel));
+        }
+
+        [Theory]
+        [InlineData("939393939", false)]  // Way too large major version
+        [InlineData("100", false)]  // Just over max reasonable
+        [InlineData("999999", false)]
+        [InlineData("", false)]
+        [InlineData("   ", false)]
+        [InlineData("abc", false)]
+        [InlineData("invalid", false)]
+        [InlineData("-1", false)]  // Negative
+        [InlineData("9.-1.100", false)]  // Negative minor
+        public void IsValidChannelFormat_InvalidInputs_ReturnsFalse(string channel, bool expected)
+        {
+            Assert.Equal(expected, ChannelVersionResolver.IsValidChannelFormat(channel));
+        }
         [Fact]
         public void GetSupportedChannels_WithFeatureBands_IncludesFeatureBandChannels()
         {

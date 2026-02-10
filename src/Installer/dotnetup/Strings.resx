@@ -153,4 +153,7 @@
   <data name="RootCommandDescription" xml:space="preserve">
     <value>.NET installation manager for user level installs.</value>
   </data>
+  <data name="TelemetryNotice" xml:space="preserve">
+    <value>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</value>
+  </data>
 </root>

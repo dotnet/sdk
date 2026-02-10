@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -60,11 +61,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         else
         {
             // For non-Windows platforms, determine based on path location
-            // TODO: This should be improved to not be windows-specific https://github.com/dotnet/sdk/issues/51601
-            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-            bool isAdminInstall = currentInstallRoot.Path.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
-                                  currentInstallRoot.Path.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
+            bool isAdminInstall = InstallExecutor.IsAdminInstallPath(currentInstallRoot.Path);
 
             // For now, we consider it fully configured if it's on PATH
             return new(currentInstallRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsFullyConfigured: true);
@@ -125,14 +122,14 @@ public class DotnetInstallManager : IDotnetInstallManager
             new InstallRequestOptions()
         );
 
-        DotnetInstall? newInstall = InstallerOrchestratorSingleton.Instance.Install(request);
-        if (newInstall == null)
+        InstallResult installResult = InstallerOrchestratorSingleton.Instance.Install(request);
+        if (installResult.Install == null)
         {
             throw new Exception($"Failed to install .NET SDK {channnel.Name}");
         }
         else
         {
-            Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {newInstall.Version}, available via {newInstall.InstallRoot}[/]");
+            Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {installResult.Install.Version}, available via {installResult.Install.InstallRoot}[/]");
         }
     }
 

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -7,6 +7,11 @@
     <IsUnitTestProject>true</IsUnitTestProject>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>
+
+  <!-- Exclude demo app from test compilation -->
+  <ItemGroup>
+    <Compile Remove="TestAssets\TelemetryIntegrationDemo\**\*.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Installer\dotnetup\dotnetup.csproj" />

@@ -1,0 +1,713 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# dotnetup Telemetry Dashboard\n\nMonitoring installation success rates, usage patterns, and error analysis."
+      },
+      "name": "header"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "time-range",
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "type": 4,
+            "isRequired": true,
+            "value": {
+              "durationMs": 604800000
+            },
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 3600000,
+                  "displayName": "Last hour"
+                },
+                {
+                  "durationMs": 86400000,
+                  "displayName": "Last 24 hours"
+                },
+                {
+                  "durationMs": 604800000,
+                  "displayName": "Last 7 days"
+                },
+                {
+                  "durationMs": 2592000000,
+                  "displayName": "Last 30 days"
+                },
+                {
+                  "durationMs": 7776000000,
+                  "displayName": "Last 90 days"
+                }
+              ],
+              "allowCustom": true
+            },
+            "label": "Time Range"
+          },
+          {
+            "id": "version-filter",
+            "version": "KqlParameterItem/1.0",
+            "name": "VersionFilter",
+            "type": 2,
+            "isRequired": true,
+            "query": "dependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| where isnotempty(version)\n| distinct version\n| order by version desc\n| take 20\n| union (datatable(version:string)[\"all\"])\n| order by version asc",
+            "value": "all",
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "label": "Version"
+          },
+          {
+            "id": "dev-build-filter",
+            "version": "KqlParameterItem/1.0",
+            "name": "DevBuildFilter",
+            "type": 2,
+            "isRequired": true,
+            "value": "all",
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "jsonData": "[{\"value\": \"all\", \"label\": \"All (dev + prod)\"}, {\"value\": \"exclude\", \"label\": \"Production only\"}, {\"value\": \"only\", \"label\": \"Dev builds only\"}]",
+            "label": "Dev Builds"
+          }
+        ],
+        "style": "pills"
+      },
+      "name": "parameters"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Success Rate Overview\n\n*Success rate excludes user errors (invalid input, permissions, disk full, network issues). Only product issues count against quality.*"
+      },
+      "name": "success-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\nlet filteredData = dependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter);\nlet versions = filteredData\n| where isnotempty(version)\n| distinct version\n| order by version desc\n| take 2\n| extend rank = row_number();\nlet latestVersion = toscalar(versions | where rank == 1 | project version);\nlet priorVersion = toscalar(versions | where rank == 2 | project version);\nlet latestStats = filteredData\n| where version == latestVersion\n| summarize \n    Total = count(), \n    Successful = countif(success == true), \n    ProductErrors = countif(success == false and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(success == false and error_category == \"user\")\n| extend \n    Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1), \n    Version = latestVersion, \n    Label = \"Latest\";\nlet priorStats = filteredData\n| where version == priorVersion and isnotempty(priorVersion)\n| summarize \n    Total = count(), \n    Successful = countif(success == true), \n    ProductErrors = countif(success == false and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(success == false and error_category == \"user\")\n| extend \n    Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1), \n    Version = priorVersion, \n    Label = \"Prior\";\nlatestStats\n| union priorStats\n| where isnotempty(Version)\n| project Label, Version, ['Success Rate'] = strcat(SuccessRate, '%'), Relevant, Successful, ['Product Errors'] = ProductErrors, ['User Errors'] = UserErrors\n| order by Label asc",
+        "size": 1,
+        "title": "Product Success Rate by Version",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Success Rate",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": ">=",
+                    "thresholdValue": "95",
+                    "representation": "green",
+                    "text": "{0}"
+                  },
+                  {
+                    "operator": ">=",
+                    "thresholdValue": "80",
+                    "representation": "yellow",
+                    "text": "{0}"
+                  },
+                  {
+                    "operator": "Default",
+                    "representation": "red",
+                    "text": "{0}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Successful",
+              "formatter": 8,
+              "formatOptions": {
+                "palette": "green"
+              }
+            },
+            {
+              "columnMatch": "Product Errors",
+              "formatter": 8,
+              "formatOptions": {
+                "palette": "red"
+              }
+            },
+            {
+              "columnMatch": "User Errors",
+              "formatter": 8,
+              "formatOptions": {
+                "palette": "yellow"
+              }
+            }
+          ],
+          "rowLimit": 2
+        }
+      },
+      "customWidth": "30",
+      "name": "success-tiles"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend command = tostring(customDimensions[\"command.name\"]),\n    version = coalesce(tostring(customDimensions[\"dotnetup.version\"]), \"unknown\"),\n    error_category = tostring(customDimensions[\"error.category\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(command)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize \n    Total = count(),\n    Successful = countif(success == true),\n    ProductErrors = countif(success == false and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(success == false and error_category == \"user\")\n    by command, version\n| where version != \"unknown\" or Total >= 25\n| extend Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1)\n| order by command asc, version desc\n| project Command = command, Version = version, ['Success Rate'] = SuccessRate, Relevant, Successful, ['Product Errors'] = ProductErrors, ['User Errors'] = UserErrors",
+        "size": 1,
+        "title": "Product Success Rate by Command & Version",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Success Rate",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": ">=",
+                    "thresholdValue": "95",
+                    "representation": "green",
+                    "text": "{0}%"
+                  },
+                  {
+                    "operator": ">=",
+                    "thresholdValue": "80",
+                    "representation": "yellow",
+                    "text": "{0}%"
+                  },
+                  {
+                    "operator": "Default",
+                    "representation": "red",
+                    "text": "{0}%"
+                  }
+                ]
+              }
+            }
+          ],
+          "rowLimit": 50
+        }
+      },
+      "customWidth": "40",
+      "name": "success-by-command-version"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\nlet baseData = dependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"]),\n    command = tostring(customDimensions[\"command.name\"]),\n    error_category = tostring(customDimensions[\"error.category\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true);\nlet latestVersion = toscalar(baseData | where isnotempty(version) | summarize arg_max(timestamp, version) | project version);\nlet targetVersion = iif(versionFilter == 'all', latestVersion, versionFilter);\nbaseData\n| where version == targetVersion\n| where isnotempty(command)\n| summarize \n    Total = count(),\n    Successful = countif(success == true),\n    UserErrors = countif(success == false and error_category == \"user\")\n    by bin(timestamp, 1d), command\n| where (Total - UserErrors) > 0\n| extend SuccessRate = 100.0 * Successful / (Total - UserErrors)\n| project timestamp, command, SuccessRate\n| render timechart",
+        "size": 1,
+        "title": "Product Success Rate Over Time (by Command)",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "timechart",
+        "chartSettings": {
+          "ySettings": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      "customWidth": "35",
+      "name": "success-timechart"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Command Usage"
+      },
+      "name": "usage-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| count",
+        "size": 4,
+        "title": "Total Commands",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "card",
+        "textSettings": {
+          "style": "bignumber"
+        }
+      },
+      "customWidth": "20",
+      "name": "total-commands"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend command = tostring(customDimensions[\"command.name\"]), version = tostring(customDimensions[\"dotnetup.version\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(command)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by command\n| order by Count desc\n| render piechart",
+        "size": 1,
+        "title": "Commands by Type",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "40",
+      "name": "commands-piechart"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend command = tostring(customDimensions[\"command.name\"]), version = tostring(customDimensions[\"dotnetup.version\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(command)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by bin(timestamp, 1d), command\n| render timechart",
+        "size": 1,
+        "title": "Command Usage Over Time",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "timechart"
+      },
+      "customWidth": "40",
+      "name": "commands-timechart"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Platform & Environment"
+      },
+      "name": "platform-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend os = tostring(customDimensions[\"os.platform\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(os)\n| summarize Count = count() by os\n| render piechart",
+        "size": 1,
+        "title": "Usage by OS",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "os-piechart"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend arch = tostring(customDimensions[\"process.arch\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(arch)\n| summarize Count = count() by arch\n| render piechart",
+        "size": 1,
+        "title": "Usage by Architecture",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "arch-piechart"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend ci = tostring(customDimensions[\"ci.detected\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(ci)\n| summarize Count = count() by CI_Environment = iif(ci == \"true\" or ci == \"True\", \"CI/CD\", \"Interactive\")\n| render piechart",
+        "size": 1,
+        "title": "CI vs Interactive",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "ci-piechart"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend os = tostring(customDimensions[\"os.platform\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(os)\n| summarize \n    Total = count(),\n    SuccessRate = round(100.0 * countif(success == true) / count(), 1)\n    by os\n| order by Total desc\n| project OS = os, Total, ['Success Rate'] = strcat(SuccessRate, '%')",
+        "size": 1,
+        "title": "Success Rate by OS",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Success Rate",
+              "formatter": 1
+            }
+          ]
+        }
+      },
+      "customWidth": "25",
+      "name": "success-by-os"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\" or name == \"download\" or name == \"extract\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend caller = coalesce(tostring(customDimensions[\"caller\"]), \"(library direct)\")\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| summarize Count = count() by caller\n| render piechart",
+        "size": 1,
+        "title": "Usage by Caller",
+        "noDataMessage": "No telemetry with caller tag yet.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "caller-piechart"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Installations"
+      },
+      "name": "install-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"command/runtime/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend component = coalesce(tostring(customDimensions[\"install.component\"]), \"Runtime\")\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by component\n| render piechart",
+        "size": 1,
+        "title": "Runtime Type Distribution",
+        "noDataMessage": "No runtime install telemetry data yet.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "runtime-type-distribution"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\" and name endswith \"/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend path_source = coalesce(tostring(customDimensions[\"install.path_source\"]), \"unknown\")\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by path_source\n| render piechart",
+        "size": 1,
+        "title": "Install Path Source",
+        "noDataMessage": "No install path source telemetry data yet.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "install-path-source-distribution"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\" and name endswith \"/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend path_type = coalesce(tostring(customDimensions[\"install.path_type\"]), \"unknown\")\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by path_type\n| render piechart",
+        "size": 1,
+        "title": "Install Path Type",
+        "noDataMessage": "No install path type telemetry data yet.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "install-path-type-distribution"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\" and name endswith \"/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend result = coalesce(tostring(customDimensions[\"install.result\"]), iif(success == true, \"success\", \"failed\"))\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by result\n| render piechart",
+        "size": 1,
+        "title": "Install Outcome",
+        "noDataMessage": "No install outcome data yet.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "install-outcome-distribution"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"download\" or name == \"extract\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"download.version\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(version)\n| summarize Count = count() by version\n| order by Count desc\n| take 20\n| render barchart",
+        "size": 1,
+        "title": "Most Installed SDK Versions",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart"
+      },
+      "customWidth": "50",
+      "name": "installed-versions"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"command/sdk/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend requested = tostring(customDimensions[\"sdk.requested\"]),\n    source = tostring(customDimensions[\"sdk.request_source\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| extend display_requested = case(\n    source == \"default-latest\", \"(default: latest)\",\n    source == \"default-globaljson\", strcat(\"(global.json: \", requested, \")\"),\n    source == \"explicit\" and isnotempty(requested), requested,\n    isnotempty(requested), requested,\n    isnotempty(source), strcat(\"(\", source, \")\"),\n    \"(no request data)\")\n| summarize Count = count() by display_requested\n| order by Count desc\n| take 15\n| render barchart",
+        "size": 1,
+        "title": "Requested SDK Versions (User Input)",
+        "noDataMessage": "No SDK install telemetry with request source data yet. This data is populated when users run 'dotnetup sdk install'.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart"
+      },
+      "customWidth": "50",
+      "name": "requested-versions"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"command/sdk/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend source = coalesce(tostring(customDimensions[\"sdk.request_source\"]), \"unknown\")\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize Count = count() by source\n| render piechart",
+        "size": 1,
+        "title": "Request Source Distribution",
+        "noDataMessage": "No SDK install telemetry data yet.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "30",
+      "name": "request-source-distribution"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"download\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend from_cache = tostring(customDimensions[\"download.from_cache\"]),\n    bytes = todouble(customDimensions[\"download.bytes\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| summarize \n    TotalDownloads = count(),\n    CacheHits = countif(from_cache == \"true\" or from_cache == \"True\"),\n    AvgSizeMB = round(avg(bytes) / 1048576, 2)\n| extend CacheHitRate = round(100.0 * CacheHits / TotalDownloads, 1)\n| project TotalDownloads, CacheHits, ['Cache Hit Rate'] = strcat(CacheHitRate, '%'), ['Avg Size MB'] = AvgSizeMB",
+        "size": 1,
+        "title": "Download Statistics",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "customWidth": "35",
+      "name": "download-stats"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Product Errors (Quality Issues)\n\n*These are errors we can take action on - bugs, crashes, server issues.*"
+      },
+      "name": "errors-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| where error_category == \"product\" or isempty(error_category)\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| extend error_type = coalesce(tostring(customDimensions[\"error.type\"]), \"Unknown\")\n| extend error_code = tostring(customDimensions[\"error.code\"])\n| extend display_error = iif(error_type == \"Exception\" and isnotempty(error_code) and error_code != \"Exception\", error_code, error_type)\n| where display_error != \"Unknown\"\n| summarize Count = count() by display_error\n| order by Count desc\n| render barchart",
+        "size": 1,
+        "title": "Product Errors by Type",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart"
+      },
+      "customWidth": "50",
+      "name": "errors-by-type"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend error_type = tostring(customDimensions[\"error.type\"]),\n    http_status = tostring(customDimensions[\"error.http_status\"]),\n    command = tostring(customDimensions[\"command.name\"])\n| where error_category == \"product\" or isempty(error_category)\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(http_status)\n| summarize Count = count() by http_status, error_type\n| order by Count desc\n| project ['HTTP Status'] = http_status, ['Error Type'] = error_type, Count",
+        "size": 1,
+        "title": "HTTP Errors (Product)",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "customWidth": "50",
+      "name": "http-errors"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend command = tostring(customDimensions[\"command.name\"]),\n    error_type = tostring(customDimensions[\"error.type\"]),\n    error_details = tostring(customDimensions[\"error.details\"]),\n    source_location = tostring(customDimensions[\"error.source_location\"]),\n    exception_chain = tostring(customDimensions[\"error.exception_chain\"]),\n    hresult = tostring(customDimensions[\"error.hresult\"]),\n    os = tostring(customDimensions[\"os.platform\"]),\n    version = tostring(customDimensions[\"dotnetup.version\"])\n| where error_category == \"product\" or isempty(error_category)\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| project timestamp, command, error_type, error_details, source_location, exception_chain, hresult, os, version\n| order by timestamp desc\n| take 25",
+        "size": 1,
+        "title": "Recent Product Failures (Detailed)",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "name": "recent-failures"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend source_location = tostring(customDimensions[\"error.source_location\"]),\n    error_type = tostring(customDimensions[\"error.type\"])\n| where error_category == \"product\" or isempty(error_category)\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(source_location)\n| summarize Count = count() by source_location, error_type\n| order by Count desc\n| take 20\n| project ['Source Location'] = source_location, ['Error Type'] = error_type, Count",
+        "size": 1,
+        "title": "Product Errors by Source Location",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "customWidth": "50",
+      "name": "errors-by-source-location"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend exception_chain = tostring(customDimensions[\"error.exception_chain\"])\n| where error_category == \"product\" or isempty(error_category)\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(exception_chain)\n| summarize Count = count() by exception_chain\n| order by Count desc\n| take 15\n| project ['Exception Chain'] = exception_chain, Count",
+        "size": 1,
+        "title": "Common Exception Chains (Product)",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "customWidth": "50",
+      "name": "exception-chains"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## User Errors (UX Opportunities)\n\n*These indicate user confusion or environmental issues - opportunities to improve documentation, validation, or error messages.*"
+      },
+      "name": "user-errors-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend version = tostring(customDimensions[\"dotnetup.version\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| where error_category == \"user\"\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| extend error_type = coalesce(tostring(customDimensions[\"error.type\"]), \"Unknown\")\n| summarize Count = count() by error_type\n| order by Count desc\n| render piechart",
+        "size": 1,
+        "title": "User Errors by Type",
+        "noDataMessage": "No user errors recorded yet. User errors include: invalid version requests, permission denied, disk full, network timeouts.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "40",
+      "name": "user-errors-piechart"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where success == false\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend error_category = tostring(customDimensions[\"error.category\"])\n| extend command = tostring(customDimensions[\"command.name\"]),\n    error_type = tostring(customDimensions[\"error.type\"]),\n    error_details = tostring(customDimensions[\"error.details\"]),\n    os = tostring(customDimensions[\"os.platform\"]),\n    version = tostring(customDimensions[\"dotnetup.version\"])\n| where error_category == \"user\"\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| project timestamp, command, error_type, error_details, os, version\n| order by timestamp desc\n| take 25",
+        "size": 1,
+        "title": "Recent User Errors",
+        "noDataMessage": "No user errors recorded yet.",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "customWidth": "60",
+      "name": "recent-user-errors"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Performance"
+      },
+      "name": "perf-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| where success == true\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend command = tostring(customDimensions[\"command.name\"]),\n    duration = todouble(customDimensions[\"duration_ms\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| summarize \n    Count = count(),\n    P50 = percentile(duration, 50),\n    P90 = percentile(duration, 90),\n    P99 = percentile(duration, 99),\n    Avg = avg(duration)\n    by command\n| project Command = command, \n    Count,\n    ['P50 (ms)'] = round(P50, 0), \n    ['P90 (ms)'] = round(P90, 0), \n    ['P99 (ms)'] = round(P99, 0),\n    ['Avg (ms)'] = round(Avg, 0)",
+        "size": 1,
+        "title": "Command Duration Percentiles (Successful Only)",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "customWidth": "50",
+      "name": "duration-percentiles"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"download\" or name == \"extract\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend from_cache = tostring(customDimensions[\"download.from_cache\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| extend operation = case(\n    name == \"download\" and (from_cache == \"true\" or from_cache == \"True\"), \"download (cached)\",\n    name == \"download\", \"download (network)\",\n    \"extract\")\n| summarize AvgDuration = avg(duration) by bin(timestamp, 1h), operation\n| render timechart",
+        "size": 1,
+        "title": "Download & Extract Duration Over Time",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "timechart"
+      },
+      "customWidth": "50",
+      "name": "download-duration-timechart"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Unique Users"
+      },
+      "name": "users-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend device_id = tostring(customDimensions[\"device.id\"]), version = tostring(customDimensions[\"dotnetup.version\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize \n    UniqueDevices = dcount(device_id),\n    TotalCommands = count()\n| project ['Unique Devices'] = UniqueDevices, ['Total Commands'] = TotalCommands, ['Avg Commands/Device'] = round(1.0 * TotalCommands / UniqueDevices, 1)",
+        "size": 4,
+        "title": "User Statistics",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Unique Devices",
+              "formatter": 1
+            },
+            {
+              "columnMatch": "Total Commands",
+              "formatter": 1
+            },
+            {
+              "columnMatch": "Avg Commands/Device",
+              "formatter": 1
+            }
+          ]
+        }
+      },
+      "customWidth": "30",
+      "name": "user-stats"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend device_id = tostring(customDimensions[\"device.id\"]), version = tostring(customDimensions[\"dotnetup.version\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(version)\n| summarize UniqueDevices = dcount(device_id) by bin(timestamp, 1d), version\n| order by timestamp asc, version desc",
+        "size": 1,
+        "title": "Daily Unique Users by Version",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart",
+        "chartSettings": {
+          "xAxis": "timestamp",
+          "yAxis": [
+            "UniqueDevices"
+          ],
+          "group": "version",
+          "createOtherGroup": null,
+          "showLegend": true
+        }
+      },
+      "customWidth": "35",
+      "name": "daily-users-by-version"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\nlet versionFilter = '{VersionFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend device_id = tostring(customDimensions[\"device.id\"]), version = tostring(customDimensions[\"dotnetup.version\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where (versionFilter == 'all') or (version == versionFilter)\n| summarize UniqueDevices = dcount(device_id) by bin(timestamp, 1d)\n| render timechart",
+        "size": 1,
+        "title": "Daily Active Devices",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "timechart"
+      },
+      "customWidth": "35",
+      "name": "daily-active-devices"
+    }
+  ],
+  "fallbackResourceIds": [],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

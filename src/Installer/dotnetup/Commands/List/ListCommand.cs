@@ -21,7 +21,9 @@ internal class ListCommand : CommandBase
         _skipVerification = parseResult.GetValue(ListCommandParser.NoVerifyOption);
     }
 
-    public override int Execute()
+    protected override string GetCommandName() => "list";
+
+    protected override int ExecuteCore()
     {
         var installations = InstallationLister.GetInstallations(verify: !_skipVerification);
 

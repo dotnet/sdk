@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
@@ -21,7 +20,9 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly ChannelVersionResolver _channelVersionResolver = new ChannelVersionResolver();
 
-    public override int Execute()
+    protected override string GetCommandName() => "sdk/install";
+
+    protected override int ExecuteCore()
     {
         var workflow = new InstallWorkflow(_dotnetInstaller, _channelVersionResolver);
 
@@ -43,8 +44,6 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     string? ResolveChannelFromGlobalJson(string globalJsonPath)
     {
-        //return null;
-        //return "9.0";
         return Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_CHANNEL");
     }
 }

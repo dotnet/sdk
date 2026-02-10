@@ -62,6 +62,11 @@
         <target state="new">.NET installation manager for user level installs.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TelemetryNotice">
+        <source>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</source>
+        <target state="new">dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

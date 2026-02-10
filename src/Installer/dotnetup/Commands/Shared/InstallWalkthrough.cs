@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
@@ -51,6 +52,9 @@ internal class InstallWalkthrough
 
         if (setDefaultInstall && currentInstallRoot?.InstallType == InstallType.Admin)
         {
+            // Track admin-to-user migration scenario
+            Activity.Current?.SetTag("install.migrating_from_admin", true);
+
             if (_options.Interactive)
             {
                 var latestAdminVersion = _dotnetInstaller.GetLatestInstalledAdminVersion();
@@ -63,6 +67,7 @@ internal class InstallWalkthrough
                         defaultValue: true))
                     {
                         additionalVersions.Add(latestAdminVersion);
+                        Activity.Current?.SetTag("install.admin_version_copied", true);
                     }
                 }
             }
