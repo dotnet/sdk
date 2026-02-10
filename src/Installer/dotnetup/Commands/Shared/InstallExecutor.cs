@@ -154,8 +154,11 @@ internal class InstallExecutor
 
     /// <summary>
     /// Classifies the install path for telemetry (no PII - just the type of location).
+    /// When pathSource is provided, global_json paths are distinguished from other path types.
     /// </summary>
-    public static string ClassifyInstallPath(string path)
+    /// <param name="path">The install path to classify.</param>
+    /// <param name="pathSource">How the path was determined (e.g., "global_json", "explicit"). Null to skip source-based classification.</param>
+    public static string ClassifyInstallPath(string path, string? pathSource = null)
     {
         var fullPath = Path.GetFullPath(path);
 
@@ -173,16 +176,18 @@ internal class InstallExecutor
                 return "system_programfiles_x86";
             }
 
-            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            if (!string.IsNullOrEmpty(userProfile) && fullPath.StartsWith(userProfile, StringComparison.OrdinalIgnoreCase))
-            {
-                return "user_profile";
-            }
-
+            // Check more-specific paths before less-specific ones:
+            // LocalApplicationData (e.g., C:\Users\x\AppData\Local) is under UserProfile (C:\Users\x)
             var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             if (!string.IsNullOrEmpty(localAppData) && fullPath.StartsWith(localAppData, StringComparison.OrdinalIgnoreCase))
             {
                 return "local_appdata";
+            }
+
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (!string.IsNullOrEmpty(userProfile) && fullPath.StartsWith(userProfile, StringComparison.OrdinalIgnoreCase))
+            {
+                return "user_profile";
             }
         }
         else
@@ -198,6 +203,13 @@ internal class InstallExecutor
             {
                 return "user_home";
             }
+        }
+
+        // If the path was specified by global.json and doesn't match a well-known location,
+        // classify it as global_json rather than generic "other"
+        if (pathSource == "global_json")
+        {
+            return "global_json";
         }
 
         return "other";

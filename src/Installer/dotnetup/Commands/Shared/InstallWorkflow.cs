@@ -73,7 +73,7 @@ internal class InstallWorkflow
         Activity.Current?.SetTag("install.has_global_json", context.GlobalJson?.GlobalJsonPath is not null);
         Activity.Current?.SetTag("install.existing_install_type", context.CurrentInstallRoot?.InstallType.ToString() ?? "none");
         Activity.Current?.SetTag("install.set_default", context.SetDefaultInstall);
-        Activity.Current?.SetTag("install.path_type", InstallExecutor.ClassifyInstallPath(context.InstallPath));
+        Activity.Current?.SetTag("install.path_type", InstallExecutor.ClassifyInstallPath(context.InstallPath, context.PathSource));
         Activity.Current?.SetTag("install.path_source", context.PathSource);
 
         // Record request source (how the version/channel was determined)
