@@ -146,10 +146,21 @@ internal static class TelemetryCommonProperties
 #endif
     }
 
-    private static string GetVersion()
+    internal static string GetVersion()
     {
-        return typeof(TelemetryCommonProperties).Assembly
-            .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()?.InformationalVersion
-            ?? "0.0.0";
+        var version = BuildInfo.Version;
+
+        // For dev builds, append the commit SHA so we can correlate failures to specific commits.
+        // Prod telemetry stays clean (e.g., "10.0.100-alpha"), while dev shows "10.0.100-alpha@abc1234".
+        if (s_isDevBuild.Value)
+        {
+            var commitSha = BuildInfo.CommitSha;
+            if (commitSha != "unknown")
+            {
+                return $"{version}@{commitSha}";
+            }
+        }
+
+        return version;
     }
 }
