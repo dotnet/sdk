@@ -40,16 +40,35 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
             if (_fileSystem.File.Exists(packageCacheFile))
             {
                 var existingCacheTable = GetCacheTable(packageCacheFile);
+                var existingCount = existingCacheTable.Length;
 
-                var diffedRow = distinctPackageIdAndRestoredCommandMap
-                    .Where(pair => !TryGetMatchingRestoredCommand(
-                        pair.Key,
-                        existingCacheTable, out _))
-                    .Select(pair => ConvertToCacheRow(pair.Key, pair.Value));
+                foreach (var pair in distinctPackageIdAndRestoredCommandMap)
+                {
+                    var updatedRow = ConvertToCacheRow(pair.Key, pair.Value);
+                    bool replaced = false;
+
+                    for (int i = 0; i < existingCount; i++)
+                    {
+                        var existingIdentifier = Convert(distinctPackageId, existingCacheTable[i]).restoredCommandIdentifier;
+                        if (existingIdentifier == pair.Key)
+                        {
+                            existingCacheTable[i] = updatedRow;
+                            replaced = true;
+                            break;
+                        }
+                    }
+
+                    if (!replaced)
+                    {
+                        Array.Resize(ref existingCacheTable, existingCount + 1);
+                        existingCacheTable[existingCount] = updatedRow;
+                        existingCount++;
+                    }
+                }
 
                 _fileSystem.File.WriteAllText(
                     packageCacheFile,
-                    JsonSerializer.Serialize(existingCacheTable.Concat(diffedRow)));
+                    JsonSerializer.Serialize(existingCacheTable));
             }
             else
             {
