@@ -104,7 +104,6 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
     {
         // First, try to find if the package already exists in any manifest
         FilePath manifestFile;
-        string? warningMessage = null;
 
         if (!string.IsNullOrWhiteSpace(_explicitManifestFile))
         {
@@ -131,11 +130,12 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
 
                 if (manifestFilesContainPackageId.Count > 1)
                 {
-                    warningMessage = string.Format(
+                    string warningMessage = string.Format(
                         CliCommandStrings.SamePackageIdInOtherManifestFile,
                         string.Join(
                             Environment.NewLine,
                             manifestFilesContainPackageId.Skip(1).Select(m => $"\t{m}")));
+                    _reporter.WriteLine(warningMessage.Yellow());
                 }
             }
             else
@@ -143,11 +143,6 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
                 // Package not found, get or create a manifest
                 manifestFile = GetManifestFilePath();
             }
-        }
-
-        if (warningMessage != null)
-        {
-            _reporter.WriteLine(warningMessage.Yellow());
         }
 
         var existingPackageWithPackageId = _toolManifestFinder.Find(manifestFile).Where(p => p.PackageId.Equals(packageId));
