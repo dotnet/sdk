@@ -106,7 +106,9 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         {
             var userAgreed = UserAgreedToRunFromSource(packageId, bestVersion, packageSource);
             
-            // In non-interactive mode (userAgreed == null), auto-approve the tool installation
+            // userAgreed can be: true (explicit approval), false (explicit rejection), or null (auto-approve in non-interactive mode)
+            // We only show an error and exit when the user explicitly rejects (false)
+            // When null (non-interactive), we fall through and proceed with installation
             if (userAgreed == false)
             {
                 Reporter.Error.WriteLine(CliCommandStrings.ToolDownloadCanceled.Red().Bold());
@@ -137,6 +139,15 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         return result.ExitCode;
     }
 
+    /// <summary>
+    /// Prompts the user to confirm downloading and running a tool from the specified source.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the user explicitly approved the download (via --yes flag or interactive prompt),
+    /// <see langword="false"/> if the user explicitly rejected the download (via interactive prompt),
+    /// <see langword="null"/> if running in non-interactive mode (stdin redirected, CI environment, or --interactive=false),
+    /// indicating automatic approval should proceed.
+    /// </returns>
     private bool? UserAgreedToRunFromSource(PackageId packageId, NuGetVersion version, PackageSource source)
     {
         string promptMessage = string.Format(CliCommandStrings.ToolDownloadConfirmationPrompt, packageId, version.ToString(), source.Source);
