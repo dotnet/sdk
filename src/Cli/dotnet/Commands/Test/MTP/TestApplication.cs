@@ -83,7 +83,13 @@ internal sealed class TestApplication(
 
             // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
             // We might not be able to consume all the output if the test app has exited but left a child process alive.
-            await Task.WhenAll(stdOutTask, stdErrTask).WaitAsync(TimeSpan.FromSeconds(5));
+            try
+            {
+                await Task.WhenAll(stdOutTask, stdErrTask).WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            catch (TimeoutException)
+            {
+            }
 
             var exitCode = process.ExitCode;
             _handler.OnTestProcessExited(exitCode, stdOutBuilder.ToString(), stdErrBuilder.ToString());
