@@ -28,6 +28,11 @@
 
     <ItemGroup>
       <RestoreTelemetryData Include="RestoreType" Value="$(_RestoreType)" />
+      <!-- NuGet's RestoreTask sets these properties as outputs:
+           - RestoreProjectCount from ProjectsRestored
+           - RestoreSkippedCount from ProjectsAlreadyUpToDate
+           - RestoreProjectsAuditedCount from ProjectsAudited
+           See NuGet.targets for the Output mappings -->
       <RestoreTelemetryData Include="ProjectsRestored" Value="$(RestoreProjectCount)" />
       <RestoreTelemetryData Include="ProjectsAlreadyUpToDate" Value="$(RestoreSkippedCount)" />
       <RestoreTelemetryData Include="ProjectsAudited" Value="$(RestoreProjectsAuditedCount)" />

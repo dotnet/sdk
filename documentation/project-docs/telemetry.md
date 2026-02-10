@@ -286,12 +286,12 @@ Every telemetry event automatically includes these common properties:
 
 **When fired**: After the Restore target completes
 
-**Properties**: Gathers the values of the following MSBuild Properties from the NuGet RestoreTask outputs:
+**Properties**: Gathers the values of the following MSBuild Properties:
 
 - RestoreType: Type of restore operation - `implicit` (via `-restore` flag integrated with build) or `explicit` (via `dotnet restore` or `-t:Restore` command)
-- ProjectsRestored: Number of projects that were restored (from NuGet's RestoreTask.ProjectsRestored output)
-- ProjectsAlreadyUpToDate: Number of projects that were already up-to-date and skipped restore (from NuGet's RestoreTask.ProjectsAlreadyUpToDate output)
-- ProjectsAudited: Number of projects that were audited for vulnerabilities (from NuGet's RestoreTask.ProjectsAudited output)
+- ProjectsRestored: Number of projects that were restored (from MSBuild property `RestoreProjectCount`, which is set by NuGet's RestoreTask.ProjectsRestored output)
+- ProjectsAlreadyUpToDate: Number of projects that were already up-to-date and skipped restore (from MSBuild property `RestoreSkippedCount`, which is set by NuGet's RestoreTask.ProjectsAlreadyUpToDate output)
+- ProjectsAudited: Number of projects that were audited for vulnerabilities (from MSBuild property `RestoreProjectsAuditedCount`, which is set by NuGet's RestoreTask.ProjectsAudited output)
 
 **Description**: Tracks restore operation effectiveness and frequency to understand how often restores are necessary vs. unnecessary
 
