@@ -15,8 +15,7 @@
     ============================================================
   -->
   <Target Name="_RestoreTelemetry"
-          AfterTargets="Restore"
-          Condition="'$(DisableRestoreTelemetry)' != 'true'">
+          AfterTargets="Restore">
 
     <PropertyGroup>
       <!-- Determine restore type based on MSBuildRestoreSessionId which is set for implicit restores -->
@@ -24,10 +23,16 @@
       <!-- For explicit 'dotnet restore' or '-t:Restore', MSBuildRestoreSessionId is not set -->
       <_RestoreType Condition="'$(MSBuildRestoreSessionId)' != ''">implicit</_RestoreType>
       <_RestoreType Condition="'$(MSBuildRestoreSessionId)' == ''">explicit</_RestoreType>
+      
+      <!-- Determine restore scope: workspace-wide (solution/traversal) vs single-project -->
+      <!-- _RestoreSolutionFileUsed is set by NuGet.targets when restoring a solution (.metaproj) -->
+      <_RestoreScope Condition="'$(_RestoreSolutionFileUsed)' == 'true'">workspace-wide</_RestoreScope>
+      <_RestoreScope Condition="'$(_RestoreScope)' == ''">single-project</_RestoreScope>
     </PropertyGroup>
 
     <ItemGroup>
       <RestoreTelemetryData Include="RestoreType" Value="$(_RestoreType)" />
+      <RestoreTelemetryData Include="RestoreScope" Value="$(_RestoreScope)" />
       <!-- NuGet's RestoreTask sets these properties as outputs:
            - RestoreProjectCount from ProjectsRestored
            - RestoreSkippedCount from ProjectsAlreadyUpToDate

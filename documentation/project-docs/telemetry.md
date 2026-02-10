@@ -289,6 +289,7 @@ Every telemetry event automatically includes these common properties:
 **Properties**: Gathers the values of the following MSBuild Properties:
 
 - RestoreType: Type of restore operation - `implicit` (via `-restore` flag integrated with build) or `explicit` (via `dotnet restore` or `-t:Restore` command)
+- RestoreScope: Scope of restore operation - `workspace-wide` (solution or traversal SDK project) or `single-project` (individual project restore)
 - ProjectsRestored: Number of projects that were restored (from MSBuild property `RestoreProjectCount`, which is set by NuGet's RestoreTask.ProjectsRestored output)
 - ProjectsAlreadyUpToDate: Number of projects that were already up-to-date and skipped restore (from MSBuild property `RestoreSkippedCount`, which is set by NuGet's RestoreTask.ProjectsAlreadyUpToDate output)
 - ProjectsAudited: Number of projects that were audited for vulnerabilities (from MSBuild property `RestoreProjectsAuditedCount`, which is set by NuGet's RestoreTask.ProjectsAudited output)
