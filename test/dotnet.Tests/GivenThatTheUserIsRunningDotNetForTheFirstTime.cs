@@ -243,7 +243,7 @@ namespace Microsoft.DotNet.Tests
 
         private string GetDotnetVersion()
         {
-            return TestContext.Current.ToolsetUnderTest.SdkVersion;
+            return SdkTestContext.Current.ToolsetUnderTest.SdkVersion;
         }
     }
 }

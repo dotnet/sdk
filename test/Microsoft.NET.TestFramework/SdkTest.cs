@@ -5,7 +5,7 @@ namespace Microsoft.NET.TestFramework
 {
     public abstract class SdkTest
     {
-        protected bool? UsingFullFrameworkMSBuild => TestContext.Current.ToolsetUnderTest?.ShouldUseFullFrameworkMSBuild;
+        protected bool? UsingFullFrameworkMSBuild => SdkTestContext.Current.ToolsetUnderTest?.ShouldUseFullFrameworkMSBuild;
 
         protected ITestOutputHelper Log { get; }
 

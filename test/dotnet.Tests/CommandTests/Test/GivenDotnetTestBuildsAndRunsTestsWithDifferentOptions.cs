@@ -244,7 +244,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("--arch", arch,
                                              "--configuration", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("error NETSDK1134: Building a solution with a specific RuntimeIdentifier is not supported. If you would like to publish for a single RID, specify the RID at the individual project level instead.");
             }
@@ -392,7 +392,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "--configuration", configuration,
                                             "--property:WarningLevel=2", $"--property:Configuration={configuration}");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                   .Should().Contain("Test run summary: Passed!")
@@ -417,7 +417,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("--configuration", configuration,
                                             "--property:WarningLevel=2");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                   .Should().Contain("Test run summary: Failed!")
@@ -442,7 +442,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("--framework", ToolsetInfo.CurrentTargetFramework,
                                              "--configuration", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration), result.StdOut);
 
@@ -481,7 +481,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 error NETSDK1005: Assets file 'path\to\OtherTestProject\obj\project.assets.json' doesn't have a target for 'net9.0'. Ensure that restore has run and that you have included 'net9.0' in the TargetFrameworks for your project.
                 Get projects properties with MSBuild didn't execute properly with exit code: 1.
             */
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                  .Should().NotContain("Test run summary")
@@ -514,7 +514,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("--framework", ToolsetInfo.CurrentTargetFramework,
                                              "--configuration", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);

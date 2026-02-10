@@ -4,7 +4,6 @@
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Build.Tasks;
-using Microsoft.NET.TestFramework.Commands;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 

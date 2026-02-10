@@ -235,7 +235,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolPackageUninstallerMock = new ToolPackageUninstallerMock(_fileSystem, store);
 
             var toolPackageDownloaderMock = new ToolPackageDownloaderMock2(store,
-                runtimeJsonPathForTests: TestContext.GetRuntimeGraphFilePath(),
+                runtimeJsonPathForTests: SdkTestContext.GetRuntimeGraphFilePath(),
                 currentWorkingDirectory: null,
                 fileSystem: _fileSystem);
 
