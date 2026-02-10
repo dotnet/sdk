@@ -98,7 +98,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [MemberData(nameof(Net8Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_links_simple_app_without_analysis_warnings_and_it_runs(string targetFramework)
         {
             foreach (var trimMode in new[] { "copyused", "link" })
@@ -185,8 +185,9 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net5.0", true)]
         [InlineData("net6.0", false)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for trimming
-        [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for trimming and targeting.
-        [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for trimming, but leaves a "gap" for the supported net6.0/net7.0 TFMs.
+        [InlineData("netstandard2.0;net6.0", false)] // net6.0 is the min TFM supported for trimming and targeting.
+        [InlineData("netstandard2.0;net8.0", false)] // Net8.0 is supported for trimming and targeting.
+        [InlineData("netstandard2.0;net9.0", true)] // Net8.0 is supported for trimming, but leaves a "gap" for the supported net6.0/net7.0 TFMs.
         [InlineData("alias-ns2", true)]
         [InlineData("alias-n6", false)]
         [InlineData("alias-n6;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
@@ -198,19 +199,19 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(_testAssetsManager, targetFrameworks, projectName);
             testProject.AdditionalProperties["IsTrimmable"] = "true";
-            testProject.AdditionalProperties["NoWarn"] = "NETSDK1138"; // Silence warning about targeting EOL TFMs
+            testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
 
             var buildCommand = new BuildCommand(testAsset);
-            var resultAssertion = buildCommand.Execute()
+            var resultAssertion = buildCommand.Execute("/p:CheckEolTargetFramework=false")
                 .Should().Pass();
             if (shouldWarn) {
                 resultAssertion
                     // Note: can't check for Strings.IsTrimmableUnsupported because each line of
                     // the message gets prefixed with a file path by MSBuild.
                     .And.HaveStdOutContaining($"warning NETSDK1212")
-                    .And.HaveStdOutContaining($"<IsTrimmable Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))\">true</IsTrimmable>");
+                    .And.HaveStdOutContaining($"<IsTrimmable Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))\">true</IsTrimmable>");
             } else {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }
@@ -250,7 +251,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [MemberData(nameof(Net8Plus), MemberType = typeof(PublishTestUtils))]
         public void PrepareForILLink_can_set_IsTrimmable(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -1147,7 +1148,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [MemberData(nameof(Net8Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_runs_incrementally(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -1250,7 +1251,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [MemberData(nameof(Net8Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_does_not_include_leftover_artifacts_on_second_run(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -1336,7 +1337,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [MemberData(nameof(Net8Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_removes_symbols_when_debugger_support_is_disabled(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -1372,7 +1373,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [MemberData(nameof(Net8Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_accepts_option_to_remove_symbols(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -1623,7 +1624,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [MemberData(nameof(Net8Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_dont_display_time_awareness_message_on_incremental_build(string targetFramework)
         {
             var projectName = "HelloWorld";

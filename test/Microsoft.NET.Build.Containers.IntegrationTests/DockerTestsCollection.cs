@@ -5,7 +5,9 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 [CollectionDefinition("Docker tests")]
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class DockerTestsCollection : ICollectionFixture<DockerTestsFixture>
+// TODO: skipped due to docker infra instability - need to use new ACR.
+// See https://github.com/dotnet/sdk/issues/49300
+public class DockerTestsCollection // : ICollectionFixture<DockerTestsFixture>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     // This class has no code, and is never created. Its purpose is simply

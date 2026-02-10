@@ -22,14 +22,14 @@ variables:
 
 resources:
   containers:
-  - container: alpine319WithNode
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
+  - container: alpine322
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.22-amd64
   - container: centosStream9
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
   - container: debian12Amd64
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
-  - container: fedora39
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
+  - container: fedora41
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-41
   - container: ubuntu2204DebPkg
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
 

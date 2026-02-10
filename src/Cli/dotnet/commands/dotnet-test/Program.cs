@@ -238,10 +238,8 @@ namespace Microsoft.DotNet.Tools.Test
                 }
             }
 
-            // Set DOTNET_PATH if it isn't already set in the environment as it is required
-            // by the testhost which uses the apphost feature (Windows only).
-            (bool hasRootVariable, string rootVariableName, string rootValue) = VSTestForwardingApp.GetRootVariable();
-            if (!hasRootVariable)
+            Dictionary<string, string> variables = VSTestForwardingApp.GetVSTestRootVariables();
+            foreach (var (rootVariableName, rootValue) in variables)
             {
                 testCommand.EnvironmentVariable(rootVariableName, rootValue);
                 VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");

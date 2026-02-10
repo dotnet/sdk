@@ -844,6 +844,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to CONTAINER1018: Unable to download image from the repository &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnableToDownloadFromRepository {
+            get {
+                return ResourceManager.GetString("UnableToDownloadFromRepository", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2021: Unknown AppCommandInstruction &apos;{0}&apos;. Valid instructions are {1}..
         /// </summary>
         internal static string UnknownAppCommandInstruction {

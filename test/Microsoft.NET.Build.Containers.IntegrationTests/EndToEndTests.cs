@@ -4,6 +4,8 @@
 using System.Formats.Tar;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using FakeItEasy;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Resources;
@@ -40,7 +42,7 @@ public class EndToEndTests : IDisposable
         _loggerFactory.Dispose();
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithRegistryPushAndPull));
@@ -87,7 +89,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithLocalLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithLocalLoad));
@@ -128,7 +130,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithArchiveWritingAndLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithArchiveWritingAndLoad));
@@ -178,7 +180,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task TarballsHaveCorrectStructure()
     {
         var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
@@ -349,7 +351,7 @@ public class EndToEndTests : IDisposable
         return publishDirectory;
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task EndToEnd_MultiProjectSolution()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution));
@@ -435,7 +437,7 @@ public class EndToEndTests : IDisposable
     /// It's safe to load the target for libraries in a multi-targeted context because libraries don't have EnableSdkContainerSupport
     /// enabled by default, so the target will be skipped.
     /// </summary>
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task EndToEnd_MultiProjectSolution_with_multitargeted_library()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution_with_multitargeted_library));
@@ -503,7 +505,7 @@ public class EndToEndTests : IDisposable
         commandResult.Should().HaveStdOutContaining("Pushed image 'webapp:latest'");
     }
 
-    [DockerAvailableTheory()]
+    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     [InlineData("webapi", false)]
     [InlineData("webapi", true)]
     [InlineData("worker", false)]
@@ -680,7 +682,7 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    [DockerAvailableTheory()]
+    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     [InlineData(DockerRegistryManager.FullyQualifiedBaseImageAspNet)]
     [InlineData(DockerRegistryManager.FullyQualifiedBaseImageAspNetDigest)]
     public void EndToEnd_NoAPI_Console(string baseImage)
@@ -762,7 +764,7 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void EndToEnd_SingleArch_NoRid()
     {
         // Create a new console project
@@ -794,9 +796,10 @@ public class EndToEndTests : IDisposable
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
     }
 
+    /**
     [InlineData("endtoendmultiarch-localregisty")]
     [InlineData("myteam/endtoendmultiarch-localregisty")]
-    [DockerIsAvailableAndSupportsArchTheory("linux/arm64", checkContainerdStoreAvailability: true)]
+    [DockerIsAvailableAndSupportsArchTheory(Skip = "https://github.com/dotnet/sdk/issues/49502", "linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_LocalRegistry(string imageName)
     {
         string tag = "1.0";
@@ -851,8 +854,9 @@ public class EndToEndTests : IDisposable
         // Cleanup
         newProjectDir.Delete(true);
     }
+    */
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void MultiArchStillAllowsSingleRID()
     {
         string imageName = NewImageName();
@@ -903,7 +907,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void MultiArchStillAllowsSingleRIDUsingJustRIDProperties()
     {
         string imageName = NewImageName();
@@ -975,9 +979,10 @@ public class EndToEndTests : IDisposable
     private string GetPublishArtifactsPath(string projectDir, string rid, string configuration = "Debug")
         => Path.Combine(projectDir, "bin", configuration, ToolsetInfo.CurrentTargetFramework, rid, "publish");
 
+    /**
     [InlineData("endtoendmultiarch-archivepublishing")]
     [InlineData("myteam/endtoendmultiarch-archivepublishing")]
-    [DockerIsAvailableAndSupportsArchTheory("linux/arm64", checkContainerdStoreAvailability: true)]
+    [DockerIsAvailableAndSupportsArchTheory(Skip = "https://github.com/dotnet/sdk/issues/49502", "linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_ArchivePublishing(string imageName)
     {
         string tag = "1.0";
@@ -1043,6 +1048,7 @@ public class EndToEndTests : IDisposable
         // Cleanup
         newProjectDir.Delete(true);
     }
+    */
 
     [DockerIsAvailableAndSupportsArchFact("linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_RemoteRegistry()
@@ -1365,7 +1371,7 @@ public class EndToEndTests : IDisposable
     [DockerSupportsArchInlineData("linux/386", "linux-x86", "/app", Skip = "There's no apphost for linux-x86 so we can't execute self-contained, and there's no .NET runtime base image for linux-x86 so we can't execute framework-dependent.")]
     [DockerSupportsArchInlineData("windows/amd64", "win-x64", "C:\\app")]
     [DockerSupportsArchInlineData("linux/amd64", "linux-x64", "/app")]
-    [DockerAvailableTheory()]
+    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49300")]
     public async Task CanPackageForAllSupportedContainerRIDs(string dockerPlatform, string rid, string workingDir)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanPackageForAllSupportedContainerRIDs));
@@ -1413,6 +1419,71 @@ public class EndToEndTests : IDisposable
         {
             var binary = rid.StartsWith("win", StringComparison.Ordinal) ? $"{appName}.exe" : appName;
             return new[] { $"{workingDir}/{binary}" };
+        }
+    }
+
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    public async void CheckDownloadErrorMessageWhenSourceRepositoryThrows()
+    {
+        var loggerFactory = new TestLoggerFactory(_testOutput);
+        var logger = loggerFactory.CreateLogger(nameof(CheckDownloadErrorMessageWhenSourceRepositoryThrows));
+        string rid = "win-x64";
+        string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
+
+        // Build the image
+        Registry registry = new(DockerRegistryManager.BaseImageSource, logger, RegistryMode.Push);
+        ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
+            DockerRegistryManager.RuntimeBaseImage,
+            DockerRegistryManager.Net8PreviewWindowsSpecificImageTag,
+            rid,
+            ToolsetUtils.RidGraphManifestPicker,
+            cancellationToken: default).ConfigureAwait(false);
+        Assert.NotNull(imageBuilder);
+
+        Layer l = Layer.FromDirectory(publishDirectory, "C:\\app", true, imageBuilder.ManifestMediaType);
+
+        imageBuilder.AddLayer(l);
+        imageBuilder.SetWorkingDirectory("C:\\app");
+
+        string[] entryPoint = DecideEntrypoint(rid, "MinimalTestApp", "C:\\app");
+        imageBuilder.SetEntrypointAndCmd(entryPoint, Array.Empty<string>());
+
+        BuiltImage builtImage = imageBuilder.Build();
+
+        // Load the image into the local registry
+        var sourceReference = new SourceImageReference(registry, "some_random_image", DockerRegistryManager.Net9ImageTag, null);
+        string archivePath = Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CheckDownloadErrorMessageWhenSourceRepositoryThrows));
+        var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archivePath), NewImageName(), new[] { rid });
+
+        (var taskLog, var errors) = SetupTaskLog();
+        var telemetry = new Telemetry(sourceReference, destinationReference, taskLog);
+
+        await ImagePublisher.PublishImageAsync(builtImage, sourceReference, destinationReference, taskLog, telemetry, CancellationToken.None)
+                .ConfigureAwait(false);
+
+        // Assert the error message
+        Assert.True(taskLog.HasLoggedErrors);
+        Assert.NotNull(errors);
+        Assert.Single(errors);
+        Assert.Contains("Unable to download image from the repository", errors[0]);
+
+        static string[] DecideEntrypoint(string rid, string appName, string workingDir)
+        {
+            var binary = rid.StartsWith("win", StringComparison.Ordinal) ? $"{appName}.exe" : appName;
+            return new[] { $"{workingDir}/{binary}" };
+        }
+
+        static (Microsoft.Build.Utilities.TaskLoggingHelper, List<string?> errors) SetupTaskLog()
+        {
+            // We can use any Task, we just need TaskLoggingHelper
+            Tasks.CreateNewImage cni = new();
+            List<string?> errors = new();
+            IBuildEngine buildEngine = A.Fake<IBuildEngine>();
+            A.CallTo(() => buildEngine.LogWarningEvent(A<BuildWarningEventArgs>.Ignored)).Invokes((BuildWarningEventArgs e) => errors.Add(e.Message));
+            A.CallTo(() => buildEngine.LogErrorEvent(A<BuildErrorEventArgs>.Ignored)).Invokes((BuildErrorEventArgs e) => errors.Add(e.Message));
+            A.CallTo(() => buildEngine.LogMessageEvent(A<BuildMessageEventArgs>.Ignored)).Invokes((BuildMessageEventArgs e) => errors.Add(e.Message));
+            cni.BuildEngine = buildEngine;
+            return (cni.Log, errors);
         }
     }
 

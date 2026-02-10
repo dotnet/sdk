@@ -52,14 +52,23 @@ namespace Microsoft.DotNet.ToolPackage
                 throw new ToolConfigurationException(CommonLocalizableStrings.ToolSettingsMoreThanOneCommand);
             }
 
-            if (dotNetCliTool.Commands[0].Runner != "dotnet")
+            // if there is no runner, this could be an entirely different _kind_ of tool.
+            if (string.IsNullOrWhiteSpace(dotNetCliTool.Commands[0].Runner))
             {
-                throw new ToolConfigurationException(
-                    string.Format(
-                        CommonLocalizableStrings.ToolSettingsUnsupportedRunner,
-                        dotNetCliTool.Commands[0].Name,
-                        dotNetCliTool.Commands[0].Runner));
+                if (warnings.Count != 0)
+                {
+                    throw new ToolConfigurationException(warnings[0]);
+                }
             }
+
+            if (dotNetCliTool.Commands[0].Runner != "dotnet")
+                {
+                    throw new ToolConfigurationException(
+                        string.Format(
+                            CommonLocalizableStrings.ToolSettingsUnsupportedRunner,
+                            dotNetCliTool.Commands[0].Name,
+                            dotNetCliTool.Commands[0].Runner));
+                }
 
             return new ToolConfiguration(
                 dotNetCliTool.Commands[0].Name,

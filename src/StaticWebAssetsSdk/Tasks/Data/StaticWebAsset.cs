@@ -220,9 +220,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
             OriginalItemSpec = item.GetMetadata(nameof(OriginalItemSpec)),
             FileLength = item.GetMetadata("FileLength") is string fileLengthString &&
-                long.TryParse(fileLengthString, out var fileLength) ? fileLength : -1,
+                long.TryParse(fileLengthString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var fileLength) ? fileLength : -1,
             LastWriteTime = item.GetMetadata("LastWriteTime") is string lastWriteTimeString &&
-                DateTimeOffset.TryParse(lastWriteTimeString, out var lastWriteTime) ? lastWriteTime : DateTimeOffset.MinValue
+                DateTimeOffset.TryParseExact(lastWriteTimeString, DateTimeAssetFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var lastWriteTime) ?
+                    lastWriteTime :
+                    DateTimeOffset.MinValue
         };
 
     public void ApplyDefaults()
@@ -485,6 +487,13 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             BasePath = Normalize(BasePath);
             RelativePath = Normalize(RelativePath, allowEmpyPath: true);
             RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? Path.GetFullPath(RelatedAsset) : RelatedAsset;
+
+            if (FileLength < 0 || LastWriteTime == DateTimeOffset.MinValue)
+            {
+                var file = ResolveFile(Identity, OriginalItemSpec);
+                FileLength = file.Length;
+                LastWriteTime = file.LastWriteTimeUtc;
+            }
         }
 
         // Normalizes the given path to a content root path in the way we expect it:
