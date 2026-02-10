@@ -1,57 +1,15 @@
 ---
-name: investigate-sdk-issue
-description: Investigate a GitHub issue filed against the .NET SDK (or related dotnet repos) by reproducing the problem, analyzing build logs, tracing through MSBuild targets, and producing a root cause analysis with links to the relevant source code and a suggested fix. Use this when pointed at a GitHub issue URL or when asked to investigate an SDK build/publish/pack behavior problem.
-argument-hint: [issue-number]
+name: analyze-sdk-issue
+description: Analyze a binary log (binlog) from a .NET SDK build to determine the root cause of a reported issue. Traces MSBuild targets, inspects item and property flow, reads SDK source code, and produces a structured root cause analysis with links to the relevant source and a suggested fix. Use this when you already have a binlog and need to understand why a build/publish/pack behaves incorrectly.
 ---
 
-# Investigate .NET SDK Issue
+# Analyze .NET SDK Issue from Binlog
 
-You are investigating a GitHub issue to determine the root cause of unexpected .NET SDK behavior. Your goal is to produce a detailed root cause analysis in GitHub-flavored markdown, with links to the specific source code that causes the problem and a suggested fix.
+You are analyzing a binary log (binlog) to determine the root cause of unexpected .NET SDK behavior. Your goal is to produce a detailed root cause analysis in GitHub-flavored markdown, with links to the specific source code that causes the problem and a suggested fix.
 
-## Step 1: Read the issue
+You should already have a binlog file available. If you do not have one, ask the user to provide a binlog or use the `reproduce-sdk-issue` agent to create one first.
 
-Use `gh issue view` to fetch the issue details:
-
-- If you are given a full GitHub issue URL like `https://github.com/OWNER/REPO/issues/123`, extract `OWNER/REPO` and the issue number, then run:  
-  `gh issue view 123 --repo OWNER/REPO --json title,body,comments,labels`
-- If you are only given an issue number for the .NET SDK repo, assume `dotnet/sdk` as the default:  
-  `gh issue view <number> --repo dotnet/sdk --json title,body,comments,labels`
-Extract from the issue:
-- **Symptom**: What the user observes (e.g., unexpected files in output, build error, wrong behavior).
-- **Expected behavior**: What the user expected instead.
-- **Reproduction steps**: How to reproduce the issue.
-- **Attachments**: Look for linked binlog files (`.binlog` or `.zip` containing binlogs), reproduction projects (`.zip`, `.tar`), or inline project files.
-- **Environment**: SDK version, OS, target framework, any special properties (`PublishAot`, `PublishSingleFile`, `SelfContained`, etc.).
-
-## Step 2: Obtain or create a reproduction
-
-### If the issue includes a binlog
-
-1. Download the binlog attachment using `gh` or `curl`.
-2. If it is a `.zip` or `.tar`, extract it with `unzip` or `tar`.
-3. Proceed to **Step 3**.
-
-### If the issue includes a reproduction project but no binlog
-
-1. Download and extract the reproduction project.
-2. Restore and build/publish/pack (matching the scenario described in the issue) with a binary log:
-   ```bash
-   dotnet restore
-   dotnet publish -c Release /bl:1.binlog
-   ```
-   Use the `binlog-generation` skill conventions: name binlogs with incrementing numbers (`1.binlog`, `2.binlog`, etc.).
-3. If the build/publish succeeds, inspect the output directory to confirm the reported symptom.
-4. Proceed to **Step 3**.
-
-### If the issue has only a description (no attachments)
-
-1. Create a minimal reproduction project in a temporary directory based on the issue description.
-2. Build/publish/pack with a binary log as above.
-3. Confirm the symptom is reproducible before proceeding.
-
-If you cannot reproduce the issue, state what you tried and what you observed, then stop.
-
-## Step 3: Analyze the binlog
+## Step 1: Load and orient
 
 Load the binlog using the binlog MCP tools:
 
@@ -59,14 +17,12 @@ Load the binlog using the binlog MCP tools:
 load_binlog with path: "<absolute-path-to-binlog>"
 ```
 
-### 3a: Get an overview
-
 Run these in parallel to get oriented:
 - `list_projects` — identify the projects involved.
 - `get_diagnostics` — check for errors/warnings that may be relevant.
 - `get_project_target_list` for the main project — see the full target execution order.
 
-### 3b: Search for the symptom
+## Step 2: Search for the symptom
 
 Use `search_binlog` to find traces of the problematic behavior. Search for:
 - File names or paths mentioned in the issue (e.g., `resources.dll`, `appsettings.json`).
@@ -74,7 +30,7 @@ Use `search_binlog` to find traces of the problematic behavior. Search for:
 - Target names related to the scenario (e.g., for publish issues search for `$target Publish`, `$target ComputeResolvedFilesToPublishList`, `$target CopyFilesToPublishDirectory`).
 - Property names that gate behavior (e.g., `PublishAot`, `PublishSingleFile`, `SelfContained`).
 
-### 3c: Trace the data flow
+## Step 3: Trace the data flow
 
 Once you find the problematic item or file, trace **how it got there**:
 1. Find the target that first adds the item (use `search_binlog` with the item name).
@@ -85,7 +41,7 @@ Once you find the problematic item or file, trace **how it got there**:
 
 Follow the chain: which target produces the item, which target consumes it, which target should have removed/filtered it but didn't.
 
-### 3d: Identify key properties and conditions
+### Identify key properties and conditions
 
 Search for properties that should be gating the behavior:
 ```
