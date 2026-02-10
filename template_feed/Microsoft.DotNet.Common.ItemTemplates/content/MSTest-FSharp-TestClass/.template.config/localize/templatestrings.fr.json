@@ -1,0 +1,16 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Classe de test MSTest",
+  "description": "Crée une classe de test MSTest",
+  "symbols/Fixture/description": "Sélectionnez les types de fixtures à inclure dans le projet.",
+  "symbols/Fixture/displayName": "Appareil",
+  "symbols/Fixture/choices/None/description": "Aucune méthode de fixture",
+  "symbols/Fixture/choices/None/displayName": "Aucun",
+  "symbols/Fixture/choices/AssemblyInitialize/description": "Méthode de fixture AssemblyInitialize",
+  "symbols/Fixture/choices/AssemblyCleanup/description": "Méthode de fixture assemblyCleanup",
+  "symbols/Fixture/choices/ClassInitialize/description": "Méthode de fixture ClassInitialize",
+  "symbols/Fixture/choices/ClassCleanup/description": "Méthode de fixture ClassCleanup",
+  "symbols/Fixture/choices/TestInitialize/description": "Méthode de fixture TestInitialize",
+  "symbols/Fixture/choices/TestCleanup/description": "Méthode de fixture TestCleanup",
+  "postActions/openInEditor/description": "Ouvre Test1.cs dans l’éditeur."
+}

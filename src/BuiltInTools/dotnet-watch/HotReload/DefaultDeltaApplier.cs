@@ -7,16 +7,15 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using Microsoft.Extensions.HotReload;
-using Microsoft.Extensions.Tools.Internal;
+using Microsoft.DotNet.HotReload;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class DefaultDeltaApplier(IReporter reporter) : SingleProcessDeltaApplier(reporter)
     {
         private Task<ImmutableArray<string>>? _capabilitiesTask;
         private NamedPipeServerStream? _pipe;
-        private bool _changeApplicationErrorFailed;
+        private bool _managedCodeUpdateFailedOrCancelled;
 
         public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
@@ -37,9 +36,14 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                     // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
 
-                    var capabilities = ClientInitializationPayload.Read(_pipe).Capabilities;
+                    var capabilities = (await ClientInitializationResponse.ReadAsync(_pipe, cancellationToken)).Capabilities;
                     Reporter.Verbose($"Capabilities: '{capabilities}'");
-                    return capabilities.Split(' ').ToImmutableArray();
+                    return [.. capabilities.Split(' ')];
+                }
+                catch (EndOfStreamException)
+                {
+                    // process terminated before capabilities sent:
+                    return [];
                 }
                 catch (Exception e) when (e is not OperationCanceledException)
                 {
@@ -62,7 +66,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             // Should only be called after CreateConnection
             => _capabilitiesTask ?? throw new InvalidOperationException();
 
-        public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        private ResponseLoggingLevel ResponseLoggingLevel
+            => Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
+
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
             // Should only be called after CreateConnection
             Debug.Assert(_capabilitiesTask != null);
@@ -70,7 +77,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             // Should not be disposed:
             Debug.Assert(_pipe != null);
 
-            if (_changeApplicationErrorFailed)
+            if (_managedCodeUpdateFailedOrCancelled)
             {
                 Reporter.Verbose("Previous changes failed to apply. Further changes are not applied to this process.", "🔥");
                 return ApplyStatus.Failed;
@@ -83,27 +90,28 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return ApplyStatus.NoChangesApplied;
             }
 
-            var payload = new UpdatePayload(
-                deltas: applicableUpdates.Select(update => new UpdateDelta(
+            var request = new ManagedCodeUpdateRequest(
+                deltas: [.. applicableUpdates.Select(update => new UpdateDelta(
                     update.ModuleId,
-                    metadataDelta: update.MetadataDelta.ToArray(),
-                    ilDelta: update.ILDelta.ToArray(),
-                    update.UpdatedTypes.ToArray())).ToArray(),
-                responseLoggingLevel: Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors);
+                    metadataDelta: [.. update.MetadataDelta],
+                    ilDelta: [.. update.ILDelta],
+                    pdbDelta: [.. update.PdbDelta],
+                    updatedTypes: [.. update.UpdatedTypes]))],
+                responseLoggingLevel: ResponseLoggingLevel);
 
             var success = false;
             var canceled = false;
             try
             {
-                await payload.WriteAsync(_pipe, cancellationToken);
-                await _pipe.FlushAsync(cancellationToken);
-                success = await ReceiveApplyUpdateResult(cancellationToken);
+                success = await SendAndReceiveUpdate(request, cancellationToken);
             }
             catch (OperationCanceledException) when (!(canceled = true))
             {
+                // unreachable
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
+                success = false;
                 Reporter.Error($"Change failed to apply (error: '{e.Message}'). Further changes won't be applied to this process.");
                 Reporter.Verbose($"Exception stack trace: {e.StackTrace}", "❌");
             }
@@ -116,7 +124,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                         Reporter.Verbose("Change application cancelled. Further changes won't be applied to this process.", "🔥");
                     }
 
-                    _changeApplicationErrorFailed = true;
+                    _managedCodeUpdateFailedOrCancelled = true;
 
                     DisposePipe();
                 }
@@ -129,54 +137,96 @@ namespace Microsoft.DotNet.Watcher.Tools
                 (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
-        private async Task<bool> ReceiveApplyUpdateResult(CancellationToken cancellationToken)
+        public async override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
         {
-            Debug.Assert(_pipe != null);
+            var appliedUpdateCount = 0;
 
-            var status = ArrayPool<byte>.Shared.Rent(1);
-            try
+            foreach (var update in updates)
             {
-                var statusBytesRead = await _pipe.ReadAsync(status, offset: 0, count: 1, cancellationToken);
-                if (statusBytesRead != 1 || status[0] != UpdatePayload.ApplySuccessValue)
+                var request = new StaticAssetUpdateRequest(
+                    update.AssemblyName,
+                    update.RelativePath,
+                    update.Content,
+                    update.IsApplicationProject,
+                    ResponseLoggingLevel);
+
+                var success = false;
+                var canceled = false;
+                try
                 {
-                    var message = (statusBytesRead == 0) ? "received no data" : $"received status 0x{status[0]:x2}";
-                    Reporter.Error($"Change failed to apply ({message}). Further changes won't be applied to this process.");
-                    return false;
+                    success = await SendAndReceiveUpdate(request, cancellationToken);
                 }
-
-                foreach (var (message, severity) in UpdatePayload.ReadLog(_pipe))
+                catch (OperationCanceledException) when (!(canceled = true))
                 {
-                    switch (severity)
+                    // unreachable
+                }
+                catch (Exception e) when (e is not OperationCanceledException)
+                {
+                    success = false;
+                    Reporter.Error($"Change failed to apply (error: '{e.Message}').");
+                    Reporter.Verbose($"Exception stack trace: {e.StackTrace}", "❌");
+                }
+                finally
+                {
+                    if (canceled)
                     {
-                        case AgentMessageSeverity.Verbose:
-                            Reporter.Verbose(message, emoji: "🕵️");
-                            break;
-
-                        case AgentMessageSeverity.Error:
-                            Reporter.Error(message);
-                            break;
-
-                        case AgentMessageSeverity.Warning:
-                            Reporter.Warn(message, emoji: "⚠");
-                            break;
-
-                        default:
-                            Reporter.Error($"Unexpected message severity: {severity}");
-                            return false;
+                        Reporter.Verbose("Change application cancelled.", "🔥");
                     }
                 }
 
-                return true;
+                if (success)
+                {
+                    appliedUpdateCount++;
+                }
             }
-            finally
+
+            Reporter.Report(MessageDescriptor.UpdatesApplied, appliedUpdateCount, updates.Length);
+
+            return
+                (appliedUpdateCount == 0) ? ApplyStatus.Failed :
+                (appliedUpdateCount < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
+        }
+
+        private async ValueTask<bool> SendAndReceiveUpdate<TRequest>(TRequest request, CancellationToken cancellationToken)
+            where TRequest : IUpdateRequest
+        {
+            // Should not be disposed:
+            Debug.Assert(_pipe != null);
+
+            await _pipe.WriteAsync((byte)request.Type, cancellationToken);
+            await request.WriteAsync(_pipe, cancellationToken);
+            await _pipe.FlushAsync(cancellationToken);
+
+            var (success, log) = await UpdateResponse.ReadAsync(_pipe, cancellationToken);
+
+            await foreach (var (message, severity) in log)
             {
-                ArrayPool<byte>.Shared.Return(status);
+                ReportLogEntry(Reporter, message, severity);
             }
+
+            return success;
+        }
+
+        public override async Task InitialUpdatesApplied(CancellationToken cancellationToken)
+        {
+            // Should only be called after CreateConnection
+            Debug.Assert(_capabilitiesTask != null);
+
+            // Should not be disposed:
+            Debug.Assert(_pipe != null);
+
+            if (_managedCodeUpdateFailedOrCancelled)
+            {
+                return;
+            }
+
+            await _pipe.WriteAsync((byte)RequestType.InitialUpdatesCompleted, cancellationToken);
+            await _pipe.FlushAsync(cancellationToken);
         }
 
         private void DisposePipe()
         {
-            Reporter.Verbose("Disposing pipe");
+            Reporter.Verbose("Disposing agent communication pipe");
             _pipe?.Dispose();
             _pipe = null;
         }

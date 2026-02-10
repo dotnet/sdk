@@ -15,12 +15,14 @@ namespace Microsoft.DotNet.CommandFactory
             string commandName,
             IEnumerable<string> args,
             NuGetFramework framework = null,
-            string configuration = Constants.DefaultConfiguration)
+            string configuration = Constants.DefaultConfiguration,
+            string currentWorkingDirectory = null)
         {
             return Create("dotnet",
                 new[] { commandName }.Concat(args),
                 framework,
-                configuration: configuration);
+                configuration: configuration,
+                currentWorkingDirectory);
         }
 
         /// <summary>
@@ -35,7 +37,8 @@ namespace Microsoft.DotNet.CommandFactory
             NuGetFramework framework = null,
             string configuration = Constants.DefaultConfiguration,
             string outputPath = null,
-            string applicationName = null)
+            string applicationName = null,
+            string currentWorkingDirectory = null)
         {
             return Create(
                 new DefaultCommandResolverPolicy(),
@@ -44,7 +47,8 @@ namespace Microsoft.DotNet.CommandFactory
                 framework,
                 configuration,
                 outputPath,
-                applicationName);
+                applicationName,
+                currentWorkingDirectory);
         }
 
         public static Command Create(
@@ -54,7 +58,8 @@ namespace Microsoft.DotNet.CommandFactory
             NuGetFramework framework = null,
             string configuration = Constants.DefaultConfiguration,
             string outputPath = null,
-            string applicationName = null)
+            string applicationName = null,
+            string currentWorkingDirectory = null)
         {
             var commandSpec = CommandResolver.TryResolveCommandSpec(
                 commandResolverPolicy,
@@ -63,7 +68,8 @@ namespace Microsoft.DotNet.CommandFactory
                 framework,
                 configuration: configuration,
                 outputPath: outputPath,
-                applicationName: applicationName);
+                applicationName: applicationName,
+                currentWorkingDirectory: currentWorkingDirectory);
 
             if (commandSpec == null)
             {

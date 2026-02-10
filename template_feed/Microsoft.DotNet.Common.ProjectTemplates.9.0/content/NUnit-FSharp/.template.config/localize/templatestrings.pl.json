@@ -1,0 +1,19 @@
+﻿{
+  "author": "Aleksei Kharlov aka halex2005 (codeofclimber.ru)",
+  "name": "NUnit 3 — projekt testowy",
+  "description": "Projekt zawierający testy NUnit, które mogą być uruchamiane na platformie .NET w systemach Windows, Linux i macOS",
+  "symbols/TargetFrameworkOverride/description": "Zastępuje platformę docelową",
+  "symbols/TargetFrameworkOverride/displayName": "Zastąpienie struktury docelowej",
+  "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
+  "symbols/Framework/displayName": "Struktura",
+  "symbols/Framework/choices/net9.0/description": "Docelowa platforma net9.0",
+  "symbols/EnablePack/description": "Określa, czy włączyć pakowanie (za pośrednictwem „pakietu dotnet”) dla projektu.",
+  "symbols/EnablePack/displayName": "Włącz pakiet",
+  "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
+  "symbols/skipRestore/displayName": "Pomiń przywracanie",
+  "symbols/langVersion/description": "Ustawia właściwość LangVersion w utworzonym pliku projektu",
+  "symbols/langVersion/displayName": "Wersja języka",
+  "postActions/restoreNugetPackages/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
+  "postActions/restoreNugetPackages/manualInstructions/default/text": "Uruchom polecenie „dotnet restore”",
+  "postActions/openInEditor/description": "Otwiera plik UnitTest1.fs w edytorze"
+}

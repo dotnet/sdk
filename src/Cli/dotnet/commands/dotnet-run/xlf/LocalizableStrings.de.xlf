@@ -17,6 +17,11 @@
         <target state="translated">Erstellt die App mit dem angegebenen Framework und führt sie aus. Das Framework muss in der Projektdatei angegeben werden. </target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="translated">Verwenden Sie die im Startprofil angegebenen Argumente nicht zum Ausführen der Anwendung.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
         <target state="translated">Der Pfad zur auszuführenden Projektdatei (standardmäßig das aktuelle Verzeichnis, falls nur ein einzelnes Projekt vorhanden ist).</target>
