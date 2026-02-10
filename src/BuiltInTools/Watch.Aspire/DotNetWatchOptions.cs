@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -17,8 +18,7 @@ internal sealed class DotNetWatchOptions
 
     public required string ProjectPath { get; init; }
     public required ImmutableArray<string> ApplicationArguments { get; init; }
-    public bool IsVerbose { get; init; }
-    public bool IsQuiet { get; init; }
+    public LogLevel LogLevel { get; init; }
     public bool NoLaunchProfile { get; init; }
 
     public static bool TryParse(string[] args, [NotNullWhen(true)] out DotNetWatchOptions? options)
@@ -71,8 +71,7 @@ internal sealed class DotNetWatchOptions
         {
             SdkDirectory = parseResult.GetRequiredValue(sdkOption),
             ProjectPath = parseResult.GetRequiredValue(projectOption),
-            IsQuiet = parseResult.GetValue(quietOption),
-            IsVerbose = parseResult.GetValue(verboseOption),
+            LogLevel = parseResult.GetValue(quietOption) ? LogLevel.Warning : parseResult.GetValue(verboseOption) ? LogLevel.Debug : LogLevel.Information,
             ApplicationArguments = [.. parseResult.GetValue(applicationArguments) ?? []],
             NoLaunchProfile = parseResult.GetValue(noLaunchProfileOption),
         };

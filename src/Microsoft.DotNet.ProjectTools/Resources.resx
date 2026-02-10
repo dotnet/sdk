@@ -125,4 +125,34 @@
     <value>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</value>
   </data>
+  <data name="LaunchProfileIsNotAJsonObject" xml:space="preserve">
+    <value>A profile with the specified name isn't a valid JSON object.</value>
+  </data>
+  <data name="LaunchProfilesCollectionIsNotAJsonObject" xml:space="preserve">
+    <value>The 'profiles' property of the launch settings document is not a JSON object.</value>
+  </data>
+  <data name="DuplicateCaseInsensitiveLaunchProfileNames" xml:space="preserve">
+    <value>There are several launch profiles with case-sensitive names, which isn't permitted:
+{0}
+Make the profile names distinct.</value>
+  </data>
+  <data name="LaunchProfileDoesNotExist" xml:space="preserve">
+    <value>A launch profile with the name '{0}' doesn't exist.</value>
+  </data>
+  <data name="UsableLaunchProfileCannotBeLocated" xml:space="preserve">
+    <value>A usable launch profile could not be located.</value>
+  </data>
+  <data name="LaunchProfileHandlerCannotBeLocated" xml:space="preserve">
+    <value>The launch profile type '{0}' is not supported.</value>
+  </data>
+  <data name="DeserializationExceptionMessage" xml:space="preserve">
+    <value>An error was encountered when reading '{0}': {1}</value>
+    <comment>{0} is file path. {1} is exception message.</comment>
+  </data>
+  <data name="Path0SpecifiedIn1IsInvalid" xml:space="preserve">
+    <value>Path '{0}' specified in '{1}' is invalid.</value>
+  </data>
+  <data name="DefaultLaunchProfileDisplayName" xml:space="preserve">
+    <value>(Default)</value>
+  </data>
 </root>

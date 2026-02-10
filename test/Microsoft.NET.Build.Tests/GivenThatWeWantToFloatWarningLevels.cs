@@ -44,7 +44,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "warningLevelConsoleApp" + tfm);
 
             var buildCommand = new GetValuesCommand(
@@ -88,7 +88,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
             testProject.AdditionalProperties.Add("WarningLevel", warningLevel?.ToString());
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "customWarningLevelConsoleApp");
 
             var buildCommand = new GetValuesCommand(
@@ -133,7 +133,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "analysisLevelConsoleApp" + tfm);
 
             var buildCommand = new GetValuesCommand(
@@ -189,7 +189,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("AnalysisLevel", "preview");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + currentTFM);
 
             var buildCommand = new GetValuesCommand(
@@ -236,7 +236,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("AnalysisLevel", analysisLevel);
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel);
 
             var buildCommand = new GetValuesCommand(
@@ -332,7 +332,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add(analysisLevelPropertyName, mergedAnalysisLevel);
             testProject.AdditionalProperties.Add("CodeAnalysisTreatWarningsAsErrors", codeAnalysisTreatWarningsAsErrors);
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel + category);
 
             var buildCommand = new GetValuesCommand(
@@ -457,7 +457,7 @@ namespace Microsoft.NET.Build.Tests
             // actually an important failure, so don't error out here.
             testProject.AdditionalProperties.Add("NoWarn", "CS9057");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "analysisLevelConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel + $"Warnaserror:{codeAnalysisTreatWarningsAsErrors}");
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));

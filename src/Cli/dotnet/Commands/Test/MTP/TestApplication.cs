@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -103,12 +104,11 @@ internal sealed class TestApplication(
             processStartInfo.WorkingDirectory = Module.RunProperties.WorkingDirectory;
         }
 
-        if (Module.LaunchSettings is not null)
+        if (Module.LaunchSettings is ProjectLaunchProfile)
         {
             foreach (var entry in Module.LaunchSettings.EnvironmentVariables)
             {
-                string value = Environment.ExpandEnvironmentVariables(entry.Value);
-                processStartInfo.Environment[entry.Key] = value;
+                processStartInfo.Environment[entry.Key] = entry.Value;
             }
 
             // Env variables specified on command line override those specified in launch profile:
@@ -150,25 +150,25 @@ internal sealed class TestApplication(
 
         if (TestOptions.IsDiscovery)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ListTestsOption.Name}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}");
         }
 
         if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ResultsDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ResultsDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
         }
 
         if (_buildOptions.PathOptions.ConfigFilePath is { } configFilePath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.ConfigFileOption.Name} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
         }
 
         if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
         }
 
-        foreach (var arg in _buildOptions.UnmatchedTokens)
+        foreach (var arg in _buildOptions.TestApplicationArguments)
         {
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
         }

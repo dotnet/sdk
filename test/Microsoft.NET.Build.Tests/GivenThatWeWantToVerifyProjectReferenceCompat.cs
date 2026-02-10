@@ -45,7 +45,7 @@ namespace Microsoft.NET.Build.Tests
                 referencerProject.IsExe = true;
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(referencerProject, nameof(Project_reference_compat), identifier);
+            var testAsset = TestAssetsManager.CreateTestProject(referencerProject, nameof(Project_reference_compat), identifier);
             var restoreCommand = testAsset.GetRestoreCommand(Log, relativePath: referencerProject.Name);
             if (restoreSucceeds)
             {

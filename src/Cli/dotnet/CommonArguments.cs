@@ -2,32 +2,31 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli
 {
-    internal class CommonArguments
+    internal static class CommonArguments
     {
+        public const string PackageIdArgumentName = "packageId";
 
-        public static Argument<PackageIdentityWithRange?> OptionalPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
-            new("packageId")
+        public static Argument<PackageIdentityWithRange?> CreateOptionalPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
+            new(PackageIdArgumentName)
             {
                 Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
-                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
+                CustomParser = argumentResult => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
                 Arity = ArgumentArity.ZeroOrOne,
                 IsDynamic = true
             };
 
-        public static Argument<PackageIdentityWithRange> RequiredPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
-            new("packageId")
+        public static Argument<PackageIdentityWithRange> CreateRequiredPackageIdentityArgument(string examplePackage = "Newtonsoft.Json", string exampleVersion = "13.0.3") =>
+            new(PackageIdArgumentName)
             {
                 Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
-                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
+                CustomParser = argumentResult => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
                 Arity = ArgumentArity.ExactlyOne,
                 IsDynamic = true
             };

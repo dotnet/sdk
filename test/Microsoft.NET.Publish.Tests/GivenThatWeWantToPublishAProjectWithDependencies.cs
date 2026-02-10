@@ -18,7 +18,7 @@ namespace Microsoft.NET.Publish.Tests
         public void It_publishes_projects_with_simple_dependencies()
         {
             string targetFramework = ToolsetInfo.CurrentTargetFramework;
-            TestAsset simpleDependenciesAsset = _testAssetsManager
+            TestAsset simpleDependenciesAsset = TestAssetsManager
                 .CopyTestAsset("SimpleDependencies")
                 .WithSource();
 
@@ -60,7 +60,7 @@ namespace Microsoft.NET.Publish.Tests
         [WindowsOnlyFact]
         public void It_publishes_the_app_config_if_necessary()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopNeedsBindingRedirects")
                 .WithSource();
 
@@ -87,7 +87,7 @@ namespace Microsoft.NET.Publish.Tests
             // which means an App project will get duplicate "Content" items for each P2P it references
             // that targets netcoreapp1.1.  Ensure Publish works correctly with these duplicate Content items.
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreApp11WithP2P")
                 .WithSource();
 
@@ -105,7 +105,7 @@ namespace Microsoft.NET.Publish.Tests
             string project = "SimpleDependencies";
             string targetFramework = "netcoreapp2.0";
 
-            TestAsset simpleDependenciesAsset = _testAssetsManager
+            TestAsset simpleDependenciesAsset = TestAssetsManager
                 .CopyTestAsset(project)
                 .WithSource()
                 .WithProjectChanges(projectFile =>
@@ -116,7 +116,7 @@ namespace Microsoft.NET.Publish.Tests
                     targetFrameworkElement.SetValue(targetFramework);
                 });
 
-            string filterProjDir = _testAssetsManager.CopyTestAsset("StoreManifests").WithSource().Path;
+            string filterProjDir = TestAssetsManager.CopyTestAsset("StoreManifests").WithSource().Path;
             string manifestFileName1 = "NewtonsoftFilterProfile.xml";
             string manifestFileName2 = "NewtonsoftMultipleVersions.xml";
             string manifestFile1 = Path.Combine(filterProjDir, manifestFileName1);
@@ -154,7 +154,7 @@ namespace Microsoft.NET.Publish.Tests
             string project = "SimpleDependencies";
             string targetFramework = "netcoreapp2.1";
             var rid = RuntimeInformation.RuntimeIdentifier;
-            TestAsset simpleDependenciesAsset = _testAssetsManager
+            TestAsset simpleDependenciesAsset = TestAssetsManager
                 .CopyTestAsset(project)
                 .WithSource()
                 .WithProjectChanges(projectFile =>
@@ -165,7 +165,7 @@ namespace Microsoft.NET.Publish.Tests
                     targetFrameworkElement.SetValue(targetFramework);
                 });
 
-            string filterProjDir = _testAssetsManager.CopyTestAsset("StoreManifests").WithSource().Path;
+            string filterProjDir = TestAssetsManager.CopyTestAsset("StoreManifests").WithSource().Path;
             string manifestFile = Path.Combine(filterProjDir, "NewtonsoftFilterProfile.xml");
 
             // According to https://github.com/dotnet/sdk/issues/1362 publish should throw an error
@@ -201,7 +201,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("GenerateDocumentationFile=true;PublishDocumentationFiles=false", false, false)]
         public void It_publishes_documentation_files(string properties, bool expectAppDocPublished, bool expectLibProjectDocPublished)
         {
-            var kitchenSinkAsset = _testAssetsManager
+            var kitchenSinkAsset = TestAssetsManager
                 .CopyTestAsset("KitchenSink", identifier: $"{expectAppDocPublished}_{expectLibProjectDocPublished}")
                 .WithSource();
 
@@ -245,7 +245,7 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = "netstandard1.0"
             };
 
-            var libAsset = _testAssetsManager.CreateTestProject(libProject, identifier: identifier);
+            var libAsset = TestAssetsManager.CreateTestProject(libProject, identifier: identifier);
 
             var libPublishCommand = new PublishCommand(Log, Path.Combine(libAsset.TestRoot, "NetStdLib"));
             var libPublishResult = libPublishCommand.Execute("/t:Publish", "/p:GenerateDocumentationFile=true");
@@ -260,7 +260,7 @@ namespace Microsoft.NET.Publish.Tests
                 References = { publishedLibPath }
             };
 
-            var appAsset = _testAssetsManager.CreateTestProject(appProject, identifier: identifier);
+            var appAsset = TestAssetsManager.CreateTestProject(appProject, identifier: identifier);
 
             new RestoreCommand(appAsset, "TestApp").Execute().Should().Pass();
             var appPublishCommand = new PublishCommand(appAsset);
@@ -276,6 +276,33 @@ namespace Microsoft.NET.Publish.Tests
             else
             {
                 appPublishDirectory.Should().NotHaveFile("NetStdLib.xml");
+            }
+        }
+
+        [Theory]
+        [InlineData("PublishReferencesSymbols=false", false)]
+        [InlineData("PublishReferencesSymbols=true", true)]
+        public void It_publishes_referenced_project_symbol(string property, bool expectReferenceSymbol)
+        {
+            var kitchenSinkAsset = TestAssetsManager
+                .CopyTestAsset("KitchenSink", identifier: $"{property.Replace("=", "")}")
+                .WithSource();
+
+            var publishCommand = new PublishCommand(kitchenSinkAsset, "TestApp");
+            var publishArgs = new string[] { $"/p:{property}" };
+            var publishResult = publishCommand.Execute(publishArgs);
+
+            publishResult.Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework);
+
+            if (expectReferenceSymbol)
+            {
+                publishDirectory.Should().HaveFile("TestLibrary.pdb");
+            }
+            else
+            {
+                publishDirectory.Should().NotHaveFile("TestLibrary.pdb");
             }
         }
 

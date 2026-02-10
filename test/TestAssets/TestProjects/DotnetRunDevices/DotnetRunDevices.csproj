@@ -49,4 +49,9 @@
     </ItemGroup>
   </Target>
 
+  <!-- DeployToDevice target for testing, ResolveFrameworkReferences mimics Android -->
+  <Target Name="DeployToDevice" DependsOnTargets="ResolveFrameworkReferences">
+    <Message Text="DeployToDevice: Deployed to device $(Device) with RuntimeIdentifier $(RuntimeIdentifier)" Importance="high" />
+  </Target>
+
 </Project>

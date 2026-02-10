@@ -1,4 +1,5 @@
-﻿using Microsoft.Testing.Platform.Builder;
+﻿using System;
+using Microsoft.Testing.Platform.Builder;
 using Microsoft.Testing.Platform.Capabilities.TestFramework;
 using Microsoft.Testing.Platform.Extensions.Messages;
 using Microsoft.Testing.Platform.Extensions.TestFramework;
@@ -57,7 +58,7 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 		{
 			Uid = "Test1",
 			DisplayName = "Test1",
-			Properties = new PropertyBag(new SkippedTestNodeStateProperty("OK skipped!")),
+			Properties = new PropertyBag(new SkippedTestNodeStateProperty($"OK skipped! MY_VARIABLE_FROM_LAUNCH_SETTINGS={Environment.GetEnvironmentVariable("MY_VARIABLE_FROM_LAUNCH_SETTINGS")}")),
 		}));
 		
 		context.Complete();

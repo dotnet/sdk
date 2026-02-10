@@ -51,9 +51,10 @@ public class CompleteCommand
 
     private static CompletionItem[] Completions(ParseResult complete)
     {
-        var input = complete.GetValue(CompleteCommandParser.PathArgument) ?? string.Empty;
+        var definition = (CompleteCommandDefinition)complete.CommandResult.Command;
+        var input = complete.GetValue(definition.PathArgument) ?? string.Empty;
 
-        var position = complete.GetValue(CompleteCommandParser.PositionOption);
+        var position = complete.GetValue(definition.PositionOption);
 
         if (position > input.Length)
         {

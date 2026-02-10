@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// <summary>
         /// Gets a path to the folder with dotnet new test assets.
         /// </summary>
-        public static string DotnetNewTestAssets { get; } = VerifyExists(Path.Combine(TestContext.Current.TestAssetsDirectory, "TestPackages", "dotnet-new"));
+        public static string DotnetNewTestAssets { get; } = VerifyExists(Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "TestPackages", "dotnet-new"));
 
         /// <summary>
         /// Gets a path to the folder with dotnet new test NuGet template packages.
@@ -140,7 +140,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// </summary>
         internal string PackTestNuGetPackage(ITestOutputHelper log, [CallerMemberName] string testName = "UnnamedTest")
         {
-            var testAsset = _testAssetsManager.CopyTestAsset("dotnet-new", callingMethod: testName, testAssetSubdirectory: "TestPackages").WithSource();
+            var testAsset = TestAssetsManager.CopyTestAsset("dotnet-new", callingMethod: testName, testAssetSubdirectory: "TestPackages").WithSource();
             string testProject = Path.GetFileName(DotnetNewTestTemplatePackageProjectPath);
             string testPath = testAsset.Path;
 
@@ -178,7 +178,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private static string GetAndVerifyRepoRoot()
         {
-            string repoRoot = Path.GetFullPath(Path.Combine(TestContext.Current.TestAssetsDirectory, "..", ".."));
+            string repoRoot = Path.GetFullPath(Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "..", ".."));
             if (!Directory.Exists(repoRoot))
             {
                 Assert.Fail($"The repo root cannot be evaluated.");

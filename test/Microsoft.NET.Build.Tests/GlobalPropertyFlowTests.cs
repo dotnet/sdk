@@ -33,7 +33,7 @@ namespace Microsoft.NET.Build.Tests
 
         TestAsset Build(bool passSelfContained, bool passRuntimeIdentifier, [CallerMemberName] string callingMethod = "", string identifier = "")
         {
-            var testAsset = _testAssetsManager.CreateTestProject(_testProject, callingMethod: callingMethod, identifier: identifier);
+            var testAsset = TestAssetsManager.CreateTestProject(_testProject, callingMethod: callingMethod, identifier: identifier);
 
             var arguments = GetDotnetArguments(passSelfContained, passRuntimeIdentifier);
 
@@ -179,7 +179,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var identifier = passSelfContained.ToString() + "_" + passRuntimeIdentifier;
 
-            var testAsset = _testAssetsManager.CreateTestProject(_testProject, identifier: identifier);
+            var testAsset = TestAssetsManager.CreateTestProject(_testProject, identifier: identifier);
 
             new DotnetNewCommand(Log, "sln")
                 .WithVirtualHive()

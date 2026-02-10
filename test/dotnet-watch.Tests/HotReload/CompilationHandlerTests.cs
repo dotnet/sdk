@@ -1,11 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
 {
-    [Fact(Skip="https://github.com/dotnet/sdk/issues/51491")]
+    [Fact]
     public async Task ReferenceOutputAssembly_False()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
@@ -22,7 +24,7 @@ public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTest
         var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
 
         var reporter = new TestReporter(Logger);
-        var loggerFactory = new LoggerFactory(reporter);
+        var loggerFactory = new LoggerFactory(reporter, LogLevel.Debug);
         var logger = loggerFactory.CreateLogger("Test");
         var factory = new ProjectGraphFactory(globalOptions: []);
         var projectGraph = factory.TryLoadProjectGraph(options.ProjectPath, logger, projectGraphRequired: false, CancellationToken.None);

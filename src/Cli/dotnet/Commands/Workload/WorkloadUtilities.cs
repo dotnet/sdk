@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
-internal class WorkloadUtilities
+internal static class WorkloadUtilities
 {
     internal static int VersionCompare(string first, string second)
     {
@@ -34,5 +33,35 @@ internal class WorkloadUtilities
         var modifiedSecond = new ReleaseVersion(1, 1, 1, secondDash == second.Length ? null : second.Substring(secondDash));
 
         return modifiedFirst.CompareTo(modifiedSecond);
+    }
+
+    /// <summary>
+    /// Determines whether workload packs and installer signatures should be verified based on whether
+    /// dotnet is signed, the skip option was specified, and whether a global policy enforcing verification
+    /// was set.
+    /// </summary>
+    /// <returns><see langword="true"/> if signatures of packages and installers should be verified.</returns>
+    /// <exception cref="GracefulException" />
+    public static bool ShouldVerifySignatures(bool skipSignCheck)
+    {
+#if DOT_NET_BUILD_FROM_SOURCE
+        // Never signed on Unix
+        return false;
+#else
+        if (!SignCheck.IsDotNetSigned())
+        {
+            // Can't enforce anything if we already allowed an unsigned dotnet to be installed.
+            return false;
+        }
+
+        bool policyEnabled = SignCheck.IsWorkloadSignVerificationPolicySet();
+        if (skipSignCheck && policyEnabled)
+        {
+            // Can't override the global policy by using the skip option.
+            throw new GracefulException(CliCommandStrings.SkipSignCheckInvalidOption);
+        }
+
+        return !skipSignCheck;
+#endif
     }
 }

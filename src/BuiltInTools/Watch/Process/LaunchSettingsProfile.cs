@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Watch
 
         internal static LaunchSettingsProfile? ReadLaunchProfile(string projectPath, string? launchProfileName, ILogger logger)
         {
-            var launchSettingsPath = LaunchSettingsLocator.TryFindLaunchSettings(projectPath, launchProfileName, (message, isError) =>
+            var launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(projectPath, launchProfileName, (message, isError) =>
             {
                 if (isError)
                 {
@@ -94,11 +94,16 @@ namespace Microsoft.DotNet.Watch
                 return null;
             }
 
-            var defaultProfileKey = launchSettings.Profiles.FirstOrDefault(entry => entry.Value.CommandName == "Project").Key;
+            // Look for the first profile with a supported command name
+            // Note: These must match the command names supported by LaunchSettingsManager in src/Cli/dotnet/Commands/Run/LaunchSettings/
+            var supportedCommandNames = new[] { "Project", "Executable" };
+            var defaultProfileKey = launchSettings.Profiles.FirstOrDefault(entry =>
+                entry.Value.CommandName != null && supportedCommandNames.Contains(entry.Value.CommandName, StringComparer.Ordinal)).Key;
 
             if (defaultProfileKey is null)
             {
-                logger.LogDebug("Unable to find 'Project' command in the default launch profile.");
+                logger.LogDebug("Unable to find a supported command name in the default launch profile. Supported types: {SupportedTypes}",
+                    string.Join(", ", supportedCommandNames));
                 return null;
             }
 

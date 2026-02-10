@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -35,6 +36,7 @@ namespace Microsoft.DotNet.Watch
         bool SuppressBrowserRefresh = false,
         bool SuppressEmojis = false,
         bool RestartOnRudeEdit = false,
+        LogLevel? CliLogLevel = null,
         string? AutoReloadWebSocketHostName = null,
         int? AutoReloadWebSocketPort = null,
         string? BrowserPath = null,
@@ -53,6 +55,7 @@ namespace Microsoft.DotNet.Watch
             SuppressBrowserRefresh: EnvironmentVariables.SuppressBrowserRefresh,
             SuppressEmojis: EnvironmentVariables.SuppressEmojis,
             RestartOnRudeEdit: EnvironmentVariables.RestartOnRudeEdit,
+            CliLogLevel: EnvironmentVariables.CliLogLevel,
             AutoReloadWebSocketHostName: EnvironmentVariables.AutoReloadWSHostName,
             AutoReloadWebSocketPort: EnvironmentVariables.AutoReloadWSPort,
             BrowserPath: EnvironmentVariables.BrowserPath,

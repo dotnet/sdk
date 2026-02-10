@@ -26,6 +26,10 @@ public static class OptionForwardingExtensions
                 return [];
             }
             string argVal = CommandDirectoryContext.GetFullPath(o);
+            if (!Path.EndsInDirectorySeparator(argVal))
+            {
+                argVal += Path.DirectorySeparatorChar;
+            }
             if (surroundWithDoubleQuotes)
             {
                 //  Not sure if this is necessary, but this is what "dotnet test" previously did and so we are

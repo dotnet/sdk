@@ -75,6 +75,27 @@ internal class AnyPresentEnvironmentRule : EnvironmentDetectionRule
 }
 
 /// <summary>
+/// Rule that matches when an environment variable contains a specific value (case-insensitive).
+/// </summary>
+internal class EnvironmentVariableValueRule : EnvironmentDetectionRule
+{
+    private readonly string _variable;
+    private readonly string _expectedValue;
+
+    public EnvironmentVariableValueRule(string variable, string expectedValue)
+    {
+        _variable = variable ?? throw new ArgumentNullException(nameof(variable));
+        _expectedValue = expectedValue ?? throw new ArgumentNullException(nameof(expectedValue));
+    }
+
+    public override bool IsMatch()
+    {
+        var value = Environment.GetEnvironmentVariable(_variable);
+        return !string.IsNullOrEmpty(value) && value.Equals(_expectedValue, StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+/// <summary>
 /// Rule that matches when any of the specified environment variables is present and not null/empty,
 /// and returns the associated result value.
 /// </summary>

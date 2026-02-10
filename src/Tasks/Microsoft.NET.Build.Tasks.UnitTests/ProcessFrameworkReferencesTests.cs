@@ -60,7 +60,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     "win-x86": {
                         "#import": ["win"]
                     },
+                    "win-arm64": {
+                        "#import": ["win"]
+                    },
                     "linux-x64": {
+                        "#import": ["any"]
+                    },
+                    "linux-arm64": {
                         "#import": ["any"]
                     },
                     "osx": {
@@ -71,6 +77,30 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     },
                     "osx-x64": {
                         "#import": ["osx"]
+                    }
+                }
+            }
+            """;
+
+        private const string NonPortableRid = "fedora.42-x64";
+
+        private static readonly string NonPortableRuntimeGraph = $$"""
+            {
+                "runtimes": {
+                    "base": {
+                        "#import": []
+                    },
+                    "any": {
+                        "#import": ["base"]
+                    },
+                    "linux": {
+                        "#import": ["any"]
+                    },
+                    "linux-x64": {
+                        "#import": ["linux"]
+                    },
+                    "{{NonPortableRid}}": {
+                        "#import": ["linux-x64"]
                     }
                 }
             }
@@ -167,6 +197,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             if (config.EnableAotAnalyzer.HasValue) task.EnableAotAnalyzer = config.EnableAotAnalyzer.Value;
             if (config.EnableTrimAnalyzer.HasValue) task.EnableTrimAnalyzer = config.EnableTrimAnalyzer.Value;
             if (config.EnableSingleFileAnalyzer.HasValue) task.EnableSingleFileAnalyzer = config.EnableSingleFileAnalyzer.Value;
+            if (config.ReadyToRunEnabled.HasValue) task.ReadyToRunEnabled = config.ReadyToRunEnabled.Value;
+            if (config.ReadyToRunUseCrossgen2.HasValue) task.ReadyToRunUseCrossgen2 = config.ReadyToRunUseCrossgen2.Value;
             
             if (!string.IsNullOrEmpty(config.NetCoreRoot)) task.NetCoreRoot = config.NetCoreRoot;
             if (!string.IsNullOrEmpty(config.NETCoreSdkVersion)) task.NETCoreSdkVersion = config.NETCoreSdkVersion;
@@ -205,6 +237,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             public bool? EnableAotAnalyzer { get; set; }
             public bool? EnableTrimAnalyzer { get; set; }
             public bool? EnableSingleFileAnalyzer { get; set; }
+            public bool? ReadyToRunEnabled { get; set; }
+            public bool? ReadyToRunUseCrossgen2 { get; set; }
             public string? NetCoreRoot { get; set; }
             public string? NETCoreSdkVersion { get; set; }
             public string? NETCoreSdkPortableRuntimeIdentifier { get; set; }
@@ -419,10 +453,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        // This test is now covered by the theory above
-
-        // This test is now covered by the theory above
-
         [Fact]
         public void It_processes_RuntimeIdentifiers_with_AlwaysCopyLocal_and_no_RuntimeIdentifier()
         {
@@ -451,10 +481,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimePacks.Should().NotBeNull().And.HaveCount(1);
             task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref");
         }
-
-        // This test is now covered by the theory above
-
-        // This test is now covered by the theory above
 
         [Fact]
         public void It_handles_real_world_ridless_scenario_with_aot_and_trimming()
@@ -491,6 +517,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ["TargetFramework"] = "net10.0",
                 ["ILCompilerPackNamePattern"] = "runtime.**RID**.Microsoft.DotNet.ILCompiler",
                 ["ILCompilerPackVersion"] = "10.0.0-rc.2.25457.102",
+                ["ILCompilerPortableRuntimeIdentifiers"] = "osx-x64;osx-arm64;win-x64;linux-x64",
                 ["ILCompilerRuntimeIdentifiers"] = "osx-x64;osx-arm64;win-x64;linux-x64"
             });
 
@@ -733,6 +760,205 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.TargetingPacks.Should().NotBeNull();
         }
 
+        [Fact]
+        public void It_resolves_runtime_packs_for_SelfContained_deployment()
+        {
+            // This test validates the "good" behavior from good-processframeworkreferences-selfcontained.txt
+            // When SelfContained=true with a RuntimeIdentifier, runtime packs should be resolved
+            
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", 
+                "linux-arm;linux-arm64;linux-musl-arm64;linux-musl-x64;linux-x64;osx-x64;tizen.4.0.0-armel;tizen.5.0.0-armel;win-arm64;win-x64;win-x86;linux-musl-arm;osx-arm64;linux-s390x;linux-loongarch64;linux-bionic-arm;linux-bionic-arm64;linux-bionic-x64;linux-bionic-x86;linux-ppc64le;freebsd-x64;freebsd-arm64;linux-riscv64;linux-musl-riscv64;linux-musl-loongarch64;android-arm64;android-x64");
+            
+            var aspNetCoreRef = CreateKnownFrameworkReference("Microsoft.AspNetCore.App", "net10.0", "10.0.0",
+                "Microsoft.AspNetCore.App.Runtime.**RID**",
+                "win-x64;win-x86;osx-x64;linux-musl-x64;linux-musl-arm64;linux-x64;linux-arm;linux-arm64;linux-musl-arm;win-arm64;osx-arm64;linux-s390x;linux-loongarch64;linux-ppc64le;freebsd-x64;freebsd-arm64;linux-riscv64;linux-musl-riscv64;linux-loongarch64;linux-musl-loongarch64");
+            
+            var ilLinkPack = new MockTaskItem("Microsoft.NET.ILLink.Tasks", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["ILLinkPackVersion"] = "10.0.0"
+            });
+            
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "10.0",
+                EnableRuntimePackDownload = true,
+                EnableTargetingPackDownload = true,
+                SelfContained = true,
+                RuntimeIdentifier = "linux-arm64",
+                PublishTrimmed = true,
+                RequiresILLinkPack = true,
+                TargetLatestRuntimePatch = true,
+                TargetLatestRuntimePatchIsDefault = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { 
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()),
+                    new MockTaskItem("Microsoft.AspNetCore.App", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" })
+                },
+                KnownFrameworkReferences = new[] { netCoreAppRef, aspNetCoreRef },
+                KnownILLinkPacks = new[] { ilLinkPack }
+            };
+            
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue("SelfContained deployment should succeed");
+            
+            // Validate PackagesToDownload contains runtime packs
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-arm64",
+                "Should download NETCore runtime pack for target RID");
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.AspNetCore.App.Runtime.linux-arm64",
+                "Should download AspNetCore runtime pack for target RID");
+            
+            // Validate RuntimePacks output
+            task.RuntimePacks.Should().NotBeNull().And.HaveCount(2, "Should have runtime packs for both frameworks");
+            task.RuntimePacks.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-arm64");
+            task.RuntimePacks.Should().Contain(p => p.ItemSpec == "Microsoft.AspNetCore.App.Runtime.linux-arm64");
+            
+            // Validate RuntimeFrameworks
+            task.RuntimeFrameworks.Should().NotBeNull().And.HaveCount(2);
+            task.RuntimeFrameworks.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App");
+            task.RuntimeFrameworks.Should().Contain(p => p.ItemSpec == "Microsoft.AspNetCore.App");
+            
+            // Validate TargetingPacks
+            task.TargetingPacks.Should().NotBeNull().And.HaveCount(2);
+            task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.NETCore.App.Ref");
+            task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.AspNetCore.App.Ref");
+            
+            // Validate ILLink pack is included
+            task.ImplicitPackageReferences.Should().NotBeNull();
+            task.ImplicitPackageReferences.Should().Contain(p => p.ItemSpec == "Microsoft.NET.ILLink.Tasks");
+        }
+
+        [Fact]
+        public void It_resolves_runtime_packs_for_PublishTrimmed_without_SelfContained()
+        {
+            // This test validates that PublishTrimmed should trigger runtime pack resolution
+            // even when SelfContained=false (addresses the issue in bad-processframeworkreferences-publishtrimmed)
+            // PublishTrimmed requires runtime-specific assets, similar to SelfContained
+            
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", 
+                "linux-arm;linux-arm64;linux-musl-arm64;linux-musl-x64;linux-x64;osx-x64;tizen.4.0.0-armel;tizen.5.0.0-armel;win-arm64;win-x64;win-x86;linux-musl-arm;osx-arm64;linux-s390x;linux-loongarch64;linux-bionic-arm;linux-bionic-arm64;linux-bionic-x64;linux-bionic-x86;linux-ppc64le;freebsd-x64;freebsd-arm64;linux-riscv64;linux-musl-riscv64;linux-musl-loongarch64;android-arm64;android-x64");
+            
+            var aspNetCoreRef = CreateKnownFrameworkReference("Microsoft.AspNetCore.App", "net10.0", "10.0.0",
+                "Microsoft.AspNetCore.App.Runtime.**RID**",
+                "win-x64;win-x86;osx-x64;linux-musl-x64;linux-musl-arm64;linux-x64;linux-arm;linux-arm64;linux-musl-arm;win-arm64;osx-arm64;linux-s390x;linux-loongarch64;linux-ppc64le;freebsd-x64;freebsd-arm64;linux-riscv64;linux-musl-riscv64;linux-loongarch64;linux-musl-loongarch64");
+            
+            var ilLinkPack = new MockTaskItem("Microsoft.NET.ILLink.Tasks", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["ILLinkPackVersion"] = "10.0.0"
+            });
+            
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "10.0",
+                EnableRuntimePackDownload = true,
+                EnableTargetingPackDownload = true,
+                SelfContained = false, // This is the key difference from the previous test
+                RuntimeIdentifier = "linux-arm64",
+                PublishTrimmed = true,
+                RequiresILLinkPack = true,
+                EnableTrimAnalyzer = true,
+                TargetLatestRuntimePatch = false,
+                TargetLatestRuntimePatchIsDefault = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { 
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()),
+                    new MockTaskItem("Microsoft.AspNetCore.App", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" })
+                },
+                KnownFrameworkReferences = new[] { netCoreAppRef, aspNetCoreRef },
+                KnownILLinkPacks = new[] { ilLinkPack }
+            };
+            
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue("PublishTrimmed deployment should succeed");
+            
+            // The key assertion: runtime packs should be resolved even when SelfContained=false
+            // because PublishTrimmed requires runtime-specific assets
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-arm64",
+                "Should download NETCore runtime pack for PublishTrimmed even when SelfContained=false");
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.AspNetCore.App.Runtime.linux-arm64",
+                "Should download AspNetCore runtime pack for PublishTrimmed even when SelfContained=false");
+            
+            // Validate RuntimePacks output
+            task.RuntimePacks.Should().NotBeNull().And.HaveCount(2, 
+                "Should have runtime packs for both frameworks when PublishTrimmed=true");
+            task.RuntimePacks.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-arm64");
+            task.RuntimePacks.Should().Contain(p => p.ItemSpec == "Microsoft.AspNetCore.App.Runtime.linux-arm64");
+            
+            // Validate RuntimeFrameworks
+            task.RuntimeFrameworks.Should().NotBeNull().And.HaveCount(2);
+            
+            // Validate TargetingPacks
+            task.TargetingPacks.Should().NotBeNull().And.HaveCount(2);
+            
+            // Validate ILLink pack is included for trimming
+            task.ImplicitPackageReferences.Should().NotBeNull();
+            task.ImplicitPackageReferences.Should().Contain(p => p.ItemSpec == "Microsoft.NET.ILLink.Tasks",
+                "ILLink pack should be included for PublishTrimmed");
+        }
+
+        [Theory]
+        [InlineData(true, false, false, false, "SelfContained only")]
+        [InlineData(false, true, false, false, "PublishTrimmed only")]
+        [InlineData(false, false, true, false, "PublishReadyToRun only")]
+        [InlineData(false, false, false, true, "PublishAot only")]
+        [InlineData(true, true, false, false, "SelfContained + PublishTrimmed")]
+        [InlineData(true, false, true, false, "SelfContained + PublishReadyToRun")]
+        [InlineData(false, true, true, false, "PublishTrimmed + PublishReadyToRun")]
+        public void It_resolves_runtime_packs_for_various_publish_scenarios(
+            bool selfContained, bool publishTrimmed, bool publishReadyToRun, bool publishAot, string scenario)
+        {
+            // This test validates that runtime packs are resolved for any scenario requiring runtime-specific assets
+            
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", 
+                "linux-x64;linux-arm64;win-x64;osx-x64;osx-arm64");
+            
+            var ilLinkPack = new MockTaskItem("Microsoft.NET.ILLink.Tasks", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["ILLinkPackVersion"] = "10.0.0"
+            });
+            
+            var ilCompilerPack = CreateKnownILCompilerPack("net10.0", "10.0.0", "linux-x64;linux-arm64;win-x64;osx-x64;osx-arm64");
+            
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "10.0",
+                EnableRuntimePackDownload = true,
+                EnableTargetingPackDownload = true,
+                SelfContained = selfContained,
+                RuntimeIdentifier = "linux-x64",
+                PublishTrimmed = publishTrimmed,
+                PublishAot = publishAot,
+                ReadyToRunEnabled = publishReadyToRun,
+                RequiresILLinkPack = publishTrimmed || publishAot,
+                TargetLatestRuntimePatch = true,
+                TargetLatestRuntimePatchIsDefault = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreAppRef },
+                KnownILLinkPacks = new[] { ilLinkPack },
+                KnownILCompilerPacks = new[] { ilCompilerPack }
+            };
+            
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue($"Task should succeed for scenario: {scenario}");
+            
+            // All of these scenarios require runtime-specific assets, so runtime packs should be resolved
+            task.PackagesToDownload.Should().NotBeNull($"PackagesToDownload should not be null for scenario: {scenario}");
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-x64",
+                $"Should download runtime pack for scenario: {scenario}");
+            
+            task.RuntimePacks.Should().NotBeNull($"RuntimePacks should not be null for scenario: {scenario}");
+            task.RuntimePacks.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-x64",
+                $"Should have runtime pack in output for scenario: {scenario}");
+        }
+
 
         [Fact]
         public void It_handles_complex_cross_compilation_RuntimeIdentifiers()
@@ -765,6 +991,53 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 task.PackagesToDownload.Should().Contain(p => p.ItemSpec == $"Microsoft.NETCore.App.Runtime.{rid}",
                     $"Should include runtime pack for supported RID: {rid}");
             }
+        }
+
+        [Theory]
+        [InlineData(null, "linux-x64")]
+        [InlineData("linux-x64", "linux-x64")]
+        [InlineData(NonPortableRid, NonPortableRid)]
+        public void It_selects_correct_ILCompiler_based_on_RuntimeIdentifier(string? runtimeIdentifier, string expectedILCompilerRid)
+        {
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.1",
+                "Microsoft.NETCore.App.Runtime.**RID**",
+                "linux-x64;" + NonPortableRid);
+
+            var ilCompilerPack = new MockTaskItem("Microsoft.DotNet.ILCompiler", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["ILCompilerPackNamePattern"] = "runtime.**RID**.Microsoft.DotNet.ILCompiler",
+                ["ILCompilerPackVersion"] = "10.0.1",
+                ["ILCompilerPortableRuntimeIdentifiers"] = "linux-x64",
+                ["ILCompilerRuntimeIdentifiers"] = "linux-x64;" + NonPortableRid
+            });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "10.0",
+                EnableRuntimePackDownload = true,
+                PublishAot = true,
+                NETCoreSdkRuntimeIdentifier = NonPortableRid,
+                NETCoreSdkPortableRuntimeIdentifier = "linux-x64",
+                RuntimeIdentifier = runtimeIdentifier,
+                RuntimeGraphPath = CreateRuntimeGraphFile(NonPortableRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreAppRef },
+                KnownILCompilerPacks = new[] { ilCompilerPack }
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue("Task should succeed");
+
+            // Validate that the expected ILCompiler pack is used
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec.Contains("Microsoft.DotNet.ILCompiler"),
+                "Should include ILCompiler pack when PublishAot is true");
+
+            var ilCompilerPackage = task.PackagesToDownload.FirstOrDefault(p => p.ItemSpec.Contains("Microsoft.DotNet.ILCompiler"));
+            ilCompilerPackage.Should().NotBeNull();
+            ilCompilerPackage!.ItemSpec.Should().Contain(expectedILCompilerRid,
+                $"Should use {expectedILCompilerRid} ILCompiler pack");
         }
     }
 }

@@ -740,17 +740,17 @@ This is equivalent to deleting project.assets.json.</source>
       </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
         <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">実行するプロジェクト ファイルのパスを定義します。プロジェクト ファイルへのパス、またはプロジェクト ファイルを含むディレクトリへのパスを使用します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
         <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">テストするプロジェクト ファイルまたはソリューション ファイルのパスを定義します。プロジェクト ファイルへのパス、またはプロジェクト ファイルを含むディレクトリへのパスを使用します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
         <source>PROJECT_OR_SOLUTION_PATH</source>
-        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
+        <target state="translated">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -797,7 +797,7 @@ The specified directory will be created if it does not exist.</source>
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">テストするソリューション ファイルのパスを定義します。ソリューション ファイルへのパス、またはソリューション ファイルを含むディレクトリへのパスを使用します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -1066,11 +1066,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">日付</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(既定)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">ワークロード マニフェスト {0} のバージョン {1} をアンインストールしています...</target>
@@ -1100,11 +1095,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Description</source>
         <target state="translated">説明</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">'{0}' の読み取り中にエラーが発生しました: {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1206,15 +1196,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Downloads</source>
         <target state="translated">ダウンロード</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">大文字と小文字が区別される名前の起動プロファイルがいくつかありますが、これは許可されていません:
-{0}
-プロファイル名を区別できるようにしてください。</target>
-        <note />
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1605,26 +1586,6 @@ Make the profile names distinct.</source>
         <source>Latest Version</source>
         <target state="translated">最新バージョン</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">'{0} ' という名前の起動プロファイルは存在しません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">起動プロファイルの種類 '{0}' はサポートされていません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">指定された名前のプロファイルは、有効な JSON オブジェクトではありません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">起動設定のドキュメントの 'profiles' プロパティが JSON オブジェクトではありません。</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -2344,7 +2305,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
       3. 1 つ以上のワークロードをバージョンと共に ('@' 文字で結合して) 指定すると、指定されたバージョンに一致するワークロード バージョンが出力されます。--take オプションを指定して提供する数を指定し、--format を指定して形式を変更します。
-         例:
+         例: 
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -2427,7 +2388,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
-        <target state="needs-review-translation">出力ディレクトリ ({0}) を指定します:</target>
+        <target state="translated">出力ディレクトリを指定します (Enter キーを押すと既定値に設定されます: '{0}'、ディレクトリは存在してはなりません):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
@@ -2627,6 +2588,11 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">復元に失敗しました。</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">復元が部分的に失敗しました。</target>
@@ -2679,12 +2645,17 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RunCommandAvailableTargetFrameworks">
         <source>Available target frameworks:</source>
-        <target state="new">Available target frameworks:</target>
+        <target state="translated">使用可能なターゲット フレームワーク:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">ビルドしています...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
@@ -2694,7 +2665,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="RunCommandExampleText">
         <source>Example</source>
-        <target state="new">Example</target>
+        <target state="translated">例</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -2712,7 +2683,7 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="translated">起動設定ファイルが見つからないため、起動プロファイル '{0}' を使用できません。試行された場所:
+        <target state="translated">起動設定ファイルが見つからないため、起動プロファイル '{0}' を使用できません。試行された場所: 
 {1}</target>
         <note />
       </trans-unit>
@@ -2756,7 +2727,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandMoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">上下に移動して、さらに多くのフレームワークを表示</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandNoDevicesAvailable">
@@ -2771,7 +2742,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandSearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">入力して検索します</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSelectDevicePrompt">
@@ -2781,7 +2752,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">実行するターゲット フレームワークを選択してください:</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
@@ -3695,11 +3666,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
         <target state="translated">{0} を使用するようにワークロード インストール モードが正常に更新されました。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">使用可能な起動プロファイルが見つかりませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">

@@ -85,31 +85,21 @@ internal class CommandDefinition(string name, string description) : Command(name
         ];
 
         internal static readonly IEnumerable<Option> LegacyOptions;
+        internal static readonly IEnumerable<Option> LegacyFilterOptions;
 
-        private static readonly IReadOnlyDictionary<FilterOptionDefinition, Option> s_legacyFilters;
         private static readonly Lazy<CommandDefinition> s_lazyCommand = new(Create);
 
         static New()
         {
-            IReadOnlyList<FilterOptionDefinition> legacyFilterDefinitions =
+            LegacyFilterOptions =
             [
-                FilterOptionDefinition.AuthorFilter,
-                FilterOptionDefinition.BaselineFilter,
-                FilterOptionDefinition.LanguageFilter,
-                FilterOptionDefinition.TypeFilter,
-                FilterOptionDefinition.TagFilter,
-                FilterOptionDefinition.PackageFilter
+                SharedOptionsFactory.CreateAuthorOption().AsHidden(),
+                SharedOptionsFactory.CreateBaselineOption().AsHidden(),
+                SharedOptionsFactory.CreateLanguageOption().AsHidden(),
+                SharedOptionsFactory.CreateTypeOption().AsHidden(),
+                SharedOptionsFactory.CreateTagOption().AsHidden(),
+                SharedOptionsFactory.CreatePackageOption().AsHidden()
             ];
-
-            var filterOptionsMap = new Dictionary<FilterOptionDefinition, Option>();
-            var filterOptions = new List<Option>();
-
-            foreach (var filterDef in legacyFilterDefinitions)
-            {
-                var option = filterDef.OptionFactory().AsHidden();
-                filterOptionsMap.Add(filterDef, option);
-                filterOptions.Add(option);
-            }
 
             LegacyOptions =
             [
@@ -117,10 +107,8 @@ internal class CommandDefinition(string name, string description) : Command(name
                 AddSourceOption,
                 ColumnsAllOption,
                 ColumnsOption,
-                .. filterOptions,
+                .. LegacyFilterOptions
             ];
-
-            s_legacyFilters = filterOptionsMap;
         }
 
         public static CommandDefinition Command => s_lazyCommand.Value;
@@ -175,18 +163,6 @@ internal class CommandDefinition(string name, string description) : Command(name
 
             command.Options.AddRange(LegacyOptions);
             return command;
-        }
-
-        internal static OrderedDictionary<FilterOptionDefinition, Option> CreateFilterOptions(IEnumerable<FilterOptionDefinition> supportedFilters, bool isLegacy)
-        {
-            var filterOptionsMap = new OrderedDictionary<FilterOptionDefinition, Option>();
-
-            foreach (var filterDef in supportedFilters)
-            {
-                filterOptionsMap.Add(filterDef, isLegacy ? s_legacyFilters[filterDef] : filterDef.OptionFactory());
-            }
-
-            return filterOptionsMap;
         }
     }
 
@@ -368,13 +344,13 @@ internal class CommandDefinition(string name, string description) : Command(name
 
     public sealed class List : CommandDefinition
     {
-        public static readonly IEnumerable<FilterOptionDefinition> SupportedFilters =
+        public static readonly IEnumerable<Option> SupportedFilterOptions =
         [
-            FilterOptionDefinition.AuthorFilter,
-            FilterOptionDefinition.BaselineFilter,
-            FilterOptionDefinition.LanguageFilter,
-            FilterOptionDefinition.TypeFilter,
-            FilterOptionDefinition.TagFilter
+            SharedOptions.AuthorOption,
+            SharedOptions.BaselineOption,
+            SharedOptions.LanguageOption,
+            SharedOptions.TypeOption,
+            SharedOptions.TagOption,
         ];
 
         public static readonly Argument<string> NameArgument = new("template-name")
@@ -399,7 +375,7 @@ internal class CommandDefinition(string name, string description) : Command(name
         public Option<bool> ColumnsAllOption { get; }
         public Option<string[]> ColumnsOption { get; }
 
-        public OrderedDictionary<FilterOptionDefinition, Option> Filters { get; }
+        public IEnumerable<Option> FilterOptions { get; }
 
         public List(string name, bool isLegacy)
             : base(name, SymbolStrings.Command_List_Description)
@@ -407,11 +383,11 @@ internal class CommandDefinition(string name, string description) : Command(name
             Hidden = isLegacy;
             ColumnsAllOption = isLegacy ? New.ColumnsAllOption : SharedOptions.ColumnsAllOption;
             ColumnsOption = isLegacy ? New.ColumnsOption : SharedOptions.ColumnsOption;
-            Filters = New.CreateFilterOptions(SupportedFilters, isLegacy);
+            FilterOptions = isLegacy ? New.LegacyFilterOptions : SupportedFilterOptions;
 
             Arguments.Add(NameArgument);
 
-            Options.AddRange(Filters.Values);
+            Options.AddRange(FilterOptions);
 
             Options.AddRange(
             [
@@ -422,20 +398,20 @@ internal class CommandDefinition(string name, string description) : Command(name
                 ColumnsOption,
             ]);
 
-            this.AddNoLegacyUsageValidators(isLegacy ? [.. Filters.Values, ColumnsAllOption, ColumnsOption, New.ShortNameArgument] : []);
+            this.AddNoLegacyUsageValidators(isLegacy ? [.. FilterOptions, ColumnsAllOption, ColumnsOption, New.ShortNameArgument] : []);
         }
     }
 
     public sealed class Search : CommandDefinition
     {
-        public static readonly IEnumerable<FilterOptionDefinition> SupportedFilters =
+        public static readonly IEnumerable<Option> SupportedFilterOptions =
         [
-            FilterOptionDefinition.AuthorFilter,
-            FilterOptionDefinition.BaselineFilter,
-            FilterOptionDefinition.LanguageFilter,
-            FilterOptionDefinition.TypeFilter,
-            FilterOptionDefinition.TagFilter,
-            FilterOptionDefinition.PackageFilter
+            SharedOptions.AuthorOption,
+            SharedOptions.BaselineOption,
+            SharedOptions.LanguageOption,
+            SharedOptions.TypeOption,
+            SharedOptions.TagOption,
+            SharedOptions.PackageOption
         ];
 
         public static readonly Argument<string> NameArgument = new("template-name")
@@ -456,7 +432,7 @@ internal class CommandDefinition(string name, string description) : Command(name
         public Option<bool> ColumnsAllOption { get; }
         public Option<string[]> ColumnsOption { get; }
 
-        public OrderedDictionary<FilterOptionDefinition, Option> Filters { get; }
+        public IEnumerable<Option> FilterOptions { get; }
 
         public Search(string name, bool isLegacy)
             : base(name, SymbolStrings.Command_Search_Description)
@@ -464,11 +440,11 @@ internal class CommandDefinition(string name, string description) : Command(name
             Hidden = isLegacy;
             ColumnsAllOption = isLegacy ? New.ColumnsAllOption : SharedOptions.ColumnsAllOption;
             ColumnsOption = isLegacy ? New.ColumnsOption : SharedOptions.ColumnsOption;
-            Filters = New.CreateFilterOptions(SupportedFilters, isLegacy);
+            FilterOptions = isLegacy ? New.LegacyFilterOptions : SupportedFilterOptions;
 
             Arguments.Add(NameArgument);
 
-            Options.AddRange(Filters.Values);
+            Options.AddRange(FilterOptions);
 
             Options.AddRange(
             [
@@ -476,7 +452,7 @@ internal class CommandDefinition(string name, string description) : Command(name
                 ColumnsOption,
             ]);
 
-            this.AddNoLegacyUsageValidators(isLegacy ? [.. Filters.Values, ColumnsAllOption, ColumnsOption, New.ShortNameArgument] : []);
+            this.AddNoLegacyUsageValidators(isLegacy ? [.. FilterOptions, ColumnsAllOption, ColumnsOption, New.ShortNameArgument] : []);
         }
     }
 

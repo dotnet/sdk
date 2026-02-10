@@ -200,6 +200,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_PublishStaticWebAssetsCopyAlways Include="@(_PublishStaticWebAssetsTargetPath)" Condition="'%(CopyToPublishDirectory)' == 'Always'" />
       <_PublishStaticWebAssetsPreserveNewest Include="@(_PublishStaticWebAssetsTargetPath)" Condition="'%(CopyToPublishDirectory)' == 'PreserveNewest'" />
+      <_PublishStaticWebAssetsIfDifferent Include="@(_PublishStaticWebAssetsTargetPath)" Condition="'%(CopyToPublishDirectory)' == 'IfDifferent'" />
     </ItemGroup>
 
   </Target>
@@ -207,7 +208,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_PublishCopyStaticWebAssetsPreserveNewest"
     Inputs="@(_PublishStaticWebAssetsPreserveNewest)"
     Outputs="@(_PublishStaticWebAssetsPreserveNewest->'$(PublishDir)%(TargetPath)')"
-    AfterTargets="_SplitPublishStaticWebAssetsByCopyOptions">
+    AfterTargets="_SplitPublishStaticWebAssetsByCopyOptions"
+    Condition=" '@(_PublishStaticWebAssetsPreserveNewest)' != '' ">
 
     <Copy SourceFiles="@(_PublishStaticWebAssetsPreserveNewest)"
       DestinationFiles="@(_PublishStaticWebAssetsPreserveNewest->'$(PublishDir)%(TargetPath)')"
@@ -224,10 +226,33 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_PublishCopyStaticWebAssetsAlways"
-    AfterTargets="_SplitPublishStaticWebAssetsByCopyOptions">
+    AfterTargets="_SplitPublishStaticWebAssetsByCopyOptions"
+    Condition=" '@(_PublishStaticWebAssetsCopyAlways)' != '' ">
 
     <Copy SourceFiles="@(_PublishStaticWebAssetsCopyAlways)"
       DestinationFiles="@(_PublishStaticWebAssetsCopyAlways->'$(PublishDir)%(TargetPath)')"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+
+  </Target>
+  
+  <Target Name="_PublishCopyStaticWebAssetsIfDifferent"
+    AfterTargets="_SplitPublishStaticWebAssetsByCopyOptions"
+    Condition=" '@(_PublishStaticWebAssetsIfDifferent)' != '' ">
+
+    <!--
+        Using SkipUnchangedFiles="true" because we want only differing files.
+    -->
+    <Copy SourceFiles="@(_PublishStaticWebAssetsIfDifferent)"
+      DestinationFiles="@(_PublishStaticWebAssetsIfDifferent->'$(PublishDir)%(TargetPath)')"
+      SkipUnchangedFiles="true"
       OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
       Retries="$(CopyRetryCount)"
       RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"

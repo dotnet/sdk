@@ -14,19 +14,23 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
+        // The same syntax works on Windows and Unix ($VAR does not get expanded Unix).
+        private static string EnvironmentVariableReference(string name)
+            => $"%{name}%";
+
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunTestProjectWithNoTests_ShouldReturnExitCodeZeroTests(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Zero tests ran")
@@ -44,14 +48,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithWithRetryFeature_ShouldSucceed(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestAppSimpleWithRetry", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestAppSimpleWithRetry", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("(try 2)")
@@ -71,14 +75,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunMultipleTestProjectsWithNoTests_ShouldReturnExitCodeZeroTests(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Zero tests ran")
@@ -97,14 +101,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")
@@ -122,24 +126,43 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void RunTestProjectWithTestsAndLaunchSettings_ShouldReturnExitCodeSuccess(
             [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration, bool runJson)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: $"{configuration}_{runJson}")
                 .WithSource();
+
+            var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+            var runJsonPath = Path.Join(testInstance.Path, "TestProjectWithLaunchSettings.run.json");
+
+            File.WriteAllText(launchSettingsPath, $$"""
+                {
+                    "profiles": {
+                        "ConsoleApp25": {
+                            "commandName": "Project",
+                            "commandLineArgs": "--from-launch-settings",
+                            "environmentVariables": {
+                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "{{EnvironmentVariableReference("TEST_ENV_VAR")}}"
+                            }
+                        }
+                    }
+                }
+                """);
 
             if (runJson)
             {
-                File.Move(Path.Join(testInstance.Path, "Properties", "launchSettings.json"), Path.Join(testInstance.Path, "TestProjectWithLaunchSettings.run.json"));
+                File.Move(launchSettingsPath, runJsonPath);
             }
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .WithEnvironmentVariable("TEST_ENV_VAR", "TestValue1")
+                                    .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Using launch settings from")
                     .And.Contain(runJson ? "TestProjectWithLaunchSettings.run.json..." : $"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
                     .And.Contain("Test run summary: Passed!")
+                    .And.Contain("MY_VARIABLE_FROM_LAUNCH_SETTINGS=TestValue1")
                     .And.Contain("skipped Test1")
                     .And.Contain("total: 2")
                     .And.Contain("succeeded: 1")
@@ -155,18 +178,49 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithTestsAndNoLaunchSettings_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: configuration)
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(
-                                        TestCommandDefinition.ConfigurationOption.Name, configuration,
-                                        MicrosoftTestingPlatformOptions.NoLaunchProfileOption.Name);
+                                        "-c", configuration,
+                                        "--no-launch-profile");
 
             result.StdOut.Should()
                 .Contain("FAILED to find argument from launchSettings.json")
                 .And.NotContain("Using launch settings from");
+        }
+
+        [Fact]
+        public void RunTestProjectWithTestsAndLaunchSettingsAndExecutableProfile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings")
+                .WithSource();
+
+            var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+
+            File.WriteAllText(launchSettingsPath, """
+                {
+                    "profiles": {
+                        "Execute": {
+                            "commandName": "Executable",
+                            "executablePath": "dotnet",
+                            "commandLineArgs": "--version"
+                        }
+                    }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug);
+
+            result.StdOut.Should()
+                .Contain("Using launch settings from")
+                .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
+                .And.Contain("FAILED to find argument from launchSettings.json");
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -174,14 +228,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithTestsAndNoLaunchSettingsArguments_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: configuration)
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(
-                                        TestCommandDefinition.ConfigurationOption.Name, configuration,
-                                        MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption.Name, "true");
+                                        "-c", configuration,
+                                        "--no-launch-profile-arguments", "true");
 
             result.StdOut.Should()
                 .Contain("Using launch settings from")
@@ -194,14 +248,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunMultipleTestProjectsWithFailingTests_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
@@ -219,19 +273,19 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute("--minimum-expected-tests 2",
-                                    TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("--minimum-expected-tests", "2",
+                                        "-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.ZeroTestsRan, true, configuration, "8"), result.StdOut);
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Failed, true, configuration, "2"), result.StdOut);
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", TestingConstants.Failed, true, configuration, "9"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
@@ -249,14 +303,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
             }
@@ -269,14 +323,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectsWithClassLibraryHavingIsTestProjectAndMTPProject_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("ClassLibraryWithIsTestProjectAndOtherTestProjects", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("ClassLibraryWithIsTestProjectAndOtherTestProjects", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
             }
@@ -289,14 +343,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunOnEmptyFolder_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("EmptyFolder", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("EmptyFolder", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
@@ -309,14 +363,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunOnMultipleProjectFoldersWithoutSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectsWithoutSolution", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultipleTestProjectsWithoutSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
@@ -329,14 +383,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunOnProjectWithSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                                    .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain(CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
             }
@@ -351,18 +405,18 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             [CombinatorialValues("TestProjectWithClassLibrary", "TestProjectWithClassLibraryDifferentTFMs")] string assetName,
             bool useFrameworkOption)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset(assetName, Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset(assetName, Guid.NewGuid().ToString())
                 .WithSource();
 
             string[] args = useFrameworkOption
-                ? new[] { TestCommandDefinition.ConfigurationOption.Name, configuration, TestCommandDefinition.FrameworkOption.Name, ToolsetInfo.CurrentTargetFramework }
-                : new[] { TestCommandDefinition.ConfigurationOption.Name, configuration };
+                ? new[] { "-c", configuration, "-f", ToolsetInfo.CurrentTargetFramework }
+                : new[] { "-c", configuration };
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(args);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")
@@ -382,17 +436,17 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunningWithGlobalPropertyShouldProperlyPropagate(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithConditionOnGlobalProperty", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithConditionOnGlobalProperty", Guid.NewGuid().ToString())
                 .WithSource();
             testInstance.WithTargetFramework($"{DotnetVersionHelper.GetPreviousDotnetVersion()}", "TestProject");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(
-                                        TestCommandDefinition.ConfigurationOption.Name, configuration,
-                                        CommonOptions.PropertiesOption.Name, "PROPERTY_TO_ENABLE_MTP=1");
+                                        "-c", configuration,
+                                        "--property", "PROPERTY_TO_ENABLE_MTP=1");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")
@@ -408,7 +462,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunMTPProjectWithUseAppHostFalse_ShouldWork()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectMTPWithUseAppHostFalse", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPWithUseAppHostFalse", Guid.NewGuid().ToString())
                 .WithSource();
 
             // Run test with UseAppHost=false
@@ -429,12 +483,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void RunMTPSolutionWithMinimumExpectedTests(string value, int expectedExitCode)
         {
             // The solution has two test projects. Each reports 5 tests. So, total 10 tests.
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionTestingMinimumExpectedTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionTestingMinimumExpectedTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption.Name, value);
+                .Execute("--minimum-expected-tests", value);
 
             result.ExitCode.Should().Be(expectedExitCode);
         }
@@ -442,7 +496,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunMTPProjectThatCrashesWithExitCodeZero_ShouldFail()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectMTPCrash", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPCrash", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -450,7 +504,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute();
 
             result.ExitCode.Should().NotBe(ExitCodes.Success);
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 /*
                 The following exception occurred when running the test module with RunCommand 'C:\Users\ygerges\Desktop\sdk\artifacts\tmp\Debug\testing\19cefafa-91c4---0D0799BD\TestProject1\bin\Debug\net10.0\TestProject1.exe' and RunArguments ' ':
@@ -479,7 +533,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunMTPProjectThatCrashesWithExitCodeNonZero_ShouldFail_WithSameExitCode()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectMTPCrashNonZero", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPCrashNonZero", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -488,7 +542,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             // The test asset exits with Environment.Exit(47);
             result.ExitCode.Should().Be(47);
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().NotContain("A test session start event was received without a corresponding test session end");
 
@@ -510,16 +564,16 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Release)]
         public void RunTestProjectWithEnvVariable(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectShowingEnvVariable", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectShowingEnvVariable", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(
-                                        TestCommandDefinition.ConfigurationOption.Name, configuration,
-                                        CommonOptions.EnvOption.Name, "DUMMY_TEST_ENV_VAR=ENV_VAR_CMD_LINE");
+                                        "-c", configuration,
+                                        "--environment", "DUMMY_TEST_ENV_VAR=ENV_VAR_CMD_LINE");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Using launch settings from")

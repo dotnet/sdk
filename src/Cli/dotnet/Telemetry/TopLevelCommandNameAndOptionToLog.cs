@@ -13,19 +13,19 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal class TopLevelCommandNameAndOptionToLog(
     HashSet<string> topLevelCommandName,
-    HashSet<Option> optionsToLog) : IParseResultLogRule
+    HashSet<string> optionsToLog) : IParseResultLogRule
 {
     private HashSet<string> _topLevelCommandName { get; } = topLevelCommandName;
-    private HashSet<Option> _optionsToLog { get; } = optionsToLog;
+    private HashSet<string> _optionsToLog { get; } = optionsToLog;
 
     public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
     {
         var topLevelCommandName = parseResult.RootSubCommandResult();
         var result = new List<ApplicationInsightsEntryFormat>();
-        foreach (var option in _optionsToLog)
+        foreach (var optionName in _optionsToLog)
         {
             if (_topLevelCommandName.Contains(topLevelCommandName)
-                && parseResult.GetResult(option) is OptionResult optionResult
+                && parseResult.GetResult(optionName) is OptionResult optionResult
                 && !parseResult.Errors.Any(error => error.SymbolResult == optionResult)
                 && optionResult.GetValueOrDefault<object>() is object optionValue
                 && optionValue is not null)
@@ -35,7 +35,7 @@ internal class TopLevelCommandNameAndOptionToLog(
                     new Dictionary<string, string>
                     {
                         { "verb", topLevelCommandName},
-                        { option.Name.RemovePrefix(), Stringify(optionValue) }
+                        { optionName.RemovePrefix(), Stringify(optionValue) }
                     },
                     measurements));
             }
