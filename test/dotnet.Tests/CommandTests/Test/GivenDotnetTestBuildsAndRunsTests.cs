@@ -599,7 +599,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(TestCommandDefinition.ConfigurationOption.Name, configuration);
+                .Execute("-c", configuration);
 
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
