@@ -215,7 +215,11 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             {
                 var versions = WorkloadSearchVersionsCommand.FindBestWorkloadSetsFromComponents(
                     _sdkFeatureBand,
+#if DOT_NET_BUILD_FROM_SOURCE
+                    _workloadInstaller,
+#else
                     _workloadInstaller is not NetSdkMsiInstallerClient ? _workloadInstaller : null,
+#endif
                     _sdkFeatureBand.IsPrerelease,
                     PackageDownloader,
                     _workloadSetVersionFromCommandLine,
