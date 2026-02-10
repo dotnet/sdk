@@ -18,6 +18,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new GetDependsOnNETStandard()
             {
                 BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 References = new[] { new MockTaskItem() { ItemSpec = thisAssemblyPath } }
             };
             task.Execute().Should().BeTrue();
@@ -33,6 +34,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new GetDependsOnNETStandard()
             {
                 BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 References = new[]
                 {
                     new MockTaskItem(
@@ -60,6 +62,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var task = new GetDependsOnNETStandard()
                 {
                     BuildEngine = new MockBuildEngine(),
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                     References = new[] { new MockTaskItem() { ItemSpec = testFile } }
                 };
                 // ensure that false is returned and no exception is thrown
@@ -90,6 +93,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var task = new GetDependsOnNETStandard()
                 {
                     BuildEngine = new MockBuildEngine(),
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                     References = new[] { new MockTaskItem() { ItemSpec = coreclrLocation } }
                 };
 
@@ -108,6 +112,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new GetDependsOnNETStandard()
             {
                 BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 References = new[] { new MockTaskItem() { ItemSpec = missingFile } }
             };
 
@@ -126,6 +131,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var task = new GetDependsOnNETStandard()
                 {
                     BuildEngine = new MockBuildEngine(),
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                     References = new[] { new MockTaskItem() { ItemSpec = lockedFile } }
                 };
 

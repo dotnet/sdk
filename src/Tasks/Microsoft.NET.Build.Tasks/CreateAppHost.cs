@@ -13,7 +13,8 @@ namespace Microsoft.NET.Build.Tasks
     /// Creates the runtime host to be used for an application.
     /// This embeds the application DLL path into the apphost and performs additional customizations as requested.
     /// </summary>
-    public class CreateAppHost : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class CreateAppHost : TaskBase, IMultiThreadableTask
     {
         /// <summary>
         /// The number of additional retries to attempt for creating the apphost.
@@ -54,12 +55,16 @@ namespace Microsoft.NET.Build.Tasks
 
         public string AppRelativeDotNet { get; set; } = null;
 
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         protected override void ExecuteCore()
         {
             try
             {
                 var isGUI = WindowsGraphicalUserInterface;
-                var resourcesAssembly = IntermediateAssembly;
+                AbsolutePath appHostSource = TaskEnvironment.GetAbsolutePath(AppHostSourcePath);
+                AbsolutePath appHostDest = TaskEnvironment.GetAbsolutePath(AppHostDestinationPath);
+                AbsolutePath resourcesAssembly = TaskEnvironment.GetAbsolutePath(IntermediateAssembly);
 
                 int attempts = 0;
 
@@ -91,8 +96,8 @@ namespace Microsoft.NET.Build.Tasks
                             };
                         }
 
-                        HostWriter.CreateAppHost(appHostSourceFilePath: AppHostSourcePath,
-                                                appHostDestinationFilePath: AppHostDestinationPath,
+                        HostWriter.CreateAppHost(appHostSourceFilePath: appHostSource,
+                                                appHostDestinationFilePath: appHostDest,
                                                 appBinaryFilePath: AppBinaryName,
                                                 windowsGraphicalUserInterface: isGUI,
                                                 assemblyToCopyResourcesFrom: resourcesAssembly,
