@@ -225,8 +225,8 @@ Paths searched: '{1}', '{2}'.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">MSBuild를 사용하여 프로젝트 가져오기 속성이 종료 코드에서 제대로 실행되지 않았습니다. {0}.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">MSBuild를 사용하여 프로젝트 가져오기 속성이 종료 코드에서 제대로 실행되지 않았습니다. {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">

@@ -225,8 +225,8 @@ Rutas de acceso buscadas: "{1}", "{2}".</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">La obtención de propiedades de proyectos con MSBuild no se ejecutó correctamente con el código de salida: {0}.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">La obtención de propiedades de proyectos con MSBuild no se ejecutó correctamente con el código de salida: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">

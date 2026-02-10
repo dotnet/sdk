@@ -225,8 +225,8 @@ Paths searched: '{1}', '{2}'.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">使用 MSBuild 获取项目属性未正确执行，退出代码为: {0}。</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">使用 MSBuild 获取项目属性未正确执行，退出代码为: {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">

@@ -225,8 +225,8 @@ Prohledané cesty: „{1}“, „{2}“.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">Získání vlastností projektů pomocí nástroje MSBuild nebylo správně spuštěno s ukončovacím kódem: {0}.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">Získání vlastností projektů pomocí nástroje MSBuild nebylo správně spuštěno s ukončovacím kódem: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">

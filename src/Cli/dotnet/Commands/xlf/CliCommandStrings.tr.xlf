@@ -225,8 +225,8 @@ Aranan yollar: '{1}', '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">MSBuild ile proje özelliklerini al işlemi {0} çıkış koduyla çıkarak düzgün şekilde çalışmadı.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">MSBuild ile proje özelliklerini al işlemi {0} çıkış koduyla çıkarak düzgün şekilde çalışmadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
