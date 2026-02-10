@@ -16,8 +16,11 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Generates the $(project).deps.json file.
     /// </summary>
-    public class GenerateDepsFile : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GenerateDepsFile : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         [Required]
         public string ProjectPath { get; set; }
 
@@ -304,7 +307,8 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            WriteDepsFile(DepsFilePath);
+            AbsolutePath absDepsFilePath = TaskEnvironment.GetAbsolutePath(DepsFilePath);
+            WriteDepsFile(absDepsFilePath);
         }
     }
 }

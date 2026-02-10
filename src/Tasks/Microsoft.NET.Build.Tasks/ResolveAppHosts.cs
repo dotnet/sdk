@@ -9,7 +9,8 @@ using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class ResolveAppHosts : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolveAppHosts : TaskBase, IMultiThreadableTask
     {
         public string TargetFrameworkIdentifier { get; set; }
 
@@ -56,6 +57,8 @@ namespace Microsoft.NET.Build.Tasks
         public string NetCoreTargetingPackRoot { get; set; }
 
         public bool EnableAppHostPackDownload { get; set; } = true;
+
+        public TaskEnvironment TaskEnvironment { get; set; }
 
         [Output]
         public ITaskItem[] PackagesToDownload { get; set; }
@@ -245,7 +248,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             string bestAppHostRuntimeIdentifier = NuGetUtils.GetBestMatchingRidWithExclusion(
-                new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath),
+                new RuntimeGraphCache(this).GetRuntimeGraph(TaskEnvironment.GetAbsolutePath(RuntimeGraphPath)),
                 runtimeIdentifier,
                 runtimeIdentifiersToExclude.Split(';'),
                 appHostRuntimeIdentifiers.Split(';'),
@@ -290,7 +293,8 @@ namespace Microsoft.NET.Build.Tasks
                 string appHostPackPath = null;
                 if (!string.IsNullOrEmpty(TargetingPackRoot))
                 {
-                    appHostPackPath = Path.Combine(TargetingPackRoot, hostPackName, appHostPackVersion);
+                    AbsolutePath absoluteTargetingPackRoot = TaskEnvironment.GetAbsolutePath(TargetingPackRoot);
+                    appHostPackPath = Path.Combine(absoluteTargetingPackRoot, hostPackName, appHostPackVersion);
                 }
                 if (appHostPackPath != null && Directory.Exists(appHostPackPath))
                 {
