@@ -64,7 +64,7 @@ internal static class EnvCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("env", "Generates a shell script that configures the environment for .NET");
+        Command command = new("print-env-script", "Generates a shell script that configures the environment for .NET");
 
         command.Options.Add(ShellOption);
         command.Options.Add(DotnetInstallPathOption);

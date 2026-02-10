@@ -98,7 +98,7 @@ public class ParserTests
     public void Parser_ShouldParseEnvCommandWithValidShell(string shell)
     {
         // Arrange
-        var args = new[] { "env", "--shell", shell };
+        var args = new[] { "print-env-script", "--shell", shell };
 
         // Act
         var parseResult = Parser.Parse(args);
@@ -112,7 +112,7 @@ public class ParserTests
     public void Parser_ShouldParseEnvCommandWithCustomPath()
     {
         // Arrange
-        var args = new[] { "env", "--shell", "bash", "--dotnet-install-path", "/custom/path" };
+        var args = new[] { "print-env-script", "--shell", "bash", "--dotnet-install-path", "/custom/path" };
 
         // Act
         var parseResult = Parser.Parse(args);
@@ -139,7 +139,7 @@ public class ParserTests
     public void Parser_ShouldParseEnvCommandWithShortOptions()
     {
         // Arrange
-        var args = new[] { "env", "-s", "bash", "-d", "/custom/path" };
+        var args = new[] { "print-env-script", "-s", "bash", "-d", "/custom/path" };
 
         // Act
         var parseResult = Parser.Parse(args);
@@ -153,7 +153,7 @@ public class ParserTests
     public void Parser_ShouldParseEnvCommandHelp()
     {
         // Arrange
-        var args = new[] { "env", "--help" };
+        var args = new[] { "print-env-script", "--help" };
 
         // Act
         var parseResult = Parser.Parse(args);

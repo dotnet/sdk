@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the design for setting up the .NET environment via initialization scripts using the `dotnetup env` command. This is the first step toward enabling automatic user profile configuration for Unix as described in [issue #51582](https://github.com/dotnet/sdk/issues/51582). Note that this also supports PowerShell and thus Windows, but on Windows the main method of configuring the environment will be to set environment variables which are stored in the registry instead of written by initialization scripts.
+This document describes the design for setting up the .NET environment via initialization scripts using the `dotnetup print-env-script` command. This is the first step toward enabling automatic user profile configuration for Unix as described in [issue #51582](https://github.com/dotnet/sdk/issues/51582). Note that this also supports PowerShell and thus Windows, but on Windows the main method of configuring the environment will be to set environment variables which are stored in the registry instead of written by initialization scripts.
 
 ## Background
 
@@ -20,12 +20,12 @@ On Unix systems, this requires modifying shell configuration files (like `.bashr
 4. **Single-file execution**: Generate scripts that can be sourced or saved for later use
 5. **Discoverable**: Make it easy for users to understand how to configure their environment
 
-## The `dotnetup env` Command
+## The `dotnetup print-env-script` Command
 
 ### Command Structure
 
 ```bash
-dotnetup env [--shell <shell>] [--dotnet-install-path <path>]
+dotnetup print-env-script [--shell <shell>] [--dotnet-install-path <path>]
 ```
 
 ### Options
@@ -42,29 +42,29 @@ dotnetup env [--shell <shell>] [--dotnet-install-path <path>]
 
 #### Auto-detect current shell
 ```bash
-dotnetup env
+dotnetup print-env-script
 ```
 
 #### Generate and source in one command
 ```bash
-source <(dotnetup env)
+source <(dotnetup print-env-script)
 ```
 
 #### Explicitly specify shell
 ```bash
-dotnetup env --shell zsh
+dotnetup print-env-script --shell zsh
 ```
 
 #### Save script for later use
 ```bash
-dotnetup env --shell bash > ~/.dotnet-env.sh
+dotnetup print-env-script --shell bash > ~/.dotnet-env.sh
 # Later, in .bashrc or manually:
 source ~/.dotnet-env.sh
 ```
 
 #### Use custom installation path
 ```bash
-dotnetup env --dotnet-install-path /opt/dotnet
+dotnetup print-env-script --dotnet-install-path /opt/dotnet
 ```
 
 ## Generated Script Format
