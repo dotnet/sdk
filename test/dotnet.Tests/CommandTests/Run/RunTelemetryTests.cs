@@ -170,7 +170,7 @@ public class RunTelemetryTests : SdkTest
             events.Should().HaveCount(1);
             var eventData = events[0];
             eventData.eventName.Should().Be("run");
-            eventData.properties.Should().NotBeNull();
+                        eventData.properties.Should().NotBeNull();
             eventData.measurements.Should().NotBeNull();
 
             var props = eventData.properties!;
@@ -221,7 +221,7 @@ public class RunTelemetryTests : SdkTest
             events.Should().HaveCount(1);
             var eventData = events[0];
             eventData.eventName.Should().Be("run");
-            eventData.properties.Should().NotBeNull();
+                        eventData.properties.Should().NotBeNull();
             eventData.measurements.Should().NotBeNull();
 
             var props = eventData.properties!;

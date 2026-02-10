@@ -125,7 +125,7 @@ namespace Microsoft.DotNet.Tests
             // not stdout, to avoid interfering with completion commands and other
             // tools that parse stdout. See: https://github.com/dotnet/sdk/issues/50444
             var expectedVersion = GetDotnetVersion();
-            
+
             // StdErr should contain first-run messages
             _fixture.FirstDotnetVerbUseCommandResult.StdErr
                 .Should()
@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.Tests
                     DotnetFirstTimeUseConfigurer.ParseDotNetVersion(expectedVersion),
                     expectedVersion))
                 .And.ContainVisuallySameFragment(Configurer.LocalizableStrings.FirstTimeMessageMoreInformation);
-                
+
             // StdOut should NOT contain first-run messages (they should only be in stderr)
             _fixture.FirstDotnetVerbUseCommandResult.StdOut
                 .Should()

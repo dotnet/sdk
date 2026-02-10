@@ -386,7 +386,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
             foreach (var nugetRoot in nugetRoots)
             {
-                if (nugetRoot is not null &&  absoluteNuGetPath.StartsWith(nugetRoot + Path.DirectorySeparatorChar))
+                if (nugetRoot is not null && absoluteNuGetPath.StartsWith(nugetRoot + Path.DirectorySeparatorChar))
                 {
                     return absoluteNuGetPath.Substring(nugetRoot.Length + 1)
                                 .Replace(Path.DirectorySeparatorChar, '/');

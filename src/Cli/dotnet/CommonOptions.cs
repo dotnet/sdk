@@ -301,6 +301,7 @@ internal static class CommonOptions
         AllowMultipleArgumentsPerToken = false
     };
 
+
     private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
     {
         var result = new Dictionary<string, string>(

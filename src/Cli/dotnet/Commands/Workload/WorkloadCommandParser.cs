@@ -17,7 +17,9 @@ using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+
 using Command = System.CommandLine.Command;
+using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
