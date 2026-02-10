@@ -55,7 +55,7 @@ internal sealed class BrowserRefreshServer(
                 builder.UseKestrel();
                 if (supportsTls)
                 {
-                    builder.UseUrls($"https://{hostName}:{port}", $"http://{hostName}:{port}");
+                    builder.UseUrls($"https://{hostName}:{port}");
                 }
                 else
                 {
