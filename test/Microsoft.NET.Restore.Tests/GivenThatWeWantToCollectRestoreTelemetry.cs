@@ -42,7 +42,7 @@ namespace Microsoft.NET.Restore.Tests
             result.StdOut.Should().MatchRegex("\"RestoreType\":\"(explicit|implicit)\"");
             
             // Verify that restore scope property is present
-            result.StdOut.Should().MatchRegex("\"RestoreScope\":\"(workspace-wide|single-project)\"");
+            result.StdOut.Should().MatchRegex("\"RestoreScope\":\"(workspace|single-project)\"");
             
             // Verify that restore count properties are present
             result.StdOut.Should().MatchRegex("\"ProjectsRestored\":\"\\d+\"");
@@ -80,7 +80,7 @@ namespace Microsoft.NET.Restore.Tests
             result.StdOut.Should().Contain("\"RestoreType\":\"implicit\"");
             
             // Verify that restore scope property is present
-            result.StdOut.Should().MatchRegex("\"RestoreScope\":\"(workspace-wide|single-project)\"");
+            result.StdOut.Should().MatchRegex("\"RestoreScope\":\"(workspace|single-project)\"");
             
             // Verify that restore count properties are present
             result.StdOut.Should().MatchRegex("\"ProjectsRestored\":\"\\d+\"");
@@ -118,7 +118,7 @@ namespace Microsoft.NET.Restore.Tests
             result.StdOut.Should().Contain("\"EventName\":\"RestoreTelemetry\"");
             
             // Verify that restore scope property is present
-            result.StdOut.Should().MatchRegex("\"RestoreScope\":\"(workspace-wide|single-project)\"");
+            result.StdOut.Should().MatchRegex("\"RestoreScope\":\"(workspace|single-project)\"");
             
             // For a second restore without changes, projects should be up-to-date
             // The exact count depends on whether restore was needed, but we should see the property

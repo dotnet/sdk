@@ -24,9 +24,10 @@
       <_RestoreType Condition="'$(MSBuildRestoreSessionId)' != ''">implicit</_RestoreType>
       <_RestoreType Condition="'$(MSBuildRestoreSessionId)' == ''">explicit</_RestoreType>
       
-      <!-- Determine restore scope: workspace-wide (solution/traversal) vs single-project -->
+      <!-- Determine restore scope: workspace (solution/traversal) vs single-project -->
       <!-- _RestoreSolutionFileUsed is set by NuGet.targets when restoring a solution (.metaproj) -->
-      <_RestoreScope Condition="'$(_RestoreSolutionFileUsed)' == 'true'">workspace-wide</_RestoreScope>
+      <!-- IsTraversal is set when using Microsoft.Build.Traversal SDK or similar traversal projects -->
+      <_RestoreScope Condition="'$(_RestoreSolutionFileUsed)' == 'true' OR '$(IsTraversal)' == 'true'">workspace</_RestoreScope>
       <_RestoreScope Condition="'$(_RestoreScope)' == ''">single-project</_RestoreScope>
     </PropertyGroup>
 
