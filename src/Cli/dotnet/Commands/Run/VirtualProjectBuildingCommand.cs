@@ -1179,8 +1179,8 @@ internal sealed class RunFileBuildCacheEntry
     public ImmutableArray<string> Directives { get; set; } = [];
 
     /// <summary>
-    /// Full paths of additional files that participate in the build
-    /// (e.g., default items like <c>.resx</c> and files from <c>#:include</c> directives).
+    /// Full paths of non-entry-point files that participate in the build
+    /// (e.g., default items like <c>.resx</c> and C# source files from <c>#:include</c> directives).
     /// </summary>
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
     public HashSet<string> AdditionalSources { get; }

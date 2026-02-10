@@ -96,6 +96,7 @@ The file-based build and run kicks in only when:
 
 Otherwise, project-based `dotnet run` fallback is used and you might get an error like "Couldn't find a project to run."
 You can explicitly use the `--file` option to avoid the fallback behavior.
+However, it is discouraged to put file-based apps in the same directory as a `.csproj` file (such file-based apps might not be properly recognized by tooling).
 
 File-based programs are processed by `dotnet run` equivalently to project-based programs unless specified otherwise in this document.
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
@@ -137,7 +138,7 @@ This is achieved by having property `EnableDefaultCompileItems=false` and entry-
 
 Thanks to this, it is possible to have multiple file-based apps in a single directory.
 
-Default items like `.resx` are included in the build only if a non-default `#:sdk` is used (to improve performance for simple file-based apps).
+Default items like `.resx` are included in the build only if an `#:sdk` other than `Microsoft.NET.Sdk` is used (to improve performance for simple file-based apps).
 Again, this is achieved by setting `EnableDefaultNoneItems=false` and `EnableDefaultEmbeddedResourceItems=false` in the virtual project.
 
 To customize this default behavior, you can use the `#:include`/`#:exclude` [directives](#directives-for-project-metadata)
