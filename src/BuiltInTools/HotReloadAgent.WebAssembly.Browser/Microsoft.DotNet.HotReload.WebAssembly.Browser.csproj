@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\WasmSdk\Sdk\TargetFrameworks.props" />
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>$(WasmAgentTargetFrameworkV10)</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <LangVersion>preview</LangVersion>
