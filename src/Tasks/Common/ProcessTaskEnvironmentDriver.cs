@@ -108,7 +108,7 @@ namespace Microsoft.Build.Framework
             // Populate environment from the scoped environment dictionary
             foreach (var kvp in _environmentVariables)
             {
-                startInfo.Environment[kvp.Key] = kvp.Value;
+                startInfo.EnvironmentVariables[kvp.Key] = kvp.Value;
             }
 
             return startInfo;

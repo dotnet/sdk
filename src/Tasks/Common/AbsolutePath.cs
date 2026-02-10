@@ -17,7 +17,7 @@ namespace Microsoft.Build.Framework
     /// <summary>
     /// Represents an absolute file system path.
     /// </summary>
-    internal readonly struct AbsolutePath : IEquatable<AbsolutePath>
+    public readonly struct AbsolutePath : IEquatable<AbsolutePath>
     {
         private static readonly bool s_isFileSystemCaseSensitive = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                                                                    && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
@@ -87,25 +87,32 @@ namespace Microsoft.Build.Framework
                 return false;
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // On Windows, reject drive-relative paths like "C:foo".
-                if (path.Length >= 2 && path[1] == ':')
-                {
-                    if (path.Length < 3)
-                    {
-                        return false;
-                    }
-
-                    char separator = path[2];
-                    if (separator != Path.DirectorySeparatorChar && separator != Path.AltDirectorySeparatorChar)
-                    {
-                        return false;
-                    }
-                }
+                // On non-Windows, a rooted path is fully qualified.
+                return true;
             }
 
-            return true;
+            // Windows: drive-rooted paths like "C:\foo" are fully qualified.
+            if (path.Length >= 3 && path[1] == ':')
+            {
+                char separator = path[2];
+                return separator == Path.DirectorySeparatorChar || separator == Path.AltDirectorySeparatorChar;
+            }
+
+            // UNC/extended paths like "\\server\share" or "\\?\C:\foo" are fully qualified.
+            if (path.Length >= 2 && IsDirectorySeparator(path[0]) && IsDirectorySeparator(path[1]))
+            {
+                return true;
+            }
+
+            // Rooted with single leading separator (e.g., "\foo") is drive-relative on Windows.
+            return false;
+        }
+
+        private static bool IsDirectorySeparator(char c)
+        {
+            return c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar;
         }
 
         /// <summary>

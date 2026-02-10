@@ -17,7 +17,7 @@ namespace Microsoft.Build.Framework
     /// Provides an <see cref="IMultiThreadableTask"/> with access to a run-time execution environment including
     /// environment variables, file paths, and process management capabilities.
     /// </summary>
-    internal sealed class TaskEnvironment
+    public sealed class TaskEnvironment
     {
         private readonly ITaskEnvironmentDriver _driver;
 
