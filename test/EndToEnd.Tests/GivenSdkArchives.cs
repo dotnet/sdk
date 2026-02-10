@@ -12,7 +12,7 @@ public class GivenSdkArchives(ITestOutputHelper log) : SdkTest(log)
     public void ItHasDeduplicatedAssemblies()
     {
         // Find and extract archive
-        string archivePath = TestContext.FindSdkAcquisitionArtifact("dotnet-sdk-*.tar.gz");
+        string archivePath = SdkTestContext.FindSdkAcquisitionArtifact("dotnet-sdk-*.tar.gz");
         Log.WriteLine($"Found SDK archive: {Path.GetFileName(archivePath)}");
         string extractedPath = ExtractArchive(archivePath);
 

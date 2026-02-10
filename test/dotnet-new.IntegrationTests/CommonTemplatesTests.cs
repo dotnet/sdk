@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public async Task AllCommonItemsCreate(string expectedTemplateName, string templateShortName, string[]? args)
         {
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
-            TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
+            SdkTestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
 
             string itemName = expectedTemplateName.Replace(' ', '-').Replace('.', '-');
 
@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 VerifyCommandOutput = true,
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
                 SettingsDirectory = _fixture.HomeDirectory,
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
+                DotnetExecutablePath = SdkTestContext.Current.ToolsetUnderTest?.DotNetHostPath,
                 DoNotPrependTemplateNameToScenarioName = true,
                 UniqueFor = expectedTemplateName.Equals("NuGet Config") ? UniqueForOption.OsPlatform : null,
             }
@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string finalProjectName = Path.Combine(projectDir, $"{projName}.{extension}");
 
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
-            TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
+            SdkTestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
             {
@@ -222,7 +222,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 DoNotAppendTemplateArgsToScenarioName = true,
                 ScenarioName = language.Replace('#', 's').ToLower(),
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
+                DotnetExecutablePath = SdkTestContext.Current.ToolsetUnderTest?.DotNetHostPath,
             }
             .WithCustomEnvironment(environmentUnderTest)
             .WithCustomScrubbers(
@@ -404,7 +404,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
             environmentUnderTest["CheckEolTargetFramework"] = false.ToString();
-            TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
+            SdkTestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
             {
@@ -421,7 +421,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     + '#' + (language == null ? "cs" : language.Replace('#', 's').ToLower())
                     + (langVersion == null ? "#NoLangVer" : (langVersionUnsupported ? "#UnsuportedLangVer" : null)),
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
+                DotnetExecutablePath = SdkTestContext.Current.ToolsetUnderTest?.DotNetHostPath,
             }
             .WithCustomEnvironment(environmentUnderTest)
             .WithCustomScrubbers(

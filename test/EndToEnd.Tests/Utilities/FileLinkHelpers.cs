@@ -53,7 +53,7 @@ internal static class FileLinkHelpers
             return;
         }
 
-        if (!TestContext.FindOptionalSdkAcquisitionArtifact(filePattern, excludeSubstrings, out string? installerPath))
+        if (!SdkTestContext.FindOptionalSdkAcquisitionArtifact(filePattern, excludeSubstrings, out string? installerPath))
         {
             log.WriteLine($"SKIPPED: No artifact matching '{filePattern}' found in shipping packages directory");
             return;

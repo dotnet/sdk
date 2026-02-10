@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
         [Fact]
         public async Task GetInstalledVersionsAsync_ShouldContainCurrentVersion()
         {
-            string? dotnetRootUnderTest = TestContext.Current.ToolsetUnderTest?.DotNetRoot;
+            string? dotnetRootUnderTest = SdkTestContext.Current.ToolsetUnderTest?.DotNetRoot;
             string? pathOrig = Environment.GetEnvironmentVariable("PATH");
             Environment.SetEnvironmentVariable("PATH", dotnetRootUnderTest + Path.PathSeparator + pathOrig);
 

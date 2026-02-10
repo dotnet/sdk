@@ -7,8 +7,6 @@ namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.CommandLine.Help;
 using System.CommandLine.StaticCompletions;
-using FluentAssertions;
-using Xunit;
 
 public class HelpExtensionsTests
 {

@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.TestFramework
 {
-    public class TestContext
+    public class SdkTestContext
     {
         //  Generally the folder the test DLL is in
         private string? _testExecutionDirectory;
@@ -135,9 +135,9 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        private static TestContext? _current;
+        private static SdkTestContext? _current;
 
-        public static TestContext Current
+        public static SdkTestContext Current
         {
             get
             {
@@ -147,7 +147,7 @@ namespace Microsoft.NET.TestFramework
                     //  (ie when using test explorer or another runner)
                     Initialize(TestCommandLine.Parse(Array.Empty<string>()));
                 }
-                return _current ?? throw new InvalidOperationException("TestContext.Current should never be null.");
+                return _current ?? throw new InvalidOperationException("SdkTestContext.Current should never be null.");
             }
             set
             {
@@ -159,7 +159,7 @@ namespace Microsoft.NET.TestFramework
 
         public static string GetRuntimeGraphFilePath()
         {
-            string dotnetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+            string dotnetRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
 
             DirectoryInfo sdksDir = new(Path.Combine(dotnetRoot, "sdk"));
 
@@ -201,7 +201,7 @@ namespace Microsoft.NET.TestFramework
             //  one running the tests, it won't interfere
             Environment.SetEnvironmentVariable("MSBuildSdksPath", null);
 
-            TestContext testContext = new();
+            SdkTestContext testContext = new();
 
             bool runAsTool = false;
             if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "TestAssets")))
@@ -338,8 +338,8 @@ namespace Microsoft.NET.TestFramework
 
             testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration, commandLine);
 
-            //  Important to set this before below code which ends up calling through TestContext.Current, which would
-            //  result in infinite recursion / stack overflow if TestContext.Current wasn't set
+            //  Important to set this before below code which ends up calling through SdkTestContext.Current, which would
+            //  result in infinite recursion / stack overflow if SdkTestContext.Current wasn't set
             Current = testContext;
 
             //  Set up test hooks for in-process tests

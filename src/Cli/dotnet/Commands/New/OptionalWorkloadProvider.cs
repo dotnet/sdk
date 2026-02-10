@@ -33,7 +33,9 @@ internal class OptionalWorkloadProvider : ITemplatePackageProvider
     {
         var list = new List<TemplatePackage>();
         var optionalWorkloadLocator = new TemplateLocator.TemplateLocator();
+#pragma warning disable IL3000 // Avoid accessing Assembly file path when publishing as a single file
         var sdkDirectory = Path.GetDirectoryName(typeof(DotnetFiles).Assembly.Location);
+#pragma warning restore IL3000 // Avoid accessing Assembly file path when publishing as a single file
         var sdkVersion = Path.GetFileName(sdkDirectory);
         var dotnetRootPath = Path.GetDirectoryName(Path.GetDirectoryName(sdkDirectory));
         string userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
