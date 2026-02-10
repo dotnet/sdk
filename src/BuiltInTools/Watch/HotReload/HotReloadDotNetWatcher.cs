@@ -135,13 +135,14 @@ namespace Microsoft.DotNet.Watch
                             mainProjectOptions,
                             mainProcessTerminationSource,
                             onOutput: null,
-                            onExit: (_, _) =>
-                            {
-                                // Process exited: cancel the iteration, but wait for a file change before starting a new one
-                                waitForFileChangeBeforeRestarting = true;
-                                iterationCancellationSource.Cancel();
-                                return ValueTask.CompletedTask;
-                            },
+                            //onExit: (_, _) =>
+                            //{
+                            //    // Process exited: cancel the iteration, but wait for a file change before starting a new one
+                            //    waitForFileChangeBeforeRestarting = true;
+                            //    iterationCancellationSource.Cancel();
+                            //    return ValueTask.CompletedTask;
+                            //},
+                            onExit: null,
                             restartOperation: new RestartOperation(_ => default), // the process will automatically restart
                             iterationCancellationToken);
 
@@ -205,7 +206,26 @@ namespace Microsoft.DotNet.Watch
 
                             // Use timeout to batch file changes. If the process doesn't exit within the given timespan we'll check
                             // for accumulated file changes. If there are any we attempt Hot Reload. Otherwise we come back here to wait again.
-                            await Task.Delay(TimeSpan.FromMilliseconds(extendTimeout ? 200 : 50), iterationCancellationToken);
+                            if (mainRunningProject != null)
+                            {
+                                try
+                                {
+                                    _ = await mainRunningProject.RunningProcess.WaitAsync(TimeSpan.FromMilliseconds(extendTimeout ? 200 : 50), iterationCancellationToken);
+
+                                    // Process exited: cancel the iteration, but wait for a file change before starting a new one
+                                    waitForFileChangeBeforeRestarting = true;
+                                    iterationCancellationSource.Cancel();
+                                    break;
+                                }
+                                catch (TimeoutException)
+                                {
+                                    // check for changed files
+                                }
+                            }
+                            else
+                            {
+                                await Task.Delay(TimeSpan.FromMilliseconds(extendTimeout ? 200 : 50), iterationCancellationToken);
+                            }
                         }
                         catch (OperationCanceledException)
                         {
