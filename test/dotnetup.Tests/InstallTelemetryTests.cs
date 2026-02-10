@@ -80,7 +80,7 @@ public class ClassifyInstallPathTests
     }
 
     [Fact]
-    public void ClassifyInstallPath_ProgramFiles_ReturnsSystemProgramfiles()
+    public void ClassifyInstallPath_ProgramFilesDotnet_ReturnsAdmin()
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -94,6 +94,28 @@ public class ClassifyInstallPathTests
         }
 
         var path = Path.Combine(programFiles, "dotnet");
+
+        var result = InstallExecutor.ClassifyInstallPath(path);
+
+        Assert.Equal("admin", result);
+    }
+
+    [Fact]
+    public void ClassifyInstallPath_ProgramFilesNonDotnet_ReturnsSystemProgramfiles()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        if (string.IsNullOrEmpty(programFiles))
+        {
+            return;
+        }
+
+        // A path under Program Files that is NOT dotnet — still system_programfiles
+        var path = Path.Combine(programFiles, "SomeOtherTool");
 
         var result = InstallExecutor.ClassifyInstallPath(path);
 
@@ -179,11 +201,22 @@ public class ClassifyInstallPathTests
     }
 
     [Fact]
-    public void ClassifyInstallPath_UsrPath_ReturnsSystemPath()
+    public void ClassifyInstallPath_UsrShareDotnet_ReturnsAdmin()
     {
         if (OperatingSystem.IsWindows()) return;
 
         var result = InstallExecutor.ClassifyInstallPath("/usr/share/dotnet");
+
+        Assert.Equal("admin", result);
+    }
+
+    [Fact]
+    public void ClassifyInstallPath_UsrLocalBin_ReturnsSystemPath()
+    {
+        if (OperatingSystem.IsWindows()) return;
+
+        // /usr/local/bin is a system path but NOT an admin dotnet location
+        var result = InstallExecutor.ClassifyInstallPath("/usr/local/bin/something");
 
         Assert.Equal("system_path", result);
     }
@@ -371,5 +404,156 @@ public class ApplyErrorTagsTests
         };
         ActivitySource.AddActivityListener(listener);
         return listener;
+    }
+}
+
+public class IsAdminInstallPathTests
+{
+    [Fact]
+    public void IsAdminInstallPath_ProgramFilesDotnet_ReturnsTrue()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        if (string.IsNullOrEmpty(programFiles)) return;
+
+        Assert.True(InstallExecutor.IsAdminInstallPath(Path.Combine(programFiles, "dotnet")));
+    }
+
+    [Fact]
+    public void IsAdminInstallPath_ProgramFilesX86Dotnet_ReturnsTrue()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        if (string.IsNullOrEmpty(programFilesX86)) return;
+
+        Assert.True(InstallExecutor.IsAdminInstallPath(Path.Combine(programFilesX86, "dotnet")));
+    }
+
+    [Fact]
+    public void IsAdminInstallPath_ProgramFilesSubfolder_ReturnsTrue()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        if (string.IsNullOrEmpty(programFiles)) return;
+
+        // Subfolders of Program Files\dotnet should also be blocked
+        Assert.True(InstallExecutor.IsAdminInstallPath(Path.Combine(programFiles, "dotnet", "sdk")));
+    }
+
+    [Fact]
+    public void IsAdminInstallPath_UserPath_ReturnsFalse()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        if (string.IsNullOrEmpty(localAppData)) return;
+
+        Assert.False(InstallExecutor.IsAdminInstallPath(Path.Combine(localAppData, "dotnet")));
+    }
+
+    [Fact]
+    public void IsAdminInstallPath_CustomPath_ReturnsFalse()
+    {
+        var path = OperatingSystem.IsWindows()
+            ? @"D:\custom\dotnet"
+            : "/tmp/custom/dotnet";
+
+        Assert.False(InstallExecutor.IsAdminInstallPath(path));
+    }
+
+    [Fact]
+    public void IsAdminInstallPath_UsrShareDotnet_ReturnsTrue()
+    {
+        if (OperatingSystem.IsWindows()) return;
+
+        Assert.True(InstallExecutor.IsAdminInstallPath("/usr/share/dotnet"));
+    }
+
+    [Fact]
+    public void IsAdminInstallPath_UsrLibDotnet_ReturnsTrue()
+    {
+        if (OperatingSystem.IsWindows()) return;
+
+        Assert.True(InstallExecutor.IsAdminInstallPath("/usr/lib/dotnet"));
+    }
+
+    [Fact]
+    public void IsAdminInstallPath_UsrLocalShareDotnet_ReturnsTrue()
+    {
+        if (OperatingSystem.IsWindows()) return;
+
+        Assert.True(InstallExecutor.IsAdminInstallPath("/usr/local/share/dotnet"));
+    }
+
+    [Fact]
+    public void IsAdminInstallPath_OptPath_ReturnsFalse()
+    {
+        if (OperatingSystem.IsWindows()) return;
+
+        // /opt/dotnet is a system path but not an admin dotnet location
+        Assert.False(InstallExecutor.IsAdminInstallPath("/opt/dotnet"));
+    }
+
+    [Fact]
+    public void IsAdminInstallPath_HomePath_ReturnsFalse()
+    {
+        if (OperatingSystem.IsWindows()) return;
+
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (string.IsNullOrEmpty(home)) return;
+
+        Assert.False(InstallExecutor.IsAdminInstallPath(Path.Combine(home, ".dotnet")));
+    }
+
+    [Fact]
+    public void IsAdminInstallPath_ProgramFilesNonDotnet_ReturnsFalse()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        if (string.IsNullOrEmpty(programFiles)) return;
+
+        // Program Files\SomeOtherTool is NOT an admin dotnet path
+        Assert.False(InstallExecutor.IsAdminInstallPath(Path.Combine(programFiles, "SomeOtherTool")));
+    }
+}
+
+public class GetVersionTests
+{
+    [Fact]
+    public void GetVersion_ReturnsNonEmptyVersion()
+    {
+        var version = TelemetryCommonProperties.GetVersion();
+
+        Assert.False(string.IsNullOrEmpty(version));
+    }
+
+    [Fact]
+    public void GetVersion_DevBuild_ContainsAtSymbol()
+    {
+        // In test builds (compiled as Debug), GetVersion should include @commitsha
+        // since DetectDevBuild returns true for DEBUG builds
+        var version = TelemetryCommonProperties.GetVersion();
+
+        // The version should contain @ if the commit SHA is known
+        if (BuildInfo.CommitSha != "unknown")
+        {
+            Assert.Contains("@", version);
+            // The part after @ should be the commit SHA
+            var parts = version.Split('@');
+            Assert.Equal(2, parts.Length);
+            Assert.Equal(BuildInfo.CommitSha, parts[1]);
+        }
+    }
+
+    [Fact]
+    public void GetVersion_VersionPartMatchesBuildInfoVersion()
+    {
+        var version = TelemetryCommonProperties.GetVersion();
+
+        // The version part (before @) should match BuildInfo.Version
+        var versionPart = version.Split('@')[0];
+        Assert.Equal(BuildInfo.Version, versionPart);
     }
 }

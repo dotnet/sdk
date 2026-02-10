@@ -153,6 +153,46 @@ internal class InstallExecutor
     }
 
     /// <summary>
+    /// Determines whether the given path is an admin/system-managed .NET install location.
+    /// These locations are managed by system package managers or OS installers and should not
+    /// be used by dotnetup for user-level installations.
+    /// </summary>
+    public static bool IsAdminInstallPath(string path)
+    {
+        var fullPath = Path.GetFullPath(path);
+
+        if (OperatingSystem.IsWindows())
+        {
+            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
+            // Check for C:\Program Files\dotnet or C:\Program Files (x86)\dotnet
+            if (!string.IsNullOrEmpty(programFiles) &&
+                fullPath.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            if (!string.IsNullOrEmpty(programFilesX86) &&
+                fullPath.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        else
+        {
+            // Standard admin/package-manager locations on Linux and macOS
+            if (fullPath.StartsWith("/usr/share/dotnet", StringComparison.Ordinal) ||
+                fullPath.StartsWith("/usr/lib/dotnet", StringComparison.Ordinal) ||
+                fullPath.StartsWith("/usr/local/share/dotnet", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Classifies the install path for telemetry (no PII - just the type of location).
     /// When pathSource is provided, global_json paths are distinguished from other path types.
     /// </summary>
@@ -161,6 +201,12 @@ internal class InstallExecutor
     public static string ClassifyInstallPath(string path, string? pathSource = null)
     {
         var fullPath = Path.GetFullPath(path);
+
+        // Check for admin/system .NET paths first — these are the most important to distinguish
+        if (IsAdminInstallPath(path))
+        {
+            return "admin";
+        }
 
         if (OperatingSystem.IsWindows())
         {
