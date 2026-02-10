@@ -468,6 +468,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <PropertyGroup>
     <_ComputeFilesToPublishDependsOn>
+      $(_ComputeFilesToPublishDependsOn);
       PrepareForPublish;
       ComputeResolvedFilesToPublishList;
       ILLink;
