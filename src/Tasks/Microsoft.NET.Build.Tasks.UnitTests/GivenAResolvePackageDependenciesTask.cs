@@ -835,14 +835,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         private static ResolvePackageDependencies GetExecutedTask(LockFile lockFile, string target)
         {
             var resolver = new MockPackageResolver(_packageRoot);
+            string fullProjectPath = Path.GetFullPath(_projectPath);
 
             var task = new ResolvePackageDependencies(lockFile, resolver)
             {
                 ProjectAssetsFile = lockFile.Path,
-                ProjectPath = _projectPath,
+                ProjectPath = fullProjectPath,
                 ProjectLanguage = null,
                 TargetFramework = target
             };
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(
+                Path.GetDirectoryName(fullProjectPath));
 
             task.Execute().Should().BeTrue();
 
