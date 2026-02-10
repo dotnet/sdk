@@ -14,14 +14,14 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-environment-variables" "7" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-environment-variables" "7" "2025-10-30" "" ".NET Documentation"
 .hy
 .SH NAME
 .PP
 dotnet-environment-variables - .NET environment variables
 .SH DESCRIPTION
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .PP
 In this article, you\[cq]ll learn about the environment variables used by .NET.
 Some environment variables are used by the .NET runtime, while others are only used by the .NET SDK and .NET CLI.
@@ -178,40 +178,6 @@ To opt-out, set the value to either \f[V]false\f[R] or \f[V]0\f[R].
 .PP
 Starting in .NET 5, this setting to use <xref:System.Net.Http.HttpClientHandler> is no longer available.
 .RE
-.SS \f[V]DOTNET_Jit*\f[R] and \f[V]DOTNET_GC*\f[R]
-.PP
-There are two stressing-related features for the JIT and JIT-generated GC information: JIT Stress and GC Hole Stress.
-These features provide a way during development to discover edge cases and more \[lq]real world\[rq] scenarios without having to develop complex applications.
-The following environment variables are available:
-.IP \[bu] 2
-\f[V]DOTNET_JitStress\f[R]
-.IP \[bu] 2
-\f[V]DOTNET_JitStressModeNamesOnly\f[R]
-.IP \[bu] 2
-\f[V]DOTNET_GCStress\f[R]
-.SS JIT stress
-.PP
-Enabling JIT Stress can be done in several ways.
-Set \f[V]DOTNET_JitStress\f[R] to a non-zero integer value to generate varying levels of JIT optimizations based on a hash of the method\[cq]s name.
-To apply all optimizations set \f[V]DOTNET_JitStress=2\f[R], for example.
-Another way to enable JIT Stress is by setting \f[V]DOTNET_JitStressModeNamesOnly=1\f[R] and then requesting the stress modes, space-delimited, in the \f[V]DOTNET_JitStressModeNames\f[R] variable.
-.PP
-As an example, consider:
-.IP
-.nf
-\f[C]
-DOTNET_JitStressModeNames=STRESS_USE_CMOV STRESS_64RSLT_MUL STRESS_LCL_FLDS
-\f[R]
-.fi
-.SS GC Hole stress
-.PP
-Enabling GC Hole Stress causes GCs to always occur in specific locations and that helps to track down GC holes.
-GC Hole Stress can be enabled using the \f[V]DOTNET_GCStress\f[R] environment variable.
-.PP
-For more information, see Investigating JIT and GC Hole stress (https://github.com/dotnet/runtime/blob/main/docs/design/coreclr/jit/investigate-stress.md).
-.SS JIT memory barriers
-.PP
-The code generator for Arm64 allows all \f[V]MemoryBarriers\f[R] instructions to be removed by setting \f[V]DOTNET_JitNoMemoryBarriers\f[R] to \f[V]1\f[R].
 .SS \f[V]DOTNET_RUNNING_IN_CONTAINER\f[R] and \f[V]DOTNET_RUNNING_IN_CONTAINERS\f[R]
 .PP
 The official .NET images (Windows and Linux) set the well-known environment variables:
@@ -281,9 +247,26 @@ GitHub issue dotnet/core#7699 (https://github.com/dotnet/core/issues/7699)
 .IP \[bu] 2
 GitHub issue dotnet/runtime#79237 (https://github.com/dotnet/runtime/issues/79237)
 .PP
-This environment variable is used only when running apps via generated executables (apphosts).
-\f[V]DOTNET_ROOT(x86)\f[R] is used instead when running a 32-bit executable on a 64-bit OS.
-\f[V]DOTNET_ROOT_X64\f[R] is used instead when running a 64-bit executable on an ARM64 OS.
+These environment variables are used only when running apps via generated executables (apphosts).
+The order in which the environment variables are considered is:
+.IP "1." 3
+\f[V]DOTNET_ROOT_<ARCH>\f[R], where \f[V]<ARCH>\f[R] is the architecture of the running executable (apphost).
+For example:
+.RS 4
+.IP \[bu] 2
+\f[V]DOTNET_ROOT_ARM64\f[R] is used for an Arm64 process.
+.IP \[bu] 2
+\f[V]DOTNET_ROOT_X64\f[R] is used for an x64 process.
+This process might be running on x64 or Arm64 architecture.
+.IP \[bu] 2
+\f[V]DOTNET_ROOT_X86\f[R] is used for an x86 process.
+This process might be running on x86 or x64 architecture.
+.RE
+.IP "2." 3
+\f[V]DOTNET_ROOT(x86)\f[R] is used when a 32-bit process is running on 64-bit Windows.
+In other cases, this environment variable is ignored.
+.IP "3." 3
+\f[V]DOTNET_ROOT\f[R].
 .SS \f[V]DOTNET_HOST_PATH\f[R]
 .PP
 Specifies the absolute path to a \f[V]dotnet\f[R] host (\f[V]dotnet.exe\f[R] on Windows, \f[V]dotnet\f[R] on Linux and macOS) that was used to launch the currently-running \f[V]dotnet\f[R] process.
@@ -440,11 +423,6 @@ If set to \f[V]1\f[R] (enabled), enables rolling forward to a pre-release versio
 By default (\f[V]0\f[R] - disabled), when a release version of .NET runtime is requested, roll-forward will only consider installed release versions.
 .PP
 For more information, see the \f[V]--roll-forward\f[R] option for the \f[V]dotnet\f[R] command.
-.SS \f[V]DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX\f[R]
-.PP
-Disables minor version roll forward, if set to \f[V]0\f[R].
-This setting is superseded in .NET Core 3.0 by \f[V]DOTNET_ROLL_FORWARD\f[R].
-The new settings should be used instead.
 .SS \f[V]DOTNET_CLI_FORCE_UTF8_ENCODING\f[R]
 .PP
 Forces the use of UTF-8 encoding in the console, even for older versions of Windows 10 that don\[cq]t fully support UTF-8.
@@ -508,18 +486,20 @@ For more information, see Advertising manifests.
 .PP
 Specifies whether .NET SDK local tools search for tool manifest files in the root folder on Windows.
 The default is \f[V]false\f[R].
-.SS \f[V]COREHOST_TRACE\f[R]
+.SS \f[V]DOTNET_HOST_TRACE\f[R]
+.PP
+\f[B]This variable applies to .NET 10 and later versions.\f[R] For older versions, replace the \f[V]DOTNET_HOST_\f[R] prefix with \f[V]COREHOST_\f[R].
 .PP
 Controls diagnostics tracing from the hosting components, such as \f[V]dotnet.exe\f[R], \f[V]hostfxr\f[R], and \f[V]hostpolicy\f[R].
 .IP \[bu] 2
-\f[V]COREHOST_TRACE=[0/1]\f[R] - default is \f[V]0\f[R] - tracing disabled.
+\f[V]DOTNET_HOST_TRACE=[0/1]\f[R] - default is \f[V]0\f[R] - tracing disabled.
 If set to \f[V]1\f[R], diagnostics tracing is enabled.
 .IP \[bu] 2
-\f[V]COREHOST_TRACEFILE=<file path>\f[R] - has an effect only if tracing is enabled by setting \f[V]COREHOST_TRACE=1\f[R].
+\f[V]DOTNET_HOST_TRACEFILE=<file path>\f[R] - has an effect only if tracing is enabled by setting \f[V]DOTNET_HOST_TRACE=1\f[R].
 When set, the tracing information is written to the specified file; otherwise, the trace information is written to \f[V]stderr\f[R].
 .IP \[bu] 2
-\f[V]COREHOST_TRACE_VERBOSITY=[1/2/3/4]\f[R] - default is \f[V]4\f[R].
-The setting is used only when tracing is enabled via \f[V]COREHOST_TRACE=1\f[R].
+\f[V]DOTNET_HOST_TRACE_VERBOSITY=[1/2/3/4]\f[R] - default is \f[V]4\f[R].
+The setting is used only when tracing is enabled via \f[V]DOTNET_HOST_TRACE=1\f[R].
 .RS 2
 .IP \[bu] 2
 \f[V]4\f[R] - all tracing information is written
@@ -531,8 +511,22 @@ The setting is used only when tracing is enabled via \f[V]COREHOST_TRACE=1\f[R].
 \f[V]1\f[R] - only error messages are written
 .RE
 .PP
-The typical way to get detailed trace information about application startup is to set \f[V]COREHOST_TRACE=1\f[R] and\f[V]COREHOST_TRACEFILE=host_trace.txt\f[R] and then run the application.
+The typical way to get detailed trace information about application startup is to set \f[V]DOTNET_HOST_TRACE=1\f[R] and \f[V]DOTNET_HOST_TRACEFILE=host_trace.txt\f[R] and then run the application.
 A new file \f[V]host_trace.txt\f[R] will be created in the current directory with the detailed information.
+.SS \f[V]COREHOST_TRACE\f[R]
+.PP
+Controls diagnostics tracing from the hosting components, such as \f[V]dotnet.exe\f[R], \f[V]hostfxr\f[R], and \f[V]hostpolicy\f[R].
+.RS
+.PP
+Starting with .NET 10, use the \f[V]DOTNET_HOST_TRACE\f[R] environment variables instead.
+The \f[V]COREHOST_TRACE\f[R] variables work the same as \f[V]DOTNET_HOST_TRACE\f[R] variables.
+.RE
+.IP \[bu] 2
+\f[V]COREHOST_TRACE\f[R] - see \f[V]DOTNET_HOST_TRACE\f[R].
+.IP \[bu] 2
+\f[V]COREHOST_TRACEFILE\f[R] - see \f[V]DOTNET_HOST_TRACEFILE\f[R].
+.IP \[bu] 2
+\f[V]COREHOST_TRACE_VERBOSITY\f[R] - see \f[V]DOTNET_HOST_TRACE_VERBOSITY\f[R].
 .SS \f[V]SuppressNETCoreSdkPreviewMessage\f[R]
 .PP
 If set to \f[V]true\f[R], invoking \f[V]dotnet\f[R] won\[cq]t produce a warning when a preview SDK is being used.

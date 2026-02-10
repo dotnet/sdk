@@ -38,7 +38,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // process should exit after run
             await App.AssertExiting();
 
-            await App.AssertWaitingForFileChangeBeforeRestarting();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Program.cs"));
             await App.AssertStarted();

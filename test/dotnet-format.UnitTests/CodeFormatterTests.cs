@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -38,6 +39,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
         private static readonly string s_generatorSolutionPath = Path.Combine("for_code_formatter", "generator_solution");
         private static readonly string s_generatorSolutionFileName = "generator_solution.sln";
+
+        private static readonly string s_suppressorProjectPath = Path.Combine("for_code_formatter", "suppressor_project");
+        private static readonly string s_suppressorProjectFilePath = Path.Combine(s_suppressorProjectPath, "suppressor_project.csproj");
 
         private static string[] EmptyFilesList => Array.Empty<string>();
 
@@ -625,6 +629,21 @@ Greeter.Greeter() -> void";
                     // On Windows the generator library may still be locked
                 }
             }
+        }
+
+        [MSBuildFact]
+        public async Task SuppressorsHandledInProject()
+        {
+            await TestFormatWorkspaceAsync(
+                s_suppressorProjectFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 3,
+                codeStyleSeverity: DiagnosticSeverity.Warning,
+                fixCategory: FixCategory.CodeStyle);
         }
 
         internal async Task<string> TestFormatWorkspaceAsync(

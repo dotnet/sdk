@@ -15,49 +15,18 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal partial class InstantiateCommand : BaseCommand<InstantiateCommandArgs>, ICustomHelp
     {
-        internal InstantiateCommand(
-            NewCommand parentCommand,
-            Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, "create", SymbolStrings.Command_Instantiate_Description)
+        internal InstantiateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
+            : base(hostBuilder, CommandDefinition.Instantiate.Command)
         {
-            Arguments.Add(ShortNameArgument);
-            Arguments.Add(RemainingArguments);
-
-            Options.Add(SharedOptions.OutputOption);
-            Options.Add(SharedOptions.NameOption);
-            Options.Add(SharedOptions.DryRunOption);
-            Options.Add(SharedOptions.ForceOption);
-            Options.Add(SharedOptions.NoUpdateCheckOption);
-            Options.Add(SharedOptions.ProjectPathOption);
-
-            parentCommand.AddNoLegacyUsageValidators(this);
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.OutputOption));
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.NameOption));
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.DryRunOption));
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ForceOption));
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.NoUpdateCheckOption));
-            Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ProjectPathOption));
         }
 
-        internal static Argument<string> ShortNameArgument { get; } = new Argument<string>("template-short-name")
-        {
-            Description = SymbolStrings.Command_Instantiate_Argument_ShortName,
-            Arity = new ArgumentArity(0, 1)
-        };
-
-        internal Argument<string[]> RemainingArguments { get; } = new Argument<string[]>("template-args")
-        {
-            Description = SymbolStrings.Command_Instantiate_Argument_TemplateOptions,
-            Arity = new ArgumentArity(0, 999)
-        };
-
-        internal IReadOnlyList<Option> PassByOptions { get; } = new Option[]
-        {
+        internal IReadOnlyList<Option> PassByOptions { get; } =
+        [
             SharedOptions.ForceOption,
             SharedOptions.NameOption,
             SharedOptions.DryRunOption,
             SharedOptions.NoUpdateCheckOption
-        };
+        ];
 
         internal static Task<NewCommandStatus> ExecuteAsync(
             NewCommandArgs newCommandArgs,
@@ -74,6 +43,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             HostSpecificDataLoader hostSpecificDataLoader,
             CancellationToken cancellationToken)
         {
+            using var createTemplateGroupsActivity = Activities.Source.StartActivity("create-template-groups");
             IReadOnlyList<ITemplateInfo> templates = await templatePackageManager.GetTemplatesAsync(cancellationToken).ConfigureAwait(false);
             return TemplateGroup.FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, hostSpecificDataLoader));
         }
@@ -84,6 +54,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 TemplatePackageManager templatePackageManager,
                 TemplateGroup templateGroup)
         {
+            using var getTemplateActivity = Activities.Source.StartActivity("get-template-command");
             //groups templates in the group by precedence
             foreach (IGrouping<int, CliTemplateInfo> templateGrouping in templateGroup.Templates.GroupBy(g => g.Precedence).OrderByDescending(g => g.Key))
             {
@@ -114,7 +85,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     templateGroup,
                     candidates);
             }
-            return new HashSet<TemplateCommand>();
+            return [];
         }
 
         internal static void HandleNoMatchingTemplateGroup(InstantiateCommandArgs instantiateArgs, IEnumerable<TemplateGroup> templateGroups, IReporter reporter)
@@ -204,6 +175,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
                 return await templateListCoordinator.DisplayCommandDescriptionAsync(instantiateArgs, cancellationToken).ConfigureAwait(false);
             }
+            using var createActivity = Activities.Source.StartActivity("instantiate-command");
+            createActivity?.DisplayName = $"Invoke '{instantiateArgs.ShortName}'";
 
             IEnumerable<TemplateGroup> allTemplateGroups = await GetTemplateGroupsAsync(
                 templatePackageManager,
@@ -273,10 +246,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 TemplateCommand templateCommandToRun = candidates.Single();
                 args.Command.Subcommands.Add(templateCommandToRun);
-
+                var templateParseActivity = Activities.Source.StartActivity("reparse-for-template");
                 ParseResult updatedParseResult = args.ParseResult.RootCommandResult.Command.Parse(
                     args.ParseResult.Tokens.Select(t => t.Value).ToArray(),
                     args.ParseResult.Configuration);
+                templateParseActivity?.Stop();
                 return await candidates.Single().InvokeAsync(updatedParseResult, cancellationToken).ConfigureAwait(false);
             }
             else if (candidates.Any())
@@ -435,8 +409,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     template,
                     validateDefaultLanguage);
 
-                CommandLineConfiguration parser = ParserFactory.CreateParser(command);
-                ParseResult parseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>());
+                System.CommandLine.Command parser = ParserFactory.CreateParser(command);
+                ParseResult parseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
                 return (command, parseResult);
             }
             catch (InvalidTemplateParametersException e)
@@ -466,8 +440,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 foreach (string possibleMatch in possibleTemplateMatches)
                 {
                     Example example = useInstantiateCommand
-                        ? Example.For<InstantiateCommand>(instantiateArgs.ParseResult).WithArgument(ShortNameArgument, possibleMatch)
-                        : Example.For<NewCommand>(instantiateArgs.ParseResult).WithArgument(NewCommand.ShortNameArgument, possibleMatch);
+                        ? Example.For<InstantiateCommand>(instantiateArgs.ParseResult).WithArgument(CommandDefinition.New.ShortNameArgument, possibleMatch)
+                        : Example.For<NewCommand>(instantiateArgs.ParseResult).WithArgument(CommandDefinition.New.ShortNameArgument, possibleMatch);
                     if (helpOption)
                     {
                         example = example.WithHelpOption();
@@ -512,7 +486,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                   Example
                       .For<NewCommand>(instantiateArgs.ParseResult)
                       .WithSubcommand<ListCommand>()
-                      .WithArgument(BaseListCommand.NameArgument, instantiateArgs.ShortName));
+                      .WithArgument(CommandDefinition.List.NameArgument, instantiateArgs.ShortName));
             }
             else
             {
@@ -533,7 +507,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     Example
                         .For<NewCommand>(instantiateArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithArgument(BaseSearchCommand.NameArgument, instantiateArgs.ShortName));
+                        .WithArgument(CommandDefinition.Search.NameArgument, instantiateArgs.ShortName));
             }
         }
     }

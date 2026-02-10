@@ -19,7 +19,7 @@ namespace Microsoft.NET.Restore.Tests
         [Theory]
         [InlineData("4.7.1")]
         [InlineData("4.7.2")]
-        [InlineData("4.5.2")]
+        [InlineData("4.6.2")]
         [InlineData("4.8")]
         public void It_restores_net_framework_project_successfully(string version)
         {
@@ -31,7 +31,7 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = targetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: version);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: version);
 
             string projectAssetsJsonPath = Path.Combine(
                 testAsset.Path,
@@ -72,7 +72,7 @@ namespace Microsoft.NET.Restore.Tests
             if (includeExplicitReference)
             {
                 // Add explicit reference to assembly packs
-                testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: includeExplicitReference.ToString()).WithProjectChanges(project =>
+                testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: includeExplicitReference.ToString()).WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
                     var itemGroup = project.Root.Elements(ns + "ItemGroup").FirstOrDefault();
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Restore.Tests
             }
             else
             {
-                testAsset = _testAssetsManager.CreateTestProject(testProject);
+                testAsset = TestAssetsManager.CreateTestProject(testProject);
             }
 
             string projectAssetsJsonPath = Path.Combine(
@@ -138,7 +138,7 @@ namespace Microsoft.NET.Restore.Tests
             };
 
             // Add explicit reference to assembly packs
-            var testAsset = _testAssetsManager.CreateTestProject(testProject).WithProjectChanges(project =>
+            var testAsset = TestAssetsManager.CreateTestProject(testProject).WithProjectChanges(project =>
             {
                 var ns = project.Root.Name.Namespace;
                 var itemGroup = project.Root.Elements(ns + "ItemGroup").FirstOrDefault();
@@ -186,7 +186,7 @@ namespace Microsoft.NET.Restore.Tests
             };
             testProject.AdditionalProperties["AutomaticallyUseReferenceAssemblyPackages"] = "false";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             if (ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(TargetDotNetFrameworkVersion.Version472) != null)

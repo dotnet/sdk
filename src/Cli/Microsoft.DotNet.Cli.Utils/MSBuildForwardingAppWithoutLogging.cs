@@ -5,11 +5,10 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
-internal class MSBuildForwardingAppWithoutLogging
+internal sealed class MSBuildForwardingAppWithoutLogging
 {
     private static readonly bool AlwaysExecuteMSBuildOutOfProc = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_RUN_MSBUILD_OUTOFPROC");
     private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", false);
@@ -22,6 +21,8 @@ internal class MSBuildForwardingAppWithoutLogging
     private const string MSBuildExeName = "MSBuild.dll";
 
     private const string SdksDirectoryName = "Sdks";
+
+    internal const VerbosityOptions DefaultVerbosity = VerbosityOptions.m;
 
     // Null if we're running MSBuild in-proc.
     private ForwardingAppImplementation? _forwardingApp;
@@ -39,23 +40,16 @@ internal class MSBuildForwardingAppWithoutLogging
     // True if, given current state of the class, MSBuild would be executed in its own process.
     public bool ExecuteMSBuildOutOfProc => _forwardingApp != null;
 
-    private readonly Dictionary<string, string> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
+    private readonly Dictionary<string, string?> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
-    private readonly List<string> _msbuildRequiredParameters = [ "-maxcpucount", "--verbosity:m" ];
+    private readonly List<string> _msbuildRequiredParameters = ["-maxcpucount", $"--verbosity:{DefaultVerbosity}"];
 
-    public MSBuildForwardingAppWithoutLogging(MSBuildArgs msbuildArgs, string? msbuildPath = null, bool includeLogo = false, bool isRestoring = true)
+    public MSBuildForwardingAppWithoutLogging(MSBuildArgs msbuildArgs, string? msbuildPath = null)
     {
         string defaultMSBuildPath = GetMSBuildExePath();
         _msbuildArgs = msbuildArgs;
-        if (!includeLogo && !msbuildArgs.OtherMSBuildArgs.Contains("-nologo", StringComparer.OrdinalIgnoreCase))
-        {
-            // If the user didn't explicitly ask for -nologo, we add it to avoid the MSBuild logo.
-            // This is useful for scenarios like restore where we don't want to print the logo.
-            // Note that this is different from the default behavior of MSBuild, which prints the logo.
-            msbuildArgs.OtherMSBuildArgs.Add("-nologo");
-        }
+
         string? tlpDefault = TerminalLoggerDefault;
-        // new for .NET 9 - default TL to auto (aka enable in non-CI scenarios)
         if (string.IsNullOrWhiteSpace(tlpDefault))
         {
             tlpDefault = "auto";
@@ -93,7 +87,7 @@ internal class MSBuildForwardingAppWithoutLogging
 
     public string[] GetAllArguments()
     {
-        return [.. _msbuildRequiredParameters, ..EmitMSBuildArgs(_msbuildArgs) ];
+        return [.. _msbuildRequiredParameters, .. EmitMSBuildArgs(_msbuildArgs)];
     }
 
     private string[] EmitMSBuildArgs(MSBuildArgs msbuildArgs) => [
@@ -101,6 +95,7 @@ internal class MSBuildForwardingAppWithoutLogging
         .. msbuildArgs.RestoreGlobalProperties?.Select(kvp => EmitProperty(kvp, "restoreProperty")) ?? [],
         .. msbuildArgs.RequestedTargets?.Select(target => $"--target:{target}") ?? [],
         .. msbuildArgs.Verbosity is not null ? new string[1] { $"--verbosity:{msbuildArgs.Verbosity}" } : [],
+        .. msbuildArgs.NoLogo is true ? new string[1] { "--nologo" } : [],
         .. msbuildArgs.OtherMSBuildArgs
     ];
 
@@ -112,7 +107,7 @@ internal class MSBuildForwardingAppWithoutLogging
             : $"--{label}:{property.Key}={property.Value}";
     }
 
-    public void EnvironmentVariable(string name, string value)
+    public void EnvironmentVariable(string name, string? value)
     {
         if (_forwardingApp != null)
         {
@@ -153,7 +148,7 @@ internal class MSBuildForwardingAppWithoutLogging
         Dictionary<string, string?> savedEnvironmentVariables = [];
         try
         {
-            foreach (KeyValuePair<string, string> kvp in _msbuildRequiredEnvironmentVariables)
+            foreach (KeyValuePair<string, string?> kvp in _msbuildRequiredEnvironmentVariables)
             {
                 savedEnvironmentVariables[kvp.Key] = Environment.GetEnvironmentVariable(kvp.Key);
                 Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
@@ -218,7 +213,7 @@ internal class MSBuildForwardingAppWithoutLogging
         return new Muxer().MuxerPath;
     }
 
-    internal static Dictionary<string, string> GetMSBuildRequiredEnvironmentVariables()
+    internal static Dictionary<string, string?> GetMSBuildRequiredEnvironmentVariables()
     {
         return new()
         {

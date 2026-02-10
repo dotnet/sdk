@@ -37,7 +37,7 @@ namespace Microsoft.NET.TestFramework
             string? overrideTfm = null,
             string? identifier = null)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -49,6 +49,7 @@ namespace Microsoft.NET.TestFramework
                     {
                         targetFramework.Value = overrideTfm ?? DefaultTfm ?? string.Empty;
                         targetFramework.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
+                        targetFramework.AddAfterSelf(new XElement("AttachWeakETagToCompressedAssetsDuringDevelopment", "false"));
                     }
                     var targetFrameworks = project.Descendants()
                         .SingleOrDefault(e => e.Name.LocalName == "TargetFrameworks");
@@ -56,10 +57,11 @@ namespace Microsoft.NET.TestFramework
                     {
                         targetFrameworks.Value = targetFrameworks.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
                         targetFrameworks.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
+                        targetFrameworks.AddAfterSelf(new XElement("AttachWeakETagToCompressedAssetsDuringDevelopment", "false"));
                     }
                 });
 
-            foreach (string assetPath in Directory.EnumerateFiles(Path.Combine(_testAssetsManager.TestAssetsRoot, "WasmOverride")))
+            foreach (string assetPath in Directory.EnumerateFiles(Path.Combine(TestAssetsManager.TestAssetsRoot, "WasmOverride")))
                 File.Copy(assetPath, Path.Combine(projectDirectory.Path, Path.GetFileName(assetPath)));
 
             return projectDirectory;
@@ -72,7 +74,7 @@ namespace Microsoft.NET.TestFramework
             string? overrideTfm = null,
             string? identifier = null)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>

@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 .Setup(p => p.EnumerateBuildServers(ServerEnumerationFlags.MSBuild))
                 .Returns(Array.Empty<IBuildServer>());
 
-            var command = CreateCommand(options: "--msbuild", serverProvider: provider.Object);
+            var command = CreateCommand(options: ["--msbuild"], serverProvider: provider.Object);
 
             command.Execute().Should().Be(0);
 
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 .Setup(p => p.EnumerateBuildServers(ServerEnumerationFlags.VBCSCompiler))
                 .Returns(Array.Empty<IBuildServer>());
 
-            var command = CreateCommand(options: "--vbcscompiler", serverProvider: provider.Object);
+            var command = CreateCommand(options: ["--vbcscompiler"], serverProvider: provider.Object);
 
             command.Execute().Should().Be(0);
 
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 .Setup(p => p.EnumerateBuildServers(ServerEnumerationFlags.Razor))
                 .Returns(Array.Empty<IBuildServer>());
 
-            var command = CreateCommand(options: "--razor", serverProvider: provider.Object);
+            var command = CreateCommand(options: ["--razor"], serverProvider: provider.Object);
 
             command.Execute().Should().Be(0);
 
@@ -162,9 +162,9 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             var pipeName = Path.GetRandomFileName();
 
-            var pidDirectory = _testAssetsManager.CreateTestDirectory(identifier: "pidDirectory").Path;
+            var pidDirectory = TestAssetsManager.CreateTestDirectory(identifier: "pidDirectory").Path;
 
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset("TestRazorApp")
                 .WithSource();
 
@@ -195,12 +195,12 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         private BuildServerShutdownCommand CreateCommand(
-            string options = "",
+            ReadOnlySpan<string> options = default,
             IBuildServerProvider serverProvider = null,
             IEnumerable<IBuildServer> buildServers = null,
             ServerEnumerationFlags expectedFlags = ServerEnumerationFlags.None)
         {
-            ParseResult result = Parser.Instance.Parse($"dotnet build-server shutdown {options}".Trim());
+            ParseResult result = Parser.Parse(["dotnet", "build-server", "shutdown", .. options]);
             return new BuildServerShutdownCommand(
                 result: result,
                 serverProvider: serverProvider,

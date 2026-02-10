@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public void GivenInvalidArgumentToWorkloadSearchVersionItFailsCleanly(string argument)
         {
             _reporter.Clear();
-            var parseResult = Parser.Instance.Parse($"dotnet workload search version {argument}");
+            var parseResult = Parser.Parse($"dotnet workload search version {argument}");
             var workloadResolver = new MockWorkloadResolver(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "9.0.100", workloadResolver);
             var command = () => new WorkloadSearchVersionsCommand(parseResult, _reporter, workloadResolverFactory);
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public void GivenNoWorkloadsAreInstalledSearchIsEmpty()
         {
             _reporter.Clear();
-            var parseResult = Parser.Instance.Parse("dotnet workload search");
+            var parseResult = Parser.Parse("dotnet workload search");
             var workloadResolver = new MockWorkloadResolver(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
 
             MockPackWorkloadInstaller installer = new(workloadSetContents: workloadSets);
             MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.103.0"), new NuGetVersion("9.102.0"), new NuGetVersion("9.101.0"), new NuGetVersion("9.100.0")]);
-            var parseResult = Parser.Instance.Parse("dotnet workload search version android@17.5.9 macos@14.5.92 --take 1");
+            var parseResult = Parser.Parse("dotnet workload search version android@17.5.9 macos@14.5.92 --take 1");
             MockWorkloadResolver resolver = new(
                 [new WorkloadResolver.WorkloadInfo(new WorkloadId("Microsoft.NET.Sdk.Android"), null),
                  new WorkloadResolver.WorkloadInfo(new WorkloadId("Microsoft.NET.Sdk.macOS"), null),
@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public void GivenNoStubIsProvidedSearchShowsAllWorkloads()
         {
             _reporter.Clear();
-            var parseResult = Parser.Instance.Parse("dotnet workload search");
+            var parseResult = Parser.Parse("dotnet workload search");
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
@@ -135,7 +135,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public void GivenDetailedVerbositySearchShowsAllColumns()
         {
             _reporter.Clear();
-            var parseResult = Parser.Instance.Parse("dotnet workload search -v d");
+            var parseResult = Parser.Parse("dotnet workload search -v d");
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public void GivenStubIsProvidedSearchShowsAllMatchingWorkloads()
         {
             _reporter.Clear();
-            var parseResult = Parser.Instance.Parse("dotnet workload search mock");
+            var parseResult = Parser.Parse("dotnet workload search mock");
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
@@ -178,7 +178,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public void GivenSearchResultsAreOrdered()
         {
             _reporter.Clear();
-            var parseResult = Parser.Instance.Parse("dotnet workload search");
+            var parseResult = Parser.Parse("dotnet workload search");
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public void GivenWorkloadSearchItSearchesDescription()
         {
             _reporter.Clear();
-            var parseResult = Parser.Instance.Parse("dotnet workload search description");
+            var parseResult = Parser.Parse("dotnet workload search description");
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
             var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);

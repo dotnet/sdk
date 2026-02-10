@@ -114,8 +114,8 @@ internal static class ContainerBuilder
             KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
             _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
         };
-
-        Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
+        var userId = imageBuilder.IsWindows ? null : TryParseUserId(containerUser);
+        Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, userId);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(workingDir);
 
@@ -200,6 +200,24 @@ internal static class ContainerBuilder
         return exitCode;
     }
 
+    public static int? TryParseUserId(string? containerUser)
+    {
+        if (containerUser is null)
+        {
+            return null;
+        }
+        if (int.TryParse(containerUser, out int userId))
+        {
+            return userId;
+        }
+        if (containerUser.Equals("root", StringComparison.OrdinalIgnoreCase))
+        {
+            return 0; // root user
+        }
+        // TODO: on Linux we could _potentially_ try to map the user name to a UID
+        return null;
+    }
+
     private static async Task<int> PushToLocalRegistryAsync(ILogger logger, BuiltImage builtImage, SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         CancellationToken cancellationToken)
@@ -215,6 +233,11 @@ internal static class ContainerBuilder
         {
             await containerRegistry.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, containerRegistry);
+        }
+        catch (UnableToDownloadFromRepositoryException)
+        {
+            logger.LogError(Resource.FormatString(nameof(Strings.UnableToDownloadFromRepository)), sourceImageReference);
+            return 1;
         }
         catch (Exception ex)
         {
@@ -241,11 +264,6 @@ internal static class ContainerBuilder
         catch (UnableToDownloadFromRepositoryException)
         {
             logger.LogError(Resource.FormatString(nameof(Strings.UnableToDownloadFromRepository)), sourceImageReference);
-            return 1;
-        }
-        catch (UnableToAccessRepositoryException)
-        {
-            logger.LogError(Resource.FormatString(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName));
             return 1;
         }
         catch (Exception e)

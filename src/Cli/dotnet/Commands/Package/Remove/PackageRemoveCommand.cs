@@ -1,51 +1,49 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Hidden.Remove;
+using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.NuGet;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 
-internal class PackageRemoveCommand : CommandBase
+internal sealed class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _fileOrDirectory;
-    private readonly IReadOnlyCollection<string> _arguments;
-
-    public PackageRemoveCommand(
-        ParseResult parseResult) : base(parseResult)
-    {
-        _fileOrDirectory = parseResult.HasOption(PackageCommandParser.ProjectOption) ?
-            parseResult.GetValue(PackageCommandParser.ProjectOption) :
-            parseResult.GetValue(RemoveCommandParser.ProjectArgument);
-        _arguments = parseResult.GetValue(PackageRemoveCommandParser.CmdPackageArgument).ToList().AsReadOnly();
-        if (_fileOrDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(_fileOrDirectory));
-        }
-        if (_arguments.Count != 1)
-        {
-            throw new GracefulException(CliCommandStrings.PackageRemoveSpecifyExactlyOnePackageReference);
-        }
-    }
+    private readonly PackageRemoveCommandDefinitionBase _definition = (PackageRemoveCommandDefinitionBase)parseResult.CommandResult.Command;
 
     public override int Execute()
     {
-        string projectFilePath;
-        if (!File.Exists(_fileOrDirectory))
+        var arguments = _parseResult.GetValue(_definition.CmdPackageArgument) ?? [];
+
+        if (arguments is not [{ } packageToRemove])
         {
-            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(_fileOrDirectory).FullName;
+            throw new GracefulException(CliCommandStrings.PackageRemoveSpecifyExactlyOnePackageReference);
+        }
+
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_definition.FileOption, _definition.ProjectOption, projectOrFileArgument: null, _parseResult);
+
+        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
+        {
+            return ExecuteForFileBasedApp(path: fileOrDirectory, packageId: packageToRemove);
+        }
+
+        Debug.Assert(allowedAppKinds.HasFlag(AppKinds.ProjectBased));
+
+        string projectFilePath;
+        if (!File.Exists(fileOrDirectory))
+        {
+            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory);
         }
         else
         {
-            projectFilePath = _fileOrDirectory;
+            projectFilePath = fileOrDirectory;
         }
 
-        var packageToRemove = _arguments.Single();
         var result = NuGetCommand.Run(TransformArgs(packageToRemove, projectFilePath));
 
         return result;
@@ -64,9 +62,34 @@ internal class PackageRemoveCommand : CommandBase
         };
 
         args.AddRange(_parseResult
-            .OptionValuesToBeForwarded(PackageRemoveCommandParser.GetCommand())
+            .OptionValuesToBeForwarded(new PackageRemoveCommandDefinition())
             .SelectMany(a => a.Split(' ')));
 
         return [.. args];
+    }
+
+    private static int ExecuteForFileBasedApp(string path, string packageId)
+    {
+        var fullPath = Path.GetFullPath(path);
+
+        // Remove #:package directive from the C# file.
+        // We go through the directives in reverse order so removing one doesn't affect spans of the remaining ones.
+        var editor = FileBasedAppSourceEditor.Load(SourceFile.Load(fullPath));
+        var count = 0;
+        var directives = editor.Directives;
+        for (int i = directives.Length - 1; i >= 0; i--)
+        {
+            var directive = directives[i];
+            if (directive is CSharpDirective.Package p &&
+                string.Equals(p.Name, packageId, StringComparison.OrdinalIgnoreCase))
+            {
+                editor.Remove(directive);
+                count++;
+            }
+        }
+        editor.SourceFile.Save();
+
+        Reporter.Output.WriteLine(CliCommandStrings.DirectivesRemoved, "#:package", count, packageId, fullPath);
+        return count > 0 ? 0 : 1; // success if any directives were found and removed
     }
 }

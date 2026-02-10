@@ -201,15 +201,6 @@
   <data name="RequiredCommandNotPassed" xml:space="preserve">
     <value>Required command was not provided.</value>
   </data>
-  <data name="CouldNotFindAnyProjectInDirectory" xml:space="preserve">
-    <value>Could not find any project in `{0}`.</value>
-  </data>
-  <data name="CouldNotFindProjectOrDirectory" xml:space="preserve">
-    <value>Could not find project or directory `{0}`.</value>
-  </data>
-  <data name="MoreThanOneProjectInDirectory" xml:space="preserve">
-    <value>Found more than one project in `{0}`. Specify which one to use.</value>
-  </data>
   <data name="FoundInvalidProject" xml:space="preserve">
     <value>Found a project `{0}` but it is invalid.</value>
   </data>
@@ -252,6 +243,9 @@
   <data name="SolutionAlreadyContainsProject" xml:space="preserve">
     <value>Solution {0} already contains project {1}.</value>
   </data>
+  <data name="SolutionFolderAlreadyContainsProjectWithFilename" xml:space="preserve">
+    <value>Solution folder '{0}' already contains a project with the filename '{1}'.</value>
+  </data>
   <data name="SpecifyAtLeastOneReferenceToRemove" xml:space="preserve">
     <value>You must specify at least one reference to remove.</value>
   </data>
@@ -273,8 +267,17 @@
   <data name="ProjectArgumentName" xml:space="preserve">
     <value>PROJECT</value>
   </data>
+  <data name="ProjectOrFileArgumentName" xml:space="preserve">
+    <value>PROJECT | FILE</value>
+  </data>
   <data name="ProjectArgumentDescription" xml:space="preserve">
     <value>The project file to operate on. If a file is not specified, the command will search the current directory for one.</value>
+  </data>
+  <data name="ProjectOrFileArgumentDescription" xml:space="preserve">
+    <value>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</value>
+  </data>
+  <data name="FileArgumentDescription" xml:space="preserve">
+    <value>The file-based app to operate on.</value>
   </data>
   <data name="CommonCmdFramework" xml:space="preserve">
     <value>FRAMEWORK</value>
@@ -413,6 +416,12 @@ setx PATH "%PATH%;{0}"
   <data name="MissingToolSettingsFile" xml:space="preserve">
     <value>Settings file 'DotnetToolSettings.xml' was not found in the package.</value>
   </data>
+  <data name="ToolRequiresHigherDotNetVersion" xml:space="preserve">
+    <value>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</value>
+  </data>
+  <data name="ToolRequiresHigherDotNetVersionSuggestion" xml:space="preserve">
+    <value>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</value>
+  </data>
   <data name="ToolPackageConflictPackageId" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') is already installed.</value>
   </data>
@@ -501,6 +510,18 @@ setx PATH "%PATH%;{0}"
     <value>Specifying both the `-r|--runtime` and `-os` options is not supported.</value>
   </data>
   <data name="CmdEnvironmentVariableDescription" xml:space="preserve">
+    <value>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</value>
+  </data>
+  <data name="CmdTestEnvironmentVariableDescription" xml:space="preserve">
     <value>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
 This will force the tests to be run in an isolated process. 
@@ -796,7 +817,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
     <comment>{Locked="dotnet workload update"}</comment>
   </data>
   <data name="PackageIdentityArgumentDescription" xml:space="preserve">
-    <value>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</value>
+    <value>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</value>
   </data>
   <data name="PackageIdentityArgumentIdOrVersionIsNull" xml:space="preserve">
     <value>Package reference id and version must not be null.</value>
@@ -813,5 +834,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   </data>
   <data name="SDKSchemaCommandDefinition" xml:space="preserve">
     <value>Display the command schema as JSON.</value>
+  </data>
+  <data name="PackCmd_OneNuspecAllowed" xml:space="preserve">
+    <value>Only one .nuspec file can be packed at a time</value>
+  </data>
+  <data name="Error_NU1302_HttpSourceUsed" xml:space="preserve">
+    <value>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</value>
   </data>
 </root>

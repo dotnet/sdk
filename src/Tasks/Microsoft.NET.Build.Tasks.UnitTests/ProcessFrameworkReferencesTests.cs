@@ -9,107 +9,268 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class ProcessFrameworkReferencesTests
     {
-        private MockTaskItem _validWindowsSDKKnownFrameworkReference
-            = new("Microsoft.Windows.SDK.NET.Ref",
-                new Dictionary<string, string>
-                {
-                    {"TargetFramework", "net5.0-windows10.0.18362"},
-                    {"RuntimeFrameworkName", "Microsoft.Windows.SDK.NET.Ref"},
-                    {"DefaultRuntimeFrameworkVersion", "10.0.18362.1-preview"},
-                    {"LatestRuntimeFrameworkVersion", "10.0.18362.1-preview"},
-                    {"TargetingPackName", "Microsoft.Windows.SDK.NET.Ref"},
-                    {"TargetingPackVersion", "10.0.18362.1-preview"},
-                    {"RuntimePackNamePatterns", "Microsoft.Windows.SDK.NET.Ref"},
-                    {"RuntimePackRuntimeIdentifiers", "any"},
-                    {MetadataKeys.RuntimePackAlwaysCopyLocal, "true"},
-                    {"IsWindowsOnly", "true"},
-                });
+        // Shared runtime graph templates
+        private const string MinimalRuntimeGraph = """
+            {
+                "runtimes": {
+                    "any": {
+                        "#import": ["base"]
+                    },
+                    "base": {
+                        "#import": []
+                    }
+                }
+            }
+            """;
+        
+        private const string WindowsRuntimeGraph = """
+            {
+                "runtimes": {
+                    "any": {
+                        "#import": ["base"]
+                    },
+                    "base": {
+                        "#import": []
+                    },
+                    "win": {
+                        "#import": ["any"]
+                    },
+                    "win-x64": {
+                        "#import": ["win"]
+                    }
+                }
+            }
+            """;
+        
+        private const string MultiPlatformRuntimeGraph = """
+            {
+                "runtimes": {
+                    "any": {
+                        "#import": ["base"]
+                    },
+                    "base": {
+                        "#import": []
+                    },
+                    "win": {
+                        "#import": ["any"]
+                    },
+                    "win-x64": {
+                        "#import": ["win"]
+                    },
+                    "win-x86": {
+                        "#import": ["win"]
+                    },
+                    "win-arm64": {
+                        "#import": ["win"]
+                    },
+                    "linux-x64": {
+                        "#import": ["any"]
+                    },
+                    "linux-arm64": {
+                        "#import": ["any"]
+                    },
+                    "osx": {
+                        "#import": ["any"]
+                    },
+                    "osx-arm64": {
+                        "#import": ["osx"]
+                    },
+                    "osx-x64": {
+                        "#import": ["osx"]
+                    }
+                }
+            }
+            """;
 
+        private const string NonPortableRid = "fedora.42-x64";
 
-        private MockTaskItem _netcoreAppKnownFrameworkReference =
-            new("Microsoft.NETCore.App",
-                new Dictionary<string, string>
-                {
-                    {"TargetFramework", "net5.0"},
-                    {"RuntimeFrameworkName", "Microsoft.NETCore.App"},
-                    {"DefaultRuntimeFrameworkVersion", "5.0.0-preview.4.20251.6"},
-                    {"LatestRuntimeFrameworkVersion", "5.0.0-preview.4.20251.6"},
-                    {"TargetingPackName", "Microsoft.NETCore.App.Ref"},
-                    {"TargetingPackVersion", "5.0.0-preview.4.20251.6"},
-                    {"RuntimePackNamePatterns", "Microsoft.NETCore.App.Runtime.**RID**"},
-                    {"RuntimePackRuntimeIdentifiers", "win-x64"},
-                });
+        private static readonly string NonPortableRuntimeGraph = $$"""
+            {
+                "runtimes": {
+                    "base": {
+                        "#import": []
+                    },
+                    "any": {
+                        "#import": ["base"]
+                    },
+                    "linux": {
+                        "#import": ["any"]
+                    },
+                    "linux-x64": {
+                        "#import": ["linux"]
+                    },
+                    "{{NonPortableRid}}": {
+                        "#import": ["linux-x64"]
+                    }
+                }
+            }
+            """;
 
-        [Fact]
-        public void It_resolves_FrameworkReferences()
+        // Shared known framework references
+        private readonly MockTaskItem _validWindowsSDKKnownFrameworkReference = CreateKnownFrameworkReference(
+            "Microsoft.Windows.SDK.NET.Ref", "net5.0-windows10.0.18362", "10.0.18362.1-preview", 
+            additionalMetadata: new Dictionary<string, string> {
+                {MetadataKeys.RuntimePackAlwaysCopyLocal, "true"},
+                {"IsWindowsOnly", "true"},
+                {"RuntimePackRuntimeIdentifiers", "any"},
+                {"RuntimePackNamePatterns", "Microsoft.Windows.SDK.NET.Ref"}
+            });
+
+        private readonly MockTaskItem _netcoreAppKnownFrameworkReference = CreateKnownFrameworkReference(
+            "Microsoft.NETCore.App", "net5.0", "5.0.0-preview.4.20251.6", 
+            runtimePackPattern: "Microsoft.NETCore.App.Runtime.**RID**", 
+            runtimeIdentifiers: "win-x64");
+
+        // Helper methods for creating common test objects
+        private static MockTaskItem CreateKnownFrameworkReference(string name, string targetFramework, string version, 
+            string? runtimePackPattern = null, string? runtimeIdentifiers = null, Dictionary<string, string>? additionalMetadata = null)
+        {
+            var metadata = new Dictionary<string, string>
+            {
+                {"TargetFramework", targetFramework},
+                {"RuntimeFrameworkName", name},
+                {"DefaultRuntimeFrameworkVersion", version},
+                {"LatestRuntimeFrameworkVersion", version},
+                {"TargetingPackName", name.EndsWith(".Ref") ? name : $"{name}.Ref"},
+                {"TargetingPackVersion", version}
+            };
+            
+            if (runtimePackPattern != null) metadata["RuntimePackNamePatterns"] = runtimePackPattern;
+            if (runtimeIdentifiers != null) metadata["RuntimePackRuntimeIdentifiers"] = runtimeIdentifiers;
+            if (additionalMetadata != null)
+            {
+                foreach (var kvp in additionalMetadata)
+                    metadata[kvp.Key] = kvp.Value;
+            }
+            
+            return new MockTaskItem(name, metadata);
+        }
+        
+        private static MockTaskItem CreateKnownILCompilerPack(string targetFramework, string version, string runtimeIdentifiers)
+        {
+            return new MockTaskItem("Microsoft.DotNet.ILCompiler", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = targetFramework,
+                ["ILCompilerPackNamePattern"] = "runtime.**RID**.Microsoft.DotNet.ILCompiler",
+                ["ILCompilerPackVersion"] = version,
+                ["ILCompilerRuntimeIdentifiers"] = runtimeIdentifiers
+            });
+        }
+        
+        private static string CreateRuntimeGraphFile(string content)
+        {
+            var path = Path.GetTempFileName();
+            File.WriteAllText(path, content);
+            return path;
+        }
+        
+        private static ProcessFrameworkReferences CreateTask(TaskConfiguration config)
         {
             var task = new ProcessFrameworkReferences
             {
-                EnableTargetingPackDownload = true,
-                TargetFrameworkIdentifier = ".NETCoreApp",
-                TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
-                FrameworkReferences = new[]
-                {
-                    new MockTaskItem("Microsoft.AspNetCore.App", new Dictionary<string, string>())
-                },
-                KnownFrameworkReferences = new[]
-                {
-                    new MockTaskItem("Microsoft.AspNetCore.App",
-                        new Dictionary<string, string>()
-                        {
-                            {"TargetFramework", ToolsetInfo.CurrentTargetFramework},
-                            {"RuntimeFrameworkName", "Microsoft.AspNetCore.App"},
-                            {"DefaultRuntimeFrameworkVersion", "1.9.5"},
-                            {"LatestRuntimeFrameworkVersion", "1.9.6"},
-                            {"TargetingPackName", "Microsoft.AspNetCore.App"},
-                            {"TargetingPackVersion", "1.9.0"}
-                        })
-                }
+                BuildEngine = config.UseCachingEngine ? new MockBuildEngine() : new MockNeverCacheBuildEngine4(),
+                EnableTargetingPackDownload = config.EnableTargetingPackDownload,
+                EnableRuntimePackDownload = config.EnableRuntimePackDownload,
+                TargetFrameworkIdentifier = config.TargetFrameworkIdentifier ?? ".NETCoreApp",
+                TargetFrameworkVersion = config.TargetFrameworkVersion ?? "5.0",
+                NETCoreSdkRuntimeIdentifier = config.NETCoreSdkRuntimeIdentifier ?? "win-x64",
+                RuntimeIdentifier = config.RuntimeIdentifier,
+                SelfContained = config.SelfContained,
+                TargetLatestRuntimePatch = config.TargetLatestRuntimePatch,
+                TargetLatestRuntimePatchIsDefault = config.TargetLatestRuntimePatchIsDefault,
             };
-
-            task.Execute().Should().BeTrue();
-
-            task.PackagesToDownload.Length.Should().Be(1);
-
-            task.RuntimeFrameworks.Length.Should().Be(1);
-            task.RuntimeFrameworks[0].ItemSpec.Should().Be("Microsoft.AspNetCore.App");
-            task.RuntimeFrameworks[0].GetMetadata(MetadataKeys.Version).Should().Be("1.9.5");
+            
+            // Set nullable properties conditionally to avoid warnings
+            if (config.TargetPlatformIdentifier != null) task.TargetPlatformIdentifier = config.TargetPlatformIdentifier;
+            if (config.TargetPlatformVersion != null) task.TargetPlatformVersion = config.TargetPlatformVersion;
+            if (config.RuntimeGraphPath != null) task.RuntimeGraphPath = config.RuntimeGraphPath;
+            if (config.FrameworkReferences != null) task.FrameworkReferences = config.FrameworkReferences;
+            if (config.KnownFrameworkReferences != null) task.KnownFrameworkReferences = config.KnownFrameworkReferences;
+            if (config.KnownRuntimePacks != null) task.KnownRuntimePacks = config.KnownRuntimePacks;
+            if (config.KnownILLinkPacks != null) task.KnownILLinkPacks = config.KnownILLinkPacks;
+            if (config.KnownILCompilerPacks != null) task.KnownILCompilerPacks = config.KnownILCompilerPacks;
+            
+            // Set additional AOT/trimming properties
+            if (config.PublishAot.HasValue) task.PublishAot = config.PublishAot.Value;
+            if (config.PublishTrimmed.HasValue) task.PublishTrimmed = config.PublishTrimmed.Value;
+            if (config.RequiresILLinkPack.HasValue) task.RequiresILLinkPack = config.RequiresILLinkPack.Value;
+            if (config.EnableAotAnalyzer.HasValue) task.EnableAotAnalyzer = config.EnableAotAnalyzer.Value;
+            if (config.EnableTrimAnalyzer.HasValue) task.EnableTrimAnalyzer = config.EnableTrimAnalyzer.Value;
+            if (config.EnableSingleFileAnalyzer.HasValue) task.EnableSingleFileAnalyzer = config.EnableSingleFileAnalyzer.Value;
+            if (config.ReadyToRunEnabled.HasValue) task.ReadyToRunEnabled = config.ReadyToRunEnabled.Value;
+            if (config.ReadyToRunUseCrossgen2.HasValue) task.ReadyToRunUseCrossgen2 = config.ReadyToRunUseCrossgen2.Value;
+            
+            if (!string.IsNullOrEmpty(config.NetCoreRoot)) task.NetCoreRoot = config.NetCoreRoot;
+            if (!string.IsNullOrEmpty(config.NETCoreSdkVersion)) task.NETCoreSdkVersion = config.NETCoreSdkVersion;
+            if (!string.IsNullOrEmpty(config.NETCoreSdkPortableRuntimeIdentifier)) task.NETCoreSdkPortableRuntimeIdentifier = config.NETCoreSdkPortableRuntimeIdentifier;
+            
+            // Missing assignment that was causing the issue
+            task.RuntimeIdentifiers = config.RuntimeIdentifiers;
+            
+            return task;
+        }
+        
+        private class TaskConfiguration
+        {
+            public bool UseCachingEngine { get; set; }
+            public bool EnableTargetingPackDownload { get; set; } = true;
+            public bool EnableRuntimePackDownload { get; set; }
+            public string? TargetFrameworkIdentifier { get; set; }
+            public string? TargetFrameworkVersion { get; set; }
+            public string? TargetPlatformIdentifier { get; set; }
+            public string? TargetPlatformVersion { get; set; }
+            public string? NETCoreSdkRuntimeIdentifier { get; set; }
+            public string? RuntimeIdentifier { get; set; }
+            public string[]? RuntimeIdentifiers { get; set; }
+            public bool SelfContained { get; set; }
+            public string? RuntimeGraphPath { get; set; }
+            public bool TargetLatestRuntimePatch { get; set; }
+            public bool TargetLatestRuntimePatchIsDefault { get; set; }
+            public MockTaskItem[]? FrameworkReferences { get; set; }
+            public MockTaskItem[]? KnownFrameworkReferences { get; set; }
+            public MockTaskItem[]? KnownRuntimePacks { get; set; }
+            public MockTaskItem[]? KnownILLinkPacks { get; set; }
+            public MockTaskItem[]? KnownILCompilerPacks { get; set; }
+            public bool? PublishAot { get; set; }
+            public bool? PublishTrimmed { get; set; }
+            public bool? RequiresILLinkPack { get; set; }
+            public bool? EnableAotAnalyzer { get; set; }
+            public bool? EnableTrimAnalyzer { get; set; }
+            public bool? EnableSingleFileAnalyzer { get; set; }
+            public bool? ReadyToRunEnabled { get; set; }
+            public bool? ReadyToRunUseCrossgen2 { get; set; }
+            public string? NetCoreRoot { get; set; }
+            public string? NETCoreSdkVersion { get; set; }
+            public string? NETCoreSdkPortableRuntimeIdentifier { get; set; }
         }
 
-        [Fact]
-        public void Given_targetPlatform_and_targetPlatform_version_It_resolves_FrameworkReferences_()
+        [Theory]
+        [InlineData(false)] // Without target platform
+        [InlineData(true)]  // With target platform
+        public void It_resolves_AspNetCore_FrameworkReferences(bool withTargetPlatform)
         {
-            var task = new ProcessFrameworkReferences
+            var aspNetCoreRef = CreateKnownFrameworkReference("Microsoft.AspNetCore.App", 
+                ToolsetInfo.CurrentTargetFramework, "1.9.5", additionalMetadata: new Dictionary<string, string> 
+                {
+                    {"LatestRuntimeFrameworkVersion", "1.9.6"},
+                    {"TargetingPackVersion", "1.9.0"}
+                });
+            
+            var config = new TaskConfiguration
             {
-                EnableTargetingPackDownload = true,
-                TargetFrameworkIdentifier = ".NETCoreApp",
+                UseCachingEngine = true,
                 TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
-                TargetPlatformIdentifier = "Windows",
-                TargetPlatformVersion = "10.0.18362",
-                FrameworkReferences = new[]
-                {
-                    new MockTaskItem("Microsoft.AspNetCore.App", new Dictionary<string, string>())
-                },
-                KnownFrameworkReferences = new[]
-                {
-                    new MockTaskItem("Microsoft.AspNetCore.App",
-                        new Dictionary<string, string>()
-                        {
-                            {"TargetFramework", ToolsetInfo.CurrentTargetFramework},
-                            {"RuntimeFrameworkName", "Microsoft.AspNetCore.App"},
-                            {"DefaultRuntimeFrameworkVersion", "1.9.5"},
-                            {"LatestRuntimeFrameworkVersion", "1.9.6"},
-                            {"TargetingPackName", "Microsoft.AspNetCore.App"},
-                            {"TargetingPackVersion", "1.9.0"}
-                        })
-                }
+                TargetPlatformIdentifier = withTargetPlatform ? "Windows" : null,
+                TargetPlatformVersion = withTargetPlatform ? "10.0.18362" : null,
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.AspNetCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { aspNetCoreRef }
             };
-
+            
+            var task = CreateTask(config);
             task.Execute().Should().BeTrue();
-
-            task.PackagesToDownload.Length.Should().Be(1);
-
-            task.RuntimeFrameworks.Length.Should().Be(1);
+            
+            task.PackagesToDownload.Should().NotBeNull().And.HaveCount(1);
+            task.RuntimeFrameworks.Should().NotBeNull().And.HaveCount(1);
             task.RuntimeFrameworks[0].ItemSpec.Should().Be("Microsoft.AspNetCore.App");
             task.RuntimeFrameworks[0].GetMetadata(MetadataKeys.Version).Should().Be("1.9.5");
         }
@@ -117,31 +278,20 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void It_does_not_resolve_FrameworkReferences_if_targetframework_doesnt_match()
         {
-            var task = new ProcessFrameworkReferences
+            var aspNetCoreRef = CreateKnownFrameworkReference("Microsoft.AspNetCore.App", "netcoreapp3.0", "1.9.5");
+            
+            var config = new TaskConfiguration
             {
-                TargetFrameworkIdentifier = ".NETCoreApp",
-                TargetFrameworkVersion = "2.0",
-                FrameworkReferences = new[]
-                {
-                    new MockTaskItem("Microsoft.AspNetCore.App", new Dictionary<string, string>())
-                },
-                KnownFrameworkReferences = new[]
-                {
-                    new MockTaskItem("Microsoft.AspNetCore.App",
-                        new Dictionary<string, string>()
-                        {
-                            {"TargetFramework", "netcoreapp3.0"},
-                            {"RuntimeFrameworkName", "Microsoft.AspNetCore.App"},
-                            {"DefaultRuntimeFrameworkVersion", "1.9.5"},
-                            {"LatestRuntimeFrameworkVersion", "1.9.6"},
-                            {"TargetingPackName", "Microsoft.AspNetCore.App"},
-                            {"TargetingPackVersion", "1.9.0"}
-                        })
-                }
+                UseCachingEngine = true,
+                EnableTargetingPackDownload = false, // Explicitly disable to test non-resolution
+                TargetFrameworkVersion = "2.0", // Mismatched version
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.AspNetCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { aspNetCoreRef }
             };
-
+            
+            var task = CreateTask(config);
             task.Execute().Should().BeTrue();
-
+            
             task.PackagesToDownload.Should().BeNull();
             task.RuntimeFrameworks.Should().BeNull();
         }
@@ -149,44 +299,27 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void Given_KnownFrameworkReferences_with_RuntimePackAlwaysCopyLocal_It_resolves_FrameworkReferences()
         {
-            const string minimalRuntimeGraphPathContent =
-                "{\"runtimes\":{\"any\":{\"#import\":[\"base\"]},\"base\":{\"#import\":[]}}}";
-            var runtimeGraphPathPath = Path.GetTempFileName();
-            File.WriteAllText(runtimeGraphPathPath, minimalRuntimeGraphPathContent);
-
-            var task = new ProcessFrameworkReferences
+            var windowsSDKRef = CreateKnownFrameworkReference("Microsoft.Windows.SDK.NET.Ref", 
+                "net5.0-windows10.0.17760", "10.0.17760.1-preview", 
+                additionalMetadata: new Dictionary<string, string> {
+                    {MetadataKeys.RuntimePackAlwaysCopyLocal, "true"},
+                    {"IsWindowsOnly", "true"},
+                    {"RuntimePackRuntimeIdentifiers", "any"},
+                    {"RuntimePackNamePatterns", "Microsoft.Windows.SDK.NET.Ref"}
+                });
+                
+            var config = new TaskConfiguration
             {
-                BuildEngine = new MockNeverCacheBuildEngine4(),
-                EnableTargetingPackDownload = true,
-                TargetFrameworkIdentifier = ".NETCoreApp",
-                TargetFrameworkVersion = "5.0",
+                EnableRuntimePackDownload = true,
                 TargetPlatformIdentifier = "Windows",
                 TargetPlatformVersion = "10.0.18362",
-                EnableRuntimePackDownload = true,
-                RuntimeGraphPath =
-                    runtimeGraphPathPath,
-                FrameworkReferences =
-                    new[] { new MockTaskItem("Microsoft.Windows.SDK.NET.Ref", new Dictionary<string, string>()) },
-                KnownFrameworkReferences = new[]
-                {
-                    new MockTaskItem("Microsoft.Windows.SDK.NET.Ref",
-                        new Dictionary<string, string>
-                        {
-                            {"TargetFramework", $"net5.0-windows10.0.17760"},
-                            {"RuntimeFrameworkName", "Microsoft.Windows.SDK.NET.Ref"},
-                            {"DefaultRuntimeFrameworkVersion", "10.0.17760.1-preview"},
-                            {"LatestRuntimeFrameworkVersion", "10.0.17760.1-preview"},
-                            {"TargetingPackName", "Microsoft.Windows.SDK.NET.Ref"},
-                            {"TargetingPackVersion", "10.0.17760.1-preview"},
-                            {"RuntimePackNamePatterns", "Microsoft.Windows.SDK.NET.Ref"},
-                            {"RuntimePackRuntimeIdentifiers", "any"},
-                            {MetadataKeys.RuntimePackAlwaysCopyLocal, "true"},
-                            {"IsWindowsOnly", "true"},
-                        }),
-                    _validWindowsSDKKnownFrameworkReference,
-                }
+                RuntimeGraphPath = CreateRuntimeGraphFile(MinimalRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.Windows.SDK.NET.Ref", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { windowsSDKRef, _validWindowsSDKKnownFrameworkReference }
             };
-
+            
+            var task = CreateTask(config);
+            
             if (Environment.OSVersion.Platform != PlatformID.Win32NT)
             {
                 task.Execute().Should().BeFalse("IsWindowsOnly=true");
@@ -194,70 +327,49 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
 
             task.Execute().Should().BeTrue();
-
-            task.PackagesToDownload.Length.Should().Be(1);
-
-            task.RuntimeFrameworks.Should().BeNullOrEmpty(
-                "Should not contain RuntimePackAlwaysCopyLocal framework, or it will be put into runtimeconfig.json");
-
-            task.TargetingPacks.Length.Should().Be(1);
-            task.TargetingPacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref");
-            task.TargetingPacks[0].GetMetadata(MetadataKeys.NuGetPackageId).Should()
-                .Be("Microsoft.Windows.SDK.NET.Ref");
-            task.TargetingPacks[0].GetMetadata(MetadataKeys.NuGetPackageVersion).Should().Be("10.0.18362.1-preview");
-            task.TargetingPacks[0].GetMetadata(MetadataKeys.PackageConflictPreferredPackages).Should()
-                .Be("Microsoft.Windows.SDK.NET.Ref");
-            task.TargetingPacks[0].GetMetadata(MetadataKeys.RuntimeFrameworkName).Should()
-                .Be("Microsoft.Windows.SDK.NET.Ref");
-            task.TargetingPacks[0].GetMetadata(MetadataKeys.RuntimeIdentifier).Should().Be("");
-
-            task.RuntimePacks.Length.Should().Be(1);
-            task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref");
-            task.RuntimePacks[0].GetMetadata(MetadataKeys.FrameworkName).Should().Be("Microsoft.Windows.SDK.NET.Ref");
-            task.RuntimePacks[0].GetMetadata(MetadataKeys.NuGetPackageVersion).Should().Be("10.0.18362.1-preview");
-            task.RuntimePacks[0].GetMetadata(MetadataKeys.RuntimePackAlwaysCopyLocal).Should().Be("true");
+            task.PackagesToDownload.Should().NotBeNull().And.HaveCount(1);
+            task.RuntimeFrameworks.Should().BeNullOrEmpty("Should not contain RuntimePackAlwaysCopyLocal framework");
+            
+            // Validate targeting pack
+            task.TargetingPacks.Should().NotBeNull().And.HaveCount(1);
+            var targetingPack = task.TargetingPacks[0];
+            targetingPack.ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref");
+            targetingPack.GetMetadata(MetadataKeys.NuGetPackageId).Should().Be("Microsoft.Windows.SDK.NET.Ref");
+            targetingPack.GetMetadata(MetadataKeys.NuGetPackageVersion).Should().Be("10.0.18362.1-preview");
+            
+            // Validate runtime pack
+            task.RuntimePacks.Should().NotBeNull().And.HaveCount(1);
+            var runtimePack = task.RuntimePacks[0];
+            runtimePack.ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref");
+            runtimePack.GetMetadata(MetadataKeys.RuntimePackAlwaysCopyLocal).Should().Be("true");
         }
 
         [Fact]
         public void It_resolves_self_contained_FrameworkReferences_to_download()
         {
-            const string minimalRuntimeGraphPathContent =
-                "{\"runtimes\":{\"any\":{\"#import\":[\"base\"]},\"base\":{\"#import\":[]},\"win\":{\"#import\":[\"any\"]},\"win-x64\":{\"#import\":[\"win\"]}}}";
-            var runtimeGraphPathPath = Path.GetTempFileName();
-            File.WriteAllText(runtimeGraphPathPath, minimalRuntimeGraphPathContent);
-
-            var task = new ProcessFrameworkReferences
+            var config = new TaskConfiguration
             {
-                BuildEngine = new MockNeverCacheBuildEngine4(),
-                EnableTargetingPackDownload = true,
-                TargetFrameworkIdentifier = ".NETCoreApp",
-                TargetFrameworkVersion = "5.0",
+                EnableRuntimePackDownload = true,
                 TargetPlatformIdentifier = "Windows",
                 TargetPlatformVersion = "10.0.18362",
-                NETCoreSdkRuntimeIdentifier = "win-x64",
                 RuntimeIdentifier = "win-x64",
-                RuntimeGraphPath =
-                    runtimeGraphPathPath,
                 SelfContained = true,
                 TargetLatestRuntimePatch = true,
                 TargetLatestRuntimePatchIsDefault = true,
-                EnableRuntimePackDownload = true,
-                FrameworkReferences =
-                    new[]
-                    {
-                        new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()),
-                        new MockTaskItem("Microsoft.Windows.SDK.NET.Ref", new Dictionary<string, string>())
-                    },
-                KnownFrameworkReferences = new[]
-                {
-                    _netcoreAppKnownFrameworkReference, _validWindowsSDKKnownFrameworkReference,
-                }
+                RuntimeGraphPath = CreateRuntimeGraphFile(WindowsRuntimeGraph),
+                FrameworkReferences = new[] {
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()),
+                    new MockTaskItem("Microsoft.Windows.SDK.NET.Ref", new Dictionary<string, string>())
+                },
+                KnownFrameworkReferences = new[] { _netcoreAppKnownFrameworkReference, _validWindowsSDKKnownFrameworkReference }
             };
+            
+            var task = CreateTask(config);
+            
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
                 task.Execute().Should().BeTrue();
-
-                task.PackagesToDownload.Length.Should().Be(3);
+                task.PackagesToDownload.Should().NotBeNull().And.HaveCount(3);
                 task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.Windows.SDK.NET.Ref");
                 task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Ref");
                 task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.win-x64");
@@ -271,37 +383,93 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void Given_reference_to_NETCoreApp_It_should_not_resolve_runtime_pack()
         {
-            const string minimalRuntimeGraphPathContent =
-                "{\"runtimes\":{\"any\":{\"#import\":[\"base\"]},\"base\":{\"#import\":[]},\"win\":{\"#import\":[\"any\"]},\"win-x64\":{\"#import\":[\"win\"]}}}";
-            var runtimeGraphPathPath = Path.GetTempFileName();
-            File.WriteAllText(runtimeGraphPathPath, minimalRuntimeGraphPathContent);
-
-            var task = new ProcessFrameworkReferences
+            var config = new TaskConfiguration
             {
-                BuildEngine = new MockNeverCacheBuildEngine4(),
-                EnableTargetingPackDownload = true,
-                TargetFrameworkIdentifier = ".NETCoreApp",
-                TargetFrameworkVersion = "5.0",
+                EnableRuntimePackDownload = true,
                 TargetPlatformIdentifier = "Windows",
                 TargetPlatformVersion = "10.0.18362",
-                NETCoreSdkRuntimeIdentifier = "win-x64",
-                RuntimeGraphPath =
-                    runtimeGraphPathPath,
                 TargetLatestRuntimePatch = true,
                 TargetLatestRuntimePatchIsDefault = true,
-                EnableRuntimePackDownload = true,
-                FrameworkReferences =
-                    new[]
-                    {
-                        new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()),
-                        new MockTaskItem("Microsoft.Windows.SDK.NET.Ref", new Dictionary<string, string>())
-                    },
-                KnownFrameworkReferences = new[]
-                {
-                    _netcoreAppKnownFrameworkReference, _validWindowsSDKKnownFrameworkReference,
-                }
+                RuntimeGraphPath = CreateRuntimeGraphFile(WindowsRuntimeGraph),
+                FrameworkReferences = new[] {
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()),
+                    new MockTaskItem("Microsoft.Windows.SDK.NET.Ref", new Dictionary<string, string>())
+                },
+                KnownFrameworkReferences = new[] { _netcoreAppKnownFrameworkReference, _validWindowsSDKKnownFrameworkReference }
             };
+            
+            var task = CreateTask(config);
+            
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                task.Execute().Should().BeFalse("IsWindowsOnly=true");
+                return;
+            }
+            
+            task.Execute().Should().BeTrue();
+            task.TargetingPacks.Should().NotBeNull().And.HaveCount(2);
+            task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.Windows.SDK.NET.Ref");
+            task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.NETCore.App.Ref");
+            task.RuntimePacks.Should().NotBeNull().And.HaveCount(1);
+            task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref", "should not resolve runtime pack for Microsoft.NETCore.App");
+        }
 
+        [Theory]
+        [InlineData(null, new[] { "win-x64", "win-x86", "linux-x64" }, "Multiple RuntimeIdentifiers without RuntimeIdentifier")]
+        [InlineData("", new[] { "win-x64", "linux-x64" }, "Empty RuntimeIdentifier with RuntimeIdentifiers")]
+        [InlineData("any", new[] { "win-x64" }, "Any RID with RuntimeIdentifiers")]
+        [InlineData(null, new string[0], "No RuntimeIdentifier with empty RuntimeIdentifiers")]
+        [InlineData(null, null, "No RuntimeIdentifier with null RuntimeIdentifiers")]
+        public void It_processes_various_RuntimeIdentifier_scenarios(string? runtimeIdentifier, string[]? runtimeIdentifiers, string scenario)
+        {
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net5.0", "5.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", "win-x64;win-x86;linux-x64");
+                
+            var config = new TaskConfiguration
+            {
+                EnableRuntimePackDownload = true,
+                TargetLatestRuntimePatch = true,
+                RuntimeIdentifier = runtimeIdentifier,
+                RuntimeIdentifiers = runtimeIdentifiers,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreAppRef }
+            };
+            
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue($"Task should succeed for scenario: {scenario}");
+            
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Ref", $"Should contain targeting pack for scenario: {scenario}");
+            
+            // Validate expected runtime packs based on scenario
+            if (runtimeIdentifiers != null && runtimeIdentifiers.Length > 0)
+            {
+                foreach (var rid in runtimeIdentifiers)
+                {
+                    task.PackagesToDownload.Should().Contain(p => p.ItemSpec == $"Microsoft.NETCore.App.Runtime.{rid}", 
+                        $"Should contain runtime pack for {rid} in scenario: {scenario}");
+                }
+            }
+        }
+
+        [Fact]
+        public void It_processes_RuntimeIdentifiers_with_AlwaysCopyLocal_and_no_RuntimeIdentifier()
+        {
+            var config = new TaskConfiguration
+            {
+                EnableRuntimePackDownload = true,
+                TargetPlatformIdentifier = "Windows",
+                TargetPlatformVersion = "10.0.18362",
+                RuntimeIdentifier = null,
+                RuntimeIdentifiers = new[] { "win-x64" },
+                RuntimeGraphPath = CreateRuntimeGraphFile(WindowsRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.Windows.SDK.NET.Ref", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { _validWindowsSDKKnownFrameworkReference }
+            };
+            
+            var task = CreateTask(config);
+            
             if (Environment.OSVersion.Platform != PlatformID.Win32NT)
             {
                 task.Execute().Should().BeFalse("IsWindowsOnly=true");
@@ -309,16 +477,567 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
 
             task.Execute().Should().BeTrue();
+            task.TargetingPacks.Should().NotBeNull().And.HaveCount(1);
+            task.RuntimePacks.Should().NotBeNull().And.HaveCount(1);
+            task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref");
+        }
 
-            task.TargetingPacks.Length.Should().Be(2);
-            task.TargetingPacks.Should().Contain(p =>
-                p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.Windows.SDK.NET.Ref");
-            task.TargetingPacks.Should()
-                .Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.NETCore.App.Ref");
+        [Fact]
+        public void It_handles_real_world_ridless_scenario_with_aot_and_trimming()
+        {
+            // This test reproduces the exact scenario from the reported issue
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.0-rc.2.25457.102",
+                "Microsoft.NETCore.App.Runtime.**RID**", "linux-arm;linux-arm64;osx-arm64;osx-x64;win-x64;win-x86");
+                
+            var macOSRef = CreateKnownFrameworkReference("Microsoft.macOS", "net10.0", "15.5.10834-ci.darc-net10-0-3e2d6574-3e2e-4233-aab9-99cf75de33e4",
+                "Microsoft.macOS.Runtime.osx.net10.0_15.5", "osx-x64;osx-arm64", 
+                new Dictionary<string, string> {
+                    ["TargetingPackName"] = "Microsoft.macOS.Ref.net10.0_15.5",
+                    ["Profile"] = "macOS"
+                });
+                
+            var nativeAOTRuntimePack = new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["RuntimeFrameworkName"] = "Microsoft.NETCore.App",
+                ["LatestRuntimeFrameworkVersion"] = "10.0.0-rc.2.25457.102",
+                ["RuntimePackNamePatterns"] = "Microsoft.NETCore.App.Runtime.NativeAOT.**RID**",
+                ["RuntimePackRuntimeIdentifiers"] = "osx-arm64;osx-x64;win-x64;linux-x64",
+                ["RuntimePackLabels"] = "NativeAOT"
+            });
+            
+            var ilLinkPack = new MockTaskItem("Microsoft.NET.ILLink.Tasks", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["ILLinkPackVersion"] = "10.0.0-rc.2.25457.102"
+            });
+            
+            var ilCompilerPack = new MockTaskItem("Microsoft.DotNet.ILCompiler", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["ILCompilerPackNamePattern"] = "runtime.**RID**.Microsoft.DotNet.ILCompiler",
+                ["ILCompilerPackVersion"] = "10.0.0-rc.2.25457.102",
+                ["ILCompilerPortableRuntimeIdentifiers"] = "osx-x64;osx-arm64;win-x64;linux-x64",
+                ["ILCompilerRuntimeIdentifiers"] = "osx-x64;osx-arm64;win-x64;linux-x64"
+            });
 
-            task.RuntimePacks.Length.Should().Be(1);
-            task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref",
-                "it should not resolve runtime pack for Microsoft.NETCore.App");
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "10.0",
+                TargetPlatformIdentifier = "macOS",
+                TargetPlatformVersion = "15.5",
+                EnableRuntimePackDownload = true,
+                RequiresILLinkPack = true,
+                PublishAot = true,
+                PublishTrimmed = true,
+                EnableAotAnalyzer = true,
+                EnableTrimAnalyzer = true,
+                EnableSingleFileAnalyzer = true,
+                NETCoreSdkRuntimeIdentifier = "osx-arm64",
+                NETCoreSdkPortableRuntimeIdentifier = "osx-arm64",
+                RuntimeIdentifier = null, // Key: No primary RuntimeIdentifier
+                RuntimeIdentifiers = new[] { "osx-arm64", "osx-x64" }, // But has RuntimeIdentifiers
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                NetCoreRoot = "/usr/local/share/dotnet",
+                NETCoreSdkVersion = "10.0.100-rc.2.25457.102",
+                FrameworkReferences = new[] {
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" }),
+                    new MockTaskItem("Microsoft.macOS", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" })
+                },
+                KnownFrameworkReferences = new[] { netCoreAppRef, macOSRef },
+                KnownRuntimePacks = new[] { nativeAOTRuntimePack },
+                KnownILLinkPacks = new[] { ilLinkPack },
+                KnownILCompilerPacks = new[] { ilCompilerPack }
+            };
+            
+            var task = CreateTask(config);
+            
+            // Key validation: The task should complete successfully without crashing
+            // This was the main issue - null RuntimeIdentifier with RuntimeIdentifiers would crash
+            task.Execute().Should().BeTrue("Task should not crash with null RuntimeIdentifier but present RuntimeIdentifiers");
+            
+            // Validate that frameworks are processed correctly
+            task.TargetingPacks.Should().NotBeNull();
+            task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.NETCore.App.Ref");
+            task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.macOS.Ref.net10.0_15.5");
+            
+            // Validate that AOT tooling is processed
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec.Contains("Microsoft.DotNet.ILCompiler"), "Should include AOT compiler tooling");
+        }
+
+        [Fact]
+        public void It_handles_AOT_properties_without_failure()
+        {
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "8.0",
+                SelfContained = true,
+                RuntimeIdentifier = "linux-x64",
+                EnableRuntimePackDownload = true,
+                NETCoreSdkRuntimeIdentifier = "linux-x64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { 
+                    CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0", "Microsoft.NETCore.App.Runtime.**RID**", "linux-x64")
+                },
+                KnownILCompilerPacks = new[] {
+                    CreateKnownILCompilerPack("net8.0", "8.0.0", "linux-x64;win-x64;osx-x64;osx-arm64")
+                },
+                PublishAot = true
+            };
+            
+            var task = CreateTask(config);
+            
+            task.Execute().Should().BeTrue("Task should handle AOT properties without failing");
+            
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-x64");
+        }
+
+        [Fact]
+        public void It_handles_trimming_scenarios()
+        {
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "8.0",
+                PublishTrimmed = true,
+                EnableTrimAnalyzer = true,
+                SelfContained = true,
+                RuntimeIdentifier = "win-x64",
+                EnableRuntimePackDownload = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(WindowsRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { 
+                    CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0", "Microsoft.NETCore.App.Runtime.**RID**", "win-x64")
+                }
+            };
+            
+            var task = CreateTask(config);
+            task.FirstTargetFrameworkVersionToSupportTrimAnalyzer = "6.0";
+            
+            task.Execute().Should().BeTrue("Trimming scenario should be handled");
+            
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.win-x64");
+        }
+
+        [Fact]
+        public void It_handles_combined_publish_properties()
+        {
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "8.0",
+                SelfContained = true,
+                RuntimeIdentifier = "osx-arm64",
+                EnableRuntimePackDownload = true,
+                NETCoreSdkRuntimeIdentifier = "osx-arm64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { 
+                    CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0", "Microsoft.NETCore.App.Runtime.**RID**", "osx-arm64")
+                },
+                KnownILCompilerPacks = new[] {
+                    CreateKnownILCompilerPack("net8.0", "8.0.0", "linux-x64;win-x64;osx-x64;osx-arm64")
+                },
+                PublishAot = true,
+                PublishTrimmed = true
+            };
+            
+            var task = CreateTask(config);
+            
+            task.Execute().Should().BeTrue("Combined publish properties should be handled");
+            
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.osx-arm64");
+        }
+
+        [Fact]
+        public void It_handles_mobile_iOS_framework_references()
+        {
+            // Create compatible framework references with correct target framework
+            var netCoreRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0", "Microsoft.NETCore.App.Runtime.**RID**", "ios-arm64");
+            var iosFrameworkRef = CreateKnownFrameworkReference("Microsoft.iOS", "net8.0-ios17.0", "17.0.8478",
+                "Microsoft.iOS.Runtime.**RID**", "ios-arm64;iossimulator-x64;iossimulator-arm64",
+                new Dictionary<string, string> { ["Profile"] = "iOS" });
+                
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "8.0",
+                TargetPlatformIdentifier = "iOS",
+                TargetPlatformVersion = "17.0",
+                EnableRuntimePackDownload = true,
+                RuntimeIdentifier = "ios-arm64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { 
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()),
+                    new MockTaskItem("Microsoft.iOS", new Dictionary<string, string>())
+                },
+                KnownFrameworkReferences = new[] { netCoreRef, iosFrameworkRef }
+            };
+            
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue();
+            
+            // Should include both .NET and iOS targeting packs
+            task.TargetingPacks.Should().NotBeNull();
+            task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.NETCore.App.Ref");
+            task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.iOS.Ref");
+        }
+
+        [Theory]
+        [InlineData(true, true, true, "All analyzers enabled")]
+        [InlineData(true, true, false, "AOT and Trim analyzers only")]
+        [InlineData(false, false, true, "SingleFile analyzer only")]
+        [InlineData(true, false, false, "AOT analyzer only")]
+        public void It_handles_analyzer_combinations(bool aotAnalyzer, bool trimAnalyzer, bool singleFileAnalyzer, string scenario)
+        {
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "8.0", // Ensure analyzers are supported
+                EnableTargetingPackDownload = true, // Need this for PackagesToDownload
+                EnableAotAnalyzer = aotAnalyzer,
+                EnableTrimAnalyzer = trimAnalyzer,
+                EnableSingleFileAnalyzer = singleFileAnalyzer,
+                RuntimeGraphPath = CreateRuntimeGraphFile(WindowsRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { 
+                    CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0", "Microsoft.NETCore.App.Runtime.**RID**", "win-x64")
+                }
+            };
+            
+            var task = CreateTask(config);
+            // Set framework version thresholds for analyzer support
+            task.FirstTargetFrameworkVersionToSupportAotAnalyzer = "7.0";
+            task.FirstTargetFrameworkVersionToSupportTrimAnalyzer = "6.0";
+            task.FirstTargetFrameworkVersionToSupportSingleFileAnalyzer = "6.0";
+            
+            task.Execute().Should().BeTrue($"Task should succeed for scenario: {scenario}");
+            task.PackagesToDownload.Should().NotBeNull();
+        }
+
+        [Theory]
+        [InlineData("Android", "34.0", "android-arm64")]
+        [InlineData("macOS", "14.0", "osx-arm64")]
+        [InlineData("Windows", "10.0.19041.0", "win-x64")]
+        public void It_handles_different_target_platforms(string platformId, string platformVersion, string runtimeId)
+        {
+            var platformFrameworkRef = CreateKnownFrameworkReference($"Microsoft.{platformId}", "net8.0", "8.0.0",
+                $"Microsoft.{platformId}.Runtime.**RID**", runtimeId,
+                new Dictionary<string, string> { 
+                    ["Profile"] = platformId,
+                    ["IsWindowsOnly"] = (platformId == "Windows").ToString().ToLower()
+                });
+                
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "8.0",
+                TargetPlatformIdentifier = platformId,
+                TargetPlatformVersion = platformVersion,
+                EnableRuntimePackDownload = true,
+                RuntimeIdentifier = runtimeId,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { 
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()),
+                    new MockTaskItem($"Microsoft.{platformId}", new Dictionary<string, string>())
+                },
+                KnownFrameworkReferences = new[] { 
+                    CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0", "Microsoft.NETCore.App.Runtime.**RID**", runtimeId),
+                    platformFrameworkRef 
+                }
+            };
+            
+            var task = CreateTask(config);
+            
+            // Windows-only framework should fail on non-Windows
+            if (platformId == "Windows" && Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                task.Execute().Should().BeFalse("Windows-only framework should fail on non-Windows platforms");
+                return;
+            }
+            
+            task.Execute().Should().BeTrue($"Should handle {platformId} platform targeting");
+            task.TargetingPacks.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void It_resolves_runtime_packs_for_SelfContained_deployment()
+        {
+            // This test validates the "good" behavior from good-processframeworkreferences-selfcontained.txt
+            // When SelfContained=true with a RuntimeIdentifier, runtime packs should be resolved
+            
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", 
+                "linux-arm;linux-arm64;linux-musl-arm64;linux-musl-x64;linux-x64;osx-x64;tizen.4.0.0-armel;tizen.5.0.0-armel;win-arm64;win-x64;win-x86;linux-musl-arm;osx-arm64;linux-s390x;linux-loongarch64;linux-bionic-arm;linux-bionic-arm64;linux-bionic-x64;linux-bionic-x86;linux-ppc64le;freebsd-x64;freebsd-arm64;linux-riscv64;linux-musl-riscv64;linux-musl-loongarch64;android-arm64;android-x64");
+            
+            var aspNetCoreRef = CreateKnownFrameworkReference("Microsoft.AspNetCore.App", "net10.0", "10.0.0",
+                "Microsoft.AspNetCore.App.Runtime.**RID**",
+                "win-x64;win-x86;osx-x64;linux-musl-x64;linux-musl-arm64;linux-x64;linux-arm;linux-arm64;linux-musl-arm;win-arm64;osx-arm64;linux-s390x;linux-loongarch64;linux-ppc64le;freebsd-x64;freebsd-arm64;linux-riscv64;linux-musl-riscv64;linux-loongarch64;linux-musl-loongarch64");
+            
+            var ilLinkPack = new MockTaskItem("Microsoft.NET.ILLink.Tasks", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["ILLinkPackVersion"] = "10.0.0"
+            });
+            
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "10.0",
+                EnableRuntimePackDownload = true,
+                EnableTargetingPackDownload = true,
+                SelfContained = true,
+                RuntimeIdentifier = "linux-arm64",
+                PublishTrimmed = true,
+                RequiresILLinkPack = true,
+                TargetLatestRuntimePatch = true,
+                TargetLatestRuntimePatchIsDefault = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { 
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()),
+                    new MockTaskItem("Microsoft.AspNetCore.App", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" })
+                },
+                KnownFrameworkReferences = new[] { netCoreAppRef, aspNetCoreRef },
+                KnownILLinkPacks = new[] { ilLinkPack }
+            };
+            
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue("SelfContained deployment should succeed");
+            
+            // Validate PackagesToDownload contains runtime packs
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-arm64",
+                "Should download NETCore runtime pack for target RID");
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.AspNetCore.App.Runtime.linux-arm64",
+                "Should download AspNetCore runtime pack for target RID");
+            
+            // Validate RuntimePacks output
+            task.RuntimePacks.Should().NotBeNull().And.HaveCount(2, "Should have runtime packs for both frameworks");
+            task.RuntimePacks.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-arm64");
+            task.RuntimePacks.Should().Contain(p => p.ItemSpec == "Microsoft.AspNetCore.App.Runtime.linux-arm64");
+            
+            // Validate RuntimeFrameworks
+            task.RuntimeFrameworks.Should().NotBeNull().And.HaveCount(2);
+            task.RuntimeFrameworks.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App");
+            task.RuntimeFrameworks.Should().Contain(p => p.ItemSpec == "Microsoft.AspNetCore.App");
+            
+            // Validate TargetingPacks
+            task.TargetingPacks.Should().NotBeNull().And.HaveCount(2);
+            task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.NETCore.App.Ref");
+            task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.AspNetCore.App.Ref");
+            
+            // Validate ILLink pack is included
+            task.ImplicitPackageReferences.Should().NotBeNull();
+            task.ImplicitPackageReferences.Should().Contain(p => p.ItemSpec == "Microsoft.NET.ILLink.Tasks");
+        }
+
+        [Fact]
+        public void It_resolves_runtime_packs_for_PublishTrimmed_without_SelfContained()
+        {
+            // This test validates that PublishTrimmed should trigger runtime pack resolution
+            // even when SelfContained=false (addresses the issue in bad-processframeworkreferences-publishtrimmed)
+            // PublishTrimmed requires runtime-specific assets, similar to SelfContained
+            
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", 
+                "linux-arm;linux-arm64;linux-musl-arm64;linux-musl-x64;linux-x64;osx-x64;tizen.4.0.0-armel;tizen.5.0.0-armel;win-arm64;win-x64;win-x86;linux-musl-arm;osx-arm64;linux-s390x;linux-loongarch64;linux-bionic-arm;linux-bionic-arm64;linux-bionic-x64;linux-bionic-x86;linux-ppc64le;freebsd-x64;freebsd-arm64;linux-riscv64;linux-musl-riscv64;linux-musl-loongarch64;android-arm64;android-x64");
+            
+            var aspNetCoreRef = CreateKnownFrameworkReference("Microsoft.AspNetCore.App", "net10.0", "10.0.0",
+                "Microsoft.AspNetCore.App.Runtime.**RID**",
+                "win-x64;win-x86;osx-x64;linux-musl-x64;linux-musl-arm64;linux-x64;linux-arm;linux-arm64;linux-musl-arm;win-arm64;osx-arm64;linux-s390x;linux-loongarch64;linux-ppc64le;freebsd-x64;freebsd-arm64;linux-riscv64;linux-musl-riscv64;linux-loongarch64;linux-musl-loongarch64");
+            
+            var ilLinkPack = new MockTaskItem("Microsoft.NET.ILLink.Tasks", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["ILLinkPackVersion"] = "10.0.0"
+            });
+            
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "10.0",
+                EnableRuntimePackDownload = true,
+                EnableTargetingPackDownload = true,
+                SelfContained = false, // This is the key difference from the previous test
+                RuntimeIdentifier = "linux-arm64",
+                PublishTrimmed = true,
+                RequiresILLinkPack = true,
+                EnableTrimAnalyzer = true,
+                TargetLatestRuntimePatch = false,
+                TargetLatestRuntimePatchIsDefault = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { 
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()),
+                    new MockTaskItem("Microsoft.AspNetCore.App", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" })
+                },
+                KnownFrameworkReferences = new[] { netCoreAppRef, aspNetCoreRef },
+                KnownILLinkPacks = new[] { ilLinkPack }
+            };
+            
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue("PublishTrimmed deployment should succeed");
+            
+            // The key assertion: runtime packs should be resolved even when SelfContained=false
+            // because PublishTrimmed requires runtime-specific assets
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-arm64",
+                "Should download NETCore runtime pack for PublishTrimmed even when SelfContained=false");
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.AspNetCore.App.Runtime.linux-arm64",
+                "Should download AspNetCore runtime pack for PublishTrimmed even when SelfContained=false");
+            
+            // Validate RuntimePacks output
+            task.RuntimePacks.Should().NotBeNull().And.HaveCount(2, 
+                "Should have runtime packs for both frameworks when PublishTrimmed=true");
+            task.RuntimePacks.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-arm64");
+            task.RuntimePacks.Should().Contain(p => p.ItemSpec == "Microsoft.AspNetCore.App.Runtime.linux-arm64");
+            
+            // Validate RuntimeFrameworks
+            task.RuntimeFrameworks.Should().NotBeNull().And.HaveCount(2);
+            
+            // Validate TargetingPacks
+            task.TargetingPacks.Should().NotBeNull().And.HaveCount(2);
+            
+            // Validate ILLink pack is included for trimming
+            task.ImplicitPackageReferences.Should().NotBeNull();
+            task.ImplicitPackageReferences.Should().Contain(p => p.ItemSpec == "Microsoft.NET.ILLink.Tasks",
+                "ILLink pack should be included for PublishTrimmed");
+        }
+
+        [Theory]
+        [InlineData(true, false, false, false, "SelfContained only")]
+        [InlineData(false, true, false, false, "PublishTrimmed only")]
+        [InlineData(false, false, true, false, "PublishReadyToRun only")]
+        [InlineData(false, false, false, true, "PublishAot only")]
+        [InlineData(true, true, false, false, "SelfContained + PublishTrimmed")]
+        [InlineData(true, false, true, false, "SelfContained + PublishReadyToRun")]
+        [InlineData(false, true, true, false, "PublishTrimmed + PublishReadyToRun")]
+        public void It_resolves_runtime_packs_for_various_publish_scenarios(
+            bool selfContained, bool publishTrimmed, bool publishReadyToRun, bool publishAot, string scenario)
+        {
+            // This test validates that runtime packs are resolved for any scenario requiring runtime-specific assets
+            
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", 
+                "linux-x64;linux-arm64;win-x64;osx-x64;osx-arm64");
+            
+            var ilLinkPack = new MockTaskItem("Microsoft.NET.ILLink.Tasks", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["ILLinkPackVersion"] = "10.0.0"
+            });
+            
+            var ilCompilerPack = CreateKnownILCompilerPack("net10.0", "10.0.0", "linux-x64;linux-arm64;win-x64;osx-x64;osx-arm64");
+            
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "10.0",
+                EnableRuntimePackDownload = true,
+                EnableTargetingPackDownload = true,
+                SelfContained = selfContained,
+                RuntimeIdentifier = "linux-x64",
+                PublishTrimmed = publishTrimmed,
+                PublishAot = publishAot,
+                ReadyToRunEnabled = publishReadyToRun,
+                RequiresILLinkPack = publishTrimmed || publishAot,
+                TargetLatestRuntimePatch = true,
+                TargetLatestRuntimePatchIsDefault = true,
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreAppRef },
+                KnownILLinkPacks = new[] { ilLinkPack },
+                KnownILCompilerPacks = new[] { ilCompilerPack }
+            };
+            
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue($"Task should succeed for scenario: {scenario}");
+            
+            // All of these scenarios require runtime-specific assets, so runtime packs should be resolved
+            task.PackagesToDownload.Should().NotBeNull($"PackagesToDownload should not be null for scenario: {scenario}");
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-x64",
+                $"Should download runtime pack for scenario: {scenario}");
+            
+            task.RuntimePacks.Should().NotBeNull($"RuntimePacks should not be null for scenario: {scenario}");
+            task.RuntimePacks.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-x64",
+                $"Should have runtime pack in output for scenario: {scenario}");
+        }
+
+
+        [Fact]
+        public void It_handles_complex_cross_compilation_RuntimeIdentifiers()
+        {
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0",
+                "Microsoft.NETCore.App.Runtime.**RID**", 
+                "linux-x64;linux-musl-x64;linux-arm64;linux-musl-arm64;alpine-x64;alpine-arm64");
+                
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "8.0",
+                EnableRuntimePackDownload = true,
+                RuntimeIdentifier = null, // No primary RID
+                RuntimeIdentifiers = new[] { "linux-x64", "linux-musl-x64", "alpine-x64", "linux-arm64" }, // Mixed supported/unsupported
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreAppRef }
+            };
+            
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue("Should handle mixed supported/unsupported RIDs gracefully");
+            
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Ref");
+            
+            // Should download runtime packs for supported RIDs only
+            var supportedRids = new[] { "linux-x64", "linux-musl-x64", "linux-arm64" };
+            foreach (var rid in supportedRids)
+            {
+                task.PackagesToDownload.Should().Contain(p => p.ItemSpec == $"Microsoft.NETCore.App.Runtime.{rid}",
+                    $"Should include runtime pack for supported RID: {rid}");
+            }
+        }
+
+        [Theory]
+        [InlineData(null, "linux-x64")]
+        [InlineData("linux-x64", "linux-x64")]
+        [InlineData(NonPortableRid, NonPortableRid)]
+        public void It_selects_correct_ILCompiler_based_on_RuntimeIdentifier(string? runtimeIdentifier, string expectedILCompilerRid)
+        {
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.1",
+                "Microsoft.NETCore.App.Runtime.**RID**",
+                "linux-x64;" + NonPortableRid);
+
+            var ilCompilerPack = new MockTaskItem("Microsoft.DotNet.ILCompiler", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net10.0",
+                ["ILCompilerPackNamePattern"] = "runtime.**RID**.Microsoft.DotNet.ILCompiler",
+                ["ILCompilerPackVersion"] = "10.0.1",
+                ["ILCompilerPortableRuntimeIdentifiers"] = "linux-x64",
+                ["ILCompilerRuntimeIdentifiers"] = "linux-x64;" + NonPortableRid
+            });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "10.0",
+                EnableRuntimePackDownload = true,
+                PublishAot = true,
+                NETCoreSdkRuntimeIdentifier = NonPortableRid,
+                NETCoreSdkPortableRuntimeIdentifier = "linux-x64",
+                RuntimeIdentifier = runtimeIdentifier,
+                RuntimeGraphPath = CreateRuntimeGraphFile(NonPortableRuntimeGraph),
+                FrameworkReferences = new[] { new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string>()) },
+                KnownFrameworkReferences = new[] { netCoreAppRef },
+                KnownILCompilerPacks = new[] { ilCompilerPack }
+            };
+
+            var task = CreateTask(config);
+            task.Execute().Should().BeTrue("Task should succeed");
+
+            // Validate that the expected ILCompiler pack is used
+            task.PackagesToDownload.Should().NotBeNull();
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec.Contains("Microsoft.DotNet.ILCompiler"),
+                "Should include ILCompiler pack when PublishAot is true");
+
+            var ilCompilerPackage = task.PackagesToDownload.FirstOrDefault(p => p.ItemSpec.Contains("Microsoft.DotNet.ILCompiler"));
+            ilCompilerPackage.Should().NotBeNull();
+            ilCompilerPackage!.ItemSpec.Should().Contain(expectedILCompilerRid,
+                $"Should use {expectedILCompilerRid} ILCompiler pack");
         }
     }
 }

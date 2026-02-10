@@ -8,35 +8,22 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal static class ParserFactory
     {
-        internal static CommandLineConfiguration CreateParser(Command command, bool disableHelp = false)
+        internal static readonly ParserConfiguration ParserConfiguration = new()
         {
-            CommandLineConfiguration config = new(command)
-            //TODO: decide if it's needed to implement it; and implement if needed
-            //.UseParseDirective()
-            //.UseSuggestDirective()
-            {
-                EnablePosixBundling = false
-            };
+            EnablePosixBundling = false,
+        };
 
-            for (int i = 0; i < command.Options.Count; i++)
-            {
-                if (command.Options[i] is HelpOption)
-                {
-                    if (disableHelp)
-                    {
-                        command.Options.RemoveAt(i);
-                    }
-
-                    return config;
-                }
-            }
+        internal static Command CreateParser(Command command, bool disableHelp = false)
+        {
+            // {
+            //     EnablePosixBundling = false
+            // };
 
             if (!disableHelp)
             {
                 command.Options.Add(new HelpOption());
             }
-
-            return config;
+            return command;
         }
     }
 }

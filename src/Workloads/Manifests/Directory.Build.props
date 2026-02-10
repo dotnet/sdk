@@ -15,15 +15,17 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <_workloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PrereleaseVersionLabel)' != 'rtm'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_workloadVersionSuffix>
-    <_workloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PrereleaseVersionLabel)' != 'rtm'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_workloadVersionSuffix>
+    <_workloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and
+                                       '$(PrereleaseVersionLabel)' != 'rtm' and
+                                       '$(PrereleaseVersionLabel)' != 'servicing'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_workloadVersionSuffix>
     <PackageId>$(MSBuildProjectName)-$(BuiltinWorkloadFeatureBand)$(_workloadVersionSuffix)</PackageId>
     <PackageId Condition="'$(MSBuildProjectName)' == 'Microsoft.NET.Workload.Emscripten.Current.Transport.Manifest'">Microsoft.NET.Workload.Emscripten.Current.Manifest-$(BuiltinWorkloadFeatureBand).Transport</PackageId>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- NU5128: This package doesn't contain any lib or ref assemblies because it's a tooling package. -->
-    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <!-- NU5039: NuGet is unable to find the readme file in the package. -->
+    <NoWarn>$(NoWarn);NU5128;NU5039</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,4 +1,6 @@
 [
+  "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\blazorhosted.modules.json.gz",
+  "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.AspNetCore.Authorization.wasm",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.AspNetCore.Authorization.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm",
@@ -13,6 +15,8 @@
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.AspNetCore.Metadata.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.CSharp.wasm",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.CSharp.wasm.gz",
+  "${OutputPath}\\wwwroot\\_framework\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm",
+  "${OutputPath}\\wwwroot\\_framework\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm",

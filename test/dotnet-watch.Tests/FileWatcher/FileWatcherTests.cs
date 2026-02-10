@@ -5,6 +5,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
@@ -70,8 +71,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(expectedChanges, filesChanged.OrderBy(x => x.Path));
         }
 
-        private sealed class TestFileWatcher(IReporter reporter)
-            : FileWatcher(reporter, TestOptions.GetEnvironmentOptions())
+        private sealed class TestFileWatcher(ILogger logger)
+            : FileWatcher(logger, TestOptions.GetEnvironmentOptions())
         {
             public IReadOnlyDictionary<string, DirectoryWatcher> DirectoryTreeWatchers => _directoryTreeWatchers;
             public IReadOnlyDictionary<string, DirectoryWatcher> DirectoryWatchers => _directoryWatchers;
@@ -93,7 +94,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public void DirectoryWatcherMerging()
         {
-            var watcher = new TestFileWatcher(NullReporter.Singleton);
+            var logger = new TestLogger(output);
+            var watcher = new TestFileWatcher(logger);
             string root = TestContext.Current.TestExecutionDirectory;
 
             var dirA = Path.Combine(root, "A");

@@ -26,11 +26,14 @@ public sealed class MSBuildForwardingLogger : IForwardingLogger
             eventSource4.IncludeEvaluationPropertiesAndItems();
         }
 
-        // Only forward telemetry events
+        // Forward telemetry events
         if (eventSource is IEventSource2 eventSource2)
         {
             eventSource2.TelemetryLogged += (sender, args) => BuildEventRedirector.ForwardEvent(args);
         }
+
+        // Forward build finished events. Is used for logging the aggregated build events.
+        eventSource.BuildFinished += (sender, args) => BuildEventRedirector.ForwardEvent(args);
     }
 
     public void Initialize(IEventSource eventSource, int nodeCount)

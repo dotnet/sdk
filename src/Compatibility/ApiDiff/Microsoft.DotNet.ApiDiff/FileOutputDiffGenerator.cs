@@ -1,5 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
@@ -154,8 +154,6 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
 
             _log.LogMessage($"Wrote '{filePath}'.");
         }
-
-        tableOfContents.AppendLine();
 
         string tableOfContentsFilePath = Path.Combine(_outputFolderPath, $"{_tableOfContentsTitle}.md");
 

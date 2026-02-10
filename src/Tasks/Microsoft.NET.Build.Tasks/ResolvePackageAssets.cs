@@ -56,6 +56,13 @@ namespace Microsoft.NET.Build.Tasks
         public string RuntimeIdentifier { get; set; }
 
         /// <summary>
+        /// The `any` RID can be passed to indicate that the assets should be resolved as a RID-agnostic application.
+        /// We use this field to detect that case and ensure that we treat `any` the same as no RID at all.
+        /// Essentially, if you see use of `RuntimeIdentifier` directly, you should ask "why?".
+        /// </summary>
+        private string EffectiveRuntimeIdentifier => !string.IsNullOrEmpty(RuntimeIdentifier) && RuntimeIdentifier != "any" ? RuntimeIdentifier : null;
+
+        /// <summary>
         /// The platform library name for resolving copy local assets.
         /// </summary>
         public string PlatformLibraryName { get; set; }
@@ -478,6 +485,8 @@ namespace Microsoft.NET.Build.Tasks
                     writer.Write(ProjectLanguage ?? "");
                     writer.Write(CompilerApiVersion ?? "");
                     writer.Write(ProjectPath);
+                    // we want to ensure uniqueness of results, so even though `any` is No RID for purposes of Task logic,
+                    // we continue to treat it distinctly for hashing
                     writer.Write(RuntimeIdentifier ?? "");
                     if (ShimRuntimeIdentifiers != null)
                     {
@@ -730,7 +739,7 @@ namespace Microsoft.NET.Build.Tasks
                 if (task.DesignTimeBuild)
                 {
                     _compileTimeTarget = _lockFile.GetTargetAndReturnNullIfNotFound(_targetFramework, runtimeIdentifier: null);
-                    _runtimeTarget = _lockFile.GetTargetAndReturnNullIfNotFound(_targetFramework, _task.RuntimeIdentifier);
+                    _runtimeTarget = _lockFile.GetTargetAndReturnNullIfNotFound(_targetFramework, runtimeIdentifier: _task.EffectiveRuntimeIdentifier);
                     if (_compileTimeTarget == null)
                     {
                         _compileTimeTarget = new LockFileTarget();
@@ -745,7 +754,7 @@ namespace Microsoft.NET.Build.Tasks
                 else
                 {
                     _compileTimeTarget = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, runtimeIdentifier: null);
-                    _runtimeTarget = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, _task.RuntimeIdentifier);
+                    _runtimeTarget = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, runtimeIdentifier: _task.EffectiveRuntimeIdentifier);
                 }
 
 
@@ -1271,11 +1280,11 @@ namespace Microsoft.NET.Build.Tasks
 
             private void WriteUnsupportedRuntimeIdentifierMessageIfNecessary()
             {
-                if (_task.EnsureRuntimePackageDependencies && !string.IsNullOrEmpty(_task.RuntimeIdentifier))
+                if (_task.EnsureRuntimePackageDependencies && !string.IsNullOrEmpty(_task.EffectiveRuntimeIdentifier))
                 {
                     if (_compileTimeTarget.Libraries.Count >= _runtimeTarget.Libraries.Count)
                     {
-                        WriteItem(string.Format(Strings.UnsupportedRuntimeIdentifier, _task.RuntimeIdentifier));
+                        WriteItem(string.Format(Strings.UnsupportedRuntimeIdentifier, _task.EffectiveRuntimeIdentifier));
                         WriteMetadata(MetadataKeys.Severity, nameof(LogLevel.Error));
                     }
                 }
@@ -1566,10 +1575,19 @@ namespace Microsoft.NET.Build.Tasks
                     bool ForCurrentTargetFramework(string targetFramework)
                     {
                         var parts = targetFramework.Split(LockFile.DirectorySeparatorChar);
-                        var parsedTargetGraph = NuGetFramework.Parse(parts[0]);
-                        var alias = _lockFile.PackageSpec.TargetFrameworks
-                            .FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)
-                            ?.TargetAlias ?? targetFramework;
+                        string alias = parts[0];
+                        if (alias == _task.TargetFramework)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            var parsedTargetGraph = NuGetFramework.Parse(alias);
+                            alias = _lockFile.PackageSpec.TargetFrameworks
+                                .FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)
+                                ?.TargetAlias ?? targetFramework;
+                        }
+
                         return alias == _task.TargetFramework;
                     }
 

@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private (string testDirectory, string dotnetRoot, string userProfileDir, WorkloadResolver workloadResolver, MockNuGetPackageDownloader nugetDownloader) Setup(bool userLocal, bool cleanAll)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? $"userlocal-{cleanAll}" : $"default-{cleanAll}").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? $"userlocal-{cleanAll}" : $"default-{cleanAll}").Path;
             var dotnetRoot = Path.Combine(testDirectory, dotnet);
             var userProfileDir = Path.Combine(testDirectory, _profileDirectoryLeafName);
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
         public GivenDotnetWorkloadClean(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
-            _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
         [Theory]
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
         {
             var (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader) = Setup(userLocal, true);
 
-            const string aboveSdkFeatureBand = ToolsetInfo.NextTargetFrameworkVersion + ".100";
+            const string aboveSdkFeatureBand = ToolsetInfo.CurrentTargetFrameworkVersion + ".100";
             const string belowSdkFeatureBand = "5.0.100"; // At the time of writing this test, it would only run on 7-8.0 SDKs or above.
 
             string installRoot = userLocal ? userProfileDir : dotnetRoot;
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
         {
             sdkBand ??= _sdkFeatureVersion;
 
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", _installingWorkload });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", _installingWorkload });
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkBand, workloadResolver, userProfileDir);
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory: workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: _manifestUpdater, tempDirPath: testDirectory);
@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private WorkloadCleanCommand GenerateWorkloadCleanCommand(WorkloadResolver workloadResolver, string userProfileDir, string dotnetRoot)
         {
-            var cleanParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "clean" });
+            var cleanParseResult = Parser.Parse(new string[] { "dotnet", "workload", "clean" });
             return MakeWorkloadCleanCommand(cleanParseResult, workloadResolver, userProfileDir, dotnetRoot);
         }
 
@@ -135,7 +135,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private WorkloadCleanCommand GenerateWorkloadCleanAllCommand(WorkloadResolver workloadResolver, string userProfileDir, string dotnetRoot)
         {
-            var cleanParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "clean", "--all" });
+            var cleanParseResult = Parser.Parse(new string[] { "dotnet", "workload", "clean", "--all" });
             return MakeWorkloadCleanCommand(cleanParseResult, workloadResolver, userProfileDir, dotnetRoot);
         }
 

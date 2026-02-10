@@ -8,11 +8,12 @@ namespace Microsoft.NET.TestFramework
 {
     public class ToolsetInfo
     {
-        public const string CurrentTargetFramework = "net10.0";
-        public const string CurrentTargetFrameworkVersion = "10.0";
+        public const string CurrentTargetFramework = "net11.0";
+        /// <remarks>Keep in sync with <see cref="Product.TargetFrameworkVersion"/>.</remarks>
+        public const string CurrentTargetFrameworkVersion = "11.0";
         public const string CurrentTargetFrameworkMoniker = ".NETCoreApp,Version=v" + CurrentTargetFrameworkVersion;
-        public const string NextTargetFramework = "net11.0";
-        public const string NextTargetFrameworkVersion = "11.0";
+        public const string NextTargetFramework = "net12.0";
+        public const string NextTargetFrameworkVersion = "12.0";
 
         public const string LatestWinRuntimeIdentifier = "win";
         public const string LatestLinuxRuntimeIdentifier = "linux";
@@ -68,6 +69,8 @@ namespace Microsoft.NET.TestFramework
         public string? FullFrameworkMSBuildPath { get; set; }
 
         public string? SdkResolverPath { get; set; }
+
+        public string? RepoRoot { get; set; }
 
         public ToolsetInfo(string dotNetRoot)
         {
@@ -161,7 +164,7 @@ namespace Microsoft.NET.TestFramework
                 //  Use stage 2 MSBuild SDK resolver
                 if (SdkResolverPath is not null)
                 {
-                    environment["MSBUILDADDITIONALSDKRESOLVERSFOLDER"] = SdkResolverPath;
+                    environment["MSBUILDADDITIONALSDKRESOLVERSFOLDER_NETFRAMEWORK"] = SdkResolverPath;
                 }
 
                 //  Avoid using stage 0 dotnet install dir
@@ -292,7 +295,10 @@ namespace Microsoft.NET.TestFramework
                 throw new FileNotFoundException($"Host '{dotnetHost}' not found. {hostNotFoundReason}");
             }
 
-            var ret = new ToolsetInfo(dotnetRoot);
+            var ret = new ToolsetInfo(dotnetRoot)
+            {
+                RepoRoot = repoRoot,
+            };
 
             if (!string.IsNullOrEmpty(commandLine.FullFrameworkMSBuildPath))
             {
@@ -346,7 +352,7 @@ namespace Microsoft.NET.TestFramework
 
             if (repoRoot != null && repoArtifactsDir is not null)
             {
-                ret.CliHomePath = Path.Combine(repoArtifactsDir, "tmp", configuration);
+                ret.CliHomePath = Path.Combine(repoArtifactsDir, "tmp", configuration, "testing");
             }
 
             return ret;

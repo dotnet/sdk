@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 namespace Microsoft.ComponentDetection.Detectors.NuGet;
 
 #nullable disable
@@ -27,7 +30,6 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
     {
         NETStandard20.Register();
         NETStandard21.Register();
-        NET461.Register();
         NETCoreApp20.Register();
         NETCoreApp21.Register();
         NETCoreApp22.Register();
@@ -167,8 +169,15 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
 
     private void Add(string id, string version)
     {
-        // intentionally redirect to indexer to allow for overwrite
-        this.Packages[id] = NuGetVersion.Parse(version);
+        if (string.IsNullOrEmpty(version))
+        {
+            this.Packages.Remove(id);
+        }
+        else
+        {
+            // intentionally redirect to indexer to allow for overwrite
+            this.Packages[id] = NuGetVersion.Parse(version);
+        }
     }
 
     public bool IsAFrameworkComponent(string id, NuGetVersion version) => this.Packages.TryGetValue(id, out var frameworkPackageVersion) && frameworkPackageVersion >= version;

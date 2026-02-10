@@ -18,26 +18,29 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void ListToolParserCanGetGlobalOption()
         {
-            var result = Parser.Instance.Parse("dotnet tool list -g");
+            var result = Parser.Parse("dotnet tool list -g");
 
-            result.GetValue<bool>(ToolListCommandParser.GlobalOption).Should().Be(true);
+            var definition = Assert.IsType<ToolListCommandDefinition>(result.CommandResult.Command);
+            result.GetValue(definition.LocationOptions.GlobalOption).Should().Be(true);
         }
 
         [Fact]
         public void ListToolParserCanGetLocalOption()
         {
-            var result = Parser.Instance.Parse("dotnet tool list --local");
+            var result = Parser.Parse("dotnet tool list --local");
 
-            result.GetValue<bool>(ToolListCommandParser.LocalOption).Should().Be(true);
+            var definition = Assert.IsType<ToolListCommandDefinition>(result.CommandResult.Command);
+            result.GetValue(definition.LocationOptions.LocalOption).Should().Be(true);
         }
 
         [Fact]
         public void ListToolParserCanParseToolPathOption()
         {
             var result =
-                Parser.Instance.Parse(@"dotnet tool list --tool-path C:\Tools ");
+                Parser.Parse(@"dotnet tool list --tool-path C:\Tools ");
 
-            result.GetValue<string>(ToolListCommandParser.ToolPathOption).Should().Be(@"C:\Tools");
+            var definition = Assert.IsType<ToolListCommandDefinition>(result.CommandResult.Command);
+            result.GetValue(definition.LocationOptions.ToolPathOption).Should().Be(@"C:\Tools");
         }
     }
 }

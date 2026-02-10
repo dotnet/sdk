@@ -25,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("All")]
         public void It_respects_opt_outs(string attributeToOptOut)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: Path.DirectorySeparatorChar + attributeToOptOut)
                 .WithSource();
 
@@ -50,19 +50,19 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var expectedInfo = new SortedDictionary<string, string>
+            var expectedInfo = new HashSet<(string Key, string Value)>
             {
-                { "AssemblyInformationalVersionAttribute", "1.2.3-beta" },
-                { "AssemblyFileVersionAttribute", "4.5.6.7" },
-                { "AssemblyVersionAttribute", "8.9.10.11" },
-                { "AssemblyCompanyAttribute", "TestCompany" },
-                { "AssemblyConfigurationAttribute", "Release" },
-                { "AssemblyCopyrightAttribute", "TestCopyright" },
-                { "AssemblyDescriptionAttribute", "TestDescription" },
-                { "AssemblyProductAttribute", "TestProduct" },
-                { "AssemblyTitleAttribute", "TestTitle" },
-                { "AssemblyTrademarkAttribute", "TestTrademark" },
-                { "NeutralResourcesLanguageAttribute", "fr" },
+                ("AssemblyInformationalVersionAttribute", "1.2.3-beta"),
+                ("AssemblyFileVersionAttribute", "4.5.6.7"),
+                ("AssemblyVersionAttribute", "8.9.10.11"),
+                ("AssemblyCompanyAttribute", "TestCompany"),
+                ("AssemblyConfigurationAttribute", "Release"),
+                ("AssemblyCopyrightAttribute", "TestCopyright"),
+                ("AssemblyDescriptionAttribute", "TestDescription"),
+                ("AssemblyProductAttribute", "TestProduct"),
+                ("AssemblyTitleAttribute", "TestTitle"),
+                ("AssemblyTrademarkAttribute", "TestTrademark"),
+                ("NeutralResourcesLanguageAttribute", "fr"),
             };
 
             if (attributeToOptOut == "All")
@@ -71,15 +71,15 @@ namespace Microsoft.NET.Build.Tests
             }
             else
             {
-                expectedInfo.Remove(attributeToOptOut);
+                expectedInfo.RemoveWhere(i => i.Key == attributeToOptOut);
             }
 
-            expectedInfo.Add("TargetFrameworkAttribute", $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}");
+            expectedInfo.Add(("TargetFrameworkAttribute", $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}"));
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework, "Release").FullName, "HelloWorld.dll");
             var actualInfo = AssemblyInfo.Get(assemblyPath);
 
-            actualInfo.Should().Equal(expectedInfo);
+            actualInfo.Should().BeEquivalentTo(expectedInfo);
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var command = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name), testProject.TargetFrameworks, valueName: "InformationalVersion");
             command.Execute().Should().Pass();
@@ -108,7 +108,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((path, project) =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -139,7 +139,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((path, project) =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -171,7 +171,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((path, project) =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -207,7 +207,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((path, project) =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -235,7 +235,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().Should().BeEquivalentTo(new[] { "1.2.3+abc.xyz" });
         }
 
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         [InlineData("net45")]
         public void It_respects_version_prefix(string targetFramework)
@@ -245,7 +245,7 @@ namespace Microsoft.NET.Build.Tests
                 return;
             }
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource();
 
@@ -258,9 +258,9 @@ namespace Microsoft.NET.Build.Tests
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(targetFramework).FullName, "HelloWorld.dll");
             var info = AssemblyInfo.Get(assemblyPath);
 
-            info["AssemblyVersionAttribute"].Should().Be("1.2.3.0");
-            info["AssemblyFileVersionAttribute"].Should().Be("1.2.3.0");
-            info["AssemblyInformationalVersionAttribute"].Should().Be("1.2.3");
+            info.Should().Contain(("AssemblyVersionAttribute", "1.2.3.0"));
+            info.Should().Contain(("AssemblyFileVersionAttribute", "1.2.3.0"));
+            info.Should().Contain(("AssemblyInformationalVersionAttribute", "1.2.3"));
         }
 
         [WindowsOnlyTheory]
@@ -274,7 +274,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             // Given a project that has already been built
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource();
             BuildProject(versionPrefix: "1.2.3");
@@ -285,7 +285,7 @@ namespace Microsoft.NET.Build.Tests
             // Then the version of the built assembly shall match the provided VersionPrefix
             var assemblyPath = Path.Combine(incrementalBuildCommand.GetOutputDirectory(targetFramework).FullName, "HelloWorld.dll");
             var info = AssemblyInfo.Get(assemblyPath);
-            info["AssemblyVersionAttribute"].Should().Be("1.2.4.0");
+            info.Should().Contain(("AssemblyVersionAttribute", "1.2.4.0"));
 
             BuildCommand BuildProject(string versionPrefix)
             {
@@ -301,13 +301,13 @@ namespace Microsoft.NET.Build.Tests
         public void It_respects_custom_assembly_attribute_items_on_incremental_build()
         {
             var targetFramework = "netstandard1.5";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("KitchenSink", identifier: targetFramework)
                 .WithSource();
 
             var firstBuildCommand = BuildProject(buildNumber: "1");
             var assemblyPath = Path.Combine(firstBuildCommand.GetOutputDirectory(targetFramework).FullName, "TestLibrary.dll");
-            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("BuildNumber:1");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "BuildNumber:1"));
 
             var firstWriteTime = File.GetLastWriteTimeUtc(assemblyPath);
 
@@ -324,7 +324,7 @@ namespace Microsoft.NET.Build.Tests
             File.GetLastWriteTimeUtc(assemblyPath).Should().NotBe(firstWriteTime);
 
             // and the custom assembly should be generated with the updated value.
-            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("BuildNumber:2");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "BuildNumber:2"));
 
             BuildCommand BuildProject(string buildNumber)
             {
@@ -339,7 +339,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_includes_internals_visible_to()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -358,7 +358,7 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            AssemblyInfo.Get(assemblyPath)["InternalsVisibleToAttribute"].Should().Be("Tests");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("InternalsVisibleToAttribute", "Tests"));
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -368,7 +368,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(false, false, ToolsetInfo.CurrentTargetFramework)]
         public void TestPreviewFeatures(bool enablePreviewFeatures, bool generateRequiresPreviewFeaturesAttribute, string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: $"{enablePreviewFeatures}${generateRequiresPreviewFeaturesAttribute}${targetFramework}")
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -434,7 +434,7 @@ namespace Microsoft.NET.Build.Tests
         [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_doesnt_includes_requires_preview_features()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
@@ -496,7 +496,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties["GenerateDisableRuntimeMarshallingAttribute"] = generateDisableRuntimeMarshallingAttribute.Value.ToString();
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: disableRuntimeMarshalling.ToString() + "_" + generateDisableRuntimeMarshallingAttribute + "_" + targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: disableRuntimeMarshalling.ToString() + "_" + generateDisableRuntimeMarshallingAttribute + "_" + targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -531,7 +531,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_respects_out_out_of_internals_visible_to()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -552,13 +552,13 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            Assert.False(AssemblyInfo.Get(assemblyPath).ContainsKey("InternalsVisibleToAttribute"));
+            AssemblyInfo.Get(assemblyPath).Should().NotContain(i => i.Key == "InternalsVisibleToAttribute");
         }
 
         [Fact]
         public void It_includes_internals_visible_to_with_key()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -578,13 +578,13 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            AssemblyInfo.Get(assemblyPath)["InternalsVisibleToAttribute"].Should().Be("Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001001d3e6bbb36e11ea61ceff6e1022b23dd779fc6230838db2d25a2c7c8433b3fcf86b16c25b281fc3db1027c0675395e7d0548e6add88b6a811962bf958101fa9e243b1618313bee11f5e3b3fefda7b1d1226311b6cc2d07e87ff893ba6890b20082df34a0aac14b605b8be055e81081a626f8c69e9ed4bbaa4eae9f94a35accd2");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("InternalsVisibleToAttribute", "Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001001d3e6bbb36e11ea61ceff6e1022b23dd779fc6230838db2d25a2c7c8433b3fcf86b16c25b281fc3db1027c0675395e7d0548e6add88b6a811962bf958101fa9e243b1618313bee11f5e3b3fefda7b1d1226311b6cc2d07e87ff893ba6890b20082df34a0aac14b605b8be055e81081a626f8c69e9ed4bbaa4eae9f94a35accd2"));
         }
 
         [Fact]
         public void It_includes_internals_visible_to_with_project_publickey()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -605,13 +605,13 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            AssemblyInfo.Get(assemblyPath)["InternalsVisibleToAttribute"].Should().Be("Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001001d3e6bbb36e11ea61ceff6e1022b23dd779fc6230838db2d25a2c7c8433b3fcf86b16c25b281fc3db1027c0675395e7d0548e6add88b6a811962bf958101fa9e243b1618313bee11f5e3b3fefda7b1d1226311b6cc2d07e87ff893ba6890b20082df34a0aac14b605b8be055e81081a626f8c69e9ed4bbaa4eae9f94a35accd2");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("InternalsVisibleToAttribute", "Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001001d3e6bbb36e11ea61ceff6e1022b23dd779fc6230838db2d25a2c7c8433b3fcf86b16c25b281fc3db1027c0675395e7d0548e6add88b6a811962bf958101fa9e243b1618313bee11f5e3b3fefda7b1d1226311b6cc2d07e87ff893ba6890b20082df34a0aac14b605b8be055e81081a626f8c69e9ed4bbaa4eae9f94a35accd2"));
         }
 
         [Fact]
         public void It_includes_assembly_metadata()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -631,13 +631,13 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("MetadataKey:MetadataValue");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "MetadataKey:MetadataValue"));
         }
 
         [Fact]
-        public void It_respects_out_out_of_assembly_metadata()
+        public void It_respects_opt_out_of_assembly_metadata()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -659,7 +659,7 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            Assert.False(AssemblyInfo.Get(assemblyPath).ContainsKey("AssemblyMetadataAttribute"));
+            AssemblyInfo.Get(assemblyPath).Should().NotContain(i => i.Key == "AssemblyMetadataAttribute");
         }
 
         [Theory]
@@ -686,7 +686,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Extensions.Configuration.UserSecrets", "3.0.0"));
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: referenceAspNetCore.ToString() + referenceExtensionsUserSecrets.ToString())
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: referenceAspNetCore.ToString() + referenceExtensionsUserSecrets.ToString())
                 .Restore(Log, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -699,11 +699,11 @@ namespace Microsoft.NET.Build.Tests
 
             if (shouldHaveAttribute)
             {
-                AssemblyInfo.Get(assemblyPath)["UserSecretsIdAttribute"].Should().Be("SecretsIdValue");
+                AssemblyInfo.Get(assemblyPath).Should().Contain(("UserSecretsIdAttribute", "SecretsIdValue"));
             }
             else
             {
-                AssemblyInfo.Get(assemblyPath).Should().NotContainKey("SecretsIdValue");
+                AssemblyInfo.Get(assemblyPath).Should().NotContain(i => i.Key == "SecretsIdValue");
             }
         }
 
@@ -725,7 +725,7 @@ namespace Microsoft.NET.Build.Tests
                 ReferencedProjects = { testProject }
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testTestProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testTestProject);
 
             File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.props"), @"
 <Project>
@@ -743,7 +743,7 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(testTestProject.TargetFrameworks).FullName, testTestProject.Name + ".dll");
 
-            AssemblyInfo.Get(assemblyPath)["UserSecretsIdAttribute"].Should().Be("SecretsIdValue");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("UserSecretsIdAttribute", "SecretsIdValue"));
         }
 
         [Theory]
@@ -768,14 +768,14 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties["RepositoryUrl"] = fakeUrl;
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: privateRepo.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: privateRepo.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName, testProject.Name + ".dll");
 
-            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("RepositoryUrl:" + fakeUrl);
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "RepositoryUrl:" + fakeUrl));
         }
 
         [Theory]
@@ -793,7 +793,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties["RepositoryUrl"] = fakeUrl;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -804,11 +804,11 @@ namespace Microsoft.NET.Build.Tests
 
             if (containsAttribute)
             {
-                AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("RepositoryUrl:" + fakeUrl);
+                AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "RepositoryUrl:" + fakeUrl));
             }
             else
             {
-                AssemblyInfo.Get(assemblyPath).ContainsKey("AssemblyMetadataAttribute").Should().Be(false);
+                AssemblyInfo.Get(assemblyPath).Should().NotContain(i => i.Key == "AssemblyMetadataAttribute");
             }
         }
 
@@ -850,7 +850,7 @@ class Program
         Console.WriteLine(str);
     }
 }";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworkVersion);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFrameworkVersion);
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.WithWorkingDirectory(testAsset.Path)
                 .Execute()

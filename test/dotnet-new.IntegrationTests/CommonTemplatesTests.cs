@@ -29,14 +29,30 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("global.json file", "globaljson", null)]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200" })]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
+        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "8" })]
+        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "8.0" })]
+        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "10.0.0" })]
+        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "10.0.99" })]
+        [InlineData("global.json file", "globaljson", new[] { "--test-runner", "VSTest" })]
+        [InlineData("global.json file", "globaljson", new[] { "--test-runner", "Microsoft.Testing.Platform" })]
+        [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--test-runner", "VSTest" })]
+        [InlineData("global.json file", "globaljson", new[] { "--roll-forward", "major", "--test-runner", "Microsoft.Testing.Platform" })]
         [InlineData("global.json file", "global.json", null)]
         [InlineData("global.json file", "global.json", new[] { "--sdk-version", "6.0.200" })]
         [InlineData("global.json file", "global.json", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
+        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "8" })]
+        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "8.0" })]
+        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "10.0.0" })]
+        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "10.0.99" })]
+        [InlineData("global.json file", "global.json", new[] { "--test-runner", "VSTest" })]
+        [InlineData("global.json file", "global.json", new[] { "--test-runner", "Microsoft.Testing.Platform" })]
         [InlineData("NuGet Config", "nugetconfig", null)]
         [InlineData("NuGet Config", "nuget.config", null)]
         [InlineData("dotnet gitignore file", "gitignore", null)]
         [InlineData("dotnet gitignore file", ".gitignore", null)]
         [InlineData("Solution File", "sln", null)]
+        [InlineData("Solution File", "sln", new[] { "--format", "sln" })]
+        [InlineData("Solution File", "sln", new[] { "--format", "slnx" })]
         [InlineData("Solution File", "solution", null)]
         [InlineData("Dotnet local tool manifest file", "tool-manifest", null)]
         [InlineData("Web Config", "webconfig", null)]
@@ -80,7 +96,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             // globaljson is appending current sdk version. Due to the 'base' dotnet used to run test this version differs
             //  on dev and CI runs and possibly from the version within test host. Easiest is just to scrub it away
-            if (expectedTemplateName.Equals("global.json file") && args == null)
+            if (expectedTemplateName.Equals("global.json file") &&
+                (args == null || !args.Contains("--sdk-version")))
             {
                 string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(default);
                 options.CustomScrubbers?.AddScrubber(sb => sb.Replace(sdkVersionUnderTest, "%CURRENT-VER%"), "json");

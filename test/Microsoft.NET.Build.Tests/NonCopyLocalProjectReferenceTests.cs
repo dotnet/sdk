@@ -33,7 +33,7 @@ namespace Microsoft.NET.Build.Tests
                 ReferencedProjects = { referencedProject },
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject)
                 .WithProjectChanges(doc =>
                     doc.Root

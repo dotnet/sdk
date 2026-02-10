@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
     //  global packages folder to ensure that the newly built package is used the next time a test tries to install it.
     //
     //  The main thing this class can't handle is if the way the .NET SDK builds packages changes.  In CI runs, we should use a clean test execution folder each time (I think!), so this shouldn't be an issue.
-    //  For local testing, you may need to delete the artifacts\tmp\Debug\TestTools folder if the SDK changes in a way that affects the built package.
+    //  For local testing, you may need to delete the artifacts\tmp\Debug\testing\TestTools folder if the SDK changes in a way that affects the built package.
     public class TestToolBuilder
     {
         public class TestToolSettings
@@ -28,12 +28,28 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             public string ToolPackageVersion { get; set; } = "1.0.0";
             public string ToolCommandName { get; set; } = "TestTool";
             public string[]? AdditionalPackageTypes { get; set; } = null;
-
             public bool NativeAOT { get; set { field = value; this.RidSpecific = value; } } = false;
             public bool SelfContained { get; set { field = value; this.RidSpecific = value; } } = false;
             public bool Trimmed { get; set { field = value; this.RidSpecific = value; } } = false;
+
+            /// <summary>
+            /// If set, the generated tool will include the <c>any</c> RID in the list of RIDs to target.
+            /// This will cause a framework-dependent, platform-agnostic package to be created.
+            /// </summary>
             public bool IncludeAnyRid { get; set { field = value; } } = false;
+
+            /// <summary>
+            /// If set, the generated tool will target all of the RIDs specified in <see cref="ToolsetInfo.LatestRuntimeIdentifiers"/>.
+            /// Defaults to <see langword="false"/>.
+            /// </summary>
             public bool RidSpecific { get; set; } = false;
+
+            /// <summary>
+            /// If set, the generated tool will include the current executing platform's RID in the list of RIDs to target
+            /// (which is otherwise made of <see cref="ToolsetInfo.LatestRuntimeIdentifiers"/>.) If set to <see langword="false"/>,
+            /// the current RID will be stripped from that set.
+            /// Defaults to <see langword="true"/>.
+            /// </summary>
             public bool IncludeCurrentRid { get; set; } = true;
 
             public string GetIdentifier() {
@@ -82,7 +98,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
 
-        public string CreateTestTool(ITestOutputHelper log, TestToolSettings toolSettings, bool collectBinlogs = false)
+        public string CreateTestTool(ITestOutputHelper log, TestToolSettings toolSettings, bool collectBinlogs = true)
         {
             var targetDirectory = Path.Combine(TestContext.Current.TestExecutionDirectory, "TestTools", toolSettings.GetIdentifier());
 
@@ -130,6 +146,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             }
 
             testProject.SourceFiles.Add("Program.cs", "Console.WriteLine(\"Hello Tool!\");");
+            testProject.PackageReferences.Add(new("Microsoft.Data.Sqlite", version: "9.0.8"));
 
             var testAssetManager = new TestAssetsManager(log);
             var testAsset = testAssetManager.CreateTestProject(testProject, identifier: toolSettings.GetIdentifier());

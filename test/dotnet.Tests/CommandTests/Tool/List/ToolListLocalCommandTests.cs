@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         false), new FilePath(_testManifestPath))
                 }
             );
-            _parseResult = Parser.Instance.Parse("dotnet tool list");
+            _parseResult = Parser.Parse("dotnet tool list");
             _defaultToolListLocalCommand = new ToolListLocalCommand(
                 _parseResult,
                 _toolManifestInspector,
@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void GivenManifestInspectorItPrintsJson()
         {
             new ToolListLocalCommand(
-                Parser.Instance.Parse("dotnet tool list --format json"),
+                Parser.Parse("dotnet tool list --format json"),
                 _toolManifestInspector,
                 _reporter).Execute();
             _reporter.Lines.Count.Should().Be(1);
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private ToolListLocalCommand CreateCommandWithArg(string arg)
         {
-            var parseResult = Parser.Instance.Parse("dotnet tool list " + arg);
+            var parseResult = Parser.Parse("dotnet tool list " + arg);
             var command = new ToolListLocalCommand(
                 parseResult,
                 _toolManifestInspector,

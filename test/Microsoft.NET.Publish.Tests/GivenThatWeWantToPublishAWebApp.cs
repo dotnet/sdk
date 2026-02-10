@@ -14,7 +14,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact]
         public void It_publishes_as_framework_dependent_by_default()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("WebApp")
                 .WithSource();
 
@@ -69,7 +69,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.App"));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.Razor.Design", version: "2.2.0", privateAssets: "all"));
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
 
             var command = new PublishCommand(testProjectInstance);
 
@@ -128,7 +128,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference(platformLibrary));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.Razor.Design", version: "2.2.0", privateAssets: "all"));
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, platformLibrary);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, platformLibrary);
 
             var command = new PublishCommand(testProjectInstance);
 
@@ -180,7 +180,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.Razor.Design", version: "2.2.0", privateAssets: "all"));
 
             var identifier = (selfContained == null ? "null" : selfContained.ToString()) + (useAppHost == null ? "null" : useAppHost.ToString());
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: identifier);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: identifier);
 
             var projectDirectory = Path.Combine(testProjectInstance.Path, testProject.Name);
             var publishProfilesDirectory = Path.Combine(projectDirectory, "Properties", "PublishProfiles");

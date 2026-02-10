@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         public void ItGivesAnErrorWhenAttemptingToUseALaunchProfileThatDoesNotExistWhenThereIsNoLaunchSettingsFile()
         {
             var testAppName = "VBTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -25,36 +25,30 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--launch-profile", "test");
 
-            string[] expectedErrorWords = CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile
-                .Replace("\'{0}\'", "")
-                .Split(" ")
-                .Where(word => !string.IsNullOrEmpty(word))
-                .ToArray();
-
             runResult
-                .Should()
-                .Pass()
-                .And
-                .HaveStdOutContaining("Hello World!");
-
-            expectedErrorWords.ForEach(word => runResult.Should().HaveStdErrContaining(word));
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello World!")
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, "test", $"""
+                    {Path.Join(testInstance.Path, "My Project", "launchSettings.json")}
+                    {Path.Join(testInstance.Path, "VBTestApp.run.json")}
+                    """));
         }
 
         [Fact]
         public void ItFailsWhenTryingToUseLaunchProfileSharingTheSameNameWithAnotherProfileButDifferentCapitalization()
         {
             var testAppName = "AppWithDuplicateLaunchProfiles";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             var runResult = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute("--launch-profile", "first");
 
-            string expectedError = string.Format(CliCommandStrings.DuplicateCaseInsensitiveLaunchProfileNames, "\tfirst," + (OperatingSystem.IsWindows() ? "\r" : "") + "\n\tFIRST");
+            string expectedError = string.Format(ProjectTools.Resources.DuplicateCaseInsensitiveLaunchProfileNames, "\tfirst," + (OperatingSystem.IsWindows() ? "\r" : "") + "\n\tFIRST");
             runResult
                 .Should()
-                .Fail()
+                .Pass()
                 .And
                 .HaveStdErrContaining(expectedError);
         }
@@ -63,7 +57,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         public void ItFailsWithSpecificErrorMessageIfLaunchProfileDoesntExist()
         {
             var testAppName = "VbAppWithLaunchSettings";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             string invalidLaunchProfileName = "Invalid";
@@ -74,7 +68,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdErrContaining(string.Format(CliCommandStrings.LaunchProfileDoesNotExist, invalidLaunchProfileName));
+                .HaveStdErrContaining(string.Format(ProjectTools.Resources.LaunchProfileDoesNotExist, invalidLaunchProfileName));
         }
 
         [Theory]
@@ -83,7 +77,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         public void ItUsesLaunchProfileOfTheSpecifiedName(string launchProfileName)
         {
             var testAppName = "VbAppWithLaunchSettings";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: $"LaunchProfileSuccess-{launchProfileName}")
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: $"LaunchProfileSuccess-{launchProfileName}")
                             .WithSource();
 
             new DotnetCommand(Log, "run")
@@ -101,7 +95,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         public void ItDefaultsToTheFirstUsableLaunchProfile()
         {
             var testAppName = "VbAppWithLaunchSettings";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -121,7 +115,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [Fact]
         public void ItPrintsUsingLaunchSettingsMessageWhenNotQuiet()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("VbAppWithLaunchSettings")
+            var testInstance = TestAssetsManager.CopyTestAsset("VbAppWithLaunchSettings")
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -142,7 +136,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         public void ItGivesAnErrorWhenTheLaunchProfileNotFound()
         {
             var testAppName = "VbAppWithLaunchSettings";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;

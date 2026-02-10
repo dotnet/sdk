@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
 {
     [Fact]
     public async Task ReferenceOutputAssembly_False()
@@ -15,15 +17,18 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
         var hostDir = Path.Combine(testAsset.Path, "Host");
         var hostProject = Path.Combine(hostDir, "Host.csproj");
 
-        var reporter = new TestReporter(Logger);
         var options = TestOptions.GetProjectOptions(["--project", hostProject]);
 
         var environmentOptions = TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet");
 
-        var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, CancellationToken.None);
+        var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
 
-        var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(options.ProjectPath, globalOptions: [], reporter, projectGraphRequired: false, CancellationToken.None);
-        var handler = new CompilationHandler(reporter, processRunner);
+        var reporter = new TestReporter(Logger);
+        var loggerFactory = new LoggerFactory(reporter, LogLevel.Debug);
+        var logger = loggerFactory.CreateLogger("Test");
+        var factory = new ProjectGraphFactory(globalOptions: []);
+        var projectGraph = factory.TryLoadProjectGraph(options.ProjectPath, logger, projectGraphRequired: false, CancellationToken.None);
+        var handler = new CompilationHandler(logger, processRunner);
 
         await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);
 

@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
         private void Setup([CallerMemberName] string identifier = "")
         {
-            _testDirectory = _testAssetsManager.CreateTestDirectory(identifier: identifier).Path;
+            _testDirectory = TestAssetsManager.CreateTestDirectory(identifier: identifier).Path;
             _dotnetRoot = Path.Combine(_testDirectory, "dotnet");
             _nugetDownloader = new(_dotnetRoot);
             var currentSdkFeatureBand = new SdkFeatureBand(CurrentSdkVersion);
@@ -96,9 +96,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                     })
             };
 
-            ParseResult listParseResult = Parser.Instance.Parse(new[]
+            ParseResult listParseResult = Parser.Parse(new[]
             {
-                "dotnet", "workload", "list", "--machine-readable", InstallingWorkloadCommandParser.VersionOption.Name, "7.0.100"
+                "dotnet", "workload", "list", "--machine-readable", "--sdk-version", "7.0.100"
             });
 
 
@@ -148,9 +148,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void GivenLowerTargetVersionItShouldThrow()
         {
             _workloadListCommand = new WorkloadListCommand(
-                Parser.Instance.Parse(new[]
+                Parser.Parse(new[]
                 {
-                    "dotnet", "workload", "list", "--machine-readable", InstallingWorkloadCommandParser.VersionOption.Name, "5.0.306"
+                    "dotnet", "workload", "list", "--machine-readable", "--sdk-version", "5.0.306"
                 }),
                 _reporter,
                 nugetPackageDownloader: _nugetDownloader,
@@ -168,9 +168,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void GivenSameLowerTargetVersionBandItShouldNotThrow()
         {
             _workloadListCommand = new WorkloadListCommand(
-                Parser.Instance.Parse(new[]
+                Parser.Parse(new[]
                 {
-                    "dotnet", "workload", "list", "--machine-readable", InstallingWorkloadCommandParser.VersionOption.Name, "6.0.100"
+                    "dotnet", "workload", "list", "--machine-readable", "--sdk-version", "6.0.100"
                 }),
                 _reporter,
                 nugetPackageDownloader: _nugetDownloader,

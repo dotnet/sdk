@@ -115,7 +115,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Set the IsRidAgnostic property if this project should NOT accept global RuntimeIdentifier and SelfContained
        property values from referencing projects. -->
   <PropertyGroup Condition="'$(IsRidAgnostic)' == ''">
-    <IsRidAgnostic Condition="('$(_IsExecutable)' == 'true' And '$(IsTestProject)' != 'true') Or
+    <!-- It's preferred to read IsTestingPlatformApplication in an actual MSBuild target and not in evaluation, but it's best we can do here -->
+    <!-- NOTE: A VSTest non-MTP test project will have IsTestProject=true AND IsTestingPlatformApplication!=true -->
+    <!-- We want to make VSTest non-MTP test project to be rid agnostic because it doesn't really produce a runnable executable -->
+    <IsRidAgnostic Condition="('$(_IsExecutable)' == 'true' And ('$(IsTestProject)' != 'true' Or '$(IsTestingPlatformApplication)' == 'true')) Or
                               '$(RuntimeIdentifier)' != '' Or
                               '$(RuntimeIdentifiers)' != ''">false</IsRidAgnostic>
     <IsRidAgnostic Condition="'$(IsRidAgnostic)' == ''">true</IsRidAgnostic>
@@ -297,9 +300,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         and @(RuntimeHostConfigurationOption->WithMetadataValue('Identity', 'System.Runtime.Loader.UseRidGraph')->WithMetadataValue('Value', 'true')->Count()) == 0
         and '@(_KnownRuntimeIdentifierPlatformsForTargetFramework)' != ''">
       <!-- Known RID platforms for all target frameworks comes from BundledVersions -->
-      <_ValidRuntimeIdentifierPlatformsForAssets Include="@(_KnownRuntimeIdentiferPlatforms)" />
+      <_ValidRuntimeIdentifierPlatformsForAssets Include="@(_KnownRuntimeIdentifierPlatforms)" />
       <!-- Known RID platforms for current target framework comes from ProcessFrameworkReferences output -->
-      <_ValidRuntimeIdentifierPlatformsForAssets Include="@(_KnownRuntimeIdentifierPlatformsForTargetFramework)" Exclude="@(_ExcludedKnownRuntimeIdentiferPlatforms)"/>
+      <_ValidRuntimeIdentifierPlatformsForAssets Include="@(_KnownRuntimeIdentifierPlatformsForTargetFramework)" Exclude="@(_ExcludedKnownRuntimeIdentifierPlatforms)"/>
     </ItemGroup>
 
     <GenerateDepsFile ProjectPath="$(MSBuildProjectFullPath)"
@@ -615,6 +618,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Net.Http.UseNativeHttpHandler"
                                     Condition="'$(UseNativeHttpHandler)' != ''"
                                     Value="$(UseNativeHttpHandler)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Net.Http.WasmEnableStreamingResponse"
+                                    Condition="'$(WasmEnableStreamingResponse)' != ''"
+                                    Value="$(WasmEnableStreamingResponse)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Net.Security.UseManagedNtlm"
@@ -1292,30 +1300,35 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true' And '$(ValidateExecutableReferencesMatchSelfContained)' == ''">
-    <!-- Don't generate an error if a test project references a self-contained Exe.  Test projects
-         use an OutputType of Exe but will usually call APIs in a referenced Exe rather than try
-         to run it. -->
-    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-    <!-- Don't generate an error if an Exe project references a test project. -->
-    <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
-  </PropertyGroup>
-
-
   <UsingTask TaskName="ValidateExecutableReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <PropertyGroup>
     <_UseAttributeForTargetFrameworkInfoPropertyNames Condition="$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), '17.0'))">true</_UseAttributeForTargetFrameworkInfoPropertyNames>
   </PropertyGroup>
 
+  <!-- GetTargetFrameworksWithPlatformForSingleTargetFramework uses AdditionalTargetFrameworkInfoProperty to populate _AdditionalTargetFrameworkInfoPropertyWithValue -->
+  <!-- As we are modifying the value of ShouldBeValidatedAsExecutableReference here (which is part of AdditionalTargetFrameworkInfoProperty), we must run before GetTargetFrameworksWithPlatformForSingleTargetFramework -->
+  <Target Name="_CalculateIsVSTestTestProject" BeforeTargets="GetTargetFrameworksWithPlatformForSingleTargetFramework">
+    <PropertyGroup>
+      <_IsVSTestTestProject Condition="'$(IsTestProject)' == 'true' and '$(IsTestingPlatformApplication)' != 'true'">true</_IsVSTestTestProject>
+      <_IsVSTestTestProject Condition="'$(_IsVSTestTestProject)' == ''">false</_IsVSTestTestProject>
+
+      <!-- Don't generate an error if an Exe project references a test project. -->
+      <ShouldBeValidatedAsExecutableReference Condition="'$(_IsVSTestTestProject)' == 'true'">false</ShouldBeValidatedAsExecutableReference>
+
+        <!-- Don't generate an error if a test project references a self-contained Exe.  Test projects
+            use an OutputType of Exe but will usually call APIs in a referenced Exe rather than try
+            to run it. -->
+      <ValidateExecutableReferencesMatchSelfContained Condition="'$(_IsVSTestTestProject)' == 'true' And '$(ValidateExecutableReferencesMatchSelfContained)' == ''">false</ValidateExecutableReferencesMatchSelfContained>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="ValidateExecutableReferences"
-          AfterTargets="_GetProjectReferenceTargetFrameworkProperties"
-          Condition="'$(ValidateExecutableReferencesMatchSelfContained)' != 'false'">
+          DependsOnTargets="_CalculateIsVSTestTestProject"
+          AfterTargets="_GetProjectReferenceTargetFrameworkProperties">
 
     <ValidateExecutableReferences
+      Condition="'$(ValidateExecutableReferencesMatchSelfContained)' != 'false'"
       SelfContained="$(SelfContained)"
       IsExecutable="$(_IsExecutable)"
       ReferencedProjects="@(_MSBuildProjectReferenceExistent)"
@@ -1357,6 +1370,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Remove="ReferenceManagerAssemblies" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <CrossGenTargetsPath Condition="'$(CrossGenTargetsPath)' == ''">$(MSBuildThisFileDirectory)Microsoft.NET.CrossGen.targets</CrossGenTargetsPath>
+  </PropertyGroup>
+
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.SourceLink.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DisableStandardFrameworkResolution.targets" Condition="'$(DisableStandardFrameworkResolution)' == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DesignerSupport.targets" />
@@ -1364,7 +1381,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateGlobalUsings.targets" Condition="'$(Language)' == 'C#'"/>
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateSupportedRuntime.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ComposeStore.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.CrossGen.targets" />
+  <Import Project="$(CrossGenTargetsPath)" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ObsoleteReferences.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Publish.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackStubs.targets" Condition="('$(Language)' == 'C++' and '$(_EnablePackageReferencesInVCProjects)' != 'true')"/>
@@ -1424,10 +1441,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RunCommand Condition="'$(RunCommand)' == ''">$(TargetPath)</RunCommand>
         <RunArguments Condition="'$(RunArguments)' == ''">$(StartArguments)</RunArguments>
       </PropertyGroup>
-      <PropertyGroup Condition="$([MSBuild]::IsOSUnixLike())">
-        <RunCommand Condition="'$(RunCommand)' == ''">mono</RunCommand>
-        <RunArguments Condition="'$(RunArguments)' == ''">&quot;$(TargetPath)&quot; $(StartArguments)</RunArguments>
-      </PropertyGroup>
     </When>
   </Choose>
 
@@ -1484,9 +1497,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <TargetPlatformDisplayName>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetPlatformSDKDisplayName($(TargetPlatformIdentifier), $(TargetPlatformVersion)))</TargetPlatformDisplayName>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- If the Windows targets wasn't called to default it, then just default it to the TargetPlatformVersion. -->
+    <EffectiveTargetPlatformVersion Condition="'$(EffectiveTargetPlatformVersion)' == ''">$(TargetPlatformVersion)</EffectiveTargetPlatformVersion>
+  </PropertyGroup>
+
   <!-- Default SupportedOSPlatformVersion to TargetPlatformVersion -->
   <PropertyGroup Condition="'$(SupportedOSPlatformVersion)' == ''">
-    <SupportedOSPlatformVersion>$(TargetPlatformVersion)</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>$(EffectiveTargetPlatformVersion)</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <Import Project="$(AfterMicrosoftNETSdkTargets)" Condition="'$(AfterMicrosoftNETSdkTargets)' != ''"/>

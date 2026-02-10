@@ -12,6 +12,8 @@
     <RuntimeIdentifiers>$(LatestRuntimeIdentifiers)</RuntimeIdentifiers>
     <IsPackable>true</IsPackable>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <!-- Suppress warnings caused by old TFM -->
+    <NoWarn>NU1903;NU1902</NoWarn>
   </PropertyGroup>
 
 </Project>

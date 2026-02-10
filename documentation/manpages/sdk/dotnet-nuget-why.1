@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-why" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-nuget-why" "1" "2025-10-30" "" ".NET Documentation"
 .hy
 .SH dotnet nuget why
 .PP
@@ -26,7 +26,7 @@ dotnet-nuget-why - Shows the dependency graph for a particular package.
 .IP
 .nf
 \f[C]
-dotnet nuget why <PROJECT|SOLUTION> <PACKAGE> [-f|--framework <FRAMEWORK>]
+dotnet nuget why [<PROJECT|SOLUTION>] <PACKAGE> [-f|--framework <FRAMEWORK>]
 
 dotnet nuget why -h|--help
 \f[R]
@@ -35,13 +35,16 @@ dotnet nuget why -h|--help
 .PP
 The \f[V]dotnet nuget why\f[R] command shows the dependency graph for a particular package for a given project or solution.
 .PP
-Starting from the .NET 9 SDK, it\[cq]s possible to pass a NuGet assets file in place of the project file, in order to use the command with projects that can\[cq]t be restored with the .NET SDK.
-First, restore the project in Visual Studio, or \f[V]msbuild.exe\f[R].
-By default the assets file is in the project\[cq]s \f[V]obj\[rs]\f[R] directory, but you can find the location with \f[V]msbuild.exe path\[rs]to\[rs]project.proj -getProperty:ProjectAssetsFile\f[R].
-Finally, run \f[V]dotnet nuget why path\[rs]to\[rs]project.assets.json SomePackage\f[R].
-.PP
 Starting with version 9.0.200, the command introduces support for runtime identifier (RID) specific packages by generating separate dependency trees for each RID and framework combination.
 For example, if a project targets \f[V]net9.0\f[R] with the \f[V]win-x64\f[R] RID, the command generates trees for \f[V]net9.0/win-x64\f[R] and \f[V]net9.0\f[R].
+.SS Older project format
+.PP
+To use the command with projects that can\[cq]t be restored with the .NET SDK, you can pass a NuGet assets file in place of the project file (starting with the .NET 9 SDK):
+.IP "1." 3
+First, restore the project in Visual Studio or using \f[V]msbuild.exe\f[R].
+By default, the assets file is in the project\[cq]s \f[V]obj\[rs]\f[R] directory, but you can find the location with \f[V]msbuild.exe path\[rs]to\[rs]project.proj -getProperty:ProjectAssetsFile\f[R].
+.IP "2." 3
+Run \f[V]dotnet nuget why path\[rs]to\[rs]project.assets.json SomePackage\f[R].
 .SH ARGUMENTS
 .IP \[bu] 2
 \f[B]\f[VB]PROJECT|SOLUTION\f[B]\f[R]
@@ -50,6 +53,7 @@ For example, if a project targets \f[V]net9.0\f[R] with the \f[V]win-x64\f[R] RI
 The project or solution file to operate on.
 If a directory is specified, the command searches the directory for a project or solution file.
 If more than one project or solution is found, an error is thrown.
+If no value is provided, the current working directory is used by default.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]PACKAGE\f[B]\f[R]
@@ -73,24 +77,24 @@ Prints out a description of how to use the command.
 .RE
 .SH EXAMPLES
 .IP \[bu] 2
-Show the dependency graph for the package \[lq]System.Text.Json\[rq] for a given solution:
+Show the dependency graph for the package \[lq]System.Text.Json\[rq]:
 .RS 2
 .IP
 .nf
 \f[C]
-dotnet nuget why .\[rs]DotnetNuGetWhyPackage.sln System.Text.Json
+dotnet nuget why System.Text.Json
 \f[R]
 .fi
 .PP
 [IMAGE: Example: Solution with multiple projects]
 .RE
 .IP \[bu] 2
-Show the dependency graph for the package \[lq]System.Text.Json\[rq] for a single project:
+Show the dependency graph for the package \[lq]System.Text.Json\[rq] for a specific project:
 .RS 2
 .IP
 .nf
 \f[C]
-dotnet nuget why .\[rs]DotnetNuGetWhyPackage.csproj System.Text.Json
+dotnet nuget why path/to/DotnetNuGetWhyPackage.csproj System.Text.Json
 \f[R]
 .fi
 .RE
@@ -100,7 +104,7 @@ Show the dependency graph for a specific target framework:
 .IP
 .nf
 \f[C]
-dotnet nuget why .\[rs]DotnetNuGetWhyPackage.csproj System.Text.Json --framework net6.0
+dotnet nuget why System.Text.Json --framework net6.0
 \f[R]
 .fi
 .RE

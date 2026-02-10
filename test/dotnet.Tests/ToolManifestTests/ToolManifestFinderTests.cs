@@ -764,6 +764,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             a.Should().NotThrow();
         }
 
+        [Fact]
+        public void GivenNoManifestFileWhenCreatingNewManifestItShouldCreateInDirectFolder()
+        {
+            var toolManifest =
+                new ToolManifestFinder(
+                    new DirectoryPath(_testDirectoryRoot),
+                    _fileSystem,
+                    new FakeDangerousFileDetector());
+
+            FilePath createdManifest = toolManifest.FindFirst(createIfNotFound: true);
+
+            createdManifest.Value.Should().Be(Path.Combine(_testDirectoryRoot, "dotnet-tools.json"));
+            _fileSystem.File.Exists(Path.Combine(_testDirectoryRoot, "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.Directory.Exists(Path.Combine(_testDirectoryRoot, ".config")).Should().BeFalse("New manifests should not create .config directories");
+        }
+
         private string _jsonContent =
             @"{
    ""version"":1,

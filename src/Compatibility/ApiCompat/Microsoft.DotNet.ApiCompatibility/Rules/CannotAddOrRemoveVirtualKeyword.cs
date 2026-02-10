@@ -69,8 +69,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 }
             }
             // If the left member is not virtual, ensure that we're in strict mode.
-            // TODO: This check can be expanded once compatibility rules for
-            // adding a virtual keyword are clarified: https://github.com/dotnet/sdk/issues/26169.
+            // Adding virtual to a member is only flagged in strict mode as it's not a binary breaking change,
+            // though it may break source compatibility in some scenarios (e.g., when overriding methods with covariant return types).
             else if (_settings.StrictMode)
             {
                 // If the right member is virtual, emit a diagnostic

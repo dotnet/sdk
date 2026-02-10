@@ -43,7 +43,10 @@ namespace Microsoft.TemplateEngine.Cli.TemplateResolution
 
         internal static bool HasMismatchOnListFilters(this ITemplateMatchInfo templateMatchInfo)
         {
-            IEnumerable<string> supportedFilters = BaseListCommand.SupportedFilters.OfType<TemplateFilterOptionDefinition>().Select(f => f.MatchInfoName);
+            var supportedFilters = CommandDefinition.List.SupportedFilterOptions
+                .Select(option => FilterOptionDefinition.AllDefinitions[option.Name])
+                .OfType<TemplateFilterOptionDefinition>()
+                .Select(f => f.MatchInfoName);
 
             var filterMatches = templateMatchInfo.MatchDisposition.Where(mi => supportedFilters.Any(f => f == mi.Name));
             var otherMatches = templateMatchInfo.MatchDisposition.Where(mi => !supportedFilters.Any(f => f == mi.Name));

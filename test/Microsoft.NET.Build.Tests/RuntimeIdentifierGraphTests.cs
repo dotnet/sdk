@@ -9,13 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -45,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.RecordProperties("RuntimeIdentifierGraphPath");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework + "_" + (useRidGraphValue ?? "null"));
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework + "_" + (useRidGraphValue ?? "null"));
 
             var buildCommand = new BuildCommand(testAsset);
 

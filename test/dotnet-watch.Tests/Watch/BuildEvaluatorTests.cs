@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public partial class BuildEvaluatorTests
@@ -14,13 +16,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 SuppressMSBuildIncrementalism = suppressMSBuildIncrementalism
             };
 
+            var processOutputReporter = new TestProcessOutputReporter();
+
             return new DotNetWatchContext()
             {
-                Reporter = NullReporter.Singleton,
-                ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, CancellationToken.None),
+                ProcessOutputReporter = processOutputReporter,
+                Logger = NullLogger.Instance,
+                BuildLogger = NullLogger.Instance,
+                LoggerFactory = NullLoggerFactory.Instance,
+                ProcessRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
                 Options = new(),
                 RootProjectOptions = TestOptions.ProjectOptions,
-                EnvironmentOptions = environmentOptions
+                EnvironmentOptions = environmentOptions,
+                BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
+                BrowserRefreshServerFactory = new BrowserRefreshServerFactory()
             };
         }
 

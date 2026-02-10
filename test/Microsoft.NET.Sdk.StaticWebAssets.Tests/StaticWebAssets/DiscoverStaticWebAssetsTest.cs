@@ -217,6 +217,69 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", fileName));
         }
 
+    [Fact]
+    [Trait("Category", "FingerprintIdentity")]
+    public void ComputesIdentity_UsingFingerprintPattern_ForComputedAssets_WhenIdentityNeedsComputation()
+        {
+            // Arrange: simulate a packaged asset (outside content root) with a RelativePath inside the app
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            // Create a physical file to allow fingerprint computation (tests override ResolveFileDetails returning null file otherwise)
+            var tempRoot = Path.Combine(Path.GetTempPath(), "swafp_identity_test");
+            var nugetPackagePath = Path.Combine(tempRoot, "microsoft.aspnetcore.components.webassembly", "10.0.0-rc.1.25451.107", "build", "net10.0");
+            Directory.CreateDirectory(nugetPackagePath);
+            var assetFileName = "blazor.webassembly.js";
+            var assetFullPath = Path.Combine(nugetPackagePath, assetFileName);
+            File.WriteAllText(assetFullPath, "console.log('test');");
+            // Relative path provided by the item (pre-fingerprinting)
+            var relativePath = Path.Combine("_framework", assetFileName).Replace('\\', '/');
+            var contentRoot = Path.Combine("bin", "Release", "net10.0", "wwwroot");
+
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                // Use default file resolution so the file we created is used for hashing.
+                TestResolveFileDetails = null,
+                CandidateAssets =
+                [
+                    new TaskItem(assetFullPath, new Dictionary<string, string>
+                    {
+                        ["RelativePath"] = relativePath
+                    })
+                ],
+                // No RelativePathPattern, we trigger the branch that synthesizes identity under content root.
+                FingerprintPatterns = [ new TaskItem("Js", new Dictionary<string,string>{{"Pattern","*.js"},{"Expression","#[.{fingerprint}]!"}})],
+                FingerprintCandidates = true,
+                SourceType = "Computed",
+                SourceId = "Client",
+                ContentRoot = contentRoot,
+                BasePath = "/",
+                AssetKind = StaticWebAsset.AssetKinds.All,
+                AssetTraitName = "WasmResource",
+                AssetTraitValue = "boot"
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().BeTrue($"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            var asset = task.Assets[0];
+
+            // RelativePath should still contain the hard fingerprint pattern placeholder (not expanded yet)
+            asset.GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("_framework/blazor.webassembly#[.{fingerprint}]!.js");
+
+            // Identity must contain the ACTUAL fingerprint value in the file name (placeholder expanded)
+            var actualFingerprint = asset.GetMetadata(nameof(StaticWebAsset.Fingerprint));
+            actualFingerprint.Should().NotBeNullOrEmpty();
+            var expectedIdentity = Path.GetFullPath(Path.Combine(contentRoot, "_framework", $"blazor.webassembly.{actualFingerprint}.js"));
+            asset.ItemSpec.Should().Be(expectedIdentity);
+        }
+
         [Fact]
         public void RespectsItemRelativePathWhenExplicitlySpecified()
         {
@@ -450,7 +513,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // Assert
             result.Should().Be(false);
             errorMessages.Count.Should().Be(1);
-            errorMessages[0].Should().Be($@"Two assets found targeting the same path with incompatible asset kinds: 
+            errorMessages[0].Should().Be($@"Two assets found targeting the same path with incompatible asset kinds:
 '{Path.GetFullPath(Path.Combine("wwwroot", "candidate.js"))}' with kind '{firstKind}'
 '{Path.GetFullPath(Path.Combine("wwwroot", "candidate.publish.js"))}' with kind '{secondKind}'
 for path 'candidate.js'");
@@ -688,6 +751,123 @@ for path 'candidate.js'");
                 File.Delete(manifestPath);
             }
         }
+
+        [Fact]
+        public void ComputesRelativePath_ForDiscoveredAssetsWithFullPath()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            buildEngine.SetupGet(e => e.ProjectFileOfTaskNode)
+                .Returns(Path.Combine(Environment.CurrentDirectory, "Debug", "TestProject.csproj"));
+
+            var debugDir = Path.Combine(Environment.CurrentDirectory, "Debug", "wwwroot");
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                CandidateAssets = [
+                    new TaskItem(Path.Combine(debugDir, "Microsoft.AspNetCore.Components.CustomElements.lib.module.js"),
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"}),
+                    new TaskItem(Path.Combine(debugDir, "Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map"),
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"})
+                ],
+                RelativePathPattern = "wwwroot/**",
+                SourceType = "Discovered",
+                SourceId = "Microsoft.AspNetCore.Components.CustomElements",
+                ContentRoot = debugDir,
+                BasePath = "_content/Microsoft.AspNetCore.Components.CustomElements",
+                TestResolveFileDetails = _testResolveFileDetails,
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().BeTrue($"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            task.Assets.Length.Should().Be(2);
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Microsoft.AspNetCore.Components.CustomElements.lib.module.js");
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
+            task.Assets[1].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map");
+            task.Assets[1].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
+        }
+
+        [Fact]
+        public void ComputesRelativePath_WorksForItemsWithRelativePaths()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            buildEngine.SetupGet(e => e.ProjectFileOfTaskNode)
+                .Returns(Path.Combine(Environment.CurrentDirectory, "Debug", "TestProject.csproj"));
+
+            var debugDir = Path.Combine(Environment.CurrentDirectory, "Debug", "wwwroot");
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                CandidateAssets = [
+                    new TaskItem(Path.Combine("wwwroot", "Microsoft.AspNetCore.Components.CustomElements.lib.module.js"),
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"}),
+                    new TaskItem(Path.Combine("wwwroot", "Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map"),
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"})
+                ],
+                RelativePathPattern = "wwwroot/**",
+                SourceType = "Discovered",
+                SourceId = "Microsoft.AspNetCore.Components.CustomElements",
+                ContentRoot = debugDir,
+                BasePath = "_content/Microsoft.AspNetCore.Components.CustomElements",
+                TestResolveFileDetails = _testResolveFileDetails,
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().BeTrue($"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            task.Assets.Length.Should().Be(2);
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Microsoft.AspNetCore.Components.CustomElements.lib.module.js");
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
+            task.Assets[1].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map");
+            task.Assets[1].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
+        }
+
+        [LinuxOnlyFact]
+        public void ComputesRelativePath_ForAssets_ExplicitPaths()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            buildEngine.SetupGet(e => e.ProjectFileOfTaskNode)
+                .Returns("/home/user/work/Repo/Project/Project.csproj");
+
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                CandidateAssets = [
+                    new TaskItem("/home/user/work/Repo/Project/Components/Dropdown/Dropdown.razor.js",
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"}),
+                ],
+                RelativePathPattern = "**",
+                SourceType = "Discovered",
+                SourceId = "Project",
+                ContentRoot = "/home/user/work/Repo/Project",
+                BasePath = "_content/Project",
+                TestResolveFileDetails = _testResolveFileDetails,
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().BeTrue($"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Components/Dropdown/Dropdown.razor.js");
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Project");
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.ContentRoot)).Should().Be("/home/user/work/Repo/Project/");
+        }
+
         private static TaskLoggingHelper CreateLogger()
         {
             var errorMessages = new List<string>();

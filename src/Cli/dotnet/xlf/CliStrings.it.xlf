@@ -92,7 +92,6 @@
       <trans-unit id="CmdEnvironmentVariableDescription">
         <source>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
 This argument can be specified multiple times to provide multiple variables.
 
 Examples:
@@ -101,10 +100,9 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Imposta il valore di una variabile di ambiente. 
+        <target state="needs-review-translation">Imposta il valore di una variabile di ambiente. 
 Crea la variabile se non esiste e la sostituisce se esiste. 
-In questo modo forza l'esecuzione dei test in un processo isolato. 
-È possibile specificare più volte questo argomento per fornire più variabili.
+È possibile specificare più volte l'argomento per fornire più variabili.
 
 Esempi:
 -e VARIABLE=abc
@@ -117,6 +115,31 @@ Esempi:
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
         <target state="translated">NAME="VALORE"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdVersionSuffixDescription">
@@ -162,16 +185,6 @@ Esempi:
       <trans-unit id="ConfigurationArgumentName">
         <source>CONFIGURATION</source>
         <target state="translated">CONFIGURATION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotFindAnyProjectInDirectory">
-        <source>Could not find any project in `{0}`.</source>
-        <target state="translated">Non è stato trovato alcun progetto in `{0}`.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotFindProjectOrDirectory">
-        <source>Could not find project or directory `{0}`.</source>
-        <target state="translated">Non sono stati trovati progetti o directory `{0}`.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotFindSolutionIn">
@@ -349,6 +362,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Errore</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_NU1302_HttpSourceUsed">
+        <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
+        <target state="translated">L'operazione 'tool install' è in esecuzione con un'origine 'HTTP': {0}. NuGet richiede origini HTTPS. Per usare un’origine HTTP, è necessario impostare in modo esplicito ‘allowInsecureConnections’ su true nel file NuGet.Config. Vedere https://aka.ms/nuget-https-everywhere per altre informazioni.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ExpectDepsJsonAt">
         <source>{0}: expect deps.json at: {1}</source>
         <target state="translated">{0}: è previsto deps.json in: {1}</target>
@@ -449,6 +467,11 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="File">
         <source>File</source>
         <target state="translated">File</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FileArgumentDescription">
+        <source>The file-based app to operate on.</source>
+        <target state="translated">L'app basata su file su cui eseguire operazioni.</target>
         <note />
       </trans-unit>
       <trans-unit id="FormatVersionIsHigher">
@@ -650,11 +673,6 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Sono disponibili più shim inclusi nel pacchetto: {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MoreThanOneProjectInDirectory">
-        <source>Found more than one project in `{0}`. Specify which one to use.</source>
-        <target state="translated">Sono stati trovati più progetti in `{0}`. Specificare quello da usare.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MoreThanOneSolutionInDirectory">
         <source>Found more than one solution file in {0}. Specify which one to use.</source>
         <target state="translated">Sono stati trovati più file di soluzione in {0}. Specificare quello da usare.</target>
@@ -739,14 +757,19 @@ setx PATH "%PATH%;{0}"
         <target state="translated">P2P (da progetto a progetto)</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmd_OneNuspecAllowed">
+        <source>Only one .nuspec file can be packed at a time</source>
+        <target state="translated">È creare un pacchetto di un solo file .nuspec alla volta</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Package">
         <source>Package</source>
         <target state="translated">Pacchetto</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
-        <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
-        <target state="translated">Riferimento al pacchetto sotto forma di identificatore di pacchetto, ad esempio 'Newtonsoft.Json', oppure identificatore e versione di pacchetto separati da '@', ad esempio 'Newtonsoft.Json@13.0.3'.</target>
+        <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
@@ -844,6 +867,16 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="ProjectNotFoundInTheSolution">
         <source>Project `{0}` could not be found in the solution.</source>
         <target state="translated">Il progetto `{0}` non è stato trovato nella soluzione.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentDescription">
+        <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
+        <target state="translated">Il file di progetto o l'app basata su file C# su cui eseguire operazioni. Se non si specifica un file, il comando cercherà un progetto o una soluzione nella directory corrente.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentName">
+        <source>PROJECT | FILE</source>
+        <target state="translated">FILE DI | PROGETTO</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReference">
@@ -985,6 +1018,11 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
         <target state="translated">Il file di soluzione specificato {0} non esiste oppure nella directory non è presente alcun file di soluzione.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">File di progetto o di soluzione su cui intervenire. Se non si specifica un file, il comando ne cercherà uno nella directory corrente.</target>
@@ -1043,6 +1081,16 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">Il pacchetto {0} non è uno strumento .NET.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersion">
+        <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
+        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

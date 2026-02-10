@@ -22,7 +22,7 @@ namespace Microsoft.NET.Restore.Tests
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Packaging", "3.5.0", null));
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Commands", "4.0.0", null));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var packagesFolder = Path.Combine(TestContext.Current.TestExecutionDirectory, "packages", testProjectName);
 
@@ -53,7 +53,7 @@ namespace Microsoft.NET.Restore.Tests
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Packaging", "3.5.0", null));
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Commands", "4.0.0", null));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var packagesFolder = Path.Combine(TestContext.Current.TestExecutionDirectory, "packages", testProjectName);
 

@@ -4,31 +4,38 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Tool.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
-internal class ToolUninstallCommand(
-    ParseResult result,
-    ToolUninstallGlobalOrToolPathCommand toolUninstallGlobalOrToolPathCommand = null,
-    ToolUninstallLocalCommand toolUninstallLocalCommand = null) : CommandBase(result)
+internal sealed class ToolUninstallCommand : CommandBase<ToolUninstallCommandDefinition>
 {
-    private readonly ToolUninstallLocalCommand _toolUninstallLocalCommand
-            = toolUninstallLocalCommand ??
-              new ToolUninstallLocalCommand(result);
-    private readonly ToolUninstallGlobalOrToolPathCommand _toolUninstallGlobalOrToolPathCommand =
-            toolUninstallGlobalOrToolPathCommand
-            ?? new ToolUninstallGlobalOrToolPathCommand(result);
-    private readonly bool _global = result.GetValue(ToolUninstallCommandParser.GlobalOption);
-    private readonly string _toolPath = result.GetValue(ToolUninstallCommandParser.ToolPathOption);
+    private readonly ToolUninstallLocalCommand _toolUninstallLocalCommand;
+    private readonly ToolUninstallGlobalOrToolPathCommand _toolUninstallGlobalOrToolPathCommand;
+    private readonly bool _global;
+    private readonly string _toolPath;
+
+    public ToolUninstallCommand(
+        ParseResult result,
+        ToolUninstallGlobalOrToolPathCommand toolUninstallGlobalOrToolPathCommand = null,
+        ToolUninstallLocalCommand toolUninstallLocalCommand = null)
+        : base(result)
+    {
+        _toolUninstallLocalCommand = toolUninstallLocalCommand ?? new ToolUninstallLocalCommand(result);
+        _toolUninstallGlobalOrToolPathCommand = toolUninstallGlobalOrToolPathCommand ?? new ToolUninstallGlobalOrToolPathCommand(result);
+
+        _global = result.GetValue(Definition.LocationOptions.GlobalOption);
+        _toolPath = result.GetValue(Definition.LocationOptions.ToolPathOption);
+    }
 
     public override int Execute()
     {
-        ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
+        Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
             CliCommandStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath);
 
-        ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
+        Definition.LocationOptions.EnsureToolManifestAndOnlyLocalFlagCombination(
+            _parseResult,
+            Definition.ToolManifestOption);
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {

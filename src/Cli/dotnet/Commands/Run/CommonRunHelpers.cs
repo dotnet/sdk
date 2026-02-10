@@ -14,26 +14,34 @@ internal static class CommonRunHelpers
     /// specifically Compile, None, and EmbeddedResource items are not globbed by default.
     /// See <see cref="Commands.Restore.RestoringCommand.RestoreOptimizationProperties"/> for more details.
     /// </summary>
-    public static Dictionary<string, string> GetGlobalPropertiesFromArgs(string[] args)
+    public static Dictionary<string, string> GetGlobalPropertiesFromArgs(MSBuildArgs msbuildArgs)
     {
-        var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            // This property disables default item globbing to improve performance
-            // This should be safe because we are not evaluating items, only properties
-            { Constants.EnableDefaultItems,  "false" },
-            { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory }
-        };
-
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(args, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption());
-        if (msbuildArgs.GlobalProperties is null)
-        {
-            return globalProperties;
-        }
-        foreach (var kv in msbuildArgs.GlobalProperties)
-        {
-            // If the property is already set, we don't override it
-            globalProperties[kv.Key] = kv.Value;
-        }
+        var globalProperties = msbuildArgs.GlobalProperties?.ToDictionary() ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
         return globalProperties;
     }
+
+    /// <summary>
+    /// Applies adjustments to MSBuild arguments to better suit LLM/agentic environments, if such an environment is detected.
+    /// </summary>
+    public static MSBuildArgs AdjustMSBuildForLLMs(MSBuildArgs msbuildArgs)
+    {
+        if (new Telemetry.LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment())
+        {
+            // disable the live-update display of the TerminalLogger, which wastes tokens
+            return msbuildArgs.CloneWithAdditionalArgs(Constants.TerminalLogger_DisableNodeDisplay);
+        }
+        else
+        {
+            return msbuildArgs;
+        }
+    }
+
+    /// <summary>
+    /// Creates a TerminalLogger or ConsoleLogger based on the provided MSBuild arguments.
+    /// If the environment is detected to be an LLM environment, the logger is adjusted to
+    /// better suit that environment.
+    /// </summary>
+    public static Microsoft.Build.Framework.ILogger GetConsoleLogger(MSBuildArgs args) =>
+        Microsoft.Build.Logging.TerminalLogger.CreateTerminalOrConsoleLogger([.. AdjustMSBuildForLLMs(args).OtherMSBuildArgs]);
 }

@@ -7,23 +7,9 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class UpdateCommand : BaseUpdateCommand
+    internal sealed class UpdateCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
+        : BaseUpdateCommand(hostBuilder, CommandDefinition.Update.Command)
     {
-        public UpdateCommand(
-                NewCommand parentCommand,
-                Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(parentCommand, hostBuilder, "update", SymbolStrings.Command_Update_Description)
-        {
-            parentCommand.AddNoLegacyUsageValidators(this);
-            Options.Add(CheckOnlyOption);
-        }
-
-        internal static Option<bool> CheckOnlyOption { get; } = new("--check-only", "--dry-run")
-        {
-            Description = SymbolStrings.Command_Update_Option_CheckOnly,
-            Arity = ArgumentArity.Zero
-        };
-
         protected override async Task<NewCommandStatus> ExecuteAsync(
             UpdateCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 extern alias sdkResolver;
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Framework;
@@ -34,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItDoesNotFindMSBuildSdkThatIsMissingFromLocatedNETCoreSdk()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.97");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
 
@@ -55,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItFindsTheVersionSpecifiedInGlobalJson()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.97");
             var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.98");
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.99");
@@ -79,11 +77,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void ItUsesProjectDirectoryIfSolutionFilePathIsNullOrWhitespace(string solutionFilePath)
+        public void ItUsesProjectDirectoryIfSolutionFilePathIsNullOrWhitespace(string? solutionFilePath)
         {
             const string version = "99.0.0";
 
-            var environment = new TestEnvironment(_testAssetsManager, identifier: solutionFilePath ?? "NULL");
+            var environment = new TestEnvironment(TestAssetsManager, identifier: solutionFilePath ?? "NULL");
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", version);
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
 
@@ -106,11 +104,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [InlineData("", null)]
         [InlineData("", "")]
         [InlineData(null, "")]
-        public void ItUsesCurrentDirectoryIfSolutionFilePathAndProjectFilePathIsNullOrWhitespace(string solutionFilePath, string projectFilePath)
+        public void ItUsesCurrentDirectoryIfSolutionFilePathAndProjectFilePathIsNullOrWhitespace(string? solutionFilePath, string? projectFilePath)
         {
             const string version = "99.0.0";
 
-            var environment = new TestEnvironment(_testAssetsManager, identifier: $"{solutionFilePath ?? "NULL"}-{projectFilePath ?? "NULL"}");
+            var environment = new TestEnvironment(TestAssetsManager, identifier: $"{solutionFilePath ?? "NULL"}-{projectFilePath ?? "NULL"}");
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", version);
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
 
@@ -131,7 +129,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsNullIfTheVersionFoundDoesNotSatisfyTheMinVersion()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.99");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
 
@@ -152,7 +150,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsNullWhenTheSDKRequiresAHigherVersionOfMSBuildThanAnyOneAvailable()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected =
                 environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.99", new Version(2, 0));
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
@@ -180,7 +178,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [InlineData(false)]
         public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuild(bool disallowPreviews)
         {
-            var environment = new TestEnvironment(_testAssetsManager, identifier: disallowPreviews.ToString())
+            var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString())
             {
                 DisallowPrereleaseByDefault = disallowPreviews
             };
@@ -207,12 +205,12 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // DotnetHost is the path to dotnet.exe. Can be only on Windows.
-                result.PropertiesToAdd.Count.Should().Be(2);
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(2);
                 result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
             }
             else
             {
-                result.PropertiesToAdd.Count.Should().Be(1);
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(1);
             }
             result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
             result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
@@ -221,12 +219,47 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
+        [Fact]
+        public void WhenALocalSdkIsResolvedItReturnsHostFromThatSDKInsteadOfAmbientGlobalSdk()
+        {
+            // create a test that sets up a TestEnvironment with
+            // * an ambient global SDK
+            // * a different-versioned SDK that's in a different location
+            // * a global.json with sdk.paths that prefers the different-versioned SDK
+            // assert that when we resolve, we return the path to the different-versioned SDK's dotnet.exe
+            var environment = new TestEnvironment(TestAssetsManager);
+            var localSdkRoot = Path.Combine("some", "local", "dir");
+            var localSdkDotnetRoot = Path.Combine(environment.TestDirectory.FullName, localSdkRoot, "dotnet");
+            var ambientSdkDotnetRoot = Path.Combine(environment.GetProgramFilesDirectory(ProgramFiles.X64).FullName, "dotnet");
+            var ambientMSBuildSkRoot = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "1.2.3");
+            var localPathMSBuildSdkRoot = environment.CreateSdkDirectory(localSdkRoot, "Some.Test.Sdk", "1.2.4");
+            var ambientDotnetBinary = environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            var localDotnetBinary = environment.CreateMuxer(localSdkRoot);
+            environment.CreateGlobalJson(environment.TestDirectory, "1.2.3", [localSdkDotnetRoot, ambientSdkDotnetRoot]);
+
+            var resolver = environment.CreateResolver();
+            var context = new MockContext(Log)
+            {
+                MSBuildVersion = new Version(20, 0, 0, 0),
+                ProjectFileDirectory = environment.TestDirectory,
+                IsRunningInVisualStudio = false
+            };
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                context,
+                new MockFactory());
+            result.Success.Should().BeTrue();
+            result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(2);
+            result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
+            result.PropertiesToAdd[DotnetHostExperimentalKey].Should().Be(localDotnetBinary);
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public void ItDoesNotReturnHighestSdkAvailableThatIsCompatibleWithMSBuildWhenVersionInGlobalJsonCannotBeFoundOutsideOfVisualStudio(bool disallowPreviews)
         {
-            var environment = new TestEnvironment(_testAssetsManager, callingMethod: "ItDoesNotReturnHighest___", identifier: disallowPreviews.ToString())
+            var environment = new TestEnvironment(TestAssetsManager, callingMethod: "ItDoesNotReturnHighest___", identifier: disallowPreviews.ToString())
             {
                 DisallowPrereleaseByDefault = disallowPreviews
             };
@@ -263,7 +296,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [InlineData(false)]
         public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuildWhenVersionInGlobalJsonCannotBeFoundAndRunningInVisualStudio(bool disallowPreviews)
         {
-            var environment = new TestEnvironment(_testAssetsManager, callingMethod: "ItReturnsHighest___", identifier: disallowPreviews.ToString())
+            var environment = new TestEnvironment(TestAssetsManager, callingMethod: "ItReturnsHighest___", identifier: disallowPreviews.ToString())
             {
                 DisallowPrereleaseByDefault = disallowPreviews
             };
@@ -292,12 +325,12 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // DotnetHost is the path to dotnet.exe. Can be only on Windows.
-                result.PropertiesToAdd.Count.Should().Be(4);
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(4);
                 result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
             }
             else
             {
-                result.PropertiesToAdd.Count.Should().Be(3);
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(3);
             }
             result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
             result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
@@ -312,7 +345,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsNullWhenTheDefaultVSRequiredSDKVersionIsHigherThanTheSDKVersionAvailable()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected =
                 environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "1.0.1");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
@@ -334,7 +367,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsNullWhenTheTheVSRequiredSDKVersionIsHigherThanTheSDKVersionAvailable()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected =
                 environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "1.0.1");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
@@ -357,7 +390,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsTheVersionIfItIsEqualToTheMinVersionAndTheVSDefinedMinVersion()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.99");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
             environment.CreateMinimumVSDefinedSDKVersionFile("99.99.99");
@@ -379,7 +412,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItReturnsTheVersionIfItIsHigherThanTheMinVersionAndTheVSDefinedMinVersion()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "999.99.99");
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
             environment.CreateMinimumVSDefinedSDKVersionFile("999.99.98");
@@ -403,7 +436,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [InlineData(false)]
         public void ItDisallowsPreviewsBasedOnDefault(bool disallowPreviewsByDefault)
         {
-            var environment = new TestEnvironment(_testAssetsManager, identifier: disallowPreviewsByDefault.ToString());
+            var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviewsByDefault.ToString());
             var rtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0");
             var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
             var expected = disallowPreviewsByDefault ? rtm : preview;
@@ -430,7 +463,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [InlineData(false)]
         public void ItDisallowsPreviewsBasedOnFile(bool disallowPreviews)
         {
-            var environment = new TestEnvironment(_testAssetsManager, identifier: disallowPreviews.ToString());
+            var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString());
             var rtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0");
             var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
             var expected = disallowPreviews ? rtm : preview;
@@ -456,7 +489,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItObservesChangesToVSSettingsFile()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var rtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0");
             var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
 
@@ -505,7 +538,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void ItAllowsPreviewWhenGlobalJsonHasPreviewIrrespectiveOfSetting()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var rtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0");
             var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
 
@@ -535,7 +568,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             // fix our expectations since the behavior will vary (by design) based on the current VS instance's settings.
             var vsSettings = VSSettings.Ambient;
 
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             var rtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0");
             var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
             var expected = vsSettings.DisallowPrerelease() ? rtm : preview;
@@ -559,7 +592,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void GivenTemplateLocatorItCanResolveSdkVersion()
         {
-            var environment = new TestEnvironment(_testAssetsManager);
+            var environment = new TestEnvironment(TestAssetsManager);
             const string sdkVersion = "99.99.97";
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", sdkVersion);
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
@@ -586,10 +619,21 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 
             public string PathEnvironmentVariable { get; set; }
 
-            public string ProcessPath { get; set; }
+            public string ProcessPath
+            {
+                get
+                {
+                    if (field is null)
+                    {
+                        throw new ArgumentException("ProcessPath must be set before accessing it, usually by CreateMuxerAndAddToPath()");
+                    }
+                    return field;
+                }
+                set;
+            }
 
             public DirectoryInfo TestDirectory { get; }
-            public FileInfo VSSettingsFile { get; set; }
+            public FileInfo? VSSettingsFile { get; set; }
             public bool DisallowPrereleaseByDefault { get; set; }
 
             public TestEnvironment(TestAssetsManager testAssets, string identifier = "", [CallerMemberName] string callingMethod = "")
@@ -618,11 +662,12 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             public DirectoryInfo GetProgramFilesDirectory(ProgramFiles programFiles)
                 => new(Path.Combine(TestDirectory.FullName, $"ProgramFiles{programFiles}"));
 
+            /// <returns>the directory containing the MSBuild SDK you specified</returns>
             public DirectoryInfo CreateSdkDirectory(
                 ProgramFiles programFiles,
                 string sdkName,
                 string sdkVersion,
-                Version minimumMSBuildVersion = null)
+                Version? minimumMSBuildVersion = null)
             {
                 var netSdkDirectory = Path.Combine(TestDirectory.FullName,
                     GetProgramFilesDirectory(programFiles).FullName,
@@ -653,16 +698,62 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 return sdkDir;
             }
 
-            public void CreateMuxerAndAddToPath(ProgramFiles programFiles)
+            /// <param name="environmentLocalPath">A relative path within the test environment to create an SDK layout within</param>
+            /// <returns>the directory containing the MSBuild SDK you specified</returns>
+            public DirectoryInfo CreateSdkDirectory(
+                string environmentLocalPath,
+                string sdkName,
+                string sdkVersion,
+                Version? minimumMSBuildVersion = null)
             {
-                var muxerDirectory =
-                    new DirectoryInfo(Path.Combine(
-                        TestDirectory.FullName, GetProgramFilesDirectory(programFiles).FullName, "dotnet"));
+                var netSdkDirectory = Path.Combine(TestDirectory.FullName,
+                    environmentLocalPath,
+                    "dotnet",
+                    "sdk",
+                    sdkVersion);
 
-                ProcessPath = Path.Combine(muxerDirectory.FullName, Muxer);
-                new FileInfo(ProcessPath).Create();
+                new DirectoryInfo(netSdkDirectory).Create();
 
-                PathEnvironmentVariable = $"{muxerDirectory}{Path.PathSeparator}{PathEnvironmentVariable}";
+                //  hostfxr now checks for the existence of dotnet.dll in an SDK directory: https://github.com/dotnet/runtime/pull/89333
+                //  So create that file
+                var dotnetDllPath = Path.Combine(netSdkDirectory, "dotnet.dll");
+                new FileInfo(dotnetDllPath).Create();
+
+
+                var sdkDir = new DirectoryInfo(Path.Combine(netSdkDirectory,
+                    "Sdks",
+                    sdkName,
+                    "Sdk"));
+
+                sdkDir.Create();
+
+                if (minimumMSBuildVersion != null)
+                {
+                    CreateMSBuildRequiredVersionFile(environmentLocalPath, sdkVersion, minimumMSBuildVersion);
+                }
+
+                return sdkDir;
+            }
+
+            /// <param name="setEnvironmentProps">If true, sets the ProcessPath and PathEnvironmentVariable properties.
+            /// <returns>The path to the newly-generated dotnet binary</returns>
+            public string CreateMuxerAndAddToPath(ProgramFiles programFiles, bool setEnvironmentProps = true)
+            {
+                var dotnetPath = CreateMuxer(GetProgramFilesDirectory(programFiles).FullName);
+                if (setEnvironmentProps)
+                {
+                    ProcessPath = dotnetPath;
+                    PathEnvironmentVariable = $"{Path.GetDirectoryName(dotnetPath)}{Path.PathSeparator}{PathEnvironmentVariable}";
+                }
+                return dotnetPath;
+            }
+
+            public string CreateMuxer(string localRootWithinEnvironment)
+            {
+                var muxerDirectory = new DirectoryInfo(Path.Combine(TestDirectory.FullName, localRootWithinEnvironment, "dotnet"));
+                var dotnetPath = Path.Combine(muxerDirectory.FullName, Muxer);
+                new FileInfo(dotnetPath).Create();
+                return dotnetPath;
             }
 
             private void CreateMSBuildRequiredVersionFile(
@@ -687,16 +778,69 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     minimumMSBuildVersion.ToString());
             }
 
-            public void CreateGlobalJson(DirectoryInfo directory, string version)
-                => File.WriteAllText(Path.Combine(directory.FullName, "global.json"),
-                    $@"{{ ""sdk"": {{ ""version"":  ""{version}"" }} }}");
+            /// <param name="environmentLocalPath">A relative path within the test environment to create the required version file</param>
+            private void CreateMSBuildRequiredVersionFile(
+                string environmentLocalPath,
+                string sdkVersion,
+                Version minimumMSBuildVersion)
+            {
+                if (minimumMSBuildVersion == null)
+                {
+                    minimumMSBuildVersion = new Version(1, 0);
+                }
 
-            public string GetEnvironmentVariable(string variable)
+                var cliDirectory = new DirectoryInfo(Path.Combine(
+                    TestDirectory.FullName,
+                    environmentLocalPath,
+                    "dotnet",
+                    "sdk",
+                    sdkVersion));
+
+                File.WriteAllText(
+                    Path.Combine(cliDirectory.FullName, "minimumMSBuildVersion"),
+                    minimumMSBuildVersion.ToString());
+            }
+
+            public void CreateGlobalJson(DirectoryInfo directory, string version, string[]? paths = null)
+            {
+                var builder = new StringBuilder();
+                builder.AppendLine("{");
+                builder.AppendLine("\t\"sdk\": {");
+                builder.Append($"\t\"version\":  \"{version}\"");
+                if (paths is not null)
+                {
+                    builder.Append(',');
+                    builder.AppendLine("\t\"paths\" : [");
+                    var first = true;
+                    foreach (var path in paths)
+                    {
+                        if (!first)
+                        {
+                            builder.Append(',');
+                            builder.AppendLine();
+                        }
+                        builder.Append($"\t\t\"{path.Replace("\\", "\\\\")}\"");
+                        if (first)
+                        {
+                            first = false;
+                        }
+                    }
+                    builder.AppendLine("\t]");
+                }
+                builder.AppendLine("\t}");
+                builder.AppendLine("}");
+                var globalJsonContent = builder.ToString();
+                File.WriteAllText(Path.Combine(directory.FullName, "global.json"), globalJsonContent);
+            }
+
+            public string? GetEnvironmentVariable(string variable)
             {
                 switch (variable)
                 {
                     case "PATH":
                         return PathEnvironmentVariable;
+                    case "DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG":
+                        return "true";
                     default:
                         return null;
                 }
@@ -743,14 +887,14 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 
             public void DeleteVSSettingsFile()
             {
-                VSSettingsFile.Delete();
+                VSSettingsFile?.Delete();
             }
         }
 
         private sealed class MockContext : SdkResolverContext
         {
-            public new string ProjectFilePath { get => base.ProjectFilePath; set => base.ProjectFilePath = value; }
-            public new string SolutionFilePath { get => base.SolutionFilePath; set => base.SolutionFilePath = value; }
+            public new string? ProjectFilePath { get => base.ProjectFilePath; set => base.ProjectFilePath = value; }
+            public new string? SolutionFilePath { get => base.SolutionFilePath; set => base.SolutionFilePath = value; }
             public new Version MSBuildVersion { get => base.MSBuildVersion; set => base.MSBuildVersion = value; }
             public new bool IsRunningInVisualStudio { get => base.IsRunningInVisualStudio; set => base.IsRunningInVisualStudio = value; }
 
@@ -762,33 +906,33 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 
             public override SdkLogger Logger { get; protected set; }
 
-            public MockContext()
+            public MockContext(ITestOutputHelper? logger = null)
             {
                 MSBuildVersion = new Version(15, 3, 0);
-                Logger = new MockLogger();
+                Logger = new MockLogger(logger);
             }
         }
 
         private sealed class MockFactory : SdkResultFactory
         {
-            public override SdkResult IndicateFailure(IEnumerable<string> errors, IEnumerable<string> warnings = null)
+            public override SdkResult IndicateFailure(IEnumerable<string> errors, IEnumerable<string>? warnings = null)
                 => new MockResult(success: false, path: null, version: null, warnings: warnings, errors: errors);
 
-            public override SdkResult IndicateSuccess(string path, string version, IEnumerable<string> warnings = null)
+            public override SdkResult IndicateSuccess(string path, string? version, IEnumerable<string>? warnings = null)
                 => new MockResult(success: true, path: path, version: version, warnings: warnings);
 
-            public override SdkResult IndicateSuccess(string path, string version, IDictionary<string, string> propertiesToAdd, IDictionary<string, SdkResultItem> itemsToAdd, IEnumerable<string> warnings = null)
+            public override SdkResult IndicateSuccess(string path, string? version, IDictionary<string, string>? propertiesToAdd, IDictionary<string, SdkResultItem>? itemsToAdd, IEnumerable<string>? warnings = null)
                 => new MockResult(success: true, path: path, version: version, warnings: warnings, propertiesToAdd: propertiesToAdd, itemsToAdd: itemsToAdd);
 
-            public override SdkResult IndicateSuccess(IEnumerable<string> paths, string version,
-                IDictionary<string, string> propertiesToAdd = null, IDictionary<string, SdkResultItem> itemsToAdd = null,
-                IEnumerable<string> warnings = null) => new MockResult(success: true, paths: paths, version: version, propertiesToAdd, itemsToAdd, warnings);
+            public override SdkResult IndicateSuccess(IEnumerable<string> paths, string? version,
+                IDictionary<string, string>? propertiesToAdd = null, IDictionary<string, SdkResultItem>? itemsToAdd = null,
+                IEnumerable<string>? warnings = null) => new MockResult(success: true, paths: paths, version: version, propertiesToAdd, itemsToAdd, warnings);
         }
 
         private sealed class MockResult : SdkResult
         {
-            public MockResult(bool success, string path, string version, IEnumerable<string> warnings = null,
-                IEnumerable<string> errors = null, IDictionary<string, string> propertiesToAdd = null, IDictionary<string, SdkResultItem> itemsToAdd = null)
+            public MockResult(bool success, string? path, string? version, IEnumerable<string>? warnings = null,
+                IEnumerable<string>? errors = null, IDictionary<string, string>? propertiesToAdd = null, IDictionary<string, SdkResultItem>? itemsToAdd = null)
             {
                 Success = success;
                 Path = path;
@@ -799,8 +943,8 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 ItemsToAdd = itemsToAdd;
             }
 
-            public MockResult(bool success, IEnumerable<string> paths, string version,
-                IDictionary<string, string> propertiesToAdd, IDictionary<string, SdkResultItem> itemsToAdd, IEnumerable<string> warnings)
+            public MockResult(bool success, IEnumerable<string>? paths, string? version,
+                IDictionary<string, string>? propertiesToAdd, IDictionary<string, SdkResultItem>? itemsToAdd, IEnumerable<string>? warnings)
             {
                 Success = success;
                 if (paths != null)
@@ -822,20 +966,20 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             }
 
             public override bool Success { get; protected set; }
-            public override string Version { get; protected set; }
-            public override string Path { get; protected set; }
-            public override IList<string> AdditionalPaths { get; set; }
-            public override IDictionary<string, string> PropertiesToAdd { get; protected set; }
-            public override IDictionary<string, SdkResultItem> ItemsToAdd { get; protected set; }
-            public IEnumerable<string> Errors { get; }
-            public IEnumerable<string> Warnings { get; }
+            public override string? Version { get; protected set; }
+            public override string? Path { get; protected set; }
+            public override IList<string>? AdditionalPaths { get; set; }
+            public override IDictionary<string, string>? PropertiesToAdd { get; protected set; }
+            public override IDictionary<string, SdkResultItem>? ItemsToAdd { get; protected set; }
+            public IEnumerable<string>? Errors { get; }
+            public IEnumerable<string>? Warnings { get; }
         }
 
-        private sealed class MockLogger : SdkLogger
+        private sealed class MockLogger(ITestOutputHelper? logger = null) : SdkLogger
         {
             public override void LogMessage(string message, MessageImportance messageImportance = MessageImportance.Low)
             {
-
+                logger?.WriteLine($"{messageImportance}:\t{message}");
             }
         }
     }

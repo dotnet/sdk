@@ -5,11 +5,11 @@ using System.CommandLine;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class SearchCommandArgs : BaseFilterableArgs, ITabularOutputArgs
+    internal sealed class SearchCommandArgs : BaseFilterableArgs, ITabularOutputArgs
     {
         internal SearchCommandArgs(BaseSearchCommand command, ParseResult parseResult) : base(command, parseResult)
         {
-            string? nameCriteria = parseResult.GetValue(BaseSearchCommand.NameArgument);
+            string? nameCriteria = parseResult.GetValue(CommandDefinition.Search.NameArgument);
             if (!string.IsNullOrWhiteSpace(nameCriteria))
             {
                 SearchNameCriteria = nameCriteria;
@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             // for legacy case new command argument is also accepted
             else if (command is LegacySearchCommand legacySearchCommand)
             {
-                string? newCommandArgument = parseResult.GetValue(NewCommand.ShortNameArgument);
+                string? newCommandArgument = parseResult.GetValue(CommandDefinition.New.ShortNameArgument);
                 if (!string.IsNullOrWhiteSpace(newCommandArgument))
                 {
                     SearchNameCriteria = newCommandArgument;

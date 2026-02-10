@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
@@ -28,8 +29,8 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
         internal static void EnsureFolderNotSpecifiedWithNoRestore(CommandResult symbolResult)
         {
             var folder = symbolResult.GetValue(FolderOption);
-            var noRestore = symbolResult.GetResult(NoRestoreOption);
-            if (folder && noRestore != null)
+            var noRestore = symbolResult.GetValue(NoRestoreOption);
+            if (folder && noRestore)
             {
                 symbolResult.AddError(Resources.Cannot_specify_the_folder_option_with_no_restore);
             }

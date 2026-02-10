@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
 using Microsoft.Build.Framework;
 using NuGet.Versioning;
 #if NETFRAMEWORK
@@ -131,7 +130,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         {
             if (muslRidsCount == TargetRuntimeIdentifiers.Length)
             {
-                IsMuslRid = true;              
+                IsMuslRid = true;
             }
             else
             {
@@ -192,7 +191,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                     && !UsesInvariantGlobalization
                     && versionAllowsUsingAOTAndExtrasImages
                     // the extras only became available on the stable tags of the FirstVersionWithNewTaggingScheme
-                    && (!parsedVersion.IsPrerelease && parsedVersion.Major == FirstVersionWithNewTaggingScheme))
+                    && (!parsedVersion.IsPrerelease && parsedVersion.Major >= FirstVersionWithNewTaggingScheme))
                 {
                     Log.LogMessage("Using extra variant because the application needs globalization");
                     tag += "-extra";

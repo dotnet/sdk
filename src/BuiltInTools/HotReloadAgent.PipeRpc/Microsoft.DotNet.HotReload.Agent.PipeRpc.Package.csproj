@@ -11,6 +11,7 @@
 
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
     <IsSourcePackage>true</IsSourcePackage>
     <PackageId>Microsoft.DotNet.HotReload.Agent.PipeRpc</PackageId>
     <IncludeBuildOutput>false</IncludeBuildOutput>

@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -18,17 +19,19 @@ public static class InteractiveConsole
     /// <see langword="false"/> if the user declined it,
     /// <see langword="null"/> if the user could not answer because <c>--no-interactive</c> was specified.
     /// </returns>
-    public static bool? Confirm(string message, ParseResult parseResult, bool acceptEscapeForFalse)
+    public static bool? Confirm(string message, bool yesOption, bool interactiveOption, bool acceptEscapeForFalse)
     {
-        if (parseResult.GetValue(CommonOptions.YesOption))
+        if (yesOption)
         {
             return true;
         }
 
-        if (!parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
+        if (!interactiveOption)
         {
             return null;
         }
+
+        using var _ = Activities.Source.StartActivity("confirm-run-from-source");
 
         Console.Write(AddPromptOptions(message));
 

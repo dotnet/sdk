@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
@@ -45,7 +44,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -81,40 +80,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [PlatformSpecificTheory(TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net5.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void It_can_disable_codesign_if_opt_out(string targetFramework)
-        {
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework)
-                .WithSource()
-                .WithTargetFramework(targetFramework);
-
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand
-                .Execute(new string[] {
-                    "/p:_EnableMacOSCodeSign=false;ProduceReferenceAssembly=false",
-                })
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
-            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
-
-            // Check that the apphost was not signed
-            var codesignPath = @"/usr/bin/codesign";
-            new RunExeCommand(Log, codesignPath, new string[] { "-d", appHostFullPath })
-                .Execute()
-                .Should()
-                .Fail()
-                .And
-                .HaveStdErrContaining($"{appHostFullPath}: code object is not signed at all");
-
-            outputDirectory.Should().OnlyHaveFiles(GetExpectedFilesFromBuild(testAsset, targetFramework));
-        }
-
-        [PlatformSpecificTheory(TestPlatforms.OSX)]
         [InlineData("netcoreapp3.1", "win-x64")]
         [InlineData("net5.0", "win-x64")]
         [InlineData(ToolsetInfo.CurrentTargetFramework, "win-x64")]
@@ -123,7 +88,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework, "linux-x64")]
         public void It_does_not_try_to_codesign_non_osx_app_hosts(string targetFramework, string rid)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework, allowCopyIfPresent: true)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -154,20 +119,35 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("net6.0", "osx-x64")]
-        [InlineData("net6.0", "osx-arm64")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64")]
-        public void It_codesigns_an_app_targeting_osx(string targetFramework, string rid)
+        [InlineData("net8.0", "osx-x64", true)]
+        [InlineData("net8.0", "osx-arm64", true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64", true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64", true)]
+        [InlineData("net8.0", "osx-x64", false)]
+        [InlineData("net8.0", "osx-arm64", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64", false)]
+        [InlineData("net8.0", "osx-x64", null)]
+        [InlineData("net8.0", "osx-arm64", null)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64", null)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64", null)]
+        public void It_codesigns_an_app_targeting_osx(string targetFramework, string rid, bool? enableMacOSCodesign)
         {
+            const bool CodesignsByDefault = true;
             const string testAssetName = "HelloWorld";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
+
             var buildArgs = new List<string>() { $"/p:RuntimeIdentifier={rid}" };
+            if (enableMacOSCodesign.HasValue)
+            {
+                buildArgs.Add($"/p:_EnableMacOSCodeSign={enableMacOSCodesign.Value}");
+            }
+
             buildCommand
                 .Execute(buildArgs.ToArray())
                 .Should()
@@ -176,22 +156,14 @@ namespace Microsoft.NET.Build.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
             var appHostFullPath = Path.Combine(outputDirectory.FullName, testAssetName);
 
-            // Check that the apphost is signed
-            HasMachOSignatureLoadCommand(new FileInfo(appHostFullPath)).Should().BeTrue();
-            // When on a Mac, use the codesign tool to verify the signature as well
+            // Check that the apphost is signed if expected
+            var shouldBeSigned = enableMacOSCodesign ?? CodesignsByDefault;
+            MachOSignature.HasMachOSignatureLoadCommand(new FileInfo(appHostFullPath)).Should().Be(shouldBeSigned, $"The app host should {(shouldBeSigned ? "" : "not ")}have a Mach-O signature load command.");
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                var codesignPath = @"/usr/bin/codesign";
-                new RunExeCommand(Log, codesignPath, ["-s", "-", appHostFullPath])
-                    .Execute()
+                MachOSignature.HasValidMachOSignature(new FileInfo(appHostFullPath), Log)
                     .Should()
-                    .Fail()
-                    .And
-                    .HaveStdErrContaining($"{appHostFullPath}: is already signed");
-                new RunExeCommand(Log, codesignPath, ["-v", appHostFullPath])
-                    .Execute()
-                    .Should()
-                    .Pass();
+                    .Be(shouldBeSigned, $"The app host should have a valid Mach-O signature for {rid}.");
             }
         }
 
@@ -200,7 +172,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netcoreapp2.2")]
         public void It_does_not_build_with_an_apphost_by_default_before_netcoreapp_3(string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -231,7 +203,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var targetFramework = "netcoreapp3.1";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: target)
                 .WithTargetFramework(targetFramework)
                 .WithSource();
@@ -279,7 +251,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
                 .Should()
@@ -311,7 +283,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("AppHostDotNetSearch", "AppRelative");
             testProject.AdditionalProperties.Add("AppHostRelativeDotNet", "subdirectory");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -357,7 +329,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("AssemblyVersion", version);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -377,7 +349,7 @@ namespace Microsoft.NET.Build.Tests
         public void FSharp_app_can_customize_the_apphost()
         {
             var targetFramework = "netcoreapp3.1";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorldFS")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -419,7 +391,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties["UseAppHost"] = "false";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -442,7 +414,7 @@ namespace Microsoft.NET.Build.Tests
             // enable generating apphost even on macOS
             testProject.AdditionalProperties.Add("UseApphost", "true");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -487,62 +459,5 @@ namespace Microsoft.NET.Build.Tests
                 return reader.PEHeaders.PEHeader.Magic == PEMagic.PE32;
             }
         }
-
-        // Reads the Mach-O load commands and returns true if an LC_CODE_SIGNATURE command is found, otherwise returns false
-        static bool HasMachOSignatureLoadCommand(FileInfo file)
-        {
-            /* Mach-O files have the following structure:
-             * 32 byte header beginning with a magic number and info about the file and load commands
-             * A series of load commands with the following structure:
-             * - 4-byte command type
-             * - 4-byte command size
-             * - variable length command-specific data
-             */
-            const uint LC_CODE_SIGNATURE = 0x1D;
-            using (var stream = file.OpenRead())
-            {
-                // Read the MachO magic number to determine endianness
-                Span<byte> eightByteBuffer = stackalloc byte[8];
-                stream.ReadExactly(eightByteBuffer);
-                // Determine if the magic number is in the same or opposite endianness as the runtime
-                bool reverseEndinanness = BitConverter.ToUInt32(eightByteBuffer.Slice(0, 4)) switch
-                {
-                    0xFEEDFACF => false,
-                    0xCFFAEDFE => true,
-                    _ => throw new InvalidOperationException("Not a 64-bit Mach-O file")
-                };
-                // 4-byte value at offset 16 is the number of load commands
-                // 4-byte value at offset 20 is the size of the load commands
-                stream.Position = 16;
-                ReadUInts(stream, eightByteBuffer, out uint loadCommandsCount, out uint loadCommandsSize);
-                // Mach-0 64 byte headers are 32 bytes long, and the first load command will be right after
-                stream.Position = 32;
-                bool hasSignature = false;
-                for (int commandIndex = 0; commandIndex < loadCommandsCount; commandIndex++)
-                {
-                    ReadUInts(stream, eightByteBuffer, out uint commandType, out uint commandSize);
-                    if (commandType == LC_CODE_SIGNATURE)
-                    {
-                        hasSignature = true;
-                    }
-                    stream.Position += commandSize - eightByteBuffer.Length;
-                }
-                Debug.Assert(stream.Position == loadCommandsSize + 32);
-                return hasSignature;
-
-                void ReadUInts(Stream stream, Span<byte> buffer, out uint val1, out uint val2)
-                {
-                    stream.ReadExactly(buffer);
-                    val1 = BitConverter.ToUInt32(buffer.Slice(0, 4));
-                    val2 = BitConverter.ToUInt32(buffer.Slice(4, 4));
-                    if (reverseEndinanness)
-                    {
-                        val1 = BinaryPrimitives.ReverseEndianness(val1);
-                        val2 = BinaryPrimitives.ReverseEndianness(val2);
-                    }
-                }
-            }
-        }
-
     }
 }

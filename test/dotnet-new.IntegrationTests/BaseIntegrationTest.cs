@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         /// <summary>
         /// Creates a temp test directory under test execution folder.
-        /// Format: artifacts\tmp\Debug\dotnet-new.IntegrationTests\<paramref name="testName"/>\<paramref name="folderName"/>\date-time-utc-now[optional counter].
+        /// Format: artifacts\tmp\Debug\testing\dotnet-new.IntegrationTests\<paramref name="testName"/>\<paramref name="folderName"/>\date-time-utc-now[optional counter].
         /// </summary>
         /// <remarks>
         /// Use this method when temp folder should be under location that is aware of repo nuget.config.
@@ -140,7 +140,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// </summary>
         internal string PackTestNuGetPackage(ITestOutputHelper log, [CallerMemberName] string testName = "UnnamedTest")
         {
-            var testAsset = _testAssetsManager.CopyTestAsset("dotnet-new", callingMethod: testName, testAssetSubdirectory: "TestPackages").WithSource();
+            var testAsset = TestAssetsManager.CopyTestAsset("dotnet-new", callingMethod: testName, testAssetSubdirectory: "TestPackages").WithSource();
             string testProject = Path.GetFileName(DotnetNewTestTemplatePackageProjectPath);
             string testPath = testAsset.Path;
 

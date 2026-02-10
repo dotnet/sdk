@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         public void GivenAnExecutablePathDirectoryThatDoesNotExistItCanGenerateShimFile()
         {
             var outputDll = MakeHelloWorldExecutableDll();
-            var testFolder = _testAssetsManager.CreateTestDirectory().Path;
+            var testFolder = TestAssetsManager.CreateTestDirectory().Path;
             var extraNonExistDirectory = Path.GetRandomFileName();
             var shellShimRepository = new ShellShimRepository(new DirectoryPath(Path.Combine(testFolder, extraNonExistDirectory)), GetAppHostTemplateFromStage2());
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
@@ -422,7 +422,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         [InlineData("netcoreapp3.1")]
         public void WhenRidNotSupportedOnWindowsItIsImplicit(string tfm)
         {
-            var tempDir = _testAssetsManager.CreateTestDirectory(identifier: tfm).Path;
+            var tempDir = TestAssetsManager.CreateTestDirectory(identifier: tfm).Path;
             var templateFinder = new ShellShimTemplateFinder(new MockNuGetPackageDownloader(), new DirectoryPath(tempDir), null);
             var path = templateFinder.ResolveAppHostSourceDirectoryAsync(null, NuGetFramework.Parse(tfm), Architecture.Arm64).Result;
             path.Should().Contain(tfm.Equals("net5.0") ? "AppHostTemplate" : "win-x64");
@@ -497,7 +497,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         {
             const string testAppName = "TestAppSimple";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: identifier)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: identifier)
                 .WithSource();
 
             new BuildCommand(testInstance)
@@ -514,7 +514,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
         private string GetNewCleanFolderUnderTempRoot([CallerMemberName] string callingMethod = null, string identifier = "")
         {
-            return _testAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: "cleanfolder" + identifier + Path.GetRandomFileName()).Path;
+            return TestAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: "cleanfolder" + identifier + Path.GetRandomFileName()).Path;
         }
 
         private ShellShimRepository GetShellShimRepositoryWithMockMaker(string pathToShim)

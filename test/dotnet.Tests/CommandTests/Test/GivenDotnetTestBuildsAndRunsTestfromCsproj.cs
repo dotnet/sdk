@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItImplicitlyRestoresAProjectWhenTesting()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource()
                             .WithVersionVariables();
 
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItDoesNotImplicitlyRestoreAProjectWhenTestingWithTheNoRestoreOption()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource()
                             .WithVersionVariables();
 
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItDoesNotRunTestsIfThereIsNoIsTestProject()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource()
                             .WithVersionVariables();
 
@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             // Copy XunitCore project in output directory of project dotnet-vstest.Tests
             string testAppName = "XunitCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: "4")
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: "4")
                             .WithSource()
                             .WithVersionVariables();
 
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void GivenAFailingTestItDisplaysFailureDetails()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("XunitCore")
+            var testInstance = TestAssetsManager.CopyTestAsset("XunitCore")
                 .WithSource()
                 .WithVersionVariables();
 
@@ -287,7 +287,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItBuildsAndTestsAppWhenRestoringToSpecificDirectory()
         {
             // Creating folder with name short name "RestoreTest" to avoid PathTooLongException
-            var rootPath = _testAssetsManager.CopyTestAsset("VSTestCore", identifier: "8")
+            var rootPath = TestAssetsManager.CopyTestAsset("VSTestCore", identifier: "8")
                 .WithSource()
                 .WithVersionVariables()
                 .Path;
@@ -300,7 +300,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             //}
             //else
             {
-                pkgDir = _testAssetsManager.CreateTestDirectory(identifier: "pkgs").Path;
+                pkgDir = TestAssetsManager.CreateTestDirectory(identifier: "pkgs").Path;
                 Log.WriteLine("pkgDir, package restored path is: " + pkgDir);
             }
 
@@ -376,7 +376,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void ItTestsWithTheSpecifiedRuntimeOption()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("XunitCore")
+            var testInstance = TestAssetsManager.CopyTestAsset("XunitCore")
                             .WithSource()
                             .WithVersionVariables();
 
@@ -613,7 +613,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItShouldShowImportantMessage()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables()
                 .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeVsTestToProject);
@@ -638,7 +638,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItSetsDotnetRootToTheLocationOfDotnetExecutableWhenRunningDotnetTestWithProject()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource()
                             .WithVersionVariables();
 
@@ -660,7 +660,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void TestsFromCsprojAndArchSwitchShouldFlowToMsBuild()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables()
                 .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeVsTestToProject);
@@ -689,7 +689,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void FilterPropertyCorrectlyHandlesComma(string filter, string folderSuffix)
         {
             string testAppName = "TestCategoryWithComma";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, folderSuffix)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, folderSuffix)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -804,12 +804,66 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
+
+        [Theory]
+        [InlineData("-p:ABC=C:\\my.dll")]
+        [InlineData("/p:ABC=C:\\my.dll")]
+        [InlineData("-property:ABC=C:\\my.dll")]
+        public void PropertiesEndingWithDotDllShouldNotFail(string property)
+        {
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
+
+            // Call test
+            // The test will complain about --property:VsTestUseMSBuildOutput=false but
+            // it is the .dll parameter that is causing this. It forces the command to offload work
+            // to vstest.console.exe directly, because it thinks there is some test .dll that we should run
+            // directly, rather than a project file.
+            // Vstest.console.exe will then complain just about the first unknown parameter.
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
+                                        .WithWorkingDirectory(testProjectDirectory)
+                                        .Execute(ConsoleLoggerOutputNormal.Concat([property]));
+
+            // Verify
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Total tests: 2");
+                result.StdOut.Should().Contain("Passed: 1");
+                result.StdOut.Should().Contain("Failed: 1");
+                result.StdOut.Should().Contain("Passed VSTestPassTest");
+                result.StdOut.Should().Contain("Failed VSTestFailTest");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
+
+        [Fact]
+        public void DistributedLoggerEndingWithDotDllShouldBePassedToMSBuild()
+        {
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
+                                        .WithWorkingDirectory(testProjectDirectory)
+                                        .Execute(ConsoleLoggerOutputNormal.Concat(["-dl:my.dll"]));
+
+            if (!TestContext.IsLocalized())
+            {
+                // This ensures that this was passed to MSBuild and not vstest.console.
+                result.StdOut.Should().Contain("error MSB1021: Cannot create an instance of the logger my.dll.");
+            }
+            else
+            {
+                result.StdOut.Should().Contain("MSB1021");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
+
         private string CopyAndRestoreVSTestDotNetCoreTestApp(object[] parameters, [CallerMemberName] string callingMethod = "")
         {
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
             string testAppName = "VSTestCore";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: string.Join(",", parameters.Select(p => p.ToString())))
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: string.Join(",", parameters.Select(p => p.ToString())))
                             .WithSource()
                             .WithVersionVariables();
 

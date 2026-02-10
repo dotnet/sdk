@@ -8,6 +8,7 @@ using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public sealed class GetNuGetShortFolderName : TaskBase
     {
         [Required]

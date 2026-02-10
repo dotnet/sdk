@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Commands.Tool.Restore;
 using Microsoft.DotNet.Cli.Commands.Tool.Run;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -18,31 +19,51 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Execute;
 
-internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolManifestFinder = null, string? currentWorkingDirectory = null) : CommandBase(result)
+internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinition>
 {
     const int ERROR_CANCELLED = 1223; //  Windows error code for "Operation canceled by user"
 
-    private readonly PackageIdentityWithRange _packageToolIdentityArgument = result.GetValue(ToolExecuteCommandParser.PackageIdentityArgument);
-    private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolExecuteCommandParser.CommandArgument) ?? Enumerable.Empty<string>();
-    private readonly bool _allowRollForward = result.GetValue(ToolExecuteCommandParser.RollForwardOption);
-    private readonly string? _configFile = result.GetValue(ToolExecuteCommandParser.ConfigOption);
-    private readonly string[] _sources = result.GetValue(ToolExecuteCommandParser.SourceOption) ?? [];
-    private readonly string[] _addSource = result.GetValue(ToolExecuteCommandParser.AddSourceOption) ?? [];
-    private readonly bool _interactive = result.GetValue(ToolExecuteCommandParser.InteractiveOption);
-    private readonly VerbosityOptions _verbosity = result.GetValue(ToolExecuteCommandParser.VerbosityOption);
+    private readonly PackageIdentityWithRange _packageToolIdentityArgument;
+    private readonly IEnumerable<string> _forwardArguments;
+    private readonly bool _allowRollForward;
+    private readonly string? _configFile;
+    private readonly string[] _sources;
+    private readonly string[] _addSource;
+    private readonly bool _interactive;
+    private readonly VerbosityOptions _verbosity;
     private readonly IToolPackageDownloader _toolPackageDownloader = ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
 
-    private readonly RestoreActionConfig _restoreActionConfig = new RestoreActionConfig(DisableParallel: result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-        NoCache: result.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || result.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
-        IgnoreFailedSources: result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
-        Interactive: result.GetValue(ToolExecuteCommandParser.InteractiveOption));
+    private readonly RestoreActionConfig _restoreActionConfig;
 
-    private readonly ToolManifestFinder _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
+    private readonly ToolManifestFinder _toolManifestFinder;
+
+    public ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolManifestFinder = null, string? currentWorkingDirectory = null)
+        : base(result)
+    {
+        _packageToolIdentityArgument = result.GetValue(Definition.PackageIdentityArgument);
+        _forwardArguments = result.GetValue(Definition.CommandArgument) ?? Enumerable.Empty<string>();
+        _allowRollForward = result.GetValue(Definition.RollForwardOption);
+        _configFile = result.GetValue(Definition.ConfigOption);
+        _sources = result.GetValue(Definition.SourceOption) ?? [];
+        _addSource = result.GetValue(Definition.AddSourceOption) ?? [];
+        _interactive = result.GetValue(Definition.RestoreOptions.InteractiveOption);
+        _verbosity = result.GetValue(Definition.VerbosityOption);
+        _restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(result);
+        _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
+    }
 
     public override int Execute()
     {
-        VersionRange versionRange = _parseResult.GetVersionRange();
+        var versionRange = VersionRangeUtilities.GetVersionRange(
+            _packageToolIdentityArgument.VersionRange?.OriginalString,
+            _parseResult.GetValue(Definition.VersionOption),
+            _parseResult.GetValue(Definition.PrereleaseOption));
+
         PackageId packageId = new PackageId(_packageToolIdentityArgument.Id);
+
+        var toolLocationActivity = Activities.Source.StartActivity("find-tool");
+        toolLocationActivity?.SetTag("tool.package.id", packageId.ToString());
+        toolLocationActivity?.SetTag("tool.package.version", versionRange?.ToString() ?? "latest");
 
         //  Look in local tools manifest first, but only if version is not specified
         if (versionRange == null)
@@ -51,6 +72,9 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
             if (_toolManifestFinder.TryFindPackageId(packageId, out var toolManifestPackage))
             {
+                toolLocationActivity?.SetTag("tool.exec.kind", "local");
+                toolLocationActivity?.Stop();
+
                 var toolPackageRestorer = new ToolPackageRestorer(
                     _toolPackageDownloader,
                     _sources,
@@ -82,6 +106,8 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
                 additionalFeeds: _addSource);
 
         (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
+        toolLocationActivity?.SetTag("tool.exec.kind", "one-shot");
+        toolLocationActivity?.Stop();
 
         //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
         //  but we don't support this for local or one-shot tools.
@@ -119,6 +145,10 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
                 restoreActionConfig: _restoreActionConfig);
         }
 
+        using var toolExecuteActivity = Activities.Source.StartActivity("execute-tool");
+        toolExecuteActivity?.SetTag("tool.package.id", packageId.ToString());
+        toolExecuteActivity?.SetTag("tool.package.version", toolPackage.Version.ToString());
+        toolExecuteActivity?.SetTag("tool.runner", toolPackage.Command.Runner);
         var commandSpec = ToolCommandSpecCreator.CreateToolCommandSpec(toolPackage.Command.Name.Value, toolPackage.Command.Executable.Value, toolPackage.Command.Runner, _allowRollForward, _forwardArguments);
         var command = CommandFactoryUsingResolver.Create(commandSpec);
         var result = command.Execute();
@@ -128,6 +158,11 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
     private bool UserAgreedToRunFromSource(PackageId packageId, NuGetVersion version, PackageSource source)
     {
         string promptMessage = string.Format(CliCommandStrings.ToolDownloadConfirmationPrompt, packageId, version.ToString(), source.Source);
-        return InteractiveConsole.Confirm(promptMessage, _parseResult, acceptEscapeForFalse: true) == true;
+
+        return InteractiveConsole.Confirm(
+            promptMessage,
+            yesOption: _parseResult.GetValue(Definition.YesOption),
+            interactiveOption: _parseResult.GetValue(Definition.RestoreOptions.InteractiveOption),
+            acceptEscapeForFalse: true) == true;
     }
 }

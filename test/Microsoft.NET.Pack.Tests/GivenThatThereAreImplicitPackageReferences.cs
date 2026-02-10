@@ -255,7 +255,7 @@ namespace Microsoft.NET.Pack.Tests
 
         private XDocument PackAndGetNuspec(TestProject testProject, string identifier = null)
         {
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
 
             var packCommand = new PackCommand(Log, testProjectInstance.TestRoot, testProject.Name);
 

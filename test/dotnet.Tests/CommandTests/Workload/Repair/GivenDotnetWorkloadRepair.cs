@@ -24,8 +24,8 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         public GivenDotnetWorkloadRepair(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
-            _parseResult = Parser.Instance.Parse("dotnet workload repair");
-            _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            _parseResult = Parser.Parse("dotnet workload repair");
+            _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
         [Theory]
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         public void GivenNoWorkloadsAreInstalledRepairIsNoOp(bool userLocal)
         {
             _reporter.Clear();
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         [InlineData(false)]
         public void GivenExtraPacksInstalledRepairGarbageCollects(bool userLocal)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
 
             // Install a workload
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute();
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
         [InlineData(false)]
         public void GivenMissingPacksRepairFixesInstall(bool userLocal)
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
 
             // Install a workload
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute();

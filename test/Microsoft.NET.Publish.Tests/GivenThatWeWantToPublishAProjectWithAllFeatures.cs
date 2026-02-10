@@ -79,6 +79,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Linq.Enumerable.IsSizeOptimized"": true,
             ""System.Net.Http.EnableActivityPropagation"": false,
             ""System.Net.Http.UseNativeHttpHandler"": true,
+            ""System.Net.Http.WasmEnableStreamingResponse"": true,
             ""System.Net.Security.UseManagedNtlm"": true,
             ""System.Net.SocketsHttpHandler.Http3Support"": false,
             ""System.Reflection.Metadata.MetadataUpdater.IsSupported"": false,
@@ -187,7 +188,7 @@ namespace Microsoft.NET.Publish.Tests
 
         private PublishCommand GetPublishCommand(string targetFramework, [CallerMemberName] string callingMethod = null)
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
                 .CopyTestAsset("KitchenSink", callingMethod, identifier: targetFramework)
                 .WithSource()
                 .WithProjectChanges((path, project) =>

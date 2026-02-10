@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet tool list -g --tool-path /test/path");
+            var result = Parser.Parse($"dotnet tool list -g --tool-path /test/path");
 
             var toolInstallCommand = new ToolListCommand(
                 result);
@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithBothGlobalAndLocalShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet tool list --local --tool-path /test/path");
+            var result = Parser.Parse($"dotnet tool list --local --tool-path /test/path");
 
             var toolInstallCommand = new ToolListCommand(
                 result);

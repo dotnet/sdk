@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine.Parsing;
-using Microsoft.DotNet.Cli.Commands.Hidden.Add;
-using Microsoft.DotNet.Cli.Commands.Reference.Add;
+using Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
 using Microsoft.DotNet.Cli.Utils;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -21,9 +20,11 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void AddReferenceHasDefaultArgumentSetToCurrentDirectory()
         {
-            var result = Parser.Instance.Parse("dotnet add reference my.csproj");
+            var result = Parser.Parse(["dotnet", "add", "reference", "my.csproj"]);
 
-            result.GetValue<string>(AddCommandParser.ProjectArgument)
+            var command = Assert.IsType<AddReferenceCommandDefinition>(result.CommandResult.Command);
+
+            result.GetValue(command.Parent.ProjectOrFileArgument)
                 .Should()
                 .BeEquivalentTo(
                     PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
@@ -32,22 +33,25 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void AddReferenceHasInteractiveFlag()
         {
-            var result = Parser.Instance.Parse("dotnet add reference my.csproj --interactive");
+            var result = Parser.Parse(["dotnet", "add", "reference", "my.csproj", "--interactive"]);
 
-            result.GetValue<bool>(ReferenceAddCommandParser.InteractiveOption)
+            var command = Assert.IsType<AddReferenceCommandDefinition>(result.CommandResult.Command);
+
+            result.GetValue(command.InteractiveOption)
                 .Should().BeTrue();
         }
 
         [Fact]
         public void AddReferenceWithoutArgumentResultsInAnError()
         {
-            var result = Parser.Instance.Parse("dotnet add reference");
+            var result = Parser.Parse(["dotnet", "add", "reference"]);
 
             result.Errors.Should().NotBeEmpty();
 
             var argument = (result.Errors.SingleOrDefault()?.SymbolResult as ArgumentResult)?.Argument;
 
-            argument.Should().Be(ReferenceAddCommandParser.ProjectPathArgument);
+            var command = Assert.IsType<AddReferenceCommandDefinition>(result.CommandResult.Command);
+            argument.Should().Be(command.ProjectPathArgument);
         }
     }
 }

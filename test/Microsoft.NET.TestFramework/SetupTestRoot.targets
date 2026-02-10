@@ -1,4 +1,3 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
 
   <ItemGroup>
@@ -8,9 +7,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <_CopyDirectoryBuildTestDependenciesOutput Include="$(ArtifactsTmpDir)Directory.Build.props" />
-    <_CopyDirectoryBuildTestDependenciesOutput Include="$(ArtifactsTmpDir)Directory.Build.targets" />
-    <_CopyDirectoryBuildTestDependenciesOutput Include="$(ArtifactsTmpDir).editorconfig" />
+    <_CopyDirectoryBuildTestDependenciesOutput Include="$(TestLayoutDir)Directory.Build.props" />
+    <_CopyDirectoryBuildTestDependenciesOutput Include="$(TestLayoutDir)Directory.Build.targets" />
+    <_CopyDirectoryBuildTestDependenciesOutput Include="$(TestLayoutDir).editorconfig" />
   </ItemGroup>
 
   <!-- Since TestFramework is multi-targeted, only copy these files for one of the inner builds -->
@@ -18,14 +17,14 @@
           Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">
     <Copy SourceFiles="@(_CopyDirectoryBuildTestDependenciesInput)" DestinationFiles="@(_CopyDirectoryBuildTestDependenciesOutput)" />
   </Target>
-  
-  <Target Name="WriteNugetConfigFile" 
+
+  <Target Name="WriteNugetConfigFile"
           AfterTargets="Build"
           Inputs="$(RepoRoot)NuGet.config"
-          Outputs="$(ArtifactsTmpDir)NuGet.config"
+          Outputs="$(TestLayoutDir)NuGet.config"
           Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'"
           >
-    <Copy SourceFiles="$(RepoRoot)NuGet.config" DestinationFiles="$(ArtifactsTmpDir)NuGet.config" />
+    <Copy SourceFiles="$(RepoRoot)NuGet.config" DestinationFiles="$(TestLayoutDir)NuGet.config" />
   </Target>
 
 </Project>

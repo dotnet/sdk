@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
                 "RestoreAdditionalProjectSources",
                 Path.GetDirectoryName(package.NupkgPath));
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CreateTestProject(project, project.Name)
                 .Restore(Log, project.Name);
 
@@ -79,7 +79,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netstandard1.3",
             };
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                .CreateTestProject(project, project.Name);
 
             var pack = new PackCommand(
