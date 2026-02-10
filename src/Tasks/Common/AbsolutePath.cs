@@ -27,7 +27,7 @@ namespace Microsoft.Build.Framework
             : StringComparer.OrdinalIgnoreCase;
 
         /// <summary>
-        /// The normalized string representation of this path.
+        /// The validated absolute path string as provided.
         /// </summary>
         public string Value { get; }
 
