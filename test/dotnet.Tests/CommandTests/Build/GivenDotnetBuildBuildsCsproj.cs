@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
             cmd.Should().Pass();
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 cmd.Should().NotHaveStdOutContaining("Copyright (C) Microsoft Corporation. All rights reserved.");
             }
@@ -341,7 +341,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
             var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: compilerApiVersion);
 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var command = new GetValuesCommand(testAsset,
                 "Analyzer",
@@ -378,7 +378,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
         static readonly List<string?> nugetRoots = new()
         {
-            TestContext.Current.NuGetCachePath,
+            SdkTestContext.Current.NuGetCachePath,
             Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "NuGetFallbackFolder")
         };
 

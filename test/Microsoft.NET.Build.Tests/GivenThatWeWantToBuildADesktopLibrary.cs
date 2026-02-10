@@ -437,12 +437,12 @@ public static class {project.Name}
             string correctHttpReference;
             if (useFacades)
             {
-                string microsoftNETBuildExtensionsPath = TestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath();
+                string microsoftNETBuildExtensionsPath = SdkTestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath();
                 correctHttpReference = Path.Combine(microsoftNETBuildExtensionsPath, @"net461\lib\System.Net.Http.dll");
             }
             else
             {
-                correctHttpReference = Path.Combine(TestContext.Current.NuGetCachePath, "system.net.http", "4.3.2", "ref", "net46", "System.Net.Http.dll");
+                correctHttpReference = Path.Combine(SdkTestContext.Current.NuGetCachePath, "system.net.http", "4.3.2", "ref", "net46", "System.Net.Http.dll");
             }
 
             var valuesWithMetadata = getValuesCommand.GetValuesWithMetadata();

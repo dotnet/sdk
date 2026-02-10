@@ -24,12 +24,12 @@ namespace Microsoft.NET.TestFramework.Commands
 
         protected override SdkCommandSpec CreateCommand(IEnumerable<string> args)
         {
-            if (string.IsNullOrEmpty(TestContext.Current.NuGetExePath))
+            if (string.IsNullOrEmpty(SdkTestContext.Current.NuGetExePath))
             {
                 throw new InvalidOperationException("Path to nuget.exe not set");
             }
 
-            var nugetExePath = TestContext.Current.NuGetExePath;
+            var nugetExePath = SdkTestContext.Current.NuGetExePath;
             if (!string.IsNullOrEmpty(NuGetExeVersion))
             {
                 nugetExePath = Path.Combine(Path.GetDirectoryName(nugetExePath) ?? string.Empty, NuGetExeVersion, "nuget.exe");
@@ -66,12 +66,12 @@ namespace Microsoft.NET.TestFramework.Commands
                     "restore",
                     FullPathProjectFile,
                     "-PackagesDirectory",
-                    PackagesDirectory ?? TestContext.Current.NuGetCachePath ?? string.Empty,
+                    PackagesDirectory ?? SdkTestContext.Current.NuGetCachePath ?? string.Empty,
                     .. args
                 ]
             };
 
-            TestContext.Current.AddTestEnvironmentVariables(ret.Environment);
+            SdkTestContext.Current.AddTestEnvironmentVariables(ret.Environment);
 
             return ret;
         }
