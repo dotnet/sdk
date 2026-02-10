@@ -103,7 +103,7 @@ internal static class MSBuildUtility
 
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
-        var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
+        var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
             .Concat(binLogArgs);
 
         string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
@@ -159,7 +159,7 @@ internal static class MSBuildUtility
             msbuildArgs,
             CommonOptions.CreatePropertyOption(),
             CommonOptions.CreateRestorePropertyOption(),
-            CommonOptions.CreateRequiredMSBuildTargetOption(CliConstants.MTPTarget),
+            CommonOptions.CreateRequiredMSBuildTargetOption(TestCommandDefinition.MicrosoftTestingPlatform.BuildTargetName),
             CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption());
 

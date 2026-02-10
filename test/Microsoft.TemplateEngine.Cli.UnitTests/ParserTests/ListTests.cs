@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             FilterOptionDefinition expectedDef = _stringToFilterDefMap[expectedFilter];
 
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
             ListCommandArgs args = new((BaseListCommand)parseResult.CommandResult.Command, parseResult);
@@ -119,7 +119,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             FilterOptionDefinition expectedDef = _stringToFilterDefMap[expectedFilter];
 
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
             ListCommandArgs args = new((BaseListCommand)parseResult.CommandResult.Command, parseResult);
@@ -135,7 +135,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void List_CannotParseMultipleArgs(string command)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
 
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void List_CannotParseArgsAtNewLevel()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse("new smth list");
 
@@ -164,7 +164,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void List_CannotParseOptionsAtNewLevel(string command, string expectedFilter)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
 
@@ -176,7 +176,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void List_Legacy_CannotParseArgsAtBothLevels()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse("new smth --list smth-else");
 
@@ -191,7 +191,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void List_CanParseColumnsAll(string command)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
 
@@ -211,7 +211,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void List_CanParseColumns(string command, string[] expectedColumns)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
 
@@ -233,7 +233,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void List_CannotParseUnknownColumns(string command)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
 
@@ -249,7 +249,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void List_HandleParseErrors(string command, string expectedInvalidTokens)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
             IEnumerable<string> errorMessages = parseResult.Errors.Select(error => error.Message);
@@ -268,7 +268,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public void CommandExampleCanShowParentCommandsBeyondNew()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create(_ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             Command rootCommand = new("dotnet")
             {
                 myCommand

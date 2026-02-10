@@ -99,7 +99,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var reporter = new TestReporter(Logger);
         var loggerFactory = new LoggerFactory(reporter, LogLevel.Trace);
         var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory ?? testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
-        var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled: true));
+        var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout());
 
         var program = Program.TryCreate(
            TestOptions.GetCommandLineOptions(["--verbose", ..args]),
@@ -195,7 +195,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
 
-        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
+        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
+        var projectsRestarted = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRestarted);
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
         var projectBaselinesUpdated = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
         await launchCompletionA.Task;
@@ -210,8 +211,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         await MakeRudeEditChange();
 
-        Log("Waiting for changed handled ...");
-        await changeHandled.WaitAsync(w.ShutdownSource.Token);
+        Log("Waiting for projects restarted ...");
+        await projectsRestarted.WaitAsync(w.ShutdownSource.Token);
 
         // Wait for project baselines to be updated, so that we capture the new solution snapshot
         // and further changes are treated as another update.
@@ -330,8 +331,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await using var w = StartWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
-        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
-        var updatesApplied = w.Reporter.RegisterSemaphore(MessageDescriptor.UpdatesApplied);
+        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
+        var updatesApplied = w.Reporter.RegisterSemaphore(MessageDescriptor.UpdateBatchCompleted);
 
         var hasUpdateA = new SemaphoreSlim(initialCount: 0);
         var hasUpdateB = new SemaphoreSlim(initialCount: 0);
@@ -420,7 +421,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await using var w = StartWatcher(testAsset, args: ["--project", hostProject], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
-        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
+        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
         var restartNeeded = w.Reporter.RegisterSemaphore(MessageDescriptor.ApplyUpdate_ChangingEntryPoint);
         var restartRequested = w.Reporter.RegisterSemaphore(MessageDescriptor.RestartRequested);
 
@@ -510,7 +511,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
 
-        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
+        var projectsRebuilt = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
         var applyUpdateVerbose = w.Reporter.RegisterSemaphore(MessageDescriptor.ApplyUpdate_Verbose);
 
@@ -534,8 +535,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             [assembly: System.Reflection.AssemblyMetadata("TestAssemblyMetadata", "2")]
             """);
 
-        Log("Waiting for change handled ...");
-        await changeHandled.WaitAsync(w.ShutdownSource.Token);
+        Log("Waiting for projects rebuilt ...");
+        await projectsRebuilt.WaitAsync(w.ShutdownSource.Token);
 
         Log("Waiting for verbose rude edit reported ...");
         await applyUpdateVerbose.WaitAsync(w.ShutdownSource.Token);
@@ -601,7 +602,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await using var w = StartWatcher(testAsset, ["--no-exit"], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
-        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
+        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
         var ignoringChangeInHiddenDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInHiddenDirectory);
         var ignoringChangeInExcludedFile = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInExcludedFile);
         var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
@@ -663,7 +664,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
 
-        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
+        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
 
         var hasUpdatedOutput = w.CreateCompletionSource();
         w.Reporter.OnProcessOutput += line =>
@@ -721,7 +722,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var projectChangeTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
         var projectsRebuilt = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
         var projectDependenciesDeployed = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectDependenciesDeployed);
-        var hotReloadSucceeded = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSucceeded);
+        var managedCodeChangesApplied = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
 
         var hasUpdatedOutput = w.CreateCompletionSource();
         w.Reporter.OnProcessOutput += line =>
@@ -759,7 +760,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
         Assert.Equal(1, projectsRebuilt.CurrentCount);
         Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
-        Assert.Equal(1, hotReloadSucceeded.CurrentCount);
+        Assert.Equal(1, managedCodeChangesApplied.CurrentCount);
     }
 
     [Fact]
@@ -780,7 +781,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var projectChangeTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
         var projectsRebuilt = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
         var projectDependenciesDeployed = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectDependenciesDeployed);
-        var hotReloadSucceeded = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSucceeded);
+        var managedCodeChangesApplied = w.Reporter.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
 
         var hasUpdatedOutput = w.CreateCompletionSource();
         w.Reporter.OnProcessOutput += line =>
@@ -816,6 +817,6 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
         Assert.Equal(0, projectsRebuilt.CurrentCount);
         Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
-        Assert.Equal(1, hotReloadSucceeded.CurrentCount);
+        Assert.Equal(1, managedCodeChangesApplied.CurrentCount);
     }
 }

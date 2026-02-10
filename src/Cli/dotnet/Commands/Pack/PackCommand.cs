@@ -25,7 +25,7 @@ public class PackCommand(
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parseResult = Parser.Parse(["dotnet", "pack", ..args]);
+        var parseResult = Parser.Parse(["dotnet", "pack", .. args]);
         return FromParseResult(parseResult, msbuildPath);
     }
 
@@ -97,14 +97,14 @@ public class PackCommand(
 
         if (args.Count != 1)
         {
-            Console.Error.WriteLine(CliStrings.PackCmd_OneNuspecAllowed); 
+            Console.Error.WriteLine(CliStrings.PackCmd_OneNuspecAllowed);
             return 1;
         }
 
         var nuspecPath = args[0];
 
         var packArgs = new PackArgs()
-        { 
+        {
             Logger = new NuGetConsoleLogger(),
             Exclude = new List<string>(),
             OutputDirectory = parseResult.GetValue(definition.OutputOption),

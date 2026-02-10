@@ -7,23 +7,14 @@ namespace Microsoft.DotNet.Cli.Commands.NuGet;
 
 internal static class NuGetCommandParser
 {
-    private static readonly Command Command = SetAction(NuGetCommandDefinition.Create());
-
-    public static Command GetCommand()
-    {
-        return Command;
-    }
-
-    private static Command SetAction(Command command)
+    public static void ConfigureCommand(Command command)
     {
         command.SetAction(NuGetCommand.Run);
 
         foreach (var subcommand in command.Subcommands)
         {
-            SetAction(subcommand);
+            ConfigureCommand(subcommand);
         }
-
-        return command;
     }
 }
 

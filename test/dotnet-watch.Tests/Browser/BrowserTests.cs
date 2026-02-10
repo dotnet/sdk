@@ -111,7 +111,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         // valid edit:
         UpdateSourceFile(homePagePath, src => src.Replace("/* member placeholder */", "public int F() => 1;"));
 
-        await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded);
+        await App.WaitForOutputLineContaining(MessageDescriptor.ManagedCodeChangesApplied);
 
         await App.WaitUntilOutputContains($$"""
             🧪 Received: {"type":"ReportDiagnostics","diagnostics":[]}

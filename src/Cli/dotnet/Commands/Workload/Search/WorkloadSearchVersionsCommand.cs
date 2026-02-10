@@ -13,7 +13,6 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
@@ -54,7 +53,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
 
         // For these operations, we don't have to respect 'msi' because they're equivalent between the two workload
         // install types, and FileBased is much easier to work with.
-        _installer = installer ?? GenerateInstaller(Reporter, new SdkFeatureBand(_sdkVersion), _resolver, Verbosity, result.HasOption(SharedOptions.InteractiveOption));
+        _installer = installer ?? GenerateInstaller(Reporter, new SdkFeatureBand(_sdkVersion), _resolver, Verbosity, interactive: false);
 
         _workloadVersion = result.GetValue(Definition.WorkloadVersionArgument);
 
@@ -165,7 +164,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
 
         return [.. packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
             .GetAwaiter().GetResult()
-            .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))];
+            .Select(version => featureBand.GetWorkloadSetPackageVersion(version.ToString()))];
     }
 
     private IEnumerable<string> FindBestWorkloadSetsFromComponents()
