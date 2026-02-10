@@ -1,0 +1,35 @@
+<Project>
+
+  <Target Name="CalculateLinuxNativeInstallerDependencyVersions">
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="MicrosoftNETCoreAppRuntimePackageVersionWithTilde" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="MicrosoftNETCoreAppMajorMinorVersion" />
+      <Output TaskParameter="MajorMinorPatchVersion" PropertyName="MicrosoftNETCoreAppMajorMinorPatchVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
+
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="MicrosoftNETCoreAppRefPackageVersionWithTilde" />
+    </GetLinuxNativeInstallerDependencyVersions>
+
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="AspNetCoreRuntimeVersionWithTilde" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="AspNetCoreMajorMinorVersion" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="AspNetCoreMajorMinorPatchVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
+
+    <GetLinuxNativeInstallerDependencyVersions  PackageVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="AspNetCoreRefVersionWithTilde" />
+    </GetLinuxNativeInstallerDependencyVersions>
+
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(HostFxrVersion)">
+      <Output TaskParameter="MajorMinorVersion" PropertyName="HostFxrMajorMinorVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
+
+    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(NETStandardLibraryRefPackageVersion)">
+      <Output TaskParameter="VersionWithTilde" PropertyName="NetStandardTargetingPackPackageVersionWithTilde" />
+      <Output TaskParameter="MajorMinorVersion" PropertyName="NetStandardTargetingPackMajorMinorVersion" />
+      <Output TaskParameter="MajorMinorPatchVersion" PropertyName="NetStandardTargetingPackMajorMinorPatchVersion" />
+    </GetLinuxNativeInstallerDependencyVersions>
+  </Target>
+
+</Project>

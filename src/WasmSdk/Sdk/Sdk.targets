@@ -10,7 +10,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project ToolsVersion="14.0">
-  <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
+  <!-- For browser-wasm, we want to import StaticWebAssets SDK which imports SDK. -->
+  <!-- For wasi-wasm, we don't want to import StaticWebAssets SDK. -->
+  <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition="'$(RuntimeIdentifier)' == 'wasi-wasm' and '$(_WasmSdkImportsMicrosoftNetSdk)' == 'true'" />
+
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
   <Import Project="$(_WebAssemblyTargetsFile)" Condition="'$(_WebAssemblyTargetsFile)' != ''" />
 </Project>

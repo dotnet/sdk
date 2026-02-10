@@ -55,7 +55,16 @@ namespace Microsoft.DotNet.Tools.Tool.List
             }
 
             var packageEnumerable = GetPackages(toolPath, packageId);
-            PrintTable(packageEnumerable);
+
+            var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption);
+            if (formatValue is ToolListOutputFormat.json)
+            {
+                PrintJson(packageEnumerable);
+            }
+            else
+            {
+                PrintTable(packageEnumerable);
+            }
 
             if (packageId.HasValue && !packageEnumerable.Any())
             {
@@ -63,23 +72,6 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 return 1;
             }
             return 0;
-        }
-
-        private void PrintTable(IEnumerable<IToolPackage> packageEnumerable)
-        {
-            var table = new PrintableTable<IToolPackage>();
-
-            table.AddColumn(
-                LocalizableStrings.PackageIdColumn,
-                p => p.Id.ToString());
-            table.AddColumn(
-                LocalizableStrings.VersionColumn,
-                p => p.Version.ToNormalizedString());
-            table.AddColumn(
-                LocalizableStrings.CommandsColumn,
-                p => string.Join(CommandDelimiter, p.Commands.Select(c => c.Name)));
-
-            table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
         }
 
         public IEnumerable<IToolPackage> GetPackages(DirectoryPath? toolPath, PackageId? packageId)
@@ -112,6 +104,38 @@ namespace Microsoft.DotNet.Tools.Tool.List
                         ex.Message).Yellow());
                 return false;
             }
+        }
+
+        private void PrintTable(IEnumerable<IToolPackage> packageEnumerable)
+        {
+            var table = new PrintableTable<IToolPackage>();
+
+            table.AddColumn(
+                LocalizableStrings.PackageIdColumn,
+                p => p.Id.ToString());
+            table.AddColumn(
+                LocalizableStrings.VersionColumn,
+                p => p.Version.ToNormalizedString());
+            table.AddColumn(
+                LocalizableStrings.CommandsColumn,
+                p => string.Join(CommandDelimiter, p.Commands.Select(c => c.Name)));
+
+            table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
+        }
+
+        private void PrintJson(IEnumerable<IToolPackage> packageEnumerable)
+        {
+            var jsonData = new VersionedDataContract<ToolListJsonContract[]>()
+            {
+                Data = packageEnumerable.Select(p => new ToolListJsonContract
+                {
+                    PackageId = p.Id.ToString(),
+                    Version = p.Version.ToNormalizedString(),
+                    Commands = p.Commands.Select(c => c.Name.Value).ToArray()
+                }).ToArray()
+            };
+            var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
+            _reporter.WriteLine(jsonText);
         }
     }
 }

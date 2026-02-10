@@ -1,12 +1,4 @@
 <Project>
-  <Target Name="GetCoreSdkGitCommitInfo">
-    <Exec Command="git rev-parse HEAD"
-          ConsoleToMSBuild="true"
-          Condition=" '$(GitCommitHash)' == '' ">
-      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
-    </Exec>
-  </Target>
-
   <PropertyGroup>
     <ArtifactNameSdk>dotnet-toolset-internal</ArtifactNameSdk>
     <ArtifactNameSdkLanguagePack>dotnet-toolset-langpack</ArtifactNameSdkLanguagePack>

@@ -13,7 +13,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0">
 
   <UsingTask
-    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAsssetsPropsFile"
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetsPropsFile"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetEndpointsPropsFile"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
@@ -78,6 +83,10 @@ Copyright (c) .NET Foundation. All rights reserved.
         <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.props</PackagePath>
       </StaticWebAssetPackageFile>
 
+      <StaticWebAssetPackageFile Include="$(_GeneratedStaticWebAssetEndpointsPropsFile)" Condition="'$(DisableStaticWebAssetEndpointsBuildPropsFileGeneration)' == ''">
+        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssetEndpoints.props</PackagePath>
+      </StaticWebAssetPackageFile>
+
       <StaticWebAssetPackageFile Include="$(_GeneratedBuildPropsFile)" Condition="'$(StaticWebAssetsDisableProjectBuildPropsFileGeneration)' == ''">
         <PackagePath>build\$(PackageId).props</PackagePath>
       </StaticWebAssetPackageFile>
@@ -92,11 +101,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- All files potentially created within this target -->
       <FileWrites Include="$(_GeneratedStaticWebAssetsPropsFile)" />
+      <FileWrites Include="$(_GeneratedStaticWebAssetEndpointsPropsFile)" />
       <FileWrites Include="$(_GeneratedBuildPropsFile)" />
       <FileWrites Include="$(_GeneratedBuildMultitargetingPropsFile)" />
       <FileWrites Include="$(_GeneratedBuildTransitivePropsFile)" />
       <FileWrites Include="$(StaticWebAssetPackManifestPath)" />
 
+    </ItemGroup>
+
+    <ItemGroup>
+      <_PackStaticWebAssetCandidates Include="@(StaticWebAsset)" Exclude="@(_StaticWebAssetExcludedFromPack)" />
     </ItemGroup>
 
     <!-- The logic for computing the static web assets to pack, is the same logic that we use to determine what assets we need
@@ -121,7 +135,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     -->
     <ComputeReferenceStaticWebAssetItems
-      Assets="@(StaticWebAsset)"
+      Assets="@(_PackStaticWebAssetCandidates)"
       ProjectMode="$(StaticWebAssetProjectMode)"
       AssetKind="Publish"
       Source="$(PackageId)"
@@ -130,19 +144,38 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="StaticWebAssets" ItemName="_PackStaticWebAssets" />
     </ComputeReferenceStaticWebAssetItems>
 
+    <!-- This is similar to what we do when providing assets as reference. We use _PackStaticWebAssets as ComputeEndpointsForReferenceStaticWebAssets
+      discards any endpoint that doesn't have a matching asset, which acts as a filter to ensure we only provide the relevant endpoints.
+    -->
+    <ComputeEndpointsForReferenceStaticWebAssets
+      Assets="@(_PackStaticWebAssets)"
+      CandidateEndpoints="@(StaticWebAssetEndpoint)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_PackStaticWebAssetEndpoints" />
+    </ComputeEndpointsForReferenceStaticWebAssets>
+
     <!-- Generates a props file that goes in build\Microsoft.AspNetCore.StaticWebAssets.props
          and that describes the static web assets for the package.
      -->
-    <GenerateStaticWebAsssetsPropsFile
+    <GenerateStaticWebAssetsPropsFile
       StaticWebAssets="@(_PackStaticWebAssets)"
       TargetPropsFilePath="$(_GeneratedStaticWebAssetsPropsFile)" />
+
+    <!-- Generates a props file that goes in build\Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+        that describes the static web asset endpoints associated with the assets in the package.
+    -->
+    <GenerateStaticWebAssetEndpointsPropsFile
+      StaticWebAssets="@(_PackStaticWebAssets)"
+      StaticWebAssetEndpoints="@(_PackStaticWebAssetEndpoints)"
+      TargetPropsFilePath="$(_GeneratedStaticWebAssetEndpointsPropsFile)" />
 
     <!-- Generates a props file the goes in build\$(PackageId).props and that simply imports
          build\Microsoft.AspNetCore.StaticWebAssets.props
      -->
     <StaticWebAssetsGeneratePackagePropsFile
       PropsFileImport="$(_StaticWebAssetsPropsFileImportPath)"
-      BuildTargetPath="$(_GeneratedBuildPropsFile)" />
+      BuildTargetPath="$(_GeneratedBuildPropsFile)"
+      AdditionalImports="$(_StaticWebAssetEndpointsPropsFileImportPath)" />
 
     <!-- Generates a props file the goes in buildMultiTargeting\$(PackageId).props and that simply imports
          build\$(PackageId).props

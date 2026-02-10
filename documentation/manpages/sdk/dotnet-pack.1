@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-pack" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-pack" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet pack
 .PP
@@ -27,11 +27,12 @@ dotnet-pack - Packs the code into a NuGet package.
 .IP
 .nf
 \f[C]
-dotnet pack [<PROJECT>|<SOLUTION>] [-c|--configuration <CONFIGURATION>]
-    [--force] [--include-source] [--include-symbols] [--interactive]
+dotnet pack [<PROJECT>|<SOLUTION>] [--artifacts-path <ARTIFACTS_DIR>]
+    [-c|--configuration <CONFIGURATION>] [--force]
+    [--include-source] [--include-symbols] [--interactive]
     [--no-build] [--no-dependencies] [--no-restore] [--nologo]
     [-o|--output <OUTPUT_DIRECTORY>] [--runtime <RUNTIME_IDENTIFIER>]
-    [-s|--serviceable] [-v|--verbosity <LEVEL>]
+    [-s|--serviceable] [--tl:[auto|on|off]] [-v|--verbosity <LEVEL>]
     [--version-suffix <VERSION_SUFFIX>]
 
 dotnet pack -h|--help
@@ -94,11 +95,22 @@ It\[cq]s either a path to a csproj, vbproj, or fsproj file, or to a solution fil
 If not specified, the command searches the current directory for a project or solution file.
 .SH OPTIONS
 .IP \[bu] 2
+\f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
+.RS 2
+.PP
+All build output files from the executed command will go in subfolders under the specified path, separated by project.
+For more information see Artifacts Output Layout.
+Available since .NET 8 SDK.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]-c|--configuration <CONFIGURATION>\f[B]\f[R]
 .RS 2
 .PP
 Defines the build configuration.
-The default for most projects is \f[V]Debug\f[R], but you can override the build configuration settings in your project.
+If you\[cq]re developing with the .NET 8 SDK or a later version, the command uses the \f[V]Release\f[R] configuration by default for projects whose TargetFramework is set to \f[V]net8.0\f[R] or a later version.
+The default build configuration is \f[V]Debug\f[R] for earlier versions of the SDK and for earlier target frameworks.
+You can override the default in project settings or by using this option.
+For more information, see `dotnet publish' uses Release configuration and `dotnet pack' uses Release configuration.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--force\f[B]\f[R]
@@ -185,6 +197,34 @@ For a list of Runtime Identifiers (RIDs), see the RID catalog.
 .PP
 Sets the serviceable flag in the package.
 For more information, see .NET Blog: .NET Framework 4.5.1 Supports Microsoft Security Updates for .NET NuGet Libraries (https://aka.ms/nupkgservicing).
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
+.RS 2
+.PP
+Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
+The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
+The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
+\f[V]on\f[R] skips the environment check and enables terminal logging.
+\f[V]off\f[R] skips the environment check and uses the default console logger.
+.PP
+The terminal logger shows you the restore phase followed by the build phase.
+During each phase, the currently building projects appear at the bottom of the terminal.
+Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
+You can search this information to learn more about the build.
+When a project is finished building, a single \[lq]build completed\[rq] section is written that captures:
+.IP \[bu] 2
+The name of the built project.
+.IP \[bu] 2
+The target framework (if multi-targeted).
+.IP \[bu] 2
+The status of that build.
+.IP \[bu] 2
+The primary output of that build (which is hyperlinked).
+.IP \[bu] 2
+Any diagnostics generated for that project.
+.PP
+This option is available starting in .NET 8.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
@@ -314,12 +354,12 @@ dotnet pack -p:TargetFrameworks=net45
 .fi
 .RE
 .IP \[bu] 2
-Pack the project and use a specific runtime (Windows 10) for the restore operation:
+Pack the project and use a specific runtime (Windows) for the restore operation:
 .RS 2
 .IP
 .nf
 \f[C]
-dotnet pack --runtime win10-x64
+dotnet pack --runtime win-x64
 \f[R]
 .fi
 .RE

@@ -1,0 +1,8 @@
+{
+  "solution": {
+    "path": "codestyle_solution.sln",
+    "projects": [
+      ".\\library\\library.csproj"
+    ]
+  }
+}

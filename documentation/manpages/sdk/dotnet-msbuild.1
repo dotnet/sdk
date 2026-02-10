@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-msbuild" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-msbuild" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet msbuild
 .PP
@@ -64,12 +64,12 @@ dotnet msbuild -property:Configuration=Release
 .fi
 .RE
 .IP \[bu] 2
-Run the publish target and publish for the \f[V]osx.10.11-x64\f[R] RID:
+Run the publish target and publish for the \f[V]osx-x64\f[R] RID:
 .RS 2
 .IP
 .nf
 \f[C]
-dotnet msbuild -target:Publish -property:RuntimeIdentifiers=osx.10.11-x64
+dotnet msbuild -target:Publish -property:RuntimeIdentifiers=osx-x64
 \f[R]
 .fi
 .RE

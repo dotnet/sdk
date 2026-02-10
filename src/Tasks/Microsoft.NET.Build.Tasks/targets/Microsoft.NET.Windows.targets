@@ -47,7 +47,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Used by analyzers in the Microsoft.Windows.SDK.NET.Ref package. -->
   <PropertyGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'">
-    <CsWinRTAotOptimizerEnabled Condition="'$(CsWinRTAotOptimizerEnabled)' == '' and $([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) >= 6">true</CsWinRTAotOptimizerEnabled>
+    <CsWinRTAotOptimizerEnabled Condition="'$(CsWinRTAotOptimizerEnabled)' == '' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))">true</CsWinRTAotOptimizerEnabled>
     <CsWinRTAotExportsEnabled Condition="'$(CsWinRTAotExportsEnabled)' == '' and '$(CsWinRTAotOptimizerEnabled)' == 'true' and '$(PublishAot)' == 'true'">true</CsWinRTAotExportsEnabled>
     <CsWinRTCcwLookupTableGeneratorEnabled Condition="'$(CsWinRTCcwLookupTableGeneratorEnabled)' == '' and '$(CsWinRTGenerateProjection)' != 'true'">true</CsWinRTCcwLookupTableGeneratorEnabled>
     <CsWinRTAotWarningLevel Condition="'$(CsWinRTAotWarningLevel)' == '' and '$(CsWinRTGenerateProjection)' != 'true' and ('$(PublishAot)' == 'true' or '$(IsAotCompatible)' == 'true')">1</CsWinRTAotWarningLevel>
@@ -61,6 +61,48 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CompilerVisibleProperty Include="CsWinRTCcwLookupTableGeneratorEnabled" />
     <CompilerVisibleProperty Include="CsWinRTMergeReferencedActivationFactories" />
     <CompilerVisibleProperty Include="CsWinRTAotWarningLevel" />
+  </ItemGroup>
+
+  <!-- Also add the Windows.UI.Xaml.* projections from the Windows SDK if 'UseUwp' is set in the project.
+       Note: we only add this reference if the TFM is .NET 8 or above, as the Windows SDK projections
+       that are used on .NET 6 and below do not have the Windows.UI.Xaml profile, so this wouldn't work. -->
+  <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' ">
+    <FrameworkReference Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(TargetPlatformIdentifier)' == 'Windows' and '$(UseUwp)' == 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Xaml" />
+  </ItemGroup>
+
+  <!-- If WindowsSdkPackageVersion is specified and it is an older version before profile support was added, 
+       add the non profile framework reference. -->
+  <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'
+                        and '$(WindowsSdkPackageVersion)' != ''
+                        and '$(UseUwp)' != 'true'
+                        and $([System.Version]::Parse('$(WindowsSdkPackageVersion.Split('-')[0])').Build) &lt;= 26100
+                        and $([System.Version]::Parse('$(WindowsSdkPackageVersion.Split('-')[0])').Revision) &lt;= 34">
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
+  </ItemGroup>
+
+  <!-- Default 'CsWinRTUseWindowsUIXamlProjections' to 'false', unless 'UseUwp' is set.
+       This is to ensure that using the full Windows SDK projections will work correctly.
+       We still allow users to override this, which can help in mixed WinAppSDK scenarios. -->
+  <PropertyGroup>
+    <CsWinRTUseWindowsUIXamlProjections Condition=" '$(CsWinRTUseWindowsUIXamlProjections)' == '' and '$(UseUwp)' == 'true' ">true</CsWinRTUseWindowsUIXamlProjections>
+    <CsWinRTUseWindowsUIXamlProjections Condition=" '$(CsWinRTUseWindowsUIXamlProjections)' == '' ">false</CsWinRTUseWindowsUIXamlProjections>
+  </PropertyGroup>
+
+  <ItemGroup>
+
+    <!-- Mark 'CsWinRTUseWindowsUIXamlProjections' as compiler visible, so the analyzers bundled in the Windows SDK projections can see it -->
+    <CompilerVisibleProperty Include="CsWinRTUseWindowsUIXamlProjections" />
+  </ItemGroup>
+
+  <!-- Configure the Windows.UI.Xaml.* projections feature switch for CsWinRT from here. This is
+       needed because there's no .targets from CsWinRT that's used when CsWinRT itself is not being
+       directly referenced in the project. For instance, in a normal application (not authoring).
+       Note: we only do this on 'net8.0-windows' or greater, as it's not supported otherwise.  -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="CSWINRT_USE_WINDOWS_UI_XAML_PROJECTIONS"
+                                    Value="$(CsWinRTUseWindowsUIXamlProjections)"
+                                    Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(TargetPlatformIdentifier)' == 'Windows'"
+                                    Trim="true" />
   </ItemGroup>
 
   <Target Name="_ErrorOnUnresolvedWindowsSDKAssemblyConflict"
@@ -103,11 +145,38 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <!-- Emit a warning if 'UseUwp' is set (it is only supported by the .NET 9 SDK) -->
-  <Target Name="_WarnForUnsupportedUseUwpFeatureEnabled"
+  <!-- Target to emit an error when 'UseUwp' is not set, but the 'Microsoft.Windows.SDK.NET.Ref.Xaml' item is transitively referenced -->
+  <Target Name="_CheckForTransitiveWindowsSDKFullDependencies"
+          AfterTargets="ResolvePackageAssets"
+          Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+                      and '$(TargetPlatformIdentifier)' == 'Windows'
+                      and '@(TransitiveFrameworkReference)' != ''
+                      and '$(UseUwp)' != 'true' ">
+    <ItemGroup>
+      <_WindowsSDKXamlTransitiveFrameworkReference Include="@(TransitiveFrameworkReference)"
+                                                   Condition="'%(Identity)' == 'Microsoft.Windows.SDK.NET.Ref.Xaml'" />
+    </ItemGroup>
+    <NetSdkError Condition="'@(_WindowsSDKXamlTransitiveFrameworkReference)' != ''"
+                 ResourceName="WindowsSDKXamlMissingUseUwpProperty" />
+  </Target>
+
+  <!-- Target to emit an error when 'UseUwp' is set, but the TFM is not 'net8.0-windows' or greater -->
+  <Target Name="_CheckForInvalidTfmForWindowsSDKXamlDependencies"
+          AfterTargets="ResolvePackageAssets"
+          Condition=" !('$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(TargetPlatformIdentifier)' == 'Windows')
+                      and '$(UseUwp)' == 'true' ">
+    <NetSdkError ResourceName="WindowsSDKXamlInvalidTfm" />
+  </Target>
+
+  <!--
+    Emit a warning if 'UseUwp' is set.
+
+    NOTE: remove this target when 'UseUwp' becomes officially supported.
+  -->
+  <Target Name="_WarnForUseUwpPreviewFeatureEnabled"
           AfterTargets="ResolvePackageAssets"
           Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'
                       and '$(UseUwp)' == 'true'">
-    <NETSdkWarning ResourceName="UsingUnsupportedUseUwpFeature" />
+    <NETSdkWarning ResourceName="UsingPreviewUseUwpFeature" />
   </Target>
 </Project>

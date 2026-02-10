@@ -8,24 +8,40 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class BlazorWebAssemblyHostedDeltaApplier : DeltaApplier
+    internal sealed class BlazorWebAssemblyHostedDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, Version? targetFrameworkVersion) : DeltaApplier(reporter)
     {
-        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier;
-        private readonly DefaultDeltaApplier _hostApplier;
+        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(reporter, browserRefreshServer, targetFrameworkVersion);
+        private readonly DefaultDeltaApplier _hostApplier = new(reporter);
 
-        public BlazorWebAssemblyHostedDeltaApplier(IReporter reporter)
+        public override void Dispose()
         {
-            _wasmApplier = new BlazorWebAssemblyDeltaApplier(reporter);
-            _hostApplier = new DefaultDeltaApplier(reporter);
+            _hostApplier.Dispose();
+            _wasmApplier.Dispose();
         }
 
-        public override void Initialize(DotNetWatchContext context, CancellationToken cancellationToken)
+        public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
-            _wasmApplier.Initialize(context, cancellationToken);
-            _hostApplier.Initialize(context, cancellationToken);
+            _wasmApplier.CreateConnection(namedPipeName, cancellationToken);
+            _hostApplier.CreateConnection(namedPipeName, cancellationToken);
         }
-        
-        public override async Task<ApplyStatus> Apply(DotNetWatchContext context, ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+
+        public override Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
+            // We only need to wait for any of the app processes to start, so wait for the host.
+            // We do not need to wait for the browser connection to be established.
+            => _hostApplier.WaitForProcessRunningAsync(cancellationToken);
+
+        public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
+        {
+            var result = await Task.WhenAll(
+                _wasmApplier.GetApplyUpdateCapabilitiesAsync(cancellationToken),
+                _hostApplier.GetApplyUpdateCapabilitiesAsync(cancellationToken));
+
+            // Allow updates that are supported by at least one process.
+            // When applying changes we will filter updates applied to a specific process based on their required capabilities.
+            return result[0].Union(result[1], StringComparer.OrdinalIgnoreCase).ToImmutableArray();
+        }
+
+        public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
             // Apply to both processes.
             // The module the change is for does not need to be loaded in either of the processes, yet we still consider it successful if the application does not fail.
@@ -34,14 +50,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             // the compiler (producing wrong delta), or rude edit detection (the change shouldn't have been allowed).
 
             var result = await Task.WhenAll(
-                _wasmApplier.Apply(context, updates, cancellationToken),
-                _hostApplier.Apply(context, updates, cancellationToken));
+                _wasmApplier.Apply(updates, cancellationToken),
+                _hostApplier.Apply(updates, cancellationToken));
 
             var wasmResult = result[0];
             var hostResult = result[1];
 
-            ReportStatus(context.Reporter, wasmResult, "client");
-            ReportStatus(context.Reporter, hostResult, "host");
+            ReportStatus(wasmResult, "client");
+            ReportStatus(hostResult, "host");
 
             return (wasmResult, hostResult) switch
             {
@@ -51,34 +67,17 @@ namespace Microsoft.DotNet.Watcher.Tools
                 _ => ApplyStatus.SomeChangesApplied,
             };
 
-            static void ReportStatus(IReporter reporter, ApplyStatus status, string target)
+            void ReportStatus(ApplyStatus status, string target)
             {
                 if (status == ApplyStatus.NoChangesApplied)
                 {
-                    reporter.Warn($"No changes applied to {target} because they are not supported by the runtime.");
+                    Reporter.Warn($"No changes applied to {target} because they are not supported by the runtime.");
                 }
                 else if (status == ApplyStatus.SomeChangesApplied)
                 {
-                    reporter.Verbose($"Some changes not applied to {target} because they are not supported by the runtime.");
+                    Reporter.Verbose($"Some changes not applied to {target} because they are not supported by the runtime.");
                 }
             }
-        }
-        
-        public override void Dispose()
-        {
-            _hostApplier.Dispose();
-            _wasmApplier.Dispose();
-        }
-
-        public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(DotNetWatchContext context, CancellationToken cancellationToken)
-        {
-            var result = await Task.WhenAll(
-                _wasmApplier.GetApplyUpdateCapabilitiesAsync(context, cancellationToken),
-                _hostApplier.GetApplyUpdateCapabilitiesAsync(context, cancellationToken));
-
-            // Allow updates that are supported by at least one process.
-            // When applying changes we will filter updates applied to a specific process based on their required capabilities.
-            return result[0].Union(result[1], StringComparer.OrdinalIgnoreCase).ToImmutableArray();
         }
     }
 }

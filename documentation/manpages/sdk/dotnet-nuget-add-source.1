@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-add-source" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-nuget-add-source" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet nuget add source
 .PP
@@ -22,13 +22,17 @@
 .SH NAME
 .PP
 dotnet-nuget-add-source - Add a NuGet source.
+.RS
+.PP
+Use package sources that you trust.
+.RE
 .SH SYNOPSIS
 .IP
 .nf
 \f[C]
 dotnet nuget add source <PACKAGE_SOURCE_PATH> [--name <SOURCE_NAME>] [--username <USER>]
     [--password <PASSWORD>] [--store-password-in-clear-text]
-    [--valid-authentication-types <TYPES>] [--configfile <FILE>]
+    [--valid-authentication-types <TYPES>] [--configfile <FILE>] [--allow-insecure-connections]
 
 dotnet nuget add source -h|--help
 \f[R]
@@ -38,7 +42,7 @@ dotnet nuget add source -h|--help
 The \f[V]dotnet nuget add source\f[R] command adds a new package source to your NuGet configuration files.
 .RS
 .PP
-[!WARNING] When adding multiple package sources, be careful not to introduce a dependency confusion vulnerability (https://aka.ms/pkg-sec-wp).
+[!WARNING] When adding multiple package sources, be careful not to introduce a dependency confusion vulnerability.
 .RE
 .SH ARGUMENTS
 .IP \[bu] 2
@@ -58,6 +62,14 @@ If not specified, the hierarchy of configuration files from the current director
 For more information, see Common NuGet Configurations.
 .RE
 .IP \[bu] 2
+\f[B]\f[VB]--allow-insecure-connections\f[B]\f[R]
+.RS 2
+.PP
+Allows HTTP connections for adding or updating packages.
+This method is not secure.
+Available since .NET 9 SDK.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]-n|--name <SOURCE_NAME>\f[B]\f[R]
 .RS 2
 .PP
@@ -69,11 +81,21 @@ Name of the source.
 .PP
 Password to be used when connecting to an authenticated source.
 .RE
+.RS
+.PP
+Be aware that encrypted passwords are only supported on Windows.
+Moreover, they can only be decrypted on the same machine and by the same user who originally encrypted them.
+.RE
 .IP \[bu] 2
 \f[B]\f[VB]--store-password-in-clear-text\f[B]\f[R]
 .RS 2
 .PP
 Enables storing portable package source credentials by disabling password encryption.
+.RE
+.RS
+.PP
+[!WARNING] Storing passwords in clear text is strongly discouraged.
+For more information on managing credentials securely, refer to the security best practices for consuming packages from private feeds.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-u|--username <USER>\f[B]\f[R]
@@ -116,7 +138,7 @@ Add a source that needs authentication:
 .IP
 .nf
 \f[C]
-dotnet nuget add source https://someServer/myTeam -n myTeam -u myUsername -p myPassword --store-password-in-clear-text
+dotnet nuget add source https://someServer/myTeam -n myTeam -u myUsername -p myPassword
 \f[R]
 .fi
 .RE
@@ -131,6 +153,8 @@ dotnet nuget add source https://azureartifacts.microsoft.com/myTeam -n myTeam
 .fi
 .RE
 .SH SEE ALSO
+.IP \[bu] 2
+Security best practices for managing package source credentials
 .IP \[bu] 2
 Package source sections in NuGet.config files
 .IP \[bu] 2

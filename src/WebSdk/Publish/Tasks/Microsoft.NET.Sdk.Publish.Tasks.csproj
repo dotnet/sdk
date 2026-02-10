@@ -4,14 +4,16 @@
     <PublishRoot Condition="'$(PublishRoot)' == ''">$(RepoRoot)\src\WebSdk\Publish\</PublishRoot>
     <PackageId>Microsoft.NET.Sdk.Publish</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <Import Project="$(RepoRoot)\src\WebSdk\Package.props" />
-  
+
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">$(SdkTargetFramework)</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
@@ -21,11 +23,6 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <PackageReference Include="Microsoft.Web.Xdt" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">
-    <PackageReference Include="System.Collections.Specialized" ExcludeAssets="Runtime"/>
-    <PackageReference Include="System.Xml.XmlDocument" ExcludeAssets="Runtime" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

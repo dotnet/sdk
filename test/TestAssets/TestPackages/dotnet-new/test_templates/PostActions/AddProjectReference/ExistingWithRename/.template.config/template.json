@@ -1,0 +1,46 @@
+{
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "TestAssets.PostActions.AddProjectReference.ExistingWithRename",
+  "groupIdentity": "TestAssets.PostActions.AddProjectReference.ExistingWithRename",
+  "precedence": "100",
+  "identity": "TestAssets.PostActions.AddProjectReference.ExistingWithRename",
+  "shortName": "TestAssets.PostActions.AddProjectReference.ExistingWithRename",
+  "primaryOutputs": [
+    {
+      "path": "Project1/Project1.csproj"
+    }
+  ],
+  "symbols": {
+    "existingProject": {
+      "displayName": "Existing project relative path",
+      "description": "Path relative to the working directory",
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "ExistingProject/ExistingProject.csproj",
+      "fileRename": "ExistingProjectPath"
+    }
+  },
+  "postActions": [
+    {
+      "Description": "Add ProjectReference to ExistingProject/ExistingProject.csproj",
+      "ActionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "ContinueOnError": "false",
+      "ManualInstructions": [
+        {
+          "Text": "Manually add the reference to Project1 in ExistingProject"
+        }
+      ],
+      "applyFileRenamesToArgs": [
+        "targetFiles"
+      ],
+      "args": {
+        "targetFiles": [
+          "ExistingProjectPath"
+        ],
+        "referenceType": "project",
+        "reference": "Project1/Project1.csproj"
+      }
+    }
+  ]
+}

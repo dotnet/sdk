@@ -1,0 +1,9 @@
+variables:
+- name: AZDO_PROJECT
+  value: internal
+- name: AZDO_ORG
+  value: https://dev.azure.com/dnceng/
+- name: SDK_OFFICIAL_CI_PIPELINE_ID
+  value: 140
+- name: DOTNET_DOTNET_CI_PIPELINE_ID
+  value: 1219

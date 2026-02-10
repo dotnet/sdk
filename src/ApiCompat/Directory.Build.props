@@ -1,9 +1,0 @@
-<Project>
-
-  <PropertyGroup>
-    <DirectoryPackagesPropsPath>$(MSBuildThisFileDirectory)Directory.Packages.props</DirectoryPackagesPropsPath>
-  </PropertyGroup>
-
-  <Import Project="..\..\Directory.Build.props" />
-
-</Project>

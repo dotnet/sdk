@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     if (asset.ShouldCopyToOutputDirectory())
                     {
                         // We have an asset we want to copy to the output folder.
-                        fileOutputPath = Path.Combine(normalizedOutputPath, asset.RelativePath);
+                        fileOutputPath = Path.Combine(normalizedOutputPath, asset.ComputeTargetPath("", Path.DirectorySeparatorChar, StaticWebAssetTokenResolver.Instance));
                         string source = null;
                         if (asset.IsComputed())
                         {

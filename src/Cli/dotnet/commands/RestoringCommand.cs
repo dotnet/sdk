@@ -61,11 +61,8 @@ namespace Microsoft.DotNet.Tools
             }
 
             IEnumerable<string> restoreArguments = ["-target:Restore"];
-            if (arguments != null)
-            {
-                (var newArgumentsToAdd, var existingArgumentsToForward) = ProcessForwardedArgumentsForSeparateRestore(arguments);
-                restoreArguments = [.. restoreArguments, .. newArgumentsToAdd, .. existingArgumentsToForward];
-            }
+            (var newArgumentsToAdd, var existingArgumentsToForward) = ProcessForwardedArgumentsForSeparateRestore(arguments);
+            restoreArguments = [.. restoreArguments, .. newArgumentsToAdd, .. existingArgumentsToForward];
 
             return new RestoreCommand(restoreArguments, msbuildPath);
         }
@@ -84,12 +81,13 @@ namespace Microsoft.DotNet.Tools
             "TargetFramework"
         ];
 
+        //  These arguments should lead to absolutely no output from the restore command
         private static readonly string[] FlagsThatTriggerSilentRestore =
-            [
-                "getProperty",
-                "getItem",
-                "getTargetResult"
-            ];
+        [
+            "getProperty",
+            "getItem",
+            "getTargetResult"
+        ];
 
         //  These arguments don't by themselves require that restore be run in a separate process,
         //  but if there is a separate restore process they shouldn't be passed to it
@@ -116,12 +114,12 @@ namespace Microsoft.DotNet.Tools
         // that we need to compensate for, so we might yield new arguments that should be included in the overall restore call.
         private static (string[] newArgumentsToAdd, string[] existingArgumentsToForward) ProcessForwardedArgumentsForSeparateRestore(IEnumerable<string> forwardedArguments)
         {
-            HashSet<string> newArgumentsToAdd = new();
+            // Separate restore should be silent in terminal logger - regardless of actual scenario
+            HashSet<string> newArgumentsToAdd = new() { "-tlp:verbosity=quiet" };
             List<string> existingArgumentsToForward = new();
 
-            foreach (var argument in forwardedArguments)
+            foreach (var argument in forwardedArguments ?? Enumerable.Empty<string>())
             {
-
                 if (!IsExcludedFromSeparateRestore(argument) && !IsExcludedFromRestore(argument))
                 {
                     existingArgumentsToForward.Add(argument);
@@ -165,6 +163,7 @@ namespace Microsoft.DotNet.Tools
         private static bool IsExcludedFromSeparateRestore(string argument)
             => FlagsToExcludeFromSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
+        // These arguments should lead to absolutely no output from the restore command - regardless of loggers
         private static bool TriggersSilentSeparateRestore(string argument)
             => FlagsThatTriggerSilentSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
