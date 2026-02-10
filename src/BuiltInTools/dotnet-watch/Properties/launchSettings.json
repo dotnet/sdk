@@ -3,7 +3,7 @@
     "dotnet-watch": {
       "commandName": "Project",
       "commandLineArgs": "-bl",
-      "workingDirectory": "$(RepoRoot)src\\Assets\\TestProjects\\BlazorWasmWithLibrary\\blazorwasm",
+      "workingDirectory": "E:\\sdk1\\artifacts\\tmp\\Debug\\testing\\BlazorWasmHos---8E6CC8E8\\blazorwasm",
       "environmentVariables": {
         "DOTNET_WATCH_DEBUG_SDK_DIRECTORY": "$(RepoRoot)artifacts\\bin\\redist\\$(Configuration)\\dotnet\\sdk\\$(Version)",
         "DCP_IDE_REQUEST_TIMEOUT_SECONDS": "100000",

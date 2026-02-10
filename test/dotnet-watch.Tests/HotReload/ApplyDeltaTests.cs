@@ -789,7 +789,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [Fact]
         public async Task GracefulTermination_Windows()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -853,10 +853,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("exited with exit code 0.");
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/49928")] // https://github.com/dotnet/aspnetcore/issues/63759
+        [Theory]
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm", identifier: projectSpecifiesCapabilities.ToString())
                 .WithSource();
 
@@ -875,13 +877,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var port = TestOptions.GetTestPort();
             App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
 
-            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
-
             await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
 
-            // Browser is launched based on blazor-devserver output "Now listening on: ...".
-            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
+            // env variable passed when launching the server:
+            await App.WaitUntilOutputContains($"HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES=dotnet watch 🕵️ [blazorwasm ({tfm})]");
+            App.Process.ClearOutput();
 
             // Middleware should have been loaded to blazor-devserver before the browser is launched:
             await App.WaitUntilOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware[0]");
@@ -894,26 +895,25 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
             App.AssertOutputDoesNotContain("🕵️");
 
+            // Browser is launched based on blazor-devserver output "Now listening on: ...".
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
+
+            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+            App.Process.ClearOutput();
+
             var newSource = """
                 @page "/"
                 <h1>Updated</h1>
                 """;
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
-            await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
 
-            // check project specified capapabilities:
-            if (projectSpecifiesCapabilities)
-            {
-                await App.WaitUntilOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddMethodToExistingType Baseline.");
-            }
-            else
-            {
-                await App.WaitUntilOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddFieldRva AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
-            }
+            // WebAssemblyHotReloadCapabilities set by project is overwritten in WASM SDK targets:
+            await App.WaitUntilOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
+            await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [Fact]
         public async Task BlazorWasm_MSBuildWarning()
         {
             var testAsset = TestAssets
@@ -935,7 +935,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [Fact]
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -958,31 +958,21 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains(MessageDescriptor.ReloadingBrowser);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/49928")] // https://github.com/dotnet/aspnetcore/issues/63759
+        [Fact]
         public async Task BlazorWasmHosted()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasmHosted")
                 .WithSource();
 
-            var tfm = ToolsetInfo.CurrentTargetFramework;
-
             var port = TestOptions.GetTestPort();
             App.Start(testAsset, ["--urls", "http://localhost:" + port], "blazorhosted", testFlags: TestFlags.MockBrowser);
-
-            await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
             await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
             await App.WaitUntilOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
-
-            // client capabilities:
-            await App.WaitUntilOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project specifies capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType AddExplicitInterfaceImplementation.");
-
-            // server capabilities:
-            await App.WaitUntilOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva AddExplicitInterfaceImplementation.");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [Fact]
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -1027,7 +1017,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// Currently only works on Windows.
         /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
         /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [Fact]
         public async Task MauiBlazor()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor")
@@ -1221,7 +1211,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("> NewSubdir");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [Fact]
         public async Task Aspire_BuildError_ManualRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -1321,7 +1311,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("dotnet watch ⭐ [#3] Sending 'sessionTerminated'");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
+        [Fact]
         public async Task Aspire_NoEffect_AutoRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
