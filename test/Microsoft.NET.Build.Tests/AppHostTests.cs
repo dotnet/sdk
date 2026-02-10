@@ -71,7 +71,7 @@ namespace Microsoft.NET.Build.Tests
             new RunExeCommand(Log, Path.Combine(outputDirectory.FullName, hostExecutable))
                 .WithEnvironmentVariable(
                     Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)",
-                    Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath))
+                    Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath))
                 .Execute()
                 .Should()
                 .Pass()

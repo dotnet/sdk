@@ -123,7 +123,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Directory.CreateDirectory(outOfTreeBaseDirectory);
 
         // Create NuGet.config in our out-of-tree base directory.
-        var sourceNuGetConfig = Path.Join(TestContext.Current.TestExecutionDirectory, "NuGet.config");
+        var sourceNuGetConfig = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config");
         var targetNuGetConfig = Path.Join(outOfTreeBaseDirectory, "NuGet.config");
         File.Copy(sourceNuGetConfig, targetNuGetConfig, overwrite: true);
 
@@ -3071,9 +3071,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var msbuildCallArgsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(msbuildCallArgs);
 
         // Generate argument template code.
-        string sdkPath = NormalizePath(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
-        string dotNetRootPath = NormalizePath(TestContext.Current.ToolsetUnderTest.DotNetRoot);
-        string nuGetCachePath = NormalizePath(TestContext.Current.NuGetCachePath!);
+        string sdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
+        string dotNetRootPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot);
+        string nuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
         string artifactsDirNormalized = NormalizePath(artifactsDir);
         string objPath = $"{artifactsDirNormalized}/obj/debug";
         string entryPointPathNormalized = NormalizePath(entryPointPath);
@@ -3248,7 +3248,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Save the code.
         var codeFolder = new DirectoryInfo(Path.Join(
-            TestContext.Current.ToolsetUnderTest.RepoRoot,
+            SdkTestContext.Current.ToolsetUnderTest.RepoRoot,
             "src", "Cli", "dotnet", "Commands", "Run"));
         var nonGeneratedFile = codeFolder.File("CSharpCompilerCommand.cs");
         if (!nonGeneratedFile.Exists)
@@ -3898,7 +3898,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             }
             """);
 
-        var expectedDotNetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+        var expectedDotNetRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
 
         var cscResult = new DotnetCommand(Log, "run", "Program.cs", "-bl")
             .WithWorkingDirectory(testInstance.Path)

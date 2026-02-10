@@ -8,6 +8,12 @@
     <!-- Create FileDefinitions items for ResolveHostfxrCopyLocalContent target -->
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
     <RootNamespace>Microsoft.DotNet.DotNetSdkResolver</RootNamespace>
+
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible Condition="'$(TargetFramework)' != 'net472'">true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

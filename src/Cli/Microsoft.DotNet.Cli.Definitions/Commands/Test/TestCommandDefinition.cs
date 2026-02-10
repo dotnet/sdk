@@ -40,14 +40,7 @@ internal abstract partial class TestCommandDefinition : Command
 
         string jsonText = File.ReadAllText(globalJsonPath);
 
-        // This code path is hit exactly once during the whole life of the dotnet process.
-        // So, no concern about caching JsonSerializerOptions.
-        var globalJson = JsonSerializer.Deserialize<GlobalJsonModel>(jsonText, new JsonSerializerOptions()
-        {
-            AllowDuplicateProperties = false,
-            AllowTrailingCommas = false,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-        });
+        var globalJson = JsonSerializer.Deserialize(jsonText, GlobalJsonSerializerContext.Default.GlobalJsonModel);
 
         var name = globalJson?.Test?.RunnerName;
 
@@ -92,4 +85,8 @@ internal abstract partial class TestCommandDefinition : Command
         [JsonPropertyName("runner")]
         public string RunnerName { get; set; } = null!;
     }
+
+    [JsonSourceGenerationOptions(ReadCommentHandling = JsonCommentHandling.Skip)]
+    [JsonSerializable(typeof(GlobalJsonModel))]
+    private partial class GlobalJsonSerializerContext : JsonSerializerContext;
 }
