@@ -56,7 +56,7 @@ namespace Microsoft.Build.Framework
         {
             if (Path.IsPathRooted(path))
             {
-                return new AbsolutePath(path, ignoreRootedCheck: true);
+                return new AbsolutePath(path);
             }
 
             return new AbsolutePath(path, _projectDirectory);
