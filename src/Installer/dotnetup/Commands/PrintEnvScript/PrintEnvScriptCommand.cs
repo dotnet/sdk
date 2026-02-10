@@ -3,19 +3,19 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
-internal class EnvCommand : CommandBase
+internal class PrintEnvScriptCommand : CommandBase
 {
     private readonly IEnvShellProvider? _shellProvider;
     private readonly string? _dotnetInstallPath;
     private readonly IDotnetInstallManager _dotnetInstaller;
 
-    public EnvCommand(ParseResult result, IDotnetInstallManager? dotnetInstaller = null) : base(result)
+    public PrintEnvScriptCommand(ParseResult result, IDotnetInstallManager? dotnetInstaller = null) : base(result)
     {
         _dotnetInstaller = dotnetInstaller ?? new DotnetInstallManager();
-        _shellProvider = result.GetValue(EnvCommandParser.ShellOption);
-        _dotnetInstallPath = result.GetValue(EnvCommandParser.DotnetInstallPathOption);
+        _shellProvider = result.GetValue(PrintEnvScriptCommandParser.ShellOption);
+        _dotnetInstallPath = result.GetValue(PrintEnvScriptCommandParser.DotnetInstallPathOption);
     }
 
     public override int Execute()
@@ -29,13 +29,13 @@ internal class EnvCommand : CommandBase
                 if (shellPath is null)
                 {
                     Console.Error.WriteLine("Error: Unable to detect current shell. The SHELL environment variable is not set.");
-                    Console.Error.WriteLine($"Please specify the shell using --shell option. Supported shells: {string.Join(", ", EnvCommandParser.SupportedShells.Select(s => s.ArgumentName))}");
+                    Console.Error.WriteLine($"Please specify the shell using --shell option. Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.SupportedShells.Select(s => s.ArgumentName))}");
                 }
                 else
                 {
                     var shellName = Path.GetFileName(shellPath);
                     Console.Error.WriteLine($"Error: Unsupported shell '{shellName}'.");
-                    Console.Error.WriteLine($"Supported shells: {string.Join(", ", EnvCommandParser.SupportedShells.Select(s => s.ArgumentName))}");
+                    Console.Error.WriteLine($"Supported shells: {string.Join(", ", PrintEnvScriptCommandParser.SupportedShells.Select(s => s.ArgumentName))}");
                     Console.Error.WriteLine("Please specify the shell using --shell option.");
                 }
                 return 1;

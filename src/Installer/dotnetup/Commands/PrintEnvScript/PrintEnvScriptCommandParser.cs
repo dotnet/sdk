@@ -5,9 +5,9 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
-internal static class EnvCommandParser
+internal static class PrintEnvScriptCommandParser
 {
     internal static readonly IEnvShellProvider[] SupportedShells =
     [
@@ -44,7 +44,7 @@ internal static class EnvCommandParser
         Arity = ArgumentArity.ZeroOrOne
     };
 
-    static EnvCommandParser()
+    static PrintEnvScriptCommandParser()
     {
         // Add validator to only accept supported shells
         ShellOption.Validators.Clear();
@@ -55,11 +55,11 @@ internal static class EnvCommandParser
         ShellOption.CompletionSources.Add(CreateCompletions());
     }
 
-    private static readonly Command EnvCommand = ConstructCommand();
+    private static readonly Command PrintEnvScriptCommand = ConstructCommand();
 
     public static Command GetCommand()
     {
-        return EnvCommand;
+        return PrintEnvScriptCommand;
     }
 
     private static Command ConstructCommand()
@@ -69,7 +69,7 @@ internal static class EnvCommandParser
         command.Options.Add(ShellOption);
         command.Options.Add(DotnetInstallPathOption);
 
-        command.SetAction(parseResult => new EnvCommand(parseResult).Execute());
+        command.SetAction(parseResult => new PrintEnvScriptCommand(parseResult).Execute());
 
         return command;
     }

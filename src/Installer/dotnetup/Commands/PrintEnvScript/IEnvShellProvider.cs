@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 /// <summary>
 /// Provides shell-specific environment configuration scripts.
