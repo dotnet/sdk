@@ -25,7 +25,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <AppendTargetFrameworkToOutputPath Condition="'$(AppendTargetFrameworkToOutputPath)' == ''">true</AppendTargetFrameworkToOutputPath>
     <AppendPlatformToOutputPath Condition="'$(AppendPlatformToOutputPath)' == '' and '$(PlatformName)' == 'AnyCPU'">false</AppendPlatformToOutputPath>
     <AppendPlatformToOutputPath Condition="'$(AppendPlatformToOutputPath)' == '' and '$(PlatformName)' != 'AnyCPU'">true</AppendPlatformToOutputPath>
-    <_PlatformToAppendToOutputPath Condition="'$(AppendPlatformToOutputPath)' == 'true'">$(PlatformName)\</_PlatformToAppendToOutputPath>
+    <_PlatformToAppendToOutputPath Condition="'$(AppendPlatformToOutputPath)' == 'true'">$(PlatformName)$([System.IO.Path]::DirectorySeparatorChar)</_PlatformToAppendToOutputPath>
   </PropertyGroup>
 
   <!-- NOTE: If we want to default UseArtifactsOutput to true when targeting a given version of .NET or higher, this is where we would do it.
@@ -77,41 +77,41 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup Condition="'$(UseArtifactsOutput)' == 'true' And '$(IncludeProjectNameInArtifactsPaths)' == 'true'">
     <!-- Set artifacts paths when project name should be included in the path -->
-    <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">$(ArtifactsPath)\$(ArtifactsBinOutputName)\$(ArtifactsProjectName)\</BaseOutputPath>
-    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == '' And '$(UseArtifactsIntermediateOutput)' == 'true'">$(ArtifactsPath)\obj\$(ArtifactsProjectName)\</BaseIntermediateOutputPath>
-    <PublishDir Condition="'$(PublishDir)' == ''">$(ArtifactsPath)\$(ArtifactsPublishOutputName)\$(ArtifactsProjectName)\$(ArtifactsPivots)\</PublishDir>
+    <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">$(ArtifactsPath)$([System.IO.Path]::DirectorySeparatorChar)$(ArtifactsBinOutputName)$([System.IO.Path]::DirectorySeparatorChar)$(ArtifactsProjectName)$([System.IO.Path]::DirectorySeparatorChar)</BaseOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == '' And '$(UseArtifactsIntermediateOutput)' == 'true'">$(ArtifactsPath)$([System.IO.Path]::DirectorySeparatorChar)obj$([System.IO.Path]::DirectorySeparatorChar)$(ArtifactsProjectName)$([System.IO.Path]::DirectorySeparatorChar)</BaseIntermediateOutputPath>
+    <PublishDir Condition="'$(PublishDir)' == ''">$(ArtifactsPath)$([System.IO.Path]::DirectorySeparatorChar)$(ArtifactsPublishOutputName)$([System.IO.Path]::DirectorySeparatorChar)$(ArtifactsProjectName)$([System.IO.Path]::DirectorySeparatorChar)$(ArtifactsPivots)$([System.IO.Path]::DirectorySeparatorChar)</PublishDir>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseArtifactsOutput)' == 'true' And '$(IncludeProjectNameInArtifactsPaths)' != 'true'">
     <!-- Set artifacts paths when project name should not be included in the path -->
-    <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">$(ArtifactsPath)\$(ArtifactsBinOutputName)\</BaseOutputPath>
-    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == '' And '$(UseArtifactsIntermediateOutput)' == 'true'">$(ArtifactsPath)\obj\</BaseIntermediateOutputPath>
-    <PublishDir Condition="'$(PublishDir)' == ''">$(ArtifactsPath)\$(ArtifactsPublishOutputName)\$(ArtifactsPivots)\</PublishDir>
+    <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">$(ArtifactsPath)$([System.IO.Path]::DirectorySeparatorChar)$(ArtifactsBinOutputName)$([System.IO.Path]::DirectorySeparatorChar)</BaseOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == '' And '$(UseArtifactsIntermediateOutput)' == 'true'">$(ArtifactsPath)$([System.IO.Path]::DirectorySeparatorChar)obj$([System.IO.Path]::DirectorySeparatorChar)</BaseIntermediateOutputPath>
+    <PublishDir Condition="'$(PublishDir)' == ''">$(ArtifactsPath)$([System.IO.Path]::DirectorySeparatorChar)$(ArtifactsPublishOutputName)$([System.IO.Path]::DirectorySeparatorChar)$(ArtifactsPivots)$([System.IO.Path]::DirectorySeparatorChar)</PublishDir>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseArtifactsOutput)' == 'true'">
-    <OutputPath Condition="'$(OutputPath)' == ''">$(BaseOutputPath)$(ArtifactsPivots)\</OutputPath>
-    <IntermediateOutputPath Condition=" $(IntermediateOutputPath) == '' And '$(UseArtifactsIntermediateOutput)' == 'true'">$(BaseIntermediateOutputPath)$(ArtifactsPivots)\</IntermediateOutputPath>
+    <OutputPath Condition="'$(OutputPath)' == ''">$(BaseOutputPath)$(ArtifactsPivots)$([System.IO.Path]::DirectorySeparatorChar)</OutputPath>
+    <IntermediateOutputPath Condition=" $(IntermediateOutputPath) == '' And '$(UseArtifactsIntermediateOutput)' == 'true'">$(BaseIntermediateOutputPath)$(ArtifactsPivots)$([System.IO.Path]::DirectorySeparatorChar)</IntermediateOutputPath>
 
     <!-- The package output path does not include the project name, and only includes the Configuration as a pivot -->
-    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(ArtifactsPath)\$(ArtifactsPackageOutputName)\$(Configuration.ToLowerInvariant())\</PackageOutputPath>
+    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(ArtifactsPath)$([System.IO.Path]::DirectorySeparatorChar)$(ArtifactsPackageOutputName)$([System.IO.Path]::DirectorySeparatorChar)$(Configuration.ToLowerInvariant())$([System.IO.Path]::DirectorySeparatorChar)</PackageOutputPath>
 
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseArtifactsOutput)' != 'true'">
-    <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">bin\</BaseOutputPath>
-    <BaseOutputPath Condition="!HasTrailingSlash('$(BaseOutputPath)')">$(BaseOutputPath)\</BaseOutputPath>
-    <OutputPath Condition="'$(OutputPath)' == ''">$(BaseOutputPath)$(_PlatformToAppendToOutputPath)$(Configuration)\</OutputPath>
-    <OutputPath Condition="!HasTrailingSlash('$(OutputPath)')">$(OutputPath)\</OutputPath>
+    <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">bin$([System.IO.Path]::DirectorySeparatorChar)</BaseOutputPath>
+    <BaseOutputPath Condition="!HasTrailingSlash('$(BaseOutputPath)')">$(BaseOutputPath)$([System.IO.Path]::DirectorySeparatorChar)</BaseOutputPath>
+    <OutputPath Condition="'$(OutputPath)' == ''">$(BaseOutputPath)$(_PlatformToAppendToOutputPath)$(Configuration)$([System.IO.Path]::DirectorySeparatorChar)</OutputPath>
+    <OutputPath Condition="!HasTrailingSlash('$(OutputPath)')">$(OutputPath)$([System.IO.Path]::DirectorySeparatorChar)</OutputPath>
   </PropertyGroup>
 
   <!-- If "UseArtifactsOutput" wasn't set when the MSBuild project extensions .props files were imported, then use "obj" in the project folder for the intermediate output path
          instead a folder under ArtifactsPath.  To have the intermediate output path in the artifacts folder, "UseArtifactsOutput" should be set in Directory.Build.props-->
   <PropertyGroup Condition="'$(UseArtifactsIntermediateOutput)' != 'true'">
-    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">obj\</BaseIntermediateOutputPath>
-    <BaseIntermediateOutputPath Condition="!HasTrailingSlash('$(BaseIntermediateOutputPath)')">$(BaseIntermediateOutputPath)\</BaseIntermediateOutputPath>
-    <IntermediateOutputPath Condition=" $(IntermediateOutputPath) == '' ">$(BaseIntermediateOutputPath)$(_PlatformToAppendToOutputPath)$(Configuration)\</IntermediateOutputPath>
-    <IntermediateOutputPath Condition="!HasTrailingSlash('$(IntermediateOutputPath)')">$(IntermediateOutputPath)\</IntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">obj$([System.IO.Path]::DirectorySeparatorChar)</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition="!HasTrailingSlash('$(BaseIntermediateOutputPath)')">$(BaseIntermediateOutputPath)$([System.IO.Path]::DirectorySeparatorChar)</BaseIntermediateOutputPath>
+    <IntermediateOutputPath Condition=" $(IntermediateOutputPath) == '' ">$(BaseIntermediateOutputPath)$(_PlatformToAppendToOutputPath)$(Configuration)$([System.IO.Path]::DirectorySeparatorChar)</IntermediateOutputPath>
+    <IntermediateOutputPath Condition="!HasTrailingSlash('$(IntermediateOutputPath)')">$(IntermediateOutputPath)$([System.IO.Path]::DirectorySeparatorChar)</IntermediateOutputPath>
   </PropertyGroup>
 
   <!-- Set the package output path (for nuget pack target) now, before the TargetFramework is appended -->
@@ -139,12 +139,12 @@ Copyright (c) .NET Foundation. All rights reserved.
    -->
   <PropertyGroup Condition="'$(UseArtifactsOutput)' != 'true' and
                             '$(AppendTargetFrameworkToOutputPath)' == 'true' and '$(TargetFramework)' != '' and '$(_UnsupportedTargetFrameworkError)' != 'true'">
-    <OutputPath>$(OutputPath)$(TargetFramework.ToLowerInvariant())\</OutputPath>
+    <OutputPath>$(OutputPath)$(TargetFramework.ToLowerInvariant())$([System.IO.Path]::DirectorySeparatorChar)</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseArtifactsOutput)' != 'true' and
                             '$(AppendTargetFrameworkToOutputPath)' == 'true' and '$(TargetFramework)' != '' and '$(_UnsupportedTargetFrameworkError)' != 'true'">
-    <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetFramework.ToLowerInvariant())\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetFramework.ToLowerInvariant())$([System.IO.Path]::DirectorySeparatorChar)</IntermediateOutputPath>
   </PropertyGroup>
 
 
