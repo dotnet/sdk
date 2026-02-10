@@ -1,0 +1,40 @@
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Project>
+
+  <UsingTask TaskName="AllowEmptyTelemetry" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <!--
+    ============================================================
+    _RestoreTelemetry
+    
+    Collects telemetry about restore operations after the Restore target completes.
+    This target gathers information about:
+    - Restore type (implicit vs explicit)
+    - Restore effectiveness (projects restored vs already up-to-date)
+    - Audit results
+    ============================================================
+  -->
+  <Target Name="_RestoreTelemetry"
+          AfterTargets="Restore"
+          Condition="'$(DisableRestoreTelemetry)' != 'true'">
+
+    <PropertyGroup>
+      <!-- Determine restore type based on MSBuildRestoreSessionId which is set for implicit restores -->
+      <!-- MSBuildRestoreSessionId is set when using -restore flag (implicit restore integrated with build) -->
+      <!-- For explicit 'dotnet restore' or '-t:Restore', MSBuildRestoreSessionId is not set -->
+      <_RestoreType Condition="'$(MSBuildRestoreSessionId)' != ''">implicit</_RestoreType>
+      <_RestoreType Condition="'$(MSBuildRestoreSessionId)' == ''">explicit</_RestoreType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RestoreTelemetryData Include="RestoreType" Value="$(_RestoreType)" />
+      <RestoreTelemetryData Include="ProjectsRestored" Value="$(RestoreProjectCount)" />
+      <RestoreTelemetryData Include="ProjectsAlreadyUpToDate" Value="$(RestoreSkippedCount)" />
+      <RestoreTelemetryData Include="ProjectsAudited" Value="$(RestoreProjectsAuditedCount)" />
+    </ItemGroup>
+
+    <AllowEmptyTelemetry EventName="RestoreTelemetry" EventData="@(RestoreTelemetryData)" />
+
+  </Target>
+
+</Project>
