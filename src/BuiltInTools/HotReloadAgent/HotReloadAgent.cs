@@ -155,32 +155,38 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
 
         var updatedTypes = GetMetadataUpdateTypes(updates);
 
-        InstallHotReloadExceptionCreatedHandler(updatedTypes);
+        var handlerGuard = InstallHotReloadExceptionCreatedHandler(updatedTypes);
 
         _metadataUpdateHandlerInvoker.MetadataUpdated(updatedTypes);
 
         Reporter.Report("Updates applied.", AgentMessageSeverity.Verbose);
+
+        // Signal the HotReloadException.Created handler that the update is complete and the handler may execute now.
+        if (handlerGuard != null)
+        {
+            Monitor.Exit(handlerGuard);
+        }
     }
 
-    private void InstallHotReloadExceptionCreatedHandler(Type[] types)
+    private object? InstallHotReloadExceptionCreatedHandler(Type[] types)
     {
         if (_hotReloadExceptionCreateHandler is null)
         {
             // already installed or not available
-            return;
+            return null;
         }
 
         var exceptionType = types.FirstOrDefault(static t => t.FullName == "System.Runtime.CompilerServices.HotReloadException");
         if (exceptionType == null)
         {
-            return;
+            return null;
         }
 
         var handler = Interlocked.Exchange(ref _hotReloadExceptionCreateHandler, null);
         if (handler == null)
         {
             // already installed or not available
-            return;
+            return null;
         }
 
         // HotReloadException has a private static field Action<Exception> Created, unless emitted by previous versions of the compiler:
@@ -190,8 +196,13 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
         if (createdField == null || codeField == null)
         {
             Reporter.Report($"Failed to install HotReloadException handler: not supported by the compiler", AgentMessageSeverity.Verbose);
-            return;
+            return null;
         }
+
+        var handlerGuard = new object();
+
+        // Enter the lock, so that the handler doesn't execute until the application of the changes is completed.
+        Monitor.Enter(handlerGuard);
 
         try
         {
@@ -199,7 +210,13 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
             {
                 try
                 {
-                    handler(codeField.GetValue(e) is int code ? code : 0, e.Message);
+                    // Wait until the metadata update handlers have completed.
+                    // Prevent multiple threads from executing the handler concurrently.
+                    // The first thread notifies the client and then the process is restarted.
+                    lock (handlerGuard)
+                    {
+                        handler(codeField.GetValue(e) is int code ? code : 0, e.Message);
+                    }
                 }
                 catch
                 {
@@ -210,10 +227,11 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
         catch (Exception e)
         {
             Reporter.Report($"Failed to install HotReloadException handler: {e.Message}", AgentMessageSeverity.Verbose);
-            return;
+            return null;
         }
 
         Reporter.Report($"HotReloadException handler installed.", AgentMessageSeverity.Verbose);
+        return handlerGuard;
     }
 
     private Type[] GetMetadataUpdateTypes(IEnumerable<RuntimeManagedCodeUpdate> updates)
