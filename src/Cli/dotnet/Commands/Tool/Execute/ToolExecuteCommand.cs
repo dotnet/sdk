@@ -104,18 +104,13 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         //  but we don't support this for local or one-shot tools.
         if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, verbosity: _verbosity, out var toolPackage))
         {
-            if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
+            var userAgreed = UserAgreedToRunFromSource(packageId, bestVersion, packageSource);
+            
+            // In non-interactive mode (userAgreed == null), auto-approve the tool installation
+            if (userAgreed == false)
             {
-                if (_interactive)
-                {
-                    Reporter.Error.WriteLine(CliCommandStrings.ToolDownloadCanceled.Red().Bold());
-                    return ERROR_CANCELLED;
-                }
-                else
-                {
-                    Reporter.Error.WriteLine(CliCommandStrings.ToolDownloadNeedsConfirmation.Red().Bold());
-                    return 1;
-                }
+                Reporter.Error.WriteLine(CliCommandStrings.ToolDownloadCanceled.Red().Bold());
+                return ERROR_CANCELLED;
             }
 
             //  We've already determined which source we will use and displayed that in a confirmation message to the user.
@@ -142,7 +137,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         return result.ExitCode;
     }
 
-    private bool UserAgreedToRunFromSource(PackageId packageId, NuGetVersion version, PackageSource source)
+    private bool? UserAgreedToRunFromSource(PackageId packageId, NuGetVersion version, PackageSource source)
     {
         string promptMessage = string.Format(CliCommandStrings.ToolDownloadConfirmationPrompt, packageId, version.ToString(), source.Source);
 
@@ -150,6 +145,6 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
             promptMessage,
             yesOption: _parseResult.GetValue(Definition.YesOption),
             interactiveOption: _parseResult.GetValue(Definition.RestoreOptions.InteractiveOption),
-            acceptEscapeForFalse: true) == true;
+            acceptEscapeForFalse: true);
     }
 }

@@ -234,7 +234,7 @@ internal static class CommonOptions
     }.ForwardAs("-restore");
 
     private static bool IsCIEnvironmentOrRedirected() =>
-        new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
+        new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected || Console.IsInputRedirected;
 
     public const string InteractiveOptionName = "--interactive";
 
