@@ -356,7 +356,7 @@ The primary development workflow is an iterative loop focused on fast feedback w
 5. **Inspect results** — Check output assets, manifests (`.staticwebassets.runtime.json`, `.staticwebassets.endpoints.json`), and endpoints. Use binary logs (`-bl`) if needed.
 6. **Repeat** — Go back to step 1 until the behavior is correct
 
-**Do not write or run tests during the inner loop.** Focus on getting the behavior right first.
+**Do not write or run integration tests during the inner loop.** Scoped unit tests (run with `--filter "FullyQualifiedName~YourTestClassName"`) are fine for quick validation of task logic.
 
 ### After Validation: Unit Tests
 
@@ -370,6 +370,8 @@ Never run all the tests — that takes a very long time. Always use `--filter` t
 
 ### Last: Integration Tests
 
-Integration tests extend `AspNetSdkBaselineTest` (or `IsolatedNuGetPackageFolderAspNetSdkBaselineTest`) and run full MSBuild builds against test project assets. They are slow and should **not** be part of the inner development loop. Write or update integration tests only after the change is validated and unit-tested. Leave running the full integration test suite to CI.
+Integration tests extend `AspNetSdkBaselineTest` (or `IsolatedNuGetPackageFolderAspNetSdkBaselineTest`) and run full MSBuild builds against test project assets. They are slow and should **not** be part of the inner development loop. Write or update integration tests only after the change is validated and unit-tested.
+
+When running integration tests locally, only run the specific tests you wrote or modified — at most the tests from the same class using `--filter "FullyQualifiedName~YourIntegrationTestClassName"`. Leave running the full integration test suite to CI.
 
 **Never modify the system dotnet SDK.** Always use the repo-local redist SDK at `artifacts/bin/redist/{Configuration}/dotnet/` or a freshly downloaded copy for Blazor WASM scenarios.
