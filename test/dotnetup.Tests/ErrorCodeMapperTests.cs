@@ -419,6 +419,84 @@ public class ErrorCodeMapperTests
         Assert.Equal(ErrorCategory.User, info.Category);
     }
 
+    [Fact]
+    public void GetErrorInfo_ManifestFetchFailed_WithInnerHttpException_NoStatus_IsUserError()
+    {
+        // Network connectivity failure during manifest fetch should be User, not Product
+        var innerEx = new HttpRequestException("Error while copying content to a stream");
+        var ex = new DotnetInstallException(
+            DotnetInstallErrorCode.ManifestFetchFailed,
+            $"Failed to fetch release manifest: {innerEx.Message}",
+            innerEx);
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.User, info.Category);
+        Assert.Equal("ManifestFetchFailed", info.ErrorType);
+    }
+
+    [Fact]
+    public void GetErrorInfo_ManifestFetchFailed_WithInner500Error_IsProductError()
+    {
+        // Server errors (5xx) during manifest fetch should be Product
+        var innerEx = new HttpRequestException("Internal server error", null, System.Net.HttpStatusCode.InternalServerError);
+        var ex = new DotnetInstallException(
+            DotnetInstallErrorCode.ManifestFetchFailed,
+            $"Failed to fetch release manifest: {innerEx.Message}",
+            innerEx);
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.Product, info.Category);
+        Assert.Equal(500, info.StatusCode);
+        Assert.Contains("http_500", info.Details!);
+    }
+
+    [Fact]
+    public void GetErrorInfo_ManifestFetchFailed_WithInnerSocketException_IsUserError()
+    {
+        // Socket errors are user environment issues
+        var socketEx = new System.Net.Sockets.SocketException((int)System.Net.Sockets.SocketError.HostNotFound);
+        var httpEx = new HttpRequestException("Error", socketEx);
+        var ex = new DotnetInstallException(
+            DotnetInstallErrorCode.ManifestFetchFailed,
+            $"Failed to fetch release manifest: {httpEx.Message}",
+            httpEx);
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.User, info.Category);
+        Assert.Contains("socket_", info.Details!);
+    }
+
+    [Fact]
+    public void GetErrorInfo_DownloadFailed_WithInnerHttpException_NoStatus_IsUserError()
+    {
+        // Network connectivity failure during download should be User
+        var innerEx = new HttpRequestException("Network error");
+        var ex = new DotnetInstallException(
+            DotnetInstallErrorCode.DownloadFailed,
+            $"Download failed: {innerEx.Message}",
+            innerEx);
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.User, info.Category);
+    }
+
+    [Fact]
+    public void GetErrorInfo_ManifestFetchFailed_NoInnerException_IsProductError()
+    {
+        // Without inner exception info, we can't determine it's a user issue - default to Product
+        var ex = new DotnetInstallException(
+            DotnetInstallErrorCode.ManifestFetchFailed,
+            "Failed to fetch release manifest");
+
+        var info = ErrorCodeMapper.GetErrorInfo(ex);
+
+        Assert.Equal(ErrorCategory.Product, info.Category);
+    }
+
     private class CustomTestException : Exception
     {
         public CustomTestException(string message) : base(message) { }

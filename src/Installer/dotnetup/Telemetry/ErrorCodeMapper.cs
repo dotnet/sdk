@@ -4,6 +4,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -115,12 +116,8 @@ public static class ErrorCodeMapper
         {
             // DotnetInstallException has specific error codes - categorize by error code
             // Sanitize the version to prevent PII leakage (user could have typed anything)
-            DotnetInstallException installEx => new ExceptionErrorInfo(
-                installEx.ErrorCode.ToString(),
-                Category: GetInstallErrorCategory(installEx.ErrorCode),
-                Details: installEx.Version is not null ? VersionSanitizer.Sanitize(installEx.Version) : null,
-                SourceLocation: sourceLocation,
-                ExceptionChain: exceptionChain),
+            // For network-related errors, also check the inner exception for more details
+            DotnetInstallException installEx => GetInstallExceptionErrorInfo(installEx, sourceLocation, exceptionChain),
 
             // HTTP errors: 4xx client errors are often user issues, 5xx are product/server issues
             HttpRequestException httpEx => new ExceptionErrorInfo(
@@ -232,6 +229,113 @@ public static class ErrorCodeMapper
 
             _ => ErrorCategory.Product  // Default to product for new codes
         };
+    }
+
+    /// <summary>
+    /// Gets error info for a DotnetInstallException, enriching with inner exception details
+    /// for network-related errors.
+    /// </summary>
+    private static ExceptionErrorInfo GetInstallExceptionErrorInfo(
+        DotnetInstallException installEx,
+        string? sourceLocation,
+        string? exceptionChain)
+    {
+        var errorCode = installEx.ErrorCode;
+        var baseCategory = GetInstallErrorCategory(errorCode);
+        var details = installEx.Version is not null ? VersionSanitizer.Sanitize(installEx.Version) : null;
+        int? httpStatus = null;
+
+        // For network-related errors, check the inner exception to better categorize
+        // and extract additional diagnostic info
+        if (IsNetworkRelatedErrorCode(errorCode) && installEx.InnerException is not null)
+        {
+            var (refinedCategory, innerHttpStatus, innerDetails) = AnalyzeNetworkException(installEx.InnerException);
+            baseCategory = refinedCategory;
+            httpStatus = innerHttpStatus;
+
+            // Combine details: version + inner exception info
+            if (innerDetails is not null)
+            {
+                details = details is not null ? $"{details};{innerDetails}" : innerDetails;
+            }
+        }
+
+        return new ExceptionErrorInfo(
+            errorCode.ToString(),
+            Category: baseCategory,
+            StatusCode: httpStatus,
+            Details: details,
+            SourceLocation: sourceLocation,
+            ExceptionChain: exceptionChain);
+    }
+
+    /// <summary>
+    /// Checks if the error code is related to network operations.
+    /// </summary>
+    private static bool IsNetworkRelatedErrorCode(DotnetInstallErrorCode errorCode)
+    {
+        return errorCode is
+            DotnetInstallErrorCode.ManifestFetchFailed or
+            DotnetInstallErrorCode.DownloadFailed or
+            DotnetInstallErrorCode.NetworkError;
+    }
+
+    /// <summary>
+    /// Analyzes a network-related inner exception to determine the category and extract details.
+    /// </summary>
+    private static (ErrorCategory Category, int? HttpStatus, string? Details) AnalyzeNetworkException(Exception inner)
+    {
+        // Walk the exception chain to find HttpRequestException or SocketException
+        // Look for the most specific info we can find
+        HttpRequestException? foundHttpEx = null;
+        SocketException? foundSocketEx = null;
+
+        var current = inner;
+        while (current is not null)
+        {
+            if (current is HttpRequestException httpEx && foundHttpEx is null)
+            {
+                foundHttpEx = httpEx;
+            }
+
+            if (current is SocketException socketEx && foundSocketEx is null)
+            {
+                foundSocketEx = socketEx;
+            }
+
+            current = current.InnerException;
+        }
+
+        // Prefer socket-level info if available (more specific)
+        if (foundSocketEx is not null)
+        {
+            var socketErrorName = foundSocketEx.SocketErrorCode.ToString().ToLowerInvariant();
+            return (ErrorCategory.User, null, $"socket_{socketErrorName}");
+        }
+
+        // Then HTTP-level info
+        if (foundHttpEx is not null)
+        {
+            var category = GetHttpErrorCategory(foundHttpEx.StatusCode);
+            var httpStatus = (int?)foundHttpEx.StatusCode;
+
+            string? details = null;
+            if (foundHttpEx.StatusCode.HasValue)
+            {
+                details = $"http_{(int)foundHttpEx.StatusCode}";
+            }
+            else if (foundHttpEx.HttpRequestError != HttpRequestError.Unknown)
+            {
+                // .NET 7+ has HttpRequestError enum for non-HTTP failures
+                details = $"request_error_{foundHttpEx.HttpRequestError.ToString().ToLowerInvariant()}";
+            }
+
+            return (category, httpStatus, details);
+        }
+
+        // Couldn't determine from inner exception - use default Product category
+        // but mark as unknown network error
+        return (ErrorCategory.Product, null, "network_unknown");
     }
 
     /// <summary>
