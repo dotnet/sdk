@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using Microsoft.Build.Framework;
 using Microsoft.Extensions.DependencyModel.Resolution;
 
 namespace Microsoft.NET.Build.Tasks
@@ -10,6 +11,11 @@ namespace Microsoft.NET.Build.Tasks
     internal static class FrameworkReferenceResolver
     {
         public static string GetDefaultReferenceAssembliesPath()
+        {
+            return GetDefaultReferenceAssembliesPath(taskEnvironment: null);
+        }
+
+        public static string GetDefaultReferenceAssembliesPath(TaskEnvironment taskEnvironment)
         {
             // Allow setting the reference assemblies path via an environment variable
             var referenceAssembliesPath = DotNetReferenceAssembliesPathResolver.Resolve();
@@ -28,12 +34,16 @@ namespace Microsoft.NET.Build.Tasks
 
             // References assemblies are in %ProgramFiles(x86)% on
             // 64 bit machines
-            var programFiles = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+            var programFiles = taskEnvironment != null
+                ? taskEnvironment.GetEnvironmentVariable("ProgramFiles(x86)")
+                : Environment.GetEnvironmentVariable("ProgramFiles(x86)");
 
             if (string.IsNullOrEmpty(programFiles))
             {
                 // On 32 bit machines they are in %ProgramFiles%
-                programFiles = Environment.GetEnvironmentVariable("ProgramFiles");
+                programFiles = taskEnvironment != null
+                    ? taskEnvironment.GetEnvironmentVariable("ProgramFiles")
+                    : Environment.GetEnvironmentVariable("ProgramFiles");
             }
 
             if (string.IsNullOrEmpty(programFiles))

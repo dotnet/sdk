@@ -247,7 +247,7 @@ namespace Microsoft.NET.Build.Tasks
                 .WithReferenceProjectInfos(referenceProjects)
                 .WithRuntimePackAssets(runtimePackAssets)
                 .WithCompilationOptions(compilationOptions)
-                .WithReferenceAssembliesPath(FrameworkReferenceResolver.GetDefaultReferenceAssembliesPath())
+                .WithReferenceAssembliesPath(FrameworkReferenceResolver.GetDefaultReferenceAssembliesPath(TaskEnvironment))
                 .WithPackagesThatWereFiltered(GetFilteredPackages());
 
             if (CompileReferences.Length > 0)
@@ -308,6 +308,11 @@ namespace Microsoft.NET.Build.Tasks
         protected override void ExecuteCore()
         {
             AbsolutePath absDepsFilePath = TaskEnvironment.GetAbsolutePath(DepsFilePath);
+            if (AssetsFilePath != null)
+            {
+                AssetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
+            }
+            RuntimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
             WriteDepsFile(absDepsFilePath);
         }
     }
