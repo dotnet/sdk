@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Reflection;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -36,10 +35,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var task = new WriteAppConfigWithSupportedRuntime();
                 task.BuildEngine = new MockBuildEngine();
 
-                var taskEnvProp = typeof(WriteAppConfigWithSupportedRuntime).GetProperty("TaskEnvironment",
-                    BindingFlags.Public | BindingFlags.Instance);
-                taskEnvProp.Should().NotBeNull("WriteAppConfigWithSupportedRuntime must have a TaskEnvironment property");
-                taskEnvProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
+                task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
 
                 // No input app.config — the task creates an empty one
                 task.AppConfigFile = null;
@@ -73,10 +69,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var task = new WriteAppConfigWithSupportedRuntime();
                 task.BuildEngine = new MockBuildEngine();
 
-                var taskEnvProp = typeof(WriteAppConfigWithSupportedRuntime).GetProperty("TaskEnvironment",
-                    BindingFlags.Public | BindingFlags.Instance);
-                taskEnvProp.Should().NotBeNull("WriteAppConfigWithSupportedRuntime must have a TaskEnvironment property");
-                taskEnvProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
+                task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
 
                 task.AppConfigFile = new TaskItem("app.config");
                 task.TargetFrameworkIdentifier = ".NETFramework";

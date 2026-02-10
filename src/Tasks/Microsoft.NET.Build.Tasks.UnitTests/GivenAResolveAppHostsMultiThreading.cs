@@ -76,9 +76,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 task.BuildEngine = mockEngine;
 
                 // Set TaskEnvironment pointing to projectDir
-                var teProp = task.GetType().GetProperty("TaskEnvironment");
-                teProp.Should().NotBeNull("task must have a TaskEnvironment property (from IMultiThreadableTask)");
-                teProp!.SetValue(task, TaskEnvironmentHelper.CreateForTest(projectDir));
+                task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
 
                 task.Execute().Should().BeTrue(
                     string.Join("; ", mockEngine.Errors.Select(e => e.Message)));
