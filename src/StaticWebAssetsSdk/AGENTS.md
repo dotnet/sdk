@@ -36,7 +36,7 @@ StaticWebAssetsPrepareForRun
 │   │   ├── ResolveCoreStaticWebAssets (already run)
 │   │   ├── GenerateComputedBuildStaticWebAssets
 │   │   │   └── BundleScopedCssFiles (if ScopedCss enabled)
-│   │   └── ResolveScopedCssAssets (if ScopedCss enabled)
+│   │   ├── ResolveScopedCssAssets (if ScopedCss enabled)
 │   │   └── ResolveJSModuleManifestBuildStaticWebAssets (if JSModules enabled)
 │   └── ResolveBuildRelatedStaticWebAssets
 │       └── ResolveBuildCompressedStaticWebAssets (if Compression enabled)
@@ -189,18 +189,18 @@ StaticWebAssetsPrepareForPublish
 | `ResolveFingerprintedStaticWebAssetEndpointsForAssets` | ResolveFingerprintedStaticWebAssetEndpointsForAssets.cs | Resolve fingerprinted endpoints |
 | `ResolveStaticWebAssetsEmbeddedProjectConfiguration` | ResolveStaticWebAssetsEmbeddedProjectConfiguration.cs | Resolve embedded config |
 | `ApplyCompressionNegotiation` | ApplyCompressionNegotiation.cs | Apply content negotiation |
-| `BrotliCompress` | Compression/ | Brotli compression |
-| `GZipCompress` | Compression/ | Gzip compression |
-| `DiscoverPrecompressedAssets` | Compression/ | Find pre-compressed assets |
-| `ResolveCompressedAssets` | Compression/ | Resolve compression candidates |
+| `BrotliCompress` | Compression/BrotliCompress.cs | Brotli compression |
+| `GZipCompress` | Compression/GZipCompress.cs | Gzip compression |
+| `DiscoverPrecompressedAssets` | Compression/DiscoverPrecompressedAssets.cs | Find pre-compressed assets |
+| `ResolveCompressedAssets` | Compression/ResolveCompressedAssets.cs | Resolve compression candidates |
 | `DiscoverDefaultScopedCssItems` | DiscoverDefaultScopedCssItems.cs | Discover scoped CSS |
-| `ResolveAllScopedCssAssets` | ScopedCss/ | Resolve all scoped CSS |
-| `ApplyCssScopes` | ScopedCss/ | Apply CSS scopes |
-| `ComputeCssScope` | ScopedCss/ | Compute scope identifiers |
-| `RewriteCss` | ScopedCss/ | Rewrite CSS with scopes |
-| `ConcatenateCssFiles` | ScopedCss/ | Bundle CSS files |
-| `GenerateJsModuleManifest` | JSModules/ | Generate JS module manifest |
-| `ApplyJsModules` | JSModules/ | Apply JS modules to components |
+| `ResolveAllScopedCssAssets` | ScopedCss/ResolveAllScopedCssAssets.cs | Resolve all scoped CSS |
+| `ApplyCssScopes` | ScopedCss/ApplyCssScopes.cs | Apply CSS scopes |
+| `ComputeCssScope` | ScopedCss/ComputeCssScope.cs | Compute scope identifiers |
+| `RewriteCss` | ScopedCss/RewriteCss.cs | Rewrite CSS with scopes |
+| `ConcatenateCssFiles` | ScopedCss/ConcatenateCssFiles.cs | Bundle CSS files |
+| `GenerateJsModuleManifest` | JSModules/GenerateJsModuleManifest.cs | Generate JS module manifest |
+| `ApplyJsModules` | JSModules/ApplyJsModules.cs | Apply JS modules to components |
 
 ## Core Data Model
 
