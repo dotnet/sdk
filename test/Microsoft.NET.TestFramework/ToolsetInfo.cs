@@ -31,7 +31,7 @@ namespace Microsoft.NET.TestFramework
                 if (_sdkVersion == null)
                 {
                     //  Initialize SdkVersion lazily, as we call `dotnet --version` to get it, so we need to wait
-                    //  for the TestContext to finish being initialize
+                    //  for the SdkTestContext to finish being initialize
                     InitSdkVersion();
                 }
                 return _sdkVersion ?? throw new InvalidOperationException("SdkVersion should never be null."); ;
@@ -46,7 +46,7 @@ namespace Microsoft.NET.TestFramework
                 if (_msbuildVersion == null)
                 {
                     //  Initialize MSBuildVersion lazily, as we call `dotnet msbuild -version` to get it, so we need to wait
-                    //  for the TestContext to finish being initialize
+                    //  for the SdkTestContext to finish being initialize
                     InitMSBuildVersion();
                 }
                 return _msbuildVersion;
@@ -94,7 +94,7 @@ namespace Microsoft.NET.TestFramework
                 var logger = new StringTestLogger();
                 var command = new DotnetCommand(logger, "--version")
                 {
-                    WorkingDirectory = TestContext.Current.TestExecutionDirectory
+                    WorkingDirectory = SdkTestContext.Current.TestExecutionDirectory
                 };
 
                 var result = command.Execute();
@@ -117,7 +117,7 @@ namespace Microsoft.NET.TestFramework
             var logger = new StringTestLogger();
             var command = new MSBuildVersionCommand(logger)
             {
-                WorkingDirectory = TestContext.Current.TestExecutionDirectory
+                WorkingDirectory = SdkTestContext.Current.TestExecutionDirectory
             };
 
             var result = command.Execute();
@@ -243,7 +243,7 @@ namespace Microsoft.NET.TestFramework
                 ret.Arguments = newArgs;
             }
 
-            TestContext.Current.AddTestEnvironmentVariables(ret.Environment);
+            SdkTestContext.Current.AddTestEnvironmentVariables(ret.Environment);
 
             return ret;
         }

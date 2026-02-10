@@ -149,7 +149,6 @@
 
     <ItemGroup>
       <HelixCorrelationPayload Include="$(HelixPayloadOnHost)">
-        <PayloadDirectory>$(HelixPayloadOnHost)</PayloadDirectory>
         <Destination>t</Destination>
       </HelixCorrelationPayload>
 
@@ -158,22 +157,18 @@
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(TestHostDotNetRoot)">
-        <PayloadDirectory>$(TestHostDotNetRoot)</PayloadDirectory>
         <Destination>d</Destination>
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Include="$(MicrosoftNETBuildExtensions)">
-        <PayloadDirectory>$(MicrosoftNETBuildExtensions)</PayloadDirectory>
         <Destination>ex</Destination>
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Include="$(MSBuildSdkResolverDir)">
-        <PayloadDirectory>$(MSBuildSdkResolverDir)</PayloadDirectory>
         <Destination>r</Destination>
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Include="$(ArtifactsShippingPackages)">
-        <PayloadDirectory>$(ArtifactsShippingPackages)</PayloadDirectory>
         <Destination>d/.nuget</Destination>
       </HelixCorrelationPayload>
     </ItemGroup>

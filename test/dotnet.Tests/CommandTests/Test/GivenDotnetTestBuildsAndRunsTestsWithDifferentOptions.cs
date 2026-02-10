@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithProjectPathWithFailingTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string testProjectPath = $"TestProject{Path.DirectorySeparatorChar}TestProject.csproj";
 
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,
             [CombinatorialValues("--solution", "--project")] string projectOrSolution)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string testSolutionPath = "MultiTestProjectSolutionWithTests.sln";
 
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,
             [CombinatorialValues("--solution", "--project")] string projectOrSolution)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string testSolutionPath = "TestProjects.slnf";
 
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithSolutionFilterPathInOtherDirectory_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory($"{testInstance.Path}{Path.DirectorySeparatorChar}SolutionFilter")
@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithInvalidProjectExtension_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string invalidProjectPath = $"TestProject{Path.DirectorySeparatorChar}TestProject.txt";
 
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithDirectoryAsProjectOrSolutionOption_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string projectPath = $"TestProject";
 
@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithInvalidSolutionExtension_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string invalidSolutionPath = "TestProjects.txt";
 
@@ -155,7 +155,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithBothProjectAndSolutionOptions_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string testProjectPath = $"TestProject{Path.DirectorySeparatorChar}TestProject.csproj";
             string testSolutionPath = "MultiTestProjectSolutionWithTests.sln";
@@ -176,7 +176,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithNonExistentProjectPath_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string testProjectPath = $"TestProject{Path.DirectorySeparatorChar}OtherTestProject.csproj";
 
@@ -196,7 +196,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithNonExistentSolutionPath_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string solutionPath = "Solution.sln";
 
@@ -216,7 +216,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithArchOption_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -236,7 +236,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectSolutionWithArchOption_NotSupported(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString()).WithSource();
 
             var arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -244,7 +244,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("--arch", arch,
                                              "--configuration", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("error NETSDK1134: Building a solution with a specific RuntimeIdentifier is not supported. If you would like to publish for a single RID, specify the RID at the individual project level instead.");
             }
@@ -263,7 +263,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunTestProjectSolutionWithRuntimeOption_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string runtime = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, "x64");
 
@@ -282,7 +282,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectSolutionWithArchAndRuntimeOptions_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
             string runtime = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
@@ -301,7 +301,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectSolutionWithOSOption_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string runtime = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, string.Empty);
 
@@ -320,7 +320,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectSolutionWithArchAndOSOptions_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
             string runtime = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
@@ -341,7 +341,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunSpecificCSProjRunsWithNoBuildAndNoRestoreOptions_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             new BuildCommand(testInstance)
                 .Execute($"-p:Configuration={configuration}")
@@ -368,7 +368,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectSolutionWithBinLogOption_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -384,7 +384,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunSpecificCSProjRunsWithMSBuildArgs_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -392,7 +392,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "--configuration", configuration,
                                             "--property:WarningLevel=2", $"--property:Configuration={configuration}");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                   .Should().Contain("Test run summary: Passed!")
@@ -410,14 +410,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunOnSolutionWithMSBuildArgs_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("--configuration", configuration,
                                             "--property:WarningLevel=2");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                   .Should().Contain("Test run summary: Failed!")
@@ -435,14 +435,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectSolutionWithFrameworkOption_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("--framework", ToolsetInfo.CurrentTargetFramework,
                                              "--configuration", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration), result.StdOut);
 
@@ -462,7 +462,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunMultiTFMsProjectSolutionWithPreviousFramework_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString()).WithSource();
 
             testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
 
@@ -481,7 +481,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 error NETSDK1005: Assets file 'path\to\OtherTestProject\obj\project.assets.json' doesn't have a target for 'net9.0'. Ensure that restore has run and that you have included 'net9.0' in the TargetFrameworks for your project.
                 Get projects properties with MSBuild didn't execute properly with exit code: 1.
             */
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                  .Should().NotContain("Test run summary")
@@ -498,7 +498,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunMultiTFMsProjectSolutionWithCurrentFramework_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString()).WithSource();
 
             testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
 
@@ -514,7 +514,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("--framework", ToolsetInfo.CurrentTargetFramework,
                                              "--configuration", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
@@ -536,7 +536,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithTraceFileLogging_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string traceFile = "logs.txt";
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -554,7 +554,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithTraceFileLoggingAndNonExistingDirectory_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
             string traceFile = $"directory_{configuration}{Path.DirectorySeparatorChar}logs.txt";
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -572,7 +572,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithSolutionFilterContainingSharedProject_ShouldSkipSharedProjectAndSucceed(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
 
             string testSolutionFilterPath = "TestProjectsWithShared.slnf";
 
@@ -594,7 +594,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithSolutionFilterAsFirstUnmatchedToken_ShouldWork(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedProject", Guid.NewGuid().ToString()).WithSource();
 
             string testSolutionFilterPath = "TestProjectsWithShared.slnf";
 
@@ -613,7 +613,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunWithSolutionAndPlatformConfiguration_ShouldRespectPlatform(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithPlatforms", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithPlatforms", Guid.NewGuid().ToString()).WithSource();
 
             string testSolutionPath = "MultiTestProjectSolutionWithPlatforms.slnx";
 

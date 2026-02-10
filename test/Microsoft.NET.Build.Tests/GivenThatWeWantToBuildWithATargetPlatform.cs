@@ -25,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
                 Name = "TargetPlatformTests",
                 TargetFrameworks = targetFramework
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProj, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProj, identifier: targetFramework);
 
             Action<string, string> assertValue = (string valueName, string expected) =>
             {
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFramework
             };
             testProj.AdditionalProperties["TargetPlatformVersion"] = targetPlatformVersion;
-            var testAsset = _testAssetsManager.CreateTestProject(testProj);
+            var testAsset = TestAssetsManager.CreateTestProject(testProj);
 
             var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.Path, testProj.Name), targetFramework, "TargetPlatformIdentifier");
             getValuesCommand
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Build.Tests
                 Name = "UnsupportedOS",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-unsupported"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var build = new BuildCommand(Log, Path.Combine(testAsset.Path, testProject.Name));
             build.Execute()
@@ -101,7 +101,7 @@ namespace Microsoft.NET.Build.Tests
                 Name = "It_fails_if_targetplatformversion_is_constant_only",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
 
             string DirectoryBuildTargetsContent = $@"
@@ -140,7 +140,7 @@ namespace Microsoft.NET.Build.Tests
                 Name = "It_fails_if_targetplatformversion_is_invalid",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
 
             string DirectoryBuildTargetsContent = $@"

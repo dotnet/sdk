@@ -19,13 +19,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithFailingTestsAndFileArtifacts_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(@".*Test6.*testNodeFile.txt", result.StdOut);
 
@@ -51,11 +51,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [WindowsOnlyTheory]
         public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
 
             // Read MSTestPackageVersion from Version.Details.props and update the .csproj file
             // Search for Version.Details.props file from the current directory up to the root
-            string? versionsPropsPath = PathUtility.FindFileInParentDirectories(TestContext.Current.TestExecutionDirectory, $"eng{Path.DirectorySeparatorChar}Version.Details.props") ?? throw new FileNotFoundException("Version.Details.props file not found.");
+            string? versionsPropsPath = PathUtility.FindFileInParentDirectories(SdkTestContext.Current.TestExecutionDirectory, $"eng{Path.DirectorySeparatorChar}Version.Details.props") ?? throw new FileNotFoundException("Version.Details.props file not found.");
             string msTestVersion = testInstance.ReadMSTestPackageVersionFromProps(versionsPropsPath);
             testInstance.UpdateProjectFileWithMSTestPackageVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
 
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("--coverage", "-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 string pattern = $@"In\sprocess\sfile\sartifacts\sproduced:\s+.*{PathUtility.GetDirectorySeparatorChar()}TestResults{PathUtility.GetDirectorySeparatorChar()}.*\.coverage";
 

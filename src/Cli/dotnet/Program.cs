@@ -417,10 +417,12 @@ public class Program
 
         dotnetConfigurer.Configure();
 
+#if !DOT_NET_BUILD_FROM_SOURCE
         if (isDotnetBeingInvokedFromNativeInstaller && OperatingSystem.IsWindows())
         {
             DotDefaultPathCorrector.Correct();
         }
+#endif
 
         if (isFirstTimeUse && !dotnetFirstRunConfiguration.SkipWorkloadIntegrityCheck)
         {

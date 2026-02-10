@@ -15,7 +15,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_builds_a_simple_desktop_app()
         {
             var targetFramework = "net462";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorldFS")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -45,7 +45,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_builds_a_simple_net50_app()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorldFS")
                 .WithSource()
                 .WithTargetFramework("net5.0");

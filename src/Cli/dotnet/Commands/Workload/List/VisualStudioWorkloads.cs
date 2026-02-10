@@ -92,24 +92,21 @@ internal static class VisualStudioWorkloads
     }
 
     /// <summary>
-    /// Finds all workloads installed by all Visual Studio instances given that the
-    /// SDK installed by an instance matches the feature band of the currently executing SDK.
+    ///  Finds all workloads installed by all Visual Studio instances given that the
+    ///  SDK installed by an instance matches the feature band of the currently executing SDK.
     /// </summary>
     /// <param name="workloadResolver">The workload resolver used to obtain available workloads.</param>
     /// <param name="installedWorkloads">The collection of installed workloads to update.</param>
-    /// <param name="sdkFeatureBand">The feature band of the executing SDK.
-    /// If <see langword="null"/>, then workloads from all feature bands in VS will be returned.
+    /// <param name="sdkFeatureBand">
+    ///  The feature band of the executing SDK.
+    ///  If <see langword="null"/>, then workloads from all feature bands in VS will be returned.
     /// </param>
     internal static unsafe void GetInstalledWorkloads(
         IWorkloadResolver workloadResolver,
         InstalledWorkloadsCollection installedWorkloads,
         SdkFeatureBand? sdkFeatureBand = null)
     {
-        using ComClassFactory factory = new(CLSID.SetupConfiguration);
-        
-        using var setupConfiguration = factory.TryCreateInstance<ISetupConfiguration2>(out HRESULT result);
-
-        if (result.Failed)
+        if (!ComClassFactory.TryCreate(CLSID.SetupConfiguration, out ComClassFactory? factory, out HRESULT result))
         {
             // Query API not registered, good indication there are no VS installations of 15.0 or later.
             // If we hit any other errors here, assert so we can investigate.
@@ -117,17 +114,20 @@ internal static class VisualStudioWorkloads
             return;
         }
 
-        GetInstalledWorkloads(
-            workloadResolver,
-            installedWorkloads,
-            setupConfiguration,
-            sdkFeatureBand);
+        using (factory)
+        {
+            using var setupConfiguration = factory.TryCreateInstance<ISetupConfiguration2>(out result);
+
+            GetInstalledWorkloads(
+                workloadResolver,
+                installedWorkloads,
+                setupConfiguration,
+                sdkFeatureBand);
+        }
     }
 
     /// <inheritdoc cref="GetInstalledWorkloads(IWorkloadResolver, InstalledWorkloadsCollection, SdkFeatureBand?)"/>
-    /// <param name="setupConfiguration">
-    /// The Visual Studio setup interface. If <see langword="null"/> the default object will be used.
-    /// </param>
+    /// <param name="setupConfiguration">The Visual Studio setup interface.</param>
     internal static unsafe void GetInstalledWorkloads(
         IWorkloadResolver workloadResolver,
         InstalledWorkloadsCollection installedWorkloads,

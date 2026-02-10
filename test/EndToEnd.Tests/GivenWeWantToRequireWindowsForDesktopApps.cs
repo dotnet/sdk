@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -20,7 +20,7 @@ namespace EndToEnd.Tests
             testProjectCreator.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
             testProjectCreator.AdditionalProperties["OutputType"] = "exe";
 
-            var testInstance = testProjectCreator.Create(_testAssetsManager);
+            var testInstance = testProjectCreator.Create(TestAssetsManager);
 
             new DotnetBuildCommand(testInstance)
                 .Execute().Should().Pass();
@@ -59,7 +59,7 @@ namespace EndToEnd.Tests
                 target.Name = ns + target.Name.LocalName;
                 project.Root.Add(target);
             }
-            var testInstance = testProjectCreator.Create(_testAssetsManager)
+            var testInstance = testProjectCreator.Create(TestAssetsManager)
                 .WithProjectChanges(overrideLastRuntimeFrameworkVersionToExistingOlderVersion);
 
             new PublishCommand(testInstance)

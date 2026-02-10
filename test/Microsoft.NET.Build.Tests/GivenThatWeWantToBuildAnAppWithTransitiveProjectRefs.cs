@@ -16,7 +16,7 @@ namespace Microsoft.NET.Build.Tests
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary
             // (TestApp transitively depends on AuxLibrary)
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithTransitiveProjectRefs", "BuildAppWithTransitiveProjectRef")
                 .WithSource();
 
@@ -58,7 +58,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithTransitiveProjectRefs")
                 .WithSource();
 
@@ -100,7 +100,7 @@ namespace Microsoft.NET.Build.Tests
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary
             // (TestApp transitively depends on AuxLibrary)
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithTransitiveProjectRefs", "BuildAppWithTransitiveProjectRefDisabled")
                 .WithSource();
 

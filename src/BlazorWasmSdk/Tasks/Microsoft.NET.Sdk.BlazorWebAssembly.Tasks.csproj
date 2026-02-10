@@ -4,13 +4,14 @@
     <BlazorWasmSdkRoot>$(RepoRoot)\src\BlazorWasmSdk\</BlazorWasmSdkRoot>
     <PackageId>Microsoft.NET.Sdk.BlazorWebAssembly</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
-    <DefineConstants>$(DefineConstants);WASM_TASKS</DefineConstants>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <Description>SDK for building and publishing Blazor WebAssembly applications.</Description>
+    <RootNamespace>Microsoft.NET.Sdk.BlazorWebAssembly</RootNamespace>
 
     <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateDependencyFile>false</GenerateDependencyFile>
@@ -30,16 +31,8 @@
 
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
-  </PropertyGroup>
 
-  <PropertyGroup>
-    <Description>SDK for building and publishing Blazor WebAssembly applications.</Description>
-    <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.NET.Sdk.BlazorWebAssembly</RootNamespace>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+    <DefineConstants>$(DefineConstants);WASM_TASKS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

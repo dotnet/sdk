@@ -11,7 +11,7 @@ namespace ManifestReaderTests
 
         public ManifestReaderFunctionalTests(ITestOutputHelper log) : base(log)
         {
-            ManifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            ManifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace ManifestReaderTests
         [Fact]
         public void ItCanReadIntegerVersion()
         {
-            var testFolder = _testAssetsManager.CreateTestDirectory().Path;
+            var testFolder = TestAssetsManager.CreateTestDirectory().Path;
             var manifestPath = Path.Combine(testFolder, "manifest.json");
             File.WriteAllText(manifestPath, @"
 {

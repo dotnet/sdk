@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .Execute(ConsoleLoggerOutputNormal);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItImplicitlyRestoresAProjectWhenTesting()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource()
                             .WithVersionVariables();
 
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(ConsoleLoggerOutputNormal);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItDoesNotImplicitlyRestoreAProjectWhenTestingWithTheNoRestoreOption()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource()
                             .WithVersionVariables();
 
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItDoesNotRunTestsIfThereIsNoIsTestProject()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource()
                             .WithVersionVariables();
 
@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             // Copy XunitCore project in output directory of project dotnet-vstest.Tests
             string testAppName = "XunitCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: "4")
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: "4")
                             .WithSource()
                             .WithVersionVariables();
 
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .Execute(ConsoleLoggerOutputNormal);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void GivenAFailingTestItDisplaysFailureDetails()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("XunitCore")
+            var testInstance = TestAssetsManager.CopyTestAsset("XunitCore")
                 .WithSource()
                 .WithVersionVariables();
 
@@ -147,7 +147,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(1);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Failed TestNamespace.VSTestXunitTests.VSTestXunitFailTest");
                 result.StdOut.Should().Contain("Total:     2");
@@ -177,7 +177,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "console;verbosity=normal", "--", "RunConfiguration.ResultsDirectory=" + trxLoggerDirectory);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 // We append current date time to trx file name, hence modifying this check
                 Assert.True(Directory.EnumerateFiles(trxLoggerDirectory, trxFileNamePattern).Any());
@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                        .Execute("--no-build", "-v:m");
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().NotContain("Restore");
                 //  https://github.com/dotnet/sdk/issues/3684
@@ -287,7 +287,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItBuildsAndTestsAppWhenRestoringToSpecificDirectory()
         {
             // Creating folder with name short name "RestoreTest" to avoid PathTooLongException
-            var rootPath = _testAssetsManager.CopyTestAsset("VSTestCore", identifier: "8")
+            var rootPath = TestAssetsManager.CopyTestAsset("VSTestCore", identifier: "8")
                 .WithSource()
                 .WithVersionVariables()
                 .Path;
@@ -300,7 +300,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             //}
             //else
             {
-                pkgDir = _testAssetsManager.CreateTestDirectory(identifier: "pkgs").Path;
+                pkgDir = TestAssetsManager.CreateTestDirectory(identifier: "pkgs").Path;
                 Log.WriteLine("pkgDir, package restored path is: " + pkgDir);
             }
 
@@ -321,7 +321,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .WithWorkingDirectory(rootPath)
                                         .Execute("--no-restore");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -350,7 +350,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .Execute("-v", verbosity);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 if (shouldShowPassedTests)
                 {
@@ -376,7 +376,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void ItTestsWithTheSpecifiedRuntimeOption()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("XunitCore")
+            var testInstance = TestAssetsManager.CopyTestAsset("XunitCore")
                             .WithSource()
                             .WithVersionVariables();
 
@@ -400,7 +400,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .And
                 .HaveStdOutContaining(rid);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -422,7 +422,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                        .Execute("--nologo");
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().NotContain("Microsoft (R) Test Execution Command Line Tool Version");
                 result.StdOut.Should().Contain("Total:     2");
@@ -457,7 +457,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                 result.StdOut + Environment.NewLine + result.StdErr);
 
             // Verify test results
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -493,7 +493,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "--results-directory", resultsDirectory);
 
             // Verify test results
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -529,7 +529,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "--results-directory", resultsDirectory);
 
             // Verify test results
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -566,7 +566,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "--results-directory", resultsDirectory);
 
             // Verify test results
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -598,7 +598,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "--filter", "VSTestPassTest");
 
             // Verify test results
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("No code coverage data available. Code coverage is currently supported only on Windows, Linux x64 and macOS x64.");
                 result.StdOut.Should().Contain("Total:     1");
@@ -613,7 +613,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItShouldShowImportantMessage()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables()
                 .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeVsTestToProject);
@@ -626,7 +626,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute();
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Important text");
             }
@@ -638,7 +638,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItSetsDotnetRootToTheLocationOfDotnetExecutableWhenRunningDotnetTestWithProject()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource()
                             .WithVersionVariables();
 
@@ -660,7 +660,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void TestsFromCsprojAndArchSwitchShouldFlowToMsBuild()
         {
             string testAppName = "VSTestCore";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables()
                 .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeVsTestToProject);
@@ -673,7 +673,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute("--arch", "wrongArchitecture");
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("error NETSDK1083: The specified RuntimeIdentifier");
                 result.StdOut.Should().Contain("wrongArchitecture");
@@ -689,7 +689,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void FilterPropertyCorrectlyHandlesComma(string filter, string folderSuffix)
         {
             string testAppName = "TestCategoryWithComma";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, folderSuffix)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, folderSuffix)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -701,7 +701,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute("--filter", filter);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     1");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -724,7 +724,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute(flag, pathWithComma);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -772,7 +772,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute(flag, flagDirectory + slashesOrBackslashes);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -795,7 +795,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute(testProjectDirectory, arg);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -824,7 +824,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .Execute(ConsoleLoggerOutputNormal.Concat([property]));
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -845,7 +845,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(ConsoleLoggerOutputNormal.Concat(["-dl:my.dll"]));
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 // This ensures that this was passed to MSBuild and not vstest.console.
                 result.StdOut.Should().Contain("error MSB1021: Cannot create an instance of the logger my.dll.");
@@ -863,7 +863,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
             string testAppName = "VSTestCore";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: string.Join(",", parameters.Select(p => p.ToString())))
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: string.Join(",", parameters.Select(p => p.ToString())))
                             .WithSource()
                             .WithVersionVariables();
 

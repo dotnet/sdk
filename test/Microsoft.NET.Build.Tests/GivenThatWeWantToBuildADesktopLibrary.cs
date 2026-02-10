@@ -41,7 +41,7 @@ namespace Microsoft.NET.Build.Tests
                     }
                 }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(netFrameworkLibrary, "FacadesFromTargetFramework");
+            var testAsset = TestAssetsManager.CreateTestProject(netFrameworkLibrary, "FacadesFromTargetFramework");
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
         }
@@ -85,7 +85,7 @@ public class NETFramework
 }
 ";
 
-            var testAsset = _testAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeHttpClient")
+            var testAsset = TestAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeHttpClient")
                 .WithProjectChanges((projectPath, project) =>
                 {
                     if (Path.GetFileName(projectPath).Equals(netFrameworkLibrary.Name + ".csproj", StringComparison.OrdinalIgnoreCase))
@@ -113,7 +113,7 @@ public class NETFramework
         [InlineData("DesktopReferencingNetStandardLibrary", "net46", "Library")]
         public void PackageReferences_with_private_assets_do_not_appear_in_deps_file(string asset, string targetFramework, string exeName)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(asset)
                 .WithSource();
 
@@ -152,7 +152,7 @@ public class NETFramework
                 testProject.AdditionalProperties["TrimDepsJsonLibrariesWithoutAssets"] = "False";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
@@ -181,7 +181,7 @@ public class NETFramework
             testProject.PackageReferences.Add(new TestPackageReference("xunit.extensibility.core", "2.9.3"));
             testProject.PackageReferences.Add(new TestPackageReference("xunit.extensibility.execution", "2.9.3"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
@@ -205,7 +205,7 @@ public class NETFramework
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.AdditionalProperties["PackageId"] = "Newtonsoft.Json*";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
@@ -245,7 +245,7 @@ public class NETFramework
     }
 }
 ";
-            var testAsset = _testAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeNETStandard2");
+            var testAsset = TestAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeNETStandard2");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -301,7 +301,7 @@ public class NETFramework
     }
 }
 ";
-            var testAsset = _testAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeValueTuple");
+            var testAsset = TestAssetsManager.CreateTestProject(netFrameworkLibrary, "ExchangeValueTuple");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -314,7 +314,7 @@ public class NETFramework
         [WindowsOnlyFact]
         public void It_can_preserve_compilation_context_and_reference_netstandard_library()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopReferencingNetStandardLibrary")
                 .WithSource();
 
@@ -346,7 +346,7 @@ public static class {project.Name}
     {ConflictResolutionAssets.ConflictResolutionTestMethod}
 }}";
 
-            var testAsset = _testAssetsManager.CreateTestProject(project)
+            var testAsset = TestAssetsManager.CreateTestProject(project)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -402,7 +402,7 @@ public static class {project.Name}
             }
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(project, "SimpleNamesWithHintPaths", identifier: useFacades ? "_useFacades" : "")
+            var testAsset = TestAssetsManager.CreateTestProject(project, "SimpleNamesWithHintPaths", identifier: useFacades ? "_useFacades" : "")
                 .WithProjectChanges((path, p) =>
                 {
                     if (Path.GetFileNameWithoutExtension(path) == project.Name)
@@ -437,12 +437,12 @@ public static class {project.Name}
             string correctHttpReference;
             if (useFacades)
             {
-                string microsoftNETBuildExtensionsPath = TestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath();
+                string microsoftNETBuildExtensionsPath = SdkTestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath();
                 correctHttpReference = Path.Combine(microsoftNETBuildExtensionsPath, @"net461\lib\System.Net.Http.dll");
             }
             else
             {
-                correctHttpReference = Path.Combine(TestContext.Current.NuGetCachePath, "system.net.http", "4.3.2", "ref", "net46", "System.Net.Http.dll");
+                correctHttpReference = Path.Combine(SdkTestContext.Current.NuGetCachePath, "system.net.http", "4.3.2", "ref", "net46", "System.Net.Http.dll");
             }
 
             var valuesWithMetadata = getValuesCommand.GetValuesWithMetadata();
@@ -470,7 +470,7 @@ public static class {project.Name}
                 TargetFrameworks = "net462",
             };
 
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(project, "SimpleNamesWithHintPathsWithNewLines")
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(project, "SimpleNamesWithHintPathsWithNewLines")
                 .WithProjectChanges((path, p) =>
                 {
                     XNamespace ns = p.Root.Name.Namespace;
@@ -498,7 +498,7 @@ public static class {project.Name}
                 TargetFrameworks = "net462",
             };
 
-            TestAsset referencedTestAsset = _testAssetsManager
+            TestAsset referencedTestAsset = TestAssetsManager
                 .CreateTestProject(referencedProject, "SimpleNamesWithHintPathsWithNewLinesReferenced");
 
             var referencedbuildCommand =
@@ -522,7 +522,7 @@ public static class {project.Name}
                 IsExe = false
             };
 
-            var testInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testInstance = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(p =>
                 {
                     var pns = p.Root.Name.Namespace;

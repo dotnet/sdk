@@ -33,7 +33,6 @@ REM call dotnet new so the first run message doesn't interfere with the first te
 dotnet new --debug:ephemeral-hive
 
 dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget add source %DOTNET_ROOT%\.nuget --configfile %TestExecutionDirectory%\nuget.config
 if exist %TestExecutionDirectory%\Testpackages dotnet nuget add source %TestExecutionDirectory%\Testpackages --name testpackages --configfile %TestExecutionDirectory%\nuget.config
 
 dotnet nuget remove source dotnet6-transport --configfile %TestExecutionDirectory%\nuget.config

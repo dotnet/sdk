@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         public GivenDotnetSdkCheck(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
-            fakeReleasesPath = Path.Combine(_testAssetsManager.TestAssetsRoot, "TestReleases", "TestRelease");
+            fakeReleasesPath = Path.Combine(TestAssetsManager.TestAssetsRoot, "TestReleases", "TestRelease");
         }
 
         [Theory]
@@ -193,7 +193,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
         public void ItUsesConfigFile()
         {
             var parseResult = Parser.Parse(new string[] { "dotnet", "sdk", "check" });
-            var dotnetRoot = _testAssetsManager.CreateTestDirectory().Path;
+            var dotnetRoot = TestAssetsManager.CreateTestDirectory().Path;
             var bundles = GetFakeEnvironmentInfo(new[] { "1.0.10", "2.1.809", "3.1.100", "5.0.100" }, new[] { "1.1.4", "2.1.8", "3.1.0", "3.1.3", "5.0.0" });
             var replacementString = "Mock command output";
             var configFileContent = JsonSerializer.Serialize(new SdkCheckConfig() { CommandOutputReplacementString = replacementString });

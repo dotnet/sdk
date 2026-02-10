@@ -110,7 +110,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                         WriteManifestsToFile(Log, m_manifests, ManifestFile);
                     }
                 }
-#if NET472
+#if NETFRAMEWORK
                 catch (Xml.XmlException ex)
                 {
                     Uri sourceUri = new(ex.SourceUri);
