@@ -20,7 +20,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// <summary>
 /// Handles downloading and parsing .NET release manifests to find the correct installer/archive for a given installation.
 /// </summary>
-internal class DotnetArchiveDownloader : IDisposable
+internal class DotnetArchiveDownloader : IArchiveDownloader
 {
     private const int MaxRetryCount = 3;
     private const int RetryDelayMilliseconds = 1000;
@@ -223,10 +223,10 @@ internal class DotnetArchiveDownloader : IDisposable
             {
                 // Verify the cached file's hash
                 VerifyFileHash(cachedFilePath, expectedHash);
-                
+
                 // Copy from cache to destination
                 File.Copy(cachedFilePath, destinationPath, overwrite: true);
-                
+
                 // Report 100% progress immediately since we're using cache
                 progress?.Report(new DownloadProgress(100, 100));
                 return;

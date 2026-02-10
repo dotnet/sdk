@@ -45,6 +45,25 @@ internal class CommonOptions
         DefaultValueFactory = _ => OutputFormat.Text
     };
 
+    public static Option<string> InstallPathOption = new("--install-path")
+    {
+        HelpName = "INSTALL_PATH",
+        Description = "The path to install .NET to",
+    };
+
+    public static Option<bool?> SetDefaultInstallOption = new("--set-default-install")
+    {
+        Description = "Set the install path as the default dotnet install. This will update the PATH and DOTNET_ROOT environment variables.",
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = r => null
+    };
+
+    public static Option<string> ManifestPathOption = new("--manifest-path")
+    {
+        HelpName = "MANIFEST_PATH",
+        Description = "Custom path to the manifest file for tracking .NET installations",
+    };
+
     private static bool IsCIEnvironmentOrRedirected() =>
         new Cli.Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 }

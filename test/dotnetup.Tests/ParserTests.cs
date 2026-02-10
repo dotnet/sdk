@@ -178,9 +178,12 @@ public class ParserTests
     public void DotnetupProcess_Version_ShouldOutputExpectedVersion()
     {
         // Run dotnetup --version as a process
+        // Use AppContext.BaseDirectory as working directory to avoid race conditions
+        // with other tests that may delete temp directories
         var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
             new[] { "--version" },
-            captureOutput: true);
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
 
         // Should succeed
         exitCode.Should().Be(0);
@@ -188,4 +191,97 @@ public class ParserTests
         // Output should match Parser.Version
         output.Trim().Should().Be(Parser.Version);
     }
+
+    #region Runtime Command Parser Tests
+
+    [Theory]
+    [InlineData("9.0")]           // Version only - installs core runtime
+    [InlineData("latest")]        // Channel - installs core runtime
+    [InlineData("aspnetcore@9.0")]
+    [InlineData("windowsdesktop@lts")]
+    [InlineData("runtime@10.0.1")]
+    public void Parser_ShouldParseRuntimeInstallCommand(string componentSpec)
+    {
+        // Arrange
+        var args = new[] { "runtime", "install", componentSpec };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseRuntimeInstallWithOptions()
+    {
+        // Arrange
+        var args = new[] { "runtime", "install", "aspnetcore@9.0", "--install-path", @"C:\dotnet", "--no-progress" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldHandleRuntimeHelp()
+    {
+        // Arrange
+        var args = new[] { "runtime", "--help" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldHandleRuntimeInstallHelp()
+    {
+        // Arrange
+        var args = new[] { "runtime", "install", "--help" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_RuntimeInstallAllowsNoArgument()
+    {
+        // Arrange - no argument is valid (will use default behavior)
+        var args = new[] { "runtime", "install" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert - should parse without errors (argument is optional)
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty("component-spec argument is optional");
+    }
+
+    [Fact]
+    public void Parser_ShouldParseRuntimeInstallWithManifestPath()
+    {
+        // Arrange
+        var args = new[] { "runtime", "install", "9.0", "--manifest-path", @"C:\test\manifest.json" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    #endregion
 }

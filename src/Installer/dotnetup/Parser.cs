@@ -12,6 +12,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
@@ -51,6 +52,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
         {
             rootCommand.Subcommands.Add(InfoCommandParser.GetCommand());
             rootCommand.Subcommands.Add(SdkCommandParser.GetCommand());
+            rootCommand.Subcommands.Add(RuntimeCommandParser.GetCommand());
             rootCommand.Subcommands.Add(SdkInstallCommandParser.GetRootInstallCommand());
             rootCommand.Subcommands.Add(SdkUpdateCommandParser.GetRootUpdateCommand());
             rootCommand.Subcommands.Add(ElevatedAdminPathCommandParser.GetCommand());

@@ -36,36 +36,73 @@ internal static class DotnetupTestUtilities
     }
 
     /// <summary>
-    /// Builds command line arguments for dotnetup
+    /// Builds command line arguments for SDK install
+    /// </summary>
+    public static string[] BuildSdkArguments(string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
+        => BuildArguments(InstallComponent.SDK, channel, installPath, manifestPath, disableProgress, runtimeType: null);
+
+    /// <summary>
+    /// Builds command line arguments for runtime install using the new component@version syntax.
+    /// This delegates to BuildArguments with the componentSpec pre-formatted.
+    /// </summary>
+    public static string[] BuildRuntimeArgumentsWithSpec(string componentSpec, string installPath, string? manifestPath = null, bool disableProgress = true)
+        => BuildArgumentsCore(["runtime", "install", componentSpec], installPath, manifestPath, disableProgress);
+
+    /// <summary>
+    /// Builds command line arguments for runtime install
+    /// </summary>
+    public static string[] BuildRuntimeArguments(string runtimeType, string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
+        => BuildArguments(InstallComponent.Runtime, channel, installPath, manifestPath, disableProgress, runtimeType);
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup (legacy - defaults to SDK)
     /// </summary>
     public static string[] BuildArguments(string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
+        => BuildSdkArguments(channel, installPath, manifestPath, disableProgress);
+
+    /// <summary>
+    /// Builds command line arguments for dotnetup
+    /// </summary>
+    public static string[] BuildArguments(InstallComponent component, string channel, string installPath, string? manifestPath = null, bool disableProgress = true, string? runtimeType = null)
     {
-        var args = new List<string>
+        var commandArgs = new List<string>();
+
+        if (component == InstallComponent.SDK)
         {
-            "sdk",
-            "install",
-            channel
-        };
+            commandArgs.AddRange(["sdk", "install", channel]);
+        }
+        else
+        {
+            // Runtime install: dotnetup runtime install <component@version> or dotnetup runtime install <version>
+            // Format: "runtime" defaults to core runtime, "aspnetcore@9.0" for ASP.NET Core, etc.
+            string componentSpec = runtimeType is null or "core" or "runtime"
+                ? channel  // Just version for core runtime (e.g., "9.0")
+                : $"{runtimeType}@{channel}";  // component@version for others (e.g., "aspnetcore@9.0")
+            commandArgs.AddRange(["runtime", "install", componentSpec]);
+        }
 
-        args.Add("--install-path");
-        args.Add(installPath);
-        args.Add("--interactive");
-        args.Add("false");
+        return BuildArgumentsCore(commandArgs, installPath, manifestPath, disableProgress);
+    }
 
-        // Add manifest path option if specified for test isolation
+    /// <summary>
+    /// Core method that appends common options to command arguments.
+    /// </summary>
+    private static string[] BuildArgumentsCore(List<string> commandArgs, string installPath, string? manifestPath, bool disableProgress)
+    {
+        commandArgs.AddRange(["--install-path", installPath, "--interactive", "false"]);
+
         if (!string.IsNullOrEmpty(manifestPath))
         {
-            args.Add("--manifest-path");
-            args.Add(manifestPath);
+            commandArgs.AddRange(["--manifest-path", manifestPath]);
         }
 
         // Add no-progress option when running tests in parallel to avoid Spectre.Console exclusivity issues
         if (disableProgress)
         {
-            args.Add("--no-progress");
+            commandArgs.Add("--no-progress");
         }
 
-        return [.. args];
+        return [.. commandArgs];
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -40,6 +41,7 @@ internal class InstallerOrchestratorSingleton
             installRequest.Component);
 
         string? customManifestPath = installRequest.Options.ManifestPath;
+        string componentDescription = installRequest.Component.GetDisplayName();
 
         // Check if the install already exists and we don't need to do anything
         // read write mutex only for manifest?
@@ -47,7 +49,17 @@ internal class InstallerOrchestratorSingleton
         {
             if (InstallAlreadyExists(install, customManifestPath))
             {
-                Console.WriteLine($"\n.NET SDK {versionToInstall} is already installed, skipping installation.");
+                Console.WriteLine($"\n{componentDescription} {versionToInstall} is already installed, skipping installation.");
+                return install;
+            }
+
+            // Also check if the component files already exist on disk (e.g., runtime files from SDK install)
+            // If so, just add to manifest without downloading
+            if (ArchiveInstallationValidator.ComponentFilesExist(install))
+            {
+                Console.WriteLine($"\n{componentDescription} {versionToInstall} files already exist, adding to manifest.");
+                DotnetupSharedManifest manifestManager = new(customManifestPath);
+                manifestManager.AddInstalledVersion(install);
                 return install;
             }
         }

@@ -12,59 +12,86 @@ using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
+using Microsoft.Dotnet.Installation;
+
 internal class DotnetArchiveExtractor : IDisposable
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
     private readonly IProgressTarget _progressTarget;
+    private readonly IArchiveDownloader _archiveDownloader;
+    private readonly bool _shouldDisposeDownloader;
     private string scratchDownloadDirectory;
     private string? _archivePath;
+    private IProgressReporter? _progressReporter;
 
-    public DotnetArchiveExtractor(DotnetInstallRequest request, ReleaseVersion resolvedVersion, ReleaseManifest releaseManifest, IProgressTarget progressTarget)
+    public DotnetArchiveExtractor(
+        DotnetInstallRequest request,
+        ReleaseVersion resolvedVersion,
+        ReleaseManifest releaseManifest,
+        IProgressTarget progressTarget,
+        IArchiveDownloader? archiveDownloader = null)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
         _progressTarget = progressTarget;
         scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
+
+        if (archiveDownloader != null)
+        {
+            _archiveDownloader = archiveDownloader;
+            _shouldDisposeDownloader = false;
+        }
+        else
+        {
+            _archiveDownloader = new DotnetArchiveDownloader(releaseManifest);
+            _shouldDisposeDownloader = true;
+        }
     }
+
+    /// <summary>
+    /// Gets the scratch download directory path. Exposed for testing.
+    /// </summary>
+    internal string ScratchDownloadDirectory => scratchDownloadDirectory;
+
+    /// <summary>
+    /// Gets or creates the shared progress reporter for both Prepare and Commit phases.
+    /// This avoids multiple newlines from Spectre.Console Progress between phases.
+    /// </summary>
+    private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget.CreateProgressReporter();
 
     public void Prepare()
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Prepare");
 
-        using var archiveDownloader = new DotnetArchiveDownloader();
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
 
-        using (var progressReporter = _progressTarget.CreateProgressReporter())
+        string componentDescription = _request.Component.GetDisplayName();
+        var downloadTask = ProgressReporter.AddTask($"Downloading {componentDescription} {_resolvedVersion}", 100);
+        var reporter = new DownloadProgressReporter(downloadTask, $"Downloading {componentDescription} {_resolvedVersion}");
+
+        try
         {
-            var downloadTask = progressReporter.AddTask($"Downloading .NET SDK {_resolvedVersion}", 100);
-            var reporter = new DownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
-
-            try
-            {
-                archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
-            }
-
-            downloadTask.Value = 100;
+            _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
         }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to download .NET archive for version {_resolvedVersion}", ex);
+        }
+
+        downloadTask.Value = 100;
     }
     public void Commit()
     {
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Commit");
 
-        using (var progressReporter = _progressTarget.CreateProgressReporter())
-        {
-            var installTask = progressReporter.AddTask($"Installing .NET SDK {_resolvedVersion}", maxValue: 100);
+        string componentDescription = _request.Component.GetDisplayName();
+        var installTask = ProgressReporter.AddTask($"Installing {componentDescription} {_resolvedVersion}", maxValue: 100);
 
-            // Extract archive directly to target directory with special handling for muxer
-            ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
-            installTask.Value = installTask.MaxValue;
-        }
+        // Extract archive directly to target directory with special handling for muxer
+        ExtractArchiveDirectlyToTarget(_archivePath!, _request.InstallRoot.Path!, installTask);
+        installTask.Value = installTask.MaxValue;
     }
 
     /// <summary>
@@ -343,6 +370,27 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Dispose()
     {
+        try
+        {
+            // Dispose the progress reporter to finalize progress display
+            _progressReporter?.Dispose();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            // Dispose the archive downloader if we created it
+            if (_shouldDisposeDownloader)
+            {
+                _archiveDownloader.Dispose();
+            }
+        }
+        catch
+        {
+        }
+
         try
         {
             // Clean up temporary download directory
