@@ -57,6 +57,11 @@
         <target state="translated">Авторы</target>
         <note>Table lable</note>
       </trans-unit>
+      <trans-unit id="CmdTestNoTestProjectsFound">
+        <source>No test projects were found.</source>
+        <target state="new">No test projects were found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
         <target state="new">The device identifier to use for running the application.</target>
@@ -220,8 +225,8 @@ Paths searched: '{1}', '{2}'.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">Получение свойств проектов с помощью MSBuild сработало не так, как ожидалось, код завершения: {0}.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">Получение свойств проектов с помощью MSBuild сработало не так, как ожидалось, код завершения: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
