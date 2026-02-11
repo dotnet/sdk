@@ -110,12 +110,6 @@ public sealed class MSBuildLogger : INodeLogger
     {
         try
         {
-            if (eventSource is IEventSource3 eventSource3)
-            {
-                // Enable profiling to get evaluation timing data
-                eventSource3.IncludeEvaluationProfiles();
-            }
-
             if (eventSource is IEventSource4 eventSource4)
             {
                 // Declare lack of dependency on having properties/items in ProjectStarted events
@@ -125,6 +119,12 @@ public sealed class MSBuildLogger : INodeLogger
 
             if (_telemetry != null && _telemetry.Enabled)
             {
+                if (eventSource is IEventSource3 eventSource3)
+                {
+                    // Enable profiling to get evaluation timing data
+                    eventSource3.IncludeEvaluationProfiles();
+                }
+
                 if (eventSource is IEventSource2 eventSource2)
                 {
                     eventSource2.TelemetryLogged += OnTelemetryLogged;
@@ -213,6 +213,11 @@ public sealed class MSBuildLogger : INodeLogger
 
     private void SendEvaluationTelemetry(ITelemetry telemetry)
     {
+        if (telemetry == null || !telemetry.Enabled)
+        {
+            return;
+        }
+
         var properties = new Dictionary<string, string?>();
         var measurements = new Dictionary<string, double>();
 
