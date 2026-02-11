@@ -32,22 +32,14 @@ public sealed class StoreCommand : MSBuildForwardingApp
 
         result.ShowHelpOrErrorIfAppropriate();
 
-<<<<<<<< HEAD:src/Cli/dotnet/Commands/Tool/Store/StoreCommand.cs
         if (!result.HasOption(definition.ManifestOption))
-========
-        if (!result.HasOption(StoreCommandDefinition.ManifestOption))
->>>>>>>> darc/back/9477b51-fadbc3c:src/Cli/dotnet/Commands/Tool/Common/Store/StoreCommand.cs
         {
             throw new GracefulException(CliCommandStrings.SpecifyManifests);
         }
 
         msbuildArgs.AddRange(result.OptionValuesToBeForwarded(definition));
 
-<<<<<<<< HEAD:src/Cli/dotnet/Commands/Tool/Store/StoreCommand.cs
         msbuildArgs.AddRange(result.GetValue(definition.Argument) ?? []);
-========
-        msbuildArgs.AddRange(result.GetValue(StoreCommandDefinition.Argument) ?? []);
->>>>>>>> darc/back/9477b51-fadbc3c:src/Cli/dotnet/Commands/Tool/Common/Store/StoreCommand.cs
 
         return new StoreCommand(msbuildArgs, msbuildPath);
     }

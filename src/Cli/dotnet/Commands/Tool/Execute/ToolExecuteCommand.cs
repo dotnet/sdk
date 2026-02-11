@@ -19,7 +19,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Execute;
 
-internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinition>
+internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinitionBase>
 {
     const int ERROR_CANCELLED = 1223; //  Windows error code for "Operation canceled by user"
 
