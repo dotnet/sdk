@@ -110,6 +110,13 @@ public sealed class MSBuildLogger : INodeLogger
     {
         try
         {
+            if (eventSource is IEventSource4 eventSource4)
+            {
+                // Declare lack of dependency on having properties/items in ProjectStarted events
+                // (since this logger doesn't ever care about those events it's irrelevant)
+                eventSource4.IncludeEvaluationPropertiesAndItems();
+            }
+
             if (_telemetry != null && _telemetry.Enabled)
             {
                 if (eventSource is IEventSource2 eventSource2)
@@ -117,22 +124,8 @@ public sealed class MSBuildLogger : INodeLogger
                     eventSource2.TelemetryLogged += OnTelemetryLogged;
                 }
 
-                if (eventSource is IEventSource4 eventSource4)
-                {
-                    // Declare lack of dependency on having properties/items in ProjectStarted events
-                    // (since this logger doesn't ever care about those events it's irrelevant)
-                    eventSource4.IncludeEvaluationPropertiesAndItems();
-                }
-
                 // Subscribe to status events to capture ProjectEvaluationFinished
                 eventSource.StatusEventRaised += OnStatusEventRaised;
-                eventSource.BuildFinished += OnBuildFinished;
-            }
-            else if (eventSource is IEventSource4 eventSource4)
-            {
-                // Declare lack of dependency on having properties/items in ProjectStarted events
-                // (since this logger doesn't ever care about those events it's irrelevant)
-                eventSource4.IncludeEvaluationPropertiesAndItems();
             }
 
             eventSource.BuildFinished += OnBuildFinished;
@@ -163,7 +156,7 @@ public sealed class MSBuildLogger : INodeLogger
             _evaluationCount++;
             
             // Track evaluation duration in milliseconds
-            var durationMs = (e.ProfilerResult?.ProfiledLocations
+            var durationMs = (e.ProfilerResult?.ProfiledLocations?
                 .Values
                 .Sum(location => location.InclusiveTime.TotalMilliseconds)) ?? 0.0;
             
