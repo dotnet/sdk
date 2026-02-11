@@ -23,7 +23,7 @@ Options:
                                                   Examples:
                                                   -e VARIABLE=abc
                                                   -e VARIABLE="value with spaces"
-                                                  -e VARIABLE="value;seperated with;semicolons"
+                                                  -e VARIABLE="value;separated with;semicolons"
                                                   -e VAR1=abc -e VAR2=def -e VAR3=ghi
   -c, --configuration <CONFIGURATION>             The configuration to use for running tests. The default for most projects is 'Debug'.
   -f, --framework <FRAMEWORK>                     The target framework to run tests for. The target framework must also be specified in the project file.
