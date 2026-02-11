@@ -88,6 +88,9 @@ extends:
         componentgovernance:
           # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
           ignoreDirectories: artifacts, .packages
+    containers:
+      sourceBuildManagedContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 
     stages:
     ############### BUILD STAGE ###############
