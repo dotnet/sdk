@@ -9,9 +9,9 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli.Commands.Tool.Store;
+namespace Microsoft.DotNet.Cli.Commands.Store;
 
-public sealed class StoreCommand : MSBuildForwardingApp
+public class StoreCommand : MSBuildForwardingApp
 {
     private StoreCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null)
         : base(msbuildArgs, msbuildPath)
@@ -20,34 +20,24 @@ public sealed class StoreCommand : MSBuildForwardingApp
 
     public static StoreCommand FromArgs(string[] args, string msbuildPath = null)
     {
-        var result = Parser.Parse(["dotnet", "store", .. args]);
+        var result = Parser.Parse(["dotnet", "store", ..args]);
         return FromParseResult(result, msbuildPath);
     }
 
     public static StoreCommand FromParseResult(ParseResult result, string msbuildPath = null)
     {
-        var definition = (StoreCommandDefinition)result.CommandResult.Command;
-
         List<string> msbuildArgs = ["--target:ComposeStore"];
 
         result.ShowHelpOrErrorIfAppropriate();
 
-<<<<<<<< HEAD:src/Cli/dotnet/Commands/Tool/Store/StoreCommand.cs
-        if (!result.HasOption(definition.ManifestOption))
-========
-        if (!result.HasOption(StoreCommandDefinition.ManifestOption))
->>>>>>>> darc/back/9477b51-fadbc3c:src/Cli/dotnet/Commands/Tool/Common/Store/StoreCommand.cs
+        if (!result.HasOption(StoreCommandParser.ManifestOption))
         {
             throw new GracefulException(CliCommandStrings.SpecifyManifests);
         }
 
-        msbuildArgs.AddRange(result.OptionValuesToBeForwarded(definition));
+        msbuildArgs.AddRange(result.OptionValuesToBeForwarded(StoreCommandParser.GetCommand()));
 
-<<<<<<<< HEAD:src/Cli/dotnet/Commands/Tool/Store/StoreCommand.cs
-        msbuildArgs.AddRange(result.GetValue(definition.Argument) ?? []);
-========
-        msbuildArgs.AddRange(result.GetValue(StoreCommandDefinition.Argument) ?? []);
->>>>>>>> darc/back/9477b51-fadbc3c:src/Cli/dotnet/Commands/Tool/Common/Store/StoreCommand.cs
+        msbuildArgs.AddRange(result.GetValue(StoreCommandParser.Argument) ?? []);
 
         return new StoreCommand(msbuildArgs, msbuildPath);
     }
