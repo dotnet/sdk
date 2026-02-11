@@ -110,6 +110,12 @@ public sealed class MSBuildLogger : INodeLogger
     {
         try
         {
+            if (eventSource is IEventSource3 eventSource3)
+            {
+                // Enable profiling to get evaluation timing data
+                eventSource3.IncludeEvaluationProfiles();
+            }
+
             if (eventSource is IEventSource4 eventSource4)
             {
                 // Declare lack of dependency on having properties/items in ProjectStarted events
