@@ -13,7 +13,7 @@ namespace EndToEnd.Tests
         public void WeCoverLatestNetCoreAppRollForward()
         {
             //  Run "dotnet new console", get TargetFramework property, and make sure it's covered in SupportedNetCoreAppVersions
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             new DotnetNewCommand(Log, "web", "--no-restore")
@@ -38,7 +38,7 @@ namespace EndToEnd.Tests
         [Fact]
         public void WeCoverLatestAspNetCoreAppRollForward()
         {
-            var directory = _testAssetsManager.CreateTestDirectory();
+            var directory = TestAssetsManager.CreateTestDirectory();
             string projectDirectory = directory.Path;
 
             //  Run "dotnet new web", get TargetFramework property, and make sure it's covered in SupportedAspNetCoreAppVersions

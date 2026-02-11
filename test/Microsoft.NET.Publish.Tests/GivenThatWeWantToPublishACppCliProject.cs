@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void When_referenced_by_csharp_project_it_publishes_and_runs()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource();
 
@@ -42,7 +42,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact(Skip = "There is no publish error when using PackageReference support which is required for testing")]
         public void When_not_referenced_by_csharp_project_it_fails_to_publish()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource();
 

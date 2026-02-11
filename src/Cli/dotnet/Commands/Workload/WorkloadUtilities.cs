@@ -44,6 +44,10 @@ internal static class WorkloadUtilities
     /// <exception cref="GracefulException" />
     public static bool ShouldVerifySignatures(bool skipSignCheck)
     {
+#if DOT_NET_BUILD_FROM_SOURCE
+        // Never signed on Unix
+        return false;
+#else
         if (!SignCheck.IsDotNetSigned())
         {
             // Can't enforce anything if we already allowed an unsigned dotnet to be installed.
@@ -58,5 +62,6 @@ internal static class WorkloadUtilities
         }
 
         return !skipSignCheck;
+#endif
     }
 }

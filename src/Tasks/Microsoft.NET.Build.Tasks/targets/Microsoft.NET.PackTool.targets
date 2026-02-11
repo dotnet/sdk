@@ -271,6 +271,13 @@ NOTE: This file is imported from the following contexts, so be aware when writin
        ToolsSettingsFilePath="$(_ToolsSettingsFilePath)" />
   </Target>
 
+  <Target Name="_WarnForCustomNuspecFileWithPackAsTool" 
+          BeforeTargets="GenerateNuspec"
+          Condition=" '$(PackAsTool)' == 'true' and '$(NuspecFile)' != '' ">
+    <NETSdkWarning ResourceName="DotnetToolDoesNotSupportCustomNuspecFile"
+                   FormatArguments="$(NuspecFile)" />
+  </Target>
+
   <Target Name="_PackToolValidation" Condition=" '$(PackAsTool)' == 'true' ">
 
     <GetNuGetShortFolderName

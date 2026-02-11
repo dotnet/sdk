@@ -14,7 +14,7 @@ namespace Microsoft.NET.Publish.Tests
         [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_publishes_and_runs_self_contained_wpf_app()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory();
+            var testDir = TestAssetsManager.CreateTestDirectory();
 
             new DotnetNewCommand(Log)
                 .WithVirtualHive()
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Publish.Tests
                 FileName = Path.Combine(publishDirectory, Path.GetFileName(testDir.Path) + ".exe")
             };
 
-            runAppCommand.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
+            runAppCommand.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
 
             var result = runAppCommand.ToCommand()
                 .CaptureStdErr()

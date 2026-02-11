@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -17,7 +18,7 @@ using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
-internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<WorkloadSearchVersionsCommandDefinition>   
+internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<WorkloadSearchVersionsCommandDefinition>
 {
     private readonly ReleaseVersion _sdkVersion;
     private readonly int _numberOfWorkloadSetsToTake;
@@ -101,7 +102,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
                 Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => new Dictionary<string, string>()
                 {
                     { "workloadVersion", version }
-                })));
+                }), WorkloadSearchVersionsJsonSerializerContext.Default.IEnumerableDictionaryStringString));
             }
             else
             {
@@ -122,7 +123,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
             }
             else if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
             {
-                Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v))));
+                Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v)), WorkloadSearchVersionsJsonSerializerContext.Default.IEnumerableDictionaryStringString));
             }
             else
             {
@@ -138,7 +139,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
                 Reporter.WriteLine(JsonSerializer.Serialize(new Dictionary<string, Dictionary<string, string>>()
                 {
                     { "manifestVersions", set.ToDictionaryForJson() }
-                }, new JsonSerializerOptions { WriteIndented = true }));
+                }, WorkloadSearchVersionsJsonSerializerContext.Default.DictionaryStringDictionaryStringString));
             }
             else
             {
@@ -202,3 +203,8 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
         }).Take(numberOfWorkloadSetsToTake);
     }
 }
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(IEnumerable<Dictionary<string, string>>))]
+[JsonSerializable(typeof(Dictionary<string, Dictionary<string, string>>))]
+internal partial class WorkloadSearchVersionsJsonSerializerContext : JsonSerializerContext;

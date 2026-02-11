@@ -14,7 +14,7 @@ public class DotnetCliSnapshotTests : SdkTest
     [Theory(Skip = "https://github.com/dotnet/sdk/issues/48817")]
     public async Task VerifyCompletions(string shellName)
     {
-        if (!shellName.Equals("zsh") || !TestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
+        if (!shellName.Equals("zsh") || !SdkTestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
         {
             // This has been unstable lately; skipping
             return;
