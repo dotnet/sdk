@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
@@ -56,8 +57,10 @@ internal sealed class TestApplication(
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
-            var stdOutBuilder = new StringBuilder();
-            var stdErrBuilder = new StringBuilder();
+            // We are using ConcurrentQueue to avoid thread-safety issues for the timeout case.
+            // In the timeout case, we leave stdOutTask and stdErrTask running, just we stop observing them.
+            var stdOutBuilder = new ConcurrentQueue<string>();
+            var stdErrBuilder = new ConcurrentQueue<string>();
 
             var stdOutTask = Task.Factory.StartNew(() =>
             {
@@ -65,7 +68,7 @@ internal sealed class TestApplication(
                 string? currentLine;
                 while ((currentLine = stdOut.ReadLine()) is not null)
                 {
-                    stdOutBuilder.AppendLine(currentLine);
+                    stdOutBuilder.Enqueue(currentLine);
                 }
             }, TaskCreationOptions.LongRunning);
 
@@ -75,7 +78,7 @@ internal sealed class TestApplication(
                 string? currentLine;
                 while ((currentLine = stdErr.ReadLine()) is not null)
                 {
-                    stdErrBuilder.AppendLine(currentLine);
+                    stdErrBuilder.Enqueue(currentLine);
                 }
             }, TaskCreationOptions.LongRunning);
 
@@ -92,7 +95,7 @@ internal sealed class TestApplication(
             }
 
             var exitCode = process.ExitCode;
-            _handler.OnTestProcessExited(exitCode, stdOutBuilder.ToString(), stdErrBuilder.ToString());
+            _handler.OnTestProcessExited(exitCode, string.Join(Environment.NewLine, stdOutBuilder), string.Join(Environment.NewLine, stdErrBuilder));
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
             // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
