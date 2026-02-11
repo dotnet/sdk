@@ -188,10 +188,12 @@ public class InstallEndToEndTests
                 return;
             }
 
+            static string Escape(string s) => s.Replace("'", "'\\''");
+
             scriptPath = Path.Combine(tempRoot, $"test-env-{shell}.sh");
             scriptContent = $@"#!/bin/{shell}
 set -e
-source <(""{dotnetupPath}"" print-env-script --shell {shell} --dotnet-install-path ""{installPath}"")
+source <('{Escape(dotnetupPath)}' print-env-script --shell {shell} --dotnet-install-path '{Escape(installPath)}')
 dotnet --version
 echo ""PATH=$PATH""
 echo ""DOTNET_ROOT=$DOTNET_ROOT""

@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
@@ -145,7 +146,7 @@ internal static class DotnetupTestUtilities
 
         using var process = new Process();
         process.StartInfo.FileName = dotnetupPath;
-        process.StartInfo.Arguments = string.Join(" ", args.Select(a => $"\"{a}\""));
+        process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args);
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.CreateNoWindow = true;
         process.StartInfo.RedirectStandardOutput = captureOutput;
