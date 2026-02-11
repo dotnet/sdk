@@ -282,6 +282,28 @@ Every telemetry event automatically includes these common properties:
 
 ---
 
+#### `projectevaluations`
+
+**When fired**: At the end of MSBuild operations when one or more project evaluations occurred
+
+**Properties**:
+
+- `TotalCount`: Total number of project evaluations during the build
+
+**Measurements**:
+
+- `TotalDurationInMilliseconds`: Total time spent across all evaluations
+- `AverageDurationInMilliseconds`: Average evaluation time
+- `MinDurationInMilliseconds`: Minimum evaluation time
+- `MaxDurationInMilliseconds`: Maximum evaluation time
+- `P50DurationInMilliseconds`: 50th percentile (median) evaluation time
+- `P90DurationInMilliseconds`: 90th percentile evaluation time
+- `P95DurationInMilliseconds`: 95th percentile evaluation time
+
+**Description**: Tracks project evaluation counts and performance across all MSBuild operations
+
+---
+
 ### MSBuild Engine Telemetry
 
 See [MSBuild Telemetry Documentation](https://github.com/dotnet/msbuild/blob/main/documentation/wiki/CollectedTelemetry.md) for details on these events.

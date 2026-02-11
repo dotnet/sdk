@@ -62,6 +62,12 @@ public sealed class MSBuildLogger : INodeLogger
     /// </remarks>
     private Dictionary<string, Dictionary<string, int>> _aggregatedEvents = new();
 
+    /// <summary>
+    /// Stores project evaluation statistics for telemetry.
+    /// </summary>
+    private int _evaluationCount = 0;
+    private readonly List<double> _evaluationDurations = new();
+
     public MSBuildLogger()
     {
         try
@@ -118,6 +124,7 @@ public sealed class MSBuildLogger : INodeLogger
                     eventSource2.TelemetryLogged += OnTelemetryLogged;
                 }
 
+                eventSource.ProjectEvaluationFinished += OnProjectEvaluationFinished;
                 eventSource.BuildFinished += OnBuildFinished;
             }
 
@@ -132,6 +139,25 @@ public sealed class MSBuildLogger : INodeLogger
     private void OnBuildFinished(object sender, BuildFinishedEventArgs e)
     {
         SendAggregatedEventsOnBuildFinished(_telemetry);
+    }
+
+    private void OnProjectEvaluationFinished(object sender, ProjectEvaluationFinishedEventArgs e)
+    {
+        try
+        {
+            _evaluationCount++;
+            
+            // Track evaluation duration in milliseconds
+            var durationMs = (e.ProfilerResult?.ProfiledLocations
+                .Values
+                .Sum(location => location.InclusiveTime.TotalMilliseconds)) ?? 0.0;
+            
+            _evaluationDurations.Add(durationMs);
+        }
+        catch (Exception)
+        {
+            // Exceptions during telemetry shouldn't cause anything else to fail
+        }
     }
 
     internal void SendAggregatedEventsOnBuildFinished(ITelemetry? telemetry)
@@ -152,6 +178,12 @@ public sealed class MSBuildLogger : INodeLogger
             TrackEvent(telemetry, $"msbuild/{TasksTelemetryAggregatedEventName}", tasksProperties, toBeHashed: [], toBeMeasured: []);
             _aggregatedEvents.Remove(TasksTelemetryAggregatedEventName);
         }
+
+        // Send project evaluation telemetry
+        if (_evaluationCount > 0)
+        {
+            SendEvaluationTelemetry(telemetry);
+        }
     }
 
     private static Dictionary<string, string?> ConvertToStringDictionary(Dictionary<string, int> properties)
@@ -163,6 +195,48 @@ public sealed class MSBuildLogger : INodeLogger
         }
 
         return stringProperties;
+    }
+
+    private void SendEvaluationTelemetry(ITelemetry telemetry)
+    {
+        var properties = new Dictionary<string, string?>();
+        var measurements = new Dictionary<string, double>();
+
+        // Total count of evaluations
+        properties["TotalCount"] = _evaluationCount.ToString(CultureInfo.InvariantCulture);
+
+        if (_evaluationDurations.Count > 0)
+        {
+            // Total evaluation time
+            var totalTime = _evaluationDurations.Sum();
+            measurements["TotalDurationInMilliseconds"] = totalTime;
+
+            // Average evaluation time
+            var avgTime = _evaluationDurations.Average();
+            measurements["AverageDurationInMilliseconds"] = avgTime;
+
+            // Min and max evaluation times
+            measurements["MinDurationInMilliseconds"] = _evaluationDurations.Min();
+            measurements["MaxDurationInMilliseconds"] = _evaluationDurations.Max();
+
+            // Time distribution percentiles
+            var sortedDurations = _evaluationDurations.OrderBy(d => d).ToList();
+            measurements["P50DurationInMilliseconds"] = GetPercentile(sortedDurations, 0.50);
+            measurements["P90DurationInMilliseconds"] = GetPercentile(sortedDurations, 0.90);
+            measurements["P95DurationInMilliseconds"] = GetPercentile(sortedDurations, 0.95);
+        }
+
+        telemetry.TrackEvent("msbuild/projectevaluations", properties, measurements);
+    }
+
+    private static double GetPercentile(List<double> sortedValues, double percentile)
+    {
+        if (sortedValues.Count == 0) return 0.0;
+        
+        int index = (int)Math.Ceiling(percentile * sortedValues.Count) - 1;
+        index = Math.Max(0, Math.Min(sortedValues.Count - 1, index));
+        
+        return sortedValues[index];
     }
 
     internal void AggregateEvent(TelemetryEventArgs args)
