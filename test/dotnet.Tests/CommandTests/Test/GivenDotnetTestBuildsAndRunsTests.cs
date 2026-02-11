@@ -599,6 +599,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testInstance.Path)
+                // We need to disable output and error redirection so that the test infra doesn't
+                // hang because of a hanging child process that keeps out/err open.
                 .WithDisableOutputAndErrorRedirection()
                 .Execute("-c", configuration);
 
