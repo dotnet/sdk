@@ -282,7 +282,7 @@ Every telemetry event automatically includes these common properties:
 
 ---
 
-#### `projectevaluations`
+#### `msbuild/projectevaluations`
 
 **When fired**: At the end of MSBuild operations when one or more project evaluations occurred
 
