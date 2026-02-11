@@ -1,0 +1,242 @@
+# Workflow to detect new ProjectCapability items in pull requests
+#
+# This workflow automatically:
+# 1. Uses git diff to detect changes to .targets files
+# 2. Scans for newly added ProjectCapability items
+# 3. Applies the 'project-capability-docs-needed' label when new capabilities are found
+# 4. Posts/updates a comment reminding contributors to update ProjectCapability documentation
+#
+# Prerequisites: The 'project-capability-docs-needed' label must exist in the repository
+#
+# Security: Uses pull_request_target to run in the base branch context (safe for forks)
+# The workflow checks out the base branch and fetches the PR head, but does not execute any code from the PR.
+#
+name: Detect New ProjectCapability Items
+
+on:
+  # Use pull_request_target for safe execution from forks
+  # This runs in the context of the base branch, not the PR head
+  pull_request_target:
+    types: [opened, synchronize]
+    branches:
+      - main
+      - release/*
+
+permissions: read-all
+
+jobs:
+  read-diff:
+    name: Read Targets File Diff
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      targets_diff: ${{ steps.get-diff.outputs.targets_diff }}
+    
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch PR head
+        env:
+          GITHUB_TOKEN: ""
+          GH_TOKEN: ""
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-${{ github.event.pull_request.number }}
+
+      - name: Get diff from .targets files only
+        id: get-diff
+        env:
+          GITHUB_TOKEN: ""
+          GH_TOKEN: ""
+        run: |
+          # Get diff only from .targets files between base and PR head
+          DIFF_OUTPUT=$(git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} -- '*.targets')
+          
+          # Check diff size to prevent resource exhaustion (limit to ~1MB)
+          DIFF_SIZE=$(echo "$DIFF_OUTPUT" | wc -c)
+          if [ "$DIFF_SIZE" -gt 1048576 ]; then
+            echo "Error: Diff size ($DIFF_SIZE bytes) exceeds 1MB limit"
+            exit 1
+          fi
+          
+          # Use multiline output for job outputs
+          # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+          {
+            echo 'targets_diff<<EOF'
+            echo "$DIFF_OUTPUT"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+  detect-capabilities:
+    name: Detect New ProjectCapability Items
+    runs-on: ubuntu-latest
+    needs: read-diff
+    permissions: {}
+    outputs:
+      found_capabilities: ${{ steps.detect.outputs.found_capabilities }}
+      has_capabilities: ${{ steps.detect.outputs.has_capabilities }}
+    
+    steps:
+      - name: Detect new ProjectCapability items
+        id: detect
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          TARGETS_DIFF: ${{ needs.read-diff.outputs.targets_diff }}
+        with:
+          script: |
+            const diff = process.env.TARGETS_DIFF;
+            
+            // Pattern to match ProjectCapability Include="..."
+            // Matches: <ProjectCapability Include="CapabilityName" />
+            // Also handles: <ProjectCapability Include="CapabilityName">...</ProjectCapability>
+            const capabilityPattern = /<ProjectCapability\s+Include=["']([^"']+)["']/gi;
+            
+            // Pattern to match ProjectCapability Remove="..."
+            // We'll track these separately but won't flag them as needing docs
+            const removePattern = /<ProjectCapability\s+Remove=["']([^"']+)["']/gi;
+            
+            // Extract only added lines from the diff (lines starting with +)
+            const addedLines = diff.split('\n').filter(line => line.startsWith('+') && !line.startsWith('+++'));
+            
+            // Find all ProjectCapability Include items in added lines
+            const addedCapabilities = new Set();
+            const removedCapabilities = new Set();
+            
+            for (const line of addedLines) {
+              // Check for Include
+              capabilityPattern.lastIndex = 0;
+              let match;
+              while ((match = capabilityPattern.exec(line)) !== null) {
+                addedCapabilities.add(match[1]);
+              }
+              
+              // Check for Remove
+              removePattern.lastIndex = 0;
+              while ((match = removePattern.exec(line)) !== null) {
+                removedCapabilities.add(match[1]);
+              }
+            }
+            
+            // Convert to sorted arrays
+            const foundCapabilities = Array.from(addedCapabilities).sort();
+            const foundRemovals = Array.from(removedCapabilities).sort();
+            
+            // Output results
+            core.setOutput('found_capabilities', foundCapabilities.join(','));
+            core.setOutput('has_capabilities', foundCapabilities.length > 0 ? 'true' : 'false');
+            
+            if (foundCapabilities.length > 0) {
+              core.info(`Found ${foundCapabilities.length} new ProjectCapability item(s): ${foundCapabilities.join(', ')}`);
+            } else {
+              core.info('No new ProjectCapability items found in this PR.');
+            }
+            
+            if (foundRemovals.length > 0) {
+              core.info(`Found ${foundRemovals.length} removed ProjectCapability item(s): ${foundRemovals.join(', ')}`);
+            }
+            
+            return foundCapabilities;
+
+  apply-label-and-comment:
+    name: Apply Label and Comment
+    runs-on: ubuntu-latest
+    needs: detect-capabilities
+    if: needs.detect-capabilities.outputs.has_capabilities == 'true'
+    permissions:
+      pull-requests: write
+      issues: write
+    
+    steps:
+      - name: Add label to PR
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const labelName = 'project-capability-docs-needed';
+            
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number,
+              labels: [labelName]
+            });
+            
+            core.info(`Label '${labelName}' added to PR #${issue_number}`);
+
+      - name: Post or update comment
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          CAPABILITIES: ${{ needs.detect-capabilities.outputs.found_capabilities }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const capabilities = process.env.CAPABILITIES.split(',');
+            
+            // Create the comment body
+            const commentIdentifier = '<!-- project-capability-reminder -->';
+            const commentBody = `${commentIdentifier}
+            ## 📋 ProjectCapability Documentation Reminder
+            
+            This PR introduces **${capabilities.length}** new \`ProjectCapability\` item${capabilities.length > 1 ? 's' : ''}:
+            ${capabilities.map(cap => `- \`${cap}\``).join('\n')}
+            
+            ### Action Required
+            Please ensure that documentation for ${capabilities.length > 1 ? 'these capabilities' : 'this capability'} is added or updated in the appropriate file(s):
+            
+            - **Path:** \`documentation/project-docs/project-capabilities/\`
+            - **Documentation:** [Project Capabilities Overview](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/project-capabilities.md)
+            
+            #### Documentation Files by SDK:
+            - [Microsoft.NET.Sdk](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/project-capabilities/Microsoft.NET.Sdk.md) - Core .NET SDK capabilities
+            - [Microsoft.NET.Sdk.Web](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/project-capabilities/Microsoft.NET.Sdk.Web.md) - Web SDK capabilities
+            - [Microsoft.NET.Sdk.Worker](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/project-capabilities/Microsoft.NET.Sdk.Worker.md) - Worker SDK capabilities
+            - [Microsoft.NET.Sdk.Razor](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/project-capabilities/Microsoft.NET.Sdk.Razor.md) - Razor SDK capabilities
+            - [Microsoft.NET.Build.Containers](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/project-capabilities/Microsoft.NET.Build.Containers.md) - Container capabilities
+            - [Microsoft.NET.Publish](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/project-capabilities/Microsoft.NET.Publish.md) - Publishing capabilities
+            
+            #### Each capability should include:
+            - ✅ The capability name
+            - ✅ When/why it's added (conditions)
+            - ✅ What features or experiences it enables
+            - ✅ Any relevant links or additional context
+            
+            Thank you for helping keep our documentation up to date! 🙏`;
+            
+            // Check if we already have a comment from this workflow
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number
+            });
+            
+            const existingComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes(commentIdentifier)
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+              core.info(`Updated existing comment #${existingComment.id}`);
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body: commentBody
+              });
+              core.info('Created new comment');
+            }
