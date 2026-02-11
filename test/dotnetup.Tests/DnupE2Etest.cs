@@ -138,11 +138,12 @@ public class InstallEndToEndTests
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
         // Create an install path with special characters (spaces and single quotes)
-        string specialCharsPath = Path.Combine(testEnv.TempRoot, "dotnet with 'special chars'");
+        var specialChars = OperatingSystem.IsWindows() ? "dotnet with `'special chars'" : "dotnet with `\"'special chars\\'";
+        string specialCharsPath = Path.Combine(testEnv.TempRoot, specialChars);
         Directory.CreateDirectory(specialCharsPath);
 
         // Install SDK to this special path
-        var args = DotnetupTestUtilities.BuildSdkArguments("9.0", specialCharsPath, testEnv.ManifestPath);
+        var args = DotnetupTestUtilities.BuildSdkArguments("latest", specialCharsPath, testEnv.ManifestPath);
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"SDK installation failed with special characters in path. Output:\n{output}");
 
@@ -207,11 +208,13 @@ echo ""DOTNET_ROOT=$DOTNET_ROOT""
         }
         else // pwsh
         {
+            static string Escape(string s) => s.Replace("'", "''");
+
             shellExecutable = "pwsh";
             scriptPath = Path.Combine(tempRoot, "test-env.ps1");
             scriptContent = $@"
 $ErrorActionPreference = 'Stop'
-. (""{dotnetupPath}"" print-env-script --shell pwsh --dotnet-install-path ""{installPath}"")
+iex (& '{Escape(dotnetupPath)}' print-env-script --shell pwsh --dotnet-install-path '{Escape(installPath)}' | Out-String)
 dotnet --version
 Write-Output ""PATH=$env:PATH""
 Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
@@ -259,7 +262,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         process.ExitCode.Should().Be(0, $"Script execution failed for {shell}. Output:\n{scriptOutput}\nError:\n{scriptError}");
 
         // Parse the output lines
-        var outputLines = scriptOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var outputLines = scriptOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
         outputLines.Should().HaveCountGreaterThanOrEqualTo(3, $"Should have dotnet version, PATH, and DOTNET_ROOT output for {shell}");
 
         // First line should be dotnet version
