@@ -1,0 +1,146 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AspireService", "AspireService", "{364DE115-7FAE-CA31-C478-9A2E79CB519F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BrowserRefresh", "BrowserRefresh", "{AC3BAF4A-B943-5F19-3116-A3FD7C885CF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-format", "dotnet-format\dotnet-format.csproj", "{6C5FBD7D-2E3D-D482-5415-893AE4661749}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-watch", "dotnet-watch\dotnet-watch.csproj", "{31818B17-178A-0598-6C6E-E15CD63E1274}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DotNetDeltaApplier", "DotNetDeltaApplier", "{1E2BF55A-FFB6-7358-58F1-01FF3B44BF81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetWatchTasks", "DotNetWatchTasks\DotNetWatchTasks.csproj", "{4855C790-EFE7-94ED-C369-0A02387F88B4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HotReloadAgent", "HotReloadAgent", "{5CDE4159-9BB7-F002-81EE-FE1EB501625E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HotReloadAgent.Data", "HotReloadAgent.Data", "{2E82323A-31E4-7672-52A7-A568AFE575B9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HotReloadAgent.Host", "HotReloadAgent.Host", "{0305277F-4D82-FB13-2499-FC48C606CE40}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HotReloadAgent.PipeRpc", "HotReloadAgent.PipeRpc", "{DE1641C4-FDB5-AA6D-6CB4-DF3846EF52B5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HotReloadAgent.WebAssembly.Browser", "HotReloadAgent.WebAssembly.Browser", "{4ECEBE05-09E3-57E8-4D2B-FE584872CA1A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HotReloadClient", "HotReloadClient", "{D2C117CF-0177-4E2D-50C8-838AB4048BBB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Watch", "Watch", "{7DA52029-B853-C26E-9887-EED38DF1A1F0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Watch.Aspire", "Watch.Aspire", "{4F97FBBD-9A86-61E0-BF34-CA189133CA2A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web.Middleware", "Web.Middleware", "{6416C8BE-C082-13BD-174D-AC0F1C4E3A1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WebTools.AspireService.Package", "AspireService\Microsoft.WebTools.AspireService.Package.csproj", "{DF68EDC4-66E0-CD0A-C3AE-DA75F6E6FB48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Watch.BrowserRefresh", "BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj", "{9AA89CA7-A32B-7B0F-3F6E-D8BFF3A7394F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.DotNetDeltaApplier", "DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj", "{6BF335B3-9AE2-45DA-BF06-984D1FC76D12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Agent.Package", "HotReloadAgent\Microsoft.DotNet.HotReload.Agent.Package.csproj", "{5EA9373C-1BAB-FA35-C694-5D55DF99EED4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Agent.Data.Package", "HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.Package.csproj", "{EE06EDB0-986D-753A-FE69-F65321BEED81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Agent.Host.Package", "HotReloadAgent.Host\Microsoft.DotNet.HotReload.Agent.Host.Package.csproj", "{806A277E-2C0C-22FB-921A-78886FFDDAA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Agent.PipeRpc.Package", "HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.Package.csproj", "{AB9EFD18-6E38-A909-42D0-CFFAB80A8497}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.WebAssembly.Browser", "HotReloadAgent.WebAssembly.Browser\Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj", "{4399F1FA-7146-7FC6-527B-80445C258185}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Client.Package", "HotReloadClient\Microsoft.DotNet.HotReload.Client.Package.csproj", "{C736CE49-22AA-C13A-A009-110F2BB42B3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Watch", "Watch\Microsoft.DotNet.HotReload.Watch.csproj", "{A66CCBDA-9D70-725D-1E21-BE53E0CB767E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Watch.Aspire", "Watch.Aspire\Microsoft.DotNet.HotReload.Watch.Aspire.csproj", "{A3C70BA5-7E79-E064-E5BB-07C0A3FB830F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Web.Middleware.Package", "Web.Middleware\Microsoft.DotNet.HotReload.Web.Middleware.Package.csproj", "{1344423B-CFA7-FC1A-935D-4B9D2BE8C512}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6C5FBD7D-2E3D-D482-5415-893AE4661749}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C5FBD7D-2E3D-D482-5415-893AE4661749}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C5FBD7D-2E3D-D482-5415-893AE4661749}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C5FBD7D-2E3D-D482-5415-893AE4661749}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31818B17-178A-0598-6C6E-E15CD63E1274}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31818B17-178A-0598-6C6E-E15CD63E1274}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31818B17-178A-0598-6C6E-E15CD63E1274}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31818B17-178A-0598-6C6E-E15CD63E1274}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4855C790-EFE7-94ED-C369-0A02387F88B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4855C790-EFE7-94ED-C369-0A02387F88B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4855C790-EFE7-94ED-C369-0A02387F88B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4855C790-EFE7-94ED-C369-0A02387F88B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF68EDC4-66E0-CD0A-C3AE-DA75F6E6FB48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF68EDC4-66E0-CD0A-C3AE-DA75F6E6FB48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF68EDC4-66E0-CD0A-C3AE-DA75F6E6FB48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF68EDC4-66E0-CD0A-C3AE-DA75F6E6FB48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AA89CA7-A32B-7B0F-3F6E-D8BFF3A7394F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AA89CA7-A32B-7B0F-3F6E-D8BFF3A7394F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AA89CA7-A32B-7B0F-3F6E-D8BFF3A7394F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AA89CA7-A32B-7B0F-3F6E-D8BFF3A7394F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BF335B3-9AE2-45DA-BF06-984D1FC76D12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BF335B3-9AE2-45DA-BF06-984D1FC76D12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BF335B3-9AE2-45DA-BF06-984D1FC76D12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BF335B3-9AE2-45DA-BF06-984D1FC76D12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EA9373C-1BAB-FA35-C694-5D55DF99EED4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EA9373C-1BAB-FA35-C694-5D55DF99EED4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EA9373C-1BAB-FA35-C694-5D55DF99EED4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EA9373C-1BAB-FA35-C694-5D55DF99EED4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE06EDB0-986D-753A-FE69-F65321BEED81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE06EDB0-986D-753A-FE69-F65321BEED81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE06EDB0-986D-753A-FE69-F65321BEED81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE06EDB0-986D-753A-FE69-F65321BEED81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{806A277E-2C0C-22FB-921A-78886FFDDAA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{806A277E-2C0C-22FB-921A-78886FFDDAA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{806A277E-2C0C-22FB-921A-78886FFDDAA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{806A277E-2C0C-22FB-921A-78886FFDDAA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB9EFD18-6E38-A909-42D0-CFFAB80A8497}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB9EFD18-6E38-A909-42D0-CFFAB80A8497}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB9EFD18-6E38-A909-42D0-CFFAB80A8497}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB9EFD18-6E38-A909-42D0-CFFAB80A8497}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4399F1FA-7146-7FC6-527B-80445C258185}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4399F1FA-7146-7FC6-527B-80445C258185}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4399F1FA-7146-7FC6-527B-80445C258185}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4399F1FA-7146-7FC6-527B-80445C258185}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C736CE49-22AA-C13A-A009-110F2BB42B3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C736CE49-22AA-C13A-A009-110F2BB42B3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C736CE49-22AA-C13A-A009-110F2BB42B3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C736CE49-22AA-C13A-A009-110F2BB42B3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A66CCBDA-9D70-725D-1E21-BE53E0CB767E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A66CCBDA-9D70-725D-1E21-BE53E0CB767E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A66CCBDA-9D70-725D-1E21-BE53E0CB767E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A66CCBDA-9D70-725D-1E21-BE53E0CB767E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3C70BA5-7E79-E064-E5BB-07C0A3FB830F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3C70BA5-7E79-E064-E5BB-07C0A3FB830F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3C70BA5-7E79-E064-E5BB-07C0A3FB830F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3C70BA5-7E79-E064-E5BB-07C0A3FB830F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1344423B-CFA7-FC1A-935D-4B9D2BE8C512}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1344423B-CFA7-FC1A-935D-4B9D2BE8C512}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1344423B-CFA7-FC1A-935D-4B9D2BE8C512}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1344423B-CFA7-FC1A-935D-4B9D2BE8C512}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DF68EDC4-66E0-CD0A-C3AE-DA75F6E6FB48} = {364DE115-7FAE-CA31-C478-9A2E79CB519F}
+		{9AA89CA7-A32B-7B0F-3F6E-D8BFF3A7394F} = {AC3BAF4A-B943-5F19-3116-A3FD7C885CF5}
+		{6BF335B3-9AE2-45DA-BF06-984D1FC76D12} = {1E2BF55A-FFB6-7358-58F1-01FF3B44BF81}
+		{5EA9373C-1BAB-FA35-C694-5D55DF99EED4} = {5CDE4159-9BB7-F002-81EE-FE1EB501625E}
+		{EE06EDB0-986D-753A-FE69-F65321BEED81} = {2E82323A-31E4-7672-52A7-A568AFE575B9}
+		{806A277E-2C0C-22FB-921A-78886FFDDAA7} = {0305277F-4D82-FB13-2499-FC48C606CE40}
+		{AB9EFD18-6E38-A909-42D0-CFFAB80A8497} = {DE1641C4-FDB5-AA6D-6CB4-DF3846EF52B5}
+		{4399F1FA-7146-7FC6-527B-80445C258185} = {4ECEBE05-09E3-57E8-4D2B-FE584872CA1A}
+		{C736CE49-22AA-C13A-A009-110F2BB42B3A} = {D2C117CF-0177-4E2D-50C8-838AB4048BBB}
+		{A66CCBDA-9D70-725D-1E21-BE53E0CB767E} = {7DA52029-B853-C26E-9887-EED38DF1A1F0}
+		{A3C70BA5-7E79-E064-E5BB-07C0A3FB830F} = {4F97FBBD-9A86-61E0-BF34-CA189133CA2A}
+		{1344423B-CFA7-FC1A-935D-4B9D2BE8C512} = {6416C8BE-C082-13BD-174D-AC0F1C4E3A1F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {347C85E1-C073-4D1E-B70E-7341B4888A27}
+	EndGlobalSection
+EndGlobal
