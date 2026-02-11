@@ -102,49 +102,15 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
 
     private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange)
     {
-        // First, try to find if the package already exists in any manifest
-        FilePath manifestFile;
+        (FilePath? manifestFileOptional, string warningMessage) =
+            _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, packageId, throwIfNoManifestFound: false);
 
-        if (!string.IsNullOrWhiteSpace(_explicitManifestFile))
+        if (warningMessage != null)
         {
-            // Use the explicitly specified manifest
-            manifestFile = new FilePath(_explicitManifestFile);
-        }
-        else
-        {
-            // Try to find manifests containing this package
-            IReadOnlyList<FilePath>? manifestFilesContainPackageId = null;
-            try
-            {
-                manifestFilesContainPackageId = _toolManifestFinder.FindByPackageId(packageId);
-            }
-            catch (ToolManifestCannotBeFoundException)
-            {
-                // No manifest exists yet, we'll create one later if needed
-            }
-
-            if (manifestFilesContainPackageId != null && manifestFilesContainPackageId.Any())
-            {
-                // Package found in one or more manifests, use the first one
-                manifestFile = manifestFilesContainPackageId.First();
-
-                if (manifestFilesContainPackageId.Count > 1)
-                {
-                    string warningMessage = string.Format(
-                        CliCommandStrings.SamePackageIdInOtherManifestFile,
-                        string.Join(
-                            Environment.NewLine,
-                            manifestFilesContainPackageId.Skip(1).Select(m => $"\t{m}")));
-                    _reporter.WriteLine(warningMessage.Yellow());
-                }
-            }
-            else
-            {
-                // Package not found, get or create a manifest
-                manifestFile = GetManifestFilePath();
-            }
+            _reporter.WriteLine(warningMessage.Yellow());
         }
 
+        FilePath manifestFile = manifestFileOptional ?? GetManifestFilePath();
         var existingPackageWithPackageId = _toolManifestFinder.Find(manifestFile).Where(p => p.PackageId.Equals(packageId));
 
         if (!existingPackageWithPackageId.Any())

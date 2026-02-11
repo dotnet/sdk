@@ -15,7 +15,8 @@ internal static class ToolManifestFinderExtensions
     public static (FilePath? filePath, string warningMessage) ExplicitManifestOrFindManifestContainPackageId(
         this IToolManifestFinder toolManifestFinder,
         string explicitManifestFile,
-        PackageId packageId)
+        PackageId packageId,
+        bool throwIfNoManifestFound = true)
     {
         if (!string.IsNullOrWhiteSpace(explicitManifestFile))
         {
@@ -29,7 +30,11 @@ internal static class ToolManifestFinderExtensions
         }
         catch (ToolManifestCannotBeFoundException e)
         {
-            throw new GracefulException([e.Message, CliCommandStrings.ToolCommonNoManifestGuide], verboseMessages: [e.VerboseMessage], isUserError: false);
+            if (throwIfNoManifestFound)
+            {
+                throw new GracefulException([e.Message, CliCommandStrings.ToolCommonNoManifestGuide], verboseMessages: [e.VerboseMessage], isUserError: false);
+            }
+            return (null, null);
         }
 
         if (manifestFilesContainPackageId.Any())
