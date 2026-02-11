@@ -591,7 +591,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory(Skip = "Works manually. The test here still hangs because the test infra redirects stdout/stderr and will be waiting for the hanging process.")]
+        [Theory]
         public void DotnetTest_MTPChildProcessHangTestProject_ShouldNotHang(string configuration)
         {
             var testInstance = TestAssetsManager.CopyTestAsset("MTPChildProcessHangTest", Guid.NewGuid().ToString())
@@ -599,6 +599,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testInstance.Path)
+                .WithDisableOutputAndErrorRedirection()
                 .Execute("-c", configuration);
 
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);

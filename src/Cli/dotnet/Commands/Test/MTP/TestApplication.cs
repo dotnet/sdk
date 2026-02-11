@@ -119,6 +119,7 @@ internal sealed class TestApplication(
     private static async Task WaitForExitWithoutOutputAsync(Process process)
     {
         // Mostly copied from WaitForExitAsync from dotnet/runtime, with adjustments to match our needs here.
+        // Basically, we don't want to wait for the output streams, and we also simplify logic around CancellationToken as we don't need to pass one.
         try
         {
             process.EnableRaisingEvents = true;
