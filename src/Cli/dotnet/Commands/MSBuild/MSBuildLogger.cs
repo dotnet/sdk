@@ -65,7 +65,7 @@ public sealed class MSBuildLogger : INodeLogger
     /// <summary>
     /// Stores project evaluation statistics for telemetry.
     /// </summary>
-    private int _evaluationCount = 0;
+    private int _evaluationCount;
     private readonly List<double> _evaluationDurations = new();
 
     public MSBuildLogger()
