@@ -36,12 +36,6 @@ internal abstract class MsiInstallerBase(InstallElevationContextBase elevationCo
     /// </summary>
     private string _dotNetHome;
 
-    private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
-    {
-        WriteIndented = true,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-    };
-
     /// <summary>
     /// Full path to the root directory for storing workload data.
     /// </summary>
@@ -382,7 +376,7 @@ internal abstract class MsiInstallerBase(InstallElevationContextBase elevationCo
         var historyDirectory = GetWorkloadHistoryDirectory(sdkFeatureBand);
         string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
         Directory.CreateDirectory(historyDirectory);
-        File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
+        File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, WorkloadHistoryJsonSerializerContext.Default.WorkloadHistoryRecord));
     }
 
     /// <summary>
