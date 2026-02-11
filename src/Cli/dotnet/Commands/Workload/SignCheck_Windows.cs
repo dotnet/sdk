@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
-using System.Reflection;
+using System.Diagnostics;
 
 #if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Cli.Installer.Windows.Security;
@@ -20,7 +18,7 @@ internal static class SignCheck
 
     private static readonly string s_WorkloadPolicyKey = @"SOFTWARE\Policies\Microsoft\dotnet\Workloads";
 
-    private static readonly string s_dotnet = Assembly.GetExecutingAssembly().Location;
+    private static readonly string? s_dotnet = Environment.ProcessPath;
 
     /// <summary>
     /// Determines whether dotnet.dll is signed.
@@ -31,6 +29,13 @@ internal static class SignCheck
         if (OperatingSystem.IsWindows())
         {
 #if !DOT_NET_BUILD_FROM_SOURCE
+            Debug.Assert(s_dotnet is not null, "Environment.ProcessPath should not be null when running in the dotnet host.");
+
+            if (s_dotnet is null)
+            {
+                return false;
+            }
+
             // API is only available on XP and Server 2003 or later versions. .NET requires Win7 minimum.
 #pragma warning disable CA1416
             // We don't care about trust in this case, only whether or not the file has a signature as that determines
@@ -51,7 +56,7 @@ internal static class SignCheck
     {
         if (OperatingSystem.IsWindows())
         {
-            using RegistryKey policyKey = Registry.LocalMachine.OpenSubKey(s_WorkloadPolicyKey);
+            using RegistryKey? policyKey = Registry.LocalMachine.OpenSubKey(s_WorkloadPolicyKey);
 
             return ((int?)policyKey?.GetValue(OnlineRevocationCheckPolicyKeyName) ?? 1) != 0;
         }
@@ -67,7 +72,7 @@ internal static class SignCheck
     {
         if (OperatingSystem.IsWindows())
         {
-            using RegistryKey policyKey = Registry.LocalMachine.OpenSubKey(s_WorkloadPolicyKey);
+            using RegistryKey? policyKey = Registry.LocalMachine.OpenSubKey(s_WorkloadPolicyKey);
 
             return ((int?)policyKey?.GetValue(VerifySignaturesPolicyKeyName) ?? 0) != 0;
         }

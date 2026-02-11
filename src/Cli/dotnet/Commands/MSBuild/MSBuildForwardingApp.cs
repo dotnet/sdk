@@ -27,7 +27,9 @@ public class MSBuildForwardingApp : CommandBase
                 Type loggerType = typeof(MSBuildLogger);
                 Type forwardingLoggerType = typeof(MSBuildForwardingLogger);
 
+#pragma warning disable IL3000 // Avoid accessing Assembly file path when publishing as a single file
                 msbuildArgs.OtherMSBuildArgs.Add($"-distributedlogger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}*{forwardingLoggerType.FullName},{forwardingLoggerType.GetTypeInfo().Assembly.Location}");
+#pragma warning restore IL3000
                 return msbuildArgs;
             }
             catch (Exception)
