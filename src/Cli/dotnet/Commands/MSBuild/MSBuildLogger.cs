@@ -108,13 +108,6 @@ public sealed class MSBuildLogger : INodeLogger
 
     public void Initialize(IEventSource eventSource)
     {
-        // Declare lack of dependency on having properties/items in ProjectStarted events
-        // (since this logger doesn't ever care about those events it's irrelevant)
-        if (eventSource is IEventSource4 eventSource4)
-        {
-            eventSource4.IncludeEvaluationPropertiesAndItems();
-        }
-
         try
         {
             if (_telemetry != null && _telemetry.Enabled)
@@ -124,8 +117,22 @@ public sealed class MSBuildLogger : INodeLogger
                     eventSource2.TelemetryLogged += OnTelemetryLogged;
                 }
 
-                eventSource.ProjectEvaluationFinished += OnProjectEvaluationFinished;
+                if (eventSource is IEventSource4 eventSource4)
+                {
+                    // Declare lack of dependency on having properties/items in ProjectStarted events
+                    // (since this logger doesn't ever care about those events it's irrelevant)
+                    eventSource4.IncludeEvaluationPropertiesAndItems();
+                }
+
+                // Subscribe to status events to capture ProjectEvaluationFinished
+                eventSource.StatusEventRaised += OnStatusEventRaised;
                 eventSource.BuildFinished += OnBuildFinished;
+            }
+            else if (eventSource is IEventSource4 eventSource4)
+            {
+                // Declare lack of dependency on having properties/items in ProjectStarted events
+                // (since this logger doesn't ever care about those events it's irrelevant)
+                eventSource4.IncludeEvaluationPropertiesAndItems();
             }
 
             eventSource.BuildFinished += OnBuildFinished;
@@ -141,7 +148,15 @@ public sealed class MSBuildLogger : INodeLogger
         SendAggregatedEventsOnBuildFinished(_telemetry);
     }
 
-    private void OnProjectEvaluationFinished(object sender, ProjectEvaluationFinishedEventArgs e)
+    private void OnStatusEventRaised(object sender, BuildStatusEventArgs e)
+    {
+        if (e is ProjectEvaluationFinishedEventArgs evaluationArgs)
+        {
+            OnProjectEvaluationFinished(evaluationArgs);
+        }
+    }
+
+    private void OnProjectEvaluationFinished(ProjectEvaluationFinishedEventArgs e)
     {
         try
         {
