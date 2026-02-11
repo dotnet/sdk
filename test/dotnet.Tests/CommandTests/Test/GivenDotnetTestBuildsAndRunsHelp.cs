@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(CliConstants.HelpOptionKey, "-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(@"Extension Options:\s+--[\s\S]*", result.StdOut);
                 Assert.Matches(@"Options:\s+--[\s\S]*", result.StdOut);
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(CliConstants.HelpOptionKey, "-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(@"Extension Options:\s+--[\s\S]*", result.StdOut);
                 Assert.Matches(@"Options:\s+--[\s\S]*", result.StdOut);
