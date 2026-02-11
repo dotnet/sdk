@@ -1,7 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
@@ -57,45 +56,14 @@ internal sealed class TestApplication(
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
-            // We are using ConcurrentQueue to avoid thread-safety issues for the timeout case.
-            // In the timeout case, we leave stdOutTask and stdErrTask running, just we stop observing them.
-            var stdOutBuilder = new ConcurrentQueue<string>();
-            var stdErrBuilder = new ConcurrentQueue<string>();
+            var stdOutTask = Task.Factory.StartNew(static standardOutput => ((StreamReader)standardOutput!).ReadToEnd(), process.StandardOutput, TaskCreationOptions.LongRunning);
+            var stdErrTask = Task.Factory.StartNew(static standardError => ((StreamReader)standardError!).ReadToEnd(), process.StandardError, TaskCreationOptions.LongRunning);
 
-            var stdOutTask = Task.Factory.StartNew(() =>
-            {
-                var stdOut = process.StandardOutput;
-                string? currentLine;
-                while ((currentLine = stdOut.ReadLine()) is not null)
-                {
-                    stdOutBuilder.Enqueue(currentLine);
-                }
-            }, TaskCreationOptions.LongRunning);
-
-            var stdErrTask = Task.Factory.StartNew(() =>
-            {
-                var stdErr = process.StandardError;
-                string? currentLine;
-                while ((currentLine = stdErr.ReadLine()) is not null)
-                {
-                    stdErrBuilder.Enqueue(currentLine);
-                }
-            }, TaskCreationOptions.LongRunning);
-
-            await WaitForExitWithoutOutputAsync(process);
-
-            // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
-            // We might not be able to consume all the output if the test app has exited but left a child process alive.
-            try
-            {
-                await Task.WhenAll(stdOutTask, stdErrTask).WaitAsync(TimeSpan.FromSeconds(5));
-            }
-            catch (TimeoutException)
-            {
-            }
+            var outputAndError = await Task.WhenAll(stdOutTask, stdErrTask);
+            await process.WaitForExitAsync();
 
             var exitCode = process.ExitCode;
-            _handler.OnTestProcessExited(exitCode, string.Join(Environment.NewLine, stdOutBuilder), string.Join(Environment.NewLine, stdErrBuilder));
+            _handler.OnTestProcessExited(exitCode, outputAndError[0], outputAndError[1]);
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
             // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
@@ -113,42 +81,6 @@ internal sealed class TestApplication(
         {
             cancellationTokenSource.Cancel();
             await testAppPipeConnectionLoop;
-        }
-    }
-
-    private static async Task WaitForExitWithoutOutputAsync(Process process)
-    {
-        // Mostly copied from WaitForExitAsync from dotnet/runtime, with adjustments to match our needs here.
-        // Basically, we don't want to wait for the output streams, and we also simplify logic around CancellationToken as we don't need to pass one.
-        try
-        {
-            process.EnableRaisingEvents = true;
-        }
-        catch (InvalidOperationException)
-        {
-            if (process.HasExited)
-            {
-                return;
-            }
-
-            throw;
-        }
-
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        EventHandler handler = (_, _) => tcs.TrySetResult();
-        process.Exited += handler;
-
-        try
-        {
-            if (!process.HasExited)
-            {
-                await tcs.Task.ConfigureAwait(false);
-            }
-        }
-        finally
-        {
-            process.Exited -= handler;
         }
     }
 
