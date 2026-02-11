@@ -82,7 +82,9 @@ internal sealed class TestApplication(
                 }
             }, TaskCreationOptions.LongRunning);
 
-            await WaitForExitWithoutOutputAsync(process);
+            // WaitForExitAsync only waits for process exit (and doesn't wait for output) for our usage here.
+            // If we use BeginOutputReadLine/BeginErrorReadLine, it will also wait for output which can deadlock.
+            await process.WaitForExitAsync();
 
             // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
             // We might not be able to consume all the output if the test app has exited but left a child process alive.
@@ -113,42 +115,6 @@ internal sealed class TestApplication(
         {
             cancellationTokenSource.Cancel();
             await testAppPipeConnectionLoop;
-        }
-    }
-
-    private static async Task WaitForExitWithoutOutputAsync(Process process)
-    {
-        // Mostly copied from WaitForExitAsync from dotnet/runtime, with adjustments to match our needs here.
-        // Basically, we don't want to wait for the output streams, and we also simplify logic around CancellationToken as we don't need to pass one.
-        try
-        {
-            process.EnableRaisingEvents = true;
-        }
-        catch (InvalidOperationException)
-        {
-            if (process.HasExited)
-            {
-                return;
-            }
-
-            throw;
-        }
-
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        EventHandler handler = (_, _) => tcs.TrySetResult();
-        process.Exited += handler;
-
-        try
-        {
-            if (!process.HasExited)
-            {
-                await tcs.Task.ConfigureAwait(false);
-            }
-        }
-        finally
-        {
-            process.Exited -= handler;
         }
     }
 
