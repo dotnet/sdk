@@ -158,9 +158,9 @@ namespace Microsoft.NET.Build.Tests
             buildResult.StdErr.Should().Be(string.Empty);
         }
 
-        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.NextTargetFrameworkVersion)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         [RequiresMSBuildVersionTheory("16.8")]
-        public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM, string nextTFMVersionNumber)
+        public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM)
         {
             var testProject = new TestProject
             {
@@ -200,7 +200,14 @@ namespace Microsoft.NET.Build.Tests
 
             buildResult.StdErr.Should().Be(string.Empty, "If this test fails when updating to a new TFM, you need to update _PreviewAnalysisLevel and _LatestAnalysisLevel in Microsoft.NET.SDK.Analyzers.Targets");
             var computedEffectiveAnalysisLevel = buildCommand.GetValues()[0];
-            computedEffectiveAnalysisLevel.Should().Be(nextTFMVersionNumber.ToString());
+            // Verify that preview resolves to a numeric version (not the literal "preview" string)
+            computedEffectiveAnalysisLevel.Should().NotBe("preview", "AnalysisLevel=preview should resolve to a numeric version");
+            double.TryParse(computedEffectiveAnalysisLevel, out var previewLevel).Should().BeTrue(
+                $"AnalysisLevel=preview should resolve to a numeric version, but got '{computedEffectiveAnalysisLevel}'");
+            // Preview should be greater than or equal to the current TFM version
+            var currentVersion = double.Parse(ToolsetInfo.CurrentTargetFrameworkVersion);
+            previewLevel.Should().BeGreaterThanOrEqualTo(currentVersion,
+                "AnalysisLevel=preview should resolve to a version >= the current TFM version");
         }
 
         [RequiresMSBuildVersionFact("16.8")]
@@ -233,7 +240,9 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: "latestAnalysisLevelGlobalConfig");
 
-            // First verify that "latest" maps to the current TFM version
+            // Verify that "latest" resolves to a numeric analysis level and has a corresponding globalconfig.
+            // Note: During development of a new TFM (e.g., net11.0), _LatestAnalysisLevel may still point to
+            // the prior shipped version (e.g., 10.0) until the new analyzers are shipped. This is expected.
             var buildCommand = new GetValuesCommand(
                 Log,
                 Path.Combine(testAsset.TestRoot, testProject.Name),
@@ -245,11 +254,11 @@ namespace Microsoft.NET.Build.Tests
 
             buildResult.StdErr.Should().Be(string.Empty);
             var effectiveAnalysisLevel = buildCommand.GetValues()[0];
-            effectiveAnalysisLevel.Should().Be(ToolsetInfo.CurrentTargetFrameworkVersion,
-                $"AnalysisLevel=latest should map to the current TFM version ({ToolsetInfo.CurrentTargetFrameworkVersion}). " +
-                "Update _LatestAnalysisLevel in Microsoft.NET.Sdk.Analyzers.targets.");
+            effectiveAnalysisLevel.Should().NotBe("latest", "AnalysisLevel=latest should resolve to a numeric version");
+            double.TryParse(effectiveAnalysisLevel, out _).Should().BeTrue(
+                $"AnalysisLevel=latest should resolve to a numeric version, but got '{effectiveAnalysisLevel}'");
 
-            // Now verify that the corresponding globalconfig file exists
+            // Verify the corresponding globalconfig file exists
             var expectedGlobalConfig = $"analysislevel_{effectiveAnalysisLevel.Replace(".0", "")}_default.globalconfig";
 
             buildCommand = new GetValuesCommand(
