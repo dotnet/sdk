@@ -225,7 +225,7 @@ Uses `Microsoft.NET.Sdk.Razor` to create reusable component libraries:
 
 The Razor SDK includes special handling for Blazor partial classes to ensure proper compilation:
 
-- **Target:** `_RemoveRazorDeclartionsFromCompile`
+- **Target:** `_RemoveRazorDeclartionsFromCompile` (note: target name has a typo in source)
 - **Purpose:** Prevents older SDKs from adding declaration files to the compile list during design-time builds
 - **Effect:** Ensures all compilation work is done in-memory in modern Visual Studio versions
 
