@@ -38,6 +38,22 @@ For mobile, we reuse the Kestrel infrastructure but with a different protocol:
 
 The mobile server (`HotReloadWebSocketServer`) extends `KestrelWebSocketServer` and speaks the same binary protocol as the named pipe transport, just over WebSocket instead.
 
+### WebSocket Authentication
+
+To prevent unauthorized processes from connecting to the hot reload server, `HotReloadWebSocketServer` uses RSA-based authentication identical to `BrowserRefreshServer`:
+
+1. **Server generates RSA key pair:** `SharedSecretProvider` creates a 2048-bit RSA key on startup
+2. **Public key exported:** The public key (X.509 SubjectPublicKeyInfo, Base64-encoded) is passed to the app via `DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY`
+3. **Client encrypts secret:** The startup hook generates a random 32-byte secret, encrypts it with RSA-OAEP-SHA256 using the public key
+4. **Secret sent as subprotocol:** The encrypted secret is Base64-encoded (URL-safe: `-` for `+`, `_` for `/`, no padding) and sent as the WebSocket subprotocol header
+5. **Server validates:** `HotReloadWebSocketServer.HandleRequestAsync` decrypts the subprotocol value and accepts the connection only if decryption succeeds
+
+This ensures only processes that received the public key via the environment variable can connect. The URL-safe Base64 encoding is required because WebSocket subprotocol tokens cannot contain `+`, `/`, or `=` characters.
+
+**Environment variables:**
+- `DOTNET_WATCH_HOTRELOAD_WEBSOCKET_ENDPOINT` — WebSocket URL (e.g., `ws://127.0.0.1:5432`)
+- `DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY` — RSA public key (Base64-encoded)
+
 ### 1. WebSocket Capability Detection
 
 [ProjectGraphUtilities.cs](../../src/BuiltInTools/Watch/Build/ProjectGraphUtilities.cs) checks for the `HotReloadWebSockets` capability (case-insensitive).
@@ -55,6 +71,7 @@ dotnet run --no-build \
   -e DOTNET_WATCH=1 \
   -e DOTNET_MODIFIABLE_ASSEMBLIES=debug \
   -e DOTNET_WATCH_HOTRELOAD_WEBSOCKET_ENDPOINT=ws://127.0.0.1:<port> \
+  -e DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY=<base64-encoded-rsa-public-key> \
   -e DOTNET_STARTUP_HOOKS=<path to DeltaApplier.dll>
 ```
 
@@ -81,13 +98,14 @@ Enables the Android workload to receive env vars from `dotnet run -e`:
 ## Data Flow
 
 1. **Build:** `dotnet-watch` builds the project, detects `HotReloadWebSockets` capability
-2. **Launch:** `dotnet run -e DOTNET_WATCH_HOTRELOAD_WEBSOCKET_ENDPOINT=ws://127.0.0.1:<port> -e DOTNET_STARTUP_HOOKS=...`
+2. **Launch:** `dotnet run -e DOTNET_WATCH_HOTRELOAD_WEBSOCKET_ENDPOINT=ws://127.0.0.1:<port> -e DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY=<key> -e DOTNET_STARTUP_HOOKS=...`
 3. **Workload:** Android build tasks:
    - Include the startup hook DLL in the APK
    - Set up ADB port forwarding for the dynamically assigned port
    - Rewrite env vars for on-device paths
-4. **Device:** App starts → StartupHook loads → `Transport.TryCreate()` reads env vars → `WebSocketTransport` connects to `ws://127.0.0.1:<port>`
-5. **Hot Reload:** File change → delta compiled → sent over WebSocket → applied on device
+4. **Device:** App starts → StartupHook loads → `Transport.TryCreate()` reads env vars → `WebSocketTransport` encrypts secret with RSA public key → connects to `ws://127.0.0.1:<port>` with encrypted secret as subprotocol
+5. **Server:** `HotReloadWebSocketServer` validates the encrypted secret, accepts connection
+6. **Hot Reload:** File change → delta compiled → sent over WebSocket → applied on device
 
 ## iOS
 

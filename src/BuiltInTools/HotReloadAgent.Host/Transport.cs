@@ -38,7 +38,9 @@ internal abstract class Transport(Action<string> log) : IDisposable
         if (!string.IsNullOrEmpty(webSocketEndpoint))
         {
             log($"{AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint}={webSocketEndpoint}");
-            return new WebSocketTransport(webSocketEndpoint, log, timeoutMS);
+
+            var serverPublicKey = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketKey);
+            return new WebSocketTransport(webSocketEndpoint, serverPublicKey, log, timeoutMS);
         }
 
         return null;

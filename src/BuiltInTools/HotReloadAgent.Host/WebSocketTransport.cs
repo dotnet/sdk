@@ -6,7 +6,9 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.Net;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,17 +18,19 @@ namespace Microsoft.DotNet.HotReload;
 /// WebSocket-based client for hot reload communication.
 /// Used for projects with the HotReloadWebSockets capability (e.g., Android, iOS).
 /// Mobile workloads add this capability since named pipes don't work over the network.
+/// Uses RSA-based shared secret for authentication (same as BrowserRefreshServer).
 /// </summary>
 internal sealed class WebSocketTransport : Transport
 {
     private readonly string _serverUrl;
+    private readonly string? _serverPublicKey;
     private readonly int _connectionTimeoutMS;
     private readonly ClientWebSocket _webSocket = new();
 
     // Buffer for receiving messages - WebSocket messages need to be read completely
     private MemoryStream? _receiveBuffer;
 
-    public WebSocketTransport(string serverUrl, Action<string> log, int connectionTimeoutMS)
+    public WebSocketTransport(string serverUrl, string? serverPublicKey, Action<string> log, int connectionTimeoutMS)
         : base(log)
     {
         // Convert http:// to ws:// or https:// to wss://
@@ -34,6 +38,7 @@ internal sealed class WebSocketTransport : Transport
             .Replace("http://", "ws://", StringComparison.OrdinalIgnoreCase)
             .Replace("https://", "wss://", StringComparison.OrdinalIgnoreCase);
 
+        _serverPublicKey = serverPublicKey;
         _connectionTimeoutMS = connectionTimeoutMS;
     }
 
@@ -56,6 +61,14 @@ internal sealed class WebSocketTransport : Transport
 
             try
             {
+                // Add encrypted shared secret as subprotocol for authentication
+                if (!string.IsNullOrEmpty(_serverPublicKey))
+                {
+                    var encryptedSecret = EncryptSharedSecret(_serverPublicKey);
+                    _webSocket.Options.AddSubProtocol(encryptedSecret);
+                    Log("Added encrypted shared secret as subprotocol.");
+                }
+
                 Log($"Connecting to {_serverUrl}...");
                 await _webSocket.ConnectAsync(new Uri(_serverUrl), connectCts.Token);
                 Log("Connected.");
@@ -127,5 +140,28 @@ internal sealed class WebSocketTransport : Transport
 
         // Return a stream that doesn't dispose the underlying buffer (we reuse it)
         return new RequestStream(_receiveBuffer, disposeOnCompletion: false);
+    }
+
+    /// <summary>
+    /// Encrypts a random shared secret using the server's RSA public key.
+    /// Uses the same algorithm as BrowserRefreshServer for consistency.
+    /// </summary>
+    private static string EncryptSharedSecret(string serverPublicKeyBase64)
+    {
+        using var rsa = RSA.Create();
+        rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(serverPublicKeyBase64), out _);
+
+        // Generate a random 32-byte secret and encrypt with RSA OAEP SHA-256 (same as BrowserRefreshServer)
+        // RSA.Encrypt(ReadOnlySpan<byte>) overload is available in .NET 9+
+#if NET9_0_OR_GREATER
+        Span<byte> secret = stackalloc byte[32];
+#else
+        var secret = new byte[32];
+#endif
+        RandomNumberGenerator.Fill(secret);
+        var encrypted = rsa.Encrypt(secret, RSAEncryptionPadding.OaepSHA256);
+
+        // Convert to URL-safe Base64 for WebSocket subprotocol header
+        return Base64Url.EncodeToString(encrypted);
     }
 }

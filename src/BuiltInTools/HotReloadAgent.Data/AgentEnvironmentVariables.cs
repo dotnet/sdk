@@ -20,6 +20,12 @@ internal static class AgentEnvironmentVariables
     public const string DotNetWatchHotReloadWebSocketEndpoint = "DOTNET_WATCH_HOTRELOAD_WEBSOCKET_ENDPOINT";
 
     /// <summary>
+    /// RSA public key (Base64-encoded X.509 SubjectPublicKeyInfo) for WebSocket connection authentication.
+    /// The client encrypts a random secret with this key and sends it as the WebSocket subprotocol.
+    /// </summary>
+    public const string DotNetWatchHotReloadWebSocketKey = "DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY";
+
+    /// <summary>
     /// Enables logging from the client delta applier agent.
     /// </summary>
     public const string HotReloadDeltaClientLogMessages = "HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES";

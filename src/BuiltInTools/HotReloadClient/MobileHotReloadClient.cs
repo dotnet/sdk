@@ -64,6 +64,10 @@ internal sealed class MobileHotReloadClient : HotReloadClient
         // Use the actual bound URL from the server (important when port 0 was requested).
         environmentBuilder[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint] = _server.WebSocketUrl;
 
+        // Set the RSA public key for the client to encrypt its shared secret.
+        // This is the same authentication mechanism used by BrowserRefreshServer.
+        environmentBuilder[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketKey] = _server.PublicKey;
+
         // Pass the startup hook path as an environment variable so the workload can deploy it.
         // This gets passed via `dotnet run -e` and becomes available as @(RuntimeEnvironmentVariable)
         // items in MSBuild targets (build, DeployToDevice, ComputeRunArguments).
@@ -315,11 +319,13 @@ internal sealed class MobileHotReloadClient : HotReloadClient
     /// <summary>
     /// WebSocket server for hot reload communication.
     /// Extends KestrelWebSocketServer to handle a single client connection.
+    /// Uses RSA-based shared secret for authentication (same as BrowserRefreshServer).
     /// </summary>
     private sealed class HotReloadWebSocketServer : KestrelWebSocketServer
     {
         private WebSocket? _clientSocket;
         private readonly TaskCompletionSource<WebSocket?> _clientConnectedSource = new();
+        private readonly SharedSecretProvider _sharedSecretProvider = new();
 
         public HotReloadWebSocketServer(ILogger logger) : base(logger)
         {
@@ -341,6 +347,11 @@ internal sealed class MobileHotReloadClient : HotReloadClient
         /// </summary>
         public int BoundPort => new Uri(WebSocketUrl).Port;
 
+        /// <summary>
+        /// Gets the RSA public key (Base64-encoded X.509 SubjectPublicKeyInfo) for client authentication.
+        /// </summary>
+        public string PublicKey => _sharedSecretProvider.GetPublicKey();
+
         public async ValueTask StartServerAsync(string hostName, int port, CancellationToken cancellationToken)
         {
             await base.StartServerAsync(hostName, port, useTls: false, cancellationToken);
@@ -348,7 +359,37 @@ internal sealed class MobileHotReloadClient : HotReloadClient
 
         protected override async Task HandleRequestAsync(HttpContext context)
         {
-            var webSocket = await AcceptWebSocketAsync(context);
+            // Validate the shared secret from the subprotocol
+            if (context.WebSockets.WebSocketRequestedProtocols is not [var subProtocol] || string.IsNullOrEmpty(subProtocol))
+            {
+                Logger.LogWarning("WebSocket connection rejected: missing subprotocol (shared secret)");
+                context.Response.StatusCode = 401;
+                return;
+            }
+
+            // Decrypt and validate the secret
+            // The client sends URL-safe Base64 (- instead of +, _ instead of /, no padding)
+            // because WebSocket subprotocol tokens can't contain those characters.
+            string? decryptedSecret;
+            try
+            {
+                decryptedSecret = _sharedSecretProvider.DecryptSecret(Base64Url.DecodeToStandardBase64(subProtocol));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning("WebSocket connection rejected: invalid shared secret - {Message}", ex.Message);
+                context.Response.StatusCode = 401;
+                return;
+            }
+
+            if (string.IsNullOrEmpty(decryptedSecret))
+            {
+                Logger.LogWarning("WebSocket connection rejected: empty shared secret");
+                context.Response.StatusCode = 401;
+                return;
+            }
+
+            var webSocket = await AcceptWebSocketAsync(context, subProtocol);
             if (webSocket == null)
             {
                 return;
@@ -423,6 +464,7 @@ internal sealed class MobileHotReloadClient : HotReloadClient
         public override void Dispose()
         {
             _clientSocket?.Dispose();
+            _sharedSecretProvider.Dispose();
             base.Dispose();
         }
     }
