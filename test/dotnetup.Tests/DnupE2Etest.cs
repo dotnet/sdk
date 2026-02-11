@@ -89,6 +89,19 @@ public class InstallEndToEndTests
                 install.Version.ToString().Should().Be(channel);
             }
         });
+
+        // Test that the env script works correctly
+        if (!OperatingSystem.IsWindows())
+        {
+            // Test bash and zsh on Unix
+            DotnetupTestUtilities.VerifyEnvScriptWorks("bash", testEnv.InstallPath, expectedVersion?.ToString(), testEnv.TempRoot);
+            DotnetupTestUtilities.VerifyEnvScriptWorks("zsh", testEnv.InstallPath, expectedVersion?.ToString(), testEnv.TempRoot);
+        }
+        else
+        {
+            // Test PowerShell on Windows
+            DotnetupTestUtilities.VerifyEnvScriptWorks("pwsh", testEnv.InstallPath, expectedVersion?.ToString(), testEnv.TempRoot);
+        }
     }
 
     [Theory]
@@ -117,117 +130,34 @@ public class InstallEndToEndTests
     }
 
     [Fact]
-    public void Test()
+    public void EnvScript_WorksWithSpecialCharactersInPath()
     {
-        // Only run on Mac or Linux
-        if (OperatingSystem.IsWindows())
-        {
-            return;
-        }
+        // Test that env scripts work correctly when the install path contains special characters
+        // such as spaces and single quotes
 
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
-        // Install SDK first
-        var sdkArgs = DotnetupTestUtilities.BuildSdkArguments("9.0", testEnv.InstallPath, testEnv.ManifestPath);
-        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(sdkArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
-        exitCode.Should().Be(0, $"SDK installation failed. Output:\n{output}");
+        // Create an install path with special characters (spaces and single quotes)
+        string specialCharsPath = Path.Combine(testEnv.TempRoot, "dotnet with 'special chars'");
+        Directory.CreateDirectory(specialCharsPath);
 
-        // Get the full path to dotnetup
-        string repoRoot = GetRepositoryRoot();
-#if DEBUG
-        string configuration = "Debug";
-#else
-        string configuration = "Release";
-#endif
-        string dotnetupPath = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", configuration, "net10.0", "dotnetup.dll");
-        string repoDotnet = Path.Combine(repoRoot, ".dotnet", DotnetupUtilities.GetDotnetExeName());
-        string dotnetCommand = File.Exists(repoDotnet) ? repoDotnet : DotnetupUtilities.GetDotnetExeName();
+        // Install SDK to this special path
+        var args = DotnetupTestUtilities.BuildSdkArguments("9.0", specialCharsPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"SDK installation failed with special characters in path. Output:\n{output}");
 
-        // Create a shell script that sources the env script and prints environment info
-        string scriptPath = Path.Combine(testEnv.TempRoot, "test-env.sh");
-        string scriptContent = $@"#!/bin/bash
-set -e
-source <({dotnetCommand} ""{dotnetupPath}"" print-env-script --dotnet-install-path ""{testEnv.InstallPath}"")
-dotnet --version
-echo ""PATH=$PATH""
-echo ""DOTNET_ROOT=$DOTNET_ROOT""
-";
-        File.WriteAllText(scriptPath, scriptContent);
-
-        // Make the script executable
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        // Test the env script with each shell
+        if (!OperatingSystem.IsWindows())
         {
-            var chmod = Process.Start(new ProcessStartInfo
-            {
-                FileName = "chmod",
-                Arguments = $"+x \"{scriptPath}\"",
-                UseShellExecute = false
-            });
-            chmod?.WaitForExit();
+            // Test bash and zsh on Unix
+            DotnetupTestUtilities.VerifyEnvScriptWorks("bash", specialCharsPath, null, testEnv.TempRoot);
+            DotnetupTestUtilities.VerifyEnvScriptWorks("zsh", specialCharsPath, null, testEnv.TempRoot);
         }
-
-        // Run the script
-        using var process = new Process();
-        process.StartInfo.FileName = "/bin/bash";
-        process.StartInfo.Arguments = $"\"{scriptPath}\"";
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.RedirectStandardOutput = true;
-        process.StartInfo.RedirectStandardError = true;
-        process.StartInfo.WorkingDirectory = testEnv.TempRoot;
-
-        var outputBuilder = new StringBuilder();
-        var errorBuilder = new StringBuilder();
-
-        process.OutputDataReceived += (sender, e) =>
+        else
         {
-            if (e.Data != null)
-            {
-                outputBuilder.AppendLine(e.Data);
-            }
-        };
-        process.ErrorDataReceived += (sender, e) =>
-        {
-            if (e.Data != null)
-            {
-                errorBuilder.AppendLine(e.Data);
-            }
-        };
-
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-        process.WaitForExit();
-
-        string scriptOutput = outputBuilder.ToString();
-        string scriptError = errorBuilder.ToString();
-
-        // Verify the script succeeded
-        process.ExitCode.Should().Be(0, $"Script execution failed. Output:\n{scriptOutput}\nError:\n{scriptError}");
-
-        // Parse the output lines
-        var outputLines = scriptOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        outputLines.Should().HaveCountGreaterThanOrEqualTo(3, "Should have dotnet version, PATH, and DOTNET_ROOT output");
-
-        // First line should be dotnet version
-        var dotnetVersion = outputLines[0].Trim();
-        dotnetVersion.Should().NotBeNullOrEmpty("dotnet --version should produce output");
-        dotnetVersion.Should().MatchRegex(@"^\d+\.\d+\.\d+", "dotnet version should be in format x.y.z");
-
-        // Find PATH and DOTNET_ROOT lines
-        var pathLine = outputLines.FirstOrDefault(l => l.StartsWith("PATH="));
-        var dotnetRootLine = outputLines.FirstOrDefault(l => l.StartsWith("DOTNET_ROOT="));
-
-        pathLine.Should().NotBeNull("PATH should be printed");
-        dotnetRootLine.Should().NotBeNull("DOTNET_ROOT should be printed");
-
-        // Verify PATH starts with the install path
-        var pathValue = pathLine!.Substring("PATH=".Length);
-        var firstPathEntry = pathValue.Split(':')[0];
-        firstPathEntry.Should().Be(testEnv.InstallPath, "First PATH entry should be the dotnet install path");
-
-        // Verify DOTNET_ROOT matches install path
-        var dotnetRootValue = dotnetRootLine!.Substring("DOTNET_ROOT=".Length);
-        dotnetRootValue.Should().Be(testEnv.InstallPath, "DOTNET_ROOT should be set to the install path");
+            // Test PowerShell on Windows
+            DotnetupTestUtilities.VerifyEnvScriptWorks("pwsh", specialCharsPath, null, testEnv.TempRoot);
+        }
     }
 
     private static void VerifyManifestContains(TestEnvironment testEnv, InstallComponent expectedComponent, Action<DotnetInstall>? additionalAssertions = null)
@@ -248,22 +178,6 @@ echo ""DOTNET_ROOT=$DOTNET_ROOT""
         matchingInstalls[0].Component.Should().Be(expectedComponent);
 
         additionalAssertions?.Invoke(matchingInstalls[0]);
-    }
-
-    private static string GetRepositoryRoot()
-    {
-        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (currentDirectory != null)
-        {
-            if (File.Exists(Path.Combine(currentDirectory.FullName, "sdk.slnx")))
-            {
-                return currentDirectory.FullName;
-            }
-
-            currentDirectory = currentDirectory.Parent;
-        }
-
-        throw new InvalidOperationException($"Unable to locate repository root from base directory '{AppContext.BaseDirectory}'.");
     }
 }
 
