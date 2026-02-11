@@ -25,8 +25,7 @@ public static class InteractiveConsole
             return true;
         }
 
-        // Auto-approve in non-interactive mode (stdin redirected, CI environment, or explicit --no-interactive)
-        if (!interactiveOption || Console.IsInputRedirected)
+        if (!interactiveOption)
         {
             return null;
         }
