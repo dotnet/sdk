@@ -112,5 +112,56 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                .Should()
                .Contain(["--property:Prop1=prop1", "--property:Prop2=prop2"]);
         }
+
+        [Fact]
+        public void OutputPathWithSemicolonIsEscaped()
+        {
+            // Test that semicolons in the output path are properly escaped for MSBuild
+            var workingDirectory = TestPathUtilities.FormatAbsolutePath("t;e;s;t");
+            CommandDirectoryContext.PerformActionWithBasePath(workingDirectory, () =>
+            {
+                var msbuildPath = "<msbuildpath>";
+                var command = (PublishCommand)PublishCommand.FromArgs(new[] { "-o", "dist" }, msbuildPath);
+                
+                var tokens = command.GetArgumentTokensToMSBuild();
+                
+                // Find the PublishDir property token
+                var publishDirToken = tokens.FirstOrDefault(t => t.StartsWith("--property:PublishDir="));
+                publishDirToken.Should().NotBeNull("PublishDir property should be set");
+                
+                // The path should contain escaped semicolons (%3B) instead of raw semicolons
+                publishDirToken.Should().Contain("%3B", "semicolons should be escaped");
+                publishDirToken.Should().NotContain(";", "raw semicolons should not be present after property name");
+                publishDirToken.Should().EndWith(Path.DirectorySeparatorChar.ToString(), "path should end with directory separator");
+            });
+        }
+
+        [Theory]
+        [InlineData("path;with;semicolons", "%3B")]
+        [InlineData("path%with%percent", "%25")]
+        [InlineData("path$with$dollar", "%24")]
+        [InlineData("path@with@at", "%40")]
+        [InlineData("path'with'apostrophe", "%27")]
+        [InlineData("path*with*asterisk", "%2A")]
+        [InlineData("path?with?question", "%3F")]
+        public void OutputPathWithSpecialCharactersIsEscaped(string pathPart, string expectedEscapeSequence)
+        {
+            // Test that MSBuild special characters in the output path are properly escaped
+            var workingDirectory = TestPathUtilities.FormatAbsolutePath(pathPart);
+            CommandDirectoryContext.PerformActionWithBasePath(workingDirectory, () =>
+            {
+                var msbuildPath = "<msbuildpath>";
+                var command = (PublishCommand)PublishCommand.FromArgs(new[] { "-o", "dist" }, msbuildPath);
+                
+                var tokens = command.GetArgumentTokensToMSBuild();
+                
+                // Find the PublishDir property token
+                var publishDirToken = tokens.FirstOrDefault(t => t.StartsWith("--property:PublishDir="));
+                publishDirToken.Should().NotBeNull("PublishDir property should be set");
+                
+                // The path should contain the expected escape sequence
+                publishDirToken.Should().Contain(expectedEscapeSequence, $"special characters should be escaped as {expectedEscapeSequence}");
+            });
+        }
     }
 }
