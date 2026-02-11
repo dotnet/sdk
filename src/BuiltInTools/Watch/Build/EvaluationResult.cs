@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
@@ -51,7 +52,9 @@ internal sealed class EvaluationResult(ProjectGraph projectGraph, IReadOnlyDicti
             .SetItem(PropertyNames.DotNetWatchBuild, "true")
             .SetItem(PropertyNames.DesignTimeBuild, "true")
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
-            .SetItem(PropertyNames.ProvideCommandLineArgs, "true");
+            .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
+            // this will force CoreCompile task to execute and return command line args even if all inputs and outputs are up to date:
+            .SetItem(PropertyNames.NonExistentFile, "__NonExistentSubDir__\\__NonExistentFile__");
     }
 
     /// <summary>
@@ -125,6 +128,9 @@ internal sealed class EvaluationResult(ProjectGraph projectGraph, IReadOnlyDicti
                     return null;
                 }
             }
+
+            // command line args items should be available:
+            Debug.Assert(Path.GetExtension(projectInstance.FullPath) != ".csproj" || projectInstance.GetItems("CscCommandLineArgs").Any());
 
             var projectPath = projectInstance.FullPath;
             var projectDirectory = Path.GetDirectoryName(projectPath)!;
