@@ -3,7 +3,7 @@
 
 using System.Runtime.Serialization;
 
-namespace Microsoft.DotNet.Watcher.Internal
+namespace Microsoft.DotNet.Watch
 {
     [DataContract]
     internal sealed class MSBuildFileSetResult

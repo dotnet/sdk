@@ -67,7 +67,6 @@
     <FileSignInfo Include="MessagePack.Annotations.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="MessagePack.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="CommandLine.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="FluentAssertions.dll" CertificateName="$(ExternalCertificateId)" />
@@ -79,6 +78,10 @@
     <FileSignInfo Include="xunit.performance.execution.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="xunit.performance.metrics.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="$(ExternalCertificateId)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="MicrosoftSHA2" />
   </ItemGroup>
 
   <!-- Filter out any test packages from ItemsToSign -->

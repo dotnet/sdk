@@ -18,6 +18,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         Dictionary<string, WorkloadSet> GetAvailableWorkloadSets();
 
-        public readonly record struct WorkloadVersionInfo(string Version, string? VersionNotInstalledMessage = null, string? UpdateModeMessage = null);
+        public readonly record struct WorkloadVersionInfo(string Version, bool IsInstalled = true, bool WorkloadSetsEnabledWithoutWorkloadSet = false, string? GlobalJsonPath = null);
     }
 }

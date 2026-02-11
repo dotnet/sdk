@@ -15,6 +15,8 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Workload.Search.Tests;
 using Microsoft.DotNet.Workloads.Workload.History;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -296,19 +298,19 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 }
 ";
             var nugetPackageDownloader = new MockNuGetPackageDownloader();
-            var workloadResolver = new MockWorkloadResolver(new WorkloadInfo[] { new WorkloadInfo(new WorkloadId("android"), string.Empty) }, getPacks: id => Enumerable.Empty<WorkloadPackId>(), installedManifests: Enumerable.Empty<WorkloadManifestInfo>());
+            var workloadResolver = new MockWorkloadResolver([new WorkloadInfo(new WorkloadId("android"), string.Empty)], getPacks: id => [], installedManifests: []);
             var workloadInstaller = new MockPackWorkloadInstaller(
                 dotnetDir,
-                installedWorkloads: new List<WorkloadId>() { new WorkloadId("android")},
-                workloadSetContents: workloadSetContents)
+                installedWorkloads: [new WorkloadId("android")],
+                workloadSetContents: new Dictionary<string, string>() { { "8.0.302", workloadSetContents } })
             {
                 WorkloadResolver = workloadResolver
             };
             var oldVersion = upgrade ? "2.3.2" : "2.3.6";
             var workloadManifestUpdater = new MockWorkloadManifestUpdater(
-                manifestUpdates: new ManifestUpdateWithWorkloads[] {
+                manifestUpdates: [
                     new ManifestUpdateWithWorkloads(new ManifestVersionUpdate(new ManifestId("android"), new ManifestVersion("2.3.4"), "8.0.200"), Enumerable.Empty<KeyValuePair<WorkloadId, WorkloadDefinition>>().ToDictionary())
-                },
+                ],
                 fromWorkloadSet: true, workloadSetVersion: workloadSetVersion);
             var resolverFactory = new MockWorkloadResolverFactory(dotnetDir, sdkVersion, workloadResolver, userProfileDir);
             var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater);
@@ -323,6 +325,64 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             workloadInstaller.InstalledManifests.Count.Should().Be(1);
             workloadInstaller.InstalledManifests[0].manifestUpdate.NewVersion.ToString().Should().Be("2.3.4");
+        }
+
+        [Fact]
+        public void GivenWorkloadUpdateItFindsGreatestWorkloadSetWithSpecifiedComponents()
+        {
+            string workloadSet1 = @"{
+""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.macOS"": ""14.5.92/9.0.100""
+}
+";
+            string workloadSet2 = @"{
+""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.macOS"": ""14.5.92/9.0.100""
+}
+";
+            string workloadSet3 = @"{
+""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.Maui"": ""14.5.92/9.0.100""
+}
+";
+            string workloadSet4 = @"{
+""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.macOS"": ""14.5.93/9.0.100""
+}
+";
+            Dictionary<string, string> workloadSets = new()
+            {
+                { "9.0.100", workloadSet1 },
+                { "9.0.101", workloadSet2 },
+                { "9.0.102", workloadSet3 },
+                { "9.0.103", workloadSet4 }
+            };
+
+            var parseResult = Parser.Instance.Parse("dotnet workload update --version ios@17.5.9 macos@14.5.92");
+            MockPackWorkloadInstaller installer = new(workloadSetContents: workloadSets);
+            var testDirectory = _testAssetsManager.CreateTestDirectory(testName: "GivenWorkloadUpdateItFindsGreatestWorkloadSetWithSpecifiedComponents").Path;
+            WorkloadManifest iosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.iOS");
+            WorkloadManifest macosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.macOS");
+            WorkloadManifest mauiManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Maui");
+            MockWorkloadResolver resolver = new([new WorkloadInfo(new WorkloadId("ios"), ""), new WorkloadInfo(new WorkloadId("macos"), ""), new WorkloadInfo(new WorkloadId("maui"), "")],
+                installedManifests: [
+                    new WorkloadManifestInfo("Microsoft.NET.Sdk.iOS", "17.4.3", Path.Combine(testDirectory, "iosManifest"), "9.0.100"),
+                    new WorkloadManifestInfo("Microsoft.NET.Sdk.macOS", "14.4.3", Path.Combine(testDirectory, "macosManifest"), "9.0.100"),
+                    new WorkloadManifestInfo("Microsoft.NET.Sdk.Maui", "14.4.3", Path.Combine(testDirectory, "mauiManifest"), "9.0.100")
+                    ],
+                getManifest: id => id.ToString().Equals("ios") ? iosManifest : id.ToString().Equals("macos") ? macosManifest : mauiManifest);
+            MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.103.0"), new NuGetVersion("9.102.0"), new NuGetVersion("9.101.0"), new NuGetVersion("9.100.0")]);
+            WorkloadUpdateCommand command = new(
+                parseResult,
+                reporter: null,
+                workloadResolverFactory: new MockWorkloadResolverFactory(Path.Combine(testDirectory, "dotnet"), "9.0.100", resolver, userProfileDir: testDirectory),
+                workloadInstaller: installer,
+                nugetPackageDownloader: nugetPackageDownloader,
+                workloadManifestUpdater: new MockWorkloadManifestUpdater()
+                );
+            command.Execute();
+
+            installer.InstalledWorkloadSet.Version.Should().Be("9.0.101");
         }
 
         [Fact]
