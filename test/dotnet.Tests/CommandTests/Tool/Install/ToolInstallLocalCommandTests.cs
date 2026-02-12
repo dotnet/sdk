@@ -504,6 +504,36 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
+        [Fact]
+        public void GivenExistingEmptyManifestItShouldInstallToolSuccessfully()
+        {
+            // Regression test for https://github.com/dotnet/sdk/issues/[issue-number]
+            // This test verifies that installing a tool into an existing empty manifest
+            // (like one created by 'dotnet new tool-manifest') works correctly.
+            // The bug was that ExplicitManifestOrFindManifestContainPackageId would throw
+            // when no manifest contained the package, even though a manifest existed.
+            
+            // The test setup already creates an empty manifest in _jsonContent,
+            // so we just need to verify installation works
+            ParseResult parseResult = Parser.Parse($"dotnet tool install {_packageIdA.ToString()}");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            // This should succeed without throwing NullReferenceException
+            installLocalCommand.Execute().Should().Be(0);
+            
+            // Verify the tool was actually installed to the manifest
+            var manifestPackages = _toolManifestFinder.Find();
+            manifestPackages.Should().HaveCount(1);
+            manifestPackages.Single().PackageId.Should().Be(_packageIdA);
+        }
+
         private IToolPackageDownloader GetToolToolPackageInstallerWithPreviewInFeed()
         {
             List<MockFeed> feeds = new()
