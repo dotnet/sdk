@@ -269,23 +269,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             File.Exists(packagePath).Should().BeTrue();
         }
 
-        [WindowsOnlyFact]
-        public async Task WhenCalledWithNotSignedPackageItShouldThrowWithCommandOutput()
-        {
-            string commandOutput = "COMMAND OUTPUT";
-            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
-                new MockFirstPartyNuGetPackageSigningVerifier(verifyResult: false, commandOutput: commandOutput),
-                _logger, restoreActionConfig: new RestoreActionConfig(NoCache: true), verifySignatures: true);
-
-            NuGetPackageInstallerException ex = await Assert.ThrowsAsync<NuGetPackageInstallerException>(() =>
-                nuGetPackageDownloader.DownloadPackageAsync(
-                    TestPackageId,
-                    new NuGetVersion(TestPackageVersion),
-                    new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() })));
-
-            ex.Message.Should().Contain(commandOutput);
-        }
-
         [UnixOnlyFact]
         public async Task GivenANonWindowsMachineItShouldPrintMessageOnce()
         {

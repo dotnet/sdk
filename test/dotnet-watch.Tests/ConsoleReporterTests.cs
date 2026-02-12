@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ReporterTests
     {
@@ -16,9 +16,8 @@ namespace Microsoft.Extensions.Tools.Internal
             IReporter reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
             var dotnetWatchDefaultPrefix = $"dotnet watch {(suppressEmojis ? ":" : "⌚")} ";
 
-            // stdout
-            reporter.Verbose("verbose");
-            Assert.Equal($"{dotnetWatchDefaultPrefix}verbose" + EOL, testConsole.GetOutput());
+            reporter.Verbose("verbose {0}");
+            Assert.Equal($"{dotnetWatchDefaultPrefix}verbose {{0}}" + EOL, testConsole.GetOutput());
             testConsole.Clear();
 
             reporter.Output("out");
@@ -29,9 +28,8 @@ namespace Microsoft.Extensions.Tools.Internal
             Assert.Equal($"{dotnetWatchDefaultPrefix}warn" + EOL, testConsole.GetOutput());
             testConsole.Clear();
 
-            // stderr
             reporter.Error("error");
-            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "❌")} error" + EOL, testConsole.GetError());
+            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "❌")} error" + EOL, testConsole.GetOutput());
             testConsole.Clear();
         }
 
@@ -44,7 +42,6 @@ namespace Microsoft.Extensions.Tools.Internal
             IReporter reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
             var dotnetWatchDefaultPrefix = $"dotnet watch {(suppressEmojis ? ":" : "😄")}";
 
-            // stdout
             reporter.Verbose("verbose", emoji: "😄");
             Assert.Equal($"{dotnetWatchDefaultPrefix} verbose" + EOL, testConsole.GetOutput());
             testConsole.Clear();
@@ -57,9 +54,8 @@ namespace Microsoft.Extensions.Tools.Internal
             Assert.Equal($"{dotnetWatchDefaultPrefix} warn" + EOL, testConsole.GetOutput());
             testConsole.Clear();
 
-            // stderr
             reporter.Error("error", emoji: "😄");
-            Assert.Equal($"{dotnetWatchDefaultPrefix} error" + EOL, testConsole.GetError());
+            Assert.Equal($"{dotnetWatchDefaultPrefix} error" + EOL, testConsole.GetOutput());
             testConsole.Clear();
         }
 
@@ -67,12 +63,9 @@ namespace Microsoft.Extensions.Tools.Internal
         {
             private readonly StringBuilder _out;
             private readonly StringBuilder _error;
-
-            event Action<ConsoleKeyInfo> IConsole.KeyPressed
-            {
-                add { }
-                remove { }
-            }
+            public TextWriter Out { get; }
+            public TextWriter Error { get; }
+            public ConsoleColor ForegroundColor { get; set; }
 
             public TestConsole()
             {
@@ -82,14 +75,17 @@ namespace Microsoft.Extensions.Tools.Internal
                 Error = new StringWriter(_error);
             }
 
-            event ConsoleCancelEventHandler IConsole.CancelKeyPress
+            event Action<ConsoleKeyInfo> IConsole.KeyPressed
             {
                 add { }
                 remove { }
             }
 
-            public string GetOutput() => _out.ToString();
-            public string GetError() => _error.ToString();
+            public string GetOutput()
+                => _out.ToString();
+
+            public string GetError()
+                => _error.ToString();
 
             public void Clear()
             {
@@ -99,16 +95,8 @@ namespace Microsoft.Extensions.Tools.Internal
 
             public void ResetColor()
             {
-                ForegroundColor = default(ConsoleColor);
+                ForegroundColor = default;
             }
-
-            public TextWriter Out { get; }
-            public TextWriter Error { get; }
-            public TextReader In { get; }
-            public bool IsInputRedirected { get; }
-            public bool IsOutputRedirected { get; }
-            public bool IsErrorRedirected { get; }
-            public ConsoleColor ForegroundColor { get; set; }
         }
     }
 }
