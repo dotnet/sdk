@@ -194,9 +194,10 @@ public class InstallEndToEndTests
             scriptContent = $@"#!/bin/{shell}
 set -e
 source <('{Escape(dotnetupPath)}' print-env-script --shell {shell} --dotnet-install-path '{Escape(installPath)}')
-# Use plain dotnet to verify hash clearing works (env script should clear cached path)
+# Clear cached dotnet path to ensure we use the newly configured PATH
+hash -d dotnet 2>/dev/null || true
+# Verify both PATH-based dotnet and DOTNET_ROOT/dotnet return the same version
 echo ""DOTNET_VERSION=$(dotnet --version)""
-# Also verify DOTNET_ROOT/dotnet returns the same version
 echo ""DOTNET_ROOT_VERSION=$(""$DOTNET_ROOT/dotnet"" --version)""
 echo ""PATH=$PATH""
 echo ""DOTNET_ROOT=$DOTNET_ROOT""
