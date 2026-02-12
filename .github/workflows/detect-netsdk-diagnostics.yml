@@ -59,24 +59,18 @@ jobs:
           # Get diff of .xlf files changed by this PR.
           # Use three-dot diff (merge-base) so that only the PR's changes are included,
           # not unrelated changes on the target branch that the PR hasn't been rebased onto.
-          DIFF_OUTPUT=$(git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} -- '*.xlf')
-          
-          # Use multiline output for step outputs
-          # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
-          {
-            echo 'xlf_diff<<EOF'
-            echo "$DIFF_OUTPUT"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+          # Write to a file to avoid GitHub Actions step output size limits.
+          git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} -- '*.xlf' > "$RUNNER_TEMP/xlf_diff.txt"
 
       - name: Detect new NETSDK diagnostics
         id: detect
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
-          XLF_DIFF: ${{ steps.get-diff.outputs.xlf_diff }}
+          XLF_DIFF_PATH: ${{ runner.temp }}/xlf_diff.txt
         with:
           script: |
-            const diff = process.env.XLF_DIFF;
+            const fs = require('fs');
+            const diff = fs.readFileSync(process.env.XLF_DIFF_PATH, 'utf8');
             
             // Pattern to match NETSDK diagnostic codes
             const diagnosticPattern = /NETSDK(\d{4}):/g;
