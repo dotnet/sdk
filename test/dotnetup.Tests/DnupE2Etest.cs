@@ -199,7 +199,7 @@ hash -d dotnet 2>/dev/null || true
 # Capture versions into variables first to avoid nested quoting issues on macOS bash 3.2
 _path_ver=$(dotnet --version)
 _root_ver=""$DOTNET_ROOT/dotnet""
-_root_ver_out=$($_root_ver --version)
+_root_ver_out=$(""$_root_ver"" --version)
 # Output results
 echo ""DOTNET_VERSION=$_path_ver""
 echo ""DOTNET_ROOT_VERSION=$_root_ver_out""
@@ -212,7 +212,8 @@ echo ""DOTNET_ROOT=$DOTNET_ROOT""
             {
                 FileName = "chmod",
                 Arguments = $"+x \"{scriptPath}\"",
-                UseShellExecute = false
+                UseShellExecute = false,
+                WorkingDirectory = tempRoot
             });
             chmod?.WaitForExit();
         }
