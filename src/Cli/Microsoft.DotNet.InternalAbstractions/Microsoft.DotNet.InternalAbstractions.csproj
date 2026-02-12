@@ -17,8 +17,4 @@
     -->
     <IsAotCompatible Condition="'$(TargetFramework)' != 'net472'">true</IsAotCompatible>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
-  </ItemGroup>
 </Project>

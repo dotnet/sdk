@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
@@ -96,7 +97,8 @@ namespace Microsoft.DotNet.Watch
 
                     foreach (var staticFile in projectItems.StaticFiles)
                     {
-                        AddFile(staticFile.FilePath, staticFile.StaticWebAssetPath);
+                        // that target adds items with "wwwroot/" prefix:
+                        AddFile(staticFile.FilePath, staticFile.StaticWebAssetPath?["wwwroot/".Length..]);
                     }
 
                     void AddFile(string filePath, string? staticWebAssetPath)
@@ -107,7 +109,7 @@ namespace Microsoft.DotNet.Watch
                             {
                                 FilePath = filePath,
                                 ContainingProjectPaths = [projectPath],
-                                StaticWebAssetPath = staticWebAssetPath,
+                                StaticWebAssetRelativeUrl = staticWebAssetPath,
                             });
                         }
                         else if (!existingFile.ContainingProjectPaths.Contains(projectPath))
@@ -161,7 +163,7 @@ namespace Microsoft.DotNet.Watch
             // Set dotnet-watch reserved properties after the user specified propeties,
             // so that the former take precedence.
 
-            if (EnvironmentOptions.SuppressHandlingStaticContentFiles)
+            if (EnvironmentOptions.SuppressHandlingStaticWebAssets)
             {
                 arguments.Add("/p:DotNetWatchContentFiles=false");
             }

@@ -7,17 +7,8 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.Complete;
 
 internal static class CompleteCommandParser
 {
-    private static readonly CompleteCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(CompleteCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static CompleteCommandDefinition CreateCommand()
-    {
-        var command = new CompleteCommandDefinition();
         command.SetAction(CompleteCommand.Run);
-        return command;
     }
 }

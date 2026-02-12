@@ -38,12 +38,6 @@ internal sealed class LocalToolListJsonContract : ToolListJsonContract
     public required string Manifest { get; init; }
 }
 
-internal enum ToolListOutputFormat
-{
-    table = 0,
-    json = 1
-}
-
 internal static class JsonHelper
 {
     public static readonly ToolListJsonSerializerContext JsonContext = new(new JsonSerializerOptions()

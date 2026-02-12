@@ -19,14 +19,14 @@ public class ParseCommand
         var reparsed = Parser.Parse(tokens);
         Console.WriteLine(reparsed.ToString());
 
-
         if (reparsed.UnmatchedTokens.Any())
         {
             Console.WriteLine("Unmatched Tokens: ");
             Console.WriteLine(string.Join(" ", reparsed.UnmatchedTokens));
         }
 
-        var optionValuesToBeForwarded = reparsed.OptionValuesToBeForwarded(ParseCommandParser.GetCommand());
+        var definition = (ParseCommandDefinition)reparsed.CommandResult.Command;
+        var optionValuesToBeForwarded = reparsed.OptionValuesToBeForwarded(definition);
         if (optionValuesToBeForwarded.Any())
         {
             Console.WriteLine("Option values to be forwarded: ");

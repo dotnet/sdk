@@ -7,7 +7,7 @@ namespace System.CommandLine.StaticCompletions.Shells;
 
 public class FishShellProvider : IShellProvider
 {
-    public string ArgumentName => "fish";
+    public string ArgumentName => ShellNames.Fish;
 
     public string Extension => "fish";
 

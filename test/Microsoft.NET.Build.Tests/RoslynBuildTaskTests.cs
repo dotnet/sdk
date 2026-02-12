@@ -87,6 +87,36 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         VerifyCompiler(buildCommand, DotNetExecCompilerFileName(language), CoreTargetFrameworkName, useSharedCompilation, toolsetPackage: true);
     }
 
+    /// <summary>
+    /// SDK side test for <see href="https://github.com/dotnet/roslyn/pull/80993"/>.
+    /// </summary>
+    [FullMSBuildOnlyFact]
+    public void UsingCscManually()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Test.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+                <PropertyGroup>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                </PropertyGroup>
+                <Target Name="CustomTarget">
+                    <Csc Sources="File.cs" />
+                </Target>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "File.cs"), """
+            using System.Linq;
+            System.Console.WriteLine();
+            """);
+
+        new MSBuildCommand(Log, "CustomTarget", testInstance.Path)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+    }
+
     private TestAsset CreateProject(bool useSharedCompilation, Language language, Action<TestProject>? configure = null, [CallerMemberName] string callingMethod = "")
     {
         var (projExtension, sourceName, sourceText) = language switch
