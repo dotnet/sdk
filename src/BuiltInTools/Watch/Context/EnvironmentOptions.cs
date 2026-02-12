@@ -39,6 +39,7 @@ namespace Microsoft.DotNet.Watch
         LogLevel? CliLogLevel = null,
         string? AutoReloadWebSocketHostName = null,
         int? AutoReloadWebSocketPort = null,
+        int? AutoReloadWebSocketSecurePort = null,
         string? BrowserPath = null,
         TestFlags TestFlags = TestFlags.None,
         string TestOutput = "")
@@ -58,6 +59,7 @@ namespace Microsoft.DotNet.Watch
             CliLogLevel: EnvironmentVariables.CliLogLevel,
             AutoReloadWebSocketHostName: EnvironmentVariables.AutoReloadWSHostName,
             AutoReloadWebSocketPort: EnvironmentVariables.AutoReloadWSPort,
+            AutoReloadWebSocketSecurePort: EnvironmentVariables.AutoReloadWSSPort,
             BrowserPath: EnvironmentVariables.BrowserPath,
             TestFlags: EnvironmentVariables.TestFlags,
             TestOutput: EnvironmentVariables.TestOutputDir

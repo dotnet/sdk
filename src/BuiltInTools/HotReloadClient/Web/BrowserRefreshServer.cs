@@ -34,6 +34,7 @@ internal sealed class BrowserRefreshServer(
     string dotnetPath,
     string? autoReloadWebSocketHostName,
     int? autoReloadWebSocketPort,
+    int? autoReloadWebSocketSecurePort,
     bool suppressTimeouts)
     : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, loggerFactory)
 {
@@ -46,6 +47,7 @@ internal sealed class BrowserRefreshServer(
     {
         var hostName = autoReloadWebSocketHostName ?? "127.0.0.1";
         var port = autoReloadWebSocketPort ?? 0;
+        var securePort = autoReloadWebSocketSecurePort ?? 0;
 
         var supportsTls = await IsTlsSupportedAsync(cancellationToken);
 
@@ -55,7 +57,7 @@ internal sealed class BrowserRefreshServer(
                 builder.UseKestrel();
                 if (supportsTls)
                 {
-                    builder.UseUrls($"https://{hostName}:{port}");
+                    builder.UseUrls($"https://{hostName}:{securePort}", $"http://{hostName}:{port}");
                 }
                 else
                 {
